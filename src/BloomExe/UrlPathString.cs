@@ -185,7 +185,7 @@ namespace Bloom
 		public static string GetFullyDecodedPath(string directory, ref string filename)
 		{
 			var path = System.IO.Path.Combine(directory, filename);
-			if (!SIL.IO.RobustFile.Exists(path))
+			if (!Bloom.Utils.PatientFile.Exists(path))
 			{
 				const string kUrlEncodedRegex = "%[0-9a-fA-F][0-9a-fA-F]";
 				var filename1 = filename;
@@ -193,7 +193,7 @@ namespace Bloom
 				{
 					filename1 = HttpUtility.UrlDecode(filename1);
 					var path1 = System.IO.Path.Combine(directory, filename1);
-					if (SIL.IO.RobustFile.Exists(path1))
+					if (Bloom.Utils.PatientFile.Exists(path1))
 					{
 						filename = filename1;
 						return path1;

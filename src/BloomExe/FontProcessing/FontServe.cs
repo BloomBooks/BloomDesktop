@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.FontProcessing
 {
@@ -38,11 +38,11 @@ namespace Bloom.FontProcessing
 			foreach (var subfolder in Directory.GetDirectories(fontsFolder))
 			{
 				var filePath = Path.Combine(subfolder, "font-info.json");
-				if (RobustFile.Exists(filePath))
+				if (PatientFile.Exists(filePath))
 				{
 					try
 					{
-						var json = RobustFile.ReadAllText(filePath);
+						var json = PatientFile.ReadAllText(filePath);
 						FontServeInfo info = JsonConvert.DeserializeObject<FontServeInfo>(json);
 						FontsServed.Add(info);
 					}

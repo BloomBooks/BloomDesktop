@@ -12,7 +12,7 @@ using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.Epub;
 using Bloom.ToPalaso;
 using SIL.CommandLineProcessing;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 
@@ -287,7 +287,7 @@ namespace Bloom.web.controllers
 				// We're looking for the ace directory. One GetDirectoryName just strips of the
 				// final slash, so we need two to get to ace.
 				var packagePath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(daisyDirectory)), "package.json");
-				var packageJson = DynamicJson.Parse(RobustFile.ReadAllText(packagePath));
+				var packageJson = DynamicJson.Parse(PatientFile.ReadAllText(packagePath));
 				string versionString = packageJson.version;
 				var match = new Regex(@"(\d+)\.(\d+)").Match(versionString);
 				if (match.Success)

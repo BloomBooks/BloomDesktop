@@ -6,7 +6,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Api;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.TestUtilities;
 

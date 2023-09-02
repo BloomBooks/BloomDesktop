@@ -1,4 +1,4 @@
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Windows.Forms.Extensions;
 using System;
 using System.ComponentModel;
@@ -153,7 +153,7 @@ namespace Bloom.web
 
 			// The 'body' height: auto rule keeps a winforms tab that only contains a ReactControl
 			// from unnecessary scrolling.
-			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
+			PatientFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
 				<html style='height:100%'>
 				<head>
 					<title>ReactControl ({_javascriptBundleName})</title>

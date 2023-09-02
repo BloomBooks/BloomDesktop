@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Bloom.Book;
 using BloomTemp;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.Book
 {
@@ -66,9 +66,9 @@ namespace BloomTests.Book
 					</div>
 				</body></html>";
 			var configHtmlContent = $@"<html><head></head><body></body></html>";
-			RobustFile.WriteAllText(_normalBookPath, normalHtmlContent);
-			RobustFile.WriteAllText(_configHtmlPath, configHtmlContent);
-			RobustFile.WriteAllText(_otherHtmlPath, configHtmlContent);
+			PatientFile.WriteAllText(_normalBookPath, normalHtmlContent);
+			PatientFile.WriteAllText(_configHtmlPath, configHtmlContent);
+			PatientFile.WriteAllText(_otherHtmlPath, configHtmlContent);
 			_normalFilter = new BookFileFilter(_normalBookFolderPath);
 			_filterForEdit = new BookFileFilter(_normalBookFolderPath) {IncludeFilesForContinuedEditing = true};
 			_filterForInteractive = new BookFileFilter(_normalBookFolderPath) { IncludeFilesNeededForBloomPlayer = true };

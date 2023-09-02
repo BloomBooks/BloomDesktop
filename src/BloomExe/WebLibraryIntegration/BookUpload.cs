@@ -14,7 +14,7 @@ using Bloom.Publish;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using System.Xml;
@@ -223,9 +223,9 @@ namespace Bloom.WebLibraryIntegration
 			// We also want to clear out old book orders with previous (other language?) filenames.
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7616.
 			foreach (var file in Directory.GetFiles(bookFolder, $"*{BookInfo.BookOrderExtension}"))
-				RobustFile.Delete(file);
+				PatientFile.Delete(file);
 			var metadataPath = BookMetaData.MetaDataPath(bookFolder);
-			RobustFile.Copy(metadataPath, BookInfo.BookOrderPath(bookFolder), true);
+			PatientFile.Copy(metadataPath, BookInfo.BookOrderPath(bookFolder), true);
 			parseId = "";
 			try
 			{
@@ -438,9 +438,9 @@ namespace Bloom.WebLibraryIntegration
 
 		internal bool CheckAgainstLocalHashfile(string currentHashes, string uploadInfoPath)
 		{
-			if (RobustFile.Exists(uploadInfoPath))
+			if (PatientFile.Exists(uploadInfoPath))
 			{
-				var previousHashes = RobustFile.ReadAllText(uploadInfoPath);
+				var previousHashes = PatientFile.ReadAllText(uploadInfoPath);
 				return currentHashes == previousHashes;
 			}
 			return false;
@@ -555,9 +555,9 @@ namespace Bloom.WebLibraryIntegration
 						progress.WriteStatus(pdfMsg);
 
 						publishModel.MakePDFForUpload(progress);
-						if (RobustFile.Exists(publishModel.PdfFilePath))
+						if (PatientFile.Exists(publishModel.PdfFilePath))
 						{
-							RobustFile.Copy(publishModel.PdfFilePath, uploadPdfPath, true);
+							PatientFile.Copy(publishModel.PdfFilePath, uploadPdfPath, true);
 						}
 						else
 						{

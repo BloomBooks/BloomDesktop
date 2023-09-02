@@ -9,7 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 namespace Bloom
@@ -276,7 +276,7 @@ namespace Bloom
 				englishPath = BloomFileLocator.GetBrowserFile(existenceOfEnglishVersionIsOptional, partsOfEnglishFilePath);
 			}
 
-			if (!RobustFile.Exists(englishPath))
+			if (!PatientFile.Exists(englishPath))
 			{
 				return englishPath; // just return whatever the original GetFileDistributedWithApplication gave. "", null, whatever it is.
 			}
@@ -292,14 +292,14 @@ namespace Bloom
 		{
 			var langId = LocalizationManager.UILanguageId;
 			var pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + langId + ".");
-			if (RobustFile.Exists(pathInDesiredLanguage))
+			if (PatientFile.Exists(pathInDesiredLanguage))
 				return pathInDesiredLanguage;
 			if (langId.Contains('-'))
 			{
 				// Ignore any country (or script) code to see if we can find a match to the generic language.
 				langId = langId.Substring(0, langId.IndexOf('-'));
 				pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + langId + ".");
-				if (RobustFile.Exists(pathInDesiredLanguage))
+				if (PatientFile.Exists(pathInDesiredLanguage))
 					return pathInDesiredLanguage;
 			}
 			return pathToEnglishFile;	// can't find a localized version, fall back to English
@@ -318,11 +318,11 @@ namespace Bloom
 			if(Path.IsPathRooted(brandingNameOrFolderPath)) //if it looks like a path
 			{
 				var path = Path.Combine(brandingNameOrFolderPath, fileName);
-				if(RobustFile.Exists(path))
+				if(PatientFile.Exists(path))
 					return path;
 				return null;
 			}
-			if (Path.IsPathRooted(fileName) && RobustFile.Exists(fileName)) // also just for unit tests
+			if (Path.IsPathRooted(fileName) && PatientFile.Exists(fileName)) // also just for unit tests
 				return fileName;
 			return BloomFileLocator.GetBrowserFile(true, "branding", brandingNameOrFolderPath, fileName);
 		}

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using Newtonsoft.Json;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 
 namespace Bloom.Book

@@ -96,7 +96,7 @@ namespace Bloom.Utils
 		internal static bool FileExistsThrowIfTooLong(string path)
 		{
 			ThrowIfExceedsMaxPath(path);
-			return SIL.IO.RobustFile.Exists(path);
+			return Bloom.Utils.PatientFile.Exists(path);
 		}
 		private static string GetGenericPathTooLongMessage()
 		{

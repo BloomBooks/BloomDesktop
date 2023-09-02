@@ -11,7 +11,7 @@ using Bloom.Spreadsheet;
 using BloomTemp;
 using BloomTests.TeamCollection;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 
 namespace BloomTests.Spreadsheet
@@ -72,15 +72,15 @@ namespace BloomTests.Spreadsheet
 			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow1.SetCell(columnForEn, "this is block 1 on page 1");
 			contentRow1.SetCell(columnForImage, "images/lady24b.png");
-			RobustFile.Copy(Path.Combine(_imagesFolder, "lady24b.png"),Path.Combine(whereToPutImages, "lady24b.png"));
-			RobustFile.WriteAllText(Path.Combine(whereToPutVideo, "fakeVideo.mp4"), "This is just a fake");
+			PatientFile.Copy(Path.Combine(_imagesFolder, "lady24b.png"),Path.Combine(whereToPutImages, "lady24b.png"));
+			PatientFile.WriteAllText(Path.Combine(whereToPutVideo, "fakeVideo.mp4"), "This is just a fake");
 			contentRow1.SetCell(columnForVideo, "video/fakeVideo.mp4");
 			var activity1Folder = Path.Combine(whereToPutActivities, "drag ball");
 			Directory.CreateDirectory(activity1Folder);
-			RobustFile.WriteAllText(Path.Combine(activity1Folder, "drag.html"), "This is just a fake HTML file");
+			PatientFile.WriteAllText(Path.Combine(activity1Folder, "drag.html"), "This is just a fake HTML file");
 			var activity1Subfolder = Path.Combine(activity1Folder, "sub");
 			Directory.CreateDirectory(activity1Subfolder);
-			RobustFile.WriteAllText(Path.Combine(activity1Subfolder, "nonsense.jpg"), "This is just a fake JPG file");
+			PatientFile.WriteAllText(Path.Combine(activity1Subfolder, "nonsense.jpg"), "This is just a fake JPG file");
 			contentRow1.SetCell(columnForActivities, "activities/drag ball/drag.html");
 			pageText.Append(SpreadsheetImageAndTextImportTests.PageWith2OfEverything(1, 1));
 
@@ -90,12 +90,12 @@ namespace BloomTests.Spreadsheet
 			contentRow2.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow2.SetCell(columnForEn, "this is block 2 on page 1");
 			contentRow2.SetCell(columnForImage, "images/LakePendOreille.jpg");
-			RobustFile.Copy(Path.Combine(_imagesFolder, "LakePendOreille.jpg"), Path.Combine(whereToPutImages, "LakePendOreille.jpg"));
-			RobustFile.WriteAllText(Path.Combine(whereToPutVideo, "anotherVideo.mp4"), "This is just a fake");
+			PatientFile.Copy(Path.Combine(_imagesFolder, "LakePendOreille.jpg"), Path.Combine(whereToPutImages, "LakePendOreille.jpg"));
+			PatientFile.WriteAllText(Path.Combine(whereToPutVideo, "anotherVideo.mp4"), "This is just a fake");
 			contentRow2.SetCell(columnForVideo, "video/anotherVideo.mp4");
 			var activity2Folder = Path.Combine(whereToPutActivities, "extra", "mygame");
 			Directory.CreateDirectory(activity2Folder);
-			RobustFile.WriteAllText(Path.Combine(activity2Folder, "mygame.html"), "This is just a fake HTML file");
+			PatientFile.WriteAllText(Path.Combine(activity2Folder, "mygame.html"), "This is just a fake HTML file");
 			contentRow2.SetCell(columnForActivities, "activities/extra/mygame/mygame.html");
 
 			// Test row3 interacts with a second page in the template. The row has image, text, and video,
@@ -104,8 +104,8 @@ namespace BloomTests.Spreadsheet
 			contentRow3.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow3.SetCell(columnForEn, "this is block 1 on page 2");
 			contentRow3.SetCell(columnForImage, "images/bird.png");
-			RobustFile.Copy(Path.Combine(_imagesFolder, "bird.png"), Path.Combine(whereToPutImages, "bird.png"));
-			RobustFile.WriteAllText(Path.Combine(whereToPutVideo, "video3.mp4"), "This is fake video 3");
+			PatientFile.Copy(Path.Combine(_imagesFolder, "bird.png"), Path.Combine(whereToPutImages, "bird.png"));
+			PatientFile.WriteAllText(Path.Combine(whereToPutVideo, "video3.mp4"), "This is fake video 3");
 			contentRow3.SetCell(columnForVideo, "video/video3.mp4");
 			pageText.Append(SpreadsheetImageAndTextImportTests.PageWithImageAndText(1, 3, 3));
 
@@ -114,15 +114,15 @@ namespace BloomTests.Spreadsheet
 			var contentRow4 = new ContentRow(ss);
 			contentRow4.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow4.SetCell(columnForImage, "images/aor_Nab037.png");
-			RobustFile.Copy(Path.Combine(_imagesFolder, "aor_Nab037.png"), Path.Combine(whereToPutImages, "aor_Nab037.png"));
-			RobustFile.WriteAllText(Path.Combine(whereToPutVideo, "video4.mp4"), "This is fake video 4");
+			PatientFile.Copy(Path.Combine(_imagesFolder, "aor_Nab037.png"), Path.Combine(whereToPutImages, "aor_Nab037.png"));
+			PatientFile.WriteAllText(Path.Combine(whereToPutVideo, "video4.mp4"), "This is fake video 4");
 			contentRow4.SetCell(columnForVideo, "video/video4.mp4");
 
 			// Test row5 again interacts with a second page in the template. The row has just video,
 			// but the page only has text and picture. Therefore, a template page will have to be inserted.
 			var contentRow5 = new ContentRow(ss);
 			contentRow5.AddCell(InternalSpreadsheet.PageContentRowLabel);
-			RobustFile.WriteAllText(Path.Combine(whereToPutVideo, "video5.mp4"), "This is fake video 5");
+			PatientFile.WriteAllText(Path.Combine(whereToPutVideo, "video5.mp4"), "This is fake video 5");
 			contentRow5.SetCell(columnForVideo, "video/video5.mp4");
 
 			// Test row6 again interacts with a second page in the template. The row has just video, text, and a widget,
@@ -130,11 +130,11 @@ namespace BloomTests.Spreadsheet
 			var contentRow6 = new ContentRow(ss);
 			contentRow6.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow6.SetCell(columnForEn, "this is block 1 on page 5");
-			RobustFile.WriteAllText(Path.Combine(whereToPutVideo, "video6.mp4"), "This is fake video 6");
+			PatientFile.WriteAllText(Path.Combine(whereToPutVideo, "video6.mp4"), "This is fake video 6");
 			contentRow6.SetCell(columnForVideo, "video/video6.mp4");
 			var activity3Folder = Path.Combine(whereToPutActivities, "game3");
 			Directory.CreateDirectory(activity3Folder);
-			RobustFile.WriteAllText(Path.Combine(activity2Folder, "game3Root.html"), "This is just a fake HTML file");
+			PatientFile.WriteAllText(Path.Combine(activity2Folder, "game3Root.html"), "This is just a fake HTML file");
 			contentRow6.SetCell(columnForActivities, "activities/game3/game3Root.html");
 
 			// Test row7 interacts with the second page in the template. The row has image, text, and video,
@@ -144,8 +144,8 @@ namespace BloomTests.Spreadsheet
 			contentRow7.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow7.SetCell(columnForEn, "this is block 1 on page 7");
 			contentRow7.SetCell(columnForImage, "images/Mars 2.png");
-			RobustFile.Copy(Path.Combine(_imagesFolder, "Mars 2.png"), Path.Combine(whereToPutImages, "Mars 2.png"));
-			RobustFile.WriteAllText(Path.Combine(whereToPutVideo, "video7.mp4"), "This is fake video 7");
+			PatientFile.Copy(Path.Combine(_imagesFolder, "Mars 2.png"), Path.Combine(whereToPutImages, "Mars 2.png"));
+			PatientFile.WriteAllText(Path.Combine(whereToPutVideo, "video7.mp4"), "This is fake video 7");
 			contentRow7.SetCell(columnForVideo, "video/video7.mp4");
 			contentRow7.SetCell(columnForPageType, "Basic Text & Picture");
 
@@ -156,7 +156,7 @@ namespace BloomTests.Spreadsheet
 			contentRow8.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow8.SetCell(columnForEn, "this is block 1 on page 9");
 			contentRow8.SetCell(columnForImage, "images/bluebird.png");
-			RobustFile.Copy(Path.Combine(_imagesFolder, "bluebird.png"), Path.Combine(whereToPutImages, "bluebird.png"));
+			PatientFile.Copy(Path.Combine(_imagesFolder, "bluebird.png"), Path.Combine(whereToPutImages, "bluebird.png"));
 			contentRow8.SetCell(columnForPageType, "Picture in Middle");
 
 			// We have room for another block of text in that Picture in Middle page.
@@ -242,7 +242,7 @@ namespace BloomTests.Spreadsheet
 		public void GotImageSourceAndFileOnPageN(int n, string tag, string fileName, string src=null)
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer') and @data-test-id='ic{tag}']/img[@src='{src ?? fileName}']", 1);
-			Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
+			Assert.That(PatientFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
 		}
 
 		[TestCase(1, "bird.png")]
@@ -251,7 +251,7 @@ namespace BloomTests.Spreadsheet
 		public void GotImageSourceAndFileOnAddedPageN(int n, string fileName)
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{fileName}']", 1);
-			Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
+			Assert.That(PatientFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
 			// We always put a data-test-id on test template pages, so this acts as a check that we inserted a default.
 			AssertThatXmlIn.Element(_contentPages[n])
 				.HasNoMatchForXpath(".//div[contains(@class, 'bloom-imageContainer') and @data-test-id]");
@@ -262,7 +262,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase("video5.mp4")]
 		public void VideoCopiedToOutput(string fileName)
 		{
-			Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, "video", fileName)));
+			Assert.That(PatientFile.Exists(Path.Combine(_bookFolder.FolderPath, "video", fileName)));
 		}
 
 		[TestCase("drag ball/drag.html")]
@@ -270,7 +270,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase("extra/mygame/mygame.html")]
 		public void ActivityFileCopiedToOutput(string fileName)
 		{
-			Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, "activities", fileName)));
+			Assert.That(PatientFile.Exists(Path.Combine(_bookFolder.FolderPath, "activities", fileName)));
 		}
 
 		[TestCase(0,1, "video%2ffakeVideo.mp4")]
@@ -369,7 +369,7 @@ namespace BloomTests.Spreadsheet
 		public void ActivityCssFile_WasAdded()
 		{
 			var activityPath = Path.Combine(_bookFolder.FolderPath, "Activity.css");
-			Assert.That(RobustFile.Exists(activityPath), Is.True);
+			Assert.That(PatientFile.Exists(activityPath), Is.True);
 		}
 
 		[Test]

@@ -8,7 +8,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using BloomTemp;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.Collection
 {
@@ -61,13 +61,13 @@ namespace BloomTests.Collection
 						</div>
 					</div>
 				</body></html>";
-			RobustFile.WriteAllText(_someBookPath, normalHtmlContent);
+			PatientFile.WriteAllText(_someBookPath, normalHtmlContent);
 			_someBookFilter = new BookFileFilter(_someBookFolderPath);
 
 			_otherBookFolderPath = Path.Combine(_collectionFolder.FolderPath, "otherBook");
 			Directory.CreateDirectory(_otherBookFolderPath);
 			_otherBookPath = Path.Combine(_otherBookFolderPath, Path.GetFileName(_otherBookFolderPath) + ".htm");
-			RobustFile.WriteAllText(_otherBookPath, normalHtmlContent);
+			PatientFile.WriteAllText(_otherBookPath, normalHtmlContent);
 			_otherBookFilter = new BookFileFilter(_otherBookFolderPath);
 
 			_filter = new CollectionFileFilter();

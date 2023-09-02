@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using SIL.Reporting;
 using System.Linq;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using System.IO;
 
 namespace Bloom.FontProcessing
@@ -148,7 +148,7 @@ namespace Bloom.FontProcessing
 			{
 				// If the request is for an existing file, return it.
 				var path = FileLocationUtilities.GetFileDistributedWithApplication(true, localPath.Substring(idx + 6));
-				if (path != null && RobustFile.Exists(path))
+				if (path != null && PatientFile.Exists(path))
 				{
 					var contentType = BloomServer.GetContentType(Path.GetExtension(path));
 					info.ResponseContentType = contentType;
@@ -176,7 +176,7 @@ namespace Bloom.FontProcessing
 						if (String.IsNullOrEmpty(file))
 							file = fontInfo.files.normal;	// must not have a requested variant.
 						path = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{file}");
-						if (path != null && RobustFile.Exists(path))
+						if (path != null && PatientFile.Exists(path))
 						{
 							var contentType = BloomServer.GetContentType(Path.GetExtension(path));
 							info.ResponseContentType = contentType;

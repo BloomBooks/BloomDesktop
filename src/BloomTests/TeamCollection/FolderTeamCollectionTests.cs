@@ -7,7 +7,7 @@ using Bloom.TeamCollection;
 using BloomTemp;
 using Moq;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.TeamCollection
 {
@@ -42,18 +42,18 @@ namespace BloomTests.TeamCollection
 			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, "My book");
 			Directory.CreateDirectory(bookFolderPath);
 			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			PatientFile.WriteAllText(bookPath, "This is just a dummy");
 			var cssPath = Path.Combine(bookFolderPath, "BasicLayout.css");
-			RobustFile.WriteAllText(cssPath, "This is another dummy");
+			PatientFile.WriteAllText(cssPath, "This is another dummy");
 			var audioDirectory = Path.Combine(bookFolderPath, "audio");
 			Directory.CreateDirectory(audioDirectory);
 			var mp3Path = Path.Combine(audioDirectory, "rubbish.mp3");
-			RobustFile.WriteAllText(mp3Path, "Fake mp3");
+			PatientFile.WriteAllText(mp3Path, "Fake mp3");
 
 			var secondBookFolderPath = Path.Combine(_collectionFolder.FolderPath, kAnotherBook);
 			Directory.CreateDirectory(secondBookFolderPath);
 			var anotherBookPath = Path.Combine(secondBookFolderPath, kAnotherBook + ".htm");
-			RobustFile.WriteAllText(anotherBookPath, "This is just a dummy for another book");
+			PatientFile.WriteAllText(anotherBookPath, "This is just a dummy for another book");
 
 			_myBookStatus = _collection.PutBook(bookFolderPath);
 			_anotherBookStatus = _collection.PutBook(secondBookFolderPath);
@@ -94,7 +94,7 @@ namespace BloomTests.TeamCollection
 		public void PutBook_CreatesExpectedBloomFile()
 		{
 			var destPath = Path.Combine(_repoFolder.FolderPath, "Books" ,"My book.bloom");
-			Assert.That(RobustFile.Exists(destPath));
+			Assert.That(PatientFile.Exists(destPath));
 		}
 
 		[Test]
@@ -112,16 +112,16 @@ namespace BloomTests.TeamCollection
 				_collection.CopyAllBooksFromRepoToLocalFolder(destFolder.FolderPath);
 				var destBookFolder = Path.Combine(destFolder.FolderPath, "My book");
 				var destBookPath = Path.Combine(destBookFolder, "My book.htm");
-				Assert.That(RobustFile.ReadAllText(destBookPath), Is.EqualTo("This is just a dummy"));
+				Assert.That(PatientFile.ReadAllText(destBookPath), Is.EqualTo("This is just a dummy"));
 				var destCssPath = Path.Combine(destBookFolder, "BasicLayout.css");
-				Assert.That(RobustFile.ReadAllText(destCssPath), Is.EqualTo("This is another dummy"));
+				Assert.That(PatientFile.ReadAllText(destCssPath), Is.EqualTo("This is another dummy"));
 				var destAudioDirectory = Path.Combine(destBookFolder, "audio");
 				var destMp3Path = Path.Combine(destAudioDirectory, "rubbish.mp3");
-				Assert.That(RobustFile.ReadAllText(destMp3Path), Is.EqualTo("Fake mp3"));
+				Assert.That(PatientFile.ReadAllText(destMp3Path), Is.EqualTo("Fake mp3"));
 
 				var anotherDestBookFolder = Path.Combine(destFolder.FolderPath, kAnotherBook);
 				var anotherDestBookPath = Path.Combine(anotherDestBookFolder, kAnotherBook + ".htm");
-				Assert.That(RobustFile.ReadAllText(anotherDestBookPath), Is.EqualTo("This is just a dummy for another book"));
+				Assert.That(PatientFile.ReadAllText(anotherDestBookPath), Is.EqualTo("This is just a dummy for another book"));
 
 				Assert.That(Directory.EnumerateDirectories(destFolder.FolderPath).Count(), Is.EqualTo(2));
 
@@ -146,7 +146,7 @@ namespace BloomTests.TeamCollection
 			var folderPath = Path.Combine(_collectionFolder.FolderPath, "newly put book");
 			var bookPath = Path.Combine(folderPath, "newly put book.htm");
 			Directory.CreateDirectory(folderPath);
-			RobustFile.WriteAllText(bookPath, "<html><body>This is our newly put book</body></html>");
+			PatientFile.WriteAllText(bookPath, "<html><body>This is our newly put book</body></html>");
 			_collection.StartMonitoring();
 			// This is used to wait up to a second for the OS to notify us that the book changed.
 			// Only after that can we be sure the event is not going to be raised.
@@ -170,7 +170,7 @@ namespace BloomTests.TeamCollection
 			_collection.NewBook -= monitorFunction;
 			_collection.StopMonitoring();
 			var newBookPath = Path.Combine(_repoFolder.FolderPath, "newly put book.bloom");
-			RobustFile.Delete(newBookPath);
+			PatientFile.Delete(newBookPath);
 
 			Assert.IsTrue(waitSucceeded, "New book was not raised");
 			Assert.That(newBookWasCalled, Is.False, "NewBook wrongly called");
@@ -189,10 +189,10 @@ namespace BloomTests.TeamCollection
 				newBookName = args.BookFileName;
 				newbookRaised.Set();
 			};
-			RobustFile.WriteAllText(newBookPath, @"Newly added book"); // no, not a zip at all
+			PatientFile.WriteAllText(newBookPath, @"Newly added book"); // no, not a zip at all
 			var waitSucceeded = newbookRaised.WaitOne(1000);
 			_collection.StopMonitoring();
-			RobustFile.Delete(newBookPath);
+			PatientFile.Delete(newBookPath);
 
 			Assert.IsTrue(waitSucceeded, "New book was not raised");
 			Assert.That(newBookName, Is.EqualTo("A new book.bloom"));
@@ -204,7 +204,7 @@ namespace BloomTests.TeamCollection
 			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "put book to modify.bloom");
 			// Don't use PutBook here...changing the file immediately after putting it won't work,
 			// because of the code that tries to prevent notifications of our own checkins.
-			RobustFile.WriteAllText(bloomBookPath, @"This is original"); // no, not a zip at all
+			PatientFile.WriteAllText(bloomBookPath, @"This is original"); // no, not a zip at all
 
 			var modifiedBookName = "";
 
@@ -218,14 +218,14 @@ namespace BloomTests.TeamCollection
 			_collection.BookRepoChange += monitorFunction;
 
 			// sut (at least, triggers it and waits for it)
-			RobustFile.WriteAllText(bloomBookPath, @"This is changed"); // no, not a zip at all
+			PatientFile.WriteAllText(bloomBookPath, @"This is changed"); // no, not a zip at all
 
 			var waitSucceeded = bookChangedRaised.WaitOne(1000);
 
 			// To avoid messing up other tests, clean up before asserting.
 			_collection.BookRepoChange -= monitorFunction;
 			_collection.StopMonitoring();
-			RobustFile.Delete(bloomBookPath);
+			PatientFile.Delete(bloomBookPath);
 
 			Assert.That(waitSucceeded, "book changed was not raised");
 			Assert.That(modifiedBookName, Is.EqualTo("put book to modify.bloom"));
@@ -237,7 +237,7 @@ namespace BloomTests.TeamCollection
 			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "put book to delete.bloom");
 			// Don't use PutBook here...changing the file immediately after putting it won't work,
 			// because of the code that tries to prevent notifications of our own checkins.
-			RobustFile.WriteAllText(bloomBookPath, @"This is original"); // no, not a zip at all
+			PatientFile.WriteAllText(bloomBookPath, @"This is original"); // no, not a zip at all
 
 			var deletedBookName = "";
 
@@ -251,7 +251,7 @@ namespace BloomTests.TeamCollection
 			_collection.DeleteRepoBookFile += monitorFunction;
 
 			// sut (at least, triggers it and waits for it)
-			RobustFile.Delete(bloomBookPath);
+			PatientFile.Delete(bloomBookPath);
 
 			var waitSucceeded = bookDeletedRaised.WaitOne(1000);
 
@@ -269,7 +269,7 @@ namespace BloomTests.TeamCollection
 			var folderPath = Path.Combine(_collectionFolder.FolderPath, "put existing book");
 			var bookPath = Path.Combine(folderPath, "put existing book.htm");
 			Directory.CreateDirectory(folderPath);
-			RobustFile.WriteAllText(bookPath, "<html><body>This is our newly put book</body></html>");
+			PatientFile.WriteAllText(bookPath, "<html><body>This is our newly put book</body></html>");
 			_collection.PutBook(folderPath); // create test situation without monitoring
 
 			_collection.StartMonitoring();
@@ -298,7 +298,7 @@ namespace BloomTests.TeamCollection
 			_collection.DeleteRepoBookFile -= monitorFunction2;
 			_collection.StopMonitoring();
 			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "put existing book.bloom");
-			RobustFile.Delete(bloomBookPath);
+			PatientFile.Delete(bloomBookPath);
 
 			Assert.That(waitSucceeded, "OnChanged was not called");
 			Assert.That(bookChangedWasCalled, Is.False, "BookChanged wrongly called");
@@ -310,14 +310,14 @@ namespace BloomTests.TeamCollection
 		public void PutBook_InLostAndFound_DoesSo()
 		{
 			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", kAnotherBook + ".bloom");
-			Assert.That(RobustFile.Exists(lfPath));
+			Assert.That(PatientFile.Exists(lfPath));
 		}
 
 		[Test]
 		public void PutBook_InLostAndFoundTwice_KeepsBoth()
 		{
 			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", kAnotherBook + "2.bloom");
-			Assert.That(RobustFile.Exists(lfPath));
+			Assert.That(PatientFile.Exists(lfPath));
 		}
 
 		[Test]
@@ -387,7 +387,7 @@ namespace BloomTests.TeamCollection
 		//	var lastTime = watch.ElapsedMilliseconds;
 		//	Debug.WriteLine("making checksum took " + lastTime);
 
-		//	RobustFile.WriteAllText(checksumPath, checksum);
+		//	PatientFile.WriteAllText(checksumPath, checksum);
 		//	Debug.WriteLine("writing checksum took " + (watch.ElapsedMilliseconds - lastTime));
 		//	lastTime = watch.ElapsedMilliseconds;
 
@@ -402,7 +402,7 @@ namespace BloomTests.TeamCollection
 		//	Debug.WriteLine("reading checksum from entry took " + (watch.ElapsedMilliseconds - lastTime));
 		//	lastTime = watch.ElapsedMilliseconds;
 
-		//	RobustFile.Copy(bookPath, bookPath+ "1");
+		//	PatientFile.Copy(bookPath, bookPath+ "1");
 		//	Debug.WriteLine("copying zip took " + (watch.ElapsedMilliseconds - lastTime));
 		//	lastTime = watch.ElapsedMilliseconds;
 

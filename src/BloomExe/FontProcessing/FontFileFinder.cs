@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing.Text;
 using System.IO;
 using Bloom.Api;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using System.Threading;
 #if __MonoCS__
 using SharpFont;				// Linux only (interface to libfreetype.so.6)
@@ -177,25 +177,25 @@ namespace Bloom.FontProcessing
 						if (!String.IsNullOrEmpty(fontInfo.files.normal))
 						{
 							var pathNormal = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.normal}");
-							if (pathNormal != null && RobustFile.Exists(pathNormal))
+							if (pathNormal != null && PatientFile.Exists(pathNormal))
 								filesForFont.Normal = pathNormal;
 						}
 						if (!String.IsNullOrEmpty(fontInfo.files.bold))
 						{
 							var pathBold = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.bold}");
-							if (pathBold != null && RobustFile.Exists(pathBold))
+							if (pathBold != null && PatientFile.Exists(pathBold))
 								filesForFont.Bold = pathBold;
 						}
 						if (!String.IsNullOrEmpty(fontInfo.files.italic))
 						{
 							var pathItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.italic}");
-							if (pathItalic != null && RobustFile.Exists(pathItalic))
+							if (pathItalic != null && PatientFile.Exists(pathItalic))
 								filesForFont.Italic = pathItalic;
 						}
 						if (!String.IsNullOrEmpty(fontInfo.files.bolditalic))
 						{
 							var pathBoldItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.bolditalic}");
-							if (pathBoldItalic != null && RobustFile.Exists(pathBoldItalic))
+							if (pathBoldItalic != null && PatientFile.Exists(pathBoldItalic))
 								filesForFont.BoldItalic = pathBoldItalic;
 						}
 						if (!String.IsNullOrEmpty(filesForFont.Normal))

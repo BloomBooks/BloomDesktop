@@ -9,7 +9,7 @@ using Bloom.web;
 using Cairo;
 using L10NSharp;
 using SIL.CommandLineProcessing;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using Path = System.IO.Path;
 using TempFile = SIL.IO.TempFile;
@@ -81,26 +81,26 @@ namespace Bloom.Publish.PDF
 						// See https://issues.bloomlibrary.org/youtrack/issue/BL-7177.
 						using (var tempInputFile = TempFile.WithExtension(".pdf"))
 						{
-							RobustFile.Delete(tempInputFile.Path);		// Move won't replace even empty files.
-							RobustFile.Move(_inputPdfPath, tempInputFile.Path);
+							PatientFile.Delete(tempInputFile.Path);		// Move won't replace even empty files.
+							PatientFile.Move(_inputPdfPath, tempInputFile.Path);
 							arguments = GetArguments(tempPdfFile.Path, tempInputFile.Path);
 							res = _runner.StartWithInvariantCulture(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
-							RobustFile.Move(tempInputFile.Path, _inputPdfPath);
+							PatientFile.Move(tempInputFile.Path, _inputPdfPath);
 						}
 					}
-					if (res.ExitCode != 0 || res.DidTimeOut || !RobustFile.Exists(tempPdfFile.Path))
+					if (res.ExitCode != 0 || res.DidTimeOut || !PatientFile.Exists(tempPdfFile.Path))
 					{
 						if (_inputPdfPath != _outputPdfPath)
-							RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
+							PatientFile.Copy(_inputPdfPath, _outputPdfPath, true);
 						return;
 					}
 					// If the process made the file larger and didn't change the color scheme, ignore the result.
 					var oldInfo = new FileInfo(_inputPdfPath);
 					var newInfo = new FileInfo(tempPdfFile.Path);
 					if (newInfo.Length < oldInfo.Length || _type == OutputType.Printshop)
-						RobustFile.Copy(tempPdfFile.Path, _outputPdfPath, true);
+						PatientFile.Copy(tempPdfFile.Path, _outputPdfPath, true);
 					else if (_inputPdfPath != _outputPdfPath)
-						RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
+						PatientFile.Copy(_inputPdfPath, _outputPdfPath, true);
 				}
 			}
 			else
@@ -110,7 +110,7 @@ namespace Bloom.Publish.PDF
 				// as a failsafe fallback reminding the developers to ensure this installation work happens.
 				Debug.WriteLine("ghostscript is not installed, so Bloom cannot process the PDF file.");
 				if (_inputPdfPath != _outputPdfPath)
-					RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
+					PatientFile.Copy(_inputPdfPath, _outputPdfPath, true);
 			}
 		}
 

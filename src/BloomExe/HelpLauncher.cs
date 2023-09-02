@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using System.Diagnostics;
 
 namespace Bloom

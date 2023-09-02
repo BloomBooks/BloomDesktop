@@ -13,7 +13,7 @@ using BloomTemp;
 using BloomTests.TeamCollection;
 using NUnit.Framework;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 
 namespace BloomTests.Spreadsheet
@@ -48,20 +48,20 @@ namespace BloomTests.Spreadsheet
 			var audioFilePaths = Directory.EnumerateFiles(testAudioPath).ToArray();
 			foreach (var audioFilePath in audioFilePaths)
 			{
-				RobustFile.Copy(audioFilePath, Path.Combine(spreadsheetAudioPath, Path.GetFileName(audioFilePath)));
+				PatientFile.Copy(audioFilePath, Path.Combine(spreadsheetAudioPath, Path.GetFileName(audioFilePath)));
 				var anotherId = Path.GetFileNameWithoutExtension(audioFilePath) + "x"; // slightly different to avoid dup here
 				var anotherPath = Path.Combine(_otherAudioFolder.FolderPath, anotherId + ".mp3");
-				RobustFile.Copy(audioFilePath, anotherPath);
+				PatientFile.Copy(audioFilePath, anotherPath);
 			}
 
 			// Yet another copy of this file to be the source for the title.
 			var titleAudioPath = Path.Combine(_otherAudioFolder.FolderPath, "i9c7f4e02-4685-48fc-8653-71d88f218706t.mp3");
-			RobustFile.Copy(Path.Combine(testAudioPath, "i9c7f4e02-4685-48fc-8653-71d88f218706.mp3"), titleAudioPath);
+			PatientFile.Copy(Path.Combine(testAudioPath, "i9c7f4e02-4685-48fc-8653-71d88f218706.mp3"), titleAudioPath);
 
 			// Make a source file. This name is actually allowed by Windows, but not by our code,
 			// as it is a problem in HTML. Ampersand is not allowed in files, and spaces are not allowed in IDs
 			var dest = Path.Combine(spreadsheetAudioPath, "a bad & problematic name.mp3");
-			RobustFile.Copy(audioFilePaths[0], dest);
+			PatientFile.Copy(audioFilePaths[0], dest);
 			File.WriteAllText(Path.Combine(spreadsheetAudioPath, "an empty file.mp3"), "");
 
 			// Create an HtmlDom for a template to import into.
@@ -431,7 +431,7 @@ namespace BloomTests.Spreadsheet
 			var id = target.Attributes["id"].Value;
 			Assert.That(id, Is.EqualTo("abadproblematicname")); // name corrected to something valid
 			var path = Path.Combine(_bookFolder.FolderPath, "audio", id + ".mp3");
-			Assert.That(RobustFile.Exists(path));
+			Assert.That(PatientFile.Exists(path));
 		}
 
 		[Test]
@@ -448,7 +448,7 @@ namespace BloomTests.Spreadsheet
 			var id = target.Attributes["id"].Value;
 			Assert.That(id, Is.Not.EqualTo("abadproblematicname")); // the ID we'd expect but for the duplication
 			var path = Path.Combine(_bookFolder.FolderPath, "audio", id + ".mp3");
-			Assert.That(RobustFile.Exists(path));
+			Assert.That(PatientFile.Exists(path));
 		}
 
 		[Test]
@@ -612,16 +612,16 @@ namespace BloomTests.Spreadsheet
 			var audioFilePaths = Directory.EnumerateFiles(testAudioPath).ToArray();
 			foreach (var audioFilePath in audioFilePaths)
 			{
-				RobustFile.Copy(audioFilePath, Path.Combine(spreadsheetAudioPath, Path.GetFileName(audioFilePath)));
+				PatientFile.Copy(audioFilePath, Path.Combine(spreadsheetAudioPath, Path.GetFileName(audioFilePath)));
 				var anotherId = Path.GetFileNameWithoutExtension(audioFilePath) + "x"; // slightly different to avoid dup here
 				var anotherPath = Path.Combine(_otherAudioFolder.FolderPath, anotherId + ".mp3");
-				RobustFile.Copy(audioFilePath, anotherPath);
+				PatientFile.Copy(audioFilePath, anotherPath);
 			}
 
 			// Make a source file. This name is actually allowed by Windows, but not by our code,
 			// as it is a problem in HTML. Ampersand is not allowed in files, and spaces are not allowed in IDs
 			var dest = Path.Combine(spreadsheetAudioPath, "a bad & problematic name.mp3");
-			RobustFile.Copy(audioFilePaths[0], dest);
+			PatientFile.Copy(audioFilePaths[0], dest);
 			File.WriteAllText(Path.Combine(spreadsheetAudioPath, "an empty file.mp3"), "");
 
 			// Create an HtmlDom for a template to import into.

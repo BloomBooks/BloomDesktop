@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using Bloom.Properties;
 using System.Windows.Forms;
@@ -32,7 +32,7 @@ namespace Bloom.MiscUI
 			testPath = !string.IsNullOrEmpty(folderToCheck) ? Path.Combine(folderToCheck, TestFileName) : GetMruProjectTestPath;
 			try
 			{
-				RobustFile.WriteAllText(testPath, "test contents");
+				PatientFile.WriteAllText(testPath, "test contents");
 			}
 			catch (Exception exc)
 			{

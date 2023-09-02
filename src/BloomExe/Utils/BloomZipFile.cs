@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Utils
 {
@@ -18,7 +18,7 @@ namespace Bloom.Utils
 
 		public BloomZipFile(string path)
 		{
-			var fsOut = RobustFile.Create(path);
+			var fsOut = PatientFile.Create(path);
 			_zipStream = new ZipOutputStream(fsOut);
 			_zipStream.SetLevel(9); // the compression level (9 is the most compression)
 		}
@@ -69,7 +69,7 @@ namespace Bloom.Utils
 
 			// Zip the file in buffered chunks
 			var buffer = new byte[4096];
-			using (var streamReader = RobustFile.OpenRead(path))
+			using (var streamReader = PatientFile.OpenRead(path))
 			{
 				StreamUtils.Copy(streamReader, _zipStream, buffer);
 			}

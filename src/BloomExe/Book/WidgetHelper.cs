@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 namespace Bloom.Book
 {
 	// "Widgets" are HTML Activities that the user creates outside of Bloom, as distinct from our built-in activities.
@@ -50,10 +50,10 @@ namespace Bloom.Book
 			// <string>HelloWorld.html</string>
 			// where the string element following the MainHTML key contains the name of the root
 			// HTML file.
-			if (!RobustFile.Exists(Path.Combine(widgetDestinationFolder, rootFileName)))
+			if (!PatientFile.Exists(Path.Combine(widgetDestinationFolder, rootFileName)))
 			{
 				rootFileName = "index.htm";
-				if (!RobustFile.Exists(Path.Combine(widgetDestinationFolder, rootFileName)))
+				if (!PatientFile.Exists(Path.Combine(widgetDestinationFolder, rootFileName)))
 					// Review: worth localizing?
 					MessageBox.Show("Zip file contains no index.htm{l} file. It will not work as a Bloom book widget.",
 						"Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -117,14 +117,14 @@ namespace Bloom.Book
 						if (ensureIndexHtmlFileName && filename != "index.html")
 						{
 							var destPath = Path.Combine(temp.FolderPath, "index.html");
-							if (RobustFile.Exists(destPath))
-								RobustFile.Delete(destPath);
-							RobustFile.Move(filePath, destPath);
+							if (PatientFile.Exists(destPath))
+								PatientFile.Delete(destPath);
+							PatientFile.Move(filePath, destPath);
 						}
 					}
 					else if (fromActivePresenter && (activePresenterFiles.Contains(name)))
 					{
-						RobustFile.Delete(filePath);
+						PatientFile.Delete(filePath);
 					}
 				}
 				// zip up the temporary folder contents into a widget file

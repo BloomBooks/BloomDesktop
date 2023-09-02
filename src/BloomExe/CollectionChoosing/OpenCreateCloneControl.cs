@@ -10,7 +10,7 @@ using SIL.Windows.Forms.Extensions;
 using SIL.i18n;
 using System.Linq;
 using Bloom.Workspace;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.CollectionChoosing
 {
@@ -71,7 +71,7 @@ namespace Bloom.CollectionChoosing
 			{
 				collectionsToShow.AddRange(Directory.GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
 					.Select(d => Path.Combine(d, Path.ChangeExtension(Path.GetFileName(d),"bloomCollection")))
-					.Where(c => RobustFile.Exists(c) && !collectionsToShow.Contains(c))
+					.Where(c => PatientFile.Exists(c) && !collectionsToShow.Contains(c))
 					.OrderBy(c => Directory.GetLastWriteTime(Path.GetDirectoryName(c)))
 					.Reverse()
 					.Take(maxMruItems - collectionsToShow.Count()));
@@ -223,18 +223,18 @@ namespace Bloom.CollectionChoosing
 						dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
 
 					//on my windows 10 box, the file we want is in AppData\Local\Dropbox
-					if (!RobustFile.Exists(dropboxInfoFile))
+					if (!PatientFile.Exists(dropboxInfoFile))
 					{
 						baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 						if (SIL.PlatformUtilities.Platform.IsWindows)
 							dropboxInfoFile = Path.Combine(baseFolder, @"Dropbox\info.json");
 						else
 							dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
-						if (!RobustFile.Exists(dropboxInfoFile))
+						if (!PatientFile.Exists(dropboxInfoFile))
 							return; // User appears to not have Dropbox installed
 					}
 
-					var info = RobustFile.ReadAllText(dropboxInfoFile);
+					var info = PatientFile.ReadAllText(dropboxInfoFile);
 					var matches = Regex.Matches(info, @"{""path"": ""([^""]+)"",");
 					foreach (Match match in matches)
 					{

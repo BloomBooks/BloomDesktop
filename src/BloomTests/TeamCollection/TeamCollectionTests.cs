@@ -7,7 +7,7 @@ using BloomTemp;
 using BloomTests.DataBuilders;
 using Moq;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 
@@ -147,7 +147,7 @@ namespace BloomTests.TeamCollection
 
 			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
 			var status = _collection.PutBook(bookFolderPath);
-			RobustFile.WriteAllText(bookBuilder.BuiltBookHtmPath, "This is pretending to be old content");
+			PatientFile.WriteAllText(bookBuilder.BuiltBookHtmPath, "This is pretending to be old content");
 			// pretending this is what it was before the change.
 			_collection.WriteLocalStatus(bookFolderName, status.WithChecksum(Bloom.TeamCollection.TeamCollection.MakeChecksum(bookFolderPath)));
 			var prevMessages = _tcLog.Messages.Count;
@@ -250,17 +250,17 @@ namespace BloomTests.TeamCollection
 			_collection.PutBook(bookFolderPath);
 			var pathToBookFileInRepo = _collection.GetPathToBookFileInRepo(bookFolderName);
 			// Save the data we will eventually write back to the .bloom file to simulate the remote change.
-			var remoteContent = RobustFile.ReadAllBytes(pathToBookFileInRepo);
+			var remoteContent = PatientFile.ReadAllBytes(pathToBookFileInRepo);
 
 			_collection.AttemptLock(bookFolderName);
-			RobustFile.WriteAllText(bookPath, "Pretend this was the state when we checked it out.");
+			PatientFile.WriteAllText(bookPath, "Pretend this was the state when we checked it out.");
 			_collection.PutBook(bookFolderPath);
 
-			RobustFile.WriteAllText(bookPath, "This is a further change locally, not checked in anywhere");
+			PatientFile.WriteAllText(bookPath, "This is a further change locally, not checked in anywhere");
 
 			// But now it's been changed remotely to the other state. (Ignore the fact that it was a previous local state;
 			// that was just a trick to get a valid alternative state.)
-			RobustFile.WriteAllBytes(pathToBookFileInRepo, remoteContent);
+			PatientFile.WriteAllBytes(pathToBookFileInRepo, remoteContent);
 
 			var prevMessages = _tcLog.Messages.Count;
 

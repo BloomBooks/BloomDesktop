@@ -19,7 +19,7 @@ using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
@@ -670,11 +670,11 @@ namespace Bloom.Book
 			foreach (string sheetName in sourceDom.GetTemplateStyleSheets())
 			{
 				var destinationPath = Path.Combine(destFolder, sheetName);
-				if (!RobustFile.Exists(destinationPath))
+				if (!PatientFile.Exists(destinationPath))
 				{
 					var sourcePath = Path.Combine(sourceFolder, sheetName);
-					if (RobustFile.Exists(sourcePath))
-						RobustFile.Copy(sourcePath, destinationPath);
+					if (PatientFile.Exists(sourcePath))
+						PatientFile.Copy(sourcePath, destinationPath);
 				}
 			}
 		}

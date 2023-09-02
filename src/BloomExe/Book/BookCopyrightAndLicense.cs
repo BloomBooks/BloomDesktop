@@ -11,7 +11,7 @@ using Bloom.ImageProcessing;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
@@ -279,7 +279,7 @@ namespace Bloom.Book
 			var licenseImage = metadata.License.GetImage();
 			var imagePath = bookFolderPath.CombineForPath("license.png");
 			// Don't try to overwrite the license image for a template book.  (See BL-3284.)
-			if (RobustFile.Exists(imagePath) && BloomFileLocator.IsInstalledFileOrDirectory(imagePath))
+			if (PatientFile.Exists(imagePath) && BloomFileLocator.IsInstalledFileOrDirectory(imagePath))
 				return;
 			ImageUtils.SaveOrDeletePngImageToPath(licenseImage, imagePath);
 		}

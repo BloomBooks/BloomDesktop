@@ -11,7 +11,7 @@ using BloomTests.DataBuilders;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.TeamCollection
 {
@@ -54,7 +54,7 @@ namespace BloomTests.TeamCollection
 			// it just gets copied into the repo.)
 			MakeBook("Should be converted to new local", "This should become a new local (no status) book as it has local status but is not in the repo", true);
 			var delPath = Path.Combine(_repoFolder.FolderPath, "Books", "Should be converted to new local.bloom");
-			RobustFile.Delete(delPath);
+			PatientFile.Delete(delPath);
 
 			// Simulate a book newly created locally. Not in repo, but should not be deleted.
 			MakeBook("A book", "This should survive as it has no local status", false);
@@ -109,7 +109,7 @@ namespace BloomTests.TeamCollection
 			_collection.AttemptLock("Rename local", "fred@somewhere.org");
 			UpdateLocalBook("Rename local", "This is a new book created independently");
 			var statusFilePath = Bloom.TeamCollection.TeamCollection.GetStatusFilePath("Rename local", _collectionFolder.FolderPath);
-			RobustFile.Delete(statusFilePath);
+			PatientFile.Delete(statusFilePath);
 
 			// Simulate a book that is checked out locally but also checked out, to a different user
 			// or machine, on the repo. This would indicate some sort of manual intervention, perhaps
@@ -156,7 +156,7 @@ namespace BloomTests.TeamCollection
 			MakeBook("copy status", "Same content in both places");
 			_collection.AttemptLock("copy status", "fred@somewhere.org");
 			statusFilePath = Bloom.TeamCollection.TeamCollection.GetStatusFilePath("copy status", _collectionFolder.FolderPath);
-			RobustFile.Delete(statusFilePath);
+			PatientFile.Delete(statusFilePath);
 
 			// Simulate a book that was copied from another TC, using File Explorer.
 			// It therefore has a book.status file, but with a different guid.
@@ -191,8 +191,8 @@ namespace BloomTests.TeamCollection
 			RobustIO.MoveDirectory(newFolder, oldFolder); // made at new path, simulate still at old.
 			var oldPath = Path.Combine(_collectionFolder.FolderPath, kBookRenamedRemotely,
 				kBookRenamedRemotely + ".htm"); // simulate old book name and content
-			RobustFile.WriteAllText(oldPath, "This is the simulated original book content");
-			RobustFile.Delete(Path.Combine(_collectionFolder.FolderPath, kBookRenamedRemotely,
+			PatientFile.WriteAllText(oldPath, "This is the simulated original book content");
+			PatientFile.Delete(Path.Combine(_collectionFolder.FolderPath, kBookRenamedRemotely,
 				kNewNameForRemoteRename + ".htm")); // get rid of the 'new' content
 
 			// Simulate a book that is in the repo, where there is a local book that has no status, a different name,
@@ -208,7 +208,7 @@ namespace BloomTests.TeamCollection
 			var localStatusPath =
 				Bloom.TeamCollection.TeamCollection.GetStatusFilePath(kLocalNameForIdConflict,
 					_collectionFolder.FolderPath);
-			RobustFile.Delete(localStatusPath);
+			PatientFile.Delete(localStatusPath);
 
 			// Make a couple of folders that are legitimately present, but not books.
 			var allowedWords = Path.Combine(_collectionFolder.FolderPath, "Allowed Words");
@@ -229,7 +229,7 @@ namespace BloomTests.TeamCollection
 			var oldPath = Path.Combine(tc.LocalCollectionFolder, oldName);
 			var newPath = Path.Combine(tc.LocalCollectionFolder, newName);
 			RobustIO.MoveDirectory(oldPath, newPath);
-			RobustFile.Move(Path.Combine(newPath, oldName + ".htm"), Path.Combine(newPath, newName + ".htm"));
+			PatientFile.Move(Path.Combine(newPath, oldName + ".htm"), Path.Combine(newPath, newName + ".htm"));
 			tc.HandleBookRename(oldName, newName);
 		}
 
@@ -321,7 +321,7 @@ namespace BloomTests.TeamCollection
 			Assert.That(Directory.Exists(newFolder), Is.True);
 			var newBookFile = Path.Combine(_collectionFolder.FolderPath, kNewNameForRemoteRename,
 				kNewNameForRemoteRename + ".htm");
-			Assert.That(RobustFile.ReadAllText(newBookFile), Does.Contain("This is the new book content after remote editing and rename"));
+			Assert.That(PatientFile.ReadAllText(newBookFile), Does.Contain("This is the new book content after remote editing and rename"));
 		}
 
 		[Test]
@@ -597,7 +597,7 @@ namespace BloomTests.TeamCollection
 		{
 			var folderPath = Path.Combine(_collectionFolder.FolderPath, name);
 			var bookPath = Path.Combine(folderPath, Path.ChangeExtension(name, "htm"));
-			RobustFile.WriteAllText(bookPath, "<html><body>" + content + "</body></html>");
+			PatientFile.WriteAllText(bookPath, "<html><body>" + content + "</body></html>");
 			if (updateChecksum)
 			{
 				var status = _collection.GetLocalStatus(name);

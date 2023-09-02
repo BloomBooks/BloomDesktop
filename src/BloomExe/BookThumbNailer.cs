@@ -10,7 +10,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 
@@ -120,10 +120,10 @@ namespace Bloom
 			{
 				// Use the custom thumbnail file if one is provided.
 				var customFile = Path.Combine(book.FolderPath, "custom-thumbnail-256.png");
-				if (RobustFile.Exists(customFile))
+				if (PatientFile.Exists(customFile))
 				{
 					var thumbnailFile = Path.Combine(book.FolderPath, "thumbnail-256.png");
-					RobustFile.Copy(customFile, thumbnailFile, true);
+					PatientFile.Copy(customFile, thumbnailFile, true);
 					return thumbnailFile;
 				}
 			}
@@ -250,7 +250,7 @@ namespace Bloom
 			finally
 			{
 				if (File.Exists(transparentImageFile))
-					SIL.IO.RobustFile.Delete(transparentImageFile);
+					Bloom.Utils.PatientFile.Delete(transparentImageFile);
 			}
 			return true;
 		}

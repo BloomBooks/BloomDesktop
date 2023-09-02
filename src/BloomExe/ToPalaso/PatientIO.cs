@@ -1,11 +1,14 @@
+using Bloom.ImageProcessing;
+using SIL.IO;
+using SIL.Windows.Forms.ClearShare;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using SIL.Code;
+using TidyManaged;
 
-namespace Bloom.ToPalaso
+namespace Bloom.Utils
 {
-	public class RobustIO
+	public class PatientIO
 	{
 		/// <summary>
 		/// Robustly try to enumerate all of the files in a directory.  Unfortunately, this makes the
@@ -20,10 +23,10 @@ namespace Bloom.ToPalaso
 			// unavoidably slows things down since we have to wait until all the files are
 			// gathered before any are returned.
 			var fileSet = new HashSet<string>();
-			RetryUtility.Retry(() =>
+			Patient.Retry(() =>
 				EnumerateFilesInDirectoryInternal(folderPath, searchPattern, option, fileSet),
-				RetryUtility.kDefaultMaxRetryAttempts,
-				RetryUtility.kDefaultRetryDelay,
+				Patient.kDefaultMaxRetryAttempts,
+				Patient.kDefaultRetryDelay,
 				new HashSet<Type>
 				{
 					Type.GetType("System.IO.IOException"),
@@ -41,7 +44,7 @@ namespace Bloom.ToPalaso
 		public static void RequireThatDirectoryExists(string path)
 		{
 			bool exists = false;
-			RetryUtility.Retry(() =>
+			Patient.Retry(() =>
 			{
 				exists = Directory.Exists(path);
 			});
@@ -49,6 +52,44 @@ namespace Bloom.ToPalaso
 			{
 				throw new ArgumentException($"The path '{path}' does not exist.");
 			}
+		}
+
+		public static Document DocumentFromFile(string filePath)
+		{
+			return Patient.Retry(() => Document.FromFile(filePath));
+		}
+
+		/// <summary>
+		/// Get the image metadata from the file as reliably as possible.
+		/// </summary>
+		public static Metadata MetadataFromFile(string path)
+		{
+			// Books sometimes use image files that are mislabeled.  JPEG files sometimes have been given
+			// .png extensions, and it's likely that PNG files have been given .jpg extensions.  TagLib crashes
+			// trying to read the metadata in such cases, so we prevent that particular crash in this method.
+			if (Path.GetExtension(path).ToLowerInvariant() == ".png" && ImageUtils.IsJpegFile(path))
+			{
+				using (var jpegFile = TempFile.WithExtension(".jpg"))
+				{
+					PatientFile.Copy(path, jpegFile.Path, true);
+					return MetadataFromFileInternal(jpegFile.Path);
+				}
+			}
+			if (ImageUtils.HasJpegExtension(path) && ImageUtils.IsPngFile(path))
+			{
+				using (var pngFile = TempFile.WithExtension(".png"))
+				{
+					PatientFile.Copy(path, pngFile.Path, true);
+					return MetadataFromFileInternal(pngFile.Path);
+				}
+			}
+			// Assume everything is okay.
+			return MetadataFromFileInternal(path);
+		}
+
+		private static Metadata MetadataFromFileInternal(string path)
+		{
+			return Patient.Retry(() => Metadata.FromFile(path));
 		}
 	}
 }

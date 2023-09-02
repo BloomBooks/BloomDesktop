@@ -11,7 +11,7 @@ using Bloom.web.controllers;
 using Moq;
 using NUnit.Framework;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
@@ -1095,7 +1095,7 @@ namespace BloomTests.Book
 
 			var newVideoFolder = Path.Combine(book.FolderPath, "video");
 			var newVideoPath = Path.Combine(newVideoFolder, fileName);
-			Assert.That(RobustFile.Exists(newVideoPath));
+			Assert.That(PatientFile.Exists(newVideoPath));
 			Assert.That(File.ReadAllText(newVideoPath), Is.EqualTo("This is a fake video"));
 		}
 
@@ -1275,7 +1275,7 @@ namespace BloomTests.Book
 
 				var newVideoFolder = Path.Combine(book.FolderPath, "video");
 				var newVideoPath = Path.Combine(newVideoFolder, fileName + ".mp4");
-				Assert.That(RobustFile.Exists(newVideoPath));
+				Assert.That(PatientFile.Exists(newVideoPath));
 				Assert.That(File.ReadAllText(newVideoPath), Is.EqualTo("This is a fake video"));
 			}
 
@@ -2540,7 +2540,7 @@ namespace BloomTests.Book
 		{
 			var book = CreateBook();
 
-			RobustFile.WriteAllText(Path.Combine(book.FolderPath, "defaultLangStyles.css"),
+			PatientFile.WriteAllText(Path.Combine(book.FolderPath, "defaultLangStyles.css"),
 @"@font-face { font-family: ABeeZee; src: url(./host/fonts/ABeeZee-Regular.woff2); }
 @font-face { font-family: ABeeZee; font-style: italic; src: url(./host/fonts/ABeeZee-Italic.woff2); }
 @font-face { font-family: Andika; src: url(./host/fonts/Andika-Regular.woff2); }
@@ -2567,14 +2567,14 @@ namespace BloomTests.Book
 }
 ");
 
-			Assert.That(RobustFile.Exists(Path.Combine(book.FolderPath, "defaultLangStyles.css")), Is.True);
+			Assert.That(PatientFile.Exists(Path.Combine(book.FolderPath, "defaultLangStyles.css")), Is.True);
 
 			Program.RunningHarvesterMode = true;
 			book.WriteFontFaces = false;
 
 			book.BringBookUpToDate(new NullProgress()); // SUT
 
-			var newContents = RobustFile.ReadAllText(Path.Combine(book.FolderPath, "defaultLangStyles.css"));
+			var newContents = PatientFile.ReadAllText(Path.Combine(book.FolderPath, "defaultLangStyles.css"));
 			Assert.That(newContents, Is.EqualTo(
 @"/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */
 /* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */
@@ -4170,9 +4170,9 @@ namespace BloomTests.Book
 			// Setup 'real' video files, otherwise we aren't actually trimming any video files
 			var videoFolder = Path.Combine(book.FolderPath, "video");
 			Directory.CreateDirectory(videoFolder);
-			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Crow.mp4"),
+			PatientFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Crow.mp4"),
 				Path.Combine(videoFolder, "Crow.mp4"));
-			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Five count.mp4"),
+			PatientFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Five count.mp4"),
 				Path.Combine(videoFolder, "Five count.mp4"));
 
 			var videoContainerElements = bookDom.SafeSelectNodes(".//div[contains(@class, 'bloom-videoContainer')]");

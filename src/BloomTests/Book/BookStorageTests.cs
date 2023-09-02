@@ -15,7 +15,7 @@ using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.TestUtilities;
@@ -711,7 +711,7 @@ namespace BloomTests.Book
 
 		private BookStorage GetInitialStorageWithCustomHtml(string html, bool doSave = true)
 		{
-			RobustFile.WriteAllText(_bookPath, html);
+			PatientFile.WriteAllText(_bookPath, html);
 			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
 			_thingsToDispose.Add(projectFolder);
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
@@ -1076,9 +1076,9 @@ namespace BloomTests.Book
 		public void MakeBookStorage_CorruptFile_Backup_ForSelect_RestoresBackup()
 		{
 			var badContent = "<htmlBlah>This is not good HTML";
-			RobustFile.WriteAllText(_bookPath, badContent);
+			PatientFile.WriteAllText(_bookPath, badContent);
 			var goodContent = "<html><head> </head><body><div class='bloom-page'>Some text</div></body></html>";
-			RobustFile.WriteAllText(Path.Combine(Path.GetDirectoryName(_bookPath), "bookhtml.bak"), goodContent);
+			PatientFile.WriteAllText(Path.Combine(Path.GetDirectoryName(_bookPath), "bookhtml.bak"), goodContent);
 			var collectionSettings = new CollectionSettings(Path.Combine(_fixtureFolder.Path, "test.bloomCollection"));
 			BookStorage storage;
 			using (new ErrorReport.NonFatalErrorReportExpected())

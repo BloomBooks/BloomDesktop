@@ -10,7 +10,7 @@ using Bloom.Utils;
 using Bloom.web;
 using DesktopAnalytics;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 namespace Bloom.Publish.Epub

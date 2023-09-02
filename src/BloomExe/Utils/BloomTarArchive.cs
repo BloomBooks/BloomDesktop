@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Tar;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Utils
 {
@@ -20,7 +20,7 @@ namespace Bloom.Utils
 
 		public BloomTarArchive(string path)
 		{
-			var fsOut = RobustFile.Create(path);
+			var fsOut = PatientFile.Create(path);
 			_tarStream = new TarOutputStream(fsOut, Encoding.UTF8);
 		}
 
@@ -50,7 +50,7 @@ namespace Bloom.Utils
 
 			// Add to the archive in buffered chunks
 			var buffer = new byte[4096];
-			using (var streamReader = RobustFile.OpenRead(path))
+			using (var streamReader = PatientFile.OpenRead(path))
 			{
 				StreamUtils.Copy(streamReader, _tarStream, buffer);
 			}

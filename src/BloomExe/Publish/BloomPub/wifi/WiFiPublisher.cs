@@ -11,7 +11,7 @@ using Bloom.Collection;
 using Bloom.web;
 using L10NSharp;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Publish.BloomPub.wifi
 {
@@ -89,7 +89,7 @@ namespace Bloom.Publish.BloomPub.wifi
 			{
 				BookTitle = BookStorage.SanitizeNameForFileSystem(book.Title), // must be the exact same name as the file we will send if requested
 				TitleLanguage = book.BookData.Language1.Tag,
-				BookVersion = Book.Book.MakeVersionCode(RobustFile.ReadAllText(pathHtmlFile), pathHtmlFile)
+				BookVersion = Book.Book.MakeVersionCode(PatientFile.ReadAllText(pathHtmlFile), pathHtmlFile)
 			};
 
 			PublishToBloomPubApi.CheckBookLayout(book, _progress);

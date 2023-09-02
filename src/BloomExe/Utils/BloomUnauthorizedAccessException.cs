@@ -1,4 +1,4 @@
-﻿using SIL.IO;
+﻿using SIL.IO; using Bloom.Utils;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -62,7 +62,7 @@ namespace Bloom.Utils
 		/// <returns>A SDDL string (just the access control sections of it) represnting the access control rules of that file</returns>
 		protected static string GetPermissionString(string path)
 		{
-			if (RobustFile.Exists(path))
+			if (PatientFile.Exists(path))
 			{
 				string permissions = GetPermissionString(new FileInfo(path));
 				return $"Permissions SDDL for file '{path}' is '{permissions}'.";

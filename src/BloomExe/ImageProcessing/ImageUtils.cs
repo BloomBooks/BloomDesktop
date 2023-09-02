@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Utils;
 using BloomTemp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
@@ -209,7 +209,7 @@ namespace Bloom.ImageProcessing
 
 		public static bool IsJpegFile(string path)
 		{
-			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
+			if (string.IsNullOrEmpty(path) || !PatientFile.Exists(path))
 				return false;
 			byte[] bytes = new byte[10];
 			using (var file = System.IO.File.OpenRead(path))
@@ -247,7 +247,7 @@ namespace Bloom.ImageProcessing
 
 		public static bool IsPngFile(string path)
 		{
-			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
+			if (string.IsNullOrEmpty(path) || !PatientFile.Exists(path))
 				return false;
 			byte[] bytes = new byte[10];
 			using (var file = System.IO.File.OpenRead(path))
@@ -319,13 +319,13 @@ namespace Bloom.ImageProcessing
 				var sourcePath = imageInfo.GetCurrentFilePath();
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
 				if (isEncodedAsJpeg || isEncodedAsPng)
-					RobustFile.Copy(sourcePath, destinationPath);
+					PatientFile.Copy(sourcePath, destinationPath);
 				else
 					imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
 				if (_createdTempImageFile != null)
 				{
-					if (RobustFile.Exists(_createdTempImageFile))
-						RobustFile.Delete(_createdTempImageFile);
+					if (PatientFile.Exists(_createdTempImageFile))
+						PatientFile.Delete(_createdTempImageFile);
 					_createdTempImageFile = null;
 				}
 				return imageFileName;
@@ -342,7 +342,7 @@ namespace Bloom.ImageProcessing
 			}*/
 			catch (Exception error)
 			{
-				if (!String.IsNullOrEmpty(imageInfo.FileName) && RobustFile.Exists(imageInfo.OriginalFilePath))
+				if (!String.IsNullOrEmpty(imageInfo.FileName) && PatientFile.Exists(imageInfo.OriginalFilePath))
 				{
 					var megs = new FileInfo(imageInfo.OriginalFilePath).Length/(1024*1000);
 					if (megs > 2)
@@ -441,7 +441,7 @@ namespace Bloom.ImageProcessing
 			{
 				int i;
 				var newBasename = ParseFilename(basename, out i);
-				while (RobustFile.Exists(ConstructFilename(bookFolderPath, newBasename, i, extension)))
+				while (PatientFile.Exists(ConstructFilename(bookFolderPath, newBasename, i, extension)))
 				{
 					++i;
 				}
@@ -454,7 +454,7 @@ namespace Bloom.ImageProcessing
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-10307.
 				var newBasename = basename + "-";
 				int i = 1;
-				while (RobustFile.Exists(ConstructFilename(bookFolderPath, newBasename, i, extension)))
+				while (PatientFile.Exists(ConstructFilename(bookFolderPath, newBasename, i, extension)))
 				{
 					++i;
 				}
@@ -705,7 +705,7 @@ namespace Bloom.ImageProcessing
 			var msg = string.Format(msgFmt, Path.GetFileName(path));
 			progress.WriteStatus(msg);
 			var exeGraphicsMagick = GetGraphicsMagickPath();
-			if (!RobustFile.Exists(exeGraphicsMagick))
+			if (!PatientFile.Exists(exeGraphicsMagick))
 				return false;
 			var tempCopy = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(path));
 			try
@@ -713,7 +713,7 @@ namespace Bloom.ImageProcessing
 				var result = RunGraphicsMagick(exeGraphicsMagick, path, tempCopy, size, makeOpaque);
 				if (result.ExitCode == 0)
 				{
-					RobustFile.Copy(tempCopy, path, true);
+					PatientFile.Copy(tempCopy, path, true);
 					// Copy metadata from older file to the new one.  GraphicsMagick does a poor job on metadata.
 					var newMeta = TagLib.File.Create(path);
 					CopyTags(oldMetaData, newMeta);
@@ -735,7 +735,7 @@ namespace Bloom.ImageProcessing
 				// Ignore any errors deleting temp files.  If we leak, we leak...
 				try
 				{
-					RobustFile.Delete(tempCopy);	// don't need this any longer
+					PatientFile.Delete(tempCopy);	// don't need this any longer
 				}
 				catch (Exception e)
 				{
@@ -864,11 +864,11 @@ namespace Bloom.ImageProcessing
 		private static Image TryResizeImageWithGraphicsMagick(PalasoImage imageInfo, Size size, bool makeOpaque=false)
 		{
 			var graphicsMagickPath = GetGraphicsMagickPath();
-			if (RobustFile.Exists(graphicsMagickPath))
+			if (PatientFile.Exists(graphicsMagickPath))
 			{
 				var sourcePath = imageInfo.GetCurrentFilePath();
 				var isJpegImage = AppearsToBeJpeg(imageInfo);
-				if (String.IsNullOrEmpty(sourcePath) || !RobustFile.Exists(sourcePath))
+				if (String.IsNullOrEmpty(sourcePath) || !PatientFile.Exists(sourcePath))
 				{
 					sourcePath = CreateSourceFileForImage(imageInfo, isJpegImage);
 				}
@@ -901,7 +901,7 @@ namespace Bloom.ImageProcessing
 					{
 						// don't need this any longer
 						if (sourcePath != imageInfo.GetCurrentFilePath())
-							RobustFile.Delete(sourcePath);
+							PatientFile.Delete(sourcePath);
 					}
 					catch (Exception e)
 					{
@@ -928,7 +928,7 @@ namespace Bloom.ImageProcessing
 		{
 			// This must be from a paste instead of the ImageChooser dialog.
 			var sourcePath = Path.GetTempFileName();
-			RobustFile.Delete(sourcePath);
+			PatientFile.Delete(sourcePath);
 			if (isJpegImage)
 			{
 				sourcePath += ".jpg";
@@ -942,8 +942,8 @@ namespace Bloom.ImageProcessing
 			imageInfo.SetCurrentFilePath(sourcePath);
 			if (_createdTempImageFile != null)
 			{
-				if (RobustFile.Exists(_createdTempImageFile))
-					RobustFile.Delete(_createdTempImageFile);
+				if (PatientFile.Exists(_createdTempImageFile))
+					PatientFile.Delete(_createdTempImageFile);
 			}
 			_createdTempImageFile = sourcePath;
 			return sourcePath;
@@ -978,7 +978,7 @@ namespace Bloom.ImageProcessing
 			if (!IsAsciiFilepath(sourcePath))
 			{
 				safeSourcePath = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(sourcePath));
-				RobustFile.Copy(sourcePath, safeSourcePath);
+				PatientFile.Copy(sourcePath, safeSourcePath);
 			}
 			var safeDestPath = destPath;
 			if (!IsAsciiFilepath(destPath))
@@ -1003,16 +1003,16 @@ namespace Bloom.ImageProcessing
 				var result = CommandLineRunnerExtra.RunWithInvariantCulture(graphicsMagickPath, arguments, "", 600, new NullProgress());
 
 				if (destPath != safeDestPath)
-					RobustFile.Copy(safeDestPath, destPath, true);
+					PatientFile.Copy(safeDestPath, destPath, true);
 				return result;
 			}
 			finally
 			{
 				// remove unneeded copies
 				if (sourcePath != safeSourcePath)
-					RobustFile.Delete(safeSourcePath);
+					PatientFile.Delete(safeSourcePath);
 				if (destPath != safeDestPath)
-					RobustFile.Delete(safeDestPath);
+					PatientFile.Delete(safeDestPath);
 			}
 		}
 
@@ -1078,10 +1078,10 @@ namespace Bloom.ImageProcessing
 			try
 			{
 				var graphicsMagickPath = GetGraphicsMagickPath();
-				if (RobustFile.Exists(graphicsMagickPath))
+				if (PatientFile.Exists(graphicsMagickPath))
 				{
 					var path = image.GetCurrentFilePath();
-					if (path == null || !RobustFile.Exists(path))
+					if (path == null || !PatientFile.Exists(path))
 						path = CreateSourceFileForImage(image, false);	// already know it's not jpeg
 					var result = RunGraphicsMagick(graphicsMagickPath, path, jpegFilePath, new Size(image.Image.Width, image.Image.Height), false);
 					if (result.ExitCode == 0)
@@ -1094,7 +1094,7 @@ namespace Bloom.ImageProcessing
 						{
 							return true;
 						}
-						RobustFile.Delete(jpegFilePath);	// don't need it after all.
+						PatientFile.Delete(jpegFilePath);	// don't need it after all.
 					}
 					else
 					{
@@ -1129,7 +1129,7 @@ namespace Bloom.ImageProcessing
 			}
 			// Use a temporary file pathname in the destination folder.  This is needed to ensure proper permissions are granted
 			// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
-			// RobustFile.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+			// PatientFile.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
 			// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
 			using (var temp = TempFile.InFolderOf(destinationPath))
 			using (var safetyImage = new Bitmap(image))
@@ -1313,12 +1313,12 @@ namespace Bloom.ImageProcessing
 				// can happen if the file has become read-only for some reason.  Changing the FileAttribute is easy.  The
 				// more complicated permission settings are probably too difficult to fix, and fixing them even likelier
 				// to not be allowed.
-				if (RobustFile.Exists(imagePath))
+				if (PatientFile.Exists(imagePath))
 				{
-					var originalFileAttributes = RobustFile.GetAttributes(imagePath);
+					var originalFileAttributes = PatientFile.GetAttributes(imagePath);
 					originalReadOnly = originalFileAttributes & FileAttributes.ReadOnly;
 					if (originalReadOnly == FileAttributes.ReadOnly)
-						RobustFile.SetAttributes(imagePath, FileAttributes.Normal);
+						PatientFile.SetAttributes(imagePath, FileAttributes.Normal);
 				}
 				if (image != null)
 				{
@@ -1334,8 +1334,8 @@ namespace Bloom.ImageProcessing
 				}
 				else
 				{
-					if (RobustFile.Exists(imagePath))
-						RobustFile.Delete(imagePath);
+					if (PatientFile.Exists(imagePath))
+						PatientFile.Delete(imagePath);
 				}
 			}
 			catch (Exception error)

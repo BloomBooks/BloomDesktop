@@ -216,7 +216,7 @@ namespace Bloom
 				};
 			}
 
-			RetryUtility.Retry(() => image.Save(fileName),
+			Patient.Retry(() => image.Save(fileName),
 				maxRetryAttempts,
 				retryDelay,
 				exceptionTypesToRetry);

@@ -12,7 +12,7 @@ using Bloom.Collection;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
@@ -221,7 +221,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 				// If we are passed a bloom book order, download the corresponding book and open it.
 			else if (_downloadRequest.ToLowerInvariant().EndsWith(BookInfo.BookOrderExtension.ToLowerInvariant()) &&
-					 RobustFile.Exists(_downloadRequest))
+					 PatientFile.Exists(_downloadRequest))
 			{
 				HandleBookOrder(_downloadRequest);
 			}
@@ -247,7 +247,7 @@ namespace Bloom.WebLibraryIntegration
 		
 		private static string MetaDataText(string bookFolder)
 		{
-			return RobustFile.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
+			return PatientFile.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
 		}
 
 		/// <summary>
@@ -294,7 +294,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public void HandleBookOrder(string bookOrderPath, string projectPath)
 		{
-			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookOrderPath));
+			var metadata = BookMetaData.FromString(PatientFile.ReadAllText(bookOrderPath));
 			var s3BookId = metadata.DownloadSource;
 			var bucket = BloomS3Client.ProductionBucketName; //TODO
 			_s3Client.DownloadBook(bucket, s3BookId, Path.GetDirectoryName(projectPath));

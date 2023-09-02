@@ -7,7 +7,7 @@ using Microsoft.Web.WebView2.WinForms;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using System;
@@ -427,13 +427,13 @@ namespace Bloom
 		public override void SaveDocument(string path)
 		{
 			var html = RunJavaScript("document.documentElement.outerHTML");
-			RobustFile.WriteAllText(path, html, Encoding.UTF8);
+			PatientFile.WriteAllText(path, html, Encoding.UTF8);
 		}
 
 		public override async Task SaveDocumentAsync(string path)
 		{
 			var html = await RunJavaScriptAsync("document.documentElement.outerHTML");
-			RobustFile.WriteAllText(path, html, Encoding.UTF8);
+			PatientFile.WriteAllText(path, html, Encoding.UTF8);
 		}
 		// Review: base class currently explicitly opens FireFox. Should we instead open Chrome,
 		// or whatever the default browser is, or...?

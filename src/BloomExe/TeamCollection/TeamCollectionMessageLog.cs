@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Bloom.web;
 using SIL.Code;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.TeamCollection
 {
@@ -48,7 +48,7 @@ namespace Bloom.TeamCollection
 		public TeamCollectionMessageLog(string logFilePath)
 		{
 			_logFilePath = logFilePath;
-			if (RobustFile.Exists(_logFilePath))
+			if (PatientFile.Exists(_logFilePath))
 			{
 				_oldMessageLength = new FileInfo(_logFilePath).Length;
 			}
@@ -167,9 +167,9 @@ namespace Bloom.TeamCollection
 			// Linux and Windows. But that's OK, because .NET line reading accepts either line
 			// break on either platform.
 			var toPersist = message.ToPersistedForm + Environment.NewLine;
-			// There ought to be a RobustFile.AppendAllText, but there isn't.
+			// There ought to be a PatientFile.AppendAllText, but there isn't.
 			// However, as this promises to close the file each call, it should be pretty reliable.
-			RetryUtility.Retry(() => File.AppendAllText(_logFilePath, toPersist));
+			Patient.Retry(() => File.AppendAllText(_logFilePath, toPersist));
 		}
 
 		private bool MatchParams(string p1, string p2)
@@ -218,7 +218,7 @@ namespace Bloom.TeamCollection
 		/// messages we have in memory and read the whole file (if we haven't already).
 		//public void LoadSavedMessages()
 		//{
-		//	if (!RobustFile.Exists(_logFilePath) || _oldMessageLength == 0)
+		//	if (!PatientFile.Exists(_logFilePath) || _oldMessageLength == 0)
 		//		return;
 		//	// There ought to be some way to read the file a line at a time without loading it all into one
 		//	// big buffer and still to know when we get to _oldMessageLength, but it's not easy.

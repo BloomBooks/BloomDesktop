@@ -18,7 +18,7 @@ using Bloom.Publish;
 using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Xml;
@@ -293,9 +293,9 @@ namespace Bloom.WebLibraryIntegration
 		/// </remarks>
 		private static void CopyCollectionSettingsToTempDirectory(string settingsPath, string tempBookFolder)
 		{
-			if (String.IsNullOrEmpty(settingsPath) || !RobustFile.Exists(settingsPath))
+			if (String.IsNullOrEmpty(settingsPath) || !PatientFile.Exists(settingsPath))
 				return;
-			var settingsText = RobustFile.ReadAllText(settingsPath);
+			var settingsText = PatientFile.ReadAllText(settingsPath);
 			var doc = new XmlDocument();
 			doc.PreserveWhitespace = true;
 			doc.LoadXml(settingsText);
@@ -321,7 +321,7 @@ namespace Bloom.WebLibraryIntegration
 				// so include the prefix in our Contains() test.
 				var fileName = BookStorage.GetNormalizedPathForOS(Path.GetFileName(videoFilePath));
 				if (videoFilesToInclude == null || !videoFilesToInclude.Contains(BookStorage.GetVideoFolderName + fileName))
-					RobustFile.Delete(videoFilePath);
+					PatientFile.Delete(videoFilePath);
 			}
 		}
 
@@ -338,7 +338,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				var fileName = BookStorage.GetNormalizedPathForOS(Path.GetFileName(audioFile));
 				if (audioFilesToInclude == null || !audioFilesToInclude.Contains(fileName))
-					RobustFile.Delete(Path.Combine(audioDir, fileName));
+					PatientFile.Delete(Path.Combine(audioDir, fileName));
 			}
 		}
 
@@ -530,14 +530,14 @@ namespace Bloom.WebLibraryIntegration
 		// Return true if both files exist, are readable, and have the same content.
 		static bool SameFileContent(string path1, string path2)
 		{
-			if (!RobustFile.Exists(path1))
+			if (!PatientFile.Exists(path1))
 				return false;
-			if (!RobustFile.Exists(path2))
+			if (!PatientFile.Exists(path2))
 				return false;
 			try
 			{
-				var first = RobustFile.ReadAllBytes(path1);
-				var second = RobustFile.ReadAllBytes(path2);
+				var first = PatientFile.ReadAllBytes(path1);
+				var second = PatientFile.ReadAllBytes(path2);
 				if (first.Length != second.Length)
 					return false;
 				for (int i = 0; i < first.Length; i++)

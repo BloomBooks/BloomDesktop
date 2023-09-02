@@ -11,7 +11,7 @@ using Bloom.web;
 using BloomTests.Book;
 using BloomTests.web;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.Publish
 {

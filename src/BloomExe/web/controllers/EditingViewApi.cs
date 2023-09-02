@@ -13,7 +13,7 @@ using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Utils;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Windows.Forms.Miscellaneous;
 using SIL.Xml;
 
@@ -301,7 +301,7 @@ namespace Bloom.web.controllers
 				request.ReplyWithText(activityRelativePathUrl.UrlEncodedForHttpPath);
 				// clean up the temporary widget file we created.
 				if (fullWidgetPath != dlg.FileName)
-					RobustFile.Delete(fullWidgetPath);
+					PatientFile.Delete(fullWidgetPath);
 			}
 		}
 

@@ -4,7 +4,7 @@ using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.web;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 using System;
 using System.Collections.Generic;
@@ -231,7 +231,7 @@ namespace Bloom.Spreadsheet
 				try
 				{
 					Directory.CreateDirectory(Path.GetDirectoryName(destPath));
-					RobustFile.Copy(sourcePath, destPath);
+					PatientFile.Copy(sourcePath, destPath);
 				}
 				catch (Exception e) when (e is IOException || e is SecurityException ||
 				                          e is UnauthorizedAccessException)
@@ -400,14 +400,14 @@ namespace Bloom.Spreadsheet
 				Directory.CreateDirectory(audioFolder);
 				var dest = Path.Combine(audioFolder, id + ".mp3");
 				var src = Path.Combine(bookFolderPath, "audio", id + ".mp3");
-				if (RobustFile.Exists(src))
+				if (PatientFile.Exists(src))
 				{
 					// We're creating a new folder, so it's somewhat pathological to find a duplicate.
 					// Somehow two blocks in the document have the same IDs. Maybe we should do a warning?
 					// Anyway, it pretty much has to be the same file, so just leave it.
-					if (!RobustFile.Exists(dest))
+					if (!PatientFile.Exists(dest))
 					{
-						RobustFile.Copy(src, dest);
+						PatientFile.Copy(src, dest);
 					}
 				}
 				else
@@ -607,7 +607,7 @@ namespace Bloom.Spreadsheet
 			{
 				if (Path.GetFileName(imageSourcePath) == "placeHolder.png")
 					return; // don't need to copy this around.
-				if (!RobustFile.Exists(imageSourcePath))
+				if (!PatientFile.Exists(imageSourcePath))
 				{
 					_progress.MessageWithParams("Spreadsheet.MissingImage", "",
 						"Export warning: did not find the image {0}. It will be missing from the export folder.",
@@ -616,7 +616,7 @@ namespace Bloom.Spreadsheet
 				}
 
 				var destPath = Path.Combine(_outputImageFolder, Path.GetFileName(imageSourcePath));
-				RobustFile.Copy(imageSourcePath, destPath, true);
+				PatientFile.Copy(imageSourcePath, destPath, true);
 			}
 		}
 

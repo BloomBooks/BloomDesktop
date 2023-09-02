@@ -28,7 +28,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using BloomTests.web.controllers;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 namespace Bloom
@@ -380,7 +380,7 @@ namespace Bloom
 		// will look for any other bloomCollection file in the folder.
 		public static CollectionSettings GetCollectionSettings(string projectSettingsPath)
 		{
-			if (!RobustFile.Exists(projectSettingsPath))
+			if (!PatientFile.Exists(projectSettingsPath))
 			{
 				// TCManager constructor may have deleted it in the process of syncing TC settings
 				var collections = Directory.EnumerateFiles(Path.GetDirectoryName(projectSettingsPath),

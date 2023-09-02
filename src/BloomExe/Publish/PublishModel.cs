@@ -10,7 +10,7 @@ using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Xml;
@@ -434,7 +434,7 @@ namespace Bloom.Publish
 					{
 						try
 						{
-							RobustFile.Delete(path);
+							PatientFile.Delete(path);
 						}
 						catch (Exception)
 						{ }
@@ -442,12 +442,12 @@ namespace Bloom.Publish
 					continue;
 				}
 
-				if (!RobustFile.Exists(path))
+				if (!PatientFile.Exists(path))
 					break;
 
 				try
 				{
-					RobustFile.Delete(path);
+					PatientFile.Delete(path);
 					break;
 				}
 				catch (Exception)
@@ -478,11 +478,11 @@ namespace Bloom.Publish
 
 		public void Dispose()
 		{
-			if (RobustFile.Exists(PdfFilePath))
+			if (PatientFile.Exists(PdfFilePath))
 			{
 				try
 				{
-					RobustFile.Delete(PdfFilePath);
+					PatientFile.Delete(PdfFilePath);
 				}
 				catch (Exception)
 				{
@@ -610,7 +610,7 @@ namespace Bloom.Publish
 				else
 				{
 					// we want the simple PDF we already made.
-					RobustFile.Copy(PdfFilePath, destFileName, true);
+					PatientFile.Copy(PdfFilePath, destFileName, true);
 				}
 				Analytics.Track("Save PDF", new Dictionary<string, string>()
 								{
@@ -919,10 +919,10 @@ namespace Bloom.Publish
 		{
 			foreach (var filepath in Directory.EnumerateFiles(dirName, "*.css"))
 			{
-				var cssTextOrig = RobustFile.ReadAllText(filepath);
+				var cssTextOrig = PatientFile.ReadAllText(filepath);
 				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, wantedLanguages);
 				if (cssText != cssTextOrig)
-					RobustFile.WriteAllText(filepath, cssText);
+					PatientFile.WriteAllText(filepath, cssText);
 			}
 		}
 

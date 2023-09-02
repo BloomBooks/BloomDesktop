@@ -16,7 +16,7 @@ using Mono.Unix;
 using NAudio.Wave;
 using SIL.Code;
 using SIL.CommandLineProcessing;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 #if __MonoCS__
 using Bloom.ToPalaso;
@@ -65,7 +65,7 @@ namespace Bloom.Utils
 					var acct = sid.Translate(typeof(NTAccount)) as NTAccount;
 					if (acct != null)
 						bldr.AppendLine($"owner of \"{filePath}\" is {acct.Value}");
-					var fileAttributes = RobustFile.GetAttributes(filePath);
+					var fileAttributes = PatientFile.GetAttributes(filePath);
 					bldr.AppendLine($"{filePath} current ReadOnly attribute of {filePath} is {(fileAttributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly}");
 					foreach (AuthorizationRule rule in rules)
 					{
@@ -191,7 +191,7 @@ namespace Bloom.Utils
 			var bldr = new StringBuilder();
 			if (!String.IsNullOrEmpty(firstLine))
 				bldr.AppendLine(firstLine);
-			if (RobustFile.Exists(path))
+			if (PatientFile.Exists(path))
 			{
 				bldr.AppendLine($"You may find help for this problem at https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445.");
 				bldr.AppendLine($"The following specific information may also be helpful.");
@@ -273,7 +273,7 @@ namespace Bloom.Utils
 			var ffmpeg = "/usr/bin/ffmpeg";     // standard Linux location
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 				ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
-			return RobustFile.Exists(ffmpeg) ? ffmpeg : string.Empty;
+			return PatientFile.Exists(ffmpeg) ? ffmpeg : string.Empty;
 		}
 
 		/// <summary>
@@ -361,7 +361,7 @@ namespace Bloom.Utils
 		/// <returns>the contents of the file as a string</returns>
 		public static string ReadAllTextFromFileWhichMightGetWrittenTo(string path)
 		{
-			return RetryUtility.Retry(()=> ReadAllTextFromFileWhichMightGetWrittenToInternal(path));
+			return Patient.Retry(()=> ReadAllTextFromFileWhichMightGetWrittenToInternal(path));
 		}
 
 		private static string ReadAllTextFromFileWhichMightGetWrittenToInternal(string path)

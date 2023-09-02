@@ -1,7 +1,7 @@
 ﻿using Bloom.Utils;
 using ICSharpCode.SharpZipLib.Tar;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.TestUtilities;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace BloomTests.Utils
 			using (var testFolder = new TemporaryFolder(kTestFolderName))
 			{
 				var testFilePath = Path.Combine(testFolder.Path, Path.ChangeExtension(Path.GetRandomFileName(), ".txt"));
-				RobustFile.WriteAllText(testFilePath, fileContents);
+				PatientFile.WriteAllText(testFilePath, fileContents);
 
 				// This is not under the test folder. It makes creating the archive less thorny that way. make sure it gets cleaned up.
 				using (var archiveFile = TempFile.WithExtension(".tar"))
@@ -43,7 +43,7 @@ namespace BloomTests.Utils
 					//////////////////
 					// Verification //
 					//////////////////
-					var inStream = RobustFile.OpenRead(archiveFile.Path);
+					var inStream = PatientFile.OpenRead(archiveFile.Path);
 					TarArchive archiveForReading = TarArchive.CreateInputTarArchive(inStream, Encoding.UTF8);
 					using (var extractedFolder = new TemporaryFolder(testFolder, "extractedTarContents"))
 					{
@@ -78,7 +78,7 @@ namespace BloomTests.Utils
 			{
 				var subFolder = new TemporaryFolder(testFolder, "subFolder");
 				var testFilePath = Path.Combine(subFolder.Path, Path.ChangeExtension(Path.GetRandomFileName(), ".txt"));
-				RobustFile.WriteAllText(testFilePath, fileContents);
+				PatientFile.WriteAllText(testFilePath, fileContents);
 
 				// This is not under the test folder. It makes creating the archive less thorny that way. make sure it gets cleaned up.
 				using (var archiveFile = TempFile.WithExtension(".tar"))
@@ -93,7 +93,7 @@ namespace BloomTests.Utils
 					//////////////////
 					// Verification //
 					//////////////////
-					var inStream = RobustFile.OpenRead(archiveFile.Path);
+					var inStream = PatientFile.OpenRead(archiveFile.Path);
 					TarArchive archiveForReading = TarArchive.CreateInputTarArchive(inStream, Encoding.UTF8);
 					using (var extractedFolder = new TemporaryFolder(testFolder, "extractedTarContents"))
 					{

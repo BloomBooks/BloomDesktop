@@ -21,7 +21,7 @@ using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms;
@@ -524,7 +524,7 @@ namespace Bloom.CollectionTab
 			// believe me.)  I don't know any perfect way to add this information to the file,
 			// but a simple string replace should be safe.  This change works okay for both
 			// Windows and Linux and for all three programs (Word, OpenOffice and Libre Office).
-			var content = RobustFile.ReadAllText(sourcePath);
+			var content = PatientFile.ReadAllText(sourcePath);
 			var fixedContent = content.Replace("<meta charset=\"UTF-8\">",
 				"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
 			var xmlDoc = RepairWordVisibility(fixedContent);
@@ -539,7 +539,7 @@ namespace Bloom.CollectionTab
 				if (BookCompressor.CompressableImageFileExtensions.Contains(extension) || extension == ".svg" || extension == ".css")
 				{
 					var destFilePath = Path.Combine(outputFolder, filename);
-					RobustFile.Copy(sourceFilePath, destFilePath, true);
+					PatientFile.Copy(sourceFilePath, destFilePath, true);
 				}
 			}
 		}
@@ -633,10 +633,10 @@ namespace Bloom.CollectionTab
 		{
 			try
 			{
-				if (RobustFile.Exists(outputPath))
+				if (PatientFile.Exists(outputPath))
 				{
 					// UI already got permission for this
-					RobustFile.Delete(outputPath);
+					PatientFile.Delete(outputPath);
 				}
 				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack...", "Bloom"))
 				{
@@ -740,7 +740,7 @@ namespace Bloom.CollectionTab
 				{
 					MessageBox.Show("Bloom will now open a list of problems it found.");
 					var path = Path.GetTempFileName() + ".txt";
-					RobustFile.WriteAllText(path, dlg.ProgressString.Text);
+					PatientFile.WriteAllText(path, dlg.ProgressString.Text);
 					ProcessExtra.SafeStartInFront(path);
 				}
 				else
@@ -765,7 +765,7 @@ namespace Bloom.CollectionTab
 				}
 
 				var path = Path.GetTempFileName() + ".txt";
-				RobustFile.WriteAllText(path, dlg.ProgressString.Text);
+				PatientFile.WriteAllText(path, dlg.ProgressString.Text);
 				try
 				{
 					ProcessExtra.SafeStartInFront(path);

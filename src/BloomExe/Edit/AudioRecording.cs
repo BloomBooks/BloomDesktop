@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Api;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Media;
 #if __MonoCS__
 using SIL.Media.AlsaAudio;
@@ -149,13 +149,13 @@ namespace Bloom.Edit
 
 			foreach (var id in idList)
 			{
-				if (RobustFile.Exists(GetPathToRecordableAudioForSegment(id)))
+				if (PatientFile.Exists(GetPathToRecordableAudioForSegment(id)))
 				{
 					request.PostSucceeded();
 					return;
 				}
 
-				if (RobustFile.Exists(GetPathToPublishableAudioForSegment(id)))
+				if (PatientFile.Exists(GetPathToPublishableAudioForSegment(id)))
 				{
 					request.PostSucceeded();
 					return;
@@ -176,7 +176,7 @@ namespace Bloom.Edit
 
 			foreach (var id in idList)
 			{
-				if (!RobustFile.Exists(GetPathToRecordableAudioForSegment(id)) && !RobustFile.Exists(GetPathToPublishableAudioForSegment(id)))
+				if (!PatientFile.Exists(GetPathToRecordableAudioForSegment(id)) && !PatientFile.Exists(GetPathToPublishableAudioForSegment(id)))
 				{
 					request.ReplyWithBoolean(false);
 					return;
@@ -348,7 +348,7 @@ namespace Bloom.Edit
 			// Try to delete the file we were writing to.
 			try
 			{
-				RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
+				PatientFile.Delete(PathToRecordableAudioForCurrentSegment);
 			}
 			catch (Exception error)
 			{
@@ -370,12 +370,12 @@ namespace Bloom.Edit
 			{
 				var minimum = TimeSpan.FromMilliseconds(300); // this is arbitrary
 				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToRecordableAudioForCurrentSegment, new TimeSpan(), TimeSpan.FromMilliseconds(_collectionAudioTrimEndMilliseconds), minimum);
-				RobustFile.Delete(PathToTemporaryWav);	// Otherwise, these continue to clutter up the temp directory.
+				PatientFile.Delete(PathToTemporaryWav);	// Otherwise, these continue to clutter up the temp directory.
 			}
 			catch (Exception error)
 			{
 				Logger.WriteEvent(error.Message);
-				RobustFile.Copy(PathToTemporaryWav,PathToRecordableAudioForCurrentSegment, true);
+				PatientFile.Copy(PathToTemporaryWav,PathToRecordableAudioForCurrentSegment, true);
 			}
 
 			//We could put this off entirely until we make the ePUB.
@@ -387,13 +387,13 @@ namespace Bloom.Edit
 				Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment),
 				Path.GetFileNameWithoutExtension(PathToRecordableAudioForCurrentSegment)+ "*"+ ".bak"))
 			{ 
-				RobustFile.Delete(path);
+				PatientFile.Delete(path);
 			}
 			
 			// BL-7617 Don't keep .wav file after .mp3 is created successfully.
 			if (!string.IsNullOrEmpty(mp3Path) && File.Exists(mp3Path))
 			{
-				RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
+				PatientFile.Delete(PathToRecordableAudioForCurrentSegment);
 			}
 			_completingRecording.Set(); // will release HandleAudioFileRequest if it is waiting.
 		}
@@ -494,11 +494,11 @@ namespace Bloom.Edit
 			// required to copy the file was noticeable and resulted in the user starting to speak before
 			// the system started recording. So we pay the price of a small chance of backups being left
 			// around the book directory to avoid that danger.
-			if (RobustFile.Exists(path))
+			if (PatientFile.Exists(path))
 			{
 				try
 				{
-					RobustFile.Move(path, backupPath);
+					PatientFile.Move(path, backupPath);
 				}
 				catch (Exception err)
 				{
@@ -582,10 +582,10 @@ namespace Bloom.Edit
 				// And the very first time a user tries this, the audio directory probably doesn't exist...
 				if (Directory.Exists(Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment)))
 				{
-					RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
+					PatientFile.Delete(PathToRecordableAudioForCurrentSegment);
 					// BL-6881: "Play btn sometimes enabled after too short audio", because the .mp3 version was left behind.
 					var mp3Version = Path.ChangeExtension(PathToRecordableAudioForCurrentSegment, kPublishableExtension);
-					RobustFile.Delete(mp3Version);
+					PatientFile.Delete(mp3Version);
 				}
 			}
 			catch (Exception error)
@@ -595,11 +595,11 @@ namespace Bloom.Edit
 			}
 
 			// If we had a prior recording, restore it...button press may have been a mistake.
-			if (RobustFile.Exists(_backupPathForRecordableAudio))
+			if (PatientFile.Exists(_backupPathForRecordableAudio))
 			{
 				try
 				{
-					RobustFile.Move(_backupPathForRecordableAudio, PathToRecordableAudioForCurrentSegment);
+					PatientFile.Move(_backupPathForRecordableAudio, PathToRecordableAudioForCurrentSegment);
 				}
 				catch (IOException e)
 				{
@@ -607,11 +607,11 @@ namespace Bloom.Edit
 					// if we can't restore it we can't. Review: are there other exception types we should ignore? Should we bother the user?
 				}
 			}
-			if (RobustFile.Exists(_backupPathForPublishableAudio))
+			if (PatientFile.Exists(_backupPathForPublishableAudio))
 			{
 				try
 				{
-					RobustFile.Move(_backupPathForPublishableAudio, Path.ChangeExtension(PathToRecordableAudioForCurrentSegment, kPublishableExtension));
+					PatientFile.Move(_backupPathForPublishableAudio, Path.ChangeExtension(PathToRecordableAudioForCurrentSegment, kPublishableExtension));
 				}
 				catch (IOException e)
 				{
@@ -675,12 +675,12 @@ namespace Bloom.Edit
 
 			WaitForRecordingToComplete();	// Wait until the recording is flushed to disk before testing file existence
 
-			if (RobustFile.Exists(path))
+			if (PatientFile.Exists(path))
 				request.ReplyWithText("exists");
 			else
 			{
 				path = GetPathToPublishableAudioForSegment(segmentId);
-				request.ReplyWithText(RobustFile.Exists(path) ? "exists" : "not found");
+				request.ReplyWithText(PatientFile.Exists(path) ? "exists" : "not found");
 			}
 		}
 
@@ -703,7 +703,7 @@ namespace Bloom.Edit
 
 				// return the audio file contents
 				var mp3File = GetPathToPublishableAudioForSegment(segmentId);
-				if (RobustFile.Exists(mp3File))
+				if (PatientFile.Exists(mp3File))
 				{
 					request.ReplyWithAudioFileContents(mp3File);
 					return;
@@ -728,10 +728,10 @@ namespace Bloom.Edit
 
 			WaitForRecordingToComplete();	// Wait for any files to (potentially) flush to disk before trying to deleting them.
 
-			if(RobustFile.Exists(recordablePath))
+			if(PatientFile.Exists(recordablePath))
 				success = DeleteFileReportingAnyProblem(recordablePath);
 
-			if (RobustFile.Exists(publishablePath))
+			if (PatientFile.Exists(publishablePath))
 				success &= DeleteFileReportingAnyProblem(publishablePath);
 
 			if (success)
@@ -748,7 +748,7 @@ namespace Bloom.Edit
 		{
 			try
 			{
-				RobustFile.Delete(path);
+				PatientFile.Delete(path);
 				return true;
 			}
 			catch (IOException e)
@@ -775,9 +775,9 @@ namespace Bloom.Edit
 			var newId = request.RequiredParam("newId");
 			var oldPath = GetPathToPublishableAudioForSegment(oldId);
 			var newPath = GetPathToPublishableAudioForSegment(newId);
-			if (RobustFile.Exists(oldPath))
+			if (PatientFile.Exists(oldPath))
 			{
-				RobustFile.Copy(oldPath, newPath);
+				PatientFile.Copy(oldPath, newPath);
 			}
 			// If the old file doesn't exist, it's probably because one hasn't been recorded before the user decided
 			// to copy and paste some text.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10291.  Setting a

@@ -9,7 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 
@@ -106,7 +106,7 @@ namespace Bloom.web.controllers
 		{
 			var filePath = request.LocalPath().Replace("api/pageTemplateThumbnail/","");
 			var pathToExistingOrGeneratedThumbnail = FindOrGenerateThumbnail(filePath, out bool isGenerating);
-			if(string.IsNullOrEmpty(pathToExistingOrGeneratedThumbnail) || !RobustFile.Exists(pathToExistingOrGeneratedThumbnail))
+			if(string.IsNullOrEmpty(pathToExistingOrGeneratedThumbnail) || !PatientFile.Exists(pathToExistingOrGeneratedThumbnail))
 			{
 				request.Failed("Could not make a page thumbnail for "+filePath);
 				return;
@@ -134,7 +134,7 @@ namespace Bloom.web.controllers
 			var localPath = AdjustPossibleLocalHostPathToFilePath(expectedPathOfThumbnailImage);
 
 			var svgpath = Path.ChangeExtension(localPath, "svg");
-			if (RobustFile.Exists(svgpath))
+			if (PatientFile.Exists(svgpath))
 			{
 				return svgpath;
 			}
@@ -143,7 +143,7 @@ namespace Bloom.web.controllers
 			bool mustRegenerate = false;
 			string tempPath = null;
 
-			if (RobustFile.Exists(pngpath))
+			if (PatientFile.Exists(pngpath))
 			{
 				var f = new FileInfo(pngpath);
 				if (f.IsReadOnly)
@@ -156,7 +156,7 @@ namespace Bloom.web.controllers
 			}
 
 			var altpath = GetAlternativeWritablePath(pngpath);
-			if (RobustFile.Exists(altpath))
+			if (PatientFile.Exists(altpath))
 			{
 				if (!IsPageTypeFromCurrentBook(localPath))
 					return altpath;
@@ -366,7 +366,7 @@ namespace Bloom.web.controllers
 						var pathToTemplatesFolder = Path.Combine(Path.GetDirectoryName(path), TemplateFolderName);
 						if (!Directory.Exists(pathToTemplatesFolder))
 							return false;
-						return !RobustFile.Exists(Path.Combine(pathToTemplatesFolder, "NotForAddPage.txt"));
+						return !PatientFile.Exists(Path.Combine(pathToTemplatesFolder, "NotForAddPage.txt"));
 					}
 
 					catch (System.IO.PathTooLongException e) // this will also catch the subclass, Bloom.Utils.PathTooLongException

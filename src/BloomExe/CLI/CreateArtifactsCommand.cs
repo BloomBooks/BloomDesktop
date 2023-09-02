@@ -15,7 +15,7 @@ using Bloom.web;
 using BloomTemp;
 using CommandLine;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.CLI
 {
@@ -163,7 +163,7 @@ namespace Bloom.CLI
 				// Report what we can about fonts and languages for this book.
 				// (See https://issues.bloomlibrary.org/youtrack/issue/BL-11512.)
 				SendFontAnalyticsCommand.ReportFontAnalytics(_book.ID, "harvester createArtifacts", parameters.Testing,
-					!RobustFile.Exists(parameters.EpubOutputPath) || parameters.SkipEpubAnalytics, parameters.SkipPdfAnalytics);
+					!PatientFile.Exists(parameters.EpubOutputPath) || parameters.SkipEpubAnalytics, parameters.SkipPdfAnalytics);
 			}
 			return exitCode;
 		}
@@ -255,13 +255,13 @@ namespace Bloom.CLI
 		{
 			string originalHtmFilePath = Bloom.Book.BookStorage.FindBookHtmlInFolder(bookDirectory);
 
-			Debug.Assert(RobustFile.Exists(originalHtmFilePath), "Book HTM not found: " + originalHtmFilePath);
-			if (!RobustFile.Exists(originalHtmFilePath))
+			Debug.Assert(PatientFile.Exists(originalHtmFilePath), "Book HTM not found: " + originalHtmFilePath);
+			if (!PatientFile.Exists(originalHtmFilePath))
 				return CreateArtifactsExitCode.BookHtmlNotFound;
 
 			string newHtmFilePath = Path.Combine(bookDirectory, $"index.htm");
-			RobustFile.Copy(originalHtmFilePath, newHtmFilePath);
-			RobustFile.Delete(originalHtmFilePath);
+			PatientFile.Copy(originalHtmFilePath, newHtmFilePath);
+			PatientFile.Delete(originalHtmFilePath);
 			return CreateArtifactsExitCode.Success;
 		}
 
@@ -337,7 +337,7 @@ namespace Bloom.CLI
 
 		private static void AppendPathIfExists(string path, IList<string> listToAppendTo)
 		{
-			if (RobustFile.Exists(path))
+			if (PatientFile.Exists(path))
 			{
 				listToAppendTo.Add(path);
 			}

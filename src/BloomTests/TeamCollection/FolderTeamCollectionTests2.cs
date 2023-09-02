@@ -4,7 +4,7 @@ using Bloom.web;
 using BloomTemp;
 using Moq;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using System;
 using System.IO;
 using System.Linq;
@@ -44,7 +44,7 @@ namespace BloomTests.TeamCollection
 						new BookStatusChangeEvent(), null, null, null);
 					Assert.That(tcManager.CurrentCollection, Is.Null);
 
-					RobustFile.WriteAllText(settingsPath, "This is a fake settings file");
+					PatientFile.WriteAllText(settingsPath, "This is a fake settings file");
 					FolderTeamCollection.CreateTeamCollectionLinkFile(collectionFolder.FolderPath,
 						sharedFolder.FolderPath);
 
@@ -66,10 +66,10 @@ namespace BloomTests.TeamCollection
 					var teamCollectionLinkPath =
 						Path.Combine(collectionFolder.FolderPath, TeamCollectionManager.TeamCollectionLinkFileName);
 					Assert.That(File.Exists(teamCollectionLinkPath));
-					var collectionFileContent = RobustFile.ReadAllText(teamCollectionLinkPath);
+					var collectionFileContent = PatientFile.ReadAllText(teamCollectionLinkPath);
 					Assert.That(collectionFileContent, Is.EqualTo(sharedFolder.FolderPath));
 					var sharedSettingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
-					Assert.That(RobustFile.ReadAllText(sharedSettingsPath), Is.EqualTo("This is a fake settings file"));
+					Assert.That(PatientFile.ReadAllText(sharedSettingsPath), Is.EqualTo("This is a fake settings file"));
 					var bookPath = Path.Combine(sharedFolder.FolderPath, "Books", bookFolderName1 + ".bloom");
 					Assert.That(File.Exists(bookPath));
 					var bookPath2 = Path.Combine(sharedFolder.FolderPath, "Books", bookFolderName2 + ".bloom");
@@ -121,7 +121,7 @@ namespace BloomTests.TeamCollection
 					Assert.That(tc.LocalCollectionFilesRecordedSyncTime, Is.EqualTo(DateTime.MinValue));
 					File.WriteAllText(bloomCollectionPath, "This is a fake collection file");
 					var collectionStylesPath = Path.Combine(collectionFolder.FolderPath, "customCollectionStyles.css");
-					RobustFile.WriteAllText(collectionStylesPath, "This is the collection styles");
+					PatientFile.WriteAllText(collectionStylesPath, "This is the collection styles");
 
 					// SUT 1: nothing in repo, no sync time file. Copies to repo.
 					tc.SyncLocalAndRepoCollectionFiles();
@@ -132,7 +132,7 @@ namespace BloomTests.TeamCollection
 					var otherFilesPath = FolderTeamCollection.GetRepoProjectFilesZipPath(repoFolder.FolderPath);
 					Assert.That(File.Exists(otherFilesPath));
 					var anotherPlace = Path.Combine(repoFolder.FolderPath, "anotherPlace.zip");
-					RobustFile.Copy(otherFilesPath, anotherPlace);
+					PatientFile.Copy(otherFilesPath, anotherPlace);
 					var repoWriteTime1 = new FileInfo(otherFilesPath).LastWriteTime;
 					var collectionWriteTime1 = new FileInfo(bloomCollectionPath).LastWriteTime;
 
@@ -169,10 +169,10 @@ namespace BloomTests.TeamCollection
 					File.WriteAllText(bloomCollectionPath, "This is a further modified fake collection file");
 					var collectionWriteTime3 = new FileInfo(bloomCollectionPath).LastWriteTime;
 					var version2Path = Path.Combine(repoFolder.FolderPath, "version2.zip");
-					RobustFile.Copy(otherFilesPath, version2Path);
+					PatientFile.Copy(otherFilesPath, version2Path);
 					// modify the remote version by copying the old one back.
 					Thread.Sleep(2);
-					RobustFile.Copy(anotherPlace, otherFilesPath, true);
+					PatientFile.Copy(anotherPlace, otherFilesPath, true);
 					var repoWriteTime3 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTime3, Is.GreaterThan(collectionWriteTime3),
 						"repo file written after local collection file [sanity check]");
@@ -254,7 +254,7 @@ namespace BloomTests.TeamCollection
 					// modify the remote version by copying version2 back.
 					Thread.Sleep(2);
 					var repoWriteTimeBeforeSut9Copy = new FileInfo(otherFilesPath).LastWriteTime;
-					RobustFile.Copy(version2Path, otherFilesPath, true);
+					PatientFile.Copy(version2Path, otherFilesPath, true);
 					var collectionWriteTimeBeforeSut9 = new FileInfo(bloomCollectionPath).LastWriteTime;
 					var repoWriteTimeBeforeSut9 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTimeBeforeSut9, Is.GreaterThan(repoWriteTimeBeforeSut9Copy),
@@ -298,7 +298,7 @@ namespace BloomTests.TeamCollection
 					var localWriteTimeBeforeSut11 = tc.LocalCollectionFilesRecordedSyncTime();
 					var repoWriteTimeBeforeSut11 = new FileInfo(otherFilesPath).LastWriteTime;
 					Thread.Sleep(2);
-					RobustFile.WriteAllText(collectionStylesPath, "This is the modified collection styles");
+					PatientFile.WriteAllText(collectionStylesPath, "This is the modified collection styles");
 
 					// SUT11: custom collection styles modified while Bloom was not running. Copied to repo.
 					Thread.Sleep(2);
@@ -434,7 +434,7 @@ namespace BloomTests.TeamCollection
 					// sut (at least, triggers it and waits for it)
 					Thread.Sleep(10);
 					var otherRepoPath = FolderTeamCollection.GetRepoProjectFilesZipPath(repoFolder.FolderPath);
-					RobustFile.WriteAllText(otherRepoPath, @"This is changed"); // no, not a zip at all
+					PatientFile.WriteAllText(otherRepoPath, @"This is changed"); // no, not a zip at all
 
 					var waitSucceeded = collectionChangedRaised.WaitOne(1000);
 
@@ -504,7 +504,7 @@ namespace BloomTests.TeamCollection
 					tc.RepoCollectionFilesChanged += monitorFunction;
 
 					// sut (at least, triggers it and waits for it)
-					RobustFile.WriteAllText(otherPath, @"This is changed");
+					PatientFile.WriteAllText(otherPath, @"This is changed");
 					tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
 
 					var waitSucceeded = collectionChangedRaised.WaitOne(1000);
@@ -649,15 +649,15 @@ namespace BloomTests.TeamCollection
 					var bookFolderPath = Path.Combine(collectionFolder.FolderPath, "My book");
 					Directory.CreateDirectory(bookFolderPath);
 					var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-					RobustFile.WriteAllText(bookPath, "This is just a dummy");
+					PatientFile.WriteAllText(bookPath, "This is just a dummy");
 					tc.PutBook(bookFolderPath);
 					tc.AttemptLock("My book", "fred@nowhere.org");
-					RobustFile.WriteAllText(bookPath, "This is the edited content");
+					PatientFile.WriteAllText(bookPath, "This is the edited content");
 
 					var changedFolders = tc.ForgetChangesCheckin("My book");
 
 					Assert.That(changedFolders.Count, Is.EqualTo(0));
-					Assert.That(RobustFile.ReadAllText(bookPath), Is.EqualTo("This is just a dummy"));
+					Assert.That(PatientFile.ReadAllText(bookPath), Is.EqualTo("This is just a dummy"));
 					Assert.That(tc.GetStatus("My book").lockedBy, Is.Null);
 				}
 			}
@@ -678,9 +678,9 @@ namespace BloomTests.TeamCollection
 					var changedFolders = tc.ForgetChangesCheckin("Renamed book");
 
 					Assert.That(changedFolders.Count, Is.EqualTo(2));
-					Assert.That(RobustFile.Exists(bookPath));
+					Assert.That(PatientFile.Exists(bookPath));
 					Assert.That(Directory.Exists(newBookFolderPath), Is.False);
-					Assert.That(RobustFile.ReadAllText(bookPath), Is.EqualTo("This is just a dummy"));
+					Assert.That(PatientFile.ReadAllText(bookPath), Is.EqualTo("This is just a dummy"));
 					Assert.That(tc.GetStatus("My book").lockedBy, Is.Null);
 					Assert.That(changedFolders[1], Is.EqualTo(newBookFolderPath));
 					Assert.That(changedFolders[0], Is.EqualTo(Path.GetDirectoryName(bookPath)));
@@ -698,12 +698,12 @@ namespace BloomTests.TeamCollection
 			var bookFolderPath = Path.Combine(collectionFolder.FolderPath, "My book");
 			Directory.CreateDirectory(bookFolderPath);
 			bookPath = Path.Combine(bookFolderPath, "My book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			PatientFile.WriteAllText(bookPath, "This is just a dummy");
 			tc.PutBook(bookFolderPath);
 			tc.AttemptLock("My book", "fred@nowhere.org");
-			RobustFile.WriteAllText(bookPath, "This is the edited content");
+			PatientFile.WriteAllText(bookPath, "This is the edited content");
 			var newBookPath = Path.Combine(bookFolderPath, "Renamed book");
-			RobustFile.Move(bookPath, newBookPath);
+			PatientFile.Move(bookPath, newBookPath);
 			newBookFolderPath = Path.Combine(collectionFolder.FolderPath, "Renamed book");
 			Directory.Move(bookFolderPath, newBookFolderPath);
 			tc.HandleBookRename("My book", "Renamed book");
@@ -722,19 +722,19 @@ namespace BloomTests.TeamCollection
 					var tc = MakeAndRenameBook(collectionFolder, repoFolder, out var bookPath,
 						out var newBookFolderPath);
 					Directory.CreateDirectory(Path.GetDirectoryName(bookPath));
-					RobustFile.WriteAllText(bookPath, "This is some other book created after the rename");
+					PatientFile.WriteAllText(bookPath, "This is some other book created after the rename");
 
 					var changedFolders = tc.ForgetChangesCheckin("Renamed book");
 
-					Assert.That(RobustFile.Exists(bookPath));
+					Assert.That(PatientFile.Exists(bookPath));
 					Assert.That(Directory.Exists(newBookFolderPath), Is.False);
-					Assert.That(RobustFile.ReadAllText(bookPath), Is.EqualTo("This is just a dummy"));
+					Assert.That(PatientFile.ReadAllText(bookPath), Is.EqualTo("This is just a dummy"));
 					Assert.That(tc.GetStatus("My book").lockedBy, Is.Null);
 					Assert.That(changedFolders.Count, Is.EqualTo(3));
 					var movedFolder = changedFolders[2];
 					var movedBookPath = Path.Combine(movedFolder,
 						Path.ChangeExtension(Path.GetFileName(movedFolder), "htm"));
-					Assert.That(RobustFile.ReadAllText(movedBookPath),
+					Assert.That(PatientFile.ReadAllText(movedBookPath),
 						Is.EqualTo("This is some other book created after the rename"));
 				}
 			}

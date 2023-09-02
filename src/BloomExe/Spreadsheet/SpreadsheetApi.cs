@@ -8,7 +8,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Spreadsheet
 {

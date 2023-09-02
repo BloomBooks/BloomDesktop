@@ -3,7 +3,7 @@ using NAudio.Wave;
 #endif
 using System.IO;
 using SIL.Code;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Windows.Forms.ClearShare;
 using TidyManaged;
 using Bloom.ImageProcessing;
@@ -25,13 +25,13 @@ namespace Bloom
 #if !__MonoCS__
 		public static WaveFileReader CreateWaveFileReader(string wavFile)
 		{
-			return RetryUtility.Retry(() => new WaveFileReader(wavFile));
+			return Patient.Retry(() => new WaveFileReader(wavFile));
 		}
 #endif
 
 		public static Document DocumentFromFile(string filePath)
 		{
-			return RetryUtility.Retry(() => Document.FromFile(filePath));
+			return Patient.Retry(() => Document.FromFile(filePath));
 		}
 
 		/// <summary>
@@ -46,7 +46,7 @@ namespace Bloom
 			{
 				using (var jpegFile = TempFile.WithExtension(".jpg"))
 				{
-					RobustFile.Copy(path, jpegFile.Path, true);
+					PatientFile.Copy(path, jpegFile.Path, true);
 					return MetadataFromFileInternal(jpegFile.Path);
 				}
 			}
@@ -54,7 +54,7 @@ namespace Bloom
 			{
 				using (var pngFile = TempFile.WithExtension(".png"))
 				{
-					RobustFile.Copy(path, pngFile.Path, true);
+					PatientFile.Copy(path, pngFile.Path, true);
 					return MetadataFromFileInternal(pngFile.Path);
 				}
 			}
@@ -64,7 +64,7 @@ namespace Bloom
 
 		private static Metadata MetadataFromFileInternal(string path)
 		{
-			return RetryUtility.Retry(() => Metadata.FromFile(path));
+			return Patient.Retry(() => Metadata.FromFile(path));
 		}
 	}
 }

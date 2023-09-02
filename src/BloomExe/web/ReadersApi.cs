@@ -7,7 +7,7 @@ using System.Xml;
 using Bloom.Collection;
 using Newtonsoft.Json;
 using SIL.Xml;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
@@ -116,7 +116,7 @@ namespace Bloom.Api
 					{
 						var path = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(request.CurrentCollectionSettings);
 						var content = request.RequiredPostJson();
-						RobustFile.WriteAllText(path, content, Encoding.UTF8);
+						PatientFile.WriteAllText(path, content, Encoding.UTF8);
 						request.PostSucceeded();
 					}
 					break;
@@ -367,14 +367,14 @@ namespace Bloom.Api
 				if (foundFile != null)
 				{
 					// copy it
-					RobustFile.Copy(Path.Combine(foundFile.DirectoryName, foundFile.Name), langFile);
+					PatientFile.Copy(Path.Combine(foundFile.DirectoryName, foundFile.Name), langFile);
 				}
 
 				return String.Empty;
 			}
 
 			// first look for ReaderToolsWords-<lang>.json
-			if (RobustFile.Exists(langFile))
+			if (PatientFile.Exists(langFile))
 				fileList1.Add(langFile);
 
 			// next look for <language_name>_lang_data.js
@@ -404,14 +404,14 @@ namespace Bloom.Api
 
 			path = Path.Combine(path, fileName);
 
-			if (!RobustFile.Exists(path)) return String.Empty;
+			if (!PatientFile.Exists(path)) return String.Empty;
 
 			// first try utf-8/ascii encoding (the .Net default)
-			var text = RobustFile.ReadAllText(path);
+			var text = PatientFile.ReadAllText(path);
 
 			// If the "unknown" character (65533) is present, C# did not sucessfully decode the file. Try the system default encoding and codepage.
 			if (text.Contains((char)65533))
-				text = RobustFile.ReadAllText(path, Encoding.Default);
+				text = PatientFile.ReadAllText(path, Encoding.Default);
 
 			return text;
 		}
@@ -421,9 +421,9 @@ namespace Bloom.Api
 			var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(bookData.CollectionSettings);
 			var jsonSettings = "";
 			// if file exists, return current settings
-			if (RobustFile.Exists(settingsPath))
+			if (PatientFile.Exists(settingsPath))
 			{
-				var result = RobustFile.ReadAllText(settingsPath, Encoding.UTF8);
+				var result = PatientFile.ReadAllText(settingsPath, Encoding.UTF8);
 				if (!string.IsNullOrWhiteSpace(result))
 					jsonSettings = result;
 			}
@@ -447,7 +447,7 @@ namespace Bloom.Api
 					+ "{\"maxWordsPerSentence\":8,\"maxWordsPerPage\":18,\"maxWordsPerBook\":206,\"maxUniqueWordsPerBook\":32,\"thingsToRemember\":[]},"
 					+ "{\"maxWordsPerSentence\":12,\"maxWordsPerPage\":25,\"maxWordsPerBook\":500,\"maxUniqueWordsPerBook\":64,\"thingsToRemember\":[]},"
 					+ "{\"maxWordsPerSentence\":20,\"maxWordsPerPage\":50,\"maxWordsPerBook\":1000,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]}]}";
-			RobustFile.WriteAllText(settingsPath, settingsString);
+			PatientFile.WriteAllText(settingsPath, settingsString);
 
 			return settingsString;
 		}
@@ -512,7 +512,7 @@ namespace Bloom.Api
 
 			// write the file
 			var fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, "Decodable Books Letters and Words.txt");
-			RobustFile.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
+			PatientFile.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
 
 			// open the file
 			ProcessExtra.SafeStartInFront(fileName);
@@ -533,7 +533,7 @@ namespace Bloom.Api
 			var fileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.BookData.Language1.Tag);
 			fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
-			RobustFile.WriteAllText(fileName, jsonString, Encoding.UTF8);
+			PatientFile.WriteAllText(fileName, jsonString, Encoding.UTF8);
 		}
 
 		private void OpenTextsFolder()
@@ -582,7 +582,7 @@ namespace Bloom.Api
 						var i = 0;
 
 						// get a unique destination file name
-						while (RobustFile.Exists(Path.Combine(destPath, destFile)))
+						while (PatientFile.Exists(Path.Combine(destPath, destFile)))
 						{
 							destFile = Path.GetFileName(srcFile);
 							var fileExt = Path.GetExtension(srcFile);
@@ -591,7 +591,7 @@ namespace Bloom.Api
 							destFile += fileExt;
 						}
 
-						RobustFile.Copy(srcFile, Path.Combine(destPath, destFile));
+						PatientFile.Copy(srcFile, Path.Combine(destPath, destFile));
 					}
 
 					returnVal = destFile;
@@ -606,7 +606,7 @@ namespace Bloom.Api
 			var folderPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Allowed Words");
 			var fullFileName = Path.Combine(folderPath, fileName);
 
-			if (RobustFile.Exists(fullFileName))
+			if (PatientFile.Exists(fullFileName))
 				PathUtilities.DeleteToRecycleBin(fullFileName);
 		}
 

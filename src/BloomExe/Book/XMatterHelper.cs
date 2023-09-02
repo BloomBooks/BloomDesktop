@@ -6,7 +6,7 @@ using System.Xml;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Xml;
 
@@ -61,18 +61,18 @@ namespace Bloom.Book
 			}
 			var htmName = _nameOfXMatterPack + "-XMatter.html";
 			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
-			if(!RobustFile.Exists(PathToXMatterHtml))
+			if(!PatientFile.Exists(PathToXMatterHtml))
 			{
 				htmName = _nameOfXMatterPack + "-XMatter.htm"; // pre- Bloom 3.7
 				PathToXMatterHtml = directoryPath.CombineForPath(htmName);
 			}
-			if (!RobustFile.Exists(PathToXMatterHtml))
+			if (!PatientFile.Exists(PathToXMatterHtml))
 			{
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1} (also checked .html)", htmName, directoryPath);
 				throw new ApplicationException();
 			}
 			PathToXMatterStylesheet = directoryPath.CombineForPath(GetStyleSheetFileName());
-			if (!RobustFile.Exists(PathToXMatterStylesheet))
+			if (!PatientFile.Exists(PathToXMatterStylesheet))
 			{
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1}", GetStyleSheetFileName(), directoryPath);
 				throw new ApplicationException();
@@ -98,7 +98,7 @@ namespace Bloom.Book
 				if (plainXmatterDirectory != null)
 				{
 					var cssPath = Path.Combine(plainXmatterDirectory, GetStyleSheetFileName(xmatterName));
-					if (RobustFile.ReadAllText(cssPath).Contains(".Device16x9"))
+					if (PatientFile.ReadAllText(cssPath).Contains(".Device16x9"))
 						return xmatterName;
 				}
 			}
@@ -241,7 +241,7 @@ namespace Bloom.Book
 				{
 					string destFileName = FolderPathForCopyingXMatterFiles.CombineForPath(Path.GetFileName(file));
 					Utils.LongPathAware.ThrowIfExceedsMaxPath(destFileName);
-					RobustFile.Copy(file, destFileName, true);
+					PatientFile.Copy(file, destFileName, true);
 				}
 			}
 

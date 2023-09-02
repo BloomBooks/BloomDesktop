@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.TeamCollection
 {
@@ -102,7 +102,7 @@ namespace Bloom.TeamCollection
 			var localStatusPath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
 			// If it doesn't have local status, treat it as not being in the repo, that is, newly
 			// created locally.
-			if (!RobustFile.Exists(localStatusPath))
+			if (!PatientFile.Exists(localStatusPath))
 				return null;
 			var localStatus = GetLocalStatus(bookFolderName);
 			// If the local status it has belongs to another collection, that's exactly like not

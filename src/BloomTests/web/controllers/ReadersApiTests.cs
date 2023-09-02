@@ -4,7 +4,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Moq;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.web
 {

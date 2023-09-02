@@ -4,7 +4,7 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Linq;
 
 namespace BloomTests.Book

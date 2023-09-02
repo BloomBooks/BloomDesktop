@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ICSharpCode.SharpZipLib.Zip;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.Utils
 {
@@ -36,7 +36,7 @@ namespace BloomTests.Utils
 					if (!String.IsNullOrEmpty(directoryName))
 						Directory.CreateDirectory(directoryName);
 					using (var instream = zipFile.GetInputStream(entry))
-					using (var writer = RobustFile.Create(fullOutputPath))
+					using (var writer = PatientFile.Create(fullOutputPath))
 					{
 						ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
 					}

@@ -16,7 +16,7 @@ using System.Xml;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using Bloom.Book;
 using Bloom.ImageProcessing;
@@ -337,7 +337,7 @@ namespace Bloom.Api
 				if (key.StartsWith("file://"))
 				{
 					var uri = new Uri(key);
-					RobustFile.Delete(uri.LocalPath);
+					PatientFile.Delete(uri.LocalPath);
 					return;
 				}
 
@@ -411,8 +411,8 @@ namespace Bloom.Api
 					// read in current defaultLangStyles.css content, add @font-face info to it if necessary.
 					var cssLangStyles = "";
 					var cssFilePath = Path.Combine(CurrentBook.FolderPath, "defaultLangStyles.css");
-					if (RobustFile.Exists(cssFilePath))
-						cssLangStyles = RobustFile.ReadAllText(cssFilePath);
+					if (PatientFile.Exists(cssFilePath))
+						cssLangStyles = PatientFile.ReadAllText(cssFilePath);
 					var serve = FontServe.GetInstance();
 					var fontFaceDeclarations = serve.GetAllFontFaceDeclarations();
 					if (!cssLangStyles.Contains(fontFaceDeclarations))
@@ -499,7 +499,7 @@ namespace Bloom.Api
 			if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
 				var temp = LocalHostPathToFilePath(localPath);
-				if (RobustFile.Exists(temp))
+				if (PatientFile.Exists(temp))
 					localPath = temp;
 			}
 			// this is used only by the readium viewer
@@ -560,7 +560,7 @@ namespace Bloom.Api
 				processImage = false;
 				imageFile = imageFile.Substring((OriginalImageMarker + "/").Length);
 
-				if (!RobustFile.Exists(imageFile))
+				if (!PatientFile.Exists(imageFile))
 				{
 					// We didn't find the file here, and don't want to use the following else if or we could errantly
 					// find it in the browser root. For example, this outer if (imageFile.StartsWith...) was added because
@@ -568,7 +568,7 @@ namespace Bloom.Api
 					return false;
 				}
 			}
-			else if (!RobustFile.Exists(imageFile))
+			else if (!PatientFile.Exists(imageFile))
 			{
 				// Generally, the path we started with will only work when the HTML file is the root file of a book,
 				// or another file (other than preview) that is simulated to be in the book folder,
@@ -590,7 +590,7 @@ namespace Bloom.Api
 
 				imageFile = Path.Combine(sourceDir, imageFile);
 
-				if (!RobustFile.Exists(imageFile))
+				if (!PatientFile.Exists(imageFile))
 				{
 					// There are a few special cases where it's not desirable to change the source of the image
 					// in our source code.
@@ -614,7 +614,7 @@ namespace Bloom.Api
 						imageFile = Path.Combine(bloomRoot, "images/widget-placeholder.svg");
 					}
 
-					if (!RobustFile.Exists(imageFile))
+					if (!PatientFile.Exists(imageFile))
 					{
 						if (sourceDir != CurrentBook?.FolderPath)
 						{
@@ -753,7 +753,7 @@ namespace Bloom.Api
 			string OriginalImageMarkerWithSuffix = OriginalImageMarker + "/";
 			if (localPath.StartsWith(OriginalImageMarkerWithSuffix))
 				possibleFullImagePath = localPath.Substring(OriginalImageMarkerWithSuffix.Length);
-			if (RobustFile.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
+			if (PatientFile.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 			{
 				return possibleFullImagePath;
 			}
@@ -772,7 +772,7 @@ namespace Bloom.Api
 			string path = null;
 			var urlPath = UrlPathString.CreateFromUrlEncodedString(modPath);
 			var tempPath = urlPath.PathOnly.NotEncoded;
-			if (RobustFile.Exists(tempPath))
+			if (PatientFile.Exists(tempPath))
 				modPath = tempPath;
 			try
 			{
@@ -797,7 +797,7 @@ namespace Bloom.Api
 			// but at the moment FF, looking for source maps to go with css, is
 			// looking for those maps where we said the css was, which is in the actual
 			// book folders. So instead redirect to our browser file folder.
-			if (String.IsNullOrEmpty(path) || !RobustFile.Exists(path))
+			if (String.IsNullOrEmpty(path) || !PatientFile.Exists(path))
 			{
 				var startOfBookLayout = localPath.IndexOf("bookLayout");
 				if (startOfBookLayout > 0)
@@ -807,7 +807,7 @@ namespace Bloom.Api
 					path = BloomFileLocator.GetBrowserFile(false, localPath.Substring(startOfBookEdit));
 			}
 
-			if (!RobustFile.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
+			if (!PatientFile.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
 			{
 				// if we're in the page chooser dialog and looking for a thumbnail representing an image in a
 				// template page, look for that thumbnail in the book that is the template source,
@@ -817,7 +817,7 @@ namespace Bloom.Api
 				{
 					var pathMinusPrefix = localPath.Substring("pageChooser/".Length);
 					var templatePath = Path.Combine(templateBook.FolderPath, pathMinusPrefix);
-					if (RobustFile.Exists(templatePath))
+					if (PatientFile.Exists(templatePath))
 					{
 						info.ReplyWithImage(templatePath);
 						return true;
@@ -843,7 +843,7 @@ namespace Bloom.Api
 			// image has a % in the filename, like 'The other 50%', and it isn't doubly encoded, then this shouldn't be a
 			// problem because we're triggering here only if the file isn't found.
 			//
-			if (!RobustFile.Exists(localPath) && info.RawUrl.Contains("%25"))
+			if (!PatientFile.Exists(localPath) && info.RawUrl.Contains("%25"))
 			{
 				// possibly doubly encoded?  decode one more time and try.  See https://issues.bloomlibrary.org/youtrack/issue/BL-3835.
 				// Some existing books have somehow acquired Url encoded coverImage data like the following:
@@ -855,30 +855,30 @@ namespace Bloom.Api
 				path = HttpUtility.UrlDecode(localPath);
 			}
 			*/
-			if (!RobustFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath) && _bookSelection?.CurrentSelection != null)
+			if (!PatientFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath) && _bookSelection?.CurrentSelection != null)
 			{
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
 				// the old path. For example, I can't figure out what hangs on to the old path when an image is changed after
 				// altering the main book title.
 				var currentFolderPath = Path.Combine(_bookSelection.CurrentSelection.FolderPath, Path.GetFileName(localPath));
-				if (RobustFile.Exists(currentFolderPath))
+				if (PatientFile.Exists(currentFolderPath))
 				{
 					info.ReplyWithImage(currentFolderPath);
 					return true;
 				}
 			}
 
-			if (!RobustFile.Exists(path) && IsAudioFileWhichCanHaveCompressedCounterpart(path))
+			if (!PatientFile.Exists(path) && IsAudioFileWhichCanHaveCompressedCounterpart(path))
 			{
 				var possiblePublishableAudioPath = Path.ChangeExtension(path, AudioRecording.kPublishableExtension);
-				if (RobustFile.Exists(possiblePublishableAudioPath))
+				if (PatientFile.Exists(possiblePublishableAudioPath))
 				{
 					path = possiblePublishableAudioPath;
 					modPath = Path.ChangeExtension(modPath, AudioRecording.kPublishableExtension);
 				}
 			}
 			const string kBloomPrefix = "/bloom/";
-			if (!RobustFile.Exists(path) && path.Length > kBloomPrefix.Length && path.StartsWith(kBloomPrefix))
+			if (!PatientFile.Exists(path) && path.Length > kBloomPrefix.Length && path.StartsWith(kBloomPrefix))
 			{
 				// On developer machines, we can lose part of path earlier.  Try one more thing, the
 				// local path starts with this prefix.
@@ -886,11 +886,11 @@ namespace Bloom.Api
 			}
 			// We no longer copy this file to the book folder.  For Bloom Desktop, we get it from browser/templates/...
 			// For Bloom Reader, bloom-player has its own copy.
-			if (!RobustFile.Exists(path) && Path.GetFileName(path) == PublishHelper.kSimpleComprehensionQuizJs)
+			if (!PatientFile.Exists(path) && Path.GetFileName(path) == PublishHelper.kSimpleComprehensionQuizJs)
 			{
 				path = Path.Combine(BloomFileLocator.FactoryTemplateBookDirectory, "Activity", PublishHelper.kSimpleComprehensionQuizJs);
 			}
-			if (!RobustFile.Exists(path))
+			if (!PatientFile.Exists(path))
 			{
 				if (ShouldReportFailedRequest(info, CurrentBook?.FolderPath))
 				{
@@ -970,7 +970,7 @@ namespace Bloom.Api
 			// but it has nothing to do with css files and defeats the following 'if'
 			var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");
 			// is this request the full path to a real file?
-			if (RobustFile.Exists(localPath) && Path.IsPathRooted(localPath))
+			if (PatientFile.Exists(localPath) && Path.IsPathRooted(localPath))
 			{
 				// Typically this will be files in the book directory, since the browser
 				// is supplying the path.
@@ -1002,7 +1002,7 @@ namespace Bloom.Api
 			// book folder; searching our usual path might find an undesirable one in some other collection.
 			string path = "";
 			var localWins = new string[] { "custombookstyles", "branding.css" };
-			if (RobustFile.Exists(localPath) &&
+			if (PatientFile.Exists(localPath) &&
 				localWins.Any(s => fileName.ToLowerInvariant().Contains(s)))
 			{
 				path = localPath;
@@ -1012,7 +1012,7 @@ namespace Bloom.Api
 				path = _fileLocator.LocateFile(fileName);
 			}
 			// if still not found, and localPath is an actual file path, use it
-			if (String.IsNullOrEmpty(path) && RobustFile.Exists(localPath))
+			if (String.IsNullOrEmpty(path) && PatientFile.Exists(localPath))
 			{
 				path = localPath;
 			}
@@ -1021,12 +1021,12 @@ namespace Bloom.Api
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
 				var p = FileLocationUtilities.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
-				if(RobustFile.Exists(p)) path = p;
+				if(PatientFile.Exists(p)) path = p;
 			}
 			if (String.IsNullOrEmpty(path))
 			{
 				var p = FileLocationUtilities.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, incomingPath);
-				if (RobustFile.Exists(p))
+				if (PatientFile.Exists(p))
 					path = p;
 			}
 
@@ -1539,7 +1539,7 @@ namespace Bloom.Api
 			{
 				localPath = localPath.Substring(1);
 			}
-			if (localPath.Contains("?") && !RobustFile.Exists(localPath))
+			if (localPath.Contains("?") && !PatientFile.Exists(localPath))
 			{
 				var idx = localPath.LastIndexOf("?", StringComparison.Ordinal);
 				return localPath.Substring(0, idx);

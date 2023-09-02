@@ -11,7 +11,7 @@ using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
 using SIL.Code;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.TeamCollection
 {
@@ -99,7 +99,7 @@ namespace Bloom.TeamCollection
 				// Make sure the repo directory that holds books exists
 				var bookDirectoryPath = Path.GetDirectoryName(bookPath);
 				Directory.CreateDirectory(bookDirectoryPath);
-				if (RobustFile.Exists(bookPath))
+				if (PatientFile.Exists(bookPath))
 				{
 					// We'll write the book initially to a new zip file. This may help with
 					// the problem of the main file being temporarily locked from a recent
@@ -135,17 +135,17 @@ namespace Bloom.TeamCollection
 				// If by any chance we've previously created a tombstone for this book, get rid of it.
 				var pathForTombstone = GetPathForTombstone(bookFolderName);
 				if (pathForTombstone != null)
-					RobustFile.Delete(pathForTombstone);
+					PatientFile.Delete(pathForTombstone);
 			}
 			catch (Exception)
 			{
-				RobustFile.Delete(pathToWrite); // try to clean up
+				PatientFile.Delete(pathToWrite); // try to clean up
 				throw;
 			}
 
 			if (pathToWrite != bookPath)
 			{
-				RobustFile.Replace(pathToWrite, bookPath, null);
+				PatientFile.Replace(pathToWrite, bookPath, null);
 			}
 
 			lock (_lockObject)
@@ -161,7 +161,7 @@ namespace Bloom.TeamCollection
 			var pathForTombstone = GetPathForTombstone(Path.GetFileName(bookFolderPath));
 			if (pathForTombstone == null)
 				return false; // if the book doesn't have meta.json, we have no way to know.
-			return !RobustFile.Exists(pathToBookFileInRepo) && RobustFile.Exists(pathForTombstone);
+			return !PatientFile.Exists(pathToBookFileInRepo) && PatientFile.Exists(pathForTombstone);
 		}
 
 		/// <summary>
@@ -186,7 +186,7 @@ namespace Bloom.TeamCollection
 				// Don't use ChangeExtension here, bookFolderName may have arbitrary period
 				bookPath =
 					Path.Combine(folderName, bookFolderName + (counter == 1 ? "" : counter.ToString())) + extension;
-			} while (RobustFile.Exists(bookPath));
+			} while (PatientFile.Exists(bookPath));
 
 			return bookPath;
 		}
@@ -196,7 +196,7 @@ namespace Bloom.TeamCollection
 		{
 			var source = GetPathToBookFileInRepo(bookName);
 			var dest = AvailableLostAndFoundPath(bookName);
-			RobustFile.Move(source, dest);
+			PatientFile.Move(source, dest);
 		}
 
 		private static string GetPathToBookFolder(string repoFolderPath) => Path.Combine(repoFolderPath, "Books");
@@ -284,7 +284,7 @@ namespace Bloom.TeamCollection
 			get
 			{
 				var repoProjectFilesZipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
-				if (!RobustFile.Exists(repoProjectFilesZipPath))
+				if (!PatientFile.Exists(repoProjectFilesZipPath))
 					return DateTime.MinValue; // brand new repo, want to copy TO it.
 				var collectionFilesModTime = new FileInfo(repoProjectFilesZipPath).LastWriteTime;
 				GetMaxModifyTime("Allowed Words", ref collectionFilesModTime);
@@ -296,7 +296,7 @@ namespace Bloom.TeamCollection
 		private void GetMaxModifyTime(string folderName, ref DateTime max)
 		{
 			var zipPath =Path.Combine(_repoFolderPath, "Other", Path.ChangeExtension(folderName,"zip"));
-			if (RobustFile.Exists(zipPath))
+			if (PatientFile.Exists(zipPath))
 			{
 				var thisModTime = new FileInfo(zipPath).LastWriteTime;
 				if (thisModTime > max)
@@ -374,7 +374,7 @@ namespace Bloom.TeamCollection
 		private static void CopyRepoCollectionFilesTo(string destFolder, string repoFolder)
 		{
 			var collectionZipPath = GetRepoProjectFilesZipPath(repoFolder);
-			if (!RobustFile.Exists(collectionZipPath))
+			if (!PatientFile.Exists(collectionZipPath))
 				return;
 			try
 			{
@@ -397,7 +397,7 @@ namespace Bloom.TeamCollection
 		static void ExtractFolder(string collectionFolder, string repoFolder, string folderName)
 		{
 			var sourceZip = GetZipFileForFolder(folderName, repoFolder);
-			if (!RobustFile.Exists(sourceZip))
+			if (!PatientFile.Exists(sourceZip))
 				return;
 			var destFolder = Path.Combine(collectionFolder, folderName);
 			try
@@ -567,14 +567,14 @@ namespace Bloom.TeamCollection
 			// (as indeed it might not, even after the test, in a rare race condition with someone else
 			// deleting it). It does serve to make sure at least the containing folder exists, which
 			// WOULD cause an exception if by any chance it did not.
-			if (RobustFile.Exists(pathToBookFileInRepo))
-				RobustFile.Delete(pathToBookFileInRepo);
+			if (PatientFile.Exists(pathToBookFileInRepo))
+				PatientFile.Delete(pathToBookFileInRepo);
 			if (makeTombstone)
 			{
 				var pathForTombstone = GetPathForTombstone(Path.GetFileName(bookFolderPath));
 				if (pathForTombstone != null)
 				{
-					RobustFile.WriteAllText(pathForTombstone,
+					PatientFile.WriteAllText(pathForTombstone,
 						"This file marks the deletion of a book previously in the collection");
 				}
 			}
@@ -587,7 +587,7 @@ namespace Bloom.TeamCollection
 			var pathToNewBookFileInRepo = GetPathToBookFileInRepo(newBookFolderPath);
 			// There is probably some pathological case where pathToNewBookFileInRepo already exists,
 			// but I can't think of a decent way to handle it, so just let it fail.
-			RobustFile.Move(pathToOldBookFileInRepo,pathToNewBookFileInRepo);
+			PatientFile.Move(pathToOldBookFileInRepo,pathToNewBookFileInRepo);
 		}
 
 		protected virtual void OnCreated(object sender, FileSystemEventArgs e)
@@ -648,7 +648,7 @@ namespace Bloom.TeamCollection
 		protected override string GetBookStatusJsonFromRepo(string bookFolderName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookFolderName);
-			if (!RobustFile.Exists(bookPath))
+			if (!PatientFile.Exists(bookPath))
 			{
 				return null;
 			}
@@ -680,7 +680,7 @@ namespace Bloom.TeamCollection
 		public override bool IsBookPresentInRepo(string bookFolderName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookFolderName);
-			return RobustFile.Exists(bookPath);
+			return PatientFile.Exists(bookPath);
 		}
 
 		public class CannotLockException : Exception
@@ -700,7 +700,7 @@ namespace Bloom.TeamCollection
 		protected override void WriteBookStatusJsonToRepo(string bookName, string status)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookName);
-			if (!RobustFile.Exists(bookPath))
+			if (!PatientFile.Exists(bookPath))
 			{
 				throw new ArgumentException("trying to write status on a book not in the repo");
 			}
@@ -754,7 +754,7 @@ namespace Bloom.TeamCollection
 				// No guarantee that even 5s is enough if Dropbox is busy syncing a large
 				// file across a poor internet, but I think after that it's better to give
 				// the user a failed message.
-				RetryUtility.Retry(() =>
+				Patient.Retry(() =>
 				{
 					using (File.Open(filePath, FileMode.Open))
 					{
@@ -867,7 +867,7 @@ namespace Bloom.TeamCollection
 			var isExistingCollection = Directory.Exists(localCollectionFolder);
 			var tcLinkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
 			var isAlreadyTcCollection = isExistingCollection &&
-			                            RobustFile.Exists(tcLinkPath);
+			                            PatientFile.Exists(tcLinkPath);
 			var repoFolderPathFromLinkPath = isAlreadyTcCollection ? TeamCollectionManager.RepoFolderPathFromLinkPath(tcLinkPath) : "";
 			var isCurrentCollection = isAlreadyTcCollection &&
 			                          repoFolderPathFromLinkPath == repoFolder;
@@ -945,7 +945,7 @@ namespace Bloom.TeamCollection
 			{
 				result = "merge";
 				var tcLinkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
-				if (RobustFile.Exists(tcLinkPath))
+				if (PatientFile.Exists(tcLinkPath))
 				{
 					// it thinks it's already part of a TC. (If it doesn't, even though it is the same collection
 					// ID, we want a first time join; maybe the local copy has existed independently for some
@@ -993,7 +993,7 @@ namespace Bloom.TeamCollection
 			var joinCollectionPath = Path.Combine(_repoFolderPath, "Join this Team Collection.JoinBloomTC");
 			// Don't think this needs to be localized. It's not really meant to be seen, just to provide some clue if anyone
 			// is curious about this file.
-			RobustFile.WriteAllText(joinCollectionPath,
+			PatientFile.WriteAllText(joinCollectionPath,
 				@"Double click this file (after installing Bloom 5.0 or later) to join this Team Collection. "
 				+ @"You can rename this file but must keep the extension the same.");
 		}
@@ -1001,7 +1001,7 @@ namespace Bloom.TeamCollection
 		public static void CreateTeamCollectionLinkFile(string collectionFolder, string teamCollectionFolder)
 		{
 			var teamCollectionLinkPath = Path.Combine(collectionFolder, TeamCollectionManager.TeamCollectionLinkFileName);
-			RobustFile.WriteAllText(teamCollectionLinkPath, teamCollectionFolder);
+			PatientFile.WriteAllText(teamCollectionLinkPath, teamCollectionFolder);
 		}
 
 		/// <summary>

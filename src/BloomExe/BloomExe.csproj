@@ -419,13 +419,14 @@
     <Compile Include="Publish\Epub\ReadiumManifest.cs" />
     <Compile Include="ToPalaso\CommandLineRunnerExtra.cs" />
     <Compile Include="ToPalaso\ProcessExtra.cs" />
-    <Compile Include="ToPalaso\RobustIO.cs" />
+    <Compile Include="ToPalaso\PatientIO.cs" />
     <Compile Include="Utils\AsyncUtil.cs" />
     <Compile Include="Publish\PDF\PublishPdfApi.cs" />
     <Compile Include="ToPalaso\RobustImageIO.cs" />
     <Compile Include="Utils\DisposableList.cs" />
     <Compile Include="Utils\OutputFilenames.cs" />
     <Compile Include="Utils\PatientFile.cs" />
+    <Compile Include="Utils\Patient.cs" />
     <Compile Include="WebView2Browser.cs" Condition="'$(OS)'=='Windows_NT'">
       <SubType>UserControl</SubType>
     </Compile>

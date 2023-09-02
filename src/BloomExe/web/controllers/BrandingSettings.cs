@@ -5,7 +5,7 @@ using System.Linq;
 using Bloom.Book;
 using Bloom.Collection;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Linq;
 
 namespace Bloom.Api
@@ -152,7 +152,7 @@ namespace Bloom.Api
 
 				if (!string.IsNullOrEmpty(settingsPath))
 				{
-					var content = RobustFile.ReadAllText(settingsPath);
+					var content = PatientFile.ReadAllText(settingsPath);
 					var settings = JsonConvert.DeserializeObject<Settings>(content);
 					if(settings == null)
 					{

@@ -2,7 +2,7 @@ using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.web;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -293,7 +293,7 @@ namespace Bloom.TeamCollection
 					var repoChecksum = string.IsNullOrEmpty(statusString) ? null : BookStatus.FromJson(statusString).checksum;
 					var localStatus = GetLocalStatus(bookFolderName);
 					var localHtmlFilePath = Path.Combine(path, BookStorage.FindBookHtmlInFolder(path));
-					if ((repoChecksum == null || repoChecksum != localStatus?.checksum) && RobustFile.Exists(localHtmlFilePath))
+					if ((repoChecksum == null || repoChecksum != localStatus?.checksum) && PatientFile.Exists(localHtmlFilePath))
 					{
 						progress.MessageWithParams("SendingFile", "", "Adding {0} to the collection", ProgressKind.Progress, bookFolderName);
 						PutBook(path);
@@ -467,7 +467,7 @@ namespace Bloom.TeamCollection
 				{
 					// The book has to have been renamed since it has a status file.
 					// Or maybe it's been removed remotely, but the local collection hasn't caught up...
-					var bookStatus = BookStatus.FromJson(RobustFile.ReadAllText(statusFilePath, Encoding.UTF8));
+					var bookStatus = BookStatus.FromJson(PatientFile.ReadAllText(statusFilePath, Encoding.UTF8));
 					if (!String.IsNullOrEmpty(bookStatus.oldName))
 					{
 						// Use the book's original name to access the repo status.  (BL-9680)
@@ -779,7 +779,7 @@ namespace Bloom.TeamCollection
 
 		private string MakeChecksumOnFiles(IEnumerable<string> files)
 		{
-			return RetryUtility.Retry(() => MakeChecksumOnFilesInternal(files));
+			return Patient.Retry(() => MakeChecksumOnFilesInternal(files));
 		}
 
 		private string MakeChecksumOnFilesInternal(IEnumerable<string> files)
@@ -790,7 +790,7 @@ namespace Bloom.TeamCollection
 				// Order must be predictable but does not otherwise matter.
 				foreach (var path in files.OrderBy(x => x))
 				{
-					if (RobustFile.Exists(path)) // won't usually be passed ones that don't, but useful for unit testing at least.
+					if (PatientFile.Exists(path)) // won't usually be passed ones that don't, but useful for unit testing at least.
 					{
 						using (var input = new FileStream(path, FileMode.Open))
 						{
@@ -1460,7 +1460,7 @@ namespace Bloom.TeamCollection
 		internal static bool IsBookKnownToTeamCollection(string bookFolderPath)
 		{
 			var statusFile = GetStatusFilePathFromBookFolderPath(bookFolderPath);
-			return RobustFile.Exists(statusFile);
+			return PatientFile.Exists(statusFile);
 		}
 
 		internal void WriteLocalStatus(string bookFolderName, BookStatus status, string collectionFolder = null, string collectionId = null)
@@ -1480,7 +1480,7 @@ namespace Bloom.TeamCollection
 #endif
 			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
 			var statusToWrite = status.WithCollectionId(collectionId ?? CollectionId);
-			RobustFile.WriteAllText(statusFilePath, statusToWrite.ToJson(), Encoding.UTF8);
+			PatientFile.WriteAllText(statusFilePath, statusToWrite.ToJson(), Encoding.UTF8);
 		}
 
 		/// <summary>
@@ -1510,7 +1510,7 @@ namespace Bloom.TeamCollection
 			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
 			if (File.Exists(statusFilePath))
 			{
-				return BookStatus.FromJson(RobustFile.ReadAllText(statusFilePath, Encoding.UTF8));
+				return BookStatus.FromJson(PatientFile.ReadAllText(statusFilePath, Encoding.UTF8));
 			}
 			return new BookStatus();
 		}
@@ -1530,7 +1530,7 @@ namespace Bloom.TeamCollection
 			// Wish we could retry at the level of reading individual files, but
 			// each bit we successfully read modifies the state of the sha.
 			// If something goes wrong, all we can really do is start over.
-			RetryUtility.Retry(() =>
+			Patient.Retry(() =>
 			{
 				result = Book.Book.ComputeHashForAllBookRelatedFiles(sourceBookPath);
 			});
@@ -1691,12 +1691,12 @@ namespace Bloom.TeamCollection
 					var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
 					// data migration
 					var obsoleteTcStatusPath = Path.Combine(path, "book.status");
-					if (RobustFile.Exists(obsoleteTcStatusPath))
+					if (PatientFile.Exists(obsoleteTcStatusPath))
 					{
-						if (RobustFile.Exists(statusFilePath))
-							RobustFile.Delete(obsoleteTcStatusPath); // somehow left behind
+						if (PatientFile.Exists(statusFilePath))
+							PatientFile.Delete(obsoleteTcStatusPath); // somehow left behind
 						else
-							RobustFile.Move(obsoleteTcStatusPath, statusFilePath); // migrate
+							PatientFile.Move(obsoleteTcStatusPath, statusFilePath); // migrate
 					}
 				}
 				catch (Exception ex)
@@ -1805,7 +1805,7 @@ namespace Bloom.TeamCollection
 							// Most likely, the book was copied from another TC using Explorer or similar.
 							// We'll treat it like any other locally newly-created book by getting rid of the
 							// bogus status.
-							RobustFile.Delete(localStatusFilePath);
+							PatientFile.Delete(localStatusFilePath);
 							continue;
 						}
 
@@ -1834,7 +1834,7 @@ namespace Bloom.TeamCollection
 							// who deleted it, but that's life in a shared collection.
 							// However, since it's not in the repo, it's most natural for it to be in the
 							// 'newly created book' state, that is, with no status. So get rid of the local status.
-							RobustFile.Delete(localStatusFilePath);
+							PatientFile.Delete(localStatusFilePath);
 							continue;
 						}
 
@@ -1870,7 +1870,7 @@ namespace Bloom.TeamCollection
 						ReportProgressAndLog(progress, ProgressKind.Warning, "RemoteBookMissing",
 							"The book '{0}' is no longer in the Team Collection. It has been kept in your local collection.",
 							bookFolderName);
-						RobustFile.Delete(localStatusFilePath);
+						PatientFile.Delete(localStatusFilePath);
 					}
 				}
 				catch (Exception ex)
@@ -1977,7 +1977,7 @@ namespace Bloom.TeamCollection
 								ReportProgressAndLog(progress, ProgressKind.Warning, "RenamingBook",
 									"Renaming the local book '{0}' because there is a new one with the same name from the Team Collection",
 									bookName);
-								RobustFile.Move(oldBookPath, renamePath);
+								PatientFile.Move(oldBookPath, renamePath);
 
 								hasProblems |=
 									!CopyBookFromRepoToLocalAndReport(progress, bookName,

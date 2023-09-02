@@ -8,7 +8,7 @@ using BloomTemp;
 using BloomTests.TeamCollection;
 using Moq;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.Spreadsheet
 {
@@ -190,9 +190,9 @@ namespace BloomTests.Spreadsheet
 
 			// We need all these files in one place so we can verify that all of them get copied except placeHolder.png
 			foreach (var name in new []{ "BloomWithTaglineAgainstLight.svg", "man.jpg", "Mars 2.png", "lady24b.png", "empty-file.jpg" })
-				RobustFile.Copy(Path.Combine(path, name), Path.Combine(_bookFolder.FolderPath, name));
+				PatientFile.Copy(Path.Combine(path, name), Path.Combine(_bookFolder.FolderPath, name));
 			var placeHolderSource = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books", "Basic Book", "placeHolder.png");
-			RobustFile.Copy(placeHolderSource, Path.Combine(_bookFolder.FolderPath, "placeHolder.png"));
+			PatientFile.Copy(placeHolderSource, Path.Combine(_bookFolder.FolderPath, "placeHolder.png"));
 
 			_progressSpy = new ProgressSpy();
 			_sheetFromExport =

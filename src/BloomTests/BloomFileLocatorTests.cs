@@ -6,7 +6,7 @@ using Bloom.Collection;
 using L10NSharp;
 using NUnit.Framework;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.TestUtilities;
 
 namespace BloomTests
@@ -32,8 +32,8 @@ namespace BloomTests
 			_xMatterParentFolder = new TemporaryFolder("UserCollection");
 			_xMatterFolder = new TemporaryFolder(_xMatterParentFolder, "User-XMatter");
 			locations.Add(_xMatterParentFolder.Path);
-			RobustFile.WriteAllText(Path.Combine(_xMatterFolder.Path, "SomeRandomXYZABCStyles.css"), "Some arbitrary test data");
-			RobustFile.WriteAllText(Path.Combine(_xMatterFolder.Path, "Decodable Reader.css"), "Fake DR test data");
+			PatientFile.WriteAllText(Path.Combine(_xMatterFolder.Path, "SomeRandomXYZABCStyles.css"), "Some arbitrary test data");
+			PatientFile.WriteAllText(Path.Combine(_xMatterFolder.Path, "Decodable Reader.css"), "Fake DR test data");
 			//locations.Add(XMatterAppDataFolder);
 			//locations.Add(XMatterCommonDataFolder);
 			_xMatterFinder = new XMatterPackFinder(locations);

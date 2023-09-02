@@ -19,7 +19,7 @@ using Bloom.web;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 namespace Bloom.Publish.Video
@@ -277,7 +277,7 @@ namespace Bloom.Publish.Video
 			Debug.Assert(_htmlFile == null, "Found existing temporary HTML file which was not properly cleaned up");
 			_htmlFile = BloomTemp.TempFileUtils.GetTempFileWithPrettyExtension("html");
 
-			RobustFile.WriteAllText(_htmlFile.Path, htmlContents);
+			PatientFile.WriteAllText(_htmlFile.Path, htmlContents);
 		}
 
 		// As window is loaded, we let Bloom Player know we are ready to start recording.
@@ -288,7 +288,7 @@ namespace Bloom.Publish.Video
 			_webSocketServer.SendString("recordVideo", "ready", "false");
 			_initialVideo = BloomTemp.TempFileUtils.GetTempFileWithPrettyExtension(_codec.ToExtension());
 			_videoOnlyPath = _initialVideo.Path;
-			RobustFile.Delete(_videoOnlyPath);
+			PatientFile.Delete(_videoOnlyPath);
 		}
 
 		/// <summary>
@@ -497,7 +497,7 @@ namespace Bloom.Publish.Video
 
 			_finalVideo = BloomTemp.TempFileUtils.GetTempFileWithPrettyExtension(_codec.ToExtension());
 			var finalOutputPath = _finalVideo.Path;
-			RobustFile.Delete(finalOutputPath);
+			PatientFile.Delete(finalOutputPath);
 			if (soundLog.Length == 0)
 			{
 				if (!haveVideo)
@@ -505,7 +505,7 @@ namespace Bloom.Publish.Video
 					return; // can't do anything useful!
 				}
 
-				RobustFile.Copy(_videoOnlyPath, finalOutputPath);
+				PatientFile.Copy(_videoOnlyPath, finalOutputPath);
 				GotFullRecording = true;
 				// Allows the Check and Save buttons to be enabled, now we have something we can play or save.
 				_webSocketServer.SendString("recordVideo", "ready", "true");
@@ -585,7 +585,7 @@ namespace Bloom.Publish.Video
 					}
 					else
 					{
-						RobustFile.Move(item.src, Path.Combine(workingDirectory, shortName));
+						PatientFile.Move(item.src, Path.Combine(workingDirectory, shortName));
 						item.shortName = shortName; // deliberately without the full path, we will set workingDirectory.
 						renames[item.src] = shortName;
 					}
@@ -646,7 +646,7 @@ namespace Bloom.Publish.Video
 							// On the final iteration, write directly to finalOutputPath
 							outputPath = finalOutputPath;
 						}
-						RobustFile.Delete(outputPath);
+						PatientFile.Delete(outputPath);
 
 						// Process one batch of files
 						var soundLogSubset = soundLog.Skip(i).Take(batchSize);
@@ -676,7 +676,7 @@ namespace Bloom.Publish.Video
 			// preview entirely.
 			foreach (var kvp in renames)
 			{
-				RobustFile.Move(Path.Combine(workingDirectory,kvp.Value), kvp.Key);
+				PatientFile.Move(Path.Combine(workingDirectory,kvp.Value), kvp.Key);
 			}
 
 			LocalAudioNamesMessedUp = false;
@@ -1280,7 +1280,7 @@ namespace Bloom.Publish.Video
 			if (!String.IsNullOrEmpty(destFileName))
 			{
 				OutputFilenames.RememberOutputFilePath(_book, extension, destFileName, langTag);
-				RobustFile.Copy(_finalVideo.Path, destFileName, true);
+				PatientFile.Copy(_finalVideo.Path, destFileName, true);
 			}
 		}
 

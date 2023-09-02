@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 
 // ReSharper disable InconsistentNaming
@@ -34,7 +34,7 @@ namespace Bloom.Publish.Epub
 			_rootFolderPath = rootFolderPath;
 			_contentPath = Path.Combine(_rootFolderPath, "content");
 			var opfPath = Path.Combine(_contentPath, "content.opf");
-			var opfData = RobustFile.ReadAllText(opfPath, Encoding.UTF8);
+			var opfData = PatientFile.ReadAllText(opfPath, Encoding.UTF8);
 			_opfDoc = new XmlDocument();
 			_opfDoc.LoadXml(opfData);
 
@@ -61,7 +61,7 @@ namespace Bloom.Publish.Epub
 			{
 				NullValueHandling = NullValueHandling.Ignore
 			});
-			RobustFile.WriteAllText(_outputPath, output);
+			PatientFile.WriteAllText(_outputPath, output);
 			return _outputPath;
 		}
 
@@ -117,7 +117,7 @@ namespace Bloom.Publish.Epub
 					var namePrefix = Path.GetFileNameWithoutExtension(overlayFileName).Replace("_overlay", "");
 					var readiumMediaName = Path.ChangeExtension(namePrefix + "-media-overlay", "json");
 					roItem.properties = new ReadiumProperty() { MediaOverlay = readiumMediaName };
-					var smilContent = RobustFile.ReadAllText(overlayPath, Encoding.UTF8);
+					var smilContent = PatientFile.ReadAllText(overlayPath, Encoding.UTF8);
 					var smilDoc = new XmlDocument();
 					smilDoc.LoadXml(smilContent);
 					var seqElt = smilDoc.SelectSingleNode("//smil:seq", _ns);
@@ -154,7 +154,7 @@ namespace Bloom.Publish.Epub
 						};
 					}
 
-					RobustFile.WriteAllText(Path.Combine(_rootFolderPath, readiumMediaName),
+					PatientFile.WriteAllText(Path.Combine(_rootFolderPath, readiumMediaName),
 						JsonConvert.SerializeObject(readiumOverlay));
 
 					roItem.duration = maxClipEnd.ToString(CultureInfo.InvariantCulture);

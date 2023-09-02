@@ -11,7 +11,7 @@ using BloomTemp;
 using Gtk;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.Publish
 {
@@ -140,19 +140,19 @@ namespace BloomTests.Publish
 			var contentFolder = Path.Combine(_folder.FolderPath, "content");
 			Directory.CreateDirectory(contentFolder);
 			var opfPath = Path.Combine(contentFolder, "content.opf");
-			RobustFile.WriteAllText(opfPath, opfData);
+			PatientFile.WriteAllText(opfPath, opfData);
 			var smil2Path = Path.Combine(contentFolder, "2_overlay.smil");
-			RobustFile.WriteAllText(smil2Path, page2Smil);
+			PatientFile.WriteAllText(smil2Path, page2Smil);
 			var smil4Path = Path.Combine(contentFolder, "4_overlay.smil");
-			RobustFile.WriteAllText(smil4Path, page4Smil);
+			PatientFile.WriteAllText(smil4Path, page4Smil);
 
 			var outputPath = ReadiumManifest.MakeReadiumManifest(_folder.FolderPath);
 
-			_manifest = JsonConvert.DeserializeObject<ReadiumManifestRoot>(RobustFile.ReadAllText(outputPath));
+			_manifest = JsonConvert.DeserializeObject<ReadiumManifestRoot>(PatientFile.ReadAllText(outputPath));
 			var overlay2Path = Path.Combine(_folder.FolderPath, "2-media-overlay.json");
-			_overlays[0] = JsonConvert.DeserializeObject<ReadiumMediaOverlay>(RobustFile.ReadAllText(overlay2Path));
+			_overlays[0] = JsonConvert.DeserializeObject<ReadiumMediaOverlay>(PatientFile.ReadAllText(overlay2Path));
 			var overlay4Path = Path.Combine(_folder.FolderPath, "4-media-overlay.json");
-			_overlays[1] = JsonConvert.DeserializeObject<ReadiumMediaOverlay>(RobustFile.ReadAllText(overlay4Path));
+			_overlays[1] = JsonConvert.DeserializeObject<ReadiumMediaOverlay>(PatientFile.ReadAllText(overlay4Path));
 		}
 
 		[OneTimeTearDown]

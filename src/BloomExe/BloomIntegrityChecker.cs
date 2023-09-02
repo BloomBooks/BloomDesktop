@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using Bloom.Properties;
 using L10NSharp;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
@@ -36,10 +36,10 @@ namespace Bloom.MiscUI
 				if (FileLocationUtilities.GetFileDistributedWithApplication(true, fileName) == null)
 				{
 					//In a code directory, the FileLocator considers the solution the root, so it can't find files in output\debug
-					if (!RobustFile.Exists(Path.Combine(FileLocationUtilities.DirectoryOfTheApplicationExecutable, fileName)))
+					if (!PatientFile.Exists(Path.Combine(FileLocationUtilities.DirectoryOfTheApplicationExecutable, fileName)))
 					{
 						//maybe it's an exe in distfiles?
-						if (fileName.EndsWith(".exe") && RobustFile.Exists(Path.Combine(FileLocationUtilities.DirectoryOfApplicationOrSolution, "DistFiles")))
+						if (fileName.EndsWith(".exe") && PatientFile.Exists(Path.Combine(FileLocationUtilities.DirectoryOfApplicationOrSolution, "DistFiles")))
 						{
 							continue;
 						}
@@ -68,7 +68,7 @@ namespace Bloom.MiscUI
 			{
 				var installFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
 						.CombineForPath(Application.ProductName);
-				message = RobustFile.ReadAllText(messagePath).Replace("{{installFolder}}", installFolder);//new
+				message = PatientFile.ReadAllText(messagePath).Replace("{{installFolder}}", installFolder);//new
 				message = message.Replace("{installFolder}", installFolder);  //old
 			}
 

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Api
 {
@@ -64,7 +64,7 @@ namespace Bloom.Api
 		public void ReplyWithFileContent(string path, string originalPath = null)
 		{
 			ReplyImagePath = path;
-			WriteCompleteOutput(RobustFile.ReadAllText(path));
+			WriteCompleteOutput(PatientFile.ReadAllText(path));
 			HaveOutput = true;
 		}
 

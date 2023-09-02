@@ -25,7 +25,7 @@ using SIL.CommandLineProcessing;
 #else
 using NAudio.Wave;
 #endif
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Text;
@@ -396,7 +396,7 @@ namespace Bloom.Publish.Epub
 			// If we don't have an epub thumbnail, create a nice large thumbnail of the cover image
 			// with the desired name.  This is a temporary file stored only in the staged book folder
 			// before being added to the epub.
-			if (!RobustFile.Exists(epubThumbnailImagePath))
+			if (!PatientFile.Exists(epubThumbnailImagePath))
 			{
 				string coverPageImageFile = "thumbnail-256.png";	// name created by _thumbNailer
 				ApplicationException thumbNailException = null;
@@ -415,7 +415,7 @@ namespace Bloom.Publish.Epub
 					return; // especially to avoid reporting problems making thumbnail, e.g., because aborted.
 
 				var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-				if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
+				if (thumbNailException != null || !PatientFile.Exists(coverPageImagePath))
 				{
 					NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
 						"Bloom failed to make a high-quality cover page for your book (BL-3209)",
@@ -424,7 +424,7 @@ namespace Bloom.Publish.Epub
 
 					coverPageImageFile = "thumbnail.png"; // Try a low-res image, which should always exist
 					coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-					if (!RobustFile.Exists(coverPageImagePath))
+					if (!PatientFile.Exists(coverPageImagePath))
 					{
 						// I don't think we can make an epub without a cover page so at this point we've had it.
 						// I suppose we could recover without actually crashing but it doesn't seem worth it unless this
@@ -433,7 +433,7 @@ namespace Bloom.Publish.Epub
 							coverPageImageFile);
 					}
 				}
-				RobustFile.Move(coverPageImagePath, epubThumbnailImagePath);
+				PatientFile.Move(coverPageImagePath, epubThumbnailImagePath);
 			}
 
 			CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder);
@@ -447,12 +447,12 @@ namespace Bloom.Publish.Epub
 			//supporting files
 
 			// Fixed requirement for all epubs
-			RobustFile.WriteAllText(Path.Combine(BookInStagingFolder, "mimetype"), @"application/epub+zip");
+			PatientFile.WriteAllText(Path.Combine(BookInStagingFolder, "mimetype"), @"application/epub+zip");
 
 			var metaInfFolder = Path.Combine(BookInStagingFolder, "META-INF");
 			Directory.CreateDirectory(metaInfFolder);
 			var containerXmlPath = Path.Combine(metaInfFolder, "container.xml");
-			RobustFile.WriteAllText(containerXmlPath, @"<?xml version='1.0' encoding='utf-8'?>
+			PatientFile.WriteAllText(containerXmlPath, @"<?xml version='1.0' encoding='utf-8'?>
 					<container version='1.0' xmlns='urn:oasis:names:tc:opendocument:xmlns:container'>
 					<rootfiles>
 					<rootfile full-path='content/content.opf' media-type='application/oebps-package+xml'/>
@@ -1110,7 +1110,7 @@ namespace Bloom.Publish.Epub
 			// We need to remove the empty xmlns="" that gets stuck on the bare meta element added for the epub 2.0 cover image metadata.
 			// We also need to change the encoding from utf-16 to utf-8 for the xml document.
 			// (Setting xws.Encoding might or might not work on Windows, but doesn't on Linux.)
-			RobustFile.WriteAllText(manifestPath, sb.ToString().Replace(" xmlns=\"\"","").Replace(" encoding=\"utf-16\"?>"," encoding=\"utf-8\"?>"), Encoding.UTF8);
+			PatientFile.WriteAllText(manifestPath, sb.ToString().Replace(" xmlns=\"\"","").Replace(" encoding=\"utf-16\"?>"," encoding=\"utf-8\"?>"), Encoding.UTF8);
 		}
 
 		Dictionary<string, string> _directionSettings = new Dictionary<string, string>();
@@ -1319,7 +1319,7 @@ namespace Bloom.Publish.Epub
 
 			// ePUB validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
 			pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-			RobustFile.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
+			PatientFile.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
 			List<Tuple<XmlElement, string>> pendingBackLinks;
 			if (_pendingBackLinks.TryGetValue(pageElement, out pendingBackLinks))
 			{
@@ -1616,7 +1616,7 @@ namespace Bloom.Publish.Epub
 				if (!String.IsNullOrEmpty(src))
 				{
 					var srcPath = Path.Combine(Book.FolderPath, src);
-					if (RobustFile.Exists(srcPath))
+					if (PatientFile.Exists(srcPath))
 						return false;
 				}
 			}
@@ -1683,7 +1683,7 @@ namespace Bloom.Publish.Epub
 				return null;
 			// Images are always directly in the folder
 			var srcPath = Path.Combine(Book.FolderPath, filename);
-			if (RobustFile.Exists(srcPath))
+			if (PatientFile.Exists(srcPath))
 				return srcPath;
 			return String.Empty;
 		}
@@ -1711,7 +1711,7 @@ namespace Bloom.Publish.Epub
 //				if (!String.IsNullOrEmpty(file))
 //				{
 //					var path = Bloom.Api.BrandingApi.FindBrandingImageFileIfPossible(Book.CollectionSettings.BrandingProjectKey, file, Book.GetLayout());
-//					if (!String.IsNullOrEmpty(path) && RobustFile.Exists(path))
+//					if (!String.IsNullOrEmpty(path) && PatientFile.Exists(path))
 //						return path;
 //				}
 //			}
@@ -2117,7 +2117,7 @@ namespace Bloom.Publish.Epub
 			if (badFonts.Any() && !_fontsUsedInBook.Contains(defaultFont))
 				AddFontFace(sb, defaultFont, "normal", "normal", fontFileFinder.GetGroupForFont(defaultFont).Normal, "../"+kFontsFolder+"/");
 			Directory.CreateDirectory(Path.Combine(_contentFolder, kCssFolder));
-			RobustFile.WriteAllText(Path.Combine(_contentFolder, kCssFolder, "fonts.css"), sb.ToString());
+			PatientFile.WriteAllText(Path.Combine(_contentFolder, kCssFolder, "fonts.css"), sb.ToString());
 			_manifestItems.Add(kCssFolder+"/" + "fonts.css");
 			// Repair defaultLangStyles.css and other places in the output book if needed.
 			if (badFonts.Any())
@@ -2441,7 +2441,7 @@ namespace Bloom.Publish.Epub
 			// We deleted the root directory at the start, so if the file is already
 			// there it is a clash, either multiple sources for files with the same name,
 			// or produced by replacing spaces, or something. Come up with a similar unique name.
-			for (int fix = 1; RobustFile.Exists (dstPath); fix++) {
+			for (int fix = 1; PatientFile.Exists (dstPath); fix++) {
 				var fileNameWithoutExtension = Path.Combine (Path.GetDirectoryName (fileName),
 					Path.GetFileNameWithoutExtension (fileName));
 				fileName = Path.ChangeExtension (fileNameWithoutExtension + fix, Path.GetExtension (fileName));
@@ -2525,18 +2525,18 @@ namespace Bloom.Publish.Epub
 			if (limitImageDimensions && BookCompressor.CompressableImageFileExtensions.Contains(Path.GetExtension(srcPath).ToLowerInvariant()))
 			{
 				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground, imagePublishSettings);
-				RobustFile.WriteAllBytes(dstPath, imageBytes);
+				PatientFile.WriteAllBytes(dstPath, imageBytes);
 				return;
 			}
 			if (dstPath.Contains(kCssFolder) && dstPath.EndsWith(".css"))
 			{
 				// ePUB 3.2 does not support direction: settings in CSS files.  We mark direction explicitly elsewhere in the .xhtml files.
-				var cssText = RobustFile.ReadAllText(srcPath);
+				var cssText = PatientFile.ReadAllText(srcPath);
 				var outputText = Regex.Replace(cssText, "\\s*direction\\s*:\\s*(rtl|ltr)\\s*;", "", RegexOptions.CultureInvariant|RegexOptions.IgnoreCase);
-				RobustFile.WriteAllText(dstPath, outputText);
+				PatientFile.WriteAllText(dstPath, outputText);
 				return;
 			}
-			RobustFile.Copy(srcPath, dstPath);
+			PatientFile.Copy(srcPath, dstPath);
 		}
 
 		// The validator is (probably excessively) upset about IDs that start with numbers.

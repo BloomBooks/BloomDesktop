@@ -6,7 +6,7 @@ using Bloom;
 using BloomTests.Book;
 using NUnit.Framework;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 
 namespace BloomTests
@@ -62,7 +62,7 @@ namespace BloomTests
 
 			// Verification
 			string expectedThumbnailFilename = book.FolderPath.CombineForPath($"thumbnail-{requestedSize}.png");
-			Assert.That(RobustFile.Exists(expectedThumbnailFilename), Is.True, "Thumbnail does not exist at expected path");
+			Assert.That(PatientFile.Exists(expectedThumbnailFilename), Is.True, "Thumbnail does not exist at expected path");
 
 			using (var image = System.Drawing.Image.FromFile(expectedThumbnailFilename))
 			{
@@ -230,7 +230,7 @@ namespace BloomTests
 			string thumbnailFilename = BookThumbNailer.GenerateSocialMediaSharingThumbnail(book);
 
 			// Verification
-			Assert.That(RobustFile.Exists(thumbnailFilename), Is.True, "Thumbnail does not exist at expected path");
+			Assert.That(PatientFile.Exists(thumbnailFilename), Is.True, "Thumbnail does not exist at expected path");
 			using (var image = System.Drawing.Image.FromFile(thumbnailFilename))
 			{
 				Assert.That(image.Width, Is.EqualTo(thumbnailSize), "image width");

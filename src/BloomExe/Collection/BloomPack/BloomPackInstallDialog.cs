@@ -4,7 +4,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Edit;
 using ICSharpCode.SharpZipLib.Zip;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 namespace Bloom.Collection.BloomPack
@@ -45,7 +45,7 @@ namespace Bloom.Collection.BloomPack
 
 		private void BeginInstall()
 		{
-			if (!RobustFile.Exists(_path))
+			if (!PatientFile.Exists(_path))
 			{
 				string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.DoesNotExist", "{0} does not exist");
 				ErrorReport.NotifyUserOfProblem(msg, _path);
@@ -109,10 +109,10 @@ namespace Bloom.Collection.BloomPack
 			//folder, we need to remove that readonly flag so we can delete it.
 			foreach (var f in Directory.GetFiles(destinationFolder))
 			{
-				var attributes = RobustFile.GetAttributes(f);
+				var attributes = PatientFile.GetAttributes(f);
 				if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
 				{
-					RobustFile.SetAttributes(f, attributes & ~FileAttributes.ReadOnly);
+					PatientFile.SetAttributes(f, attributes & ~FileAttributes.ReadOnly);
 				}
 			}
 			SIL.IO.RobustIO.DeleteDirectory(destinationFolder, true);
@@ -214,7 +214,7 @@ namespace Bloom.Collection.BloomPack
 					if (!String.IsNullOrEmpty(directoryName))
 						Directory.CreateDirectory(directoryName);
 					using (var instream = zip.GetInputStream(entry))
-					using (var writer = RobustFile.Create(fullOutputPath))
+					using (var writer = PatientFile.Create(fullOutputPath))
 					{
 						ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
 					}

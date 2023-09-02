@@ -12,7 +12,7 @@ using Bloom.Publish.BloomPub;
 using Bloom.Publish.BloomLibrary;
 using BloomTemp;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.web.controllers
 {

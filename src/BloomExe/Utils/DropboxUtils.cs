@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 
 namespace Bloom.Utils
@@ -92,9 +92,9 @@ namespace Bloom.Utils
 				foreach (var jsonPath in s_jsonPaths)
 				{
 					var fixedPath = Environment.ExpandEnvironmentVariables(jsonPath);
-					if (RobustFile.Exists(fixedPath))
+					if (PatientFile.Exists(fixedPath))
 					{
-						var json = RobustFile.ReadAllText(fixedPath, Encoding.UTF8);
+						var json = PatientFile.ReadAllText(fixedPath, Encoding.UTF8);
 						// It's a bit of a toss-up whether to use a Regex or a JSON parser here. The documentation at the
 						// URL above has several mistakes. There are at least a couple of paths to navigate through the
 						// JSON to possible dropbox folder paths (personal.path and business.path) and one of these is not
@@ -155,9 +155,9 @@ namespace Bloom.Utils
 				foreach (var jsonPath in s_jsonPaths)
 				{
 					var fixedPath = Environment.ExpandEnvironmentVariables(jsonPath);
-					if (RobustFile.Exists(fixedPath))
+					if (PatientFile.Exists(fixedPath))
 					{
-						var json = RobustFile.ReadAllText(fixedPath, Encoding.UTF8);
+						var json = PatientFile.ReadAllText(fixedPath, Encoding.UTF8);
 						foreach (var prefix in pathPrefixes)
 						{
 							var pathMatch = prefix + s_pathMatchPattern;

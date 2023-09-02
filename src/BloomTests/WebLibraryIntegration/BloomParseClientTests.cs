@@ -158,7 +158,7 @@ namespace BloomTests.WebLibraryIntegration
 			request.AddParameter("password", password);
 
 			bool result = false;
-			RetryUtility.Retry(() => {
+			Patient.Retry(() => {
 				var response = Client.Execute(request);
 				var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 				try

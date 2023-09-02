@@ -5,7 +5,7 @@ using System.Text;
 using Bloom.Api;
 using Bloom.web;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.web
 {

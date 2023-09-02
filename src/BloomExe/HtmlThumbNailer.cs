@@ -13,7 +13,7 @@ using Bloom.Api;
 using SIL.Reporting;
 using Bloom.Book;
 using Bloom.Properties;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom
 {
@@ -187,7 +187,7 @@ namespace Bloom
 			//Sitting on disk?
 			if (!string.IsNullOrEmpty(folderForThumbNailCache))
 			{
-				if (RobustFile.Exists(thumbNailFilePath))
+				if (PatientFile.Exists(thumbNailFilePath))
 				{
 					var thumbnail = ToPalaso.RobustImageIO.GetImageFromFile(thumbNailFilePath);
 					thumbnail.Tag = thumbNailFilePath;
@@ -788,11 +788,11 @@ namespace Bloom
 					string thumbnailPath = image.Tag as string;
 					if (!string.IsNullOrEmpty(thumbnailPath))
 					{
-						if (RobustFile.Exists(thumbnailPath))
+						if (PatientFile.Exists(thumbnailPath))
 						{
 							try
 							{
-								RobustFile.Delete(thumbnailPath);
+								PatientFile.Delete(thumbnailPath);
 							}
 							catch (Exception)
 							{

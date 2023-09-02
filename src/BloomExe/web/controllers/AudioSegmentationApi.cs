@@ -5,7 +5,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.Code;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
@@ -363,7 +363,7 @@ namespace Bloom.web.controllers
 			{
 				string collectionPath = _bookSelection.CurrentSelection.CollectionSettings.FolderPath;
 				string orthographyConversionMappingPath = Path.Combine(collectionPath, $"convert_{requestedLangCode}_to_{langCode}.txt");
-				if (RobustFile.Exists(orthographyConversionMappingPath))
+				if (PatientFile.Exists(orthographyConversionMappingPath))
 				{
 					fragmentList = ApplyOrthographyConversion(fragmentList, orthographyConversionMappingPath);
 				}
@@ -375,8 +375,8 @@ namespace Bloom.web.controllers
 			List<Tuple<string, string>> timingStartEndRangeList = null;
 			try
 			{
-				//TODO - Create RobustFile.WriteAllLines (where it might want even more robust-ness; see other RobustFile.WriteX methods).
-				RetryUtility.Retry(() =>
+				//TODO - Create PatientFile.WriteAllLines (where it might want even more robust-ness; see other PatientFile.WriteX methods).
+				Patient.Retry(() =>
 					File.WriteAllLines(textFragmentsFilename, fragmentList)
 				);
 
@@ -384,7 +384,7 @@ namespace Bloom.web.controllers
 				{
 					response.timingsFilePath = Path.Combine(directoryName, requestParameters.manualTimingsPath);
 					Logger.WriteEvent("AudioSegmentationApi applying manual timings file.");
-					var lines = RobustFile.ReadAllLines(requestParameters.manualTimingsPath);
+					var lines = PatientFile.ReadAllLines(requestParameters.manualTimingsPath);
 					timingStartEndRangeList = ParseTimingFileTSV(lines);
 					Logger.WriteEvent($"Parsed {timingStartEndRangeList.Count()} lines.");
 					if (timingStartEndRangeList.Count() != fragmentList.Count())
@@ -411,7 +411,7 @@ namespace Bloom.web.controllers
 
 			try
 			{
-				RobustFile.Delete(textFragmentsFilename);
+				PatientFile.Delete(textFragmentsFilename);
 			}
 			catch (Exception e)
 			{
@@ -423,7 +423,7 @@ namespace Bloom.web.controllers
 			/* leave it around so that people can edit it if they want
 				try
 				{
-					RobustFile.Delete(response.timingsFilePath);
+					PatientFile.Delete(response.timingsFilePath);
 				}
 				catch (Exception e)
 				{
@@ -545,7 +545,7 @@ namespace Bloom.web.controllers
 			{
 				string filePath = Path.Combine(directoryName, fileNameBase + extension);
 
-				if (RobustFile.Exists(filePath))
+				if (PatientFile.Exists(filePath))
 				{
 					return filePath;
 				}
@@ -654,7 +654,7 @@ namespace Bloom.web.controllers
 
 
 			// This might throw exceptions, but IMO best to let the error handler pass it, and have the Javascript code be as robust as possible, instead of passing on error messages to user
-			var segmentationResults = RobustFile.ReadAllLines(outputTimingsPath);
+			var segmentationResults = PatientFile.ReadAllLines(outputTimingsPath);
 
 			List<Tuple<string, string>> timingStartEndRangeList;
 			if (kTimingsOutputFormat.Equals("srt", StringComparison.OrdinalIgnoreCase))
@@ -672,7 +672,7 @@ namespace Bloom.web.controllers
 				var labelPath = Path.ChangeExtension(outputTimingsPath, ".txt");
 				// convert that to a single string
 				var aeneasTimingsContentsString = string.Join("\n", aeneasTimingsContents);
-				RobustFile.WriteAllText(outputTimingsPath, aeneasTimingsContentsString);
+				PatientFile.WriteAllText(outputTimingsPath, aeneasTimingsContentsString);
 			}
 			else
 			{
@@ -968,7 +968,7 @@ namespace Bloom.web.controllers
 
 			string collectionPath = _bookSelection.CurrentSelection.CollectionSettings.FolderPath;
 			string orthographyConversionMappingPath = Path.Combine(collectionPath, $"convert_{requestedLangCode}_to_{langCode}.txt");
-			if (RobustFile.Exists(orthographyConversionMappingPath))
+			if (PatientFile.Exists(orthographyConversionMappingPath))
 			{
 				text = ApplyOrthographyConversion(text, orthographyConversionMappingPath);
 			}
@@ -979,14 +979,14 @@ namespace Bloom.web.controllers
 			// This causes the audio to match the audio that Aeneas will hear when it calls its eSpeak dependency.
 			//   (Well, actually it was difficult to verify the exact audio that Aeneas hears, but for -v el "άλφα", verified reading from file caused audio duration to match, but passing on command line caused discrepancy in audio duration)
 			string textToSpeakFullPath = Path.GetTempFileName();
-			RobustFile.WriteAllText(textToSpeakFullPath, text, Encoding.UTF8);
+			PatientFile.WriteAllText(textToSpeakFullPath, text, Encoding.UTF8);
 
 			// No need to wait for espeak before responding.
 			var response = new ESpeakPreviewResponse()
 			{
 				text = text,
 				lang = langCode,
-				filePath = RobustFile.Exists(orthographyConversionMappingPath) ? Path.GetFileName(orthographyConversionMappingPath) : ""
+				filePath = PatientFile.Exists(orthographyConversionMappingPath) ? Path.GetFileName(orthographyConversionMappingPath) : ""
 			};
 			string responseJson = JsonConvert.SerializeObject(response);
 			request.ReplyWithJson(responseJson);
@@ -994,7 +994,7 @@ namespace Bloom.web.controllers
 			string stdout;
 			string command = $"espeak -v {langCode} -f \"{textToSpeakFullPath}\"";
 			bool success = !DoesCommandCauseError(command, out stdout);
-			RobustFile.Delete(textToSpeakFullPath);
+			PatientFile.Delete(textToSpeakFullPath);
 			Logger.WriteEvent("AudioSegmentationApi.ESpeakPreview() Completed with success = " + success);
 			if (!success)
 			{

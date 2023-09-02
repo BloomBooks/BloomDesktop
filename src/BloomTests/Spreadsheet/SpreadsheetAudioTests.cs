@@ -14,7 +14,7 @@ using Moq;
 using NUnit.Framework;
 using OfficeOpenXml;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.Spreadsheet
 {
@@ -137,12 +137,12 @@ namespace BloomTests.Spreadsheet
 			var bookAudioPath = Path.Combine(_bookFolder.FolderPath, "audio");
 			Directory.CreateDirectory(bookAudioPath);
 			foreach (var audioFilePath in Directory.EnumerateFiles(testAudioPath))
-				RobustFile.Copy(audioFilePath, Path.Combine(bookAudioPath, Path.GetFileName(audioFilePath)));
+				PatientFile.Copy(audioFilePath, Path.Combine(bookAudioPath, Path.GetFileName(audioFilePath)));
 
 			_exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
 			var placeHolderSource = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books",
 				"Basic Book", "placeHolder.png");
-			RobustFile.Copy(placeHolderSource, Path.Combine(_bookFolder.FolderPath, "placeHolder.png"));
+			PatientFile.Copy(placeHolderSource, Path.Combine(_bookFolder.FolderPath, "placeHolder.png"));
 
 			_progressSpy = new ProgressSpy();
 			Sheet =
@@ -267,7 +267,7 @@ namespace BloomTests.Spreadsheet
 		{
 			var expectedAudioPath = Path.Combine(_spreadsheetFolder.FolderPath,
 				"audio/i9c7f4e02-4685-48fc-8653-71d88f218706.mp3");
-			Assert.That(RobustFile.Exists(expectedAudioPath), Is.True, "audio file should be copied to output");
+			Assert.That(PatientFile.Exists(expectedAudioPath), Is.True, "audio file should be copied to output");
 			Assert.That(Directory.EnumerateFiles(Path.Combine(_spreadsheetFolder.FolderPath, "audio")).Count(), Is.EqualTo(1));
 		}
 	}
@@ -361,7 +361,7 @@ namespace BloomTests.Spreadsheet
 		{
 			var expectedAudioPath = Path.Combine(_spreadsheetFolder.FolderPath,
 				"audio/a9d7b794-7a83-473a-8307-7968176ae4bc.mp3");
-			Assert.That(RobustFile.Exists(expectedAudioPath), Is.True, "audio file should be copied to output");
+			Assert.That(PatientFile.Exists(expectedAudioPath), Is.True, "audio file should be copied to output");
 			Assert.That(Directory.EnumerateFiles(Path.Combine(_spreadsheetFolder.FolderPath, "audio")).Count(), Is.EqualTo(1));
 		}
 	}
@@ -445,10 +445,10 @@ namespace BloomTests.Spreadsheet
 		{
 			var expectedAudioPath = Path.Combine(_spreadsheetFolder.FolderPath,
 				"audio/i991ae1ac-db9a-4ad1-984b-8e679c1ae901.mp3");
-			Assert.That(RobustFile.Exists(expectedAudioPath), Is.True, "audio file should be copied to output");
+			Assert.That(PatientFile.Exists(expectedAudioPath), Is.True, "audio file should be copied to output");
 			expectedAudioPath = Path.Combine(_spreadsheetFolder.FolderPath,
 				"audio/i77c18c83-0224-405f-bb97-70d32078855c.mp3");
-			Assert.That(RobustFile.Exists(expectedAudioPath), Is.True, "audio file should be copied to output");
+			Assert.That(PatientFile.Exists(expectedAudioPath), Is.True, "audio file should be copied to output");
 			Assert.That(Directory.EnumerateFiles(Path.Combine(_spreadsheetFolder.FolderPath, "audio")).Count(), Is.EqualTo(2));
 		}
 		[Test]

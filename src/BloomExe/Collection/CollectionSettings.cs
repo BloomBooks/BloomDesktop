@@ -17,7 +17,7 @@ using L10NSharp;
 using SIL.Reporting;
 using SIL.WritingSystems;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using Directory = System.IO.Directory;
 using SIL.Code;
 
@@ -179,7 +179,7 @@ namespace Bloom.Collection
 			var collectionDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
 			var parentDirectoryPath = Path.GetDirectoryName(collectionDirectory);
 
-			if (RobustFile.Exists(desiredOrExistingSettingsFilePath))
+			if (PatientFile.Exists(desiredOrExistingSettingsFilePath))
 			{
 				DoDefenderFolderProtectionCheck();
 				Load();
@@ -335,7 +335,7 @@ namespace Bloom.Collection
 			{
 				var settingsFilePath = Path.Combine(collectionFolder,
 					Path.ChangeExtension(Path.GetFileName(collectionFolder), "bloomCollection"));
-				if (!RobustFile.Exists(settingsFilePath))
+				if (!PatientFile.Exists(settingsFilePath))
 				{
 					// When we're joining a TC, we extract settings in to a temp folder whose name does not
 					// match the settings file.
@@ -352,7 +352,7 @@ namespace Bloom.Collection
 					}
 				}
 
-				var settingsContent = RobustFile.ReadAllText(settingsFilePath, Encoding.UTF8);
+				var settingsContent = PatientFile.ReadAllText(settingsFilePath, Encoding.UTF8);
 				var xml = XElement.Parse(settingsContent);
 				return ReadString(xml, "CollectionId", "");
 			}
@@ -376,7 +376,7 @@ namespace Bloom.Collection
 				// to a path and something changes in that process so that a valid path passed to Load()
 				// raises an invalid path exception. Reading the file directly and then parsing the string
 				// works around this problem.
-				var settingsContent = RobustFile.ReadAllText(SettingsFilePath, Encoding.UTF8);
+				var settingsContent = PatientFile.ReadAllText(SettingsFilePath, Encoding.UTF8);
 				var nameMigrations = new[]
 				{
 					new[] {"LanguageName", "Language1Name"}, // but NOT SignLanguageName -> SignLanguage1Name !!
@@ -459,7 +459,7 @@ namespace Bloom.Collection
 				string settingsContents;
 				try
 				{
-					settingsContents = RobustFile.ReadAllText(SettingsFilePath);
+					settingsContents = PatientFile.ReadAllText(SettingsFilePath);
 				}
 				catch (Exception error)
 				{
@@ -476,11 +476,11 @@ namespace Bloom.Collection
 			try
 			{
 				string oldcustomCollectionStylesPath = FolderPath.CombineForPath("collection.css");
-				if (RobustFile.Exists(oldcustomCollectionStylesPath))
+				if (PatientFile.Exists(oldcustomCollectionStylesPath))
 				{
 					string newcustomCollectionStylesPath = FolderPath.CombineForPath("customCollectionStyles.css");
 
-					RobustFile.Move(oldcustomCollectionStylesPath, newcustomCollectionStylesPath);
+					PatientFile.Move(oldcustomCollectionStylesPath, newcustomCollectionStylesPath);
 				}
 			}
 			catch (Exception)
@@ -689,8 +689,8 @@ namespace Bloom.Collection
 			{
 				//we now make a default name based on the name of the directory
 				string destinationPath = Path.Combine(toDirectory, Path.GetFileName(toDirectory) + ".bloomCollection");
-				if (!RobustFile.Exists(destinationPath))
-					RobustFile.Move(collectionSettingsPath, destinationPath);
+				if (!PatientFile.Exists(destinationPath))
+					PatientFile.Move(collectionSettingsPath, destinationPath);
 
 				return destinationPath;
 			}

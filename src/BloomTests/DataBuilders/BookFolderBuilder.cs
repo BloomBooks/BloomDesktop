@@ -1,4 +1,4 @@
-﻿using SIL.IO;
+﻿using SIL.IO; using Bloom.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -53,7 +53,7 @@ namespace BloomTests.DataBuilders
 			if (_htmContents != null)
 			{
 				var htmPath = Path.Combine(bookFolderPath, $"{_bookTitle}.htm");
-				RobustFile.WriteAllText(htmPath, _htmContents);
+				PatientFile.WriteAllText(htmPath, _htmContents);
 				BuiltBookHtmPath = htmPath;
 			}
 

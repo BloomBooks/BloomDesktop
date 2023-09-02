@@ -189,7 +189,7 @@ namespace Bloom.History
 		{
 			SQLiteConnection db = null;
 			var path = GetDatabasePath(bookFolderPath);
-			RetryUtility.Retry(
+			Bloom.Utils.Patient.Retry(
 				() => db = new SQLiteConnection(path));
 			if (db == null)
 				throw new ApplicationException("Could not open book history db for" + path);

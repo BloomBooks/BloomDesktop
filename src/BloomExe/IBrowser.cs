@@ -2,7 +2,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.ToPalaso;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using System;
 using System.Diagnostics;
@@ -204,7 +204,7 @@ namespace Bloom
 			}
 
 			var tf = TempFile.WithExtension("htm"); // For some reason Gecko won't recognize a utf-8 file as html unless it has the right extension
-			RobustFile.WriteAllText(tf.Path, html, Encoding.UTF8);
+			PatientFile.WriteAllText(tf.Path, html, Encoding.UTF8);
 			SetNewDependent(tf);
 			UpdateDisplay(tf.Path);
 		}

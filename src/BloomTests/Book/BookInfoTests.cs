@@ -7,7 +7,7 @@ using Bloom.Edit;
 using Bloom.Publish;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.TestUtilities;
 using SIL.Reflection;
 
@@ -222,7 +222,7 @@ namespace BloomTests.Book
 			File.WriteAllText(jsonPath, oldMetaJson);
 
 			var settingsPath = PublishSettings.PublishSettingsPath(_folder.Path);
-			RobustFile.Delete(settingsPath);
+			PatientFile.Delete(settingsPath);
 			var restored = new BookInfo(_folder.Path, true);
 			Assert.That(restored.PublishSettings.AudioVideo.Motion, Is.True);
 			Assert.That(restored.PublishSettings.Epub.HowToPublishImageDescriptions, Is.EqualTo(BookInfo.HowToPublishImageDescriptions.OnPage));

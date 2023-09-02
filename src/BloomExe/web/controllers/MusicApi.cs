@@ -7,7 +7,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.web.controllers
 {
@@ -112,7 +112,7 @@ namespace Bloom.web.controllers
 						var i = 0;
 
 						// get a unique destination file name
-						while (RobustFile.Exists(Path.Combine(destPath, destFile)))
+						while (PatientFile.Exists(Path.Combine(destPath, destFile)))
 						{
 							// Enhance: if the file in the destination directory already has the required contents,
 							// we can just return this name.
@@ -123,7 +123,7 @@ namespace Bloom.web.controllers
 							destFile += fileExt;
 						}
 
-						RobustFile.Copy(srcFile, Path.Combine(destPath, destFile));
+						PatientFile.Copy(srcFile, Path.Combine(destPath, destFile));
 					}
 
 					returnVal = destFile;

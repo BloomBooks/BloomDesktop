@@ -7,7 +7,7 @@ using Bloom.Publish;
 using Newtonsoft.Json;
 using Sentry;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 namespace Bloom.Book
@@ -72,7 +72,7 @@ namespace Bloom.Book
 			var publishSettingsPath = PublishSettingsPath(bookFolderPath);
 			try
 			{
-				RobustFile.WriteAllText(publishSettingsPath, Json);
+				PatientFile.WriteAllText(publishSettingsPath, Json);
 			}
 			catch (Exception e)
 			{
@@ -91,7 +91,7 @@ namespace Bloom.Book
 		{
 			var publishSettingsPath = PublishSettingsPath(bookFolderPath);
 			PublishSettings ps;
-			if (!RobustFile.Exists(publishSettingsPath))
+			if (!PatientFile.Exists(publishSettingsPath))
 			{
 				// see if they have a meta.json file instead, which was the place we used to store some of this info
 				ps = MigrateFromOldMetaJson(bookFolderPath);
@@ -116,9 +116,9 @@ namespace Bloom.Book
 			var settings = new PublishSettings();
 			try
 			{
-				if (!RobustFile.Exists(metaDataPath))
+				if (!PatientFile.Exists(metaDataPath))
 					return settings;
-				var metaDataString = RobustFile.ReadAllText(metaDataPath, Encoding.UTF8);
+				var metaDataString = PatientFile.ReadAllText(metaDataPath, Encoding.UTF8);
 
 				// I chose to do this using DynamicJson, rather than just BloomMetaData.FromString() and
 				// reading the obsolete properties, in hopes that we can eventually retire the obsolete
@@ -193,11 +193,11 @@ namespace Bloom.Book
 		private static bool TryReadSettings(string path, out PublishSettings result)
 		{
 			result = null;
-			if (!RobustFile.Exists(path))
+			if (!PatientFile.Exists(path))
 				return false;
 			try
 			{
-				result = FromString(RobustFile.ReadAllText(path, Encoding.UTF8));
+				result = FromString(PatientFile.ReadAllText(path, Encoding.UTF8));
 				return true;
 			}
 			catch (Exception e)

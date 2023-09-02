@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Registration
 {
@@ -53,7 +53,7 @@ namespace Bloom.Registration
 			//if (localizedLicenseFilePath != null)
 			//	licenseFilePath = localizedLicenseFilePath;
 
-			var contents = prolog + RobustFile.ReadAllText(licenseFilePath, Encoding.UTF8);
+			var contents = prolog + PatientFile.ReadAllText(licenseFilePath, Encoding.UTF8);
 			var html = string.Format("<html><head><head/><body style=\"font-family:sans-serif\">{0}</body></html>", contents);
 			_licenseBrowser.NavigateRawHtml(html);
 			_licenseBrowser.Visible = true;
@@ -82,7 +82,7 @@ namespace Bloom.Registration
 		//{
 		//	var localizedLicenseFileName = $"{Path.GetFileNameWithoutExtension(defaultLicenseFilePath)}-{locale}.htm";
 		//	var localizedLicenseFilePath = Path.Combine(Path.GetDirectoryName(defaultLicenseFilePath), localizedLicenseFileName);
-		//	if (RobustFile.Exists(localizedLicenseFilePath))
+		//	if (PatientFile.Exists(localizedLicenseFilePath))
 		//		return localizedLicenseFilePath;
 
 		//	return null;

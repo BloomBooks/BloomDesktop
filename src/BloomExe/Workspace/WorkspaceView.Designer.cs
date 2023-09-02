@@ -20,9 +20,9 @@ namespace Bloom.Workspace
 			{
 				components.Dispose();
 			}
-			if (_tempBookInfoHtmlPath != null && SIL.IO.RobustFile.Exists(_tempBookInfoHtmlPath))
+			if (_tempBookInfoHtmlPath != null && Bloom.Utils.PatientFile.Exists(_tempBookInfoHtmlPath))
 			{
-				SIL.IO.RobustFile.Delete(_tempBookInfoHtmlPath);
+				Bloom.Utils.PatientFile.Delete(_tempBookInfoHtmlPath);
 				_tempBookInfoHtmlPath = null;
 			}
 			base.Dispose(disposing);

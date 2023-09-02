@@ -5,7 +5,7 @@ using Bloom.Collection;
 using L10NSharp;
 using Moq;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Xml;
 

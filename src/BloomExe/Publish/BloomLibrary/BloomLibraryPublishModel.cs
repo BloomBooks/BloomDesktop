@@ -10,7 +10,7 @@ using System.IO;
 using System.Diagnostics;
 using Bloom.Utils;
 using Bloom.web;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using Bloom.Book;
 using System.Globalization;
@@ -472,25 +472,25 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			// See https://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
 
-			if (RobustFile.Exists("/usr/bin/gnome-terminal"))   // standard for GNOME (Ubuntu/Wasta)
+			if (PatientFile.Exists("/usr/bin/gnome-terminal"))   // standard for GNOME (Ubuntu/Wasta)
 			{
 				// /usr/bin/gnome-terminal -- /bin/bash -c "bloom upload \"folder\" -u user -d dest; read line"
 				command = $"-- /bin/bash -c \"{QuoteQuotes(command)}; read line\"";
 				return "/usr/bin/gnome-terminal";
 			}
-			if (RobustFile.Exists("/usr/bin/terminator")) // popular alternative
+			if (PatientFile.Exists("/usr/bin/terminator")) // popular alternative
 			{
 				// /usr/bin/terminator -x /bin/bash -c "bloom upload \"folder\" -u user -d dest; read line"
 				command = $"-x /bin/bash -c \"{QuoteQuotes(command)}; read line\"";
 				return "/usr/bin/terminator";
 			}
-			if (RobustFile.Exists("/usr/bin/xfce4-terminal"))    // standard for XFCE4 (XUbuntu)
+			if (PatientFile.Exists("/usr/bin/xfce4-terminal"))    // standard for XFCE4 (XUbuntu)
 			{
 				// /usr/bin/xterm -hold -x /bin/bash -c "bloom upload \"folder\" -u user -d dest"
 				command = $"-T \"Bloom upload\" --hold -x /bin/bash -c \"{QuoteQuotes(command)}\"";
 				return "/usr/bin/xfce4-terminal";
 			}
-			if (RobustFile.Exists("/usr/bin/xterm"))    // antique original (slightly better than nothing)
+			if (PatientFile.Exists("/usr/bin/xterm"))    // antique original (slightly better than nothing)
 			{
 				// /usr/bin/xterm -hold -x /bin/bash -c "bloom upload \"folder\" -u user -d dest"
 				command = $"-T \"Bloom upload\" -hold -e /bin/bash -c \"{QuoteQuotes(command)}\"";
@@ -584,7 +584,7 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			// If this exists, it will have the original image's ratio of height to width.
 			var thumb70Path = Path.Combine(book.FolderPath, "thumbnail-70.png");
-			if (RobustFile.Exists(thumb70Path))
+			if (PatientFile.Exists(thumb70Path))
 				return thumb70Path;
 			var coverImagePath = book.GetCoverImagePath();
 			if (coverImagePath == null)

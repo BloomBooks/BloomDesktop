@@ -23,7 +23,7 @@ using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
@@ -182,7 +182,7 @@ namespace Bloom.Book
 		
 		public static void RemoveLocalOnlyFiles(string folderPath)
 		{
-			LocalOnlyFiles(folderPath).ForEach(f => RobustFile.Delete(f));
+			LocalOnlyFiles(folderPath).ForEach(f => PatientFile.Delete(f));
 		}
 
 		/// <summary>
@@ -218,7 +218,7 @@ namespace Bloom.Book
 			var htmlPath = FindBookHtmlInFolder(bookFolderPath);
 			if (String.IsNullOrEmpty(htmlPath))
 				return;	// shouldn't happen, but if it does we'll surely flag it elsewhere
-			var htmlContent = RobustFile.ReadAllText(htmlPath);
+			var htmlContent = PatientFile.ReadAllText(htmlPath);
 			foreach (var filepath in placeholders)
 			{
 				var filename = Path.GetFileName(filepath);
@@ -235,7 +235,7 @@ namespace Bloom.Book
 				// We reference PathToExistingHtml about 3 times per book when doing ExpensiveInitialization.
 				// Let's make it not quite so expensive.
 				// But let's at least make sure that "existing html" actually does (the user could have manually renamed it)
-				if (!String.IsNullOrEmpty(_cachedFolderPath) && FolderPath == _cachedFolderPath && RobustFile.Exists(_cachedPathToHtml))
+				if (!String.IsNullOrEmpty(_cachedFolderPath) && FolderPath == _cachedFolderPath && PatientFile.Exists(_cachedPathToHtml))
 				{
 					return _cachedPathToHtml;
 				}
@@ -277,14 +277,14 @@ namespace Bloom.Book
 		public bool RemoveBookThumbnail(string fileName)
 		{
 			string path = Path.Combine(FolderPath, fileName);
-			if(RobustFile.Exists(path) &&
+			if(PatientFile.Exists(path) &&
 			 (new FileInfo(path).IsReadOnly)) //readonly is good when you've put in a custom thumbnail
 			{
 				return false;
 			}
-			if (RobustFile.Exists(path))
+			if (PatientFile.Exists(path))
 			{
-				RobustFile.Delete(path);
+				PatientFile.Delete(path);
 			}
 			return true;
 		}
@@ -303,7 +303,7 @@ namespace Bloom.Book
 		public bool TryGetPremadeThumbnail(string fileName, out Image image)
 		{
 			string path = Path.Combine(FolderPath, fileName);
-			if (RobustFile.Exists(path))
+			if (PatientFile.Exists(path))
 			{
 				image = ToPalaso.RobustImageIO.GetImageFromFile(path);
 				return true;
@@ -417,7 +417,7 @@ namespace Bloom.Book
 
 		public bool GetLooksOk()
 		{
-			return RobustFile.Exists(PathToExistingHtml) && String.IsNullOrEmpty(ErrorMessagesHtml);
+			return PatientFile.Exists(PathToExistingHtml) && String.IsNullOrEmpty(ErrorMessagesHtml);
 		}
 
 		public void Save()
@@ -463,12 +463,12 @@ namespace Bloom.Book
 			{
 				Logger.WriteEvent("Errors saving book {0}: {1}", PathToExistingHtml, errors);
 				var badFilePath = PathToExistingHtml + ".bad";
-				RobustFile.Copy(tempPath, badFilePath, true);
+				PatientFile.Copy(tempPath, badFilePath, true);
 				// delete the temporary file since we've made a copy of it.
-				RobustFile.Delete(tempPath);
+				PatientFile.Delete(tempPath);
 				//hack so we can package this for palaso reporting
 				errors += String.Format("{0}{0}{0}Contents:{0}{0}{1}", Environment.NewLine,
-					RobustFile.ReadAllText(badFilePath));
+					PatientFile.ReadAllText(badFilePath));
 				var ex = new XmlSyntaxException(errors);
 
 				// ENHANCE: If it's going to kill the process right afterward, seems like we could call the FatalMessage version instead...
@@ -502,7 +502,7 @@ namespace Bloom.Book
 
 			// Read the old file and copy it to the new one, except for replacing the one page.
 			string tempPath = GetNameForATempFileInStorageFolder();
-			RetryUtility.Retry(() => {
+			Patient.Retry(() => {
 				using (var reader = new StreamReader(new FileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
 				{
 					using (var writer = new StreamWriter(new FileStream(tempPath, FileMode.Create), Encoding.UTF8))
@@ -925,7 +925,7 @@ namespace Bloom.Book
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });
 			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "license", "video-placeholder", "coverImage200", "widget-placeholder" });
-			foreach (var path in Bloom.ToPalaso.RobustIO.EnumerateFilesInDirectory(FolderPath).Where(
+			foreach (var path in Bloom.Utils.PatientIO.EnumerateFilesInDirectory(FolderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{
 				var filename = Path.GetFileName(path);
@@ -965,7 +965,7 @@ namespace Bloom.Book
 				{
 					Debug.WriteLine("Removed unused image: "+path);
 					Logger.WriteEvent("Removed unused image: " + path);
-					RobustFile.Delete(path);
+					PatientFile.Delete(path);
 				}
 				catch (Exception)
 				{
@@ -1013,7 +1013,7 @@ namespace Bloom.Book
 					var timingFilePaths = Directory.EnumerateFiles(audioFolderPath, "*_timings.tsv");
 					foreach (var timingFilePath in timingFilePaths)
 					{
-						RobustFile.Delete(timingFilePath);
+						PatientFile.Delete(timingFilePath);
 					}
 				}
 
@@ -1054,7 +1054,7 @@ namespace Bloom.Book
 				{
 					Debug.WriteLine("Removed unused audio file: " + path);
 					Logger.WriteEvent("Removed unused audio file: " + path);
-					RobustFile.Delete(path);
+					PatientFile.Delete(path);
 				}
 				catch (Exception ex) when (ex is IOException || ex is SecurityException)
 				{
@@ -1201,7 +1201,7 @@ namespace Bloom.Book
 				{
 					Debug.WriteLine("Removed unused video file: " + path);
 					Logger.WriteEvent("Removed unused video file: " + path);
-					RobustFile.Delete(path);
+					PatientFile.Delete(path);
 				}
 				catch (Exception ex) when (ex is IOException || ex is SecurityException)
 				{
@@ -1273,7 +1273,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Get a temporary file pathname in the current book's folder.  This is needed to ensure proper permissions are granted
 		/// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
-		/// RobustFile.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+		/// PatientFile.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
 		/// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
 		/// </summary>
 		private string GetNameForATempFileInStorageFolder()
@@ -1370,7 +1370,7 @@ namespace Bloom.Book
 				"Cannot rename template books!");
 			Logger.WriteEvent("Renaming html from '{0}' to '{1}.htm'", currentFilePath, idealFolderName);
 			var newFilePath = Path.Combine(FolderPath, Path.GetFileName(idealFolderName) + ".htm");
-			if (RobustFile.Exists(newFilePath))
+			if (PatientFile.Exists(newFilePath))
 			{
 				// The folder already contains two HTML files, one with the name we were going to change to.
 				// Just get rid of it.
@@ -1378,10 +1378,10 @@ namespace Bloom.Book
 				// Extra HTML files in the book folder are an anomaly. We could recycle it, report it,
 				// etc...but this has only happened once. I don't think it's worth it. Just clean up
 				// and so prevent a crash.)
-				RobustFile.Delete(newFilePath);
+				PatientFile.Delete(newFilePath);
 			}
 
-			RobustFile.Move(currentFilePath, newFilePath);
+			PatientFile.Move(currentFilePath, newFilePath);
 
 			var fromToPair = new KeyValuePair<string, string>(FolderPath, idealFolderName);
 			try
@@ -1455,7 +1455,7 @@ namespace Bloom.Book
 			{
 				return "The directory (" + FolderPath + ") could not be found.";
 			}
-			if (!RobustFile.Exists(PathToExistingHtml))
+			if (!PatientFile.Exists(PathToExistingHtml))
 			{
 				return "Could not find an html file to use.";
 			}
@@ -1511,7 +1511,7 @@ namespace Bloom.Book
 				while (Uri.UnescapeDataString(imageFileName) != imageFileName)
 					imageFileName = Uri.UnescapeDataString(imageFileName);
 
-				if (!RobustFile.Exists(Path.Combine(FolderPath, imageFileName)))
+				if (!PatientFile.Exists(Path.Combine(FolderPath, imageFileName)))
 				{
 					if (!String.IsNullOrEmpty(pathToFolderOfReplacementImages))
 					{
@@ -1534,7 +1534,7 @@ namespace Bloom.Book
 			{
 				foreach (var imageFilePath in Directory.GetFiles(pathToFolderOfReplacementImages, missingFile))
 				{
-					RobustFile.Copy(imageFilePath, Path.Combine(FolderPath, missingFile));
+					PatientFile.Copy(imageFilePath, Path.Combine(FolderPath, missingFile));
 					progress.WriteMessage($"Replaced image {missingFile} from a copy in {pathToFolderOfReplacementImages}");
 					return true;
 				}
@@ -1576,10 +1576,10 @@ namespace Bloom.Book
 		public static string FindBookHtmlInFolder(string folderPath)
 		{
 			string p = GetHtmCandidate(folderPath);
-			if (RobustFile.Exists(p))
+			if (PatientFile.Exists(p))
 				return p;
 			p = Path.Combine(folderPath, Path.GetFileName(folderPath) + ".html");
-			if (RobustFile.Exists(p))
+			if (PatientFile.Exists(p))
 				return p;
 
 			if (!Directory.Exists(folderPath)) //bl-291 (user had 4 month-old version, so the bug may well be long gone)
@@ -1620,10 +1620,10 @@ namespace Bloom.Book
 
 			//template
 			p = Path.Combine(folderPath, "templatePages.htm");
-			if (RobustFile.Exists(p))
+			if (PatientFile.Exists(p))
 				return p;
 			p = Path.Combine(folderPath, "templatePages.html");
-			if (RobustFile.Exists(p))
+			if (PatientFile.Exists(p))
 				return p;
 
 			return String.Empty;
@@ -1670,7 +1670,7 @@ namespace Bloom.Book
 				folderPath);
 			foreach (string badFilePath in badHtmFilesToDelete)
 			{
-				RobustFile.Delete(badFilePath);
+				PatientFile.Delete(badFilePath);
 			}
 		}
 
@@ -1733,7 +1733,7 @@ namespace Bloom.Book
 			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(FolderPath);
-			ToPalaso.RobustIO.RequireThatDirectoryExists(FolderPath);
+			Bloom.Utils.PatientIO.RequireThatDirectoryExists(FolderPath);
 			string pathToExistingHtml;
 			try
 			{
@@ -1770,7 +1770,7 @@ namespace Bloom.Book
 			// If neither of these cases apply, then we'll need to complain to the user and hope that he or she can
 			// figure out how to recover since it's beyond what a program can handle.  (probably multiple html files
 			// that don't match the folder name and no backup file in the folder)
-			if (!RobustFile.Exists(pathToExistingHtml) && !RobustFile.Exists(backupPath))
+			if (!PatientFile.Exists(pathToExistingHtml) && !PatientFile.Exists(backupPath))
 			{
 				ErrorAllowsReporting = false;
 				// Error out
@@ -1979,12 +1979,12 @@ namespace Bloom.Book
 			// BL-6099 it could be missing altogether if we had a bad crash or someone's anti-virus is acting up.
 			if (String.IsNullOrEmpty(pathToExistingHtml))
 			{
-				RobustFile.Copy(backupPath, GetHtmCandidate(Path.GetDirectoryName(backupPath)));
+				PatientFile.Copy(backupPath, GetHtmCandidate(Path.GetDirectoryName(backupPath)));
 			}
 			else
 			{
-				RobustFile.Move(PathToExistingHtml, corruptFilePath);
-				RobustFile.Move(backupPath, pathToExistingHtml);
+				PatientFile.Move(PathToExistingHtml, corruptFilePath);
+				PatientFile.Move(backupPath, pathToExistingHtml);
 			}
 			var msg = LocalizationManager.GetString("BookStorage.CorruptBook",
 				"Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please report it to us.");
@@ -1996,7 +1996,7 @@ namespace Bloom.Book
 		private bool TryGetValidXmlDomFromHtmlFile(string path, out XmlDocument xmlDomFromHtmlFile)
 		{
 			xmlDomFromHtmlFile = null;
-			if (!RobustFile.Exists(path))
+			if (!PatientFile.Exists(path))
 				return false;
 			try
 			{
@@ -2202,7 +2202,7 @@ namespace Bloom.Book
 					try
 					{
 						Utils.LongPathAware.ThrowIfExceedsMaxPath(destPath); //example: BL-8284
-						RobustFile.Copy(sourcePath, destPath, true);
+						PatientFile.Copy(sourcePath, destPath, true);
 					}
 					catch (UnauthorizedAccessException err)
 					{
@@ -2223,14 +2223,14 @@ namespace Bloom.Book
 				// Typically the above will copy a branding.css into the book folder.
 				// Check that, and attempt to recover if it didn't happen.
 				var brandingPath = Path.Combine(FolderPath, "branding.css");
-				if (!RobustFile.Exists(brandingPath))
+				if (!PatientFile.Exists(brandingPath))
 				{
 					Debug.Fail("Brandings MUST provide a branding.css");
 					// An empty branding.css is better than having the file server search who-knows-where
 					// and coming up with some arbitrary branding.css. At least all Bloom installations,
 					// including the evil dev one that introduced a branding without the required file,
 					// will behave the same.
-					RobustFile.WriteAllText(brandingPath, "");
+					PatientFile.WriteAllText(brandingPath, "");
 				}
 			}
 			catch (Exception err)
@@ -2274,7 +2274,7 @@ namespace Bloom.Book
 
 		private bool IsPathReadonly(string path)
 		{
-			return (RobustFile.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
+			return (PatientFile.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
 		}
 
 		public void Update(string fileName, string factoryPath = "")
@@ -2327,7 +2327,7 @@ namespace Bloom.Book
 					return;
 
 				documentPath = Path.Combine(FolderPath, fileName);
-				if(!RobustFile.Exists(documentPath))
+				if(!PatientFile.Exists(documentPath))
 				{
 					Logger.WriteMinorEvent("BookStorage.Update() Copying missing file {0} to {1}", factoryPath, documentPath);
 
@@ -2335,12 +2335,12 @@ namespace Bloom.Book
 					if (fileName.ToLowerInvariant().Contains("xmatter"))
 						RemoveExistingFilesBySuffix("XMatter.css");
 
-					RobustFile.Copy(factoryPath, documentPath);
+					PatientFile.Copy(factoryPath, documentPath);
 					return;
 				}
 				// due to BL-2166, we no longer compare times since downloaded books often have
 				// more recent times than the DistFiles versions we want to use
-				// var documentTime = RobustFile.GetLastWriteTimeUtc(documentPath);
+				// var documentTime = PatientFile.GetLastWriteTimeUtc(documentPath);
 				if (factoryPath == documentPath)
 					return; // no point in trying to update self!
 				if (IsPathReadonly(documentPath))
@@ -2352,9 +2352,9 @@ namespace Bloom.Book
 				}
 				Logger.WriteMinorEvent("BookStorage.Update() Copying file {0} to {1}", factoryPath, documentPath);
 
-				RobustFile.Copy(factoryPath, documentPath, true);
+				PatientFile.Copy(factoryPath, documentPath, true);
 				//if the source was locked, don't copy the lock over
-				RobustFile.SetAttributes(documentPath, FileAttributes.Normal);
+				PatientFile.SetAttributes(documentPath, FileAttributes.Normal);
 			}
 			catch (Exception e)
 			{
@@ -2409,7 +2409,7 @@ namespace Bloom.Book
 			{
 				try
 				{
-					RobustFile.Delete(file);
+					PatientFile.Delete(file);
 				}
 				catch(Exception e)
 				{
@@ -2451,7 +2451,7 @@ namespace Bloom.Book
 
 			EnsureHasLinkToStyleSheet(dom, "customCollectionStyles.css");
 
-			if (RobustFile.Exists(Path.Combine(FolderPath, "customBookStyles.css")))
+			if (PatientFile.Exists(Path.Combine(FolderPath, "customBookStyles.css")))
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
@@ -2658,7 +2658,7 @@ namespace Bloom.Book
 				result = Path.ChangeExtension(Path.Combine(parentPath, name + suffix), ext);
 				++i;
 				suffix = i.ToString(CultureInfo.InvariantCulture);
-			} while (RobustFile.Exists(result));
+			} while (PatientFile.Exists(result));
 			return result;
 		}
 
@@ -2685,7 +2685,7 @@ namespace Bloom.Book
 			{
 				if (skipFileExtensionsLowerCase != null && skipFileExtensionsLowerCase.Contains(Path.GetExtension(file.ToLowerInvariant())))
 					continue;
-				RobustFile.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)));
+				PatientFile.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)));
 			}
 
 			foreach (var directory in Directory.GetDirectories(sourceDir))
@@ -2729,7 +2729,7 @@ namespace Bloom.Book
 			// rename the book htm file
 			var oldName = Path.Combine(newBookDir, Path.GetFileName(PathToExistingHtml));
 			var newName = Path.Combine(newBookDir, newBookName + ".htm");
-			RobustFile.Move(oldName, newName);
+			PatientFile.Move(oldName, newName);
 			return newBookDir;
 		}
 
@@ -2738,11 +2738,11 @@ namespace Bloom.Book
 			// Update the InstanceId. This was not done prior to Bloom 4.2.104
 			// If the meta.json file is missing, ok that's weird but that means we
 			// don't have a duplicate bookInstanceId to worry about.
-			if (RobustFile.Exists(metaDataPath))
+			if (PatientFile.Exists(metaDataPath))
 			{
 				var meta = DynamicJson.Parse(File.ReadAllText(metaDataPath));
 				meta.bookInstanceId = Guid.NewGuid().ToString();
-				RobustFile.WriteAllText(metaDataPath, meta.ToString());
+				PatientFile.WriteAllText(metaDataPath, meta.ToString());
 			}
 		}
 
@@ -2973,7 +2973,7 @@ namespace Bloom.Book
 			// But if it doesn't, we can't move it, so it seems worth a check.
 			// (And if we change our minds about keeping them in sync, this will be one less place to fix.)
 			if (File.Exists(extraBookPath))
-				RobustFile.Move(extraBookPath,
+				PatientFile.Move(extraBookPath,
 					Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(newPathForExtraBook), "htm")));
 			return newPathForExtraBook;
 		}

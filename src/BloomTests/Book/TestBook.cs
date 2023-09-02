@@ -10,7 +10,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using BloomTemp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.Book
 {

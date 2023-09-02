@@ -5,7 +5,7 @@ using System.Xml;
 using Bloom.Properties;
 using L10NSharp;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.WritingSystems;
 using SIL.Xml;
 

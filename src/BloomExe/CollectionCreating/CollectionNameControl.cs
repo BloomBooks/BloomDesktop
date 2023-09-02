@@ -4,7 +4,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.CollectionCreating
 {
@@ -75,7 +75,7 @@ namespace Bloom.CollectionCreating
 			get
 			{
 				return (Directory.Exists(Path.GetDirectoryName(_collectionInfo.PathToSettingsFile))
-					|| RobustFile.Exists(_collectionInfo.PathToSettingsFile));
+					|| PatientFile.Exists(_collectionInfo.PathToSettingsFile));
 			}
 		}
 

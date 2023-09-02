@@ -20,7 +20,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using DesktopAnalytics;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 namespace Bloom.web.controllers

@@ -8,7 +8,7 @@ using Bloom;
 using Bloom.TeamCollection;
 using BloomTemp;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.TeamCollection
 {

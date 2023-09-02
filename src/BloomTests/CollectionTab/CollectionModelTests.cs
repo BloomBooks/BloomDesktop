@@ -8,7 +8,7 @@ using Bloom.Book;
 using BloomTests.TestDoubles.CollectionTab;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.TestUtilities;
 
@@ -150,10 +150,10 @@ namespace BloomTests.CollectionTab
 			const string excludedFile2 = BookStorage.PrefixForCorruptHtmFiles + "2.htm";
 			const string excludedFile3 = "Basic Book.css.map";
 			string excludedBackup = Path.GetFileName(srcBookPath) + ".bak";
-			RobustFile.WriteAllText(Path.Combine(srcBookPath, excludedFile1), "rubbish");
-			RobustFile.WriteAllText(Path.Combine(srcBookPath, excludedFile2), "rubbish");
-			RobustFile.WriteAllText(Path.Combine(srcBookPath, excludedFile3), "rubbish");
-			RobustFile.WriteAllText(Path.Combine(srcBookPath, excludedBackup), "rubbish");
+			PatientFile.WriteAllText(Path.Combine(srcBookPath, excludedFile1), "rubbish");
+			PatientFile.WriteAllText(Path.Combine(srcBookPath, excludedFile2), "rubbish");
+			PatientFile.WriteAllText(Path.Combine(srcBookPath, excludedFile3), "rubbish");
+			PatientFile.WriteAllText(Path.Combine(srcBookPath, excludedBackup), "rubbish");
 			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
 
 			// Imitate CollectionModel.MakeBloomPack() without the user interaction

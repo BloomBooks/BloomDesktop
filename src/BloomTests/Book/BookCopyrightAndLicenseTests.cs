@@ -3,7 +3,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;

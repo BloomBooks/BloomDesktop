@@ -10,7 +10,7 @@ using Bloom.Edit;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using SIL.CommandLineProcessing;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 
@@ -71,8 +71,8 @@ namespace Bloom.Publish
 		// except to regenerate them all on every publish event, but that is quite time-consuming.
 		private static bool IsPublishableAudioNeeded(string recordablePath, string publishablePath)
 		{
-			return RobustFile.Exists(recordablePath) &&
-			       (!RobustFile.Exists(publishablePath) || (new FileInfo(recordablePath).LastWriteTimeUtc) > new FileInfo(publishablePath).LastWriteTimeUtc);
+			return PatientFile.Exists(recordablePath) &&
+			       (!PatientFile.Exists(publishablePath) || (new FileInfo(recordablePath).LastWriteTimeUtc) > new FileInfo(publishablePath).LastWriteTimeUtc);
 		}
 
 		private static bool IsTrueForAllAudioSentenceElements(string bookFolderPath, XmlDocument dom, Func<string, string, bool> predicate)
@@ -113,11 +113,11 @@ namespace Bloom.Publish
 			var root = GetAudioFolderPath(bookFolderPath);
 
 			var publishablePath = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, AudioRecording.kPublishableExtension));
-			if (RobustFile.Exists(publishablePath))
+			if (PatientFile.Exists(publishablePath))
 				return publishablePath;
 
 			var recordablePath = Path.ChangeExtension(publishablePath, AudioRecording.kRecordableExtension);
-			if (!RobustFile.Exists(recordablePath))
+			if (!PatientFile.Exists(recordablePath))
 				return null;
 			return MakeCompressedAudio(recordablePath);
 		}
@@ -134,7 +134,7 @@ namespace Bloom.Publish
 			foreach(var ext in NarrationAudioExtensions)
 			{
 				var path = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, ext));
-				if(RobustFile.Exists(path))
+				if(PatientFile.Exists(path))
 					return true;
 			}
 			return false;
@@ -147,7 +147,7 @@ namespace Bloom.Publish
 		public static string MergeAudioFiles(IEnumerable<string> mergeFiles, string combinedAudioPath)
 		{
 			var ffmpeg = MiscUtils.FindFfmpegProgram();
-			if (RobustFile.Exists(ffmpeg))
+			if (PatientFile.Exists(ffmpeg))
 			{
 				// A command something like
 				//   ffmpeg -i "concat:stereo1.mp3|monaural2.mp3|stereo3.mp3" -c:a libmp3lame output.mp3
@@ -171,7 +171,7 @@ namespace Bloom.Publish
 					var output = CheckFfmpegErrors(result, mergeFiles, mergeFileSpecs);
 					if (output != null)
 					{
-						RobustFile.Delete(combinedAudioPath);
+						PatientFile.Delete(combinedAudioPath);
 					}
 					return output;
 				}
@@ -180,7 +180,7 @@ namespace Bloom.Publish
 					foreach (var file in monoFiles)
 					{
 						if (!mergeFiles.Contains(file))
-							RobustFile.Delete(file);
+							PatientFile.Delete(file);
 					}
 				}
 			}

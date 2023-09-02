@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using SIL.Code;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.ToPalaso
 {
@@ -24,8 +24,8 @@ namespace Bloom.ToPalaso
 		/// </remarks>
 		public static Image GetImageFromFile(string path)
 		{
-			Debug.Assert(RobustFile.Exists(path), String.Format("{0} does not exist for ImageUtils.GetImageFromFile()?!", path));
-			return RetryUtility.Retry(() =>
+			Debug.Assert(PatientFile.Exists(path), String.Format("{0} does not exist for ImageUtils.GetImageFromFile()?!", path));
+			return Patient.Retry(() =>
 				GetImageFromFileInternal(path),
 				RetryUtility.kDefaultMaxRetryAttempts,
 				RetryUtility.kDefaultRetryDelay,

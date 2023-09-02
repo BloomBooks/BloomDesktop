@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Windows.Forms;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Edit
 {
@@ -32,9 +32,9 @@ namespace Bloom.Edit
 			// and also a chunk of code that is set up to contain the JSON data
 			// from making earlier configurable books, and to load that data into
 			// the dialog after the main HTML loads.
-			var configuration = RobustFile.ReadAllText(_filePath, Encoding.UTF8);
+			var configuration = PatientFile.ReadAllText(_filePath, Encoding.UTF8);
 			var newConfig = Configurator.SetupConfigurationHtml(configuration, _libraryJsonData);
-			RobustFile.WriteAllText(_filePath, newConfig, Encoding.UTF8);
+			PatientFile.WriteAllText(_filePath, newConfig, Encoding.UTF8);
 
 			_browser.Navigate(_filePath, false);
 		}

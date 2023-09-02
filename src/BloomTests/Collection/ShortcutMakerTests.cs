@@ -3,7 +3,7 @@
 using System.IO;
 using Bloom.Collection;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using Bloom;
 

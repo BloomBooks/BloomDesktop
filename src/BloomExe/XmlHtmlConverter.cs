@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Utils;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 using TidyManaged;
 
@@ -30,7 +30,7 @@ namespace Bloom
 
 		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration = false)
 		{
-			return GetXmlDomFromHtml(RobustFile.ReadAllText(path), includeXmlDeclaration);
+			return GetXmlDomFromHtml(PatientFile.ReadAllText(path), includeXmlDeclaration);
 		}
 
 		/// <summary></summary>
@@ -82,7 +82,7 @@ namespace Bloom
 			//using (var temp = new TempFile())
 			var temp = new TempFile();
 			{
-				RobustFile.WriteAllText(temp.Path, content, Encoding.UTF8);
+				PatientFile.WriteAllText(temp.Path, content, Encoding.UTF8);
 				using (var tidy = RobustIO.DocumentFromFile(temp.Path))
 				{
 					tidy.ShowWarnings = false;
@@ -349,7 +349,7 @@ namespace Bloom
 			var html = ConvertDomToHtml5(dom);
 			try
 			{
-				RobustFile.WriteAllText(targetPath, html, Encoding.UTF8);
+				PatientFile.WriteAllText(targetPath, html, Encoding.UTF8);
 			}
 			catch (UnauthorizedAccessException e)
 			{

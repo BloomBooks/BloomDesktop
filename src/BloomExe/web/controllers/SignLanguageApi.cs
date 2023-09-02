@@ -14,7 +14,7 @@ using Bloom.Utils;
 using L10NSharp;
 using SIL.Code;
 using SIL.CommandLineProcessing;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
@@ -146,12 +146,12 @@ namespace Bloom.web.controllers
 				{
 					Logger.WriteEvent(msg);
 					ErrorReport.NotifyUserOfProblem(msg);
-					RobustFile.Copy(rawVideoPath, path, true);     // use the original, hoping it's better than nothing.
+					PatientFile.Copy(rawVideoPath, path, true);     // use the original, hoping it's better than nothing.
 				}
 			}
 			else
 			{
-				RobustFile.Copy(rawVideoPath, path, true);
+				PatientFile.Copy(rawVideoPath, path, true);
 			}
 		}
 
@@ -193,7 +193,7 @@ namespace Bloom.web.controllers
 					var newVideoPath =
 						Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath),
 							GetNewVideoFileName()); // Use a new name to defeat caching.
-					RobustFile.Copy(path, newVideoPath);
+					PatientFile.Copy(path, newVideoPath);
 					var relativePath = BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
 					request.ReplyWithText(UrlPathString.CreateFromUnencodedString(relativePath).UrlEncodedForHttpPath);
 				}
@@ -239,7 +239,7 @@ namespace Bloom.web.controllers
 				if (!GetVideoDetailsFromRequest(request, false, out videoFilePath, out timings))
 					return; // request.Failed was called inside the above method
 
-				if (!RobustFile.Exists(videoFilePath))
+				if (!PatientFile.Exists(videoFilePath))
 				{
 					request.Failed("Cannot find video file ("+videoFilePath+")");
 					return;
@@ -383,7 +383,7 @@ namespace Bloom.web.controllers
 
 			videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
 			// Some callers need this file to exist, others don't, but decoding is required for all.
-			if (!RobustFile.Exists(videoFilePath) && Regex.IsMatch(fileName, "%[0-9A-Fa-f][0-9A-Fa-f]"))
+			if (!PatientFile.Exists(videoFilePath) && Regex.IsMatch(fileName, "%[0-9A-Fa-f][0-9A-Fa-f]"))
 			{
 				videoFilePath = Path.Combine(CurrentBook.FolderPath,
 					UrlPathString.CreateFromUrlEncodedString(fileName).NotEncoded);	// UrlPathString used only for decoding
@@ -540,7 +540,7 @@ namespace Bloom.web.controllers
 			// Check for valid video file to match url
 			var urlWithoutPrefix = UrlPathString.CreateFromUrlEncodedString(videoUrl.Substring(6)); // grab everything after 'video/'
 			var originalVideoFilePath = Path.Combine(videoFolder, urlWithoutPrefix.NotEncoded);	// any query already removed
-			if (!RobustFile.Exists(originalVideoFilePath))
+			if (!PatientFile.Exists(originalVideoFilePath))
 				return string.Empty;
 
 			var tempName = originalVideoFilePath;
@@ -551,15 +551,15 @@ namespace Bloom.web.controllers
 				var successful = TrimVideoUsingFfmpeg(originalVideoFilePath, tempName, timings);
 				if (successful)
 				{
-					RobustFile.Delete(originalVideoFilePath);
+					PatientFile.Delete(originalVideoFilePath);
 					var trimmedFileName = BookStorage.GetVideoFolderName + Path.GetFileName(tempName);
 					HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainerElement), UrlPathString.CreateFromUnencodedString(trimmedFileName, true), false);
 				}
 				else
 				{
 					// probably doesn't exist, but if it does we don't need it.
-					// File.Delete (underneath RobustFile.Delete) does not throw if the file doesn't exist.
-					RobustFile.Delete(tempName);
+					// File.Delete (underneath PatientFile.Delete) does not throw if the file doesn't exist.
+					PatientFile.Delete(tempName);
 					tempName = originalVideoFilePath;
 				}
 			}

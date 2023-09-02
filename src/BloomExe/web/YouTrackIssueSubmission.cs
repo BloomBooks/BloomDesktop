@@ -9,7 +9,7 @@ using System.Net.Http.Headers;
 using Bloom.web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using HttpClient = System.Net.Http.HttpClient;
 
@@ -73,7 +73,7 @@ namespace Bloom
 		/// <param name="filePath"></param>
 		public void AddAttachmentWhenWeHaveAnIssue(string filePath)
 		{
-			if (!RobustFile.Exists(filePath))
+			if (!PatientFile.Exists(filePath))
 			{
 				Logger.WriteEvent("YouTrack issue submitter failed to attach non-existent file: " + filePath);
 				return;
@@ -156,7 +156,7 @@ namespace Bloom
 		/// </remarks>
 		public bool AttachFileToExistingIssue(string youTrackIssueId, string filePath)
 		{
-			if (!RobustFile.Exists(filePath))
+			if (!PatientFile.Exists(filePath))
 			{
 				Logger.WriteEvent("YouTrack issue submitter failed to attach non-existent file: " + filePath);
 				return false;

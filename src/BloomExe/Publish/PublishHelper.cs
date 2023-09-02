@@ -13,7 +13,7 @@ using Bloom.Publish.Epub;
 using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using Bloom.FontProcessing;
 
@@ -407,8 +407,8 @@ namespace Bloom.Publish
 
 		private static void RemoveEnterpriseOnlyAssets(Book.Book book)
 		{
-			RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
-			RobustFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
+			PatientFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
+			PatientFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
 		}
 
 		private bool IsDisplayed(XmlElement elt, bool throwOnFailure)
@@ -752,9 +752,9 @@ namespace Bloom.Publish
 			// Note that the font may be referred to in defaultLangStyles.css, in customCollectionStyles.css, or in a style defined in the HTML.
 			// This method handles the .css files.
 			var defaultLangStyles = Path.Combine(cssFolderPath, "defaultLangStyles.css");
-			if (RobustFile.Exists(defaultLangStyles))
+			if (PatientFile.Exists(defaultLangStyles))
 			{
-				var cssTextOrig = RobustFile.ReadAllText(defaultLangStyles);
+				var cssTextOrig = PatientFile.ReadAllText(defaultLangStyles);
 				var cssText = cssTextOrig;
 				foreach (var font in badFonts)
 				{
@@ -762,12 +762,12 @@ namespace Bloom.Publish
 					cssText = cssRegex.Replace(cssText, $"font-family: '{defaultFont}';");
 				}
 				if (cssText != cssTextOrig)
-					RobustFile.WriteAllText(defaultLangStyles, cssText);
+					PatientFile.WriteAllText(defaultLangStyles, cssText);
 			}
 			var customCollectionStyles = Path.Combine(cssFolderPath, "customCollectionStyles.css");
-			if (RobustFile.Exists(customCollectionStyles))
+			if (PatientFile.Exists(customCollectionStyles))
 			{
-				var cssTextOrig = RobustFile.ReadAllText(customCollectionStyles);
+				var cssTextOrig = PatientFile.ReadAllText(customCollectionStyles);
 				var cssText = cssTextOrig;
 				foreach (var font in badFonts)
 				{
@@ -775,7 +775,7 @@ namespace Bloom.Publish
 					cssText = cssRegex.Replace(cssText, $"font-family: '{defaultFont}';");
 				}
 				if (cssText != cssTextOrig)
-					RobustFile.WriteAllText(customCollectionStyles, cssText);
+					PatientFile.WriteAllText(customCollectionStyles, cssText);
 			}
 		}
 
@@ -818,14 +818,14 @@ namespace Bloom.Publish
 			HashSet<string> fontsFound = new HashSet<string>();
 			foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.css"))
 			{
-				var cssContent = RobustFile.ReadAllText(filepath);
+				var cssContent = PatientFile.ReadAllText(filepath);
 				HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts:true);
 			}
 			// There should be only one html file with the same name as the directory it's in, but let's
 			// not make any assumptions here.
 			foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.htm"))
 			{
-				var cssContent = RobustFile.ReadAllText(filepath);
+				var cssContent = PatientFile.ReadAllText(filepath);
 				HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts:true);	// works on HTML files as well
 			}
 			if (_fontMetadataMap == null)

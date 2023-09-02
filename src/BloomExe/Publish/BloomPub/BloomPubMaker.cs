@@ -12,7 +12,7 @@ using Bloom.Publish.Epub;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 
 namespace Bloom.Publish.BloomPub
@@ -84,7 +84,7 @@ BookServer bookServer,
 			SignLanguageApi.ProcessVideos(HtmlDom.SelectChildVideoElements(modifiedBook.RawDom.DocumentElement).Cast<XmlElement>(),
 				modifiedBook.FolderPath);
 			var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
-			RobustFile.WriteAllText(BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath), newContent, Encoding.UTF8);
+			PatientFile.WriteAllText(BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath), newContent, Encoding.UTF8);
 
 			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath,
 				MakeFilter(modifiedBook.FolderPath),
@@ -149,7 +149,7 @@ BookServer bookServer,
 					// a nasty leak of knowledge about making BloomPubs into a class responsible for
 					// compressing to zip files. If we really need this savings, we could refactor to
 					// use the overrides parameter of CompressDirectory.
-					RobustFile.WriteAllBytes(filePath, modifiedContent);
+					PatientFile.WriteAllBytes(filePath, modifiedContent);
 				}
 			}
 		}
@@ -210,7 +210,7 @@ BookServer bookServer,
 			var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
 			// We send the straight string without a BOM in our advertisement, so that needs to be what we write
 			// in the file, otherwise, BR never recognizes that it already has the current version.
-			RobustFile.WriteAllText(Path.Combine(folderForSha, name), sha, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+			PatientFile.WriteAllText(Path.Combine(folderForSha, name), sha, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 			HashOfMostRecentlyCreatedBook = sha;
 		}
 
@@ -322,8 +322,8 @@ BookServer bookServer,
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);
 			modifiedBook.Storage.CleanupUnusedSupportFiles(/*isForPublish:*/true, settings?.AudioLanguagesToExclude);
-			if (!modifiedBook.IsTemplateBook && RobustFile.Exists(Path.Combine(modifiedBookFolderPath, "placeHolder.png")))
-				RobustFile.Delete(Path.Combine(modifiedBookFolderPath, "placeHolder.png"));
+			if (!modifiedBook.IsTemplateBook && PatientFile.Exists(Path.Combine(modifiedBookFolderPath, "placeHolder.png")))
+				PatientFile.Delete(Path.Combine(modifiedBookFolderPath, "placeHolder.png"));
 			modifiedBook.RemoveObsoleteAudioMarkup();
 
 			// We want these to run after RemoveUnwantedContent() so that the metadata will more accurately reflect
@@ -351,7 +351,7 @@ BookServer bookServer,
 			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
 			StripContentEditableAndTabIndex(modifiedBook.RawDom);
 			InsertReaderStylesheet(modifiedBook.RawDom);
-			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, "publish", "ReaderPublish", "readerStyles.css"),
+			PatientFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, "publish", "ReaderPublish", "readerStyles.css"),
 				Path.Combine(modifiedBookFolderPath, "readerStyles.css"));
 			ConvertImagesToBackground(modifiedBook.RawDom);
 
@@ -381,7 +381,7 @@ BookServer bookServer,
 					break;
 				default: throw new ArgumentException("Unknown creator", creator);
 			}
-			RobustFile.WriteAllText(Path.Combine(bookFolder, kDistributionFileName), distributionValue);
+			PatientFile.WriteAllText(Path.Combine(bookFolder, kDistributionFileName), distributionValue);
 		}
 
 		private static void ProcessQuizzes(string bookFolderPath, XmlDocument bookDom)
@@ -581,7 +581,7 @@ BookServer bookServer,
 			{
 				// Enhance: do we need to worry about problem characters in font file names?
 				var dest = Path.Combine(book.FolderPath, Path.GetFileName(file));
-				RobustFile.Copy(file, dest);
+				PatientFile.Copy(file, dest);
 			}
 			// Create the fonts.css file, which tells the browser where to find the fonts for those families.
 			var sb = new StringBuilder();
@@ -600,7 +600,7 @@ BookServer bookServer,
 				// However, it's possible that although we aren't allowed to embed the desired font,
 				// the device actually has it installed. In that case, we want to use it.
 			}
-			RobustFile.WriteAllText(Path.Combine(book.FolderPath, "fonts.css"), sb.ToString());
+			PatientFile.WriteAllText(Path.Combine(book.FolderPath, "fonts.css"), sb.ToString());
 			// Tell the document to use the new stylesheet.
 			book.OurHtmlDom.AddStyleSheet("fonts.css");
 			// Repair defaultLangStyles.css and other places in the output book if needed.

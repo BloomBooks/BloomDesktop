@@ -5,7 +5,7 @@ using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Windows.Forms.Reporting;
 
@@ -216,7 +216,7 @@ namespace Bloom.ErrorReporter
 			var shortMsg = error?.Data["ProblemReportShortMessage"] as string;
 			var imageFilepath = error?.Data["ProblemImagePath"] as string;
 			string[] extraFilepaths = null;
-			if (!String.IsNullOrEmpty(imageFilepath) && RobustFile.Exists(imageFilepath))
+			if (!String.IsNullOrEmpty(imageFilepath) && PatientFile.Exists(imageFilepath))
 			{
 				extraFilepaths = new string[] { imageFilepath };
 			}

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.ToPalaso
 {
@@ -68,7 +68,7 @@ namespace Bloom.ToPalaso
 			Directory.CreateDirectory(destinationPath);
 			foreach (var filePath in Directory.GetFiles(sourcePath))
 			{
-				RobustFile.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
+				PatientFile.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}
 			foreach (var dirPath in Directory.GetDirectories(sourcePath))
 			{

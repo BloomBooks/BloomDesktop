@@ -11,7 +11,7 @@ using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Code;
 using SIL.Progress;
 using SIL.TestUtilities;
@@ -214,7 +214,7 @@ namespace BloomTests.Book
 			{
 				img.Metadata.Creator = "joe";
 				img.Metadata.CopyrightNotice = "Copyright 1999 by me";
-				RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
+				Patient.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
 			}
 		}
 

@@ -4,7 +4,7 @@ using Bloom.Publish;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -139,7 +139,7 @@ namespace Bloom.web.controllers
 
 			try
 			{
-				RobustFile.Copy(jsonData.from, jsonData.to, true);
+				PatientFile.Copy(jsonData.from, jsonData.to, true);
 			}
 			catch (Exception e)
 			{

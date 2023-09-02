@@ -14,7 +14,7 @@ using Bloom.Registration;
 using Bloom.web;
 using L10NSharp;
 using Messir.Windows.Forms;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
@@ -320,19 +320,19 @@ namespace Bloom.Workspace
 			string aboutBookInfoUrl = null;
 			if (book != null && book.HasAboutBookInformationToShow)
 			{
-				if (RobustFile.Exists(book.AboutBookHtmlPath))
+				if (PatientFile.Exists(book.AboutBookHtmlPath))
 				{
 					aboutBookInfoUrl = book.AboutBookHtmlPath.ToLocalhost();
 				}
-				else if (RobustFile.Exists(book.AboutBookMdPath))
+				else if (PatientFile.Exists(book.AboutBookMdPath))
 				{
 					var md = new MarkdownDeep.Markdown();
-					var mdContent = RobustFile.ReadAllText(book.AboutBookMdPath);
+					var mdContent = PatientFile.ReadAllText(book.AboutBookMdPath);
 					var htmlContent = string.Format("<html><head><meta charset=\"utf-8\"/></head><body>{0}</body></html>", md.Transform(mdContent));
-					if (_tempBookInfoHtmlPath != null && RobustFile.Exists(_tempBookInfoHtmlPath))
-						RobustFile.Delete(_tempBookInfoHtmlPath);
+					if (_tempBookInfoHtmlPath != null && PatientFile.Exists(_tempBookInfoHtmlPath))
+						PatientFile.Delete(_tempBookInfoHtmlPath);
 					_tempBookInfoHtmlPath = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(book.AboutBookMdPath) + ".html");
-					RobustFile.WriteAllText(_tempBookInfoHtmlPath, htmlContent);
+					PatientFile.WriteAllText(_tempBookInfoHtmlPath, htmlContent);
 					aboutBookInfoUrl = _tempBookInfoHtmlPath.ToLocalhost();
 				}
 			}
@@ -1165,7 +1165,7 @@ namespace Bloom.Workspace
 				return;
 			var shell = (Shell) ancestor;
 			var pathToNewExe = Path.Combine(newInstallDir, Path.ChangeExtension(Application.ProductName, ".exe"));
-			if (!RobustFile.Exists(pathToNewExe))
+			if (!PatientFile.Exists(pathToNewExe))
 				return; // aargh!
 			shell.QuitForVersionUpdate = true;
 			Process.Start(pathToNewExe);

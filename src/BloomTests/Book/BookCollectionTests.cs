@@ -6,7 +6,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.TestUtilities;
 
 namespace BloomTests.Book

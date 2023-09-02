@@ -13,7 +13,7 @@ using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Edit
 {
@@ -108,7 +108,7 @@ namespace Bloom.Edit
 			}
 			var frame = BloomFileLocator.GetBrowserFile(false, "bookEdit", "pageThumbnailList", "pageThumbnailList.html");
 			var backColor = MiscUtils.ColorToHtmlCode(BackColor);
-			_baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
+			_baseHtml = PatientFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 		}
 
 		protected bool ReallyDesignMode =>

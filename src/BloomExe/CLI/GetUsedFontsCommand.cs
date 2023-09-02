@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bloom.Book;
 using CommandLine;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using Directory = System.IO.Directory;
 
 namespace Bloom.CLI
@@ -120,7 +120,7 @@ namespace Bloom.CLI
 			// Css for styles are contained in the actual html
 			foreach (var filePath in Directory.EnumerateFiles(bookPath, "*.*").Where(f => f.EndsWith(".css") || f.EndsWith(".htm") || f.EndsWith(".html")))
 			{
-				var fileContents = RobustFile.ReadAllText(filePath, Encoding.UTF8);
+				var fileContents = PatientFile.ReadAllText(filePath, Encoding.UTF8);
 
 				if (filePath.EndsWith(".htm"))
 					bookHtmContent = fileContents;

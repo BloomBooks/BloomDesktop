@@ -10,7 +10,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using Bloom;
 using Bloom.ImageProcessing;
 using Bloom.Api;
@@ -334,7 +334,7 @@ namespace BloomTests.web
 			var directory = Path.Combine(testRootDir, "resources");
 			Directory.CreateDirectory(directory); 
 			var tempFileRelativePath = Path.Combine(directory, "image.png");
-			RobustFile.Create(tempFileRelativePath);
+			PatientFile.Create(tempFileRelativePath);
 			var file = TempFile.TrackExisting(tempFileRelativePath);
 
 			// No need to create the file contents right now.
@@ -500,7 +500,7 @@ namespace BloomTests.web
 
 			// customCollectionStyles.css
 			var cssFile = Path.Combine(_collectionPath, "customCollectionStyles.css");
-			RobustFile.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
+			PatientFile.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
 
 			// create book directory
 			var bookPath = Path.Combine(_collectionPath, "TestBook");
@@ -508,25 +508,25 @@ namespace BloomTests.web
 
 			// defaultLangStyles.css
 			cssFile = Path.Combine(bookPath, "defaultLangStyles.css");
-			RobustFile.WriteAllText(cssFile, @".defaultLangStylesCssTest{}");
+			PatientFile.WriteAllText(cssFile, @".defaultLangStylesCssTest{}");
 
 			cssFile = Path.Combine(bookPath, "customCollectionStyles.css");
-			RobustFile.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
+			PatientFile.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
 
 			cssFile = Path.Combine(bookPath, "ForUnitTest-XMatter.css");
-			RobustFile.WriteAllText(cssFile, @"This is the one in the book");
+			PatientFile.WriteAllText(cssFile, @"This is the one in the book");
 
 			// Factory-XMatter.css
 			cssFile = Path.Combine(bookPath, "Factory-XMatter.css");
-			RobustFile.WriteAllText(cssFile, @".factoryXmatterCssTest{}");
+			PatientFile.WriteAllText(cssFile, @".factoryXmatterCssTest{}");
 
 			// customBookStyles.css
 			cssFile = Path.Combine(bookPath, "customBookStyles.css");
-			RobustFile.WriteAllText(cssFile, @".customBookStylesCssTest{}");
+			PatientFile.WriteAllText(cssFile, @".customBookStylesCssTest{}");
 
 			// miscStyles.css - a file name not distributed with or created by Bloom
 			cssFile = Path.Combine(bookPath, "miscStyles.css");
-			RobustFile.WriteAllText(cssFile, @".miscStylesCssTest{}");
+			PatientFile.WriteAllText(cssFile, @".miscStylesCssTest{}");
 		}
 
 		[Test]

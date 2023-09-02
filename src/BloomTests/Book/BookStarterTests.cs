@@ -9,7 +9,7 @@ using Bloom.Edit;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.TestUtilities;
@@ -226,7 +226,7 @@ namespace BloomTests.Book
 					Directory.Delete(source, true);
 				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
 				var htmPath = Path.Combine(source, "Basic Book.html");
-				var content = RobustFile.ReadAllText(htmPath);
+				var content = PatientFile.ReadAllText(htmPath);
 				// insert cc0 stuff in data div
 				var replacement = @"<div id='bloomDataDiv'><div data-book='licenseUrl' lang='*'>
             http://creativecommons.org/publicdomain/zero/1.0/
@@ -242,7 +242,7 @@ namespace BloomTests.Book
         </div>
 		<div data-book='licenseNotes'>This should be removed too</div>".Replace("'", "\"");
 				var patched = content.Replace("<div id=\"bloomDataDiv\">", replacement);
-				RobustFile.WriteAllText(htmPath, patched);
+				PatientFile.WriteAllText(htmPath, patched);
 				var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
 				var assertThatBook = AssertThatXmlIn.HtmlFile(bookPath);
 				assertThatBook.HasNoMatchForXpath("//div[@data-book='licenseUrl']");
@@ -264,10 +264,10 @@ namespace BloomTests.Book
 					Directory.Delete(source, true);
 				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
 				var htmPath = Path.Combine(source, "The Moon and the Cap.htm");
-				var content = RobustFile.ReadAllText(htmPath);
+				var content = PatientFile.ReadAllText(htmPath);
 				// insert cc0 stuff in data div
 				var patched = content.Replace("http://creativecommons.org/licenses/by/4.0/", "http://creativecommons.org/publicdomain/zero/1.0/");
-				RobustFile.WriteAllText(htmPath, patched);
+				PatientFile.WriteAllText(htmPath, patched);
 				var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
 				var assertThatBook = AssertThatXmlIn.HtmlFile(bookPath);
 				// For some reason Vaccinations specifies licenseUrl in three ways (no lang, lang="en", lang="*").
@@ -288,13 +288,13 @@ namespace BloomTests.Book
 					Directory.Delete(source, true);
 				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
 				var metaDataPath = Path.Combine(source, "meta.json");
-				var content = RobustFile.ReadAllText(metaDataPath);
+				var content = PatientFile.ReadAllText(metaDataPath);
 				// Publisher (original) is Pratham Books
 				const string publisher = "Pratham Books";
 				var existingMetadata = BookMetaData.FromString(content);
 				Assert.AreEqual(publisher, existingMetadata.Publisher, "Moon & Cap Publisher should be 'Pratham Books'");
 				var derivativeMetaJsonPath = GetPathToMetaJson(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
-				var derivedMetaData = BookMetaData.FromString(RobustFile.ReadAllText(derivativeMetaJsonPath));
+				var derivedMetaData = BookMetaData.FromString(PatientFile.ReadAllText(derivativeMetaJsonPath));
 				Assert.AreEqual(publisher, derivedMetaData.OriginalPublisher, "Derivation should move Publisher to OriginalPublisher");
 				Assert.AreEqual(string.Empty, derivedMetaData.Publisher, "Derivation should leave Publisher empty");
 			}
@@ -312,7 +312,7 @@ namespace BloomTests.Book
 					Directory.Delete(source, true);
 				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
 				var metaDataPath = Path.Combine(source, "meta.json");
-				var content = RobustFile.ReadAllText(metaDataPath);
+				var content = PatientFile.ReadAllText(metaDataPath);
 				// OriginalPublisher is Pratham Books
 				const string origPublisher = "Pratham Books";
 				const string publisher = "Me, myself, and I";
@@ -322,7 +322,7 @@ namespace BloomTests.Book
 				Assert.AreEqual(origPublisher, existingMetadata.OriginalPublisher, "Initial Original Publisher is 'Pratham Books'");
 				Assert.AreEqual(publisher, existingMetadata.Publisher, "Initial Publisher is 'Me, myself, and I'");
 				var derivativeMetaJsonPath = GetPathToMetaJson(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
-				var derivedMetaData = BookMetaData.FromString(RobustFile.ReadAllText(derivativeMetaJsonPath));
+				var derivedMetaData = BookMetaData.FromString(PatientFile.ReadAllText(derivativeMetaJsonPath));
 				Assert.AreEqual(origPublisher, derivedMetaData.OriginalPublisher, "Derivation should not overwrite OriginalPublisher");
 				Assert.AreEqual(string.Empty, derivedMetaData.Publisher, "Derivation should leave Publisher empty");
 			}
@@ -340,14 +340,14 @@ namespace BloomTests.Book
 					Directory.Delete(source, true);
 				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
 				var metaDataPath = Path.Combine(source, "meta.json");
-				var content = RobustFile.ReadAllText(metaDataPath);
+				var content = PatientFile.ReadAllText(metaDataPath);
 				// Remove publisher
 				var metadataObject = BookMetaData.FromString(content);
 				metadataObject.Publisher = null;
 				var patched = JsonConvert.SerializeObject(metadataObject);
-				RobustFile.WriteAllText(metaDataPath, patched);
+				PatientFile.WriteAllText(metaDataPath, patched);
 				var derivativeMetaJsonPath = GetPathToMetaJson(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
-				var derivedMetaData = BookMetaData.FromString(RobustFile.ReadAllText(derivativeMetaJsonPath));
+				var derivedMetaData = BookMetaData.FromString(PatientFile.ReadAllText(derivativeMetaJsonPath));
 				Assert.AreEqual(string.Empty, derivedMetaData.OriginalPublisher, "Derivation of book with no Publisher should leave this empty");
 				Assert.AreEqual(string.Empty, derivedMetaData.Publisher, "Derivation of book with no Publisher should leave this empty");
 			}
@@ -833,8 +833,8 @@ namespace BloomTests.Book
 			var shellFolderPath = GetShellBookFolder(
 				@" ", includeJson: true, bookshelf: "mybookshelf/subdirectory");
 			string folderPath = _starter.CreateBookOnDiskFromTemplate(shellFolderPath, _projectFolder.Path);
-			var oldJsonString = RobustFile.ReadAllText(GetPathToMetaJson(shellFolderPath));
-			var newJsonString = RobustFile.ReadAllText(GetPathToMetaJson(folderPath));
+			var oldJsonString = PatientFile.ReadAllText(GetPathToMetaJson(shellFolderPath));
+			var newJsonString = PatientFile.ReadAllText(GetPathToMetaJson(folderPath));
 			Assert.That(oldJsonString.Contains("bookshelf"));
 			Assert.That(!newJsonString.Contains("bookshelf"));
 			Assert.That(newJsonString.Contains("topic:Fiction"));

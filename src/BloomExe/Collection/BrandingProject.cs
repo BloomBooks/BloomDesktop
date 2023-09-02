@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Bloom.Api;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Collection
 {

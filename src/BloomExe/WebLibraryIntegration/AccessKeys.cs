@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -42,7 +42,7 @@ namespace Bloom.WebLibraryIntegration
 		public static AccessKeys GetAccessKeys(string bucket)
 		{
 			var connectionsPath = FileLocationUtilities.GetFileDistributedWithApplication("connections.dll");
-			var lines = RobustFile.ReadAllLines(connectionsPath);
+			var lines = PatientFile.ReadAllLines(connectionsPath);
 			switch(bucket)
 			{
 				case BloomS3Client.SandboxBucketName:

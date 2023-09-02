@@ -18,7 +18,7 @@ using Bloom.Publish.BloomPub.wifi;
 using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.Reporting;
 

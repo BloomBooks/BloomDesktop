@@ -8,7 +8,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
 
@@ -177,9 +177,9 @@ namespace Bloom.Collection
 		private void MakeCollectionCSSIfMissing()
 		{
 			string path = Path.Combine(_path, "customCollectionStyles.css");
-			if(RobustFile.Exists(path))
+			if(PatientFile.Exists(path))
 				return;
-			RobustFile.Copy(BloomFileLocator.GetBrowserFile(false, "bookLayout", "collection styles override template.css"), path);
+			PatientFile.Copy(BloomFileLocator.GetBrowserFile(false, "bookLayout", "collection styles override template.css"), path);
 		}
 
 		public CollectionType Type { get; private set; }
@@ -268,7 +268,7 @@ namespace Bloom.Collection
 							// which could make it hard to see why a book is skipped, and also because
 							// we were having trouble finding a way to get a file called .bloom-ignore
 							// included in the filesThatMightBeNeededInOutput list in gulpfile.js.
-							if (RobustFile.Exists(Path.Combine(folder.FullName, "BloomIgnore.txt")))
+							if (PatientFile.Exists(Path.Combine(folder.FullName, "BloomIgnore.txt")))
 								continue;
 							AddBookInfo(folder.FullName);
 						}
@@ -335,7 +335,7 @@ namespace Bloom.Collection
 		private bool BackupFileExists(string folderPath)
 		{
 			var bakFiles = Directory.GetFiles(folderPath, BookStorage.BackupFilename);
-			return bakFiles.Length == 1 && RobustFile.Exists(bakFiles[0]);
+			return bakFiles.Length == 1 && PatientFile.Exists(bakFiles[0]);
 		}
 
 		private void AddBookInfo(string folderPath)
@@ -366,7 +366,7 @@ namespace Bloom.Collection
 				Logger.WriteError("Reading "+ jsonPath, e);
 				try
 				{
-					Logger.WriteEvent(jsonPath +" Contents: " +System.Environment.NewLine+ RobustFile.ReadAllText(jsonPath));
+					Logger.WriteEvent(jsonPath +" Contents: " +System.Environment.NewLine+ PatientFile.ReadAllText(jsonPath));
 				}
 				catch(Exception readError)
 				{

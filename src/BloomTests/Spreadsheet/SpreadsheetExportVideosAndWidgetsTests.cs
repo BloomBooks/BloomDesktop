@@ -11,7 +11,7 @@ using BloomTemp;
 using BloomTests.TeamCollection;
 using Moq;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.Spreadsheet
 {
@@ -252,12 +252,12 @@ namespace BloomTests.Spreadsheet
 			// We need all these files in place so we can verify that all of them get copied
 			var videoFolder = Path.Combine(_bookFolder.FolderPath, "video");
 			Directory.CreateDirectory(videoFolder);
-			RobustFile.WriteAllText(Path.Combine(videoFolder, "ac2e237a-140f-45e4-b3e8-257dd12f4793.mp4"), "this is a fake video");
+			PatientFile.WriteAllText(Path.Combine(videoFolder, "ac2e237a-140f-45e4-b3e8-257dd12f4793.mp4"), "this is a fake video");
 
 			var htmlPath = Path.Combine(_bookFolder.FolderPath, "activities", "balldragTouch", "sub","index.html");
 			Directory.CreateDirectory(Path.GetDirectoryName(htmlPath));
-			RobustFile.WriteAllText(htmlPath, "<html><body>This is a fake</body></html>");
-			RobustFile.WriteAllText(Path.Combine(_bookFolder.FolderPath, "activities", "balldragTouch", "junk.png"), "This is a fake image");
+			PatientFile.WriteAllText(htmlPath, "<html><body>This is a fake</body></html>");
+			PatientFile.WriteAllText(Path.Combine(_bookFolder.FolderPath, "activities", "balldragTouch", "junk.png"), "This is a fake image");
 
 			_progressSpy = new ProgressSpy();
 			_sheet =

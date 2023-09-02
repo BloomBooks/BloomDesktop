@@ -3,7 +3,7 @@ using System.Linq;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web.controllers;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 namespace Bloom.Edit
@@ -35,7 +35,7 @@ namespace Bloom.Edit
 				try
 				{
 					var readerSettingsFileName = Path.GetFileName(readerSettingsFile);
-					RobustFile.Copy(readerSettingsFile, Path.Combine(destFolder, readerSettingsFileName), true);
+					PatientFile.Copy(readerSettingsFile, Path.Combine(destFolder, readerSettingsFileName), true);
 					if (readerSettingsFileName.StartsWith(ReaderToolsSettingsPrefix))
 					{
 						var langCode =
@@ -67,7 +67,7 @@ namespace Bloom.Edit
 					{
 						sourcePath = allowedWordsFile;
 						destPath = Path.Combine(allowedWordsDest, Path.GetFileName(allowedWordsFile));
-						RobustFile.Copy(allowedWordsFile, destPath, true);
+						PatientFile.Copy(allowedWordsFile, destPath, true);
 					}
 				}
 				catch (IOException e)
@@ -104,11 +104,11 @@ namespace Bloom.Edit
 			var bloomFolder = ProjectContext.GetBloomAppDataFolder();
 			var readerSettingsFileName = Path.GetFileName(readerToolsPath);
 			var newReaderTools = Path.Combine(bloomFolder, readerSettingsFileName);
-			if (!RobustFile.Exists(newReaderTools))
+			if (!PatientFile.Exists(newReaderTools))
 				return;
-			if (RobustFile.Exists(readerToolsPath) && RobustFile.GetLastWriteTime(readerToolsPath) > RobustFile.GetLastWriteTime(newReaderTools))
+			if (PatientFile.Exists(readerToolsPath) && PatientFile.GetLastWriteTime(readerToolsPath) > PatientFile.GetLastWriteTime(newReaderTools))
 				return; // don't overwrite newer existing settings?
-			RobustFile.Copy(newReaderTools, readerToolsPath, true);
+			PatientFile.Copy(newReaderTools, readerToolsPath, true);
 			// If the settings file is being updated, we should update the corresponding allowed words, if any.
 			var langCode = Path.GetFileNameWithoutExtension(readerSettingsFileName.Substring(ReaderToolsSettingsPrefix.Length));
 

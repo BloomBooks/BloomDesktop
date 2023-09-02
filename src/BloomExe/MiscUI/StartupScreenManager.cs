@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 namespace Bloom.MiscUI
@@ -262,7 +262,7 @@ namespace Bloom.MiscUI
 		{
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
-				RobustFile.Delete("/tmp/BloomLaunching.now"); // (okay if file doesn't exist)
+				PatientFile.Delete("/tmp/BloomLaunching.now"); // (okay if file doesn't exist)
 			}
 			else if (SIL.PlatformUtilities.Platform.IsWindows)
 			{

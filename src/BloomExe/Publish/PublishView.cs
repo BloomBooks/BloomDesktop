@@ -10,7 +10,7 @@ using Bloom.CollectionTab;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using SIL.Reporting;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using System.Drawing;
 using Bloom.Api;
 using Bloom.Publish.BloomPub;

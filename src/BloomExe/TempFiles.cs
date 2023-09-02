@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTemp
 {
@@ -162,7 +162,7 @@ namespace BloomTemp
 			s = System.IO.Path.Combine(_path, s);
 			if (doCreateTheFile)
 			{
-				RobustFile.Create(s).Close();
+				PatientFile.Create(s).Close();
 			}
 
 			return s;
@@ -175,7 +175,7 @@ namespace BloomTemp
 
 			if (doCreateTheFile)
 			{
-				RobustFile.Create(s).Close();
+				PatientFile.Create(s).Close();
 			}
 
 			return s;
@@ -187,7 +187,7 @@ namespace BloomTemp
 			s = System.IO.Path.Combine(_path, s);
 			if (doCreateTheFile)
 			{
-				RobustFile.Create(s).Close();
+				PatientFile.Create(s).Close();
 			}
 
 			return TempFile.TrackExisting(s);
@@ -205,7 +205,7 @@ namespace BloomTemp
 		public string GetTemporaryFile(string name)
 		{
 			string s = System.IO.Path.Combine(_path, name);
-			RobustFile.Create(s).Close();
+			PatientFile.Create(s).Close();
 			return s;
 		}
 
@@ -241,7 +241,7 @@ namespace BloomTemp
 						{
 							try
 							{
-								RobustFile.Delete(s);
+								PatientFile.Delete(s);
 							}
 							catch (Exception)
 							{

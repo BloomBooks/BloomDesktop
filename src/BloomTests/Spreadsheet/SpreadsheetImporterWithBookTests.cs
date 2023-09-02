@@ -2,7 +2,7 @@
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Spreadsheet;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using NUnit.Framework;
 using System.IO;
 using BloomTemp;
@@ -45,7 +45,7 @@ namespace BloomTests.Spreadsheet
 			var bookFilePath = Path.Combine(_bookFolder.FolderPath, "testBook.htm");
 			if (File.Exists(bookFilePath)) // Shouldn't ever happen, but... just being careful.
 			{
-				RobustFile.Delete(bookFilePath);
+				PatientFile.Delete(bookFilePath);
 			}
 			_dom = SetupTestDom();
 			// Write out our test book
@@ -203,7 +203,7 @@ namespace BloomTests.Spreadsheet
 			var dom = new XmlDocument();
 			try
 			{
-				dom.LoadXml(RobustFile.ReadAllText(bookPath));
+				dom.LoadXml(PatientFile.ReadAllText(bookPath));
 			}
 			catch (Exception)
 			{

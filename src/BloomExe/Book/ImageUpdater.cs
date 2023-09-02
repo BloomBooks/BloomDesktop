@@ -5,7 +5,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Utils;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
@@ -166,7 +166,7 @@ namespace Bloom.Book
 				// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
 				var path = UrlPathString.GetFullyDecodedPath(folderPath, ref fileName);
 				progress.WriteStatus("Reading metadata from " + fileName);
-				if (!RobustFile.Exists(path)) // they have bigger problems, which aren't appropriate to deal with here.
+				if (!PatientFile.Exists(path)) // they have bigger problems, which aren't appropriate to deal with here.
 				{
 					imgElement.RemoveAttribute("data-copyright");
 					imgElement.RemoveAttribute("data-creator");

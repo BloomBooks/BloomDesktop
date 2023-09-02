@@ -1,6 +1,6 @@
 ﻿using Bloom.Utils;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.TestUtilities;
 using System;
 using System.Collections.Generic;
@@ -21,9 +21,9 @@ namespace BloomTests.Utils
 			// Setup
 			using (var testFolder = new TemporaryFolder(kTestFolderName))
 			{
-				using (var f1 = RobustFile.Create(Path.Combine(testFolder.Path, "hello.txt")))
+				using (var f1 = PatientFile.Create(Path.Combine(testFolder.Path, "hello.txt")))
 				{
-					using (var f2 = RobustFile.Create(Path.Combine(testFolder.Path, "temp.tmp")))
+					using (var f2 = PatientFile.Create(Path.Combine(testFolder.Path, "temp.tmp")))
 					{
 
 						var archive = new MockBloomArchiveSubclass();
@@ -49,7 +49,7 @@ namespace BloomTests.Utils
 				var filenames = new string[] { "1.txt", "2.txt", "temp.tmp" };
 				foreach (var filename in filenames)
 				{
-					var fs = RobustFile.Create(Path.Combine(testFolder.Path, filename));
+					var fs = PatientFile.Create(Path.Combine(testFolder.Path, filename));
 					fs.Dispose();
 				}
 

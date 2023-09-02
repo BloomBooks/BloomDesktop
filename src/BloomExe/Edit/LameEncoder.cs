@@ -3,7 +3,7 @@ using System.IO;
 using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.CommandLineProcessing;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 
 namespace Bloom.Edit
@@ -26,8 +26,8 @@ namespace Bloom.Edit
 
 			try
 			{
-				if (RobustFile.Exists(destinationPath))
-					RobustFile.Delete(destinationPath);
+				if (PatientFile.Exists(destinationPath))
+					PatientFile.Delete(destinationPath);
 			}
 			catch (Exception)
 			{

@@ -10,7 +10,7 @@ using Bloom.Spreadsheet;
 using Moq;
 using NUnit.Framework;
 using OfficeOpenXml;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 
 namespace BloomTests.Spreadsheet

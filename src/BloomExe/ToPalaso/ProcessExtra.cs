@@ -1,4 +1,4 @@
-﻿using SIL.IO;
+﻿using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using System;

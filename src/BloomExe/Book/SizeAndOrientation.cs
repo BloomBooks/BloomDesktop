@@ -6,7 +6,7 @@ using System.IO;
 using System.Xml;
 using Newtonsoft.Json;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -106,7 +106,7 @@ namespace Bloom.Book
 					NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, $"Could not find {fileName} while looking for size choices");
 					continue;
 				}
-				var contents = RobustFile.ReadAllText(path);
+				var contents = PatientFile.ReadAllText(path);
 				var start = contents.IndexOf("STARTLAYOUTS", StringComparison.InvariantCulture);
 				if (start < 0)
 					 continue; //move on to the next stylesheet

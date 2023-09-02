@@ -20,7 +20,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.Reporting;
@@ -206,7 +206,7 @@ namespace Bloom.web.controllers
 			var subject = reportKind == "User" ? "User Problem" : reportKind == "Fatal" ? "Crash Report" : "Error Report";
 
 			var issueSubmission = new YouTrackIssueSubmitter(YouTrackProjectKey);
-			if (includeScreenshot && _reportInfo?.ScreenshotTempFile != null && RobustFile.Exists(_reportInfo.ScreenshotTempFile.Path))
+			if (includeScreenshot && _reportInfo?.ScreenshotTempFile != null && PatientFile.Exists(_reportInfo.ScreenshotTempFile.Path))
 			{
 				issueSubmission.AddAttachmentWhenWeHaveAnIssue(_reportInfo.ScreenshotTempFile.Path);
 			}
@@ -384,7 +384,7 @@ namespace Bloom.web.controllers
 				var emailZipper = new BloomZipFile(emailZipPath);
 				using (var file = TempFile.WithFilenameInTempFolder("report.txt"))
 				{
-					using (var stream = RobustFile.CreateText(file.Path))
+					using (var stream = PatientFile.CreateText(file.Path))
 					{
 						stream.WriteLine(diagnosticInfo);
 						if (includeBook)
@@ -402,7 +402,7 @@ namespace Bloom.web.controllers
 					if (bookZipPath != null)
 						emailZipper.AddTopLevelFile(bookZipPath);
 				}
-				if (includeScreenshot && _reportInfo?.ScreenshotTempFile != null && RobustFile.Exists(_reportInfo.ScreenshotTempFile.Path))
+				if (includeScreenshot && _reportInfo?.ScreenshotTempFile != null && PatientFile.Exists(_reportInfo.ScreenshotTempFile.Path))
 				{
 					emailZipper.AddTopLevelFile(_reportInfo.ScreenshotTempFile.Path);
 				}

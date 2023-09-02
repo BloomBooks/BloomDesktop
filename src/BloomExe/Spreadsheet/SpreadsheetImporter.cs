@@ -11,7 +11,7 @@ using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using System.Xml;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Xml;
 using Bloom.Book;
@@ -463,7 +463,7 @@ namespace Bloom.Spreadsheet
 			if (_pathToSpreadsheetFolder != null) // only null in some unit tests
 			{
 				var sourcePath = Path.Combine(_pathToSpreadsheetFolder, source);
-				if (!RobustFile.Exists(sourcePath))
+				if (!PatientFile.Exists(sourcePath))
 				{
 					Warn(
 						$"Video \"{sourcePath}\" on row {CurrentRowIndexForMessages} was not found.");
@@ -473,7 +473,7 @@ namespace Bloom.Spreadsheet
 				Directory.CreateDirectory(videoDirectory);
 
 				var dest = Path.Combine(videoDirectory, videoFile);
-				while (RobustFile.Exists(dest))
+				while (PatientFile.Exists(dest))
 				{
 					videoFile = ImageUtils.GetUnusedFilename(videoDirectory,
 						Path.GetFileNameWithoutExtension(videoFile), Path.GetExtension(videoFile), "video");
@@ -484,7 +484,7 @@ namespace Bloom.Spreadsheet
 				// to duplicate them all.
 				try
 				{
-					RobustFile.Copy(sourcePath, dest, true);
+					PatientFile.Copy(sourcePath, dest, true);
 				}
 				catch (Exception e) when (e is IOException || e is SecurityException ||
 				                          e is UnauthorizedAccessException)
@@ -542,7 +542,7 @@ namespace Bloom.Spreadsheet
 			if (_pathToSpreadsheetFolder != null)
 			{
 				var sourcePath = Path.Combine(_pathToSpreadsheetFolder, source);
-				if (!RobustFile.Exists(sourcePath))
+				if (!PatientFile.Exists(sourcePath))
 				{
 					Warn($"Could not find '{sourcePath}' for the widget on row {CurrentRowIndexForMessages}.");
 					return;
@@ -605,7 +605,7 @@ namespace Bloom.Spreadsheet
 			if(!ImageUpdater.IsPlaceholderOrLicense(destFileName) && _pathToBookFolder != null)
 			{
 				var fullDestinationPath = Path.Combine(_pathToBookFolder, destFileName);
-				while (RobustFile.Exists(fullDestinationPath))
+				while (PatientFile.Exists(fullDestinationPath))
 				{
 					destFileName = ImageUtils.GetUnusedFilename(_pathToBookFolder,
 						Path.GetFileNameWithoutExtension(destFileName), Path.GetExtension(destFileName), "image");
@@ -659,9 +659,9 @@ namespace Bloom.Spreadsheet
 				if (_pathToBookFolder != null && _pathToSpreadsheetFolder != null)
 				{
 					var dest = Path.Combine(_pathToBookFolder, destFileName);
-					if (RobustFile.Exists(fullSpreadsheetPath))
+					if (PatientFile.Exists(fullSpreadsheetPath))
 					{
-						RobustFile.Copy(fullSpreadsheetPath, dest, true);
+						PatientFile.Copy(fullSpreadsheetPath, dest, true);
 						if (imgElement != null)
 							ImageUpdater.UpdateImgMetadataAttributesToMatchImage(_pathToBookFolder, imgElement,
 							new NullProgress());
@@ -1749,12 +1749,12 @@ namespace Bloom.Spreadsheet
 			string src = audioFile;
 			if (audioFile.StartsWith("./"))
 				src = Path.Combine(_pathToSpreadsheetFolder, audioFile.Substring(2));
-			if (RobustFile.Exists(src))
+			if (PatientFile.Exists(src))
 			{
 				var audioPath = Path.Combine(_pathToBookFolder, "audio");
 				Directory.CreateDirectory(audioPath);
 				var destPath = Path.Combine(audioPath, destFile);
-				if (RobustFile.Exists(destPath))
+				if (PatientFile.Exists(destPath))
 				{
 					id = HtmlDom.SetNewHtmlIdValue(elt);
 					destPath = Path.Combine(audioPath, id + ".mp3");
@@ -1772,7 +1772,7 @@ namespace Bloom.Spreadsheet
 						ProgressKind.Error, PageNumberToReport.ToString(), src.Replace("\\", "/"));
 					return "0";
 				}
-				RobustFile.Copy(src, destPath);
+				PatientFile.Copy(src, destPath);
 				var durationStr = duration.ToString(CultureInfo.InvariantCulture);
 				elt.SetAttribute("data-duration", durationStr);
 				string md5 = await GetMd5Async(elt);

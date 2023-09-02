@@ -7,7 +7,7 @@ using Bloom.Api;
 using Bloom.ToPalaso;
 using BloomTemp;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 namespace Bloom.Utils
@@ -71,7 +71,7 @@ namespace Bloom.Utils
 			}
 
 			_csvFilePath = TempFileUtils.GetTempFilepathWithExtension(".csv");
-			_stream = RobustFile.CreateText(_csvFilePath);
+			_stream = PatientFile.CreateText(_csvFilePath);
 			_stream.AutoFlush = true;
 
 			try

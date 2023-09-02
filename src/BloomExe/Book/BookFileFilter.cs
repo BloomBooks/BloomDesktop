@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Bloom.ToPalaso;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -361,7 +361,7 @@ namespace Bloom.Book
 				var pathFromBookFolder = path.Substring(_bookFolderPrefixLength);
 				var dest = Path.Combine(destinationFolder, pathFromBookFolder);
 				Directory.CreateDirectory(Path.GetDirectoryName(dest));
-				RobustFile.Copy(path, dest);
+				PatientFile.Copy(path, dest);
 			}
 		}
 	}

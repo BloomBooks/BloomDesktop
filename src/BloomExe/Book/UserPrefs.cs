@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Newtonsoft.Json;
 using System.IO;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using Bloom.Utils;
 
@@ -27,11 +27,11 @@ namespace Bloom.Book
 				return null;
 
 			UserPrefs userPrefs = null;
-			if(RobustFile.Exists(fileName))
+			if(PatientFile.Exists(fileName))
 			{
 				try
 				{
-					userPrefs = JsonConvert.DeserializeObject<UserPrefs>(RobustFile.ReadAllText(fileName));
+					userPrefs = JsonConvert.DeserializeObject<UserPrefs>(PatientFile.ReadAllText(fileName));
 					if (userPrefs == null)
 						throw new ApplicationException("JsonConvert.DeserializeObject() returned null");
 				}
@@ -149,7 +149,7 @@ namespace Bloom.Book
 					var temp = new TempFileForSafeWriting(_filePath);
 					try
 					{
-						RobustFile.WriteAllText(temp.TempFilePath, prefs);
+						PatientFile.WriteAllText(temp.TempFilePath, prefs);
 					}
 					catch (UnauthorizedAccessException error)
 					{

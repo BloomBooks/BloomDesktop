@@ -13,7 +13,7 @@
 using Bloom.ImageProcessing;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -199,7 +199,7 @@ namespace Bloom.Spreadsheet
 					catch (Exception ex)
 					{
 						string errorText;
-						if (!RobustFile.Exists(imageSrcPath))
+						if (!PatientFile.Exists(imageSrcPath))
 						{
 							errorText = "Missing";
 						}
@@ -228,7 +228,7 @@ namespace Bloom.Spreadsheet
 					SetBackgroundColorOfColumn(worksheet, iColumn1Based, InternalSpreadsheet.HiddenColor);
 				}
 
-				RobustFile.Delete(outputPath);
+				PatientFile.Delete(outputPath);
 				var xlFile = new FileInfo(outputPath);
 				package.SaveAs(xlFile);
 			}

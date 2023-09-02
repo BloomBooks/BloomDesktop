@@ -5,7 +5,7 @@ using Bloom;
 using Bloom.ImageProcessing;
 using Bloom.Api;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.TestUtilities;
 
 namespace BloomTests.web

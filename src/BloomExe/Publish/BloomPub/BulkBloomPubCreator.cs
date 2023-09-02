@@ -13,7 +13,7 @@ using Bloom.web;
 using BloomTemp;
 using Newtonsoft.Json;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Publish.BloomPub
 {
@@ -63,7 +63,7 @@ namespace Bloom.Publish.BloomPub
 							.Replace("hex-color-value", colorString);
 						var filename = $"{filenameWithoutExtension}.bloomshelf";
 						var bloomShelfPath = Path.Combine(dest.FolderPath, filename);
-						RobustFile.WriteAllText(bloomShelfPath, json, Encoding.UTF8);
+						PatientFile.WriteAllText(bloomShelfPath, json, Encoding.UTF8);
 					}
 
 					foreach (var bookInfo in _collectionModel.TheOneEditableCollection.GetBookInfos())

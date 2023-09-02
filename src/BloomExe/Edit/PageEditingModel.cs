@@ -7,7 +7,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.web.controllers;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
 using Application = System.Windows.Forms.Application;

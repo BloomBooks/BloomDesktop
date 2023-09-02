@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.Extensions;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Xml;
 
@@ -30,7 +30,7 @@ namespace Bloom.Edit
 		{
 			_folderInWhichToReadAndSaveCollectionSettings = folderInWhichToReadAndSaveCollectionSettings;
 			PathToCollectionJson = _folderInWhichToReadAndSaveCollectionSettings.CombineForPath("configuration.txt");
-			ToPalaso.RobustIO.RequireThatDirectoryExists(folderInWhichToReadAndSaveCollectionSettings);
+			Bloom.Utils.PatientIO.RequireThatDirectoryExists(folderInWhichToReadAndSaveCollectionSettings);
 			LocalData = string.Empty;
 		}
 
@@ -41,7 +41,7 @@ namespace Bloom.Edit
 			//BookStorage storage = new BookStorage(folderPath, null);
 			//return (null != FindConfigurationPage(dom));
 
-			return RobustFile.Exists(Path.Combine(folderPath, "configuration.html"));
+			return PatientFile.Exists(Path.Combine(folderPath, "configuration.html"));
 		}
 
 		public DialogResult ShowConfigurationDialog(string folderPath)
@@ -162,8 +162,8 @@ namespace Bloom.Edit
 				//nice non-ascii paths kill this, so let's go to a temp file first
 				var temp = TempFile.CreateAndGetPathButDontMakeTheFile(); //we don't want to wrap this in using
 				await b.SaveDocumentAsync(temp.Path);
-				RobustFile.Delete(bookPath);
-				RobustFile.Move(temp.Path, bookPath);
+				PatientFile.Delete(bookPath);
+				PatientFile.Move(temp.Path, bookPath);
 			}
 
 			var sanityCheckDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
@@ -191,7 +191,7 @@ namespace Bloom.Edit
 			//when it is done with the previous navigation.
 			if (sanityCheckDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count < 24) //should be 24 pages
 			{
-				Logger.WriteMinorEvent(RobustFile.ReadAllText(bookPath)); //this will come to us if they report it
+				Logger.WriteMinorEvent(PatientFile.ReadAllText(bookPath)); //this will come to us if they report it
 				throw new ApplicationException("Malformed Calendar (code assumes only calendar uses the Configurator, and they have at least 24 pages)");
 			}
 
@@ -235,7 +235,7 @@ namespace Bloom.Edit
 					collectionData = MergeJsonData(DynamicJson.Parse(existingDataString).library.ToString(), collectionData.ToString());
 			}
 
-			RobustFile.WriteAllText(PathToCollectionJson, collectionData.ToString());
+			PatientFile.WriteAllText(PathToCollectionJson, collectionData.ToString());
 
 
 		}
@@ -332,10 +332,10 @@ namespace Bloom.Edit
 
 		public string GetCollectionData()
 		{
-			if (!RobustFile.Exists(PathToCollectionJson))
+			if (!PatientFile.Exists(PathToCollectionJson))
 				return "{}";//return "{\"dummy\": \"x\"}";//TODO
 
-			var s= RobustFile.ReadAllText(PathToCollectionJson);
+			var s= PatientFile.ReadAllText(PathToCollectionJson);
 			if(string.IsNullOrEmpty(s))
 				return string.Empty;
 

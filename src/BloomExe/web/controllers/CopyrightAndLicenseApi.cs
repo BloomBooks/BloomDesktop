@@ -3,7 +3,7 @@ using System.Drawing;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 

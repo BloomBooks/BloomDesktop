@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.Code;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.Utils
 {
@@ -20,7 +20,7 @@ namespace Bloom.Utils
 	{
 		public static string GetComment(string zipPath)
 		{
-			return RetryUtility.Retry(() =>
+			return Patient.Retry(() =>
 			{
 				using (var zipFile = new ZipFile(zipPath))
 				{
@@ -31,7 +31,7 @@ namespace Bloom.Utils
 
 		public static void WriteZipComment(string comment, string zipPath)
 		{
-			RetryUtility.Retry(() =>
+			Patient.Retry(() =>
 			{
 				using (var zipFile = new ZipFile(zipPath))
 				{
@@ -48,7 +48,7 @@ namespace Bloom.Utils
 		public static string GetZipEntryContent(string zipPath, string entryName)
 		{
 			string result = "error";
-			RetryUtility.Retry(() =>
+			Patient.Retry(() =>
 			{
 				using (var zipFile = new ZipFile(zipPath))
 				{
@@ -74,7 +74,7 @@ namespace Bloom.Utils
 		public static void UnzipDirectory(string destFolder, string zipPath)
 		{
 			byte[] buffer = new byte[4096]; // 4K is optimum
-			RetryUtility.Retry(() =>
+			Patient.Retry(() =>
 			{
 				using (var zipFile = new ZipFile(zipPath))
 				{
@@ -95,7 +95,7 @@ namespace Bloom.Utils
 							Directory.CreateDirectory(directoryName);
 						using (var instream = zipFile.GetInputStream(entry))
 						{
-							using (var writer = RobustFile.Create(fullOutputPath))
+							using (var writer = PatientFile.Create(fullOutputPath))
 							{
 								StreamUtils.Copy(instream, writer, buffer);
 							}
@@ -110,14 +110,14 @@ namespace Bloom.Utils
 		/// </summary>
 		public static void WriteFilesToZip(string[] names, string sourceFolder, string destPath)
 		{
-			RetryUtility.Retry(() =>
+			Patient.Retry(() =>
 			{
 				Directory.CreateDirectory(Path.GetDirectoryName(destPath));
 				var zipFile = new BloomZipFile(destPath);
 				foreach (var name in names)
 				{
 					var path = Path.Combine(sourceFolder, name);
-					if (!RobustFile.Exists(path))
+					if (!PatientFile.Exists(path))
 						continue;
 					zipFile.AddTopLevelFile(path, true);
 				}
@@ -128,7 +128,7 @@ namespace Bloom.Utils
 
 		public static void WriteAllTopLevelFilesToZip(string destPath, string sourceDir)
 		{
-			RetryUtility.Retry(() =>
+			Patient.Retry(() =>
 			{
 				Directory.CreateDirectory(Path.GetDirectoryName(destPath));
 				var zipFile = new BloomZipFile(destPath);
@@ -150,7 +150,7 @@ namespace Bloom.Utils
 		{
 			byte[] buffer = new byte[4096]; // 4K is optimum
 			var filesInZip = new HashSet<string>();
-			RetryUtility.Retry(() =>
+			Patient.Retry(() =>
 			{
 				using (var zipFile = new ZipFile(zipPath))
 				{
@@ -163,7 +163,7 @@ namespace Bloom.Utils
 						if (!String.IsNullOrEmpty(directoryName))
 							Directory.CreateDirectory(directoryName);
 						using (var instream = zipFile.GetInputStream(entry))
-						using (var writer = RobustFile.Create(fullOutputPath))
+						using (var writer = PatientFile.Create(fullOutputPath))
 						{
 							StreamUtils.Copy(instream, writer, buffer);
 						}
@@ -176,7 +176,7 @@ namespace Bloom.Utils
 			filesToDelete.ExceptWith(filesInZip);
 			foreach (var discard in filesToDelete)
 			{
-				RobustFile.Delete(Path.Combine(destFolder, discard));
+				PatientFile.Delete(Path.Combine(destFolder, discard));
 			}
 		}
 	}

@@ -17,7 +17,7 @@ using Bloom.MiscUI;
 using Bloom.Utils;
 using DesktopAnalytics;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
@@ -906,7 +906,7 @@ namespace Bloom.Edit
 			// We don't really make a file for the page, the contents are just saved in our local server.
 			// But we give it a url that makes it seem to be in the book folder so local urls work.
 			// See BloomServer.MakeInMemoryHtmlFileInBookFolder() for more details.
-			var frameText = RobustFile.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
+			var frameText = PatientFile.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
 			if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)

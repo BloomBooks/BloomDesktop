@@ -12,7 +12,7 @@ using System.Text;
 using System.Web;
 using Bloom.web;
 using Bloom.web.controllers;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 
 
@@ -123,7 +123,7 @@ namespace Bloom.Api
 		{
 			//Deal with BL-3153, where the file was still open in another thread
 			FileStream fs;
-			if(!RobustFile.Exists(path))
+			if(!PatientFile.Exists(path))
 			{
 				// Earlier there was concern that we were coming here to look for .wav file existence, but that task
 				// is now handled in the "/bloom/api/audio" endpoint. So if we get here, we're looking for a different file.
@@ -135,14 +135,14 @@ namespace Bloom.Api
 
 			try
 			{
-				fs = RobustFile.OpenRead(path);
+				fs = PatientFile.OpenRead(path);
 			}
 			catch(Exception error)
 			{
 				// Something odd happened while trying to read the file. Maybe the file is locked by another process?
 				// Let's not throw an error, but we'll record it in the log.
 				// BL-12237 actually had a FileNotFoundException here, in a Team Collection setting, which should
-				// have been caught by the RobustFile.Exists() above. So we'll just log it and continue.
+				// have been caught by the PatientFile.Exists() above. So we'll just log it and continue.
 				// The important thing for avoiding a big ugly EndpointHandler error (in the case of BL-12237) is to
 				// set HaveOutput to true, which WriteError() does.
 				Logger.WriteError("Server could not read " + path, error);
@@ -192,7 +192,7 @@ namespace Bloom.Api
 				// be reloaded. It is useful when debugging with tools which automatically reload the page when something changes.
 				if (_actualContext.Request.HttpMethod == "HEAD")
 				{
-					var lastModified = RobustFile.GetLastWriteTimeUtc(path).ToString("R");
+					var lastModified = PatientFile.GetLastWriteTimeUtc(path).ToString("R");
 
 					// Originally we were returning the Last-Modified header with every response, but we discovered that this was
 					// causing Geckofx to cache the contents of the files. This made debugging difficult because, even if the file
@@ -233,7 +233,7 @@ namespace Bloom.Api
 							_actualContext.Response.OutputStream.Write(buffer, 0, read);
 							try
 							{
-								fs = RobustFile.OpenRead(path);
+								fs = PatientFile.OpenRead(path);
 							}
 							catch (FileNotFoundException)
 							{

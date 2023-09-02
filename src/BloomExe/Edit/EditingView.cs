@@ -21,7 +21,7 @@ using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Miscellaneous;
 using TempFile = SIL.IO.TempFile;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Windows.Forms.ImageToolbox.ImageGallery;
 using SIL.Windows.Forms.Widgets;
 using System.Globalization;
@@ -490,13 +490,13 @@ namespace Bloom.Edit
 		private bool ReloadCurrentPage()
 		{
 			// Note that ModifierKeys does not seem to work on Linux.
-			return ((ModifierKeys & Keys.Shift) == Keys.Shift) || RobustFile.Exists("/tmp/UseCURRENTPAGE");
+			return ((ModifierKeys & Keys.Shift) == Keys.Shift) || PatientFile.Exists("/tmp/UseCURRENTPAGE");
 		}
 
 		private bool UseBackgroundGC()
 		{
 			// Note that ModifierKeys does not seem to work on Linux.
-			return ((ModifierKeys & Keys.Alt) == Keys.Alt) || RobustFile.Exists("/tmp/UseBackgroundGC");
+			return ((ModifierKeys & Keys.Alt) == Keys.Alt) || PatientFile.Exists("/tmp/UseBackgroundGC");
 		}
 
 
@@ -743,9 +743,9 @@ namespace Bloom.Edit
 							Logger.WriteMinorEvent("[Paste Image] Saving {0} ({1}) as {2} and converting to PNG",
 								clipboardImage.FileName,
 								clipboardImage.OriginalFilePath, pathToPngVersion);
-							if (RobustFile.Exists(pathToPngVersion))
+							if (PatientFile.Exists(pathToPngVersion))
 							{
-								RobustFile.Delete(pathToPngVersion);
+								PatientFile.Delete(pathToPngVersion);
 							}
 
 							using (var temp = TempFile.TrackExisting(pathToPngVersion))
@@ -882,7 +882,7 @@ namespace Bloom.Edit
 			string newImagePath = null;
 
 			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
-			if(!currentPath.ToLowerInvariant().Contains("placeholder") && RobustFile.Exists(existingImagePath))
+			if(!currentPath.ToLowerInvariant().Contains("placeholder") && PatientFile.Exists(existingImagePath))
 			{
 				try
 				{
@@ -893,7 +893,7 @@ namespace Bloom.Edit
 					var folder = Path.GetDirectoryName(existingImagePath);
 					var newFilename = ImageUtils.GetUnusedFilename(folder, Path.GetFileNameWithoutExtension(existingImagePath), Path.GetExtension(existingImagePath));
 					newImagePath = Path.Combine(folder, newFilename);
-					RobustFile.Copy(existingImagePath, newImagePath);
+					PatientFile.Copy(existingImagePath, newImagePath);
 					Debug.WriteLine("Created image copy: " + newImagePath);
 					Logger.WriteEvent("Created image copy: " + newImagePath);
 					imageInfo = PalasoImage.FromFileRobustly(newImagePath);
@@ -1023,7 +1023,7 @@ namespace Bloom.Edit
 							{
 								// Try to copy the file only if we actually need to copy it.  (BL-9737)
 								if (dlg.ImageInfo.OriginalFilePath != newImagePath)
-									RobustFile.Copy(dlg.ImageInfo.OriginalFilePath, newImagePath);
+									PatientFile.Copy(dlg.ImageInfo.OriginalFilePath, newImagePath);
 							}
 							else
 							{
@@ -1045,7 +1045,7 @@ namespace Bloom.Edit
 							dlg.ImageInfo.SetCurrentFilePath(null); // clears internal cache
 							if (newImagePath != dlg.ImageInfo.OriginalFilePath)
 							{
-								RobustFile.Delete(newImagePath);
+								PatientFile.Delete(newImagePath);
 							}
 						}
 #if MEMORYCHECK

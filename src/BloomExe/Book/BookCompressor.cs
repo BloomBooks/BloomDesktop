@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using System.Drawing;
 using System;
 using System.Drawing.Drawing2D;
@@ -36,7 +36,7 @@ namespace Bloom.Book
 			if (coverImagePath == null)
 			{
 				var blankImage = Path.Combine(FileLocationUtilities.DirectoryOfApplicationOrSolution, "DistFiles", "Blank.png");
-				if (RobustFile.Exists(blankImage))
+				if (PatientFile.Exists(blankImage))
 					coverImagePath = blankImage;
 			}
 			if (coverImagePath != null)
@@ -123,7 +123,7 @@ namespace Bloom.Book
 		private static void CompressDirectory(string outputPath, string directoryToCompress, IFilter filter, string dirNamePrefix,
 			Dictionary<string, byte[]> overrides = null, bool wrapWithFolder = true)
 		{
-			using (var fsOut = RobustFile.Create(outputPath))
+			using (var fsOut = PatientFile.Create(outputPath))
 			{
 				using (var zipStream = new ZipOutputStream(fsOut))
 				{
@@ -206,7 +206,7 @@ namespace Bloom.Book
 				{
 					// Zip the file in buffered chunks
 					byte[] buffer = new byte[4096];
-					using (var streamReader = RobustFile.OpenRead(filePath))
+					using (var streamReader = PatientFile.OpenRead(filePath))
 					{
 						StreamUtils.Copy(streamReader, zipStream, buffer);
 					}
@@ -265,7 +265,7 @@ namespace Bloom.Book
 			//Whereas currently, we use the meta.json as the authoritative source.
 			//TODO Should we just get rid of these tags in the HTML? Can they be accessed from javascript? If so,
 			//then they will be needed eventually (as we involve c# less in the UI)
-			var text = RobustFile.ReadAllText(bookPath, Encoding.UTF8);
+			var text = PatientFile.ReadAllText(bookPath, Encoding.UTF8);
 			// Note that we're getting rid of preceding newline but not following one. Hopefully we cleanly remove a whole line.
 			// I'm not sure the </meta> ever occurs in html files, but just in case we'll match if present.
 			var regex = new Regex("\\s*<meta\\s+name=(['\\\"])lockedDownAsShell\\1 content=(['\\\"])true\\2>(</meta>)? *");
@@ -324,7 +324,7 @@ namespace Bloom.Book
 			var maxWidth = imagePublishSettings.MaxWidth;
 			var maxHeight = imagePublishSettings.MaxHeight;
 
-			var originalBytes = RobustFile.ReadAllBytes(filePath);
+			var originalBytes = PatientFile.ReadAllBytes(filePath);
 			using (var originalImage = PalasoImage.FromFileRobustly(filePath))
 			{
 				var image = originalImage.Image;
@@ -416,7 +416,7 @@ namespace Bloom.Book
 							var metadata = SIL.Windows.Forms.ClearShare.Metadata.FromFile(filePath);
 							if (!metadata.IsEmpty)
 								metadata.Write(tempFile.Path);
-							var newBytes = RobustFile.ReadAllBytes(tempFile.Path);
+							var newBytes = PatientFile.ReadAllBytes(tempFile.Path);
 							if (newBytes.Length < originalBytes.Length || needTransparencyConversion)
 								return newBytes;
 						}

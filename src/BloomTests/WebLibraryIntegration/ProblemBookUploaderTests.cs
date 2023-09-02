@@ -3,7 +3,7 @@ using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 
 namespace BloomTests.WebLibraryIntegration

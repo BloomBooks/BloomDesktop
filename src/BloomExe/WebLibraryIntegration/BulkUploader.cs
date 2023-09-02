@@ -9,7 +9,7 @@ using Bloom.Publish;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.PDF;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using BloomTemp;
 
@@ -86,7 +86,7 @@ namespace Bloom.WebLibraryIntegration
 					// If we find duplicate IDs, we need to evaluate whether the books involved can have their IDs changed safely.
 					var parent = Path.GetDirectoryName(path);
 					var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
-					if (collectionPath == null || !RobustFile.Exists(collectionPath))
+					if (collectionPath == null || !PatientFile.Exists(collectionPath))
 					{
 						return true; // weird situation, but it's not in a TC so we can update the ID if we want.
 					}
@@ -273,7 +273,7 @@ namespace Bloom.WebLibraryIntegration
 			// proper parent book collection if possible.
 			var parent = Path.GetDirectoryName(uploadParams.Folder);
 			var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
-			if (collectionPath == null || !RobustFile.Exists(collectionPath))
+			if (collectionPath == null || !PatientFile.Exists(collectionPath))
 			{
 				progress.WriteError("Skipping book because no collection file was found in its parent directory.");
 				return;
@@ -313,7 +313,7 @@ namespace Bloom.WebLibraryIntegration
 				else
 				{
 					canSkip = _singleBookUploader.CheckAgainstHashFileOnS3(currentHashes, uploadParams.Folder, progress);
-					RobustFile.WriteAllText(pathToLocalHashInfoFromLastUpload, currentHashes); // ensure local copy is saved
+					PatientFile.WriteAllText(pathToLocalHashInfoFromLastUpload, currentHashes); // ensure local copy is saved
 				}
 				if (canSkip)
 				{
@@ -324,7 +324,7 @@ namespace Bloom.WebLibraryIntegration
 				}
 			}
 			// save local copy of hashes file: it will be uploaded with the other book files
-			RobustFile.WriteAllText(pathToLocalHashInfoFromLastUpload, currentHashes);
+			PatientFile.WriteAllText(pathToLocalHashInfoFromLastUpload, currentHashes);
 
 			bookInfo.Bookshelf = book.CollectionSettings.DefaultBookshelf;
 			var bookshelfName = String.IsNullOrWhiteSpace(book.CollectionSettings.DefaultBookshelf) ? "(none)" : book.CollectionSettings.DefaultBookshelf;

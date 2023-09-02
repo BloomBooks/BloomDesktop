@@ -9,7 +9,7 @@ using Bloom.Api;
 using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
@@ -104,7 +104,7 @@ namespace Bloom.Publish.PDF
 			var execDir = BloomFileLocator.GetCodeBaseFolder();
 			var fromDirectory = String.Empty;
 			var filePath = Path.Combine(execDir, "BloomPdfMaker.exe");
-			if (!RobustFile.Exists(filePath))
+			if (!PatientFile.Exists(filePath))
 			{
 				var msg = LocalizationManager.GetString("InstallProblem.BloomPdfMaker",
 					"A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.");
@@ -164,7 +164,7 @@ namespace Bloom.Publish.PDF
 			Logger.WriteEvent($"Call to {exePath} completed");
 			Console.WriteLine($"Call to {exePath} completed");
 
-			if (res.DidTimeOut || !RobustFile.Exists(specs.OutputPdfPath))
+			if (res.DidTimeOut || !PatientFile.Exists(specs.OutputPdfPath))
 			{
 				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
 				Console.Error.WriteLine(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);

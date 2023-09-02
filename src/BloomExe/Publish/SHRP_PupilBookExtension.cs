@@ -9,7 +9,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using Bloom.ToPalaso;
 
 namespace Bloom.Publish

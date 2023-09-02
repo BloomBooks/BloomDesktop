@@ -5,7 +5,7 @@ using PdfSharp;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using System;
 using System.Collections.Generic;
@@ -57,10 +57,10 @@ namespace Bloom.Publish.PDF
 					doWorkEventArgs.Cancel = true;
 					return;
 				}
-				if (RobustFile.Exists(specs.OutputPdfPath))
+				if (PatientFile.Exists(specs.OutputPdfPath))
 					break; // normally the first time
 			}
-			if (!RobustFile.Exists(specs.OutputPdfPath) && owner != null)
+			if (!PatientFile.Exists(specs.OutputPdfPath) && owner != null)
 			{
 				// Should never happen, but...
 				owner.Invoke((Action) (() =>
@@ -80,7 +80,7 @@ namespace Bloom.Publish.PDF
 				// when debugging the PDF creation process.  I'm reluctant to just delete these lines until
 				// the time comes we're fully happy with how the process works.
 				/*var pgid = (string.IsNullOrEmpty(specs.PaperSizeName) ? "Custom" : specs.PaperSizeName) + (specs.Landscape ? "-L" : "-P");*/
-				/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-0.pdf"), true);*/
+				/*PatientFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-0.pdf"), true);*/
 				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
 				// Also if the book is full bleed we may need to remove some spurious pages.
 				// Removing spurious pages must be done BEFORE we switch pages around to make a booklet!
@@ -89,14 +89,14 @@ namespace Bloom.Publish.PDF
 				// the file before manipulating it further. Just noting it in case there are unexpected issues.
 				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker, doWorkEventArgs);
 				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath);
-				/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-1.pdf"), true);*/
+				/*PatientFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-1.pdf"), true);*/
 				AddMetadataAndRemoveBlankPagesIfNecessary(specs);
-				/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-2.pdf"), true);*/
+				/*PatientFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-2.pdf"), true);*/
 				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.PrintWithFullBleed)
 				{
 					//remake the pdf by reordering the pages (and sometimes rotating, shrinking, etc)
 					MakeBooklet(specs);
-					/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-3.pdf"), true);*/
+					/*PatientFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-3.pdf"), true);*/
 				}
 
 				// Check that we got a valid, readable PDF.
@@ -129,7 +129,7 @@ namespace Bloom.Publish.PDF
 						+ Environment.NewLine + "- "
 						+ LocalizationManager.GetString("PublishTab.PdfMaker.TryMoreMemory", "Try doing this on a computer with more memory"));
 
-				RobustFile.Move(specs.OutputPdfPath, specs.OutputPdfPath + "-BAD");
+				PatientFile.Move(specs.OutputPdfPath, specs.OutputPdfPath + "-BAD");
 				doWorkEventArgs.Result = MakingPdfFailedException.CreatePdfException();
 			}
 
@@ -262,8 +262,8 @@ namespace Bloom.Publish.PDF
 
 			using (var incoming = new TempFile())
 			{
-				RobustFile.Delete(incoming.Path);
-				RobustFile.Move(specs.OutputPdfPath, incoming.Path);
+				PatientFile.Delete(incoming.Path);
+				PatientFile.Move(specs.OutputPdfPath, incoming.Path);
 
 				LayoutMethod method;
 				switch (specs.BooketLayoutMethod)

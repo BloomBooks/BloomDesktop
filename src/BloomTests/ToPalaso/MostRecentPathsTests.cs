@@ -4,7 +4,7 @@ using Bloom;
 using Bloom.CollectionChoosing;
 using Bloom.ToPalaso;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.ToPalaso
 {
@@ -38,7 +38,7 @@ namespace BloomTests.ToPalaso
 
 			public void Dispose()
 			{
-				RobustFile.Delete(FileName);
+				PatientFile.Delete(FileName);
 
 				GC.SuppressFinalize(this);
 			}

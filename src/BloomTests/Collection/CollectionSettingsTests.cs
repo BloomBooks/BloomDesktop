@@ -5,7 +5,7 @@ using System.Xml.Linq;
 using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.TestUtilities;
 
 namespace BloomTests.Collection
@@ -65,7 +65,7 @@ namespace BloomTests.Collection
 			const string collectionName = "test";
 			var collectionPath = CollectionSettings.GetPathForNewSettings(_folder.Path, collectionName);
 			Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
-			RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+			PatientFile.WriteAllText(collectionPath, bloomCollectionFileContents);
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
 			Assert.AreEqual("Decimal", settings.PageNumberStyle,
 				"'xyz' is not in the approved list of numbering styles, should default to 'Decimal'");
@@ -81,7 +81,7 @@ namespace BloomTests.Collection
 			const string collectionName = "test";
 			var collectionPath = CollectionSettings.GetPathForNewSettings(_folder.Path, collectionName);
 			Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
-			RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+			PatientFile.WriteAllText(collectionPath, bloomCollectionFileContents);
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
 			Assert.AreEqual("Decimal", settings.PageNumberStyle,
 				"If the bloomCollection has no value for numbering style, assume 'decimal'");
@@ -113,7 +113,7 @@ namespace BloomTests.Collection
 			const string collectionName = "test";
 			var collectionPath = CollectionSettings.GetPathForNewSettings(_folder.Path, collectionName);
 			Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
-			RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+			PatientFile.WriteAllText(collectionPath, bloomCollectionFileContents);
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
 			// If there isn't a valid project name/code pair, then the project goes to Default and the bookshelf to none.
 			// We don't want to expose a valid name/code pair in the source code so this test is all we have.
@@ -124,7 +124,7 @@ namespace BloomTests.Collection
 			// they've established a valid project which has one or more bookshelves.
 			settings.DefaultBookshelf = "some-other-shelf";
 			settings.Save();
-			var newContents = RobustFile.ReadAllText(collectionPath);
+			var newContents = PatientFile.ReadAllText(collectionPath);
 			AssertThatXmlIn.String(newContents).HasSpecifiedNumberOfMatchesForXpath("//DefaultBookTags[text()='bookshelf:some-other-shelf']", 1);
 			var settings2 = CreateCollectionSettings(Path.GetDirectoryName(collectionPath), collectionName);
 			// And the assigned bookshelf will disappear on loading into the CollectionSettings object.
@@ -263,7 +263,7 @@ namespace BloomTests.Collection
 			settings.Save();
 
 			// Verification
-			var text = RobustFile.ReadAllText(settings.SettingsFilePath);
+			var text = PatientFile.ReadAllText(settings.SettingsFilePath);
 			string expected = @"<BulkPublishBloomPubSettings>
     <MakeBookshelfFile>False</MakeBookshelfFile>
     <MakeBloomBundle>False</MakeBloomBundle>
@@ -279,9 +279,9 @@ namespace BloomTests.Collection
 		{
 			var collectionName = "loadBulkPublishSettingsTest";
 			var collectionSettingsPath = Path.Combine(_folder.Path, $"{collectionName}.bloomCollection");
-			if (RobustFile.Exists(collectionSettingsPath))
+			if (PatientFile.Exists(collectionSettingsPath))
 			{
-				RobustFile.Delete(collectionSettingsPath);
+				PatientFile.Delete(collectionSettingsPath);
 			}
 
 			string fileContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -294,7 +294,7 @@ namespace BloomTests.Collection
     <BookshelfLabel>bookshelfLabel</BookshelfLabel>
   </BulkPublishBloomPubSettings>
 </Collection>";
-			RobustFile.WriteAllText(collectionSettingsPath, fileContents);
+			PatientFile.WriteAllText(collectionSettingsPath, fileContents);
 
 			// System under test
 			var collectionSettings = new CollectionSettings(collectionSettingsPath);
@@ -313,8 +313,8 @@ namespace BloomTests.Collection
 		{
 			var collectionName = "PaletteTesting";
 			var collectionSettingsPath = Path.Combine(_folder.Path, collectionName, $"{collectionName}.bloomCollection");
-			if (RobustFile.Exists(collectionSettingsPath))
-				RobustFile.Delete(collectionSettingsPath);
+			if (PatientFile.Exists(collectionSettingsPath))
+				PatientFile.Delete(collectionSettingsPath);
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
 
 			const string jsonColor1 = "{\"colors\":[\"#012345\"],\"opacity\":1}";
@@ -349,7 +349,7 @@ namespace BloomTests.Collection
 			Assert.That(jsonResult, Is.EqualTo("["+jsonColor1+","+jsonColor2+","+jsonColor3+"]"));
 
 			// The file is supposed to be saved on every addition.  Check its contents.
-			var settingsContent = RobustFile.ReadAllText(collectionSettingsPath, System.Text.Encoding.UTF8);
+			var settingsContent = PatientFile.ReadAllText(collectionSettingsPath, System.Text.Encoding.UTF8);
 			var xml = XElement.Parse(settingsContent);
 			var elements = xml.Descendants("Palette");
 			Assert.That(elements, Is.Not.Null);
@@ -381,8 +381,8 @@ namespace BloomTests.Collection
 		{
 			var collectionName = "EmptyPaletteTesting";
 			var collectionSettingsPath = Path.Combine(_folder.Path, collectionName, $"{collectionName}.bloomCollection");
-			if (RobustFile.Exists(collectionSettingsPath))
-				RobustFile.Delete(collectionSettingsPath);
+			if (PatientFile.Exists(collectionSettingsPath))
+				PatientFile.Delete(collectionSettingsPath);
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
 
 			FieldInfo colorPalletesFi = typeof(CollectionSettings).GetField("ColorPalettes", BindingFlags.NonPublic | BindingFlags.Instance);

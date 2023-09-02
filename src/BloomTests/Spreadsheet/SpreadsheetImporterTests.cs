@@ -11,7 +11,7 @@ using System.Text;
 using System.Xml;
 using BloomTemp;
 using BloomTests.TeamCollection;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using Bloom.Collection;
 
 namespace BloomTests.Spreadsheet
@@ -729,7 +729,7 @@ public static string PageWithJustText(int pageNumber, int tgNumber)
 			// Tests finding file by full path
 			var marsPath = Path.Combine(_spreadsheetFolder, "images/Mars 2.png");
 			var getMarsPath = Path.Combine(_otherImagesFolder.FolderPath, "Mars 3.png");
-			RobustFile.Copy(marsPath, getMarsPath, true);
+			PatientFile.Copy(marsPath, getMarsPath, true);
 			var contentRow7 = new ContentRow(ss);
 			contentRow7.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow7.SetCell(columnForImage, getMarsPath);
@@ -937,13 +937,13 @@ public static string PageWithJustText(int pageNumber, int tgNumber)
 		[TestCase("placeHolder.png")]
 		public void ImageCopiedToOutput(string fileName)
 		{
-			Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
+			Assert.That(PatientFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
 		}
 
 		[TestCase("placeHolder1.png")]
 		public void ImageNotCopiedToOutput(string fileName)
 		{
-			Assert.That(!RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
+			Assert.That(!PatientFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
 		}
 
 		[Test]

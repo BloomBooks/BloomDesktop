@@ -4,7 +4,7 @@ using System.Text;
 using Bloom.Utils;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.Utils
 {
@@ -21,7 +21,7 @@ namespace BloomTests.Utils
 
 			using (var tempFile = TempFile.WithFilenameInTempFolder(fileName))
 			{
-				RobustFile.WriteAllText(tempFile.Path, fileContents);
+				PatientFile.WriteAllText(tempFile.Path, fileContents);
 
 				using (var bookZip = TempFile.WithExtension(".zip"))
 				{

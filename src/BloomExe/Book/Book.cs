@@ -26,7 +26,7 @@ using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using SIL.Code;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Text;
@@ -924,9 +924,9 @@ namespace Bloom.Book
 			_needsUpdate = false;
 			_pagesCache = null;
 			string oldMetaData = string.Empty;
-			if (RobustFile.Exists(BookInfo.MetaDataPath))
+			if (PatientFile.Exists(BookInfo.MetaDataPath))
 			{
-				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
+				oldMetaData = PatientFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			}
 			BringBookUpToDateInternal(OurHtmlDom, progress, oldMetaData);
 			progress.WriteStatus("Updating pages...");
@@ -1133,10 +1133,10 @@ namespace Bloom.Book
 			if (!String.IsNullOrEmpty(FolderPath))
 			{
 				var oldAudioPath = Path.Combine(FolderPath, "audio", id + ".mp3");
-				if (RobustFile.Exists(oldAudioPath))
+				if (PatientFile.Exists(oldAudioPath))
 				{
 					var newAudioPath = Path.Combine(FolderPath, "audio", newId + ".mp3");
-					RobustFile.Copy(oldAudioPath, newAudioPath);
+					PatientFile.Copy(oldAudioPath, newAudioPath);
 					++_audioFilesCopiedForDuplication;
 				}
 			}
@@ -1504,10 +1504,10 @@ namespace Bloom.Book
 				licenseMetadata = GetLicenseMetadata();
 				// I think we should only mess with tags if we are updating the book for real.
 				var oldTagsPath = Path.Combine(Storage.FolderPath, "tags.txt");
-				if (RobustFile.Exists(oldTagsPath))
+				if (PatientFile.Exists(oldTagsPath))
 				{
 					ConvertTagsToMetaData(oldTagsPath, BookInfo);
-					RobustFile.Delete(oldTagsPath);
+					PatientFile.Delete(oldTagsPath);
 				}
 				BookInfo.BrandingProjectKey = CollectionSettings.BrandingProjectKey;
 			}
@@ -1524,7 +1524,7 @@ namespace Bloom.Book
 			bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
 			// BookInfo will always have an ID, the constructor makes one even if there is no json file.
 			// To allow migration, pretend it has no ID if there is not yet a meta.json.
-			bookDOM.RemoveMetaElement("bloomBookId", () => (RobustFile.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
+			bookDOM.RemoveMetaElement("bloomBookId", () => (PatientFile.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
 				val => BookInfo.Id = val);
 
 			// Title should be replicated in json
@@ -1574,19 +1574,19 @@ namespace Bloom.Book
 			// Don't do this in distributed folders.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7550.
 			if (!FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory))
 			{
-				if (RobustFile.Exists(Path.Combine(FolderPath, "languageDisplay.css")))
+				if (PatientFile.Exists(Path.Combine(FolderPath, "languageDisplay.css")))
 				{
-					if (RobustFile.Exists(Path.Combine(FolderPath, "langVisibility.css")))
-						RobustFile.Delete(Path.Combine(FolderPath, "languageDisplay.css"));
+					if (PatientFile.Exists(Path.Combine(FolderPath, "langVisibility.css")))
+						PatientFile.Delete(Path.Combine(FolderPath, "languageDisplay.css"));
 					else
-						RobustFile.Move(Path.Combine(FolderPath, "languageDisplay.css"), Path.Combine(FolderPath, "langVisibility.css"));
+						PatientFile.Move(Path.Combine(FolderPath, "languageDisplay.css"), Path.Combine(FolderPath, "langVisibility.css"));
 				}
-				if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles)))
-					RobustFile.Delete(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles));
+				if (PatientFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles)))
+					PatientFile.Delete(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles));
 				CreateOrUpdateDefaultLangStyles();
 				// Copy files from collection to book folders to match link href changes above.
-				if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles)))
-					RobustFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
+				if (PatientFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles)))
+					PatientFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
 			}
 			// Update book settings from collection settings
 			UpdateCollectionSettingsInBookMetaData();
@@ -1602,7 +1602,7 @@ namespace Bloom.Book
 		private void CreateOrUpdateDefaultLangStyles()
 		{
 			var path = Path.Combine(FolderPath, "defaultLangStyles.css");
-			bool doesAlreadyExist = RobustFile.Exists(path);
+			bool doesAlreadyExist = PatientFile.Exists(path);
 			if (Program.RunningHarvesterMode && doesAlreadyExist)
 			{
 				// Would overwrite, but overwrite not allowed in Harvester mode because we need to preserve the language information.
@@ -1630,7 +1630,7 @@ namespace Bloom.Book
 				if (!String.IsNullOrEmpty(CollectionSettings.Language3Tag))
 					languagesWeAlreadyHave.Add(CollectionSettings.Language3Tag);
 
-				var cssLines = RobustFile.ReadAllLines(path);
+				var cssLines = PatientFile.ReadAllLines(path);
 				const string kLangTag = "[lang='";
 				var copyCurrentRule = false;
 				for (var index = 0 ; index < cssLines.Length; ++index)
@@ -1659,7 +1659,7 @@ namespace Bloom.Book
 			}
 			try
 			{
-				RobustFile.WriteAllText(path, cssBuilder.ToString());
+				PatientFile.WriteAllText(path, cssBuilder.ToString());
 			}
 			catch (UnauthorizedAccessException e)
 			{
@@ -1670,9 +1670,9 @@ namespace Bloom.Book
 
 		private void RemoveFontFaceDeclarations(string path)
 		{
-			var contents = RobustFile.ReadAllText(path);
+			var contents = PatientFile.ReadAllText(path);
 			contents = Regex.Replace(contents, "^@font-face.*$\n", "", RegexOptions.Multiline);
-			RobustFile.WriteAllText(path, contents);
+			PatientFile.WriteAllText(path, contents);
 		}
 
 		private void UpdateCollectionSettingsInBookMetaData()
@@ -1982,7 +1982,7 @@ namespace Bloom.Book
 
 		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
-			var oldTags = RobustFile.ReadAllText(oldTagsPath);
+			var oldTags = PatientFile.ReadAllText(oldTagsPath);
 			bookMetaData.IsFolio = oldTags.Contains("folio");
 			bookMetaData.IsExperimental = oldTags.Contains("experimental");
 		}
@@ -2023,7 +2023,7 @@ namespace Bloom.Book
 			if (node == null)
 				return;     // shouldn't happen, but nothing to fix if it does.
 			var text = node.InnerText;
-			if (!String.IsNullOrWhiteSpace(text) && RobustFile.Exists(Path.Combine(FolderPath, text)))
+			if (!String.IsNullOrWhiteSpace(text) && PatientFile.Exists(Path.Combine(FolderPath, text)))
 				return;     // file exists, no need to tweak reference
 			// GetFullyDecodedPath decodes until either the file exists or no further URL decoding is possible.
 			// If the file isn't found, then text is the original value.
@@ -2553,7 +2553,7 @@ namespace Bloom.Book
 				return false;
 			if (file == "placeHolder.png" && image.Attributes["data-license"] == null)
 				return false;
-			return RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
+			return PatientFile.Exists(Path.Combine(Storage.FolderPath, file));
 		}
 
 		/// <summary>
@@ -2593,7 +2593,7 @@ namespace Bloom.Book
 			// HtmlDom.GetVideoElementUrl() takes the .bloom-videoContainer node as a parameter.
 			var videoUrl = HtmlDom.GetVideoElementUrl(new ElementProxy(vidNode.ParentNode as XmlElement));
 			var file = videoUrl.PathOnly.NotEncoded;
-			return !string.IsNullOrEmpty(file) && RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
+			return !string.IsNullOrEmpty(file) && PatientFile.Exists(Path.Combine(Storage.FolderPath, file));
 		}
 
 		// Book Information should show only for templates, not for created books.
@@ -2605,9 +2605,9 @@ namespace Bloom.Book
 				if (Storage.FolderPath == null)
 					return false;
 				if (Storage.FolderPath.Replace("\\", "/").Contains("/browser/templates/"))
-					return RobustFile.Exists(AboutBookHtmlPath);	// built-in template shipped with Bloom
+					return PatientFile.Exists(AboutBookHtmlPath);	// built-in template shipped with Bloom
 				if (BookInfo.IsSuitableForMakingShells || BookInfo.IsSuitableForMakingTemplates)
-					return RobustFile.Exists(AboutBookMdPath);
+					return PatientFile.Exists(AboutBookMdPath);
 				return false;
 			}
 		}
@@ -2941,12 +2941,12 @@ namespace Bloom.Book
 			foreach (var pathFromBook in BookStorage.GetImagePathsRelativeToBook(newPageDiv))
 			{
 				var path = Path.Combine(FolderPath, pathFromBook);
-				if (!RobustFile.Exists(path))
+				if (!PatientFile.Exists(path))
 				{
 					var fileName = Path.GetFileName(path);
 					var sourcePath = Path.Combine(templatePage.Book.FolderPath, fileName);
-					if (RobustFile.Exists(sourcePath))
-						RobustFile.Copy(sourcePath, path);
+					if (PatientFile.Exists(sourcePath))
+						PatientFile.Copy(sourcePath, path);
 				}
 			}
 
@@ -2979,8 +2979,8 @@ namespace Bloom.Book
 				// Don't try to copy a file over itself.  (See https://issues.bloomlibrary.org/youtrack/issue/BL-7349.)
 				if (sourcePath == destinationPath)
 					continue;
-				if (RobustFile.Exists(sourcePath))
-					RobustFile.Copy(sourcePath, destinationPath, true);
+				if (PatientFile.Exists(sourcePath))
+					PatientFile.Copy(sourcePath, destinationPath, true);
 			}
 
 			if (IsSuitableForMakingShells)
@@ -3023,7 +3023,7 @@ namespace Bloom.Book
 			{
 				var widgetSource = UrlPathString.CreateFromUrlEncodedString(widgetIframe.GetAttribute("src"));
 				var sourcePath = Path.Combine(sourceBookFolder, widgetSource.NotEncoded);
-				if (RobustFile.Exists(sourcePath))
+				if (PatientFile.Exists(sourcePath))
 				{
 					// This combo (create/add) unfortunately needlessly zips and unzips
 					// the widget contents, but it does other things we need like guaranteeing
@@ -3127,16 +3127,16 @@ namespace Bloom.Book
 				var newAudioFolderPath = Path.Combine(FolderPath, "audio");
 				var newAudioFilePath = Path.Combine(newAudioFolderPath, id + ".wav");
 				Directory.CreateDirectory(newAudioFolderPath);
-				if (RobustFile.Exists(sourceAudioFilePath))
+				if (PatientFile.Exists(sourceAudioFilePath))
 				{
-					RobustFile.Copy(sourceAudioFilePath, newAudioFilePath);
+					PatientFile.Copy(sourceAudioFilePath, newAudioFilePath);
 				}
 
 				var mp3Path = Path.ChangeExtension(sourceAudioFilePath, "mp3");
 				var newMp3Path = Path.ChangeExtension(newAudioFilePath, "mp3");
-				if (RobustFile.Exists(mp3Path))
+				if (PatientFile.Exists(mp3Path))
 				{
-					RobustFile.Copy(mp3Path, newMp3Path);
+					PatientFile.Copy(mp3Path, newMp3Path);
 				}
 			}
 		}
@@ -3155,7 +3155,7 @@ namespace Bloom.Book
 				// If the video file doesn't exist, don't bother adjusting anything.
 				// If it does exist, copy it with a new name based on the current one, similarly
 				// to how we've been renaming image files that already exist in the book's folder.
-				if (RobustFile.Exists(oldVideoPath))
+				if (PatientFile.Exists(oldVideoPath))
 				{
 					var extension = Path.GetExtension(src);
 					var oldFileName = Path.GetFileNameWithoutExtension(src);
@@ -3166,10 +3166,10 @@ namespace Bloom.Book
 						++count;
 						var newFileName = oldFileName + "-" + count.ToString(CultureInfo.InvariantCulture);
 						newVideoPath = Path.Combine(FolderPath, "video", newFileName + extension);
-					} while (RobustFile.Exists(newVideoPath));
+					} while (PatientFile.Exists(newVideoPath));
 
 					Directory.CreateDirectory(Path.GetDirectoryName(newVideoPath));
-					RobustFile.Copy(oldVideoPath, newVideoPath, false);
+					PatientFile.Copy(oldVideoPath, newVideoPath, false);
 
 					source.SetAttribute("src", "video/" +
 						UrlPathString.CreateFromUnencodedString(Path.GetFileName(newVideoPath)).UrlEncoded +
@@ -3930,7 +3930,7 @@ namespace Bloom.Book
 		/// <param name="bookFilePath">path to the book's HTML file inside its folder</param>
 		public static string ComputeHashForAllBookRelatedFiles(string bookFilePath)
 		{
-			return MakeVersionCode(RobustFile.ReadAllText(bookFilePath, Encoding.UTF8), bookFilePath);
+			return MakeVersionCode(PatientFile.ReadAllText(bookFilePath, Encoding.UTF8), bookFilePath);
 		}
 
 		/// <summary>
@@ -3956,7 +3956,7 @@ namespace Bloom.Book
 		/// </remarks>
 		public static string MakeVersionCode(string fileContent, string filePath = null)
 		{
-			return RetryUtility.Retry(() => MakeVersionCodeInternal(fileContent, filePath));
+			return Patient.Retry(() => MakeVersionCodeInternal(fileContent, filePath));
 		}
 
 		private static string MakeVersionCodeInternal(string fileContent, string filePath = null)
@@ -4031,7 +4031,7 @@ namespace Bloom.Book
 						if (name == "customCollectionStyles.css" || name.EndsWith(".bloomCollection", StringComparison.Ordinal))
 						{
 							//AppendDebugInfo(debugBldr, path);
-							byte[] buffer = RobustFile.ReadAllBytes(path);
+							byte[] buffer = PatientFile.ReadAllBytes(path);
 							sha.TransformBlock(buffer, 0, buffer.Length, buffer, 0);
 						}
 					}
@@ -4053,7 +4053,7 @@ namespace Bloom.Book
 		//{
 		//	using (var sha2 = SHA256.Create())
 		//	{
-		//		byte[] buffer = RobustFile.ReadAllBytes(path);
+		//		byte[] buffer = PatientFile.ReadAllBytes(path);
 		//		sha2.TransformBlock(buffer, 0, buffer.Length, buffer, 0);
 		//		sha2.TransformFinalBlock(new byte[0], 0, 0);
 		//		debugBldr.AppendLineFormat("hashing {0} [{1} bytes] => {2}", Path.GetFileName(path), buffer.Length, Convert.ToBase64String(sha2.Hash));
@@ -4605,7 +4605,7 @@ namespace Bloom.Book
 				foreach (var audioFileName in fileNames)
 				{
 					var fullPath = Path.Combine(FolderPath, "audio", audioFileName);
-					if (RobustFile.Exists(fullPath))
+					if (PatientFile.Exists(fullPath))
 					{
 						doesAnyAudioFileExist = true;
 						break;

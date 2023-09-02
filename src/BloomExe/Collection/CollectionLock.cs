@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Bloom.Utils;
 using SIL.Code;
 
 namespace Bloom.Collection
@@ -35,7 +36,7 @@ namespace Bloom.Collection
 			// to read and write to it, just not delete/rename/move it.  BL-11484
 			try
 			{
-				RetryUtility.Retry(
+				Patient.Retry(
 					() =>
 					{
 						_streamToLockCollectionFile = File.Open(_filePath, FileMode.Open, FileAccess.Read,

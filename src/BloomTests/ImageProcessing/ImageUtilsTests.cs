@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using Bloom.ImageProcessing;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ImageToolbox;
 
@@ -130,8 +130,8 @@ namespace BloomTests.ImageProcessing
 			using (var folder = new TemporaryFolder("UnusedFilenameTest"))
 			{
 				var basePath = Path.Combine(folder.Path, basename + extension);
-				RobustFile.Delete(basePath); // just in case
-				RobustFile.WriteAllText(basePath, "test contents");
+				PatientFile.Delete(basePath); // just in case
+				PatientFile.WriteAllText(basePath, "test contents");
 				var filename = ImageUtils.GetUnusedFilename(Path.GetDirectoryName(basePath), basename, extension);
 				Assert.That(Path.GetFileNameWithoutExtension(filename), Is.EqualTo(expectedResult));
 			}

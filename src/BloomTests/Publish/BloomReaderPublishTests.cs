@@ -12,7 +12,7 @@ using Bloom.web;
 using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
@@ -730,7 +730,7 @@ namespace BloomTests.Publish
 			// This file gets placed in the real book's folder after adding a quiz in edit mode, so we mock that process.
 			// But the code which puts an epub into a real browser to determine visibility of elements will actually
 			// try to run this, so it needs to be something which won't throw a javascript error.
-			RobustFile.WriteAllText(Path.Combine(bookFolderPath, PublishHelper.kSimpleComprehensionQuizJs), "//not the real file's contents");
+			PatientFile.WriteAllText(Path.Combine(bookFolderPath, PublishHelper.kSimpleComprehensionQuizJs), "//not the real file's contents");
 		} 
 
 		[Test]
@@ -895,9 +895,9 @@ namespace BloomTests.Publish
 			// These video files have to be real.
 			var videoFolderPath = Path.Combine(folderPath, "video");
 			Directory.CreateDirectory(videoFolderPath);
-			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(kPathToTestVideos, "Crow.mp4"),
+			PatientFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(kPathToTestVideos, "Crow.mp4"),
 				Path.Combine(videoFolderPath, "Crow.mp4"));
-			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(kPathToTestVideos, "Five count.mp4"),
+			PatientFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(kPathToTestVideos, "Five count.mp4"),
 				Path.Combine(videoFolderPath, "Five count.mp4"));
 		}
 
@@ -1033,7 +1033,7 @@ namespace BloomTests.Publish
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
 				var oldMetadata = Metadata.FromFile(path);
-				RobustFile.WriteAllBytes(tempFile.Path, reducedBytes);
+				PatientFile.WriteAllBytes(tempFile.Path, reducedBytes);
 				var newMetadata = Metadata.FromFile(tempFile.Path);
 				if (oldMetadata.IsEmpty)
 				{
@@ -1061,7 +1061,7 @@ namespace BloomTests.Publish
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
 				var oldMetadata = Metadata.FromFile(path);
-				RobustFile.WriteAllBytes(tempFile.Path, reducedBytes);
+				PatientFile.WriteAllBytes(tempFile.Path, reducedBytes);
 				var newMetadata = Metadata.FromFile(tempFile.Path);
 				if (oldMetadata.IsEmpty)
 				{
@@ -1089,7 +1089,7 @@ namespace BloomTests.Publish
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
 				var oldMetadata = Metadata.FromFile(path);
-				RobustFile.WriteAllBytes(tempFile.Path, reducedBytes);
+				PatientFile.WriteAllBytes(tempFile.Path, reducedBytes);
 				var newMetadata = Metadata.FromFile(tempFile.Path);
 				if (oldMetadata.IsEmpty)
 				{
@@ -1128,7 +1128,7 @@ namespace BloomTests.Publish
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
 				var oldMetadata = Metadata.FromFile(path);
-				RobustFile.WriteAllBytes(tempFile.Path, reducedBytes);
+				PatientFile.WriteAllBytes(tempFile.Path, reducedBytes);
 				var newMetadata = Metadata.FromFile(tempFile.Path);
 				if (oldMetadata.IsEmpty)
 				{
@@ -1156,7 +1156,7 @@ namespace BloomTests.Publish
 			Assert.Greater(originalBytes.Length, reducedBytes.Length, "lady24b.png is reduced from 3632x3872");
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
-				RobustFile.WriteAllBytes(tempFile.Path, reducedBytes);
+				PatientFile.WriteAllBytes(tempFile.Path, reducedBytes);
 				using (var newImage = PalasoImage.FromFileRobustly(tempFile.Path))
 					Assert.AreEqual(PixelFormat.Format32bppArgb, newImage.Image.PixelFormat, "should have switched to 32bit depth");
 			}
@@ -1323,7 +1323,7 @@ namespace BloomTests.Publish
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika\" instead."));
 
 				var fontSourceRulesPath = Path.Combine(testBook.FolderPath, "fonts.css");
-				var fontSource = RobustFile.ReadAllText(fontSourceRulesPath);
+				var fontSource = PatientFile.ReadAllText(fontSourceRulesPath);
 				// We're OK with these in either order.
 				string lineTimes = "@font-face {font-family:'Times New Roman'; font-weight:normal; font-style:normal; src:url('Times New Roman R.ttf') format('opentype');}"
 					+ Environment.NewLine;

@@ -3,7 +3,7 @@ using System.IO;
 using Bloom.Book;
 using Bloom.Publish.BloomPub;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.TestUtilities;
 using ICSharpCode.SharpZipLib.Zip;
 

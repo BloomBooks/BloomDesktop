@@ -8,7 +8,7 @@ using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using Microsoft.Win32;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 #if __MonoCS__
@@ -114,8 +114,8 @@ namespace Bloom
 				// where we will put a version-independent icon
 				try
 				{
-					if (RobustFile.Exists(versionIconPath))
-						RobustFile.Copy(versionIconPath, iconPath, true);
+					if (PatientFile.Exists(versionIconPath))
+						PatientFile.Copy(versionIconPath, iconPath, true);
 				}
 				catch (Exception)
 				{
@@ -177,7 +177,7 @@ namespace Bloom
 	                // the target is the parent directory, and the file name without the "_ExecutionStub" part of the name.
 	                var targetPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Application.ExecutablePath)),
 	                    Path.GetFileName(Application.ExecutablePath));
-	                RobustFile.Copy(stubPath, targetPath, true);
+	                PatientFile.Copy(stubPath, targetPath, true);
 	            }
 	            catch(Exception e)
 	            {

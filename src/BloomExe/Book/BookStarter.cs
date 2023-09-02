@@ -7,9 +7,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Collection;
+using Bloom.Utils;
 using L10NSharp;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Xml;
 
@@ -71,10 +72,10 @@ namespace Bloom.Book
 				var otherHtmlFiles = GetHtmFileCandidates(newBookFolder).Where(x => x != oldNamedFile);
 				foreach (var otherFile in otherHtmlFiles)
 				{
-					RobustFile.Delete(otherFile);
+					PatientFile.Delete(otherFile);
 				}
 				var newNamedFile = Path.Combine(newBookFolder, initialBookName + ".htm");
-				RobustFile.Move(oldNamedFile, newNamedFile);
+				PatientFile.Move(oldNamedFile, newNamedFile);
 
 				//the destination may change here...
 				newBookFolder = SetupNewDocumentContents(sourceBookFolder, newBookFolder);
@@ -96,7 +97,7 @@ namespace Bloom.Book
 			// As usual, if we find an HTML file at the expected location, we'll just use it, even
 			// if there are others.
 			var primaryCandidate = BookStorage.GetHtmCandidate(folder);
-			if (RobustFile.Exists(primaryCandidate))
+			if (PatientFile.Exists(primaryCandidate))
 				return primaryCandidate;
 			var candidates = GetHtmFileCandidates(folder);
 			if (candidates.Count() == 1)
@@ -342,7 +343,7 @@ namespace Bloom.Book
 		{
 			string parentId = null;
 			string lineage = null;
-			if (RobustFile.Exists(Path.Combine(sourceFolderPath, BookInfo.MetaDataFileName)))
+			if (PatientFile.Exists(Path.Combine(sourceFolderPath, BookInfo.MetaDataFileName)))
 			{
 				var sourceMetaData = new BookInfo(sourceFolderPath, false);
 				parentId = sourceMetaData.Id;
@@ -665,7 +666,7 @@ namespace Bloom.Book
 				// We don't want the ReadMe's that describe templates copied to the new books.
 				if (IsPathToReadMeHtm(filePath))
 					continue;
-				RobustFile.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
+				PatientFile.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}
 			foreach (var dirPath in Directory.GetDirectories(sourcePath))
 			{

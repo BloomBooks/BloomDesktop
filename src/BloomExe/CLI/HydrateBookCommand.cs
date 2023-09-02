@@ -8,7 +8,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.TeamCollection;
 using CommandLine;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Progress;
 
 namespace Bloom.CLI

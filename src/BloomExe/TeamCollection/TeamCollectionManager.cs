@@ -4,7 +4,7 @@ using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.TeamCollection
 {
@@ -223,7 +223,7 @@ namespace Bloom.TeamCollection
 					// Note: We don't need to check for admin privileges here. If the user isn't an admin,
 					// he could not have made any changes to settings, including turning on enterprise.
 					var tempCollectionLinkPath = GetTcLinkPathFromLcPath(_localCollectionFolder);
-					if (RobustFile.Exists(tempCollectionLinkPath))
+					if (PatientFile.Exists(tempCollectionLinkPath))
 					{
 						try
 						{
@@ -256,9 +256,9 @@ namespace Bloom.TeamCollection
 				CurrentCollectionEvenIfDisconnected?.HandleBookRename(Path.GetFileName(pair.Key), Path.GetFileName(pair.Value));
 			});
 			var impersonatePath = Path.Combine(_localCollectionFolder, "impersonate.txt");
-			if (RobustFile.Exists(impersonatePath))
+			if (PatientFile.Exists(impersonatePath))
 			{
-				var lines = RobustFile.ReadAllLines(impersonatePath);
+				var lines = PatientFile.ReadAllLines(impersonatePath);
 				_overrideCurrentUser = lines.FirstOrDefault();
 				if (lines.Length > 1)
 					_overrideMachineName = lines[1];
@@ -269,7 +269,7 @@ namespace Bloom.TeamCollection
 			}
 
 			var localCollectionLinkPath = GetTcLinkPathFromLcPath(_localCollectionFolder);
-			if (RobustFile.Exists(localCollectionLinkPath))
+			if (PatientFile.Exists(localCollectionLinkPath))
 			{
 				try
 				{
@@ -309,7 +309,7 @@ namespace Bloom.TeamCollection
 
 		public static string RepoFolderPathFromLinkPath(string localCollectionLinkPath)
 		{
-			return RobustFile.ReadAllText(localCollectionLinkPath).Trim();
+			return PatientFile.ReadAllText(localCollectionLinkPath).Trim();
 		}
 
 		/// <summary>

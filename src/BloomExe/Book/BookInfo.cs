@@ -14,7 +14,7 @@ using Bloom.Edit;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Text;
@@ -81,7 +81,7 @@ namespace Bloom.Book
 			{
 				// Look for old tags files not yet migrated
 				var oldTagsPath = Path.Combine(FolderPath, "tags.txt");
-				if (RobustFile.Exists(oldTagsPath))
+				if (PatientFile.Exists(oldTagsPath))
 				{
 					Book.ConvertTagsToMetaData(oldTagsPath, this);
 				}
@@ -320,7 +320,7 @@ namespace Bloom.Book
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
 			string path = Path.Combine(FolderPath, "thumbnail.png");
-			if (RobustFile.Exists(path))
+			if (PatientFile.Exists(path))
 			{
 				try
 				{
@@ -655,8 +655,8 @@ namespace Bloom.Book
 			try
 			{
 				Save();
-				RobustFile.Delete(BookOrderPath(FolderPath));
-				RobustFile.Delete(BookMetaData.BackupFilePath(FolderPath));
+				PatientFile.Delete(BookOrderPath(FolderPath));
+				PatientFile.Delete(BookMetaData.BackupFilePath(FolderPath));
 			}
 			catch (UnauthorizedAccessException e)
 			{
@@ -889,10 +889,10 @@ namespace Bloom.Book
 				return result;
 
 			var backupPath = BackupFilePath(bookFolderPath);
-			if (RobustFile.Exists(backupPath) && TryReadMetaData(backupPath, out result))
+			if (PatientFile.Exists(backupPath) && TryReadMetaData(backupPath, out result))
 			{
-				RobustFile.Delete(metaDataPath); // Don't think it's worth saving the corrupt one
-				RobustFile.Move(backupPath, metaDataPath);
+				PatientFile.Delete(metaDataPath); // Don't think it's worth saving the corrupt one
+				PatientFile.Move(backupPath, metaDataPath);
 				return result;
 			}
 			// Things are messed up, but maybe we can still get an ID from the file?
@@ -911,9 +911,9 @@ namespace Bloom.Book
 		/// <returns></returns>
 		public static BookMetaData GetRepairedMetaDataWithIdOnly(string metaDataPath)
 		{
-			if (RobustFile.Exists(metaDataPath))
+			if (PatientFile.Exists(metaDataPath))
 			{
-				var id = GetIdFromDamagedMetaDataString(RobustFile.ReadAllText(metaDataPath));
+				var id = GetIdFromDamagedMetaDataString(PatientFile.ReadAllText(metaDataPath));
 				if (id != null)
 					return new BookMetaData() { Id = id };
 			}
@@ -936,12 +936,12 @@ namespace Bloom.Book
 		private static bool TryReadMetaData(string path, out BookMetaData result)
 		{
 			result = null;
-			if (!RobustFile.Exists(path))
+			if (!PatientFile.Exists(path))
 				return false;
 			string metadataString = "read failed"; // for error reporting
 			try
 			{
-				metadataString = RobustFile.ReadAllText(path);
+				metadataString = PatientFile.ReadAllText(path);
 				result = FromStringUnchecked(metadataString);
 				if (result == null)
 				{
@@ -985,11 +985,11 @@ namespace Bloom.Book
 				throw new BloomUnauthorizedAccessException(metaDataPath, e);
 			}
 
-			RobustFile.WriteAllText(tempFilePath, Json);
-			if (RobustFile.Exists(metaDataPath))
-				RobustFile.Replace(tempFilePath, metaDataPath, BackupFilePath(bookFolderPath));
+			PatientFile.WriteAllText(tempFilePath, Json);
+			if (PatientFile.Exists(metaDataPath))
+				PatientFile.Replace(tempFilePath, metaDataPath, BackupFilePath(bookFolderPath));
 			else
-				RobustFile.Move(tempFilePath, metaDataPath);
+				PatientFile.Move(tempFilePath, metaDataPath);
 		}
 
 		[JsonIgnore]

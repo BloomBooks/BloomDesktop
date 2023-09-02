@@ -18,7 +18,7 @@ using Bloom.Utils;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Linq;
 
 namespace Bloom.web.controllers
@@ -190,9 +190,9 @@ namespace Bloom.web.controllers
 			var filename = Path.GetFileName(collectionFolderPath);
 			var collectionsFolder = ProjectContext.GetInstalledCollectionsDirectory();
 			var linkFile = Path.Combine(collectionsFolder, filename + ".lnk");
-			if (RobustFile.Exists(linkFile))
+			if (PatientFile.Exists(linkFile))
 			{
-				RobustFile.Delete(linkFile);
+				PatientFile.Delete(linkFile);
 				_collectionModel.ReloadCollections();
 				request.PostSucceeded();
 			}
@@ -333,7 +333,7 @@ namespace Bloom.web.controllers
 			if (collectionFolderPath.StartsWith(collectionsFolder))
 				return false;
 			var linkFile = Path.Combine(collectionsFolder, Path.GetFileName(collectionFolderPath) + ".lnk");
-			return RobustFile.Exists(linkFile);
+			return PatientFile.Exists(linkFile);
 		}
 
 		public void HandleBooksRequest(ApiRequest request)
@@ -417,14 +417,14 @@ namespace Bloom.web.controllers
 			}
 
 			string path = Path.Combine(bookInfo.FolderPath, "thumbnail.png");
-			if (!RobustFile.Exists(path))
+			if (!PatientFile.Exists(path))
 			{
 				// This is rarely if ever needed. Bloom already does this when selecting a book
 				// or after editing it. One case (but it won't succeed) is when the book doesn't
 				// HAVE an image on the cover.
 				_thumbNailer.MakeThumbnailOfCover(_collectionModel.GetBookFromBookInfo(bookInfo));
 			}
-			if (RobustFile.Exists(path))
+			if (PatientFile.Exists(path))
 				request.ReplyWithImage(path);
 			else
 			{

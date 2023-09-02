@@ -3,7 +3,7 @@ using System.IO;
 using Bloom.Publish;
 using Bloom.Publish.PDF;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests
 {
@@ -64,8 +64,8 @@ namespace BloomTests
 			using (var input = TempFile.WithFilename("北京.html"))
 			using (var output = TempFile.WithFilename("北京.pdf"))
 			{
-				RobustFile.WriteAllText(input.Path, "<html><body>北京</body></html>");
-				RobustFile.Delete(output.Path);
+				PatientFile.WriteAllText(input.Path, "<html><body>北京</body></html>");
+				PatientFile.Delete(output.Path);
 				RunMakePdf(maker, input.Path, output.Path, "A5", false, false, false,
 					PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.BookletPages);
 				//we don't actually have a way of knowing it did a booklet

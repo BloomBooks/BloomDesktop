@@ -16,7 +16,7 @@ using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using SIL.Windows.Forms.Registration;
@@ -290,10 +290,10 @@ namespace Bloom
 							if (path.ToLowerInvariant().StartsWith("bloom://"))
 							{
 								path = path.Substring("bloom://".Length);
-								if (!RobustFile.Exists(path))
+								if (!PatientFile.Exists(path))
 								{
 									path = FileLocationUtilities.GetFileDistributedWithApplication(true, path);
-									if (!RobustFile.Exists(path))
+									if (!PatientFile.Exists(path))
 										return 1;
 								}
 							}
@@ -1163,7 +1163,7 @@ namespace Bloom
 				//if(Settings.Default.MruProjects.Latest == null)
 				//{
 				//	var path = NewCollectionWizard.CreateNewCollection();
-				//	if (!string.IsNullOrEmpty(path) && RobustFile.Exists(path))
+				//	if (!string.IsNullOrEmpty(path) && PatientFile.Exists(path))
 				//	{
 				//		OpenCollection(path);
 				//		return;
@@ -1538,13 +1538,13 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			foreach(var entry in filesToCheck)
 			{
 				var destFile = entry.Value;
-				if (!RobustFile.Exists(destFile))
+				if (!PatientFile.Exists(destFile))
 				{
 					var sourceFile = Path.Combine(sourceDir, "debian", entry.Key);
-					if (RobustFile.Exists(sourceFile))
+					if (PatientFile.Exists(sourceFile))
 					{
 						updateNeeded = true;
-						RobustFile.Copy(sourceFile, destFile);
+						PatientFile.Copy(sourceFile, destFile);
 					}
 				}
 			}
@@ -1691,11 +1691,11 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 				Logger.WriteEvent("Cannot open user config file "+ex.Filename);
 				Logger.WriteEvent(ex.Message);
 
-				if (RobustFile.Exists(ex.Filename))
+				if (PatientFile.Exists(ex.Filename))
 				{
-					Logger.WriteEvent("Config file content:\n{0}", RobustFile.ReadAllText(ex.Filename));
+					Logger.WriteEvent("Config file content:\n{0}", PatientFile.ReadAllText(ex.Filename));
 					Logger.WriteEvent("Deleting "+ ex.Filename);
-					RobustFile.Delete(ex.Filename);
+					PatientFile.Delete(ex.Filename);
 					Properties.Settings.Default.Upgrade();
 					// Properties.Settings.Default.Reload();
 					// you could optionally restart the app instead

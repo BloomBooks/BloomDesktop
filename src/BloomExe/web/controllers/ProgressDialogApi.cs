@@ -7,7 +7,7 @@ using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Publish;
 using Bloom.Utils;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace Bloom.web.controllers
 {

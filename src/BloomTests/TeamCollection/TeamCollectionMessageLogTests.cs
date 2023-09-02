@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Bloom.TeamCollection;
 using Bloom.web;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.TeamCollection
 {

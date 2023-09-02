@@ -14,7 +14,7 @@ using SIL.Extensions;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using L10NSharp;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 using SIL.Xml;
 
 namespace Bloom.web.controllers
@@ -89,7 +89,7 @@ namespace Bloom.web.controllers
 			foreach (var kvp in imageNameToPages)
 			{
 				var path = currentSelectionFolderPath.CombineForPath(kvp.Key);
-				if (!RobustFile.Exists(path))
+				if (!PatientFile.Exists(path))
 					continue;
 
 				var meta = Metadata.FromFile(path);
@@ -304,7 +304,7 @@ namespace Bloom.web.controllers
 				var fileName = request.RequiredParam("image");
 				Guard.AgainstNull(_bookSelection.CurrentSelection, "CurrentBook");
 				var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
-				while (!RobustFile.Exists(path) && fileName.Contains('%'))
+				while (!PatientFile.Exists(path) && fileName.Contains('%'))
 				{
 					var fileName1 = fileName;
 					// We can be fed doubly-encoded filenames.  So try to decode a second time and see if that works.
@@ -320,7 +320,7 @@ namespace Bloom.web.controllers
 				}
 				dynamic result = new ExpandoObject();
 				result.name = fileName;
-				if (!RobustFile.Exists(path))
+				if (!PatientFile.Exists(path))
 				{
 					result.bytes = -1;
 					result.width = -1;
@@ -342,7 +342,7 @@ namespace Bloom.web.controllers
 					// Using a stream this way, according to one source,
 					// http://stackoverflow.com/questions/552467/how-do-i-reliably-get-an-image-dimensions-in-net-without-loading-the-image,
 					// supposedly avoids loading the image into memory when we only want its dimensions
-					using (var stream = RobustFile.OpenRead(path))
+					using (var stream = PatientFile.OpenRead(path))
 					using (var img = Image.FromStream(stream, false, false))
 					{
 						result.width = img.Width;

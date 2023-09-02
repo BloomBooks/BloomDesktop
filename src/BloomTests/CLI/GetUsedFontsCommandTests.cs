@@ -4,7 +4,7 @@ using System.Reflection;
 using Bloom.CLI;
 using BloomTemp;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.IO; using Bloom.Utils;
 
 namespace BloomTests.CLI
 {
@@ -24,8 +24,8 @@ namespace BloomTests.CLI
 
 			using (var bookFolder = new TemporaryFolder(MethodBase.GetCurrentMethod().Name))
 			{
-				RobustFile.WriteAllText(Path.Combine(bookFolder.FolderPath, "book.htm"), htmlContents);
-				RobustFile.WriteAllText(Path.Combine(bookFolder.FolderPath, "defaultLangStyles.css"), cssContents);
+				PatientFile.WriteAllText(Path.Combine(bookFolder.FolderPath, "book.htm"), htmlContents);
+				PatientFile.WriteAllText(Path.Combine(bookFolder.FolderPath, "defaultLangStyles.css"), cssContents);
 
 				var fontsUsed = GetUsedFontsCommand.GetFontsUsed(bookFolder.FolderPath).ToList();
 
