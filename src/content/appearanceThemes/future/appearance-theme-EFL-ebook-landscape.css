@@ -1,0 +1,51 @@
+/* This Education for life rules are used in 219 unique books (400 when you include rebrands)  */
+
+/* TODO: we want to convert this to a Bloom 5.6 compatible theme.
+   Some elements are similar to "appearance-theme-ebook-rounded-border-bottom-number.css"
+*/
+
+/* The below statement on max-width allows for a page without margins.    */
+.Device16x9Landscape .marginBox img {
+    max-width: 177.777778mm;
+} /* The below statement controls the space between the image and the title on the frontcover. */
+.Device16x9Landscape.frontCover .bloom-imageContainer {
+    order: 1;
+    flex: 1 1 auto;
+    margin-top: 1px !important;
+    margin-bottom: 1px;
+}
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape .marginBox {
+    background-color: #ffffff;
+    border-radius: 9px;
+    padding: 2mm;
+    height: 91mm;
+    width: 168.777778mm;
+    top: 2.5mm;
+    left: 2.5mm !important;
+}
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape {
+    background-color: #4e4e4e;
+} /* The following two statements control the position of the page number   */
+.Device16x9Landscape.numberedPage.side-left::after {
+    left: calc(100% / 2 - 86mm);
+}
+:not(
+        .bloom-interactive-page
+    ).Device16x9Landscape.numberedPage.side-right::after {
+    left: calc(100% / 2 - 167mm);
+}
+.bloom-interactive-page::after {
+    display: none;
+} /* The section below controls the pagenumber and the white circle around it.  */
+.Device16x9Landscape.numberedPage::after {
+    bottom: 3mm !important;
+    font-size: 10pt;
+    z-index: 1000;
+    color: black;
+    border-radius: 50%;
+    background: #ffffff;
+    padding: 1.5mm;
+    width: 4mm;
+    text-align: center !important;
+    margin: auto;
+}
