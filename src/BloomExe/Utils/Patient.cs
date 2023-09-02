@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Bloom.Utils
@@ -22,42 +23,44 @@ namespace Bloom.Utils
 			public const int kDefaultRetryDelay = 200;
 			private static readonly ISet<Type> kDefaultExceptionTypesToRetry = new HashSet<Type> { Type.GetType("System.IO.IOException") };
 
-			public static void Retry(Action action, int maxRetryAttempts = kDefaultMaxRetryAttempts, int retryDelay = kDefaultRetryDelay, ISet<Type> exceptionTypesToRetry = null)
+			public static void Retry(Action action, int maxRetryAttempts = kDefaultMaxRetryAttempts, int retryDelay = kDefaultRetryDelay, ISet<Type> exceptionTypesToRetry = null, string memo = "")
 			{
 				Retry<object>(() =>
 				{
 					action();
 					return null;
-				}, maxRetryAttempts, retryDelay, exceptionTypesToRetry);
+				}, maxRetryAttempts, retryDelay, exceptionTypesToRetry, memo);
 			}
 
-			public static T Retry<T>(Func<T> action, int maxRetryAttempts = kDefaultMaxRetryAttempts, int retryDelay = kDefaultRetryDelay, ISet<Type> exceptionTypesToRetry = null)
+			public static T Retry<T>(Func<T> action, int maxRetryAttempts = kDefaultMaxRetryAttempts, int retryDelay = kDefaultRetryDelay, ISet<Type> exceptionTypesToRetry = null, string memo="")
 			{
 				if (exceptionTypesToRetry == null)
 					exceptionTypesToRetry = kDefaultExceptionTypesToRetry;
 
 				for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
 				{
-					try
+				try
+				{
+					var result = action();
+					//Debug.WriteLine("Successful after {0} attempts", attempt);
+					return result;
+				}
+				catch (Exception e)
+				{
+					if (TypesIncludes(exceptionTypesToRetry, e.GetType()))
 					{
-						var result = action();
-						//Debug.WriteLine("Successful after {0} attempts", attempt);
-						return result;
-					}
-					catch (Exception e)
-					{
-						if (TypesIncludes(exceptionTypesToRetry, e.GetType()))
+						Debug.WriteLine($"Patient Attempt {attempt}/{maxRetryAttempts}: {e.GetType().Name}   {memo} ");
+						if (attempt == maxRetryAttempts)
 						{
-							if (attempt == maxRetryAttempts)
-							{
-								//Debug.WriteLine("Failed after {0} attempts", attempt);
-								throw;
-							}
-							Thread.Sleep(retryDelay);
-							continue;
+							Debug.WriteLine($"Patient Exceeed max attempts ({maxRetryAttempts}): {e.GetType().Name}   {memo} ");
+							throw;
 						}
-						throw;
+						Thread.Sleep(retryDelay);
+						continue;
 					}
+					Debug.WriteLine($"Patient Attempt {attempt}: Not retying for this exception type {e.GetType().Name}    {memo}");
+					throw;
+				}
 				}
 				return default(T);
 			}

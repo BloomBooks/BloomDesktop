@@ -31,7 +31,7 @@ namespace Bloom.Utils
 					fileStream2.Flush(flushToDisk: true);
 				}
 
-			});
+			}, memo:"copy to"+destFileName);
 		}
 
 		public static FileStream Create(string path)
@@ -59,7 +59,7 @@ namespace Bloom.Utils
 			Patient.Retry(delegate
 			{
 				File.Delete(path);
-			});
+			}, memo: "delete " + path);
 		}
 
 		public static bool Exists(string path)
@@ -154,26 +154,25 @@ namespace Bloom.Utils
 						throw ex;
 					}
 				}
-			});
+			},memo:"Replace "+destinationFileName);
 		}
 
 		public static void ReplaceByCopyDelete(string sourcePath, string destinationPath, string backupPath)
 		{
-			if (!string.IsNullOrEmpty(backupPath) && File.Exists(destinationPath))
+			if (!string.IsNullOrEmpty(backupPath) && PatientFile.Exists(destinationPath))
 			{
-				File.Copy(destinationPath, backupPath, overwrite: true);
+				PatientFile.Copy(destinationPath, backupPath, overwrite: true);
 			}
 
-			File.Copy(sourcePath, destinationPath, overwrite: true);
-			File.Delete(sourcePath);
+			PatientFile.Copy(sourcePath, destinationPath, overwrite: true);
+			PatientFile.Delete(sourcePath);
 		}
 
 		public static void SetAttributes(string path, FileAttributes fileAttributes)
 		{
-			Patient.Retry(delegate
-			{
+	
 				File.SetAttributes(path, fileAttributes);
-			});
+		
 		}
 
 		public static void WriteAllBytes(string path, byte[] bytes)
@@ -185,7 +184,7 @@ namespace Bloom.Utils
 					fileStream.Write(bytes, 0, bytes.Length);
 					fileStream.Close();
 				}
-			});
+			}, memo: "WriteBytes " + path);
 		}
 
 		public static void WriteAllText(string path, string contents)
@@ -216,7 +215,7 @@ namespace Bloom.Utils
 					fileStream.Write(bytes, 0, bytes.Length);
 					fileStream.Close();
 				}
-			});
+			},memo:"WriteAllText "+path);
 		}
 	}
 }
