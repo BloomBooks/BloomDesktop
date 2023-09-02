@@ -760,7 +760,7 @@ namespace Bloom.WebLibraryIntegration
 					try
 					{
 						if (PatientFile.Exists(tempPath))
-							File.Delete(tempPath);
+							PatientFile.Delete(tempPath);
 						else if (Directory.Exists(tempPath))
 							Directory.Delete(tempPath, true);
 						return name;

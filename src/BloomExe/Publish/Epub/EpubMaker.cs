@@ -473,7 +473,7 @@ namespace Bloom.Publish.Epub
 		public static void GetPageDimensions(string pageSize, out double width, out double height)
 		{
 			var path = FileLocationUtilities.GetFileDistributedWithApplication("pageSizes.json");
-			var json = File.ReadAllText(path);
+			var json = PatientFile.ReadAllText(path);
 			var sizes = DynamicJson.Parse(json).sizes;
 			// FirstOrDefault would be cleaner, but I can't figure out how to use it with dynamic data.
 			for (int i = 0; i < sizes.Count; i++)

@@ -88,7 +88,7 @@ namespace Bloom.MiscUI
 			{
 				if (PatientFile.Exists(testPath))
 				{
-					File.Delete(testPath);
+					PatientFile.Delete(testPath);
 				}
 			}
 			catch (Exception)

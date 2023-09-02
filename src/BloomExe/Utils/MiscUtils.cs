@@ -353,7 +353,7 @@ namespace Bloom.Utils
 		}
 
 		/// <summary>
-		/// Reads all text (like File.ReadAllText) from a file. Works even if that file may
+		/// Reads all text (like PatientFile.ReadAllText) from a file. Works even if that file may
 		/// be written to one or more times.
 		/// e.g. reading the progress output file of ffmpeg while ffmpeg is running.
 		/// </summary>

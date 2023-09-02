@@ -16,7 +16,8 @@ using System.Xml;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
-using SIL.IO; using Bloom.Utils;
+using SIL.IO;
+using Bloom.Utils;
 using SIL.Reporting;
 using Bloom.Book;
 using Bloom.ImageProcessing;
@@ -165,7 +166,7 @@ namespace Bloom.Api
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
 		/// </summary>
-		internal BloomServer(BookSelection bookSelection) : this( new RuntimeImageProcessor(new BookRenamedEvent()), bookSelection, new CollectionSettings())
+		internal BloomServer(BookSelection bookSelection) : this(new RuntimeImageProcessor(new BookRenamedEvent()), bookSelection, new CollectionSettings())
 		{ }
 
 		public BloomServer(RuntimeImageProcessor cache, BookSelection bookSelection, CollectionSettings collectionSettings, BloomFileLocator fileLocator = null)
@@ -348,7 +349,7 @@ namespace Bloom.Api
 			};
 			lock (_theOneInstance._queue)
 			{
-				_theOneInstance._idleTasks.Enqueue(new IdleTaskQueueItem() {Id = realKey, WhatToDo = removeIt});
+				_theOneInstance._idleTasks.Enqueue(new IdleTaskQueueItem() { Id = realKey, WhatToDo = removeIt });
 			}
 		}
 
@@ -359,7 +360,7 @@ namespace Bloom.Api
 		protected async Task<bool> ProcessRequestAsync(IRequestInfo info)
 		{
 			if (CurrentCollectionSettings != null && CurrentCollectionSettings.SettingsFilePath != null)
-				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath).Replace('\\','/');
+				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath).Replace('\\', '/');
 
 			var localPath = GetLocalPathWithoutQuery(info);
 
@@ -451,7 +452,7 @@ namespace Bloom.Api
 			if (ProcessImageFileRequest(info))
 				return true;
 
-			if(localPath.Contains("CURRENTPAGE")) //useful when debugging. E.g. http://localhost:8089/bloom/CURRENTPAGE.htm will always show the page we're on.
+			if (localPath.Contains("CURRENTPAGE")) //useful when debugging. E.g. http://localhost:8089/bloom/CURRENTPAGE.htm will always show the page we're on.
 			{
 				localPath = _keyToCurrentPage;
 			}
@@ -673,10 +674,10 @@ namespace Bloom.Api
 		protected static bool IsImageTypeThatCanBeDegraded(string path)
 		{
 			var extension = Path.GetExtension(path);
-			if(!String.IsNullOrEmpty(extension))
+			if (!String.IsNullOrEmpty(extension))
 				extension = extension.ToLower();
 			//note, we're omitting SVG
-			return (new[] { ".png", ".jpg", ".jpeg"}.Contains(extension));
+			return (new[] { ".png", ".jpg", ".jpeg" }.Contains(extension));
 		}
 
 		static HashSet<string> _imageExtensions = new HashSet<string>(new[] { ".jpg", "jpeg", ".png", ".svg" });
@@ -837,7 +838,7 @@ namespace Bloom.Api
 			// 3) I can't reproduce the original problem of BL-3835 any more, if I remove it.
 			// 4) The unit test that came with the PR now passes without this code. (https://github.com/BloomBooks/BloomDesktop/pull/1221)
 			/*
-			 * 
+			 *
 			// Use '%25' to detect that the % in a Url encoded character (for example space encoded as %20) was encoded as %25.
 			// In this example we would have %2520 in info.RawUrl and %20 in localPath instead of a space.  Note that if an
 			// image has a % in the filename, like 'The other 50%', and it isn't doubly encoded, then this shouldn't be a
@@ -945,7 +946,7 @@ namespace Bloom.Api
 		private static bool IsSimulatedFileUrl(string localPath)
 		{
 			var extension = Path.GetExtension(localPath);
-			if(extension != null && !extension.StartsWith(".htm"))
+			if (extension != null && !extension.StartsWith(".htm"))
 				return false;
 
 			// a good improvement might be to make these urls more obviously cache requests. But for now, let's just see if they are filename guids
@@ -1021,7 +1022,7 @@ namespace Bloom.Api
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
 				var p = FileLocationUtilities.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
-				if(PatientFile.Exists(p)) path = p;
+				if (PatientFile.Exists(p)) path = p;
 			}
 			if (String.IsNullOrEmpty(path))
 			{
@@ -1066,13 +1067,13 @@ namespace Bloom.Api
 			// Another thing to check on is https://github.com/bryceg/Owin.WebSocket/pull/20 which
 			// would give us an owin-compliant version of the fleck websocket server, and we could
 			// switch to using an owin-compliant http server like NancyFx.
-			for (var i=0; !success && i < kNumberOfPortsToTry; i++)
+			for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
 			{
-				BloomServer.portForHttp = kStartingPort + (i*kNumberOfPortsWeNeed);
+				BloomServer.portForHttp = kStartingPort + (i * kNumberOfPortsWeNeed);
 				success = AttemptToOpenPort();
 			}
 
-			if(!success)
+			if (!success)
 			{
 
 				ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
@@ -1099,13 +1100,13 @@ namespace Bloom.Api
 		{
 			try
 			{
-				Logger.WriteMinorEvent("Attempting to start http listener on "+ ServerUrlEndingInSlash);
-				_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
+				Logger.WriteMinorEvent("Attempting to start http listener on " + ServerUrlEndingInSlash);
+				_listener = new HttpListener { AuthenticationSchemes = AuthenticationSchemes.Anonymous };
 				_listener.Prefixes.Add(ServerUrlEndingInSlash);
 				_listener.Start();
 				return true;
 			}
-			catch(HttpListenerException error)
+			catch (HttpListenerException error)
 			{
 				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" + error.Message);
 				return HandleExceptionOpeningPort(error);
@@ -1148,16 +1149,16 @@ namespace Bloom.Api
 		{
 			try
 			{
-				var x = new WebClientWithTimeout {Timeout = 3000};
+				var x = new WebClientWithTimeout { Timeout = 3000 };
 
-				if("OK" != x.DownloadString(ServerUrlWithBloomPrefixEndingInSlash + "testconnection"))
+				if ("OK" != x.DownloadString(ServerUrlWithBloomPrefixEndingInSlash + "testconnection"))
 				{
 					throw new ApplicationException(GetServerStartFailureMessage());
 				}
 			}
-			catch(Exception error)
+			catch (Exception error)
 			{
-				ErrorReport.NotifyUserOfProblem(error,GetServerStartFailureMessage());
+				ErrorReport.NotifyUserOfProblem(error, GetServerStartFailureMessage());
 				Application.Exit();
 			}
 
@@ -1167,31 +1168,31 @@ namespace Bloom.Api
 		private static string GetServerStartFailureMessage()
 		{
 			var zoneAlarm = false;
-			if(Platform.IsWindows)
+			if (Platform.IsWindows)
 			{
 				zoneAlarm =
 					Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
 												  "CheckPoint/ZoneAlarm")) ||
-					         Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-					                              "CheckPoint/ZoneAlarm"));
+							 Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+												  "CheckPoint/ZoneAlarm"));
 
-				if(!zoneAlarm)
+				if (!zoneAlarm)
 				{
 					try
 					{
 						zoneAlarm =
 							Process.GetProcesses().Any(p => p.Modules.Cast<ProcessModule>().Any(m => m.ModuleName.Contains("ZoneAlarm")));
 					}
-					catch(Exception error)
+					catch (Exception error)
 					{
 						Logger.WriteError("GetServerStartFailureMessage() was unable to check for a running ZoneAlarm Process (BL-4055, Bl-4032, etc.)", error);
 					}
 				}
 			}
-			if(zoneAlarm)
+			if (zoneAlarm)
 			{
 				return LocalizationManager.GetString("Errors.ZoneAlarm",
-				                                     "Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.");
+													 "Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.");
 			}
 
 			return LocalizationManager.GetString("Errors.CannotConnectToBloomServer",
@@ -1435,7 +1436,7 @@ namespace Bloom.Api
 			{
 				if (ShouldReportFailedRequest(info))
 					ReportMissingFile(info);
-				info.WriteError(404);	// Informing the caller is always needed.
+				info.WriteError(404);   // Informing the caller is always needed.
 			}
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.  (Also see all requests as a side benefit.)
@@ -1622,7 +1623,7 @@ namespace Bloom.Api
 		/// This function should be called immediately before any server thread blocks
 		/// (e.g. waits for a lock, wait for a modal dialog to close, etc.)
 		/// Must be paired with RegisterThreadUnblocked() when done.
-		/// 
+		///
 		/// This can be called by any code that at least sometimes (if not always)
 		/// is called by a BloomServer worker thread. The caller need not guarantee that
 		/// the current thread is a server thread. This method will check for that.
@@ -1730,7 +1731,7 @@ namespace Bloom.Api
 
 						// stop listening for incoming http requests
 						Debug.Assert(_listener.IsListening);
-						if(_listener.IsListening)
+						if (_listener.IsListening)
 						{
 							//In BL-3290, a user quitely failed here each time he exited Bloom, with a Cannot access a disposed object.
 							//according to http://stackoverflow.com/questions/11164919/why-httplistener-start-method-dispose-stuff-on-exception,

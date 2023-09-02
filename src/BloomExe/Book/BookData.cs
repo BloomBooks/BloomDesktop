@@ -460,7 +460,7 @@ namespace Bloom.Book
 					{
 						try
 						{
-							var settingsJson = File.ReadAllText(settingsPath, Encoding.UTF8);
+							var settingsJson = PatientFile.ReadAllText(settingsPath, Encoding.UTF8);
 							var settings = DynamicJson.Parse(settingsJson);
 							var stages = settings.stages;
 							var allLetters = "";

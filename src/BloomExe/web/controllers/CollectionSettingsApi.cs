@@ -399,7 +399,7 @@ namespace Bloom.web.controllers
 			if (summaryFile == null)
 				return "";
 
-			var html = File.ReadAllText(summaryFile, Encoding.UTF8);
+			var html = PatientFile.ReadAllText(summaryFile, Encoding.UTF8);
 			return html.Replace("{flavor}", flavor);
 		}
 

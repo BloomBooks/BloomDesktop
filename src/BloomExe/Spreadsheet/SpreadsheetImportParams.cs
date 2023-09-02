@@ -19,7 +19,7 @@ namespace Bloom.Spreadsheet
 
 		public static SpreadsheetImportParams FromFile(string path)
 		{
-			return JsonConvert.DeserializeObject<SpreadsheetImportParams>(File.ReadAllText(path, Encoding.UTF8));
+			return JsonConvert.DeserializeObject<SpreadsheetImportParams>(PatientFile.ReadAllText(path, Encoding.UTF8));
 		}
 	}
 }

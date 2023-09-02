@@ -870,7 +870,7 @@ namespace Bloom.TeamCollection
 			if (!PatientFile.Exists(path))
 				return DateTime.MinValue; // assume local files are really old!
 			DateTime result;
-			if (DateTime.TryParse(File.ReadAllText(path).Split(';')[0], out result))
+			if (DateTime.TryParse(PatientFile.ReadAllText(path).Split(';')[0], out result))
 				return result;
 			return DateTime.MinValue;
 		}
@@ -880,7 +880,7 @@ namespace Bloom.TeamCollection
 			var path = GetCollectionFileSyncLocation();
 			if (!PatientFile.Exists(path))
 				return "";
-			var parts = File.ReadAllText(path).Split(';');
+			var parts = PatientFile.ReadAllText(path).Split(';');
 			if (parts.Length > 1)
 				return parts[1];
 			return "";

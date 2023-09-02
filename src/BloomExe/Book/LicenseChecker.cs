@@ -203,7 +203,7 @@ namespace Bloom.Book
 
         internal static string ReadObfuscatedFile(string path)
         {
-            return Encoding.UTF8.GetString(System.Convert.FromBase64String(File.ReadAllText(path)));
+            return Encoding.UTF8.GetString(System.Convert.FromBase64String(PatientFile.ReadAllText(path)));
         }
 
         /// <summary>

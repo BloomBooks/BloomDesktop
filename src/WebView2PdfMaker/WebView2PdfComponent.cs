@@ -189,7 +189,7 @@ namespace WebView2PdfMaker
 		}
 		private void FinishMakingPdf()
 		{
-			if (!PatientFile.Exists(_pathToTempPdf))
+			if (!File.Exists(_pathToTempPdf))
 				throw new ApplicationException(string.Format(
 					"WebView2PdfMaker was not able to create the PDF file ({0}).{1}{1}Details: WebView2 did not produce the expected document.",
 					_pathToTempPdf, Environment.NewLine));
@@ -219,9 +219,9 @@ namespace WebView2PdfMaker
 
 			var tempFileName = Path.GetTempFileName();
 			_pathToTempPdf = tempFileName + ".pdf";
-			File.Delete(tempFileName);
-			File.Delete(_pathToTempPdf);
-			File.Delete(_options.OutputPdfPath);
+			PatientFile.Delete(tempFileName);
+			PatientFile.Delete(_pathToTempPdf);
+			PatientFile.Delete(_options.OutputPdfPath);
 			_webview.Size = new Size(1920, 1320);
 			_uriOfDocument = new Uri(_options.InputHtmlUri);
 			_navigationCompleted = false;

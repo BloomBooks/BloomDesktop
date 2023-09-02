@@ -27,8 +27,8 @@ namespace Bloom.ToPalaso
 				var path2 = Path.Combine(dir2, Path.GetFileName(path));
 				if (!PatientFile.Exists(path2))
 					return false;
-				var content1 = File.ReadAllBytes(path);
-				var content2 = File.ReadAllBytes(path2);
+				var content1 = PatientFile.ReadAllBytes(path);
+				var content2 = PatientFile.ReadAllBytes(path2);
 				if (content1.Length != content2.Length)
 					return false;
 

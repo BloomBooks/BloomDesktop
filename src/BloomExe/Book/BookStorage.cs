@@ -2740,7 +2740,7 @@ namespace Bloom.Book
 			// don't have a duplicate bookInstanceId to worry about.
 			if (PatientFile.Exists(metaDataPath))
 			{
-				var meta = DynamicJson.Parse(File.ReadAllText(metaDataPath));
+				var meta = DynamicJson.Parse(PatientFile.ReadAllText(metaDataPath));
 				meta.bookInstanceId = Guid.NewGuid().ToString();
 				PatientFile.WriteAllText(metaDataPath, meta.ToString());
 			}

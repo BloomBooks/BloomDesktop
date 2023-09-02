@@ -14,7 +14,8 @@ using Bloom.Utils;
 using L10NSharp;
 using SIL.Code;
 using SIL.CommandLineProcessing;
-using SIL.IO; using Bloom.Utils;
+using SIL.IO;
+using Bloom.Utils;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
@@ -169,10 +170,11 @@ namespace Bloom.web.controllers
 		}
 
 		// Request from sign language tool to import a video.
-		private void HandleImportVideoRequest (ApiRequest request)
+		private void HandleImportVideoRequest(ApiRequest request)
 		{
 			string path = null;
-			View.Invoke((Action)(() => {
+			View.Invoke((Action)(() =>
+			{
 				var videoFiles = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.FileDialogVideoFiles", "Video files");
 				var dlg = new DialogAdapters.OpenFileDialogAdapter
 				{
@@ -187,7 +189,7 @@ namespace Bloom.web.controllers
 			}));
 			if (!string.IsNullOrEmpty(path))
 			{
-				using (PerformanceMeasurement.Global.Measure("Import Video",path))
+				using (PerformanceMeasurement.Global.Measure("Import Video", path))
 				{
 					_importedVideoIntoBloom = true;
 					var newVideoPath =
@@ -241,7 +243,7 @@ namespace Bloom.web.controllers
 
 				if (!PatientFile.Exists(videoFilePath))
 				{
-					request.Failed("Cannot find video file ("+videoFilePath+")");
+					request.Failed("Cannot find video file (" + videoFilePath + ")");
 					return;
 				}
 
@@ -377,16 +379,16 @@ namespace Bloom.web.controllers
 			out string videoFilePath, out decimal[] timings)
 		{
 			var fileName = request.Parameters.Get("source");
-			timings = new[] {0.0m, 0.0m};
+			timings = new[] { 0.0m, 0.0m };
 
-			string rawTimings = UrlPathString.CreateFromUrlEncodedString(request.Parameters.Get("timings")).NotEncoded;	// UrlPathString used only for decoding
+			string rawTimings = UrlPathString.CreateFromUrlEncodedString(request.Parameters.Get("timings")).NotEncoded; // UrlPathString used only for decoding
 
 			videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
 			// Some callers need this file to exist, others don't, but decoding is required for all.
 			if (!PatientFile.Exists(videoFilePath) && Regex.IsMatch(fileName, "%[0-9A-Fa-f][0-9A-Fa-f]"))
 			{
 				videoFilePath = Path.Combine(CurrentBook.FolderPath,
-					UrlPathString.CreateFromUrlEncodedString(fileName).NotEncoded);	// UrlPathString used only for decoding
+					UrlPathString.CreateFromUrlEncodedString(fileName).NotEncoded); // UrlPathString used only for decoding
 			}
 
 			if (forEditing && WarnIfVideoCantChange(videoFilePath))
@@ -419,8 +421,8 @@ namespace Bloom.web.controllers
 			var videoUri = new Uri(baseUri, videoUrl);
 			var fragment = videoUri.Fragment; // timing fragments
 			timings = fragment.Length > 0 ? fragment.Substring(3) : string.Empty; // strip off timing prefix ('#t=')
-			// The next line will strip off the query too (if there is one).
-			// Currently we never want the query here, if we do someday, we should use 'videoUri.PathAndQuery'.
+																				  // The next line will strip off the query too (if there is one).
+																				  // Currently we never want the query here, if we do someday, we should use 'videoUri.PathAndQuery'.
 			return videoUri.LocalPath.Substring(1); // most callers won't want the initial slash '/', LocalPath ensures no encoding
 		}
 
@@ -460,7 +462,7 @@ namespace Bloom.web.controllers
 			// is to dangerous, as well as quite difficult.
 			if (CurrentBook == null)
 				return;
-			
+
 			// On Linux, this method interferes with successfully referencing a newly imported video file.
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6723.  Ignoring just the one call to
 			// this method suffices for things  to work.  (On Windows, the sequence of events differs, but
@@ -539,13 +541,13 @@ namespace Bloom.web.controllers
 
 			// Check for valid video file to match url
 			var urlWithoutPrefix = UrlPathString.CreateFromUrlEncodedString(videoUrl.Substring(6)); // grab everything after 'video/'
-			var originalVideoFilePath = Path.Combine(videoFolder, urlWithoutPrefix.NotEncoded);	// any query already removed
+			var originalVideoFilePath = Path.Combine(videoFolder, urlWithoutPrefix.NotEncoded); // any query already removed
 			if (!PatientFile.Exists(originalVideoFilePath))
 				return string.Empty;
 
 			var tempName = originalVideoFilePath;
 			if (!string.IsNullOrEmpty(FfmpegProgram) && !string.IsNullOrEmpty(timings) &&
-			    IsVideoMarkedForTrimming(sourceBookFolder, videoUrl, timings))
+				IsVideoMarkedForTrimming(sourceBookFolder, videoUrl, timings))
 			{
 				tempName = Path.Combine(videoFolder, GetNewVideoFileName());
 				var successful = TrimVideoUsingFfmpeg(originalVideoFilePath, tempName, timings);
@@ -558,7 +560,7 @@ namespace Bloom.web.controllers
 				else
 				{
 					// probably doesn't exist, but if it does we don't need it.
-					// File.Delete (underneath PatientFile.Delete) does not throw if the file doesn't exist.
+					// PatientFile.Delete does not throw if the file doesn't exist.
 					PatientFile.Delete(tempName);
 					tempName = originalVideoFilePath;
 				}

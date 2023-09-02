@@ -154,7 +154,7 @@ namespace Bloom.Utils
 			}
 			else
 			{
-				var meminfo = File.ReadAllText("/proc/meminfo");
+				var meminfo = PatientFile.ReadAllText("/proc/meminfo");
 				var match = new Regex(@"MemTotal:\s+(\d+) kB").Match(meminfo);
 				if (match.Success)
 					returnVal.TotalPhysicalMemory = ulong.Parse(match.Groups[1].Value) * 1024;
