@@ -149,7 +149,7 @@ namespace WebView2PdfMaker
 			if (String.IsNullOrEmpty(inputHtmlUri))
 				return true;
 			if (inputHtmlUri.StartsWith("file:///"))
-				return !File.Exists(Uri.UnescapeDataString(inputHtmlUri.Substring(8)));
+				return !PatientFile.Exists(Uri.UnescapeDataString(inputHtmlUri.Substring(8)));
 			return false;
 		}
 

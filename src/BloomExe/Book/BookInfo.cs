@@ -735,7 +735,7 @@ namespace Bloom.Book
 			var metaJsonPath = Path.Combine(currentFolder, metaJsonFileName);
 			try
 			{
-				if (!File.Exists(metaJsonPath))
+				if (!PatientFile.Exists(metaJsonPath))
 				{
 					var subDirectories = Directory.GetDirectories(currentFolder);
 					foreach (var subDirectory in subDirectories)

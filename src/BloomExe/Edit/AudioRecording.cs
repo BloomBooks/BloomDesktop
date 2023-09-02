@@ -391,7 +391,7 @@ namespace Bloom.Edit
 			}
 			
 			// BL-7617 Don't keep .wav file after .mp3 is created successfully.
-			if (!string.IsNullOrEmpty(mp3Path) && File.Exists(mp3Path))
+			if (!string.IsNullOrEmpty(mp3Path) && PatientFile.Exists(mp3Path))
 			{
 				PatientFile.Delete(PathToRecordableAudioForCurrentSegment);
 			}
@@ -484,7 +484,7 @@ namespace Bloom.Edit
 			backupPath = path + ".bak";
 			var originalExtension = Path.GetExtension(path);
 			var pathWithNoExtension = Path.GetFileNameWithoutExtension(path);
-			while (File.Exists(backupPath))
+			while (PatientFile.Exists(backupPath))
 			{
 				counter++;
 				backupPath = pathWithNoExtension + counter + originalExtension + ".bak";

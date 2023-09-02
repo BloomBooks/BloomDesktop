@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.Utils;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Extensions;
@@ -455,7 +456,7 @@ namespace Bloom.Book
 				if (int.TryParse(stageString, out stage) && CollectionSettings != null)
 				{
 					var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(CollectionSettings);
-					if (File.Exists(settingsPath))
+					if (PatientFile.Exists(settingsPath))
 					{
 						try
 						{

@@ -86,7 +86,7 @@ namespace Bloom.MiscUI
 			// try to clean up behind ourselves
 			try
 			{
-				if (File.Exists(testPath))
+				if (PatientFile.Exists(testPath))
 				{
 					File.Delete(testPath);
 				}

@@ -2206,7 +2206,7 @@ namespace Bloom.Book
 					}
 					catch (UnauthorizedAccessException err)
 					{
-						if (File.Exists(destPath))
+						if (PatientFile.Exists(destPath))
 						{
 							// It's probably a minor problem if we just can't update it but already have it.
 							ReportCantUpdateSupportFile(sourcePath, destPath);
@@ -2972,7 +2972,7 @@ namespace Bloom.Book
 			// This will usually succeed, since it is standard to name the book the same as the folder.
 			// But if it doesn't, we can't move it, so it seems worth a check.
 			// (And if we change our minds about keeping them in sync, this will be one less place to fix.)
-			if (File.Exists(extraBookPath))
+			if (PatientFile.Exists(extraBookPath))
 				PatientFile.Move(extraBookPath,
 					Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(newPathForExtraBook), "htm")));
 			return newPathForExtraBook;

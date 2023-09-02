@@ -1131,7 +1131,7 @@ namespace Bloom.Publish.Epub
 					// defaultLangStyles.css is newly generated for the ePUB, the others are copied from _originalBook.FolderPath
 					path = Path.Combine(_book.FolderPath, name);
 					// It's OK not to find these.
-					if (!File.Exists(path))
+					if (!PatientFile.Exists(path))
 					{
 						continue;
 					}

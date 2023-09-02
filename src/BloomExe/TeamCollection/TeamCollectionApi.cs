@@ -791,7 +791,7 @@ namespace Bloom.TeamCollection
 				// folder is to do it.
 				var testFolder = Path.Combine(sharedFolder, "test");
 				Directory.CreateDirectory(testFolder);
-				File.WriteAllText(Path.Combine(testFolder, "test"), "This is a test");
+				PatientFile.WriteAllText(Path.Combine(testFolder, "test"), "This is a test");
 				SIL.IO.RobustIO.DeleteDirectoryAndContents(testFolder);
 			}
 			catch (Exception ex)

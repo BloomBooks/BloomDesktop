@@ -249,7 +249,7 @@ namespace Bloom
 			}
 			finally
 			{
-				if (File.Exists(transparentImageFile))
+				if (PatientFile.Exists(transparentImageFile))
 					Bloom.Utils.PatientFile.Delete(transparentImageFile);
 			}
 			return true;

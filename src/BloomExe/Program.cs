@@ -1383,7 +1383,7 @@ namespace Bloom
 					if (IsSameActualLanguage(dirTag, UserInterfaceCulture.IetfLanguageTag))
 					{
 						var xliffPath = Path.Combine(subdir, "Bloom.xlf");
-						if (File.Exists(xliffPath))
+						if (PatientFile.Exists(xliffPath))
 						{
 							var doc = new XmlDocument();
 							doc.Load(xliffPath);

@@ -430,7 +430,7 @@ namespace Bloom.Publish
 					// But it's pretty surely one of ours, so try to clean it up.
 					// (It doesn't matter if we use the same name in two different runs of Bloom. This is mainly
 					// about switching between cover and inside pages or simple.)
-					if (File.Exists(path))
+					if (PatientFile.Exists(path))
 					{
 						try
 						{
@@ -974,16 +974,16 @@ namespace Bloom.Publish
 						var errorMessage = AudioProcessor.MergeAudioFiles(mergeFiles, combinedAudioPath);
 						if (errorMessage != null)
 						{
-							File.WriteAllText(Path.Combine(folderForThisBook.FolderPath, $"error page{pageIndex}.txt"),
+							PatientFile.WriteAllText(Path.Combine(folderForThisBook.FolderPath, $"error page{pageIndex}.txt"),
 								errorMessage);
 						}
-						//File.WriteAllText(Path.Combine(folderForThisBook.FolderPath, $"page{pageIndex} timings.txt"),
+						//PatientFile.WriteAllText(Path.Combine(folderForThisBook.FolderPath, $"page{pageIndex} timings.txt"),
 						//	durations.ToString());
 					}
 				}
 				catch (Exception e)
 				{
-					File.WriteAllText(Path.Combine(folderForThisBook.FolderPath, $"error page{pageIndex}.txt"),
+					PatientFile.WriteAllText(Path.Combine(folderForThisBook.FolderPath, $"error page{pageIndex}.txt"),
 						e.Message);
 				}
 			}

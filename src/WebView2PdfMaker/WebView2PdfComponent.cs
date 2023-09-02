@@ -189,7 +189,7 @@ namespace WebView2PdfMaker
 		}
 		private void FinishMakingPdf()
 		{
-			if (!File.Exists(_pathToTempPdf))
+			if (!PatientFile.Exists(_pathToTempPdf))
 				throw new ApplicationException(string.Format(
 					"WebView2PdfMaker was not able to create the PDF file ({0}).{1}{1}Details: WebView2 did not produce the expected document.",
 					_pathToTempPdf, Environment.NewLine));

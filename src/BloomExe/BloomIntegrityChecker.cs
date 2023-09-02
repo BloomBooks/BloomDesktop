@@ -88,7 +88,7 @@ namespace Bloom.MiscUI
 
 			using (var tempFile = new TempFile())
 			{
-				File.WriteAllText(tempFile.Path, message);
+				PatientFile.WriteAllText(tempFile.Path, message);
 
 				// We're making ShowReleaseNotesDialog do double duty here. Actually, triple duty, since it also handles
 				// the Bloom videos dialog currently. But currently this is the easiest way to display a bit of markdown in a dialog,

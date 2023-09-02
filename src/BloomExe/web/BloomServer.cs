@@ -242,7 +242,7 @@ namespace Bloom.Api
 			{
 				pathToInMemoryHtmlFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
 			}
-			if (File.Exists(pathToInMemoryHtmlFile))
+			if (PatientFile.Exists(pathToInMemoryHtmlFile))
 			{
 				// Just in case someone perversely calls a book "currentPage" we will use another name.
 				// (We want one that does NOT conflict with anything really in the folder.)

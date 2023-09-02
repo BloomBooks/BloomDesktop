@@ -1192,7 +1192,7 @@ namespace Bloom.Book
 			coverImageFileName = coverImageFileName.Trim();
 			// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
 			var coverImagePath = UrlPathString.GetFullyDecodedPath(StoragePageFolder, ref coverImageFileName);
-			while (coverImagePath.Contains("&amp;") && !File.Exists(coverImagePath))
+			while (coverImagePath.Contains("&amp;") && !PatientFile.Exists(coverImagePath))
 				coverImagePath = HttpUtility.HtmlDecode(coverImagePath);
 			var filename = Path.GetFileName(coverImagePath);
 			if (filename != coverImageFileName)
@@ -4037,13 +4037,13 @@ namespace Bloom.Book
 					}
 					//var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
 					//debugPath = Path.Combine(folder, "DebugHashing-" + timestamp + ".bak");	// .bak gets ignored
-					//File.WriteAllText(Path.Combine(folder, "SimplifiedHtml-" + timestamp + ".bak"), simplified);
+					//PatientFile.WriteAllText(Path.Combine(folder, "SimplifiedHtml-" + timestamp + ".bak"), simplified);
 				}
 				sha.TransformFinalBlock(new byte[0], 0, 0);
 				//if (debugPath != null)
 				//{
 				//	debugBldr.AppendLineFormat("final hash = {0}", Convert.ToBase64String(sha.Hash));
-				//	File.WriteAllText(debugPath, debugBldr.ToString());
+				//	PatientFile.WriteAllText(debugPath, debugBldr.ToString());
 				//}
 				return Convert.ToBase64String(sha.Hash);
 			}
@@ -4113,13 +4113,13 @@ namespace Bloom.Book
 				return null;
 			// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
 			var coverImagePath = UrlPathString.GetFullyDecodedPath(StoragePageFolder, ref coverImageFileName);
-			if (!File.Exists(coverImagePath))
+			if (!PatientFile.Exists(coverImagePath))
 			{
 				// And the filename might be multiply-HTML encoded.
 				while (coverImagePath.Contains("&amp;"))
 				{
 					coverImagePath = HttpUtility.HtmlDecode(coverImagePath);
-					if (File.Exists(coverImagePath))
+					if (PatientFile.Exists(coverImagePath))
 						return coverImagePath;
 				}
 				return null;

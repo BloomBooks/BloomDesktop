@@ -25,7 +25,7 @@ namespace Bloom.ToPalaso
 			foreach (var path in files1)
 			{
 				var path2 = Path.Combine(dir2, Path.GetFileName(path));
-				if (!File.Exists(path2))
+				if (!PatientFile.Exists(path2))
 					return false;
 				var content1 = File.ReadAllBytes(path);
 				var content2 = File.ReadAllBytes(path2);

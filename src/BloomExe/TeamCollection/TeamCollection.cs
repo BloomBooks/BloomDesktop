@@ -463,7 +463,7 @@ namespace Bloom.TeamCollection
 				// a book that doesn't exist (by this name) in the repo should only exist locally if it's new
 				// (no status file) or renamed (the corresponding repo file is called oldName).
 				var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
-				if (File.Exists(statusFilePath))
+				if (PatientFile.Exists(statusFilePath))
 				{
 					// The book has to have been renamed since it has a status file.
 					// Or maybe it's been removed remotely, but the local collection hasn't caught up...
@@ -830,7 +830,7 @@ namespace Bloom.TeamCollection
 		{
 			var path = GetCollectionFileSyncLocation();
 			var nowString = DateTime.UtcNow.ToString("o"); // good for round-tripping
-			File.WriteAllText(path, nowString + @";" + checksum);
+			PatientFile.WriteAllText(path, nowString + @";" + checksum);
 		}
 
 		/// <summary>
@@ -867,7 +867,7 @@ namespace Bloom.TeamCollection
 		internal DateTime LocalCollectionFilesRecordedSyncTime()
 		{
 			var path = GetCollectionFileSyncLocation();
-			if (!File.Exists(path))
+			if (!PatientFile.Exists(path))
 				return DateTime.MinValue; // assume local files are really old!
 			DateTime result;
 			if (DateTime.TryParse(File.ReadAllText(path).Split(';')[0], out result))
@@ -878,7 +878,7 @@ namespace Bloom.TeamCollection
 		internal string LocalCollectionFilesSavedChecksum()
 		{
 			var path = GetCollectionFileSyncLocation();
-			if (!File.Exists(path))
+			if (!PatientFile.Exists(path))
 				return "";
 			var parts = File.ReadAllText(path).Split(';');
 			if (parts.Length > 1)
@@ -920,7 +920,7 @@ namespace Bloom.TeamCollection
 			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
 			// Avoiding use of ChangeExtension as it's just possible the collectionName could have period.
 			var collectionPath = Path.Combine(parentFolder, collectionName + ".bloomCollection");
-			if (File.Exists(collectionPath))
+			if (PatientFile.Exists(collectionPath))
 				return collectionPath;
 			// occasionally, mainly when making a temp folder during joining, the bloomCollection file may not
 			// have the expected name
@@ -936,7 +936,7 @@ namespace Bloom.TeamCollection
 			files.Add(Path.GetFileName(CollectionPath(folder)));
 			foreach (var file in new[] {"customCollectionStyles.css", "configuration.txt"})
 			{
-				if (File.Exists(Path.Combine(folder, file)))
+				if (PatientFile.Exists(Path.Combine(folder, file)))
 					files.Add(file);
 			}
 			foreach (var path in Directory.EnumerateFiles(folder, "ReaderTools*.json"))
@@ -1388,7 +1388,7 @@ namespace Bloom.TeamCollection
 			// sometimes we get a new book notification when all that happened is it got checked in or out remotely.
 			// If the book already exists and has status locally, then a new book notification is spurious,
 			// so we don't want a message about it.
-			if (!File.Exists(statusFilePath))
+			if (!PatientFile.Exists(statusFilePath))
 			{
 				var oldName = NewBookRenamedFrom(bookBaseName);
 				if (oldName == null)
@@ -1499,7 +1499,7 @@ namespace Bloom.TeamCollection
 
 		static void AddIfExists(List<string> paths, string path)
 		{
-			if (File.Exists(path))
+			if (PatientFile.Exists(path))
 			{
 				paths.Add(path);
 			}
@@ -1508,7 +1508,7 @@ namespace Bloom.TeamCollection
 		internal BookStatus GetLocalStatus(string bookFolderName, string collectionFolder = null)
 		{
 			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
-			if (File.Exists(statusFilePath))
+			if (PatientFile.Exists(statusFilePath))
 			{
 				return BookStatus.FromJson(PatientFile.ReadAllText(statusFilePath, Encoding.UTF8));
 			}
@@ -1777,7 +1777,7 @@ namespace Bloom.TeamCollection
 						}
 
 						// no sign of book in repo...should we delete it?
-						if (!File.Exists(localStatusFilePath))
+						if (!PatientFile.Exists(localStatusFilePath))
 						{
 							var id = GetBookId(bookFolderName);
 							if (id != null && repoBooksByIdMap.TryGetValue(id, out Tuple<string, bool> repoState))
@@ -1931,7 +1931,7 @@ namespace Bloom.TeamCollection
 					var repoStatus =
 						GetStatus(bookName); // we know it's in the repo, so status will certainly be from there.
 					var statusFilePath = GetStatusFilePath(bookName, _localCollectionFolder);
-					if (!File.Exists(statusFilePath))
+					if (!PatientFile.Exists(statusFilePath))
 					{
 						var currentChecksum = MakeChecksum(localFolderPath);
 						if (currentChecksum == repoStatus.checksum)

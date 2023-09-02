@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using Bloom.Api;
+using Bloom.Utils;
 using L10NSharp;
 using SIL.WritingSystems;
 using SIL.Xml;
@@ -150,7 +151,7 @@ namespace Bloom.Book
             }
 
             var path = getCacheFile();
-            if (!File.Exists(path))
+            if (!PatientFile.Exists(path))
             {
                 return false;
             }
@@ -197,7 +198,7 @@ namespace Bloom.Book
 
         internal static void WriteObfuscatedFile(string path, string content)
         {
-            File.WriteAllText(path, System.Convert.ToBase64String(Encoding.UTF8.GetBytes(content)));
+            PatientFile.WriteAllText(path, System.Convert.ToBase64String(Encoding.UTF8.GetBytes(content)));
         }
 
         internal static string ReadObfuscatedFile(string path)

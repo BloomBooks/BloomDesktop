@@ -920,7 +920,7 @@ namespace Bloom.TeamCollection
 			}
 
 			var repoProjectFilesZipPath = GetRepoProjectFilesZipPath(repoFolder);
-			if (!File.Exists(repoProjectFilesZipPath))
+			if (!PatientFile.Exists(repoProjectFilesZipPath))
 			{
 				if (result.Length > 0)
 					result += " and ";
