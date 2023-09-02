@@ -465,7 +465,9 @@ export const BookButton: React.FunctionComponent<{
                         <img
                             src={`/bloom/api/collections/book/thumbnail?book-id=${props.book.id}&${collectionQuery}&reload=${reload}`}
                         />
-                        <BookOnBlorgBadge book={props.book} />
+                        {props.collection.isEditableCollection && (
+                            <BookOnBlorgBadge book={props.book} />
+                        )}
                     </div>
                 }
             >
