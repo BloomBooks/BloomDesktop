@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 using SIL.Code;
 using SQLite;
 
@@ -116,31 +117,39 @@ namespace Bloom.History
 			AddEvent(book.FolderPath, book.NameBestForUserDisplay, book.ID, eventType, message);
 		}
 
-		public static void AddEvent(string folderPath, string bookName, string bookId,  BookHistoryEventType eventType, string message="")
+		public static void AddEvent(string folderPath, string bookName, string bookId, BookHistoryEventType eventType, string message = "")
 		{
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 				return;     // SQLiteConnection never works on Linux.
 			try
 			{
-				using (var db = GetConnection(folderPath))
-				{
-					GetOrMakeBookRecord(bookName, bookId, db);
+				var sQLiteExceptionSet = new HashSet<Type>() { typeof(SQLiteException) };
 
-					var evt = new BookHistoryEvent()
-					{
-						BookId = bookId,
-						Message = message,
-						UserId = TeamCollectionManager.CurrentUser,
-						UserName = TeamCollectionManager.CurrentUserFirstName,
-						Type = eventType,
-						// Be sure to use UTC, otherwise, order will not be preserved properly.
-						When = DateTime.UtcNow,
-						BloomVersion = Application.ProductVersion
-					};
+				// Note: it's really hard to know from the sdk we have at the moment if a sqllite connection is
+				// opened read only because some other process has it open. So we do the retry around the whole
+				// operation instead of just the opening of the connection like you'd expect.
+				Patient.Retry(() =>
+								{
+									using (var db = GetConnection(folderPath))
+									{
+										GetOrMakeBookRecord(bookName, bookId, db);
 
-					db.Insert(evt);
-					db.Close();
-				}
+										var evt = new BookHistoryEvent()
+										{
+											BookId = bookId,
+											Message = message,
+											UserId = TeamCollectionManager.CurrentUser,
+											UserName = TeamCollectionManager.CurrentUserFirstName,
+											Type = eventType,
+											// Be sure to use UTC, otherwise, order will not be preserved properly.
+											When = DateTime.UtcNow,
+											BloomVersion = Application.ProductVersion
+										};
+
+										db.Insert(evt);
+										db.Close();
+									}
+								}, exceptionTypesToRetry: sQLiteExceptionSet, memo: "opening history db for writing a book record");
 			}
 			catch (Exception e)
 			{
@@ -196,7 +205,7 @@ namespace Bloom.History
 
 			// For now, we're keeping things simple by just not assuming *anything*, even that the tables are there.
 			// If we find that something is slow or sqllite dislikes this approach, we can do something more complicated.
-			
+
 			db.CreateTable<BookHistoryBook>();
 			db.CreateTable<BookHistoryEvent>();
 			return db;
