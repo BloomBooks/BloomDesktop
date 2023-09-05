@@ -47,6 +47,8 @@
 
 		<RestartBuild Condition="!Exists('$(BuildTasksDll)') Or !Exists('$(BuildTasksAwsDll)')">true</RestartBuild>
 		<RestartBuild Condition="Exists('$(BuildTasksDll)') And Exists('$(BuildTasksAwsDll)')">false</RestartBuild>
+
+		<OkIfSigningFails>false</OkIfSigningFails>
 	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
@@ -304,7 +306,7 @@
 
 	<Target Name="SignExesIfPossible">
 		<PropertyGroup>
-			<ContinueOnExeSignError Condition="$(isOnTeamCity) == true">false</ContinueOnExeSignError>
+			<ContinueOnExeSignError Condition="$(isOnTeamCity) == true AND $(OkIfSigningFails) == false">false</ContinueOnExeSignError>
 			<ContinueOnExeSignError Condition="$(isOnTeamCity) == false">true</ContinueOnExeSignError>
 		</PropertyGroup>
 		<Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
