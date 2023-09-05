@@ -177,7 +177,7 @@ namespace Bloom.Book
 				}
 				try
 				{
-					metadata = RobustIO.MetadataFromFile(path);
+					metadata = RobustFileIO.MetadataFromFile(path);
 				}
 				catch (UnauthorizedAccessException e)
 				{
