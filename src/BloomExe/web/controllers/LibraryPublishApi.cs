@@ -269,6 +269,11 @@ namespace Bloom.web.controllers
 		{
 			if (!ValidateBookshelfBeforeBulkUpload()) { request.PostSucceeded(); return; }
 
+			// BL-12553: It's possible the user changed some settings (features, draft status, etc.) in the publish screen
+			// for the current book. If we just directly go to uploading the collection without saving those settings,
+			// they will be lost. So we save them here.
+			if (Model?.Book?.BookInfo != null)
+				Model.Book.BookInfo.Save();
 			Model.BulkUpload(Model.Book.CollectionSettings.FolderPath, _progress);
 			request.PostSucceeded();
 		}
@@ -277,6 +282,11 @@ namespace Bloom.web.controllers
 		{
 			if (!ValidateBookshelfBeforeBulkUpload()) { request.PostSucceeded(); return; }
 
+			// BL-12553: It's possible the user changed some settings (features, draft status, etc.) in the publish screen
+			// for the current book. If we just directly go to uploading the collection without saving those settings,
+			// they will be lost. So we save them here.
+			if (Model?.Book?.BookInfo != null)
+				Model.Book.BookInfo.Save();
 			var folderPath = request.RequiredPostString();
 			if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
 				Model.BulkUpload(folderPath, _progress);
