@@ -751,7 +751,7 @@ namespace Bloom.WebLibraryIntegration
 				var randomID = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("/","_").Replace("+","-").Trim(new []{'='});
 				name = "BDS" + randomID.Substring(0,2);	// 2 chars of randomness = 64 ** 2 = 4096 possibilities.
 				var tempPath = Path.Combine(Path.GetTempPath(), name);
-				if (!File.Exists(tempPath) && !Directory.Exists(tempPath))
+				if (!RobustFile.Exists(tempPath) && !Directory.Exists(tempPath))
 					return name;
 				// We're finding a lot of names in use.  To improve our chances, and since this is probably garbage left behind by other
 				// downloads, start trying to clean them up.
@@ -759,8 +759,8 @@ namespace Bloom.WebLibraryIntegration
 				{
 					try
 					{
-						if (File.Exists(tempPath))
-							File.Delete(tempPath);
+						if (RobustFile.Exists(tempPath))
+							RobustFile.Delete(tempPath);
 						else if (Directory.Exists(tempPath))
 							Directory.Delete(tempPath, true);
 						return name;
