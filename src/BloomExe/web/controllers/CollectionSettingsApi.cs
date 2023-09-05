@@ -276,7 +276,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getCustomPaletteColors", HandleGetCustomColorsRequest, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addCustomPaletteColor", HandleAddCustomColor, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "webGoal", HandleWebGoalRequest, true);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "languageName", HandleLanguageNameRequest, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "languageData", HandleLanguageDataRequest, true);
 		}
 
 		private void ResetBookshelf()
@@ -294,13 +294,15 @@ namespace Bloom.web.controllers
 			request.ReplyWithText(goal.ToString());
 		}
 
-		private void HandleLanguageNameRequest(ApiRequest request)
+		private void HandleLanguageDataRequest(ApiRequest request)
 		{
 			if (request.HttpMethod == HttpMethods.Post)
 				return; // Should be a get
 
 			var languageName = _collectionSettings.GetLanguageName(_collectionSettings.Language1Tag, _collectionSettings.Language1Tag);
-			request.ReplyWithText(languageName);
+			var langTag = _collectionSettings.Language1Tag;
+			var jsonString = $"{{\"languageName\":\"{languageName}\",\"languageCode\":\"{langTag}\"}}";
+			request.ReplyWithJson(jsonString);
 		}
 
 		private void HandleGetCustomColorsRequest(ApiRequest request)
