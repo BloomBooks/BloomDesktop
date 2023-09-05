@@ -459,7 +459,7 @@ namespace Bloom.Publish.Video
 				// Enhance: if something goes wrong, it may be useful to capture this somehow.
 				//Debug.WriteLine("full ffmpeg error log: " + _errorData.ToString());
 				var errors = _errorData.ToString();
-				if (!RobustFile.Exists(_videoOnlyPath) || new FileInfo(_videoOnlyPath).Length < 100)
+				if (!File.Exists(_videoOnlyPath) || new FileInfo(_videoOnlyPath).Length < 100)
 				{
 					Logger.WriteError(new ApplicationException(errors));
 					progress.MessageWithoutLocalizing("Video capture failed", ProgressKind.Error);
@@ -825,7 +825,7 @@ namespace Bloom.Publish.Video
 						++_numIterationsDone;
 
 						// Check if the file was created successfully
-						if (_ffmpegProcess.ExitCode != 0 || !RobustFile.Exists(outputPath) || new FileInfo(outputPath).Length < 100)
+						if (_ffmpegProcess.ExitCode != 0 || !File.Exists(outputPath) || new FileInfo(outputPath).Length < 100)
 						{
 							// Failure - Log and abort.
 							var mergeErrors = _errorData.ToString();				
@@ -923,7 +923,7 @@ namespace Bloom.Publish.Video
 				if (_ffmpegExited)
 					return 0;
 
-				var progressFileContents = ToPalaso.RobustIO.ReadAllTextFromFileWhichMightGetWrittenTo(_ffmpegProgressFile.Path);
+				var progressFileContents = MiscUtils.ReadAllTextFromFileWhichMightGetWrittenTo(_ffmpegProgressFile.Path);
 
 				if (string.IsNullOrWhiteSpace(progressFileContents))
 					return 0;

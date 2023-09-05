@@ -25,10 +25,10 @@ namespace Bloom.ToPalaso
 			foreach (var path in files1)
 			{
 				var path2 = Path.Combine(dir2, Path.GetFileName(path));
-				if (!RobustFile.Exists(path2))
+				if (!File.Exists(path2))
 					return false;
-				var content1 = RobustFile.ReadAllBytes(path);
-				var content2 = RobustFile.ReadAllBytes(path2);
+				var content1 = File.ReadAllBytes(path);
+				var content2 = File.ReadAllBytes(path2);
 				if (content1.Length != content2.Length)
 					return false;
 

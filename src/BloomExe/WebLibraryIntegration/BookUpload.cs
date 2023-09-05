@@ -511,9 +511,9 @@ namespace Bloom.WebLibraryIntegration
 				book.BookInfo.PageCount = book.GetPages().Count();
 				book.BookInfo.Save();
 				// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.
-				var thumbnailsExist = RobustFile.Exists(Path.Combine(bookFolder, "thumbnail-70.png")) &&
-										RobustFile.Exists(Path.Combine(bookFolder, "thumbnail-256.png")) &&
-										RobustFile.Exists(Path.Combine(bookFolder, "thumbnail.png"));
+				var thumbnailsExist = File.Exists(Path.Combine(bookFolder, "thumbnail-70.png")) &&
+				                      File.Exists(Path.Combine(bookFolder, "thumbnail-256.png")) &&
+				                      File.Exists(Path.Combine(bookFolder, "thumbnail.png"));
 				if (!bookParams.PreserveThumbnails || !thumbnailsExist)
 				{
 					var thumbnailMsg = LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail",

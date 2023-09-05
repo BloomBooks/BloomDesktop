@@ -7,7 +7,6 @@ using System.Net;
 using System.Text;
 using Bloom.Api;
 using L10NSharp;
-using SIL.IO;
 using SIL.WritingSystems;
 using SIL.Xml;
 
@@ -151,7 +150,7 @@ namespace Bloom.Book
             }
 
             var path = getCacheFile();
-			if (!RobustFile.Exists(path))
+            if (!File.Exists(path))
             {
                 return false;
             }
@@ -198,12 +197,12 @@ namespace Bloom.Book
 
         internal static void WriteObfuscatedFile(string path, string content)
         {
-			RobustFile.WriteAllText(path, System.Convert.ToBase64String(Encoding.UTF8.GetBytes(content)));
+            File.WriteAllText(path, System.Convert.ToBase64String(Encoding.UTF8.GetBytes(content)));
         }
 
         internal static string ReadObfuscatedFile(string path)
         {
-			return Encoding.UTF8.GetString(System.Convert.FromBase64String(RobustFile.ReadAllText(path)));
+            return Encoding.UTF8.GetString(System.Convert.FromBase64String(File.ReadAllText(path)));
         }
 
         /// <summary>

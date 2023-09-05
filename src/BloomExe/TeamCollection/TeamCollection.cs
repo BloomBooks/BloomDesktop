@@ -463,7 +463,7 @@ namespace Bloom.TeamCollection
 				// a book that doesn't exist (by this name) in the repo should only exist locally if it's new
 				// (no status file) or renamed (the corresponding repo file is called oldName).
 				var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
-				if (RobustFile.Exists(statusFilePath))
+				if (File.Exists(statusFilePath))
 				{
 					// The book has to have been renamed since it has a status file.
 					// Or maybe it's been removed remotely, but the local collection hasn't caught up...
@@ -792,7 +792,7 @@ namespace Bloom.TeamCollection
 				{
 					if (RobustFile.Exists(path)) // won't usually be passed ones that don't, but useful for unit testing at least.
 					{
-						using (var input = ToPalaso.RobustIO.Open(path, FileMode.Open))
+						using (var input = new FileStream(path, FileMode.Open))
 						{
 							byte[] buffer = new byte[4096];
 							int count;
@@ -830,7 +830,7 @@ namespace Bloom.TeamCollection
 		{
 			var path = GetCollectionFileSyncLocation();
 			var nowString = DateTime.UtcNow.ToString("o"); // good for round-tripping
-			RobustFile.WriteAllText(path, nowString + @";" + checksum);
+			File.WriteAllText(path, nowString + @";" + checksum);
 		}
 
 		/// <summary>
@@ -867,10 +867,10 @@ namespace Bloom.TeamCollection
 		internal DateTime LocalCollectionFilesRecordedSyncTime()
 		{
 			var path = GetCollectionFileSyncLocation();
-			if (!RobustFile.Exists(path))
+			if (!File.Exists(path))
 				return DateTime.MinValue; // assume local files are really old!
 			DateTime result;
-			if (DateTime.TryParse(RobustFile.ReadAllText(path).Split(';')[0], out result))
+			if (DateTime.TryParse(File.ReadAllText(path).Split(';')[0], out result))
 				return result;
 			return DateTime.MinValue;
 		}
@@ -878,9 +878,9 @@ namespace Bloom.TeamCollection
 		internal string LocalCollectionFilesSavedChecksum()
 		{
 			var path = GetCollectionFileSyncLocation();
-			if (!RobustFile.Exists(path))
+			if (!File.Exists(path))
 				return "";
-			var parts = RobustFile.ReadAllText(path).Split(';');
+			var parts = File.ReadAllText(path).Split(';');
 			if (parts.Length > 1)
 				return parts[1];
 			return "";
@@ -920,7 +920,7 @@ namespace Bloom.TeamCollection
 			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
 			// Avoiding use of ChangeExtension as it's just possible the collectionName could have period.
 			var collectionPath = Path.Combine(parentFolder, collectionName + ".bloomCollection");
-			if (RobustFile.Exists(collectionPath))
+			if (File.Exists(collectionPath))
 				return collectionPath;
 			// occasionally, mainly when making a temp folder during joining, the bloomCollection file may not
 			// have the expected name
@@ -936,7 +936,7 @@ namespace Bloom.TeamCollection
 			files.Add(Path.GetFileName(CollectionPath(folder)));
 			foreach (var file in new[] {"customCollectionStyles.css", "configuration.txt"})
 			{
-				if (RobustFile.Exists(Path.Combine(folder, file)))
+				if (File.Exists(Path.Combine(folder, file)))
 					files.Add(file);
 			}
 			foreach (var path in Directory.EnumerateFiles(folder, "ReaderTools*.json"))
@@ -1388,7 +1388,7 @@ namespace Bloom.TeamCollection
 			// sometimes we get a new book notification when all that happened is it got checked in or out remotely.
 			// If the book already exists and has status locally, then a new book notification is spurious,
 			// so we don't want a message about it.
-			if (!RobustFile.Exists(statusFilePath))
+			if (!File.Exists(statusFilePath))
 			{
 				var oldName = NewBookRenamedFrom(bookBaseName);
 				if (oldName == null)
@@ -1499,7 +1499,7 @@ namespace Bloom.TeamCollection
 
 		static void AddIfExists(List<string> paths, string path)
 		{
-			if (RobustFile.Exists(path))
+			if (File.Exists(path))
 			{
 				paths.Add(path);
 			}
@@ -1508,7 +1508,7 @@ namespace Bloom.TeamCollection
 		internal BookStatus GetLocalStatus(string bookFolderName, string collectionFolder = null)
 		{
 			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
-			if (RobustFile.Exists(statusFilePath))
+			if (File.Exists(statusFilePath))
 			{
 				return BookStatus.FromJson(RobustFile.ReadAllText(statusFilePath, Encoding.UTF8));
 			}
@@ -1777,7 +1777,7 @@ namespace Bloom.TeamCollection
 						}
 
 						// no sign of book in repo...should we delete it?
-						if (!RobustFile.Exists(localStatusFilePath))
+						if (!File.Exists(localStatusFilePath))
 						{
 							var id = GetBookId(bookFolderName);
 							if (id != null && repoBooksByIdMap.TryGetValue(id, out Tuple<string, bool> repoState))
@@ -1931,7 +1931,7 @@ namespace Bloom.TeamCollection
 					var repoStatus =
 						GetStatus(bookName); // we know it's in the repo, so status will certainly be from there.
 					var statusFilePath = GetStatusFilePath(bookName, _localCollectionFolder);
-					if (!RobustFile.Exists(statusFilePath))
+					if (!File.Exists(statusFilePath))
 					{
 						var currentChecksum = MakeChecksum(localFolderPath);
 						if (currentChecksum == repoStatus.checksum)

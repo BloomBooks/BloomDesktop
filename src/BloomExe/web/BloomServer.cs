@@ -242,7 +242,7 @@ namespace Bloom.Api
 			{
 				pathToInMemoryHtmlFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
 			}
-			if (RobustFile.Exists(pathToInMemoryHtmlFile))
+			if (File.Exists(pathToInMemoryHtmlFile))
 			{
 				// Just in case someone perversely calls a book "currentPage" we will use another name.
 				// (We want one that does NOT conflict with anything really in the folder.)
@@ -527,7 +527,7 @@ namespace Bloom.Api
 			if (localPath == "")
 			{
 				info.ResponseContentType = "text/html";
-				info.WriteCompleteOutput(RobustFile.ReadAllText(@"D:\temp\test.htm"));
+				info.WriteCompleteOutput(File.ReadAllText(@"D:\temp\test.htm"));
 				return true;
 			}
 			return ProcessContent(info, localPath);

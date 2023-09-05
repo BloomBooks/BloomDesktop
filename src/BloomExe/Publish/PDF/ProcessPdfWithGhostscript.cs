@@ -63,7 +63,7 @@ namespace Bloom.Publish.PDF
 			_socketProgress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
 			_socketProgress.MessageWithoutLocalizing(compressing);
 
-			if (!String.IsNullOrWhiteSpace(exePath) && RobustFile.Exists(exePath))
+			if (!String.IsNullOrWhiteSpace(exePath) && File.Exists(exePath))
 			{
 				if (_worker != null)
 					_worker.ReportProgress(0, GetSpecificStatus());
@@ -135,7 +135,7 @@ namespace Bloom.Publish.PDF
 			if (Directory.Exists(dir))
 			{
 				var filename = Path.Combine(dir, "gswin32c.exe");
-				if (RobustFile.Exists(filename))
+				if (File.Exists(filename))
 					return filename;
 			}
 			var baseName = "gswin32";
@@ -169,10 +169,10 @@ namespace Bloom.Publish.PDF
 						if (version < kMinVersion)
 							continue;
 						var prog = Path.Combine(versionDir, "bin", baseName + "c.exe");
-						if (RobustFile.Exists(prog))
+						if (File.Exists(prog))
 							return prog;
 						prog = Path.Combine(versionDir, "bin", baseName + ".exe");
-						if (RobustFile.Exists(prog))
+						if (File.Exists(prog))
 							return prog;
 					}
 				}

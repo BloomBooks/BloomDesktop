@@ -735,7 +735,7 @@ namespace Bloom.Book
 			var metaJsonPath = Path.Combine(currentFolder, metaJsonFileName);
 			try
 			{
-				if (!RobustFile.Exists(metaJsonPath))
+				if (!File.Exists(metaJsonPath))
 				{
 					var subDirectories = Directory.GetDirectories(currentFolder);
 					foreach (var subDirectory in subDirectories)
@@ -751,7 +751,7 @@ namespace Bloom.Book
 				return; // we don't have permission to read this folder, so we can't do anything with it.
 			}
 			// Leaf node; we're in a book folder
-			var metaFileLastWriteTime = RobustFile.GetLastWriteTimeUtc(metaJsonPath);
+			var metaFileLastWriteTime = File.GetLastWriteTimeUtc(metaJsonPath);
 			var bi = new BookInfo(currentFolder, false);
 			var id = bi.Id;
 			SafelyAddToIdSet(id, metaFileLastWriteTime, currentFolder, idToSortedFilepathsMap);

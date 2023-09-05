@@ -170,7 +170,7 @@ namespace Bloom
 
 			// If the move succeeds, then the stub file won't be in our main bin directory anymore... it will already be moved up to the parent
 			// directory. So basically we're just "trying again" here, sigh...
-			if (RobustFile.Exists(stubPath))
+			if (File.Exists(stubPath))
 	        {
 	            try
 	            {

@@ -473,7 +473,7 @@ namespace Bloom.Publish.Epub
 		public static void GetPageDimensions(string pageSize, out double width, out double height)
 		{
 			var path = FileLocationUtilities.GetFileDistributedWithApplication("pageSizes.json");
-			var json = RobustFile.ReadAllText(path);
+			var json = File.ReadAllText(path);
 			var sizes = DynamicJson.Parse(json).sizes;
 			// FirstOrDefault would be cleaner, but I can't figure out how to use it with dynamic data.
 			for (int i = 0; i < sizes.Count; i++)
@@ -1131,7 +1131,7 @@ namespace Bloom.Publish.Epub
 					// defaultLangStyles.css is newly generated for the ePUB, the others are copied from _originalBook.FolderPath
 					path = Path.Combine(_book.FolderPath, name);
 					// It's OK not to find these.
-					if (!RobustFile.Exists(path))
+					if (!File.Exists(path))
 					{
 						continue;
 					}

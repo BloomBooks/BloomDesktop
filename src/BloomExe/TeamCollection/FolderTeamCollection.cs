@@ -108,7 +108,7 @@ namespace Bloom.TeamCollection
 					// leave a corrupt, incomplete zip file pretending to be a valid book.
 					// I'm not entirely happy with putting the tmp file in the shared
 					// directory. It's conceivable that Dropbox might try to replicate it.
-					// But RobustFile.Replace() won't handle things on different volumes,
+					// But File.Replace() won't handle things on different volumes,
 					// and we can't count on the system temp folder being on the same volume.
 					// In fact, in the LAN case, the shared directory may be the ONLY place
 					// this user is authorized to write on the destination volume.
@@ -718,7 +718,7 @@ namespace Bloom.TeamCollection
 			// this argument exception puts the TC in the "problems encountered" state with a rather
 			// cryptic message in the dialog box, and no change in the book status panel. But at least
 			// we are not cluttering the TC with conflicts.
-			if (ToPalaso.RobustIO.IsFileLocked(bookPath))
+			if (IsFileLocked(bookPath))
 			{
 				var isDropbox = DropboxUtils.IsPathInDropboxFolder(bookPath);
 				var msg = $"Bloom was not able to modify {bookName} because some other program is busy with it. " +
@@ -741,6 +741,38 @@ namespace Bloom.TeamCollection
 			{
 				_writeBookInProgress = false;
 			}
+		}
+
+		private bool IsFileLocked(string filePath)
+		{
+			try
+			{
+				// If something recently changed it we might get some spurious failures
+				// to open it for modification.
+				// BL-10139 indicated that the default 10 retries over two seconds
+				// is sometimes not enough, so I've increased it here.
+				// No guarantee that even 5s is enough if Dropbox is busy syncing a large
+				// file across a poor internet, but I think after that it's better to give
+				// the user a failed message.
+				RetryUtility.Retry(() =>
+				{
+					using (File.Open(filePath, FileMode.Open))
+					{
+					}
+				}, maxRetryAttempts:25);
+			}
+			catch (IOException e)
+			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+				return true;
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+				return true;
+			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -888,7 +920,7 @@ namespace Bloom.TeamCollection
 			}
 
 			var repoProjectFilesZipPath = GetRepoProjectFilesZipPath(repoFolder);
-			if (!RobustFile.Exists(repoProjectFilesZipPath))
+			if (!File.Exists(repoProjectFilesZipPath))
 			{
 				if (result.Length > 0)
 					result += " and ";

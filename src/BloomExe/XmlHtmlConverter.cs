@@ -83,7 +83,7 @@ namespace Bloom
 			var temp = new TempFile();
 			{
 				RobustFile.WriteAllText(temp.Path, content, Encoding.UTF8);
-				using (var tidy = RobustFileIO.DocumentFromFile(temp.Path))
+				using (var tidy = RobustIO.DocumentFromFile(temp.Path))
 				{
 					tidy.ShowWarnings = false;
 					tidy.Quiet = true;

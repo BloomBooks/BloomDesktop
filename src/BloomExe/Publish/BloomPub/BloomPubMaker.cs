@@ -409,7 +409,7 @@ BookServer bookServer,
 			}
 
 			builder.Append("]");
-			RobustFile.WriteAllText(jsonPath, builder.ToString());
+			File.WriteAllText(jsonPath, builder.ToString());
 		}
 
 		// Given a page built using the new simple-comprehension-quiz template, generate JSON to produce the same
@@ -459,7 +459,7 @@ BookServer bookServer,
 			foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())
 			{
 				var file = UrlPathString.CreateFromUrlEncodedString(imgElt.Attributes["src"].Value).PathOnly.NotEncoded;
-				if (!RobustFile.Exists(Path.Combine(folderPath, file)))
+				if (!File.Exists(Path.Combine(folderPath, file)))
 				{
 					imgElt.ParentNode.RemoveChild(imgElt);
 				}

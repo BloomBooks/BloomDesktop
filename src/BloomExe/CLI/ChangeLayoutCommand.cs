@@ -12,7 +12,6 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using CommandLine;
 using L10NSharp;
-using SIL.IO;
 using SIL.Progress;
 
 namespace Bloom.CLI
@@ -57,19 +56,19 @@ namespace Bloom.CLI
 
 		public static void ChangeLayoutForAllContentPagesInAllBooks(IProgress progress, string collectionPath, string bookPath, string pageGuid)
 		{
-			if (!RobustFile.Exists(bookPath))
+			if (!File.Exists(bookPath))
 			{
 				MessageBox.Show("Could not find template book " + bookPath);
 				return;
 			}
-			if (!RobustFile.Exists(collectionPath))
+			if (!File.Exists(collectionPath))
 			{
 				MessageBox.Show("Could not find collection file " + collectionPath);
 				return;
 			}
 			var collectionFolder = Path.GetDirectoryName(collectionPath);
 
-			if (RobustFile.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(collectionFolder)))
+			if (File.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(collectionFolder)))
 			{
 				MessageBox.Show("Change Layout command cannot currently be used in Team Collections");
 				return;

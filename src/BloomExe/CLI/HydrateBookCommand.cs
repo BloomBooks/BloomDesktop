@@ -46,7 +46,7 @@ namespace Bloom.CLI
 				SizeAndOrientation = SizeAndOrientation.FromString(options.SizeAndOrientation)
 			};
 
-			if (RobustFile.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(Path.GetDirectoryName(options.Path))))
+			if (File.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(Path.GetDirectoryName(options.Path))))
 			{
 				throw new ApplicationException("Hydrate command cannot currently be used in Team Collections");
 				// To make this possible, we'd need to spin up a TeamCollectionManager and TeamCollection and pass the latter

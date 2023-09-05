@@ -243,7 +243,7 @@ namespace Bloom.web.controllers
 				}
 
 				var answerPath = Path.Combine(reportDirectory, "report.html");
-				if (!RobustFile.Exists(answerPath))
+				if (!File.Exists(answerPath))
 				{
 					// This hasn't been effectively reproduced, but there was a case where this would fail at least
 					// half the time on a book, reproducable. That book had 2 pages pointing at placeholder.png,

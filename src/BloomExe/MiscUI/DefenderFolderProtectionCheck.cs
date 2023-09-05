@@ -86,9 +86,9 @@ namespace Bloom.MiscUI
 			// try to clean up behind ourselves
 			try
 			{
-				if (RobustFile.Exists(testPath))
+				if (File.Exists(testPath))
 				{
-					RobustFile.Delete(testPath);
+					File.Delete(testPath);
 				}
 			}
 			catch (Exception)

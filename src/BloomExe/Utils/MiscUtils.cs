@@ -59,7 +59,7 @@ namespace Bloom.Utils
 					bool accessDenied = false;
 					bool accessAllowed = false;
 					FileSystemRights accessRights = FileSystemRights.Write;
-					var acl = ToPalaso.RobustIO.GetAccessControl(filePath);
+					var acl = File.GetAccessControl(filePath);
 					var rules = acl.GetAccessRules(true, true, typeof(NTAccount));
 					var sid = acl.GetOwner(typeof(SecurityIdentifier));
 					var acct = sid.Translate(typeof(NTAccount)) as NTAccount;
@@ -350,6 +350,36 @@ namespace Bloom.Utils
 		{
 			return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
 				|| path.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory);
+		}
+
+		/// <summary>
+		/// Reads all text (like File.ReadAllText) from a file. Works even if that file may
+		/// be written to one or more times.
+		/// e.g. reading the progress output file of ffmpeg while ffmpeg is running.
+		/// </summary>
+		/// <param name="path">path of the file to read</param>
+		/// <returns>the contents of the file as a string</returns>
+		public static string ReadAllTextFromFileWhichMightGetWrittenTo(string path)
+		{
+			return RetryUtility.Retry(()=> ReadAllTextFromFileWhichMightGetWrittenToInternal(path));
+		}
+
+		private static string ReadAllTextFromFileWhichMightGetWrittenToInternal(string path)
+		{
+			using (FileStream logFileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+			using (StreamReader logFileReader = new StreamReader(logFileStream))
+			{
+				StringBuilder sb = new StringBuilder();
+
+				char[] buffer = new char[4096];
+				while (!logFileReader.EndOfStream)
+				{
+					logFileReader.ReadBlock(buffer, 0, buffer.Length);
+					sb.Append(buffer);
+				}
+
+				return sb.ToString();
+			}
 		}
 
 		/// <summary>

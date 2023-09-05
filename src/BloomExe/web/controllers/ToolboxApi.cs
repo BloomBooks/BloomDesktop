@@ -2,7 +2,6 @@
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
-using SIL.IO;
 
 namespace BloomTests.web.controllers
 {
@@ -41,7 +40,7 @@ namespace BloomTests.web.controllers
 			{
 				var fileName = request.RequiredParam("filename");
 				var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
-				request.ReplyWithText(RobustFile.Exists(path) ? "true" : "false");
+				request.ReplyWithText(File.Exists(path) ? "true" : "false");
 			}
 		}
 	}

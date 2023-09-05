@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using SIL.IO;
 
 namespace Bloom.web.controllers
 {
@@ -40,7 +39,7 @@ namespace Bloom.web.controllers
 		{
 			this.mappings = new Dictionary<string, string>();
 
-			string[] lines = RobustFile.ReadAllLines(filename);
+			string[] lines = File.ReadAllLines(filename);
 			foreach (var line in lines)
 			{
 				// Allow empty lines and # comments.  (See BL-7023)

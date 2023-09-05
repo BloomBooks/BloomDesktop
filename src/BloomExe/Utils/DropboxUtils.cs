@@ -75,7 +75,7 @@ namespace Bloom.Utils
 				{
 					foreach (var file in Directory.EnumerateFiles(logDir, "1-*.tmp"))
 					{
-						var writeTime = RobustFile.GetLastWriteTime(file);
+						var writeTime = File.GetLastWriteTime(file);
 						if (DateTime.Now - writeTime < maxDelta)
 							return true;
 					}

@@ -249,8 +249,8 @@ namespace Bloom
 			}
 			finally
 			{
-				if (RobustFile.Exists(transparentImageFile))
-					RobustFile.Delete(transparentImageFile);
+				if (File.Exists(transparentImageFile))
+					SIL.IO.RobustFile.Delete(transparentImageFile);
 			}
 			return true;
 		}

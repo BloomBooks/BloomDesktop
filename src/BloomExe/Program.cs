@@ -895,7 +895,7 @@ namespace Bloom
 				}
 			}
 			string tempFileName = TempFile.WithExtension(".txt").Path;
-			using (var writer = RobustFile.CreateText(tempFileName))
+			using (var writer = File.CreateText(tempFileName))
 			{
 				writer.WriteLine("Something unusual happened and Bloom needs to quit.  A report has been sent to the Bloom Team.");
 				writer.WriteLine("If this keeps happening to you, please write to issues@BloomLibrary.org.");
@@ -1383,7 +1383,7 @@ namespace Bloom
 					if (IsSameActualLanguage(dirTag, UserInterfaceCulture.IetfLanguageTag))
 					{
 						var xliffPath = Path.Combine(subdir, "Bloom.xlf");
-						if (RobustFile.Exists(xliffPath))
+						if (File.Exists(xliffPath))
 						{
 							var doc = new XmlDocument();
 							doc.Load(xliffPath);

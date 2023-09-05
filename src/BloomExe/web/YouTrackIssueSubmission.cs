@@ -165,7 +165,7 @@ namespace Bloom
 			var fileName = Path.GetFileName(filePath);
 			HttpContent content = new MultipartFormDataContent
 			{
-				{new ByteArrayContent(RobustFile.ReadAllBytes(filePath)), fileName, fileName}
+				{new ByteArrayContent(File.ReadAllBytes(filePath)), fileName, fileName}
 			};
 			HttpResponseMessage response = null;
 			string problem = null;
