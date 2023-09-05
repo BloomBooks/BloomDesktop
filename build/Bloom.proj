@@ -307,7 +307,7 @@
 	<Target Name="SignExesIfPossible">
 		<PropertyGroup>
 			<ContinueOnExeSignError Condition="$(isOnTeamCity) == true AND $(OkIfSigningFails) == false">false</ContinueOnExeSignError>
-			<ContinueOnExeSignError Condition="$(isOnTeamCity) == false">true</ContinueOnExeSignError>
+			<ContinueOnExeSignError Condition="$(isOnTeamCity) == false OR $(OkIfSigningFails) == true">true</ContinueOnExeSignError>
 		</PropertyGroup>
 		<Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
 		<!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
