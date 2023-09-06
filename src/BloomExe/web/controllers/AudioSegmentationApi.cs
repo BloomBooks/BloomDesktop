@@ -375,10 +375,7 @@ namespace Bloom.web.controllers
 			List<Tuple<string, string>> timingStartEndRangeList = null;
 			try
 			{
-				//TODO - Create RobustFile.WriteAllLines (where it might want even more robust-ness; see other RobustFile.WriteX methods).
-				RetryUtility.Retry(() =>
-					File.WriteAllLines(textFragmentsFilename, fragmentList)
-				);
+				ToPalaso.RobustIO.WriteAllLines(textFragmentsFilename, fragmentList);
 
 				if (!string.IsNullOrEmpty(requestParameters.manualTimingsPath))
 				{

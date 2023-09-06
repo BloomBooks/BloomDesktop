@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using SIL.IO;
 
 namespace Bloom.Spreadsheet
 {
@@ -19,7 +19,7 @@ namespace Bloom.Spreadsheet
 
 		public static SpreadsheetImportParams FromFile(string path)
 		{
-			return JsonConvert.DeserializeObject<SpreadsheetImportParams>(File.ReadAllText(path, Encoding.UTF8));
+			return JsonConvert.DeserializeObject<SpreadsheetImportParams>(RobustFile.ReadAllText(path, Encoding.UTF8));
 		}
 	}
 }

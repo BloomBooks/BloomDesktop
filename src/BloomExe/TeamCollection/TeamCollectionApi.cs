@@ -17,6 +17,7 @@ using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
+using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.TeamCollection
@@ -793,7 +794,7 @@ namespace Bloom.TeamCollection
 				// folder is to do it.
 				var testFolder = Path.Combine(sharedFolder, "test");
 				Directory.CreateDirectory(testFolder);
-				File.WriteAllText(Path.Combine(testFolder, "test"), "This is a test");
+				RobustFile.WriteAllText(Path.Combine(testFolder, "test"), "This is a test");
 				SIL.IO.RobustIO.DeleteDirectoryAndContents(testFolder);
 			}
 			catch (Exception ex)
