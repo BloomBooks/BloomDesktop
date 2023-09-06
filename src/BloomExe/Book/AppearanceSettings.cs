@@ -93,6 +93,9 @@ public class AppearanceSettings
 		}
 		else // this books doesn't have an appearance.json file, which will happen if it was created before 5.6
 		{
+			var brandingCssPath = bookFolderPath.CombineForPath("branding.css");
+			var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
+
 			var customBookStylesPath = bookFolderPath.CombineForPath("customBookStyles.css");
 			var customBookCss = RobustFile.Exists(customBookStylesPath)? RobustFile.ReadAllText(customBookStylesPath): null;
 
@@ -100,7 +103,8 @@ public class AppearanceSettings
 			var customCollectionStylesPath = bookFolderPath.CombineForPath("../","customCollectionStyles.css");
 			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath)? RobustFile.ReadAllText(customCollectionStylesPath): null;
 
-			settings.CssThemeName = AppearanceSettings.GetSafeThemeForBook(customCollectionCss, customBookCss);
+
+			settings.CssThemeName = AppearanceSettings.GetSafeThemeForBook(new string[] { customCollectionCss, customBookCss, brandingCss });
 		}
 
 		return settings;
@@ -246,21 +250,17 @@ public class AppearanceSettings
 		}
 	}
 
-	internal static string GetSafeThemeForBook(string customCollectionCss, string customBookCss)
+	internal static string GetSafeThemeForBook(string[] cssFileContents)
 	{
 		const string kLegacy = "legacy-5-5";
-		// see if the css contains rules that nowadays should be using css variables, and would likely interfer with 5.6 and up:
+		// See if the css contains rules that nowadays should be using css variables, and would likely interfer with 5.6 and up
+		// Note that this is pessimistic, e.g. it doesn't look to see if the rule is on the .marginBox.
 		const string kProbablyWillInterfere = "padding-|left:|top:|right:|bottom:|margin-|width:";
 
-		if (customBookCss != null && Regex.IsMatch(customBookCss, kProbablyWillInterfere, RegexOptions.IgnoreCase))
+		if (cssFileContents.Any(css => css!=null && Regex.IsMatch(css, kProbablyWillInterfere, RegexOptions.IgnoreCase)))
 		{
 			return kLegacy;
 		}
-		if(customCollectionCss != null && Regex.IsMatch(customCollectionCss, kProbablyWillInterfere, RegexOptions.IgnoreCase))
-		{
-			return kLegacy;
-		}
-
 		return "default";
 	}
 }
