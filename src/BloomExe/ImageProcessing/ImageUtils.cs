@@ -212,7 +212,7 @@ namespace Bloom.ImageProcessing
 			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 				return false;
 			byte[] bytes = new byte[10];
-			using (var file = System.IO.File.OpenRead(path))
+			using (var file = ToPalaso.RobustIO.OpenRead(path))
 			{
 				file.Read(bytes, 0, 10);
 			}
@@ -250,7 +250,7 @@ namespace Bloom.ImageProcessing
 			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 				return false;
 			byte[] bytes = new byte[10];
-			using (var file = System.IO.File.OpenRead(path))
+			using (var file = ToPalaso.RobustIO.OpenRead(path))
 			{
 				file.Read(bytes, 0, 10);
 			}
@@ -536,7 +536,7 @@ namespace Bloom.ImageProcessing
 					// maximum and return true if any are found.
 					try
 					{
-						var tagFile = TagLib.File.Create(path);
+						var tagFile = RobustFileIO.CreateTaglibFile(path);
 						if (tagFile.Properties != null && tagFile.Properties.Description.Contains("PNG"))
 						{
 							if (IsImageSizeTooBig(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight))
@@ -557,7 +557,7 @@ namespace Bloom.ImageProcessing
 					// maximum and return true if any are found.
 					try
 					{
-						var tagFile = TagLib.File.Create(path);
+						var tagFile = RobustFileIO.CreateTaglibFile(path);
 						if (tagFile.Properties != null && tagFile.Properties.Description.Contains("JFIF"))
 						{
 							if (IsImageSizeTooBig(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight))
@@ -638,7 +638,7 @@ namespace Bloom.ImageProcessing
 				// Very large PNG files can cause "out of memory" errors here, while making thumbnails,
 				// and when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
 				// maximum and reduce the image here if needed.
-				var tagFile = TagLib.File.Create(path);
+				var tagFile = RobustFileIO.CreateTaglibFile(path);
 				if (tagFile.Properties != null && tagFile.Properties.Description.Contains("PNG"))
 				{
 					var size = GetDesiredImageSize(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight);
@@ -681,7 +681,7 @@ namespace Bloom.ImageProcessing
 				// Very large JPG files can cause "out of memory" errors while making thumbnails and
 				// when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
 				// maximum and reduce the image here if needed.
-				var tagFile = TagLib.File.Create(path);
+				var tagFile = RobustFileIO.CreateTaglibFile(path);
 				if (tagFile.Properties != null && tagFile.Properties.Description.Contains("JFIF"))
 				{
 					var size = GetDesiredImageSize(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight);
@@ -715,7 +715,7 @@ namespace Bloom.ImageProcessing
 				{
 					RobustFile.Copy(tempCopy, path, true);
 					// Copy metadata from older file to the new one.  GraphicsMagick does a poor job on metadata.
-					var newMeta = TagLib.File.Create(path);
+					var newMeta = RobustFileIO.CreateTaglibFile(path);
 					CopyTags(oldMetaData, newMeta);
 					newMeta.Save();
 					Application.DoEvents();	// allow progress report to work
@@ -1322,7 +1322,7 @@ namespace Bloom.ImageProcessing
 				}
 				if (image != null)
 				{
-					using (Stream fs = new FileStream(imagePath, FileMode.Create))
+					using (Stream fs = ToPalaso.RobustIO.Open(imagePath, FileMode.Create))
 					{
 						SIL.IO.RobustImageIO.SaveImage(image, fs, ImageFormat.Png);
 					}

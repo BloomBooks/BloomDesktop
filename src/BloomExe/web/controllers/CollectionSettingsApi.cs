@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Bloom.Api;
@@ -9,6 +8,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Code;
+using SIL.IO;
 
 namespace Bloom.web.controllers
 {
@@ -399,7 +399,7 @@ namespace Bloom.web.controllers
 			if (summaryFile == null)
 				return "";
 
-			var html = File.ReadAllText(summaryFile, Encoding.UTF8);
+			var html = RobustFile.ReadAllText(summaryFile, Encoding.UTF8);
 			return html.Replace("{flavor}", flavor);
 		}
 
