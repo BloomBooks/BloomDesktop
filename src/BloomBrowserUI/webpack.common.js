@@ -1,25 +1,16 @@
-var path = require("path");
+const path = require("path");
 const { merge } = require("webpack-merge");
-var pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, "lib");
-var pathToBookEditJS = path.resolve(__dirname, "bookEdit/js");
-var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(
+const pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, "lib");
+const pathToBookEditJS = path.resolve(__dirname, "bookEdit/js");
+const pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(
     __dirname,
     "modified_libraries"
 );
-var globule = require("globule");
+const globule = require("globule");
 
 //note: if you change this, change it in gulpfile.js & karma.conf.js as well
-var outputDir = "../../output/browser";
+const outputDir = "../../output/browser";
 const core = require("./webpack.core.js");
-
-// Because our output directory does not have the same parent as our node_modules, we
-// need to resolve the babel related presets (and plugins).  This mapping function was
-// suggested at https://github.com/babel/babel-loader/issues/166.
-function localResolve(preset) {
-    return Array.isArray(preset)
-        ? [require.resolve(preset[0]), preset[1]]
-        : require.resolve(preset);
-}
 
 module.exports = merge(core, {
     // mode must be set to either "production" or "development" in webpack 4.
@@ -146,43 +137,6 @@ module.exports = merge(core, {
     },
     module: {
         rules: [
-            {
-                // For the most part, we're using typescript and ts-loader handles that.
-                // But for things that are still in javascript, the following babel setup allows newer
-                // javascript features by compiling to the version JS feature supported by the specific
-                // version of FF we currently ship with.
-                test: /\.(js|jsx)$/,
-                exclude: [
-                    /node_modules/,
-                    /ckeditor/,
-                    /jquery-ui/,
-                    /-min/,
-                    /qtip/,
-                    /xregexp-all-min.js/
-                ],
-                use: [
-                    {
-                        loader: "babel-loader",
-                        options: {
-                            presets: [
-                                // Ensure that we target our version of geckofx (mozilla/firefox)
-                                [
-                                    "@babel/preset-env",
-                                    {
-                                        targets: {
-                                            browsers: [
-                                                "Firefox >= 45",
-                                                "last 2 versions"
-                                            ]
-                                        }
-                                    }
-                                ],
-                                "@babel/preset-react"
-                            ].map(localResolve)
-                        }
-                    }
-                ]
-            },
             // WOFF Font
             {
                 test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
