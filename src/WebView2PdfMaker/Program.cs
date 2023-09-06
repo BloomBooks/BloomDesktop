@@ -5,6 +5,7 @@ using System.Threading;
 using System.Windows.Forms;
 using CommandLine;
 using Microsoft.Web.WebView2.Core;
+using SIL.IO;
 
 namespace WebView2PdfMaker
 {
@@ -149,7 +150,7 @@ namespace WebView2PdfMaker
 			if (String.IsNullOrEmpty(inputHtmlUri))
 				return true;
 			if (inputHtmlUri.StartsWith("file:///"))
-				return !File.Exists(Uri.UnescapeDataString(inputHtmlUri.Substring(8)));
+				return !RobustFile.Exists(Uri.UnescapeDataString(inputHtmlUri.Substring(8)));
 			return false;
 		}
 

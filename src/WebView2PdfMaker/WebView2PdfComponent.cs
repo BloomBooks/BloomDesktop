@@ -7,6 +7,7 @@ using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using System.Threading;
 using System.Drawing;
+using SIL.IO;
 
 namespace WebView2PdfMaker
 {
@@ -189,14 +190,14 @@ namespace WebView2PdfMaker
 		}
 		private void FinishMakingPdf()
 		{
-			if (!File.Exists(_pathToTempPdf))
+			if (!RobustFile.Exists(_pathToTempPdf))
 				throw new ApplicationException(string.Format(
 					"WebView2PdfMaker was not able to create the PDF file ({0}).{1}{1}Details: WebView2 did not produce the expected document.",
 					_pathToTempPdf, Environment.NewLine));
 
 			try
 			{
-				File.Move(_pathToTempPdf, _options.OutputPdfPath);
+				RobustFile.Move(_pathToTempPdf, _options.OutputPdfPath);
 				RaiseFinished();
 			}
 			catch (IOException e)
@@ -219,9 +220,9 @@ namespace WebView2PdfMaker
 
 			var tempFileName = Path.GetTempFileName();
 			_pathToTempPdf = tempFileName + ".pdf";
-			File.Delete(tempFileName);
-			File.Delete(_pathToTempPdf);
-			File.Delete(_options.OutputPdfPath);
+			RobustFile.Delete(tempFileName);
+			RobustFile.Delete(_pathToTempPdf);
+			RobustFile.Delete(_options.OutputPdfPath);
 			_webview.Size = new Size(1920, 1320);
 			_uriOfDocument = new Uri(_options.InputHtmlUri);
 			_navigationCompleted = false;
