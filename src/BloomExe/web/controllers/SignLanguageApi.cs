@@ -71,7 +71,7 @@ namespace Bloom.web.controllers
 				var path = Path.Combine(videoFolder, fileName);
 				using (var rawVideo = TempFile.CreateAndGetPathButDontMakeTheFile())
 				{
-					using (var rawVideoOutput = ToPalaso.RobustIO.Open(rawVideo.Path, FileMode.Create))
+					using (var rawVideoOutput = ToPalaso.RobustIO.GetFileStream(rawVideo.Path, FileMode.Create))
 					{
 						// Do NOT just get RawPostData and try to write it to a file; this
 						// typically runs out of memory for anything more than about 2min of video.

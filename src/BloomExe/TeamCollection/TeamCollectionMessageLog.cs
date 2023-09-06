@@ -228,7 +228,7 @@ namespace Bloom.TeamCollection
 		//	// a byte at a time and do our own processing into lines. We can switch to that if it
 		//	// becomes necessary.
 		//	var bytes = new byte[_oldMessageLength];
-		//	using (var stream = ToPalaso.RobustIO.OpenFile(_logFilePath, FileMode.Open, FileAccess.Read))
+		//	using (var stream = ToPalaso.RobustIO.GetFileStream(_logFilePath, FileMode.Open, FileAccess.Read))
 		//	{
 		//		// We better not be getting over 2G of log!
 		//		stream.Read(bytes, 0, (int)_oldMessageLength);

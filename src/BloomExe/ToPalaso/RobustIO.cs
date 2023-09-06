@@ -85,6 +85,27 @@ namespace Bloom.ToPalaso
 			return stream;
 		}
 
+		public static FileStream GetFileStream(string path, FileMode mode)
+		{
+			FileStream stream = null;
+			RetryUtility.Retry(
+				() =>
+				{
+					stream = new FileStream(path, mode);
+				}, 5);
+			return stream;
+		}
+		public static FileStream GetFileStream(string path, FileMode mode, FileAccess access)
+		{
+			FileStream stream = null;
+			RetryUtility.Retry(
+				() =>
+				{
+					stream = new FileStream(path, mode, access);
+				}, 5);
+			return stream;
+		}
+
 		public static bool IsFileLocked(string filePath)
 		{
 			try
