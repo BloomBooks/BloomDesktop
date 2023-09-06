@@ -111,7 +111,7 @@ namespace Bloom.web.controllers
 						   Model.L1SupportsVisuallyImpaired,
 				(request, val) =>
 				{
-					Model.L1SupportsVisuallyImpaired = val;
+					Model.L1SupportsVisuallyImpaired = val; // Saves the BookInfo with the new value
 				}, true);
 
 			apiHandler.RegisterBooleanEndpointHandler("publish/canHaveMotionMode",
@@ -269,6 +269,7 @@ namespace Bloom.web.controllers
 				(writeRequest, value) =>
 				{
 					writeRequest.CurrentBook.BookInfo.MetaData.Draft = value;
+					writeRequest.CurrentBook.BookInfo.Save(); // We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
 				}, false);
 		}
 

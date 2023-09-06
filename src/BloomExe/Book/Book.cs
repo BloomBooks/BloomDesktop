@@ -4039,9 +4039,12 @@ namespace Bloom.Book
 						WantVideo = true,
 						WantMusic = true
 					};
-					filter.AlwaysReject("meta.json");		// ignore since this stores currentTool and toolboxIsOpen, which are irrelevant
-					filter.AlwaysReject("video-placeholder.svg");	// ignore since placeholder file is provided as needed
-					filter.AlwaysReject("thumbnail.png");	// ignore since it seems to vary gratuitously (still check other thumbnail images)
+					// Ignore 'meta.json' since this stores currentTool and toolboxIsOpen, which are irrelevant... but see below.
+					filter.AlwaysReject("meta.json");
+					// Ignore video placeholder since this file is provided as needed.
+					filter.AlwaysReject("video-placeholder.svg");
+					// Ignore 'thumbnail.png' since it seems to vary gratuitously (still check other thumbnail images).
+					filter.AlwaysReject("thumbnail.png");
 					// Order must be predictable but does not otherwise matter.
 					foreach (var path in Directory.GetFiles(folder, "*", SearchOption.AllDirectories).OrderBy(x => x))
 					{
