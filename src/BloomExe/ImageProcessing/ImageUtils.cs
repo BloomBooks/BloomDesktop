@@ -1322,7 +1322,7 @@ namespace Bloom.ImageProcessing
 				}
 				if (image != null)
 				{
-					using (Stream fs = ToPalaso.RobustIO.Open(imagePath, FileMode.Create))
+					using (Stream fs = ToPalaso.RobustIO.GetFileStream(imagePath, FileMode.Create))
 					{
 						SIL.IO.RobustImageIO.SaveImage(image, fs, ImageFormat.Png);
 					}

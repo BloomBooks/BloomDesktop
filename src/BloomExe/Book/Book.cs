@@ -4050,7 +4050,7 @@ namespace Bloom.Book
 						if (path == filePath)
 							continue; // we already included a simplified version of the main HTML file
 						//AppendDebugInfo(debugBldr, path);
-						using (var input = ToPalaso.RobustIO.Open(path, FileMode.Open, FileAccess.Read, FileShare.None))
+						using (var input = ToPalaso.RobustIO.GetFileStream(path, FileMode.Open, FileAccess.Read))
 						{
 							byte[] buffer = new byte[4096];
 							int count;
