@@ -736,7 +736,9 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveNormalStyleSheetsLinks()
 		{
-			foreach(XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
+			var links = RawDom.SafeSelectNodes("/html/head/link");
+			var linksToRemove	= new List<XmlElement>();
+			foreach (XmlElement linkNode in links)
 			{
 				var href = linkNode.GetAttribute("href");
 				var name = Path.GetFileName(href).ToLowerInvariant();
@@ -745,17 +747,19 @@ namespace Bloom.Book
 						prefix => name.StartsWith(prefix.ToLowerInvariant()))
 					)
 				{
-					try 
-					{
-						// I don't know how it gets null, but I've seen it
-						// even if you try if(linkNode.ParentNode!=null), the following line may still find that it is null
-						// presumably there's some unwanted async going on
-						linkNode.ParentNode.RemoveChild(linkNode);
-					}
-					catch (Exception)
-					{
-						// ah well. Swallow
-					}
+					linksToRemove.Add(linkNode);
+				}
+			}
+			// doing this in two passes because I kept getting linkNode.ParetNode==null, even though it wasn't null when I checked it
+			foreach (XmlElement linkNode in linksToRemove)
+			{
+				try
+				{
+					linkNode.ParentNode.RemoveChild(linkNode);
+				}
+				catch (Exception)
+				{
+					//ah well. Swallow
 				}
 			}
 		}
