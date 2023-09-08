@@ -503,9 +503,9 @@ namespace Bloom.Book
 			// Read the old file and copy it to the new one, except for replacing the one page.
 			string tempPath = GetNameForATempFileInStorageFolder();
 			RetryUtility.Retry(() => {
-				using (var reader = new StreamReader(new FileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
+				using (var reader = new StreamReader(ToPalaso.RobustIO.GetFileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
 				{
-					using (var writer = new StreamWriter(new FileStream(tempPath, FileMode.Create), Encoding.UTF8))
+					using (var writer = new StreamWriter(ToPalaso.RobustIO.GetFileStream(tempPath, FileMode.Create), Encoding.UTF8))
 					{
 						ReplacePage(pageId, reader, writer, pageHtml);
 					}
@@ -2206,7 +2206,7 @@ namespace Bloom.Book
 					}
 					catch (UnauthorizedAccessException err)
 					{
-						if (File.Exists(destPath))
+						if (RobustFile.Exists(destPath))
 						{
 							// It's probably a minor problem if we just can't update it but already have it.
 							ReportCantUpdateSupportFile(sourcePath, destPath);
@@ -2740,7 +2740,7 @@ namespace Bloom.Book
 			// don't have a duplicate bookInstanceId to worry about.
 			if (RobustFile.Exists(metaDataPath))
 			{
-				var meta = DynamicJson.Parse(File.ReadAllText(metaDataPath));
+				var meta = DynamicJson.Parse(RobustFile.ReadAllText(metaDataPath));
 				meta.bookInstanceId = Guid.NewGuid().ToString();
 				RobustFile.WriteAllText(metaDataPath, meta.ToString());
 			}
@@ -2972,7 +2972,7 @@ namespace Bloom.Book
 			// This will usually succeed, since it is standard to name the book the same as the folder.
 			// But if it doesn't, we can't move it, so it seems worth a check.
 			// (And if we change our minds about keeping them in sync, this will be one less place to fix.)
-			if (File.Exists(extraBookPath))
+			if (RobustFile.Exists(extraBookPath))
 				RobustFile.Move(extraBookPath,
 					Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(newPathForExtraBook), "htm")));
 			return newPathForExtraBook;

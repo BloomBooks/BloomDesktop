@@ -71,7 +71,7 @@ namespace Bloom.web.controllers
 				var path = Path.Combine(videoFolder, fileName);
 				using (var rawVideo = TempFile.CreateAndGetPathButDontMakeTheFile())
 				{
-					using (var rawVideoOutput = new FileStream(rawVideo.Path, FileMode.Create))
+					using (var rawVideoOutput = ToPalaso.RobustIO.GetFileStream(rawVideo.Path, FileMode.Create))
 					{
 						// Do NOT just get RawPostData and try to write it to a file; this
 						// typically runs out of memory for anything more than about 2min of video.
@@ -558,7 +558,7 @@ namespace Bloom.web.controllers
 				else
 				{
 					// probably doesn't exist, but if it does we don't need it.
-					// File.Delete (underneath RobustFile.Delete) does not throw if the file doesn't exist.
+					// RobustFile.Delete does not throw if the file doesn't exist.
 					RobustFile.Delete(tempName);
 					tempName = originalVideoFilePath;
 				}

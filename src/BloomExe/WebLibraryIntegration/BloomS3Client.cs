@@ -209,7 +209,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
 			string pdfToInclude, bool includeNarrationAudio, bool includeMusic,
-			string[] languagesToInclude, string metadataLang1Code, string metadataLang2Code,
+			string[] textLanguagesToInclude, string[] audioLanguagesToInclude, string metadataLang1Code, string metadataLang2Code,
 			string collectionSettingsPath = null, bool isForBulkUpload = false)
 		{
 			BaseUrl = null;
@@ -243,7 +243,7 @@ namespace Bloom.WebLibraryIntegration
 
 			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
 			var filter = new BookFileFilter(pathToBloomBookDirectory) { IncludeFilesForContinuedEditing = true,
-				NarrationLanguages = (includeNarrationAudio? languagesToInclude : Array.Empty<string>()),
+				NarrationLanguages = (includeNarrationAudio? audioLanguagesToInclude : Array.Empty<string>()),
 				WantVideo = true,
 				WantMusic = includeMusic
 			};
@@ -258,11 +258,10 @@ namespace Bloom.WebLibraryIntegration
 			filter.CopyBookFolderFiltered(destDirName);
 
 			ProcessVideosInTempDirectory(destDirName);
-			// temporarily removing this while waiting for testing of BL12583
-			// CopyCollectionSettingsToTempDirectory(collectionSettingsPath, destDirName);
+			CopyCollectionSettingsToTempDirectory(collectionSettingsPath, destDirName);
 
-			if (languagesToInclude != null && languagesToInclude.Count() > 0)
-				RemoveUnwantedLanguageData(destDirName, languagesToInclude, metadataLang1Code, metadataLang2Code);
+			if (textLanguagesToInclude != null && textLanguagesToInclude.Count() > 0)
+				RemoveUnwantedLanguageData(destDirName, textLanguagesToInclude, metadataLang1Code, metadataLang2Code);
 
 			PublishHelper.ReportInvalidFonts(destDirName, progress);
 
@@ -575,7 +574,7 @@ namespace Bloom.WebLibraryIntegration
 			// when users are downloading books.  (See BL-12583.)
 			if (!Program.RunningHarvesterMode)
 			{
-				string[] foldersToAvoid = { "collectionFiles/" };
+				string[] foldersToAvoid = { "collectionfiles/" };
 				if (foldersToAvoid.Any(folder => objectKey.ToLowerInvariant().Contains(folder)))
 					return true;
 			}
@@ -752,7 +751,7 @@ namespace Bloom.WebLibraryIntegration
 				var randomID = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("/","_").Replace("+","-").Trim(new []{'='});
 				name = "BDS" + randomID.Substring(0,2);	// 2 chars of randomness = 64 ** 2 = 4096 possibilities.
 				var tempPath = Path.Combine(Path.GetTempPath(), name);
-				if (!File.Exists(tempPath) && !Directory.Exists(tempPath))
+				if (!RobustFile.Exists(tempPath) && !Directory.Exists(tempPath))
 					return name;
 				// We're finding a lot of names in use.  To improve our chances, and since this is probably garbage left behind by other
 				// downloads, start trying to clean them up.
@@ -760,8 +759,8 @@ namespace Bloom.WebLibraryIntegration
 				{
 					try
 					{
-						if (File.Exists(tempPath))
-							File.Delete(tempPath);
+						if (RobustFile.Exists(tempPath))
+							RobustFile.Delete(tempPath);
 						else if (Directory.Exists(tempPath))
 							Directory.Delete(tempPath, true);
 						return name;

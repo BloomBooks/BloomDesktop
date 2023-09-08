@@ -614,6 +614,7 @@ namespace Bloom
 			propertiesThatGoWithEveryEvent.Remove("UserName");
 			propertiesThatGoWithEveryEvent.Remove("UserDomainName");
 			propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
+			DesktopAnalytics.Analytics.UrlThatReturnsExternalIpAddress = "http://icanhazip.com";
 
 #if DEBUG
 			_supressRegistrationDialog = true;
@@ -621,7 +622,11 @@ namespace Bloom
 				"rw21mh2piu",
 				RegistrationDialog.GetAnalyticsUserInfo(),
 				propertiesThatGoWithEveryEvent,
-				false); // change to true if you want to test sending
+				allowTracking: false, // change to true if you want to test sending
+				retainPii: true,
+				clientType: DesktopAnalytics.ClientType.Segment,
+				host: "https://analytics.bloomlibrary.org"
+			);
 #else
 			var feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
@@ -633,7 +638,11 @@ namespace Bloom
 				"c8ndqrrl7f0twbf2s6cv",
 				RegistrationDialog.GetAnalyticsUserInfo(),
 				propertiesThatGoWithEveryEvent,
-				allowTracking);
+				allowTracking,
+				retainPii: true,
+				clientType: DesktopAnalytics.ClientType.Segment,
+				host: "https://analytics.bloomlibrary.org"
+			);
 #endif
 		}
 
@@ -886,7 +895,7 @@ namespace Bloom
 				}
 			}
 			string tempFileName = TempFile.WithExtension(".txt").Path;
-			using (var writer = File.CreateText(tempFileName))
+			using (var writer = RobustFile.CreateText(tempFileName))
 			{
 				writer.WriteLine("Something unusual happened and Bloom needs to quit.  A report has been sent to the Bloom Team.");
 				writer.WriteLine("If this keeps happening to you, please write to issues@BloomLibrary.org.");
@@ -1374,7 +1383,7 @@ namespace Bloom
 					if (IsSameActualLanguage(dirTag, UserInterfaceCulture.IetfLanguageTag))
 					{
 						var xliffPath = Path.Combine(subdir, "Bloom.xlf");
-						if (File.Exists(xliffPath))
+						if (RobustFile.Exists(xliffPath))
 						{
 							var doc = new XmlDocument();
 							doc.Load(xliffPath);
