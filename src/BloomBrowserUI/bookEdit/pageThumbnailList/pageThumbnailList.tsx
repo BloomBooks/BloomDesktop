@@ -410,7 +410,10 @@ $(window).ready(() => {
 });
 
 function NotifyCSharpOfClick() {
-    (window as any).chrome.webview.postMessage("browser-clicked");
+    (window as any).chrome.webview.postMessage({
+        "message-type": "event",
+        "event-name": "browser-clicked"
+    });
 }
 
 // Function invoked when dragging a page ends. Note that it is often

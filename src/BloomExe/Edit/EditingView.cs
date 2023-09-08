@@ -520,7 +520,7 @@ namespace Bloom.Edit
 				GC.WaitForPendingFinalizers();
 			}
 			var endPageLoad = DateTime.Now;
-			Logger.WriteEvent($"update page elapsed time = {endPageLoad - _beginPageLoad} (garbage collect took {endPageLoad - beginGarbageCollect}");
+			Logger.WriteEvent($"update page elapsed time = {endPageLoad - _beginPageLoad} (garbage collect took {endPageLoad - beginGarbageCollect})");
 			//#if MEMORYCHECK
 			// Check memory for the benefit of developers.
 			Bloom.Utils.MemoryManagement.CheckMemory(false, "EditingView - display page updated", false);

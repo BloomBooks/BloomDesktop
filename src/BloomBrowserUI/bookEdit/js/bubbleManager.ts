@@ -1468,6 +1468,8 @@ export class BubbleManager {
      */
     public tryApplyResizingUI(container: HTMLElement) {
         const mouseEvent = this.lastMoveEvent;
+        if (!mouseEvent) return; // User may not have moved the mouse over the browser by the time he hits the Alt key. See BL-12614.
+
         const hoveredBubble = this.getBubbleUnderMouse(mouseEvent, container);
         if (!hoveredBubble) {
             return;

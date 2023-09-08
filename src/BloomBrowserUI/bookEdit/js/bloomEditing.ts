@@ -50,6 +50,7 @@ import {
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
+import { canUndo } from "../editViewFrame";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1145,6 +1146,15 @@ export function bootstrap() {
     $.fn.reverse = function() {
         return this.pushStack(this.get().reverse(), arguments);
     };
+
+    WebSocketManager.addListener("edit", data => {
+        if (data.id === "report-can-undo") {
+            (window as any).chrome.webview.postMessage({
+                "message-type": "can-undo-result",
+                result: canUndo()
+            });
+        }
+    });
 
     document.addEventListener("selectionchange", () => {
         const textSelected = isTextSelected();

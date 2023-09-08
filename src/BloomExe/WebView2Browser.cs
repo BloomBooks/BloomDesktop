@@ -219,14 +219,7 @@ namespace Bloom
 
 			// I is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
 			// e.g. (window as any).chrome.webview.postMessage("browser-clicked");
-			_webview.WebMessageReceived += (o, e) =>
-			{
-				// for now the only thing we're using this for is to close the page thumbnail list context menu when the user clicks outside it
-				if (e.TryGetWebMessageAsString() == "browser-clicked")
-				{
-					RaiseBrowserClick(null, null);
-				}
-			};
+			_webview.WebMessageReceived += HandleWebMessageReceived;
 
 			// Now do the same thing for any iframes. When an iframe is created...
 			_webview.CoreWebView2.FrameCreated += (o, e) =>
@@ -237,16 +230,8 @@ namespace Bloom
 				// Note that _webview.GotFocus() is easier, but I was not able to get the
 				// winforms popup menu to receive focus such that the webview would lose it
 				// and thus tell us when it regained it.
-				e.Frame.WebMessageReceived += (a, b) =>
-				{
-					if (b.TryGetWebMessageAsString() == "browser-clicked")
-					{
-						RaiseBrowserClick(null, null);
-					}
-				};
+				e.Frame.WebMessageReceived += HandleWebMessageReceived;
 			};
-
-
 
 			if (!_clearedCache)
 			{
@@ -258,6 +243,47 @@ namespace Bloom
 				// this should clear what we need and nothing else.
 				await _webview.CoreWebView2.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.CacheStorage | CoreWebView2BrowsingDataKinds.DiskCache);
 			}
+		}
+
+		private void HandleWebMessageReceived(object obj, CoreWebView2WebMessageReceivedEventArgs args)
+		{
+			try
+			{
+				dynamic messageObj = JsonConvert.DeserializeObject(args.WebMessageAsJson);
+				if (messageObj != null && messageObj["message-type"] != null)
+				{
+					string messageType = messageObj["message-type"];
+					switch (messageType)
+					{
+						case "can-undo-result":
+							// See AskBrowserIfWeCanUndo()
+							string result = messageObj.result;
+							HandleCanUndoResult(result);
+							break;
+						case "event":
+							string eventName = messageObj["event-name"];
+							HandleWebMessageEvent(eventName);
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Debug.Fail("Error handling web message " + args.WebMessageAsJson, e.Message);
+			}
+		}
+
+		private void HandleCanUndoResult(string result)
+		{
+			_undoCommand.Enabled = result == "yes";
+		}
+		private void HandleWebMessageEvent(string eventName)
+		{
+			// for now the only thing we're using this for is to close the page thumbnail list context menu when the user clicks outside it
+			if (eventName == "browser-clicked")
+				RaiseBrowserClick(null, null);
 		}
 
 		// used when the WebView2 installation is broken
@@ -539,9 +565,7 @@ namespace Bloom
 				_cutCommand.Enabled = isTextSelection;
 				_copyCommand.Enabled = isTextSelection;
 				_pasteCommand.Enabled = PortableClipboard.ContainsText();
-
-				_undoCommand.Enabled = CanUndo;
-
+				AskBrowserIfWeCanUndo();
 			}
 			catch (Exception)
 			{
@@ -553,25 +577,15 @@ namespace Bloom
 			}
 		}
 
-		bool currentlyRunningCanUndo = false;
-		private bool CanUndo
+		private void AskBrowserIfWeCanUndo()
 		{
-			get
-			{
-				// once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
-				if (currentlyRunningCanUndo)
-					return true;
-				try
-				{
-					currentlyRunningCanUndo = true;
-					var result = RunJavaScript("editTabBundle?.canUndo?.()");
-					return result == "yes"; // currently only returns 'yes' or 'fail'
-				}
-				finally
-				{
-					currentlyRunningCanUndo = false;
-				}
-			}
+			// Previous code called RunJavaScript, but due to the way we make that synchronous in wb2, 
+			// it could hang the UI when, for an unknown reason, in some circumstances,
+			// the task never completed. See BL-12614.
+			// So now we use a websocket call to ask the browser to report the result of canUndo.
+			// The browser will send a web message back.
+			// See bloomEditing.ts' bootstrap() and this.HandleWebMessageReceived().
+			BloomWebSocketServer.Instance.SendEvent("edit", "report-can-undo");
 		}
 	}
 

@@ -156,19 +156,23 @@ export function doWhenToolboxLoaded(
 
 //Called by c# using editTabBundle.canUndo()
 export function canUndo(): string {
-    // See comments on handleUndo()
-    const contentWindow = getEditablePageBundleExports();
-    if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
-        return "yes";
+    try {
+        // See comments on handleUndo()
+        const contentWindow = getEditablePageBundleExports();
+        if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
+            return "yes";
+        }
+        const toolboxWindow = getToolboxBundleExports();
+        if (toolboxWindow && toolboxWindow.canUndo && toolboxWindow.canUndo()) {
+            return "yes";
+        }
+        if (contentWindow && contentWindow.ckeditorCanUndo()) {
+            return "yes";
+        }
+        return "fail"; //can't undo in Javascript, possibly something in C# can?
+    } catch {
+        return "fail";
     }
-    const toolboxWindow = getToolboxBundleExports();
-    if (toolboxWindow && toolboxWindow.canUndo && toolboxWindow.canUndo()) {
-        return "yes";
-    }
-    if (contentWindow && contentWindow.ckeditorCanUndo()) {
-        return "yes";
-    }
-    return "fail"; //can't undo in Javascript, possibly something in C# can?
 }
 
 //noinspection JSUnusedGlobalSymbols
