@@ -441,7 +441,7 @@ namespace Bloom
 		//{
 		//	throw new NotImplementedException();
 		//}
-
+	
 		public override string RunJavaScript(string script)
 		{
 			Task<string> task = RunJavaScriptAsync(script);
@@ -522,56 +522,66 @@ namespace Bloom
 			return EditingModel.IsTextSelected;
 		}
 
-		public override void UpdateEditButtons()
+		bool _currentlyInUpdateButtons = false;
+		public override async void UpdateEditButtons()
 		{
-			if (_copyCommand == null)
+			if (_currentlyInUpdateButtons)
 				return;
-
-			if (InvokeRequired)
-			{
-				Invoke(new Action(UpdateEditButtons));
-				return;
-			}
+			_currentlyInUpdateButtons = true;
 
 			try
 			{
-				var isTextSelection = IsThereACurrentTextSelection();
-				_cutCommand.Enabled = isTextSelection;
-				_copyCommand.Enabled = isTextSelection;
-				_pasteCommand.Enabled = PortableClipboard.ContainsText();
+				if (_copyCommand == null)
+					return;
 
-				_undoCommand.Enabled = CanUndo;
+				if (InvokeRequired)
+				{
+					Invoke(new Action(UpdateEditButtons));
+					return;
+				}
 
+				try
+				{
+					var isTextSelection = IsThereACurrentTextSelection();
+					_cutCommand.Enabled = isTextSelection;
+					_copyCommand.Enabled = isTextSelection;
+					_pasteCommand.Enabled = PortableClipboard.ContainsText();
+
+					_undoCommand.Enabled = await CanUndo();
+
+				}
+				catch (Exception)
+				{
+					_pasteCommand.Enabled = false;
+					Logger.WriteMinorEvent("UpdateEditButtons(): Swallowed exception.");
+					//REf jira.palaso.org/issues/browse/BL-197
+					//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
+					//so it's probably just not ok to check if you're not front-most.
+				}
 			}
-			catch (Exception)
+			finally
 			{
-				_pasteCommand.Enabled = false;
-				Logger.WriteMinorEvent("UpdateEditButtons(): Swallowed exception.");
-				//REf jira.palaso.org/issues/browse/BL-197
-				//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
-				//so it's probably just not ok to check if you're not front-most.
+				_currentlyInUpdateButtons = false;
 			}
 		}
 
-		bool currentlyRunningCanUndo = false;
-		private bool CanUndo
-		{
-			get
+		bool _currentlyRunningCanUndo = false;
+		private async Task<bool> CanUndo()
+		{		
+			// once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
+			if (_currentlyRunningCanUndo)
+				return true;
+			try
 			{
-				// once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
-				if (currentlyRunningCanUndo)
-					return true;
-				try
-				{
-					currentlyRunningCanUndo = true;
-					var result = RunJavaScript("editTabBundle?.canUndo?.()");
-					return result == "yes"; // currently only returns 'yes' or 'fail'
-				}
-				finally
-				{
-					currentlyRunningCanUndo = false;
-				}
+				_currentlyRunningCanUndo = true;
+				return "yes" == await RunJavaScriptAsync("editTabBundle?.canUndo?.()");
 			}
+
+			finally
+			{
+				_currentlyRunningCanUndo = false;
+			}
+			
 		}
 	}
 
