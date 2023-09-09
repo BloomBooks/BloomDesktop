@@ -203,6 +203,7 @@ namespace Bloom.Book
 		public void UpdateBookInfoFromDisk()
 		{
 			BookInfo.UpdateFromDisk();
+			//History.BookHistory.AddEvent(this, BookHistoryEventType, "Updated book info from disk");
 		}
 
 		private void Book_BookTitleChanged(object sender, EventArgs e)
@@ -860,6 +861,11 @@ namespace Bloom.Book
 				return _previewDom;
 			}
 			var previewDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
+
+			// If we're going to show modern (post 5.5) basepage.css instead of basePage-legacy-5-5,
+			// make sure there is an appearance.css to compliment it.
+			// review should AppearanceSettings really be under BookInfo?
+			BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)

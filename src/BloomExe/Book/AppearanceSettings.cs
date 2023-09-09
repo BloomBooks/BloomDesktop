@@ -97,11 +97,11 @@ public class AppearanceSettings
 			var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
 
 			var customBookStylesPath = bookFolderPath.CombineForPath("customBookStyles.css");
-			var customBookCss = RobustFile.Exists(customBookStylesPath)? RobustFile.ReadAllText(customBookStylesPath): null;
+			var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
 
 			// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
-			var customCollectionStylesPath = bookFolderPath.CombineForPath("../","customCollectionStyles.css");
-			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath)? RobustFile.ReadAllText(customCollectionStylesPath): null;
+			var customCollectionStylesPath = bookFolderPath.CombineForPath("../", "customCollectionStyles.css");
+			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
 
 
 			settings.CssThemeName = AppearanceSettings.GetSafeThemeForBook(new string[] { customCollectionCss, customBookCss, brandingCss });
@@ -122,7 +122,7 @@ public class AppearanceSettings
 	{
 		var cssBuilder = new StringBuilder();
 		cssBuilder.AppendLine(":root{");
-		var overrides = Properties.ContainsKey(kOverrideGroupsArrayKey) ? (System.Collections.Generic.List<object>)Properties[kOverrideGroupsArrayKey]: null;
+		var overrides = Properties.ContainsKey(kOverrideGroupsArrayKey) ? (System.Collections.Generic.List<object>)Properties[kOverrideGroupsArrayKey] : null;
 
 		//foreach (var property in _properties.Properties())
 		foreach (var property in (IDictionary<string, object>)_properties)
@@ -257,7 +257,15 @@ public class AppearanceSettings
 		// Note that this is pessimistic, e.g. it doesn't look to see if the rule is on the .marginBox.
 		const string kProbablyWillInterfere = "padding-|left:|top:|right:|bottom:|margin-|width:";
 
-		if (cssFileContents.Any(css => css!=null && Regex.IsMatch(css, kProbablyWillInterfere, RegexOptions.IgnoreCase)))
+		if (cssFileContents.Where(css=>css !=null).Any(css =>
+		{
+			var v = Regex.Match(css, @"compatibleWithAppearanceVersion:\s*(\d+(\.\d+)?)")?.Groups[1]?.Value ?? "0";
+
+			//TODO this doesn't seem to be working yet
+			if (double.TryParse(v, out var appearanceVersion) && appearanceVersion >= 5.6)
+				return false; // this is a 5.6+ theme, so it's fine
+			return Regex.IsMatch(css, kProbablyWillInterfere, RegexOptions.IgnoreCase);
+		}))
 		{
 			return kLegacy;
 		}
