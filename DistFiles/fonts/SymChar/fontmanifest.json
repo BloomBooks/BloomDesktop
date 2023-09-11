@@ -1,0 +1,25 @@
+{
+    "symchar": {
+        "defaults": {
+            "ttf": "SymChar-Regular.ttf",
+            "woff": "SymChar-Regular.woff",
+            "woff2": "SymChar-Regular.woff2"
+        },
+        "family": "SymChar",
+        "files": {
+            "SymChar-Regular.ttf": {
+                "axes": { "ital": 0, "wght": 400.0 },
+                "packagepath": "SymChar-Regular.ttf"
+            },
+            "SymChar-Regular.woff": {
+                "axes": { "ital": 0, "wght": 400.0 },
+                "packagepath": "web/SymChar-Regular.woff"
+            },
+            "SymChar-Regular.woff2": {
+                "axes": { "ital": 0, "wght": 400.0 },
+                "packagepath": "web/SymChar-Regular.woff2"
+            }
+        },
+        "version": "3.000"
+    }
+}

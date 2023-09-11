@@ -1,0 +1,39 @@
+-----
+FONTLOG for the SymChar fonts
+
+This file provides detailed information on the SymChar Font Software.
+This information should be distributed along with the SymChar fonts
+(derived from the Bloom Show Inv and Keymanweb-OSK fonts) and any derivative works.
+
+Basic Font Information
+
+SymChar is an open font that can be used by applications to show symbols
+that represent 'invisible' characters (such as NBSP). Font sources are in UFO3 format.
+
+ChangeLog
+
+14 Aug 2023 (SIL font development team) SymChar version 3.000
+- new name SymChar (Symbols for Characters)
+- extra glyphs as requested by application developers
+- incorporating symbols used in the Keymanweb-OSK font
+
+11 July 2023 (SIL font development team) Bloom Show Inv version 2.000
+- Revised version with more glyphs and all encoded in the PUA
+
+5 July 2023 (SIL font development team) Bloom Show Inv version 1.000
+- Initial version with only nbspace and nnbsp encoded
+
+Acknowledgements
+
+If you make modifications be sure to add your name (N), email (E),
+web-address (if you have one) (W) and description (D).
+This list is in alphabetical order.
+
+N: SIL designers and developers
+E: https://software.sil.org/about/contact/
+W: https://software.sil.org/wstech/
+D: Designers and developers
+
+SIL International (https://www.sil.org/) serves language communities worldwide,
+building their capacity for sustainable language development by means of
+research, translation, training and materials development.

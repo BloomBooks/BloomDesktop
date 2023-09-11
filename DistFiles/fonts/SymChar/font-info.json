@@ -1,0 +1,15 @@
+{
+    "family": "SymChar",
+    "files": {
+        "normal": "SymChar-Regular.woff2"
+    },
+    "faces": [
+        "@font-face { font-family: SymChar; src: url(./host/fonts/SymChar-Regular.woff2); }"
+    ],
+    "metadata": {
+        "copyright": "Copyright (c) 2013-2023 SIL International (https://www.sil.org/) with Reserved Font Names SymChar and SIL",
+        "license": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+        "licenseURL": "https://scripts.sil.org/OFL",
+        "version": "3.000"
+    }
+}
