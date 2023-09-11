@@ -550,6 +550,8 @@ namespace Bloom
 
 		private static bool IsWebviewMissingOrTooOld()
 		{
+			// If we change this minimum WebView2 version, consider updating the rule near the end of
+			// "BloomBrowserUI/webpack.common.js".
 			const string kBloomMinimum= "112.0.0.0";
 			string version;
 			bool missingOrAntique;

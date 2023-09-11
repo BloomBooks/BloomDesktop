@@ -1,15 +1,15 @@
-var path = require("path");
+const path = require("path");
 const { merge } = require("webpack-merge");
-var pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, "lib");
-var pathToBookEditJS = path.resolve(__dirname, "bookEdit/js");
-var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(
+const pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, "lib");
+const pathToBookEditJS = path.resolve(__dirname, "bookEdit/js");
+const pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(
     __dirname,
     "modified_libraries"
 );
-var globule = require("globule");
+const globule = require("globule");
 
 //note: if you change this, change it in gulpfile.js & karma.conf.js as well
-var outputDir = "../../output/browser";
+const outputDir = "../../output/browser";
 const core = require("./webpack.core.js");
 
 // Because our output directory does not have the same parent as our node_modules, we
@@ -150,7 +150,7 @@ module.exports = merge(core, {
                 // For the most part, we're using typescript and ts-loader handles that.
                 // But for things that are still in javascript, the following babel setup allows newer
                 // javascript features by compiling to the version JS feature supported by the specific
-                // version of FF we currently ship with.
+                // version of WebView2/Edge we currently target.
                 test: /\.(js|jsx)$/,
                 exclude: [
                     /node_modules/,
@@ -165,15 +165,13 @@ module.exports = merge(core, {
                         loader: "babel-loader",
                         options: {
                             presets: [
-                                // Ensure that we target our version of geckofx (mozilla/firefox)
+                                // Ensure that we target our minimum version of WebView2/Edge.
+                                // (See Program.IsWebviewMissingOrTooOld)
                                 [
                                     "@babel/preset-env",
                                     {
                                         targets: {
-                                            browsers: [
-                                                "Firefox >= 45",
-                                                "last 2 versions"
-                                            ]
+                                            edge: "112"
                                         }
                                     }
                                 ],
