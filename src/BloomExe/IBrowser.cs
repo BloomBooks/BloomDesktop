@@ -76,7 +76,7 @@ namespace Bloom
 		/// Get a bitmap showing the current state of the browser. Caller should dispose.
 		/// </summary>
 		/// <returns></returns>
-		public abstract Bitmap GetPreview();
+		public abstract Bitmap CapturePreview_Synchronous_Dangerous();
 
 		/// <summary>
 		/// If it returns true these are in place of our standard extensions; if false, the
@@ -358,9 +358,11 @@ namespace Bloom
 			_pageEditDom.GetElementsByTagName("head")[0].InnerXml = HtmlDom.CreateUserModifiedStyles(userCssContent);
 		}
 
-		public abstract string RunJavaScript(string script);
+		[Obsolete("This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred.")]
+		public abstract string RunJavascriptWithStringResult_Sync_Dangerous(string script);
 
-		public abstract Task<string> RunJavaScriptAsync(string script);
+		public abstract Task<string> GetStringFromJavascriptAsync(string script);
+		public abstract Task RunJavascriptAsync(string script);
 
 		public abstract void SaveHTML(string path);
 

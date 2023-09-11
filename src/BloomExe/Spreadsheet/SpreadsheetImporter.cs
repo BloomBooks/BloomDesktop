@@ -176,7 +176,7 @@ namespace Bloom.Spreadsheet
 				_browser.Navigate(rootPage, false);
 				await signal.WaitAsync(); // Following code happens after browser has navigated
 				// This extra check that spreadsheetBundle actually exists might not be necessary.
-				while (await _browser.RunJavaScriptAsync($"spreadsheetBundle") == null)
+				while (await _browser.GetStringFromJavascriptAsync($"spreadsheetBundle") == null)
 					await Task.Delay(10);
 			}
 			return _browser;
@@ -1716,7 +1716,7 @@ namespace Bloom.Spreadsheet
 
 		protected virtual async Task<string[]> GetSentenceFragmentsAsync(string text)
 		{
-			return (await (await GetBrowserAsync()).RunJavaScriptAsync($"spreadsheetBundle.split('{text}')")).Split('\n');
+			return (await (await GetBrowserAsync()).GetStringFromJavascriptAsync($"spreadsheetBundle.split('{text}')")).Split('\n');
 		}
 
 
@@ -1806,7 +1806,7 @@ namespace Bloom.Spreadsheet
 				var result =  (Task<string>)ControlForInvoke.Invoke(new ElementStringTask(GetMd5Async), elt);
 				return await (result);
 			}
-			return await (await GetBrowserAsync()).RunJavaScriptAsync($"spreadsheetBundle.getMd5('{elt.InnerText.Replace("'", "\\'")}')");
+			return await (await GetBrowserAsync()).GetStringFromJavascriptAsync($"spreadsheetBundle.getMd5('{elt.InnerText.Replace("'", "\\'")}')");
 		}
 
 		internal static string SanitizeXHtmlId(string id)

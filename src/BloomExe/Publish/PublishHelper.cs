@@ -300,7 +300,7 @@ namespace Bloom.Publish
 				return;
 
 			// Get and store the display and font information for each element in the DOM.
-			var elementsInfo = BrowserForPageChecks.RunJavaScript(GetElementDisplayAndFontInfoJavascript);
+			var elementsInfo = BrowserForPageChecks.RunJavascriptWithStringResult_Sync_Dangerous(GetElementDisplayAndFontInfoJavascript);
 			var rawInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<ElementInfoArray>(elementsInfo);
 			if (rawInfo != null)
 			{

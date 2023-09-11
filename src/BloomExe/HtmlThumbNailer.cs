@@ -302,9 +302,9 @@ namespace Bloom
 
 			var height =
 				(int)Math.Round(double.Parse(
-					browser.RunJavaScript("document.getElementsByClassName('bloom-page')[0].clientHeight.toString()")));
+					browser.RunJavascriptWithStringResult_Sync_Dangerous("document.getElementsByClassName('bloom-page')[0].clientHeight.toString()")));
 			var width = (int)Math.Round(
-				double.Parse(browser.RunJavaScript("document.getElementsByClassName('bloom-page')[0].clientWidth.toString()")));
+				double.Parse(browser.RunJavascriptWithStringResult_Sync_Dangerous("document.getElementsByClassName('bloom-page')[0].clientWidth.toString()")));
 
 			browser.Height = height;
 			browser.Width = width;
@@ -363,7 +363,7 @@ namespace Bloom
 				while (true)
 				{
 
-					using (var image = browser.GetPreview())
+					using (var image = browser.CapturePreview_Synchronous_Dangerous())
 					{
 						if (watch.ElapsedMilliseconds > 5000)
 						{
@@ -483,15 +483,15 @@ namespace Bloom
 					// There's probably some way to get all of this in a single RunJavaScript call, but note that ?. is not supported
 					// in GeckoFx60, and I've had some trouble with scripts of more than a single expression in WebView2.
 					var imageCount =
-						int.Parse(browser.RunJavaScript(
+						int.Parse(browser.RunJavascriptWithStringResult_Sync_Dangerous(
 							"document.getElementsByClassName('bloom-imageContainer').length.toString()"));
 					if (imageCount != 0)
 					{
 						topOfCoverImage = (int)Math.Round(double.Parse(
-							browser.RunJavaScript(
+							browser.RunJavascriptWithStringResult_Sync_Dangerous(
 								"document.getElementsByClassName('bloom-imageContainer')[0].offsetTop.toString()")));
 						bottomOfCoverImage = topOfCoverImage + (int)Math.Round(double.Parse(
-							browser.RunJavaScript(
+							browser.RunJavascriptWithStringResult_Sync_Dangerous(
 								"document.getElementsByClassName('bloom-imageContainer')[0].offsetHeight.toString()")));
 					}
 				}));
