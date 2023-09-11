@@ -109,6 +109,12 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                         }
                     >
                         <img
+                            css={
+                                badge === BadgeType.Draft &&
+                                css`
+                                    width: 50px;
+                                `
+                            }
                             title="" // overwrite ancestor's title so we don't get two tooltips
                             src={
                                 badge === BadgeType.Published
