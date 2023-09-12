@@ -327,6 +327,14 @@ namespace Bloom
 
 					UpdatePerformanceMeasurementStatus();
 				}
+
+				// We may be opening on a different collection.  Meddle with that collection if
+				// file meddling is enabled.  (Don't stop meddling with the previous collection.)
+				if (FileMeddlerManager.IsMeddling)
+				{
+					FileMeddlerManager.Start(_collectionSettings?.FolderPath);
+					this.meddleWithNewFilesToolStripMenuItem.Text = "Stop Meddling with New Files";
+				}
 			}
 			catch (Exception error)
 			{
@@ -397,6 +405,20 @@ namespace Bloom
 		{
 			Settings.Default.AlwaysMeasurePerformance = !Settings.Default.AlwaysMeasurePerformance;
 			UpdatePerformanceMeasurementStatus();
+		}
+
+		private void meddleWithNewFilesToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (FileMeddlerManager.IsMeddling)
+			{
+				FileMeddlerManager.Stop();
+				meddleWithNewFilesToolStripMenuItem.Text = "Meddle with New Files";
+			}
+			else
+			{
+				FileMeddlerManager.Start(_collectionSettings?.FolderPath);
+				meddleWithNewFilesToolStripMenuItem.Text = "Stop Meddling with New Files";
+			}
 		}
 
 		private void UpdatePerformanceMeasurementStatus()

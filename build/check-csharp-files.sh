@@ -11,7 +11,7 @@ echo Checking for possible uses of non-Robust C\# File or FileStream operations.
 #    for FileStream constructors and certain (SIL.IO.)Directory methods.
 # 5) If anything is found (grep returns 0), then we stop everything and complain.
 git status --porcelain=v1 --untracked=no --ignored=no --no-renames | grep '^[AM]' | cut -c4- | grep '\.cs$' | \
-  grep -v 'src/BloomExe/RobustFileIO.cs$' | \
+  grep -v 'src/BloomExe/RobustFileIO.cs$' | grep -v 'src/FileMeddler/Program.cs$' | \
   grep -v 'src/BloomTests/' | \
   xargs grep -H '\([^A-Za-z0-9_]File\.[A-Z]\|new\s\+FileStream\|[^A-Za-z0-9_]Directory\.\(Move\|Delete\)[^A-Za-z0-9_]\|[^A-Za-z0-9_]\(Document\|Metadata\)\.FromFile\)' | \
   grep -v 'PublishTab\.Android\.File\.'

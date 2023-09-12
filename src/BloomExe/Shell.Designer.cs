@@ -1,4 +1,6 @@
-﻿namespace Bloom
+﻿using System;
+
+namespace Bloom
 {
     partial class Shell
     {
@@ -39,6 +41,7 @@
 			this.alwaysMeasureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.startMeasuringPerformanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.showPerformancePageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.meddleWithNewFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._contextMenu.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -53,7 +56,8 @@
             this.toolStripSeparator1,
             this.alwaysMeasureToolStripMenuItem,
             this.startMeasuringPerformanceToolStripMenuItem,
-            this.showPerformancePageToolStripMenuItem});
+            this.showPerformancePageToolStripMenuItem,
+			this.meddleWithNewFilesToolStripMenuItem});
 			this._contextMenu.Name = "_contextMenu";
 			this._contextMenu.Size = new System.Drawing.Size(352, 192);
 			// 
@@ -116,6 +120,13 @@
 			this.showPerformancePageToolStripMenuItem.Text = "Show Performance Page";
 			this.showPerformancePageToolStripMenuItem.Click += new System.EventHandler(this.showPerformancePageToolStripMenuItem_Click);
 			// 
+			// meddleWithNewFilesToolStripMenuItem
+			// 
+			this.meddleWithNewFilesToolStripMenuItem.Name = "meddleWithNewFilesToolStripMenuItem";
+			this.meddleWithNewFilesToolStripMenuItem.Size = new System.Drawing.Size(351, 22);
+			this.meddleWithNewFilesToolStripMenuItem.Text = "Meddle with New Files";
+			this.meddleWithNewFilesToolStripMenuItem.Click += new System.EventHandler(this.meddleWithNewFilesToolStripMenuItem_Click);
+			// 
 			// Shell
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -138,7 +149,7 @@
 
         }
 
-        #endregion
+		#endregion
 
 		private System.Windows.Forms.ContextMenuStrip _contextMenu;
 		private System.Windows.Forms.ToolStripMenuItem _size800x600;
@@ -150,5 +161,6 @@
 		private System.Windows.Forms.ToolStripMenuItem startMeasuringPerformanceToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem showPerformancePageToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem alwaysMeasureToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem meddleWithNewFilesToolStripMenuItem;
 	}
 }

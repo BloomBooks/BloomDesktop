@@ -27,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebView2PdfMaker", "src\WebView2PdfMaker\WebView2PdfMaker.csproj", "{F697DD7A-2D74-4850-8381-7E4ADB1E4431}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileMeddler", "src\FileMeddler\FileMeddler.csproj", "{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,18 @@ Global
 		{F697DD7A-2D74-4850-8381-7E4ADB1E4431}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F697DD7A-2D74-4850-8381-7E4ADB1E4431}.Release|x86.ActiveCfg = Release|Any CPU
 		{F697DD7A-2D74-4850-8381-7E4ADB1E4431}.Release|x86.Build.0 = Release|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Debug|x86.Build.0 = Debug|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Release|x86.ActiveCfg = Release|Any CPU
+		{870F7A93-2D11-4972-A596-9E0FA7DFBCE6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
