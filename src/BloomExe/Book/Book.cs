@@ -2626,7 +2626,7 @@ namespace Bloom.Book
 			if (vidNode == null)
 				return false;
 			// HtmlDom.GetVideoElementUrl() takes the .bloom-videoContainer node as a parameter.
-			var videoUrl = HtmlDom.GetVideoElementUrl(new ElementProxy(vidNode.ParentNode as XmlElement));
+			var videoUrl = HtmlDom.GetVideoElementUrl(vidNode.ParentNode as XmlElement);
 			var file = videoUrl.PathOnly.NotEncoded;
 			return !string.IsNullOrEmpty(file) && RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
 		}
@@ -3628,7 +3628,7 @@ namespace Bloom.Book
 						//NB: URLEncode would replace spaces with '+', which is ok in the parameter section, but not the URL
 						//So we are using UrlPathEncode
 
-						HtmlDom.SetImageElementUrl(new ElementProxy(img), UrlPathString.CreateFromUnencodedString(pathRelativeToFolioFolder));
+						HtmlDom.SetImageElementUrl(img, UrlPathString.CreateFromUnencodedString(pathRelativeToFolioFolder));
 
 					}
 				}

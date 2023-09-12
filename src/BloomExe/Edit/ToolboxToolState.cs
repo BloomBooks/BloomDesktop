@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -54,7 +55,7 @@ namespace Bloom.Edit
 
 		// May be overridden to save some information about the tool state during page save.
 		// Default does nothing.
-		internal virtual void SaveSettings(ElementProxy toolbox)
+		internal virtual void SaveSettings(XmlElement toolbox)
 		{ }
 
 		public static object GetToolboxToolFromJsonObject(JObject item)
