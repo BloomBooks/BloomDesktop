@@ -863,6 +863,11 @@ namespace Bloom
 				ShowUserEmergencyShutdownMessage(nasty);
 				System.Environment.FailFast(exceptMsg);
 			}
+			finally
+			{
+				if (FileMeddlerManager.IsMeddling)
+					FileMeddlerManager.Stop();
+			}
 
 			Settings.Default.Save();
 			Sldr.Cleanup();
