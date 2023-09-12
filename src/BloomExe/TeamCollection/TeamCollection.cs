@@ -1970,7 +1970,7 @@ namespace Bloom.TeamCollection
 									renameFolder = localFolderPath + count;
 								} while (Directory.Exists(renameFolder));
 
-								Directory.Move(localFolderPath, renameFolder);
+								SIL.IO.RobustIO.MoveDirectory(localFolderPath, renameFolder);
 								// Don't use ChangeExtension here, bookName may have arbitrary periods.
 								var renamePath = Path.Combine(renameFolder, Path.GetFileName(renameFolder) + ".htm");
 								var oldBookPath = Path.Combine(renameFolder, bookName + ".htm");

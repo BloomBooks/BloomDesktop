@@ -765,7 +765,7 @@ namespace Bloom.WebLibraryIntegration
 						if (RobustFile.Exists(tempPath))
 							RobustFile.Delete(tempPath);
 						else if (Directory.Exists(tempPath))
-							Directory.Delete(tempPath, true);
+							SIL.IO.RobustIO.DeleteDirectory(tempPath, true);
 						return name;
 					}
 					catch (Exception)

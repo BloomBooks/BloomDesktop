@@ -21,13 +21,6 @@ namespace Bloom
 	/// </summary>
 	public class RobustFileIO
 	{
-#if !__MonoCS__
-		public static WaveFileReader CreateWaveFileReader(string wavFile)
-		{
-			return RetryUtility.Retry(() => new WaveFileReader(wavFile));
-		}
-#endif
-
 		public static Document DocumentFromFile(string filePath)
 		{
 			return RetryUtility.Retry(() => Document.FromFile(filePath));
