@@ -93,7 +93,7 @@ namespace Bloom.Book
 			{
 				if (ExcludedFiles.Contains(Path.GetFileName(path).ToLowerInvariant()))
 					continue;
-				var metaData = Metadata.FromFile(path);
+				var metaData = RobustFileIO.MetadataFromFile(path);
 				if (metaData != null && ImageIsFromOfficialCollection(metaData))
 					continue;
 
@@ -111,7 +111,7 @@ namespace Bloom.Book
 		{
 			//enhance: this all could be done without loading the image into memory
 			//could just deal with the metadata
-			//e.g., var metadata = Metadata.FromFile(path)
+			//e.g., var metadata = RobustFileIO.MetadataFromFile(path)
 			var path = Path.Combine(folderPath, imageFilePath);
 			try
 			{

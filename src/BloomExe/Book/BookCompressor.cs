@@ -413,7 +413,7 @@ namespace Bloom.Book
 							// suitable overloads).
 							RobustImageIO.SaveImage(newImage, tempFile.Path, image.RawFormat);
 							// Copy the metadata from the original file to the new file.
-							var metadata = SIL.Windows.Forms.ClearShare.Metadata.FromFile(filePath);
+							var metadata = RobustFileIO.MetadataFromFile(filePath);
 							if (!metadata.IsEmpty)
 								metadata.Write(tempFile.Path);
 							var newBytes = RobustFile.ReadAllBytes(tempFile.Path);

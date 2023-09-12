@@ -2967,7 +2967,7 @@ namespace Bloom.Book
 			if (desiredPath == null)
 				desiredPath = oldBookFolder;
 			var newPathForExtraBook = BookStorage.GetUniqueFolderPath(desiredPath);
-			Directory.Move(oldBookFolder, newPathForExtraBook);
+			SIL.IO.RobustIO.MoveDirectory(oldBookFolder, newPathForExtraBook);
 			var extraBookPath = Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(oldBookFolder), "htm"));
 			// This will usually succeed, since it is standard to name the book the same as the folder.
 			// But if it doesn't, we can't move it, so it seems worth a check.
