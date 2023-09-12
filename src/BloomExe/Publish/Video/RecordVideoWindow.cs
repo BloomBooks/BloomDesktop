@@ -16,6 +16,7 @@ using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
+using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
@@ -1281,7 +1282,13 @@ namespace Bloom.Publish.Video
 			{
 				OutputFilenames.RememberOutputFilePath(_book, extension, destFileName, langTag);
 				RobustFile.Copy(_finalVideo.Path, destFileName, true);
-			}
+			}			
+
+			Analytics.Track("Publish Audio/Video", new Dictionary<string, string>() {
+				{ "format", _book.BookInfo.PublishSettings.AudioVideo.Format },
+				{ "BookId", _book.ID },
+				{ "Country", _book.CollectionSettings.Country },
+				{ "Language", _book.BookData.Language1.Tag } });
 		}
 
 		// Some logic I found...combined with increasing the MaximumSize of the window, it allows
