@@ -134,8 +134,23 @@ namespace Bloom.TeamCollection
 				}
 
 				var msg = string.IsNullOrEmpty(L10NId) ? RawEnglishMessageTemplate : LocalizationManager.GetString(L10NId, RawEnglishMessageTemplate);
+				// If the message contains square brackets, we assume it's a link, and we replace the square brackets with the link.
+				if (msg.Contains("[") && msg.Contains("]") && !string.IsNullOrEmpty(Param0) && string.IsNullOrEmpty(Param1))
+				{
+					msg = CreateLinkInMessage(msg, Param0);
+					return leadIn + msg;
+				}
 				return leadIn + string.Format(msg, Param0, Param1);
 			}
+		}
+
+		private string CreateLinkInMessage(string msg, string href)
+		{
+			var start = msg.IndexOf("[", StringComparison.Ordinal);
+			var end = msg.IndexOf("]", StringComparison.Ordinal);
+			var linkText = msg.Substring(start + 1, end - start - 1);
+			var linkHtml = $"<a href=\'{href}\'>{linkText}</a>";
+			return msg.Replace($"[{linkText}]", linkHtml);
 		}
 
 		public static TeamCollectionMessage FromPersistedForm(string form)
