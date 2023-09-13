@@ -924,7 +924,7 @@ namespace Bloom.Publish.Video
 				if (_ffmpegExited)
 					return 0;
 
-				var progressFileContents = ToPalaso.RobustIO.ReadAllTextFromFileWhichMightGetWrittenTo(_ffmpegProgressFile.Path);
+				var progressFileContents = RobustIO.ReadAllTextFromFileWhichMightGetWrittenTo(_ffmpegProgressFile.Path);
 
 				if (string.IsNullOrWhiteSpace(progressFileContents))
 					return 0;

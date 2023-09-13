@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Bloom.ToPalaso;
 using SIL.Code;
+using SIL.IO;
 
 namespace Bloom.Collection
 {
@@ -36,7 +37,7 @@ namespace Bloom.Collection
 			// to read and write to it, just not delete/rename/move it.  BL-11484
 			try
 			{
-				_streamToLockCollectionFile = RobustIO.Open(_filePath, FileMode.Open, FileAccess.Read,
+				_streamToLockCollectionFile = RobustFile.Open(_filePath, FileMode.Open, FileAccess.Read,
 						FileShare.ReadWrite);
 			}
 			catch (Exception err)

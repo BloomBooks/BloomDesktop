@@ -212,7 +212,7 @@ namespace Bloom.ImageProcessing
 			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 				return false;
 			byte[] bytes = new byte[10];
-			using (var file = ToPalaso.RobustIO.OpenRead(path))
+			using (var file = RobustFile.OpenRead(path))
 			{
 				file.Read(bytes, 0, 10);
 			}
@@ -250,7 +250,7 @@ namespace Bloom.ImageProcessing
 			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 				return false;
 			byte[] bytes = new byte[10];
-			using (var file = ToPalaso.RobustIO.OpenRead(path))
+			using (var file = RobustFile.OpenRead(path))
 			{
 				file.Read(bytes, 0, 10);
 			}
@@ -883,7 +883,7 @@ namespace Bloom.ImageProcessing
 							return null;
 						}
 						imageInfo.SetCurrentFilePath(destPath);
-						return ToPalaso.RobustImageIO.GetImageFromFile(destPath);
+						return RobustImageIO.GetImageFromFile(destPath);
 					}
 					else
 					{
@@ -1322,7 +1322,7 @@ namespace Bloom.ImageProcessing
 				}
 				if (image != null)
 				{
-					using (Stream fs = ToPalaso.RobustIO.GetFileStream(imagePath, FileMode.Create))
+					using (Stream fs = RobustIO.GetFileStream(imagePath, FileMode.Create))
 					{
 						SIL.IO.RobustImageIO.SaveImage(image, fs, ImageFormat.Png);
 					}

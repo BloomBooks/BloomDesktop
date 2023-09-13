@@ -189,7 +189,7 @@ namespace Bloom
 			{
 				if (RobustFile.Exists(thumbNailFilePath))
 				{
-					var thumbnail = ToPalaso.RobustImageIO.GetImageFromFile(thumbNailFilePath);
+					var thumbnail = RobustImageIO.GetImageFromFile(thumbNailFilePath);
 					thumbnail.Tag = thumbNailFilePath;
 					if (!string.IsNullOrWhiteSpace(key))
 						_images.Add(key, thumbnail);
