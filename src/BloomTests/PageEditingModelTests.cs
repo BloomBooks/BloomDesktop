@@ -6,6 +6,7 @@ using Bloom;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using NUnit.Framework;
+using SIL.IO;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
@@ -63,7 +64,7 @@ namespace BloomTests
 					var destDogImagePath = dest.Combine("dog.png");
 					File.WriteAllText(destDogImagePath, "old dog");
 					ChangePicture(dest.Path, dom, "two", original);
-					Assert.IsTrue(Bloom.ToPalaso.RobustImageIO.GetImageFromFile(destDogImagePath).Width == kSampleImageDimension);
+					Assert.IsTrue(RobustImageIO.GetImageFromFile(destDogImagePath).Width == kSampleImageDimension);
 				}
 			}
 		}

@@ -59,7 +59,7 @@ namespace Bloom.Utils
 					bool accessDenied = false;
 					bool accessAllowed = false;
 					FileSystemRights accessRights = FileSystemRights.Write;
-					var acl = ToPalaso.RobustIO.GetAccessControl(filePath);
+					var acl = RobustFile.GetAccessControl(filePath);
 					var rules = acl.GetAccessRules(true, true, typeof(NTAccount));
 					var sid = acl.GetOwner(typeof(SecurityIdentifier));
 					var acct = sid.Translate(typeof(NTAccount)) as NTAccount;

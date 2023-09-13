@@ -30,7 +30,7 @@ namespace Bloom.Edit
 		{
 			_folderInWhichToReadAndSaveCollectionSettings = folderInWhichToReadAndSaveCollectionSettings;
 			PathToCollectionJson = _folderInWhichToReadAndSaveCollectionSettings.CombineForPath("configuration.txt");
-			ToPalaso.RobustIO.RequireThatDirectoryExists(folderInWhichToReadAndSaveCollectionSettings);
+			RobustIO.RequireThatDirectoryExists(folderInWhichToReadAndSaveCollectionSettings);
 			LocalData = string.Empty;
 		}
 
