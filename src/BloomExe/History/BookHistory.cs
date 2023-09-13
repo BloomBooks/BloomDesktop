@@ -122,25 +122,33 @@ namespace Bloom.History
 				return;     // SQLiteConnection never works on Linux.
 			try
 			{
-				using (var db = GetConnection(folderPath))
+				var sQLiteExceptionSet = new HashSet<Type>() { typeof(SQLiteException) };
+
+				// Note: it's really hard to know from the sdk we have at the moment if a sqllite connection is
+				// opened read only because some other process has it open. So we do the retry around the whole
+				// operation instead of just the opening of the connection like you'd expect.
+				RetryUtility.Retry(() =>
 				{
-					GetOrMakeBookRecord(bookName, bookId, db);
-
-					var evt = new BookHistoryEvent()
+					using (var db = GetConnection(folderPath))
 					{
-						BookId = bookId,
-						Message = message,
-						UserId = TeamCollectionManager.CurrentUser,
-						UserName = TeamCollectionManager.CurrentUserFirstName,
-						Type = eventType,
-						// Be sure to use UTC, otherwise, order will not be preserved properly.
-						When = DateTime.UtcNow,
-						BloomVersion = Application.ProductVersion
-					};
+						GetOrMakeBookRecord(bookName, bookId, db);
 
-					db.Insert(evt);
-					db.Close();
-				}
+						var evt = new BookHistoryEvent()
+						{
+							BookId = bookId,
+							Message = message,
+							UserId = TeamCollectionManager.CurrentUser,
+							UserName = TeamCollectionManager.CurrentUserFirstName,
+							Type = eventType,
+							// Be sure to use UTC, otherwise, order will not be preserved properly.
+							When = DateTime.UtcNow,
+							BloomVersion = Application.ProductVersion
+						};
+
+						db.Insert(evt);
+						db.Close();
+					}
+				}, exceptionTypesToRetry: sQLiteExceptionSet, memo: "opening history db for writing a book record");
 			}
 			catch (Exception e)
 			{
