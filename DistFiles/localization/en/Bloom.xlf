@@ -5712,6 +5712,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Bloom will create a new collection on your computer based on this Team Collection.</source>
         <note>ID: TeamCollection.Creating</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.NeedDropboxRunning" sil:dynamic="true">
+        <source xml:lang="en">Dropbox does not appear to be running. Please see [Troubleshooting Dropbox](https://docs.bloomlibrary.org/dropbox-trouble).</source>
+        <note>ID: TeamCollection.NeedDropboxRunning</note>
+        <note>The text inside the [square brackets] will become a link to the URL in parentheses.</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.Intro" sil:dynamic="true">
         <source xml:lang="en">Bloom's Team Collection system helps your team collaborate as you create, translate, and edit books. Read about how it works [here]({0}), or view this [video]({1}).</source>
         <note>ID: TeamCollection.Intro</note>
