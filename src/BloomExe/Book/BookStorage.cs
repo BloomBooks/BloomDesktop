@@ -305,7 +305,7 @@ namespace Bloom.Book
 			string path = Path.Combine(FolderPath, fileName);
 			if (RobustFile.Exists(path))
 			{
-				image = ToPalaso.RobustImageIO.GetImageFromFile(path);
+				image = RobustImageIO.GetImageFromFile(path);
 				return true;
 			}
 			image = null;
@@ -503,9 +503,9 @@ namespace Bloom.Book
 			// Read the old file and copy it to the new one, except for replacing the one page.
 			string tempPath = GetNameForATempFileInStorageFolder();
 			RetryUtility.Retry(() => {
-				using (var reader = new StreamReader(ToPalaso.RobustIO.GetFileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
+				using (var reader = new StreamReader(RobustIO.GetFileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
 				{
-					using (var writer = new StreamWriter(ToPalaso.RobustIO.GetFileStream(tempPath, FileMode.Create), Encoding.UTF8))
+					using (var writer = new StreamWriter(RobustIO.GetFileStream(tempPath, FileMode.Create), Encoding.UTF8))
 					{
 						ReplacePage(pageId, reader, writer, pageHtml);
 					}
@@ -925,7 +925,7 @@ namespace Bloom.Book
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });
 			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "license", "video-placeholder", "coverImage200", "widget-placeholder" });
-			foreach (var path in Bloom.ToPalaso.RobustIO.EnumerateFilesInDirectory(FolderPath).Where(
+			foreach (var path in RobustIO.EnumerateFilesInDirectory(FolderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{
 				var filename = Path.GetFileName(path);
@@ -1733,7 +1733,7 @@ namespace Bloom.Book
 			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(FolderPath);
-			ToPalaso.RobustIO.RequireThatDirectoryExists(FolderPath);
+			RobustIO.RequireThatDirectoryExists(FolderPath);
 			string pathToExistingHtml;
 			try
 			{

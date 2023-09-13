@@ -7,7 +7,6 @@ using BloomTemp;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
-using RobustIO = SIL.IO.RobustIO;
 
 namespace BloomTests.Book
 {

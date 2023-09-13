@@ -167,7 +167,7 @@ namespace Bloom.TeamCollection
 			// Linux and Windows. But that's OK, because .NET line reading accepts either line
 			// break on either platform.
 			var toPersist = message.ToPersistedForm + Environment.NewLine;
-			ToPalaso.RobustIO.AppendAllText(_logFilePath, toPersist);
+			RobustFile.AppendAllText(_logFilePath, toPersist);
 		}
 
 		private bool MatchParams(string p1, string p2)

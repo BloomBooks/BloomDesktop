@@ -718,7 +718,7 @@ namespace Bloom.TeamCollection
 			// this argument exception puts the TC in the "problems encountered" state with a rather
 			// cryptic message in the dialog box, and no change in the book status panel. But at least
 			// we are not cluttering the TC with conflicts.
-			if (ToPalaso.RobustIO.IsFileLocked(bookPath))
+			if (RobustIO.IsFileLocked(bookPath))
 			{
 				var isDropbox = DropboxUtils.IsPathInDropboxFolder(bookPath);
 				var msg = $"Bloom was not able to modify {bookName} because some other program is busy with it. " +

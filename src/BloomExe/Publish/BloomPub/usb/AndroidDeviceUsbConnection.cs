@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using Bloom.ToPalaso;
 using PodcastUtilities.PortableDevices;
+using SIL.IO;
 
 namespace Bloom.Publish.BloomPub.usb
 {
@@ -94,7 +95,7 @@ namespace Bloom.Publish.BloomPub.usb
 			if (_device == null || _bloomFolderPath == null)
 				throw new InvalidOperationException("Must connect before calling SendBook");
 
-			using (var sourceStream = RobustIO.OpenRead(bloomdPath))
+			using (var sourceStream = RobustFile.OpenRead(bloomdPath))
 			using (var targetStream = _device.OpenWrite(Path.Combine(_bloomFolderPath, Path.GetFileName(bloomdPath)),
 				new FileInfo(bloomdPath).Length, true))
 			{
