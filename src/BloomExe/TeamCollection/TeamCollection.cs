@@ -1878,6 +1878,8 @@ namespace Bloom.TeamCollection
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
 					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage, path, null);
+					ReportProgressAndLog(progress, ProgressKind.Error, null, ex.Message);
+					Logger.WriteError(ex);
 					NonFatalProblem.ReportSentryOnly(ex, string.Format(englishSomethingWrongMessage, path));
 					hasProblems = true;
 				}
@@ -2087,6 +2089,8 @@ namespace Bloom.TeamCollection
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
 					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage, bookName);
+					ReportProgressAndLog(progress, ProgressKind.Error, null, ex.Message);
+					Logger.WriteError(ex);
 					NonFatalProblem.ReportSentryOnly(ex, string.Format(englishSomethingWrongMessage, bookName));
 					hasProblems = true;
 				}
