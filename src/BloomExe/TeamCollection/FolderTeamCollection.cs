@@ -1000,7 +1000,7 @@ namespace Bloom.TeamCollection
 							"Dropbox does not appear to be running, but the folder has also been shared locally which appears to be okay.");
 					else
 						return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.NeedDropboxRunning",
-							"Dropbox does not appear to be running.");
+							"Dropbox does not appear to be running. Please see [Troubleshooting Dropbox](https://docs.bloomlibrary.org/dropbox-trouble).");
 				}
 
 				if (!DropboxUtils.CanAccessDropbox())
