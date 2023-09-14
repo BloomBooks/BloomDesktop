@@ -435,12 +435,6 @@ namespace Bloom
 			var html = await RunJavaScriptAsync("document.documentElement.outerHTML");
 			RobustFile.WriteAllText(path, html, Encoding.UTF8);
 		}
-		// Review: base class currently explicitly opens FireFox. Should we instead open Chrome,
-		// or whatever the default browser is, or...?
-		//public override void OnOpenPageInSystemBrowser(object sender, EventArgs e)
-		//{
-		//	throw new NotImplementedException();
-		//}
 
 		public override string RunJavaScript(string script)
 		{
