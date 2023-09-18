@@ -412,10 +412,14 @@ namespace Bloom.Publish.Video
 			_capturedVideo = _initialVideo; // save so we can dispose eventually
 			_initialVideo = null; // prevent automatic dispose in OnClosed
 
-			// Stop the recording BEFORE we close the window, otherwise, we capture a bit of it fading away.
-			Debug.WriteLine("Telling ffmpeg to quit");
-			_ffmpegProcess.StandardInput.WriteLine("q");
-			_ffmpegProcess.WaitForExit();
+			// ffmpeg hasn't been set up yet for audio-only recording; we only use it during the last phase.
+			if (_ffmpegProcess != null)
+			{
+				// Stop the recording BEFORE we close the window, otherwise, we capture a bit of it fading away.
+				Debug.WriteLine("Telling ffmpeg to quit");
+				_ffmpegProcess.StandardInput.WriteLine("q");
+				_ffmpegProcess.WaitForExit();
+			}
 
 			ClearPreventSleepTimer();
 			Close();
