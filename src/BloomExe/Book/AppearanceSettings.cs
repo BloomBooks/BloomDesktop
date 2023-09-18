@@ -86,26 +86,43 @@ public class AppearanceSettings
 	{
 		var jsonPath = AppearanceJsonPath(bookFolderPath);
 		AppearanceSettings settings = new AppearanceSettings();
+
+		Debug.WriteLine($"--- FromFolderOrNew({bookFolderPath})");
 		if (RobustFile.Exists(jsonPath))
 		{
 			var json = RobustFile.ReadAllText(jsonPath);
 			settings.UpdateFromJson(json);
+			Debug.WriteLine($"Found existing appearance json. CssThemeName is currently {settings.CssThemeName}");
 		}
-		else // this books doesn't have an appearance.json file, which will happen if it was created before 5.6
+
+		// Note that just because a book *used* to conform to an Appearance version (i.e. get "default" for cssThemeName),
+		// a change in Enterprise status or Xmatter could mean that it no longer does, and may need to go back to "legacy".
+
+		var brandingCssPath = bookFolderPath.CombineForPath("branding.css");
+		var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
+
+		var customBookStylesPath = bookFolderPath.CombineForPath("customBookStyles.css");
+		var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
+
+		// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
+		var customCollectionStylesPath = bookFolderPath.CombineForPath("../", "customCollectionStyles.css");
+		var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
+
+		// RE *.xmatter.css: it's not easy to plumb that filename here, so the plan is to make sure that all the xmatters we are shipping
+		// are compatible with the new css system.
+
+		var safeTheme = AppearanceSettings.GetSafeThemeForBook(new Tuple<string, string>[]
 		{
-			var brandingCssPath = bookFolderPath.CombineForPath("branding.css");
-			var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
-
-			var customBookStylesPath = bookFolderPath.CombineForPath("customBookStyles.css");
-			var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
-
-			// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
-			var customCollectionStylesPath = bookFolderPath.CombineForPath("../", "customCollectionStyles.css");
-			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
-
-
-			settings.CssThemeName = AppearanceSettings.GetSafeThemeForBook(new string[] { customCollectionCss, customBookCss, brandingCss });
-		}
+			new Tuple<string, string>("customCollectionCss", customCollectionCss),
+			new Tuple<string, string>("customBookCss", customBookCss),
+			new Tuple<string, string>("brandingCss", brandingCss),
+		});
+		if(safeTheme != "default")
+		{
+			settings.CssThemeName = safeTheme;
+			Debug.WriteLine($"** Will use {safeTheme}");
+			SIL.Reporting.Logger.WriteEvent($"** Will use {safeTheme}");
+		}	
 
 		return settings;
 	}
@@ -250,21 +267,31 @@ public class AppearanceSettings
 		}
 	}
 
-	internal static string GetSafeThemeForBook(string[] cssFileContents)
+	internal static string GetSafeThemeForBook(Tuple<string,string>[] cssFiles)
 	{
 		const string kLegacy = "legacy-5-5";
-		// See if the css contains rules that nowadays should be using css variables, and would likely interfer with 5.6 and up
-		// Note that this is pessimistic, e.g. it doesn't look to see if the rule is on the .marginBox.
-		const string kProbablyWillInterfere = "padding-|left:|top:|right:|bottom:|margin-|width:";
-
-		if (cssFileContents.Where(css=>css !=null).Any(css =>
+		if (cssFiles.Where(css=>css.Item2 !=null).Any(css =>
 		{
-			var v = Regex.Match(css, @"compatibleWithAppearanceVersion:\s*(\d+(\.\d+)?)")?.Groups[1]?.Value ?? "0";
+			// note: "AppearanceVersion" uses the version number of Bloom, but isn't intended to increment with each new release of Bloom.
+			// E.g., we do not expect to break CSS files very often. So initially we will have the a.v. = 5.6, and maybe the next one
+			// will be 6.2.  Note that there is current some discussion of jumping from 5.5 to 6.0 to make it easier to remember which
+			// Bloom version changed to the new css system.
+			var v = Regex.Match(css.Item2, @"compatibleWithAppearanceVersion:\s*(\d+(\.\d+)?)")?.Groups[1]?.Value ?? "0";
 
-			//TODO this doesn't seem to be working yet
 			if (double.TryParse(v, out var appearanceVersion) && appearanceVersion >= 5.6)
 				return false; // this is a 5.6+ theme, so it's fine
-			return Regex.IsMatch(css, kProbablyWillInterfere, RegexOptions.IgnoreCase);
+
+			// See if the css contains rules that nowadays should be using css variables, and would likely interfere with 5.6 and up
+			// Note that this is pessimistic, e.g. it doesn't look to see if the rule is on the .marginBox.
+			const string kProbablyWillInterfere = "padding-|left:|top:|right:|bottom:|margin-|width:";
+			if (Regex.IsMatch(css.Item2, kProbablyWillInterfere, RegexOptions.IgnoreCase))
+			{
+				var s = $"** {css.Item1} matched regex for a css rule that is potentially incompatible with this version of the default Bloom Css system.";
+				Debug.WriteLine(s);
+				SIL.Reporting.Logger.WriteEvent(s);
+				return true;
+			}
+			else return false;
 		}))
 		{
 			return kLegacy;
