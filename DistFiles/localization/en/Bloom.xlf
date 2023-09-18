@@ -3698,17 +3698,17 @@
         <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
+        <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
         <note>{0} is a font name, {1} is a file extension (for example: .ttc)</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
+        <source xml:lang="en">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</source>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
         <note>{0} is a font name</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
+        <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
       </trans-unit>
@@ -3723,7 +3723,7 @@
         <note>{0} is a file path</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
+        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} is a font name</note>
       </trans-unit>
@@ -5842,7 +5842,7 @@ Do you want to go ahead?</note>
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutError">
-        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>

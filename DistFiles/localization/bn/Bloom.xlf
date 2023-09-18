@@ -4159,17 +4159,17 @@
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
-        <target xml:lang="bn" state="needs-translation">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</target>
+        <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
+        <target xml:lang="bn" state="needs-translation">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</target>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
-        <target xml:lang="bn" state="final">এ পুস্তকে \"{0}\" ব্যবহার করা হয়েছে। এটি \"{0}\" স্থাপনের জন্য ব্লুম লাইসেন্স/অনুমতি দেয় না।</target>
+        <source xml:lang="en">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</source>
+        <target xml:lang="bn" state="final">এ পুস্তকে "{0}" ব্যবহার করা হয়েছে। এটি "{0}" স্থাপনের জন্য ব্লুম লাইসেন্স/অনুমতি দেয় না।</target>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
+        <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
         <target xml:lang="bn" state="final">বইটিতে {0} অক্ষর ব্যবহার করা হয়েছে কিন্তু ব্লুমে সেই অক্ষর এই কম্পিউটারে খুঁজে পায়নি।</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>
@@ -4184,8 +4184,8 @@
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
-        <target xml:lang="bn" state="final">এর পরিবর্তে ব্লুম \"{0}\" ব্যাবহার করবে</target>
+        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
+        <target xml:lang="bn" state="final">এর পরিবর্তে ব্লুম "{0}" ব্যাবহার করবে</target>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CoverColor" sil:dynamic="true">
@@ -6073,7 +6073,7 @@
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
-        <target xml:lang="bn" state="final">এছাড়াও, এই ব্লুম প্যাক \"{0}\" ভাষার জন্য আপনার সর্বশেষ ডিকোডেবল এবং লেভেল করা রিডার সেটিংসমূহ বহন করবে। যে কেউ এই ব্লুম প্যাক খুললে, যে \"{0}\" সংগ্রহশালা খুলবে, তারা তাদের বর্তমান ডিকোডেবল ও লেভেলড রিডার সেটিংস এই ব্লুম প্যাকের সেটিং দিয়ে পরিবর্তন করবে। ডিকোডেবল রিডারে ব্যবহারের জন্য তারা বর্তমান শব্দের সেটও পাবে।</target>
+        <target xml:lang="bn" state="final">এছাড়াও, এই ব্লুম প্যাক "{0}" ভাষার জন্য আপনার সর্বশেষ ডিকোডেবল এবং লেভেল করা রিডার সেটিংসমূহ বহন করবে। যে কেউ এই ব্লুম প্যাক খুললে, যে "{0}" সংগ্রহশালা খুলবে, তারা তাদের বর্তমান ডিকোডেবল ও লেভেলড রিডার সেটিংস এই ব্লুম প্যাকের সেটিং দিয়ে পরিবর্তন করবে। ডিকোডেবল রিডারে ব্যবহারের জন্য তারা বর্তমান শব্দের সেটও পাবে।</target>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel" approved="yes">
@@ -6515,7 +6515,7 @@
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutError">
-        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>
