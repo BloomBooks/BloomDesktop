@@ -4207,18 +4207,18 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
-        <target xml:lang="sw" state="needs-translation">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</target>
+        <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
+        <target xml:lang="sw" state="needs-translation">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</target>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
-        <target xml:lang="sw" state="final">Kitabu hiki kina maandishi katika fonti iitwayo \"{0}\". Leseni ya \"{0}\" hairuhusu Bloom kupachika fonti kwenye kitabu.</target>
+        <source xml:lang="en">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</source>
+        <target xml:lang="sw" state="final">Kitabu hiki kina maandishi katika fonti iitwayo "{0}". Leseni ya "{0}" hairuhusu Bloom kupachika fonti kwenye kitabu.</target>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
-        <target xml:lang="sw" state="final">Kitabu hiki kina maandishi katika fonti inayoitwa \"{0}\", lakini Bloom haikuweza kupata fonti hiyo kwenye kompyuta hii.</target>
+        <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
+        <target xml:lang="sw" state="final">Kitabu hiki kina maandishi katika fonti inayoitwa "{0}", lakini Bloom haikuweza kupata fonti hiyo kwenye kompyuta hii.</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true" approved="yes">
@@ -4232,8 +4232,8 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
-        <target xml:lang="sw" state="final">Bloom itabadilisha \"{0}\" badala yake. "</target>
+        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
+        <target xml:lang="sw" state="final">Bloom itabadilisha "{0}" badala yake. "</target>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CoverColor" sil:dynamic="true">
@@ -6064,7 +6064,7 @@ kisomaji cha ePUB</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
-        <target xml:lang="sw" state="final">Bloom tayari inajua ni herufi gani katika lugha za ulimwengu kila wakati zinaashiria mwisho wa sentensi. Ili kuongeza zingine, ingiza herufi ya Unicode hapa. Kwa mfano kwa lugha za maandishi ya Thai, ingiza \ U0020 kuambia Bloom kwamba nafasi za kawaida hutumiwa kuvunja sentensi.</target>
+        <target xml:lang="sw" state="final">Bloom tayari inajua ni herufi gani katika lugha za ulimwengu kila wakati zinaashiria mwisho wa sentensi. Ili kuongeza zingine, ingiza herufi ya Unicode hapa. Kwa mfano kwa lugha za maandishi ya Thai, ingiza \U0020 kuambia Bloom kwamba nafasi za kawaida hutumiwa kuvunja sentensi.</target>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
@@ -6164,7 +6164,7 @@ kisomaji cha ePUB</target>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
-        <target xml:lang="sw" state="final">Kwa kuongeza, seti hii ya Bloom itabeba mpangilio wa kifaa cha kusoma kilichopewa ngazi na kinachoweza kufasiriwa cha hivi karibuni cha lugha ya \"{0}\". Yeyote anayefungua seti hii ya Bloom, ambaye basi anafungua mkusanyiko wa \"{0}\" , atahitajika kubadilisha mpangilio wa kifaa chake cha kusoma kilichopewa ngazi na kutumia mpangilio ulio kwenye seti hii ya Bloom. Pia atapata kikundi cha majina ya kisasa ili kuyatumia kwenye vifaa vya kusoma vinavyoweza kufasiriwa.</target>
+        <target xml:lang="sw" state="final">Kwa kuongeza, seti hii ya Bloom itabeba mpangilio wa kifaa cha kusoma kilichopewa ngazi na kinachoweza kufasiriwa cha hivi karibuni cha lugha ya "{0}". Yeyote anayefungua seti hii ya Bloom, ambaye basi anafungua mkusanyiko wa "{0}" , atahitajika kubadilisha mpangilio wa kifaa chake cha kusoma kilichopewa ngazi na kutumia mpangilio ulio kwenye seti hii ya Bloom. Pia atapata kikundi cha majina ya kisasa ili kuyatumia kwenye vifaa vya kusoma vinavyoweza kufasiriwa.</target>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel" approved="yes">
@@ -6606,7 +6606,7 @@ kisomaji cha ePUB</target>
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutError">
-        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>

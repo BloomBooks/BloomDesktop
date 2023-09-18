@@ -4208,18 +4208,18 @@
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
-        <target xml:lang="ru" state="needs-translation">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</target>
+        <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
+        <target xml:lang="ru" state="needs-translation">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</target>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
-        <target xml:lang="ru" state="translated">В этой книге текст набран шрифтом \"{0}\". Лицензия на \"{0}\" не разрешает Bloom встраивать шрифт в книгу.</target>
+        <source xml:lang="en">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</source>
+        <target xml:lang="ru" state="translated">В этой книге текст набран шрифтом "{0}". Лицензия на "{0}" не разрешает Bloom встраивать шрифт в книгу.</target>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
-        <target xml:lang="ru" state="translated">Эта книга имеет текст в шрифте \"{0}\", но Bloom не смог найти этот шрифт на этом компьютере.</target>
+        <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
+        <target xml:lang="ru" state="translated">Эта книга имеет текст в шрифте "{0}", но Bloom не смог найти этот шрифт на этом компьютере.</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true">
@@ -4233,8 +4233,8 @@
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
-        <target xml:lang="ru" state="translated">Bloom заменит \"{0}\" вместо этого."</target>
+        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
+        <target xml:lang="ru" state="translated">Bloom заменит "{0}" вместо этого."</target>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CoverColor" sil:dynamic="true">
@@ -6094,7 +6094,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
-        <target xml:lang="ru" state="translated">Bloom уже знает, какие символы в языках мира всегда обозначают конец предложения. Чтобы добавить другие, введите здесь экранирующий символ Unicode. Например, для языков тайского алфавита введите \ U0020, чтобы сообщить Bloom, что для разрывов предложений используются обычные пробелы.</target>
+        <target xml:lang="ru" state="translated">Bloom уже знает, какие символы в языках мира всегда обозначают конец предложения. Чтобы добавить другие, введите здесь экранирующий символ Unicode. Например, для языков тайского алфавита введите \U0020, чтобы сообщить Bloom, что для разрывов предложений используются обычные пробелы.</target>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
@@ -6194,7 +6194,7 @@
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
-        <target xml:lang="ru" state="final">Дополнительно, этот Bloom Pack будет содержать последние настройки букварей для \"{0}\" языка. Те, кто будет использовать этот Bloom Pack, могут открыть коллекцию  \"{0}\" и использовать буквари с вашими настройками. Также они смогут использовать наборы слов с этих букварей.</target>
+        <target xml:lang="ru" state="final">Дополнительно, этот Bloom Pack будет содержать последние настройки букварей для "{0}" языка. Те, кто будет использовать этот Bloom Pack, могут открыть коллекцию  "{0}" и использовать буквари с вашими настройками. Также они смогут использовать наборы слов с этих букварей.</target>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel">
@@ -6636,7 +6636,7 @@
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutError">
-        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>

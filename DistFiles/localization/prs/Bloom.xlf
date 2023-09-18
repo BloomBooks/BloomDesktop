@@ -4204,18 +4204,18 @@
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
-        <target xml:lang="prs" state="needs-translation">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</target>
+        <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
+        <target xml:lang="prs" state="needs-translation">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</target>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
-        <target xml:lang="prs" state="final">این کتاب دارای متن با خط \"{0}\" است. مجوز \"{0}\" اجازه نمی دهد Bloom بتواند خط را در كتاب جابه جا كند.</target>
+        <source xml:lang="en">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</source>
+        <target xml:lang="prs" state="final">این کتاب دارای متن با خط "{0}" است. مجوز "{0}" اجازه نمی دهد Bloom بتواند خط را در كتاب جابه جا كند.</target>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
-        <target xml:lang="prs" state="final">این کتاب دارای متن با خط به نام \"{0}\", است، اما بلوم نتوانست آن خط را در این کمپیوتر پیدا کند.</target>
+        <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
+        <target xml:lang="prs" state="final">این کتاب دارای متن با خط به نام "{0}", است، اما بلوم نتوانست آن خط را در این کمپیوتر پیدا کند.</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true" approved="yes">
@@ -4229,8 +4229,8 @@
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
-        <target xml:lang="prs" state="final">بلوم در عوض \"{0}\" را جایگزین می کند. "</target>
+        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
+        <target xml:lang="prs" state="final">بلوم در عوض "{0}" را جایگزین می کند. "</target>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CoverColor" sil:dynamic="true">
@@ -6061,7 +6061,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
-        <target xml:lang="prs" state="final">بلوم قبلا می داند که کرکترهای زبان های جهان همیشه انتهای جمله ها را علامت می دهند. برای افزودن دیگران، کرکترهای یونیکد(Unicode) را وارد کنید. به عنوان مثال برای زبان اسکریپت تایلندی، U0020\ وارد کنید، به بلوم بگویید که فاصله های طبیعی برای شکستن جملات استفاده می شود.</target>
+        <target xml:lang="prs" state="final">بلوم قبلا می داند که کرکترهای زبان های جهان همیشه انتهای جمله ها را علامت می دهند. برای افزودن دیگران، کرکترهای یونیکد(Unicode) را وارد کنید. به عنوان مثال برای زبان اسکریپت تایلندی، \U0020 وارد کنید، به بلوم بگویید که فاصله های طبیعی برای شکستن جملات استفاده می شود.</target>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
@@ -6603,7 +6603,7 @@
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutError">
-        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>

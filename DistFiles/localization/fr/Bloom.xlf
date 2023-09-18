@@ -3350,7 +3350,7 @@
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionSingular" approved="yes">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the feature "{1}".</source>
-        <target xml:lang="fr" state="final">Pour ce livre il faut Bloom {0} ou une version ultérieure, car il utilise la fonctionnalité \"{1}\".</target>
+        <target xml:lang="fr" state="final">Pour ce livre il faut Bloom {0} ou une version ultérieure, car il utilise la fonctionnalité "{1}".</target>
         <note>ID: Errors.FeatureRequiresNewerVersionSingular</note>
       </trans-unit>
       <trans-unit id="Errors.MultipleHtmlFiles" approved="yes">
@@ -4208,18 +4208,18 @@
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
-        <target xml:lang="fr" state="final">Ce livre contient du texte dans une police nommée \"{0}\". Bloom ne peut pas utiliser une police avec ce format de fichier de police.</target>
+        <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
+        <target xml:lang="fr" state="final">Ce livre contient du texte dans une police nommée "{0}". Bloom ne peut pas utiliser une police avec ce format de fichier de police.</target>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
-        <target xml:lang="fr" state="final">Ce livre contient du texte dans une police appelée \"{0}\". La licence de \"{0}\" ne permet pas à Bloom d’intégrer cette police dans le livre.</target>
+        <source xml:lang="en">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</source>
+        <target xml:lang="fr" state="final">Ce livre contient du texte dans une police appelée "{0}". La licence de "{0}" ne permet pas à Bloom d’intégrer cette police dans le livre.</target>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
-        <target xml:lang="fr" state="final">Ce livre contient du texte dans une police nommée \"{0}\", mais Bloom n'a pas pu trouver cette police sur cet ordinateur.</target>
+        <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
+        <target xml:lang="fr" state="final">Ce livre contient du texte dans une police nommée "{0}", mais Bloom n'a pas pu trouver cette police sur cet ordinateur.</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true" approved="yes">
@@ -4233,8 +4233,8 @@
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
-        <target xml:lang="fr" state="final">Bloom va remplacer par \"{0}\"</target>
+        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
+        <target xml:lang="fr" state="final">Bloom va remplacer par "{0}"</target>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CoverColor" sil:dynamic="true" approved="yes">
@@ -6604,7 +6604,7 @@
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutError">
-        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>

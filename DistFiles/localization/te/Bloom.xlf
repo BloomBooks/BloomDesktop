@@ -1853,7 +1853,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
-        <target xml:lang="te" state="final">శైలి '{0}' మరియు భాష '{1}'. \ N ప్రస్తుత పరిమాణం {2} pt మోస్తున్న అన్ని బాక్సులను కోసం టెక్స్ట్ పరిమాణం మార్పులు.</target>
+        <target xml:lang="te" state="final">శైలి '{0}' మరియు భాష '{1}'.\nప్రస్తుత పరిమాణం {2} pt మోస్తున్న అన్ని బాక్సులను కోసం టెక్స్ట్ పరిమాణం మార్పులు.</target>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true" approved="yes">
@@ -4044,7 +4044,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.UnknownError" approved="yes">
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
-        <target xml:lang="te" state="final">విచారంగా వార్తలు. బ్లూమ్, ఇక్కడ చూపడానికి అడోబ్ రీడర్ పొందలేకపోతున్నాము ఉందికాబట్టి బ్లూమ్ మీ పూర్తి పుస్తకం చూపించదు. \ n'అడోబ్ రీడర్' మీ ఇప్పటికే ఉన్న వెర్షన్ను అన్ఇన్స్టాల్ మరియు 'అడోబ్ రీడర్' మళ్ళీ ఇన్స్టాల్ చెయ్యండి. \n మీరు స్థిర వచ్చేవరకు, మీరు ఇప్పటికీ PDF పుస్తకం సేవ్ మరియు కొన్ని ఇతర ప్రోగ్రామ్ లో ఓపెన్ చేయవచ్చు.</target>
+        <target xml:lang="te" state="final">విచారంగా వార్తలు. బ్లూమ్, ఇక్కడ చూపడానికి అడోబ్ రీడర్ పొందలేకపోతున్నాము ఉందికాబట్టి బ్లూమ్ మీ పూర్తి పుస్తకం చూపించదు. \n'అడోబ్ రీడర్' మీ ఇప్పటికే ఉన్న వెర్షన్ను అన్ఇన్స్టాల్ మరియు 'అడోబ్ రీడర్' మళ్ళీ ఇన్స్టాల్ చెయ్యండి. \n మీరు స్థిర వచ్చేవరకు, మీరు ఇప్పటికీ PDF పుస్తకం సేవ్ మరియు కొన్ని ఇతర ప్రోగ్రామ్ లో ఓపెన్ చేయవచ్చు.</target>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.Hint.Heading" sil:dynamic="true">
@@ -4175,18 +4175,18 @@
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
-        <target xml:lang="te" state="needs-translation">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</target>
+        <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
+        <target xml:lang="te" state="needs-translation">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</target>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
-        <target xml:lang="te" state="needs-translation">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</target>
+        <source xml:lang="en">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</source>
+        <target xml:lang="te" state="needs-translation">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</target>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
-        <target xml:lang="te" state="needs-translation">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</target>
+        <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
+        <target xml:lang="te" state="needs-translation">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true">
@@ -4200,8 +4200,8 @@
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
-        <target xml:lang="te" state="needs-translation">Bloom will substitute \"{0}\" instead."</target>
+        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
+        <target xml:lang="te" state="needs-translation">Bloom will substitute "{0}" instead."</target>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CoverColor" sil:dynamic="true">
@@ -4442,7 +4442,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
-        <target xml:lang="te" state="final">పుస్తకం లోపల పేజీల నుండి ఒక బుక్లెట్ తయారు. పేజీలు నిర్మించబడ్డాయి మరియు మీరు అది భాగాల్లో ఉన్నప్పుడు, మీరు ఒక బుక్లెట్ ఉంటుంది కాబట్టి స్పందించవచ్చు చేయబడుతుంది. \ n</target>
+        <target xml:lang="te" state="final">పుస్తకం లోపల పేజీల నుండి ఒక బుక్లెట్ తయారు. పేజీలు నిర్మించబడ్డాయి మరియు మీరు అది భాగాల్లో ఉన్నప్పుడు, మీరు ఒక బుక్లెట్ ఉంటుంది కాబట్టి స్పందించవచ్చు చేయబడుతుంది. \n</target>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.BookMetadata">
@@ -6575,7 +6575,7 @@
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutError">
-        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>
