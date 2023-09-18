@@ -178,7 +178,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     if (!containerDiv || containerDiv.classList.contains("hoverUp")) {
         return;
     }
-    let img = getImgFromContainer(this);
+    let img = getImgFromContainer(containerDiv);
     if (img.length === 0)
         // This case is probably a left over from some previous Bloom where
         // we were using background images instead of <img>? But it does
