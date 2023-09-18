@@ -94,6 +94,8 @@ namespace Bloom.Book
 		void ReloadFromDisk(string renamedTo, Action betweenReloadAndEvents);
 
 		string[] GetCssFilesToLink();
+
+		Tuple<string, string>[] GetCssFilesToCheckForBasePageCompatibility();
 	}
 
 	public class BookStorage : IBookStorage
@@ -2094,7 +2096,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// we update these so that the file continues to look the same when you just open it in firefox
+		/// Update CSS files that are part of the book on disk.
 		/// </summary>
 		public void UpdateSupportFiles()
 		{
@@ -2106,7 +2108,7 @@ namespace Bloom.Book
 			}
 			else
 			{
-				var supportFilesToAlwaysUpdate = new[] { "placeHolder.png", BookInfo.AppearanceSettings.BasePageCssName, "previewMode.css", "origami.css" };
+				var supportFilesToAlwaysUpdate = new[] { "placeHolder.png", "basePage", "basePage-legacy-5-5", "previewMode.css", "origami.css" };
 				foreach (var supportFile in supportFilesToAlwaysUpdate)
 				{
 					Update(supportFile);
@@ -2133,8 +2135,7 @@ namespace Bloom.Book
 				// we generate an empty placeholder.
 				var cssFilesToSkipInThisPhase = new ArrayList() {
 					// Files we just updated
-					this.BookInfo.AppearanceSettings.					// Files we just updated
-					BasePageCssName, "previewmode.css", "origami.css" };
+					 "basePage", "basePage-legacy-5-5", "previewmode.css", "origami.css" };
 				cssFilesToSkipInThisPhase.AddRange(BookStorage.CssFilesThatAreDynamicallyUpdated);
 
 				foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
@@ -2160,34 +2161,7 @@ namespace Bloom.Book
 				ErrorAllowsReporting = true;
 			}
 
-			CopyBrandingFiles();
-
-			AddTheRightBasePage();
-			
-		}
-
-		private void AddTheRightBasePage()
-		{
-			var brandingCssPath = FolderPath.CombineForPath("branding.css");
-			var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
-
-			var customBookStylesPath = FolderPath.CombineForPath("customBookStyles.css");
-			var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
-
-			// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
-			var customCollectionStylesPath = FolderPath.CombineForPath("../", "customCollectionStyles.css");
-			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
-
-			// TODO  regarding *.xmatter.css: we could figure this path out. Else the plan is to make sure that all the xmatters we are shipping
-			// are compatible with the new css system.
-
-			var cssFilesToCheck = new Tuple<string, string>[]
-			{
-			new Tuple<string, string>("customCollectionCss", customCollectionCss),
-			new Tuple<string, string>("customBookCss", customBookCss),
-			new Tuple<string, string>("brandingCss", brandingCss),
-			};
-			this.BookInfo.AppearanceSettings.ComputeCssThemeNameToUse(cssFilesToCheck);
+			CopyBrandingFiles();			
 		}
 
 		// Brandings come with logos and such... we want them in the book folder itself so that they work
@@ -2540,7 +2514,7 @@ namespace Bloom.Book
 		// such time as it's clear if it matters.
 		public string[] GetCssFilesToLink()
 		{
-			return new string[] { this.BookInfo.AppearanceSettings.BasePageCssName, "previewMode.css", "origami.css", "appearance.css", "branding.css" };
+			return new string[] { "basePage.css", "basePage-legacy-5-5.css", "previewMode.css", "origami.css", "appearance.css", "branding.css" };
 		}
 
 		// While in Bloom, we could have an edit style sheet or (someday) other modes. But when stored,
@@ -3036,14 +3010,38 @@ namespace Bloom.Book
 			"branding.css", "defaultLangStyles.css", "customCollectionStyles.css", "appearance.css", "customBookStyles.css"
 		};
 
+		// TODO: Review this... what's it for, is it correct?
 		public string[] getMinimalCssFilesFromInstallThatDoNotChangeAtRuntime()
 		{
 			return new string[]
 				{
-					this.BookInfo.AppearanceSettings.					BasePageCssName, /*"editMode.css",	"previewMode.css" REVIEW,*/ "origami.css"
+					 "basePage.css", "basePage-legacy-5-5.css", /*"editMode.css",	"previewMode.css" REVIEW,*/ "origami.css"
 				};
 		}
-	
+
+		public Tuple<string, string>[] GetCssFilesToCheckForBasePageCompatibility()
+		{
+
+			var brandingCssPath = FolderPath.CombineForPath("branding.css");
+			var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
+
+			var customBookStylesPath = FolderPath.CombineForPath("customBookStyles.css");
+			var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
+
+			// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
+			var customCollectionStylesPath = FolderPath.CombineForPath("../", "customCollectionStyles.css");
+			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
+
+			// TODO  regarding *.xmatter.css: we could figure this path out. Else the plan is to make sure that all the xmatters we are shipping
+			// are compatible with the new css system.
+
+			return new Tuple<string, string>[]
+			{
+			new Tuple<string, string>("customCollectionCss", customCollectionCss),
+			new Tuple<string, string>("customBookCss", customBookCss),
+			new Tuple<string, string>("brandingCss", brandingCss),
+			};
+		}
 
 		public readonly static string[] CssFilesThatAreObsolete =
 		{
@@ -3053,7 +3051,7 @@ namespace Bloom.Book
 		public readonly static string[] KnownCssFilePrefixesInOrder = 
 		{
 			// list in the order that you want their <link> to appear
-				"basePage", // we leave off ".css" so that this can match version ones, like "basePage-legacy-5-5.css"
+				"basePage", "basePage-legacy-5-5",
 				"baseEPUB.css",
 				"editMode.css",
 				"previewMode.css",

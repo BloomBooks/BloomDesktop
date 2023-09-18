@@ -1,3 +1,6 @@
+// use these rules only if data-legacy-layout is empty
+
+[data-basepageversion = "default"] {
 @import "basePage-sharedRules.less";
 @import "bubble.less";
 @import (reference) "../../BloomBrowserUI/bloomUI.less"; // importing by reference only brings in the constants
@@ -621,4 +624,5 @@ div[data-book*="branding"] {
     &:not(.bloom-templateMode) {
         overflow: hidden;
     }
+}
 }

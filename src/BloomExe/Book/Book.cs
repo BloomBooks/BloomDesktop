@@ -447,7 +447,10 @@ namespace Bloom.Book
 
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			pageDom.AddStyleSheet(this.BookInfo.AppearanceSettings.BasePageCssName);
+			// we add all possible basePage versions, then they activate themselves based on the value of body.data-basePageVersion
+			pageDom.AddStyleSheet("basePage.css");
+			pageDom.AddStyleSheet("basePage-legacy-5-5.css"); // todo all these things seem like they should come from BookStorage or some method of it?
+
 			pageDom.AddStyleSheet("editMode.css");
 			pageDom.AddStyleSheet("editPaneGlobal.css");
 			pageDom.AddStyleSheet("");
@@ -1405,6 +1408,10 @@ namespace Bloom.Book
 				// Make sure it's not.
 				HtmlDom.RemoveClassFromBody(RawDom, "template");
 			}
+
+			var cssFiles = this.Storage.GetCssFilesToCheckForBasePageCompatibility();
+			BookInfo.AppearanceSettings.ComputeThemeAndBasePageCssVersionToUse(cssFiles);
+			bookDOM.SetBasePageVersion(BookInfo.AppearanceSettings.GetBasePageCssVersionToUse_BaseOnPriorComputation()); 
 		}
 
 		private void AddLanguageAttributesToBody(HtmlDom bookDom)

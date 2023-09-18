@@ -2746,6 +2746,11 @@ namespace Bloom.Book
 			Body.SetAttribute("data-media", media);
 		}
 
+		public void SetBasePageVersion(string version)
+		{
+			Body.SetAttribute("data-basepageversion", version);
+		}
+
 		public void SetImageAltAttrsFromDescriptions(string descriptionLang)
 		{
 			SetImageAltAttrsFromDescriptions(RawDom.DocumentElement, descriptionLang);
