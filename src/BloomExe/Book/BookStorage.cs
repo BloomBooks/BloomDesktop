@@ -2161,6 +2161,33 @@ namespace Bloom.Book
 			}
 
 			CopyBrandingFiles();
+
+			AddTheRightBasePage();
+			
+		}
+
+		private void AddTheRightBasePage()
+		{
+			var brandingCssPath = FolderPath.CombineForPath("branding.css");
+			var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
+
+			var customBookStylesPath = FolderPath.CombineForPath("customBookStyles.css");
+			var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
+
+			// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
+			var customCollectionStylesPath = FolderPath.CombineForPath("../", "customCollectionStyles.css");
+			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
+
+			// TODO  regarding *.xmatter.css: we could figure this path out. Else the plan is to make sure that all the xmatters we are shipping
+			// are compatible with the new css system.
+
+			var cssFilesToCheck = new Tuple<string, string>[]
+			{
+			new Tuple<string, string>("customCollectionCss", customCollectionCss),
+			new Tuple<string, string>("customBookCss", customBookCss),
+			new Tuple<string, string>("brandingCss", brandingCss),
+			};
+			this.BookInfo.AppearanceSettings.ComputeCssThemeNameToUse(cssFilesToCheck);
 		}
 
 		// Brandings come with logos and such... we want them in the book folder itself so that they work

@@ -57,6 +57,46 @@ public class AppearanceSettings
 	internal string BasePageCssName => CssThemeName == "legacy-5-5" ? "basePage-legacy-5-5.css" : "basePage.css";
 
 
+	private string GetCssThemeNameToUse()
+	{
+		if(RequiresLegacy())
+		return CssThemeName;
+	}
+
+	private bool RequiresLegacy()
+	{
+		// Note that just because a book *used* to conform to an Appearance version (i.e. get "default" for cssThemeName),
+		// a change in Enterprise status or Xmatter could mean that it no longer does, and may need to go back to "legacy".
+
+		var brandingCssPath =  bookFolderPath.CombineForPath("branding.css");
+		var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
+
+		var customBookStylesPath = bookFolderPath.CombineForPath("customBookStyles.css");
+		var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
+
+		// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
+		var customCollectionStylesPath = bookFolderPath.CombineForPath("../", "customCollectionStyles.css");
+		var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
+
+		// RE *.xmatter.css: it's not easy to plumb that filename here, so the plan is to make sure that all the xmatters we are shipping
+		// are compatible with the new css system.
+
+		var safeTheme = AppearanceSettings.GetSafeThemeForBook(new Tuple<string, string>[]
+		{
+			new Tuple<string, string>("customCollectionCss", customCollectionCss),
+			new Tuple<string, string>("customBookCss", customBookCss),
+			new Tuple<string, string>("brandingCss", brandingCss),
+		});
+		if (safeTheme != "default")
+		{
+			// the "auto-" prefix allows us to distinguish this from a user-selected theme. Then we can ignore it if we now
+			// think that we don't need the legacy. Note that the timing here is painful... anything that creates a bookInfo
+			// is going to go down this path, even if some factory css hasn't been updated yet.
+			settings.CssThemeName = "auto-" + safeTheme;
+			Debug.WriteLine($"** Will use {safeTheme}");
+			SIL.Reporting.Logger.WriteEvent($"** Will use {safeTheme}");
+		}
+	}
 	/// <summary>
 	/// Each book gets an "appearance.css" that is a combination of the appearance-theme-default.css and the css from selected appearance theme.
 	/// We only write that file, we don't read it (the browser does, of course). This is the path to that file in the book folder.
@@ -94,35 +134,6 @@ public class AppearanceSettings
 			settings.UpdateFromJson(json);
 			Debug.WriteLine($"Found existing appearance json. CssThemeName is currently {settings.CssThemeName}");
 		}
-
-		// Note that just because a book *used* to conform to an Appearance version (i.e. get "default" for cssThemeName),
-		// a change in Enterprise status or Xmatter could mean that it no longer does, and may need to go back to "legacy".
-
-		var brandingCssPath = bookFolderPath.CombineForPath("branding.css");
-		var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
-
-		var customBookStylesPath = bookFolderPath.CombineForPath("customBookStyles.css");
-		var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
-
-		// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
-		var customCollectionStylesPath = bookFolderPath.CombineForPath("../", "customCollectionStyles.css");
-		var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
-
-		// RE *.xmatter.css: it's not easy to plumb that filename here, so the plan is to make sure that all the xmatters we are shipping
-		// are compatible with the new css system.
-
-		var safeTheme = AppearanceSettings.GetSafeThemeForBook(new Tuple<string, string>[]
-		{
-			new Tuple<string, string>("customCollectionCss", customCollectionCss),
-			new Tuple<string, string>("customBookCss", customBookCss),
-			new Tuple<string, string>("brandingCss", brandingCss),
-		});
-		if(safeTheme != "default")
-		{
-			settings.CssThemeName = safeTheme;
-			Debug.WriteLine($"** Will use {safeTheme}");
-			SIL.Reporting.Logger.WriteEvent($"** Will use {safeTheme}");
-		}	
 
 		return settings;
 	}
