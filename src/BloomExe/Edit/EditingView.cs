@@ -547,6 +547,12 @@ namespace Bloom.Edit
 		{
 			return await _browser1.GetStringFromJavascriptAsync(script);
 		}
+		internal async Task RunJavascriptAsync(string script)
+		{
+			await _browser1.RunJavascriptAsync(script);
+			return;
+		}
+
 
 		private Metadata _originalImageMetadataFromImageToolbox;
 		// When the copyright and license dialog is launched from the palaso image toolbox,
@@ -1195,9 +1201,23 @@ namespace Bloom.Edit
 			// BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
 			// tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
 			// been editing, so there was an null.
-			RunJavascriptWithStringResult_Sync_Dangerous("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined' && editTabBundle.getToolboxBundleExports().removeToolboxMarkup()");
-			var bodyHtml = RunJavascriptWithStringResult_Sync_Dangerous("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined' && editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage()");
-			var userCssContent = RunJavascriptWithStringResult_Sync_Dangerous("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined' && editTabBundle.getEditablePageBundleExports().userStylesheetContent()");
+			var script = @"
+if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined')
+	editTabBundle.getToolboxBundleExports().removeToolboxMarkup();
+if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined')
+	editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage() + '<SPLIT-DATA>' + editTabBundle.getEditablePageBundleExports().userStylesheetContent();";
+			var combinedData = RunJavascriptWithStringResult_Sync_Dangerous(script);
+			string bodyHtml = null;
+			string userCssContent = null;
+			if (combinedData != null)
+			{
+				var endHtml = combinedData.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
+				if (endHtml > 0)
+				{
+					bodyHtml = combinedData.Substring(0, endHtml);
+					userCssContent = combinedData.Substring(endHtml + "<SPLIT-DATA>".Length);
+				}
+			}
 			_browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
 		}
 
@@ -1469,7 +1489,7 @@ namespace Bloom.Edit
 			Application.Idle -= SaveWhenIdle; // don't need to do again till next Deactivate.
 			_model.SaveNow();
 			// Restore any tool state removed by CleanHtmlAndCopyToPageDom(), which is called by _model.SaveNow().
-			RunJavascriptWithStringResult_Sync_Dangerous("if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxBundleExports().applyToolboxStateToPage();}");
+			RunJavascriptAsync("if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxBundleExports().applyToolboxStateToPage();}");
 		}
 
 		public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
@@ -1503,14 +1523,14 @@ namespace Bloom.Edit
 		{
 			PageTemplatesApi.ForPageLayout = false;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.showPageChooserDialog(false);");
+			RunJavascriptAsync("editTabBundle.showPageChooserDialog(false);");
 		}
 
 		internal void ShowChangeLayoutDialog()
 		{
 			PageTemplatesApi.ForPageLayout = true;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.showPageChooserDialog(true);");
+			RunJavascriptAsync("editTabBundle.showPageChooserDialog(true);");
 		}
 
 		// The zoom factor that is shown in the top right of the toolbar (a percent).
@@ -1687,7 +1707,7 @@ namespace Bloom.Edit
 		private void _bookSettingsButton_Click(object sender, EventArgs e)
 		{
 			_model.SaveNow();
-			RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.showEditViewBookSettingsDialog();");
+			RunJavascriptAsync("editTabBundle.showEditViewBookSettingsDialog();");
 		}
 	}
 }
