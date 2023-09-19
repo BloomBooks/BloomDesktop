@@ -71,11 +71,13 @@ namespace Bloom.MiscUI
 		/// <param name="needsToRun"> If not null, the task will run from zero to many times,
 		/// until needsToRun returns false, before any subsequent tasks.</param>
 		/// <returns></returns>
-		public static IStartupAction AddStartupAction(Action task, bool shouldHideSplashScreen = false, bool lowPriority = false, Func<bool> needsToRun = null, string waitForMilestone=null)
+		public static IStartupAction AddStartupAction(Action task, bool shouldHideSplashScreen = false, bool lowPriority = false,
+			Func<bool> needsToRun = null, string waitForMilestone=null, int maxTickWaitForMilestone = 0)
 		{
 			var startupAction = new StartupAction()
 				{ Priority = lowPriority ? StartupActionPriority.low : StartupActionPriority.high,
-					ShouldHideSplashScreen = shouldHideSplashScreen, Task = task, NeedsToRun = needsToRun, WaitForMilestone = waitForMilestone};
+					ShouldHideSplashScreen = shouldHideSplashScreen, Task = task, NeedsToRun = needsToRun,
+					WaitForMilestone = waitForMilestone, TickWaitForMilestone = maxTickWaitForMilestone };
 			_startupActions.Add(startupAction);
 			EnableProcessing();
 			return startupAction;
@@ -151,6 +153,16 @@ namespace Bloom.MiscUI
 
 			if (_current.WaitForMilestone != null && !_milestones.Contains(_current.WaitForMilestone))
 			{
+				// If the caller has specified a possible delay, we'll wait that long before giving up
+				// on the milestone.
+				if (_current.TickWaitForMilestone > 0)
+				{
+					_current.TickWaitForMilestone--;
+					_current = null; // nothing in progress we need to wait for
+					return; // we'll try again on another idle event
+				}
+				// Otherwise (or in addition), we'll give up on the milestone after a fixed time relative
+				// to when the splash screen can be closed.
 				if (DateTime.Now < _earliestWeShouldCloseTheSplashScreen.Add(new TimeSpan(0, 0, 5)))
 				{
 					_current = null; // nothing in progress we need to wait for
@@ -160,7 +172,7 @@ namespace Bloom.MiscUI
 				{
 					Logger.WriteEvent("Failed to get to startup milestone " + _current.WaitForMilestone +
 						" after five seconds");
-					// And go ahead with the next task, so we're not stuck forever.
+					// And go ahead with the task, so we're not stuck forever.
 					// (Currently, waiting is just to help things happen in the optimum order for performance.)
 				}
 			}
@@ -327,6 +339,9 @@ namespace Bloom.MiscUI
 			public bool ShouldHideSplashScreen;
 			// If this is set, event handling should pause if the specified event has not occurred.
 			public string WaitForMilestone;
+			// If this is set, event handling should allow up to the specified number of ticks for
+			// the milestone to be reached.
+			public int TickWaitForMilestone;
 			private bool _enabled = true;
 		}
 	}
