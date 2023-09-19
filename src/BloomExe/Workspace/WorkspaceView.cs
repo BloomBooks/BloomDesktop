@@ -1112,18 +1112,20 @@ namespace Bloom.Workspace
 				StartupScreenManager.AddStartupAction(() =>
 				{
 					AppApi.OpenDialogs.AddOrUpdate("ForumInvitationDialog", 1, (key, val) => val + 1);
-					if (AppApi.OpenDialogs.TryGetValue("ForumInvitationDialog", out var count) && count > 1)
+					var desiredStartupCount = 49;   // delays around 0.01 to 0.02 seconds before showing the dialog
+					if (AppApi.OpenDialogs.TryGetValue("ForumInvitationDialog", out var count) && count != desiredStartupCount)
 						return;
 					Settings.Default.ForumInvitationLastShown = today;
 					Settings.Default.Save();
 					_webSocketServer.LaunchDialog("ForumInvitationDialog", new DynamicJson());
 				}, shouldHideSplashScreen: true, lowPriority: true, needsToRun: () =>
 				{
-					var shouldShow = AppApi.OpenDialogs.TryGetValue("ForumInvitationDialog", out var count);
-					// 5000 idle cycles should be more than enough?  We don't want this running throughout the session
-					// in case the websocket or return api calls fail somehow.
+					// The startup task is called repeatedly until this function returns false.
 					// A debug build on an older development machine recorded 4654 cycles in about a minute.
-					return shouldShow && count < 5000;
+					// We need enough cycles for Team Collection to be initialized and the collection tab rendered.
+					// See September 18-19 comments in https://issues.bloomlibrary.org/youtrack/issue/BL-12410.
+					var canShow = AppApi.OpenDialogs.TryGetValue("ForumInvitationDialog", out var count);
+					return canShow && count < 50;
 				});
 			}
 		}
