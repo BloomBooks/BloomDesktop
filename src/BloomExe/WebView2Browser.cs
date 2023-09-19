@@ -426,6 +426,7 @@ namespace Bloom
 
 		public override void SaveDocument(string path)
 		{
+			// I don't think this is ever actually called, but I'm not absolutely sure.
 			var html = RunJavaScript("document.documentElement.outerHTML");
 			RobustFile.WriteAllText(path, html, Encoding.UTF8);
 		}
@@ -496,7 +497,7 @@ namespace Bloom
 			{
 				// Note: this is only used for the Undo button in the toolbar;
 				// ctrl-z is handled in JavaScript directly.
-				RunJavaScript("editTabBundle.handleUndo()");
+				RunJavaScriptAsync("editTabBundle.handleUndo()");
 			};
 		}
 
@@ -533,9 +534,7 @@ namespace Bloom
 				_cutCommand.Enabled = isTextSelection;
 				_copyCommand.Enabled = isTextSelection;
 				_pasteCommand.Enabled = PortableClipboard.ContainsText();
-
-				_undoCommand.Enabled = CanUndo;
-
+				checkIfCanUndo();
 			}
 			catch (Exception)
 			{
@@ -547,25 +546,10 @@ namespace Bloom
 			}
 		}
 
-		bool currentlyRunningCanUndo = false;
-		private bool CanUndo
+		private async void checkIfCanUndo()
 		{
-			get
-			{
-				// once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
-				if (currentlyRunningCanUndo)
-					return true;
-				try
-				{
-					currentlyRunningCanUndo = true;
-					var result = RunJavaScript("editTabBundle?.canUndo?.()");
-					return result == "yes"; // currently only returns 'yes' or 'fail'
-				}
-				finally
-				{
-					currentlyRunningCanUndo = false;
-				}
-			}
+			var result = await RunJavaScriptAsync("editTabBundle?.canUndo?.()");
+			_undoCommand.Enabled = result == "yes"; // currently only returns 'yes' or 'fail'
 		}
 	}
 
