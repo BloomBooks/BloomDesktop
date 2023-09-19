@@ -1119,12 +1119,18 @@ namespace Bloom.Workspace
 					_webSocketServer.LaunchDialog("ForumInvitationDialog", new DynamicJson());
 				}, shouldHideSplashScreen: true, lowPriority: true, needsToRun: () =>
 				{
+					// The startup task is called repeatedly until this function returns false.
 					var shouldShow = AppApi.OpenDialogs.TryGetValue("ForumInvitationDialog", out var count);
-					// 5000 idle cycles should be more than enough?  We don't want this running throughout the session
-					// in case the websocket or return api calls fail somehow.
-					// A debug build on an older development machine recorded 4654 cycles in about a minute.
-					return shouldShow && count < 5000;
-				});
+					return shouldShow && count < 2;
+				},
+				// We need to wait for the "collectionButtonsDrawn" milestone to ensure that the collection
+				// tab has rendered sufficiently to hook up the socket event handler for the dialog.
+				// See September 18-19 comments in https://issues.bloomlibrary.org/youtrack/issue/BL-12410.
+				// But we need to allow a number of ticks for the milestone to show up.  A delay of 100
+				// ticks seems to work well.  A debug build on an older development machine recorded 4654
+				// ticks in about a minute.
+				waitForMilestone: "collectionButtonsDrawn",
+				tickDelayForMilestone: 100);
 			}
 		}
 
