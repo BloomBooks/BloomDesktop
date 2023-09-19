@@ -299,12 +299,12 @@ namespace Bloom
 				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Could not make thumbnail", "Ref bl-524", e);
 				return new Size(0, 0); // this tells the caller we failed
 			}
-
-			var height =
-				(int)Math.Round(double.Parse(
-					browser.RunJavascriptWithStringResult_Sync_Dangerous("document.getElementsByClassName('bloom-page')[0].clientHeight.toString()")));
-			var width = (int)Math.Round(
-				double.Parse(browser.RunJavascriptWithStringResult_Sync_Dangerous("document.getElementsByClassName('bloom-page')[0].clientWidth.toString()")));
+			var script = @"
+const page = document.getElementsByClassName('bloom-page')[0]; page.clientHeight.toString() + ' ' + page.clientWidth.toString();";
+			var result = browser.RunJavascriptWithStringResult_Sync_Dangerous(script);
+			var parts = result.Split(' ');
+			var height = (int)Math.Round(double.Parse(parts[0]));
+			var width = (int)Math.Round(double.Parse(parts[1]));
 
 			browser.Height = height;
 			browser.Width = width;
@@ -480,19 +480,15 @@ namespace Bloom
 				int bottomOfCoverImage = -1;
 				_syncControl.Invoke((Action)(() =>
 				{
-					// There's probably some way to get all of this in a single RunJavaScript call, but note that ?. is not supported
-					// in GeckoFx60, and I've had some trouble with scripts of more than a single expression in WebView2.
-					var imageCount =
-						int.Parse(browser.RunJavascriptWithStringResult_Sync_Dangerous(
-							"document.getElementsByClassName('bloom-imageContainer').length.toString()"));
-					if (imageCount != 0)
+					var script = @"
+const containers = document.getElementsByClassName('bloom-imageContainer');
+if (containers.length) containers[0].offsetTop.toString() + ' ' + containers[0].offsetHeight.toString();";
+					var result = browser.RunJavascriptWithStringResult_Sync_Dangerous(script);
+					if (!String.IsNullOrWhiteSpace(result))
 					{
-						topOfCoverImage = (int)Math.Round(double.Parse(
-							browser.RunJavascriptWithStringResult_Sync_Dangerous(
-								"document.getElementsByClassName('bloom-imageContainer')[0].offsetTop.toString()")));
-						bottomOfCoverImage = topOfCoverImage + (int)Math.Round(double.Parse(
-							browser.RunJavascriptWithStringResult_Sync_Dangerous(
-								"document.getElementsByClassName('bloom-imageContainer')[0].offsetHeight.toString()")));
+						var parts = result.Split(' ');
+						topOfCoverImage = (int)Math.Round(double.Parse(parts[0]));
+						bottomOfCoverImage = topOfCoverImage + (int)Math.Round(double.Parse(parts[1]));
 					}
 				}));
 
