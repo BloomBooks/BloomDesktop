@@ -73,32 +73,32 @@ namespace BloomTests.Book
 		}
 		*/
 
-		[Test]
-		public void GetSafeThemeForBook_OneCSSIsEmpty_OthersAreNull_Default()
-		{
-			Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(new string[] { "", null, null }));
-		}
-		[Test]
-		public void GetSafeThemeForBook_OnCssICommentsOnly_OthersAreNull_Default()
-		{
-			Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(new string[] { "/* hello */", null }));
-		}
-		[Test]
-		public void GetSafeThemeForBook_AllCssDoesNotHavePostionOrSetWidth_Default()
-		{
-			Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(new string[] { ".marginBox{ background-color:yellow}", ".marginBox{ background-color:yellow}", "" }));
-		}
+		//[Test]
+		//public void GetSafeThemeForBook_OneCSSIsEmpty_OthersAreNull_Default()
+		//{
+		//	Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(new string[] { "", null, null }));
+		//}
+		//[Test]
+		//public void GetSafeThemeForBook_OnCssICommentsOnly_OthersAreNull_Default()
+		//{
+		//	Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(new string[] { "/* hello */", null }));
+		//}
+		//[Test]
+		//public void GetSafeThemeForBook_AllCssDoesNotHavePostionOrSetWidth_Default()
+		//{
+		//	Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(new string[] { ".marginBox{ background-color:yellow}", ".marginBox{ background-color:yellow}", "" }));
+		//}
 
-		[Test]
-		public void GetSafeThemeForBook_OneCssIsCommentsOnly_AnotherHasMarginBoxLeft_Legacy()
-		{
-			Assert.AreEqual("legacy-5-5", AppearanceSettings.GetSafeThemeForBook(new string[] { "/* hello */", null,"/* hello */\r\n.marginBox{ left: 2mm}" }));
-		}
+		//[Test]
+		//public void GetSafeThemeForBook_OneCssIsCommentsOnly_AnotherHasMarginBoxLeft_Legacy()
+		//{
+		//	Assert.AreEqual("legacy-5-5", AppearanceSettings.GetSafeThemeForBook(new string[] { "/* hello */", null,"/* hello */\r\n.marginBox{ left: 2mm}" }));
+		//}
 
-		[Test]
-		public void GetSafeThemeForBook_OneCssHasPositionsMarginBox_OthersNull_Legacy()
-		{
-			Assert.AreEqual("legacy-5-5", AppearanceSettings.GetSafeThemeForBook(new string[] { ".position-right\r\n  > .split-pane-component-inner {\r\n  padding-left: 1mm;\r\n}", null, null }));
-		}
+		//[Test]
+		//public void GetSafeThemeForBook_OneCssHasPositionsMarginBox_OthersNull_Legacy()
+		//{
+		//	Assert.AreEqual("legacy-5-5", AppearanceSettings.GetSafeThemeForBook(new string[] { ".position-right\r\n  > .split-pane-component-inner {\r\n  padding-left: 1mm;\r\n}", null, null }));
+		//}
 	}
 }

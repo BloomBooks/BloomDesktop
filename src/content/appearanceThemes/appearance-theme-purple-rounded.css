@@ -1,15 +1,19 @@
 /* based onhttps://bloomlibrary.org/player/vPftT2H1eE */
 :root {
     --marginBox-border-radius: 25px;
-    --marginBox-border-color: rgb(77, 68, 68);
-    --marginBox-border-style: solid;
+    /*--marginBox-border-color: rgb(77, 68, 68);*/
+    --marginBox-border-style: none;
     --marginBox-border-width: 1.5mm;
     --pageNumber-bottom: unset;
-    --pageNumber-top: 30px; /* within the marginBox */
+    --pageNumber-top: 15px;
     --page-margin-top: 7mm;
     --page-margin-bottom: 7mm;
     --page-margin-right: 17mm;
     --page-margin-left: 7mm;
+
+
+    --page-background-color: purple; /* just for testing */
+    --marginBox-background-color: white; /* just for testing */
 }
 .Device16x9Portrait {
     --page-margin-top: 73mm;

@@ -1405,6 +1405,9 @@ namespace Bloom.Book
 				// Make sure it's not.
 				HtmlDom.RemoveClassFromBody(RawDom, "template");
 			}
+
+			var cssFiles = this.Storage.GetCssFilesToCheckForBasePageCompatibility();
+			BookInfo.AppearanceSettings.ComputeThemeAndBasePageCssVersionToUse(cssFiles);
 		}
 
 		private void AddLanguageAttributesToBody(HtmlDom bookDom)
