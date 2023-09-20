@@ -30,14 +30,11 @@ namespace Bloom.Api
 			// Not sure this needs UI thread, but it can result in saving the page, which seems
 			// safest to do that way.
 			apiHandler.RegisterEndpointHandler("book/settings", HandleBookSettings, true /* review */);
-			apiHandler.RegisterEndpointHandler("book/settings/available-theme-names", HandleGetAvailableAppearanceThemeNames, false);
+			apiHandler.RegisterEndpointHandler("book/settings/appearanceUIOptions", HandleGetAvailableAppearanceUIOptions, false);
 		}
-		private void HandleGetAvailableAppearanceThemeNames(ApiRequest request)
+		private void HandleGetAvailableAppearanceUIOptions(ApiRequest request)
 		{
-			var names = from path in ProjectContext.GetAppearanceThemeFileNames() select Path.GetFileName(path).Replace("appearance-theme-", "");
-			var x = from name in names.ToArray<string>() select new { label = name, value = name };
-			var json = JsonConvert.SerializeObject(x);
-			request.ReplyWithJson(json);
+			request.ReplyWithJson(_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.AppearanceUIOptions);
 		}
 		/// <summary>
 		/// Get a json of the book's settings.
@@ -53,7 +50,7 @@ namespace Bloom.Api
 						currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool,
 						//bloomPUB = new { imageSettings = new { maxWidth= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth, maxHeight= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxHeight} }
 						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings,
-						appearance = _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.PropertiesForUI // todo _properties exposure
+						appearance = _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.ChangeableSettingsForUI // todo _properties exposure
 					};
 					var jsonData = JsonConvert.SerializeObject(settings);
 

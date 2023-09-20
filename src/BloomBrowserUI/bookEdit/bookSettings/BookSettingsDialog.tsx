@@ -41,12 +41,16 @@ import {
     useApiStringState
 } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
-import { WarningBox } from "../../react_components/boxes";
+import { NoteBox, WarningBox } from "../../react_components/boxes";
 
 let isOpenAlready = false;
 
 type IPageStyle = { label: string; value: string };
 type IPageStyles = Array<IPageStyle>;
+type IAppearanceUIOptions = {
+    firstPossiblyLegacyCss?: string;
+    themeNames: IPageStyles;
+};
 
 export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const {
@@ -58,10 +62,11 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         dialogFrameProvidedExternally: false
     });
 
-    const themeNames: IPageStyles = useApiObject<IPageStyles>(
-        "book/settings/available-theme-names",
-        []
-    );
+    const appearanceUIOptions: IAppearanceUIOptions = useApiObject<
+        IAppearanceUIOptions
+    >("book/settings/appearanceUIOptions", {
+        themeNames: []
+    });
 
     const [settingsString, setSettingsString] = useApiStringState(
         "book/settings",
@@ -77,11 +82,8 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         ""
     );
 
-    // needs to match any AppearanceSettings properties that we need to access directly (as opposed to via config-r)
-    type IAppearance = {
-        firstPossiblyLegacyCss?: string;
-    };
-    const [appearance, setAppearance] = React.useState<IAppearance>({});
+    const [appearanceDisabled, setAppearanceDisabled] = React.useState(false);
+
     React.useEffect(() => {
         if (settingsString === "{}") {
             return; // leave settings as undefined
@@ -95,15 +97,20 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
 
     React.useEffect(() => {
         if (settings && (settings as any).appearance) {
-            setAppearance((settings as any).appearance);
+            const liveSettings = settingsToReturnLater || settings;
+            setAppearanceDisabled(
+                !!appearanceUIOptions?.firstPossiblyLegacyCss ||
+                    (liveSettings as any)?.appearance?.cssThemeName ===
+                        "legacy-5-5"
+            );
         }
-    }, [settings]);
+    }, [settings, settingsToReturnLater]);
 
     return (
         <BloomDialog
             css={css`
                 // TODO: we would like a background color, but setting it here makes the dialog's backdrop turn that color!
-                // conceivably we could wrap the current childen in a div that just provides the background color.
+                // conceivably we could wrap the current children in a div that just provides the background color.
                 //background-color: #fbf8ff;
             `}
             // cssForDialogContents={css`
@@ -159,6 +166,39 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                         }}
                     >
                         <ConfigrGroup label="Appearance" level={1}>
+                            {appearanceUIOptions?.firstPossiblyLegacyCss && (
+                                <WarningBox>
+                                    {`"${appearanceUIOptions?.firstPossiblyLegacyCss}" might not be compatible Appearance settings, so this book is in "legacy" mode. See (TODO) for more information.`}
+                                </WarningBox>
+                            )}
+                            <ConfigrSubgroup
+                                label="Page Theme"
+                                path={`appearance`}
+                            >
+                                <ConfigrSelect
+                                    label="Theme"
+                                    disabled={
+                                        !!appearanceUIOptions?.firstPossiblyLegacyCss
+                                    }
+                                    path={`appearance.cssThemeName`}
+                                    options={appearanceUIOptions.themeNames.map(
+                                        x => {
+                                            return {
+                                                label: x.label,
+                                                value: x.value
+                                            };
+                                        }
+                                    )}
+                                    description="Choose a theme to easily change margins, borders, an other page settings."
+                                />
+                            </ConfigrSubgroup>
+                            {!appearanceUIOptions?.firstPossiblyLegacyCss &&
+                                (settingsToReturnLater as any)?.appearance
+                                    ?.cssThemeName === "legacy-5-5" && (
+                                    <NoteBox>
+                                        {`The "Legacy" theme does not support Appearance settings.`}
+                                    </NoteBox>
+                                )}
                             <ConfigrSubgroup
                                 label="Cover Background  (Not implemented yet)"
                                 path={`appearance`}
@@ -176,48 +216,27 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 path={`appearance`}
                             >
                                 <ConfigrBoolean
+                                    disabled={appearanceDisabled}
                                     path={`appearance.coverShowTitleL2`}
                                     label="Show Written Language 2 Title"
                                 />
                                 <ConfigrBoolean
+                                    disabled={appearanceDisabled}
                                     path={`appearance.coverShowTitleL3`}
                                     label="Show Written Language 3 Title"
                                 />
                                 <ConfigrBoolean
+                                    disabled={appearanceDisabled}
                                     path={`appearance.coverShowLanguageName`}
                                     label="Show Language Name"
                                 />
                                 <ConfigrBoolean
+                                    disabled={appearanceDisabled}
                                     path={`appearance.coverShowTopic`}
                                     label="Show Topic"
                                 />
                             </ConfigrSubgroup>
-                            <ConfigrSubgroup
-                                label="Page Theme"
-                                path={`appearance`}
-                            >
-                                {appearance?.firstPossiblyLegacyCss && (
-                                    <ConfigrCustomRow>
-                                        <WarningBox>
-                                            {`"${appearance?.firstPossiblyLegacyCss}" might not be compatible with the "Page Theme" feature, so this book is in "legacy" mode. See (TODO) for more information.`}
-                                        </WarningBox>
-                                    </ConfigrCustomRow>
-                                )}
-                                <ConfigrSelect
-                                    label="Theme"
-                                    disabled={
-                                        !!appearance?.firstPossiblyLegacyCss
-                                    }
-                                    path={`appearance.cssThemeName`}
-                                    options={themeNames.map(x => {
-                                        return {
-                                            label: x.label,
-                                            value: x.value
-                                        };
-                                    })}
-                                    description="Choose a theme to easily change margins, borders, an other page settings."
-                                />
-                            </ConfigrSubgroup>
+
                             <ConfigrSubgroup
                                 label="Front & Back Matter (Not implemented yet)"
                                 path={`appearance`}
