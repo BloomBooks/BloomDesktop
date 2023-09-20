@@ -3,6 +3,7 @@ using Bloom;
 using Bloom.MiscUI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Sentry;
 using SIL.Extensions;
 using SIL.IO;
 using System;
@@ -299,6 +300,7 @@ public class AppearanceSettings
 			  ContractResolver = new PropertiesContractResolver()
 			*/
 		};
+
 		var s = JsonConvert.SerializeObject(_properties,settings);
 
 		RobustFile.WriteAllText(AppearanceJsonPath(folder), s);
@@ -316,7 +318,7 @@ public class AppearanceSettings
 		// do not override the default value that we already have loaded.
 		foreach (var property in (IDictionary<string, object>)x)
 		{
-			((IDictionary<string, object>)_properties)[property.Key] = property.Value;
+			Properties[property.Key] = property.Value;
 		}
 	}
 	internal void UpdateFromDynamic(Newtonsoft.Json.Linq.JObject replacement)
@@ -336,18 +338,24 @@ public class AppearanceSettings
 		}
 	}
 
-	public object PropertiesForUI
+	// things that aren't settings but are used by the BookSettings UI
+	public string AppearanceUIOptions
 	{
 		get
 		{
+			var names = from path in ProjectContext.GetAppearanceThemeFileNames() select Path.GetFileName(path).Replace("appearance-theme-", "");
 			var x = new ExpandoObject() as IDictionary<string, object>;
-			foreach (var property in _properties)
-			{
-				x[property.Key] = property.Value;
-			}
-			// add in things that aren't settings but are used by the BookSettings UI
+
+			x["themeNames"] = from name in names.ToArray<string>() select new { label = name, value = name };
 			x["firstPossiblyLegacyCss"] = _firstPossiblyLegacyCss;
-			return x;
+			return JsonConvert.SerializeObject(x); }
+	}
+
+	public object ChangeableSettingsForUI
+	{
+		get
+		{
+			return _properties;
 		}
 	}
 }

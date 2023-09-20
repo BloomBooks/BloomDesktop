@@ -30,6 +30,8 @@ using BloomTests.web.controllers;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
+using Bloom.ToPalaso;
+using SIL.Code;
 
 namespace Bloom
 {
@@ -452,8 +454,15 @@ namespace Bloom
 		}
 		public static IEnumerable<string> GetAppearanceThemeFileNames()
 		{
-			return from f in Directory.EnumerateFiles(GetFolderContainingAppearanceThemeFiles(),
-					"*.css") select Path.GetFileNameWithoutExtension(f);
+			string[] themes = { };
+			RetryUtility.Retry(() =>
+			{
+				var x = from f in Directory.EnumerateFiles(GetFolderContainingAppearanceThemeFiles(),
+					"*.css")
+						select Path.GetFileNameWithoutExtension(f);
+				themes = x.ToArray();
+			});
+			return themes;
 		}
 
 		/// <summary>
