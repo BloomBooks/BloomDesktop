@@ -1,5 +1,5 @@
 import { css } from "@emotion/react";
-import { Slider, Typography } from "@mui/material";
+import { ListItem, Slider, Typography } from "@mui/material";
 import {
     ConfigrPane,
     ConfigrGroup,
@@ -41,6 +41,7 @@ import {
     useApiStringState
 } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
+import { WarningBox } from "../../react_components/boxes";
 
 let isOpenAlready = false;
 
@@ -76,6 +77,11 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         ""
     );
 
+    // needs to match any AppearanceSettings properties that we need to access directly (as opposed to via config-r)
+    type IAppearance = {
+        firstPossiblyLegacyCss?: string;
+    };
+    const [appearance, setAppearance] = React.useState<IAppearance>({});
     React.useEffect(() => {
         if (settingsString === "{}") {
             return; // leave settings as undefined
@@ -86,6 +92,12 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
             setSettings(settingsString);
         }
     }, [settingsString]);
+
+    React.useEffect(() => {
+        if (settings && (settings as any).appearance) {
+            setAppearance((settings as any).appearance);
+        }
+    }, [settings]);
 
     return (
         <BloomDialog
@@ -184,8 +196,18 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 label="Page Theme"
                                 path={`appearance`}
                             >
+                                {appearance?.firstPossiblyLegacyCss && (
+                                    <ConfigrCustomRow>
+                                        <WarningBox>
+                                            {`"${appearance?.firstPossiblyLegacyCss}" might not be compatible with the "Page Theme" feature, so this book is in "legacy" mode. See (TODO) for more information.`}
+                                        </WarningBox>
+                                    </ConfigrCustomRow>
+                                )}
                                 <ConfigrSelect
                                     label="Theme"
+                                    disabled={
+                                        !!appearance?.firstPossiblyLegacyCss
+                                    }
                                     path={`appearance.cssThemeName`}
                                     options={themeNames.map(x => {
                                         return {
@@ -336,5 +358,19 @@ const ColorPickerForConfigr: React.FunctionComponent<{
                 if (dialogResult === DialogResult.OK) props.onChange(newColor);
             }}
         />
+    );
+};
+
+// TODO: move this to config-r
+const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<{}>> = props => {
+    return (
+        <ListItem
+            css={css`
+                flex-direction: column;
+                align-items: flex-start;
+            `}
+        >
+            {props.children}
+        </ListItem>
     );
 };

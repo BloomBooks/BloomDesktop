@@ -53,7 +53,7 @@ namespace Bloom.Api
 						currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool,
 						//bloomPUB = new { imageSettings = new { maxWidth= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth, maxHeight= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxHeight} }
 						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings,
-						appearance = _bookSelection.CurrentSelection.BookInfo.AppearanceSettings._properties // todo _properties exposure
+						appearance = _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.PropertiesForUI // todo _properties exposure
 					};
 					var jsonData = JsonConvert.SerializeObject(settings);
 

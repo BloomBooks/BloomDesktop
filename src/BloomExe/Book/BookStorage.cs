@@ -94,6 +94,8 @@ namespace Bloom.Book
 		void ReloadFromDisk(string renamedTo, Action betweenReloadAndEvents);
 
 		string[] GetCssFilesToLink();
+
+		Tuple<string, string>[] GetCssFilesToCheckForBasePageCompatibility();
 	}
 
 	public class BookStorage : IBookStorage
@@ -3013,10 +3015,35 @@ namespace Bloom.Book
 		{
 			return new string[]
 				{
-					this.BookInfo.AppearanceSettings.					BasePageCssName, /*"editMode.css",	"previewMode.css" REVIEW,*/ "origami.css"
+					this.BookInfo.AppearanceSettings.BasePageCssName, /*"editMode.css",	"previewMode.css" REVIEW,*/ "origami.css"
 				};
 		}
-	
+
+
+		public Tuple<string, string>[] GetCssFilesToCheckForBasePageCompatibility()
+		{
+
+			var brandingCssPath = FolderPath.CombineForPath("branding.css");
+			var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
+
+			var customBookStylesPath = FolderPath.CombineForPath("customBookStyles.css");
+			var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
+
+			// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
+			var customCollectionStylesPath = FolderPath.CombineForPath("../", "customCollectionStyles.css");
+			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
+
+			// TODO  regarding *.xmatter.css: we could figure this path out. Else the plan is to make sure that all the xmatters we are shipping
+			// are compatible with the new css system.
+
+			return new Tuple<string, string>[]
+			{
+				// note, the first item here is actually for user consumption in error messages.
+			new Tuple<string, string>("customCollectionStyles.css", customCollectionCss),
+			new Tuple<string, string>("customBookStyles.css", customBookCss),
+			new Tuple<string, string>("branding.css", brandingCss),
+			};
+		}
 
 		public readonly static string[] CssFilesThatAreObsolete =
 		{
@@ -3040,4 +3067,5 @@ namespace Bloom.Book
 			};
 		
 	}
+
 }

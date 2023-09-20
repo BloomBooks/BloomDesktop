@@ -2,6 +2,7 @@
 using Bloom;
 using Bloom.MiscUI;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using SIL.Extensions;
 using SIL.IO;
 using System;
@@ -37,6 +38,8 @@ public class AppearanceSettings
 
 	public dynamic TestOnlyPropertiesAccess { get { return _properties; } }
 
+	internal string _firstPossiblyLegacyCss;
+
 	// create an array of properties and fill it in
 	private PropertyDef[] propertyDefinitions = new PropertyDef[]
 	{
@@ -47,15 +50,85 @@ public class AppearanceSettings
 		new CssDisplayVariableDef("coverShowTopic",true, "coverFields"),
 		new CssDisplayVariableDef("coverShowLanguageName",false, "coverFields"),
 	};
-	private string CssThemeName { get { return _properties.cssThemeName; } set { _properties.cssThemeName = value; } }
+
+	/// <summary>
+	/// Note, we might not actually use this theme at runtime. If the book has css that is incompatible with the new system, we will use legacy-5-5 instead.
+	/// </summary>
+	private string CssThemeNameSelectedByUser { get { return _properties.cssThemeName; } set { _properties.cssThemeName = value; } }
+
+	public string BasePageCssName => CssThemeWeWillActuallyUse == "legacy-5-5" ? "basePage-legacy-5-5.css" : "basePage.css";
+
+	public string CssThemeWeWillActuallyUse;
+
+
+	public string GetThemeToUse_BasedOnPriorComputation()
+	{
+		// there are many themes; currently only one of them triggers the special basePage-legacy-5-5.css
+		return CssThemeWeWillActuallyUse == "legacy-5-5" ? "legacy-5-5" : "default";
+	}
 
 	/// <summary>
 	/// In version 5.6, we greatly simplified and modernize our basePage css. However, existing books that had custom css could rely on the old approach,
 	/// specifically for using margins (and possible other things like page nubmer size/location). Therefore we provide a CSS theme that
-	/// effectively just gives you the basePage.css that came with 5.5.
+	/// effectively just gives you the basePage.css that came with 5.5, now named "basePage-legacy-5-5.css"
 	/// </summary>
-	internal string BasePageCssName => CssThemeName == "legacy-5-5" ? "basePage-legacy-5-5.css" : "basePage.css";
+	///
 
+
+	// TODO: we need to also switch to the legacy theme if we are going to use the legacy basepage... they go together
+	public void ComputeThemeAndBasePageCssVersionToUse(Tuple<string, string>[] cssFilesToCheck)
+	{
+		// Note that just because a book *used* to conform to an Appearance version (i.e. get "default" for cssThemeName),
+		// a change in Enterprise status or Xmatter could mean that it no longer does, and may need to go back to "legacy".
+		this.CssThemeWeWillActuallyUse = CssThemeNameSelectedByUser;
+
+		// here we're kinda conflating the legacy theme name with the legacy basePage css version, because both are called "legacy-5-5"
+		if (CssThemeNameSelectedByUser.StartsWith("legacy"))
+		{
+			Debug.WriteLine($"{CssThemeNameSelectedByUser} theme is explicitly set by user, so we'll use that for basePage");
+			return;
+		}
+
+		// otherwise, we have to slog through all the css files that might be incompatible with the new system.
+		cssFilesToCheck.Where(css => !string.IsNullOrWhiteSpace(css.Item2)).AsParallel().FirstOrDefault(css =>
+		{
+			if (MayBeIncompatible(css))
+			{
+				_firstPossiblyLegacyCss = css.Item1;
+				CssThemeWeWillActuallyUse = "legacy-5-5";
+				SIL.Reporting.Logger.WriteEvent($"** Will use {CssThemeWeWillActuallyUse} BasePage and Theme");
+				return true;
+			}
+			return false;
+		});
+
+		Debug.WriteLine($"** Will use {CssThemeWeWillActuallyUse}");
+	}
+
+	private static bool MayBeIncompatible(Tuple<string /* label */, string /* css */> labelAndCss)
+	{
+		// note: "AppearanceVersion" uses the version number of Bloom, but isn't intended to increment with each new release of Bloom.
+		// E.g., we do not expect to break CSS files very often. So initially we will have the a.v. = 5.6, and maybe the next one
+		// will be 6.2.  Note that there is current some discussion of jumping from 5.5 to 6.0 to make it easier to remember which
+		// Bloom version changed to the new css system.
+		var v = Regex.Match(labelAndCss.Item2, @"compatibleWithAppearanceVersion:\s*(\d+(\.\d+)?)")?.Groups[1]?.Value ?? "0";
+
+		if (double.TryParse(v, out var appearanceVersion) && appearanceVersion >= 5.6)
+			return false; // this is a 5.6+ theme, so it's fine
+
+		// See if the css contains rules that nowadays should be using css variables, and would likely interfere with 5.6 and up
+		// Note that this is pessimistic, e.g. it doesn't look to see if the rule is on the .marginBox.
+		const string kProbablyWillInterfere = "padding-|left:|top:|right:|bottom:|margin-|width:";
+		if (Regex.IsMatch(labelAndCss.Item2, kProbablyWillInterfere, RegexOptions.IgnoreCase))
+		{
+			var s = $"** {labelAndCss.Item1} matched regex for a css rule that is potentially incompatible with this version of the default Bloom Css system.";
+			Debug.WriteLine(s);
+			SIL.Reporting.Logger.WriteEvent(s);
+			return true;
+		}
+		else return false;
+
+	}
 
 	/// <summary>
 	/// Each book gets an "appearance.css" that is a combination of the appearance-theme-default.css and the css from selected appearance theme.
@@ -92,37 +165,8 @@ public class AppearanceSettings
 		{
 			var json = RobustFile.ReadAllText(jsonPath);
 			settings.UpdateFromJson(json);
-			Debug.WriteLine($"Found existing appearance json. CssThemeName is currently {settings.CssThemeName}");
+			Debug.WriteLine($"Found existing appearance json. CssThemeName is currently {settings.CssThemeNameSelectedByUser}");
 		}
-
-		// Note that just because a book *used* to conform to an Appearance version (i.e. get "default" for cssThemeName),
-		// a change in Enterprise status or Xmatter could mean that it no longer does, and may need to go back to "legacy".
-
-		var brandingCssPath = bookFolderPath.CombineForPath("branding.css");
-		var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
-
-		var customBookStylesPath = bookFolderPath.CombineForPath("customBookStyles.css");
-		var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
-
-		// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
-		var customCollectionStylesPath = bookFolderPath.CombineForPath("../", "customCollectionStyles.css");
-		var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
-
-		// RE *.xmatter.css: it's not easy to plumb that filename here, so the plan is to make sure that all the xmatters we are shipping
-		// are compatible with the new css system.
-
-		var safeTheme = AppearanceSettings.GetSafeThemeForBook(new Tuple<string, string>[]
-		{
-			new Tuple<string, string>("customCollectionCss", customCollectionCss),
-			new Tuple<string, string>("customBookCss", customBookCss),
-			new Tuple<string, string>("brandingCss", brandingCss),
-		});
-		if(safeTheme != "default")
-		{
-			settings.CssThemeName = safeTheme;
-			Debug.WriteLine($"** Will use {safeTheme}");
-			SIL.Reporting.Logger.WriteEvent($"** Will use {safeTheme}");
-		}	
 
 		return settings;
 	}
@@ -187,11 +231,8 @@ public class AppearanceSettings
 		}
 
 		// just something to enable us easily visually point out that we are in legacy mode
-		if (((string)_properties.cssThemeName).StartsWith("legacy"))
-		{
-			// I don't think this is worth localizing at the moment. We might not keep it at all.
-			cssBuilder.AppendLine($"--cssThemeMessage: \"⚠️Using legacy theme\";");
-		}
+		// I don't think this is worth localizing at the moment. We might not keep it at all.
+		cssBuilder.AppendLine($"--cssThemeMessage: \"Theme '{_properties.cssThemeName}'\";");
 
 		cssBuilder.AppendLine("}");
 		return cssBuilder.ToString();
@@ -217,31 +258,50 @@ public class AppearanceSettings
 		cssBuilder.AppendLine("/* From this book's appearance settings */");
 		cssBuilder.AppendLine(GetCssRootDeclaration(null));
 
+		if (CssThemeWeWillActuallyUse == null)
+		{
+			Debug.WriteLine("** TODO Appearance.WriteToFolder() called before Appearance.ComputeThemeAndBasePageCssVersionToUse()");
+		}
+		// TODO: ideally, this is set before we get here. This is so hard!
+		var theme = CssThemeWeWillActuallyUse == null ? "default" : CssThemeWeWillActuallyUse;
 
+		if (!theme.StartsWith("legacy"))
+		{
+			// Add in the var declarations of the default, so that the display doesn't collapse just because a theme is missing
+			// some var that basepage.css relies on.
 
-		// Add in the var declarations of the default, so that the display doesn't collapse just because a theme is missing
-		// some var that basepage.css relies on.
-
-		var defaultThemeSourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearanceThemeFiles(), "appearance-theme-default.css");
-		cssBuilder.AppendLine("/* From appearance-theme-default.css */");
-		cssBuilder.AppendLine(RobustFile.ReadAllText(defaultThemeSourcePath, Encoding.UTF8));
+			var defaultThemeSourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearanceThemeFiles(), "appearance-theme-default.css");
+			cssBuilder.AppendLine("/* From appearance-theme-default.css */");
+			cssBuilder.AppendLine(RobustFile.ReadAllText(defaultThemeSourcePath, Encoding.UTF8));
+		}
 
 		// Now add the user's chosen theme if it isn't the default, which we already added above.
-		if (!string.IsNullOrEmpty(CssThemeName) && CssThemeName != "default")
+		if (!string.IsNullOrEmpty(theme) && theme != "default")
 		{
-			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearanceThemeFiles(), $"appearance-theme-{CssThemeName}.css");
+			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearanceThemeFiles(), $"appearance-theme-{theme}.css");
 			if (!RobustFile.Exists(sourcePath))
 			{
 				// TODO: We should toast I suppose?
 			}
 			else
 			{
-				cssBuilder.AppendLine($"/* From the current appearance theme, '{CssThemeName}' */");
+				cssBuilder.AppendLine($"/* From the current appearance theme, '{theme}' */");
 				cssBuilder.AppendLine(RobustFile.ReadAllText(sourcePath, Encoding.UTF8));
 			}
 		}
+
 		RobustFile.WriteAllText(targetPath, cssBuilder.ToString());
-		RobustFile.WriteAllText(AppearanceJsonPath(folder), JsonConvert.SerializeObject(_properties, Formatting.Indented));
+		var settings = new JsonSerializerSettings
+		{
+			NullValueHandling = NullValueHandling.Ignore,
+			Formatting = Formatting.Indented,
+			/* doesn't work: CreateProperty() is never called
+			  ContractResolver = new PropertiesContractResolver()
+			*/
+		};
+		var s = JsonConvert.SerializeObject(_properties,settings);
+
+		RobustFile.WriteAllText(AppearanceJsonPath(folder), s);
 	}
 
 	/// <summary>
@@ -265,38 +325,30 @@ public class AppearanceSettings
 		{
 			((IDictionary<string, object>)_properties)[property.Key] = property.Value;
 		}
+
+		// If we are forced to be in legacy mode, then we can ignore any change to the
+		// theme that the UI may have let through (currently it doesn't let you change it).
+		// But if we are not in legacy mode, then go ahead and change the theme to match
+		// whatever the UI asked for, no need to check all the css files again.
+		if (string.IsNullOrEmpty(_firstPossiblyLegacyCss))
+		{
+			this.CssThemeWeWillActuallyUse = this.CssThemeNameSelectedByUser;
+		}
 	}
 
-	internal static string GetSafeThemeForBook(Tuple<string,string>[] cssFiles)
+	public object PropertiesForUI
 	{
-		const string kLegacy = "legacy-5-5";
-		if (cssFiles.Where(css=>css.Item2 !=null).Any(css =>
+		get
 		{
-			// note: "AppearanceVersion" uses the version number of Bloom, but isn't intended to increment with each new release of Bloom.
-			// E.g., we do not expect to break CSS files very often. So initially we will have the a.v. = 5.6, and maybe the next one
-			// will be 6.2.  Note that there is current some discussion of jumping from 5.5 to 6.0 to make it easier to remember which
-			// Bloom version changed to the new css system.
-			var v = Regex.Match(css.Item2, @"compatibleWithAppearanceVersion:\s*(\d+(\.\d+)?)")?.Groups[1]?.Value ?? "0";
-
-			if (double.TryParse(v, out var appearanceVersion) && appearanceVersion >= 5.6)
-				return false; // this is a 5.6+ theme, so it's fine
-
-			// See if the css contains rules that nowadays should be using css variables, and would likely interfere with 5.6 and up
-			// Note that this is pessimistic, e.g. it doesn't look to see if the rule is on the .marginBox.
-			const string kProbablyWillInterfere = "padding-|left:|top:|right:|bottom:|margin-|width:";
-			if (Regex.IsMatch(css.Item2, kProbablyWillInterfere, RegexOptions.IgnoreCase))
+			var x = new ExpandoObject() as IDictionary<string, object>;
+			foreach (var property in _properties)
 			{
-				var s = $"** {css.Item1} matched regex for a css rule that is potentially incompatible with this version of the default Bloom Css system.";
-				Debug.WriteLine(s);
-				SIL.Reporting.Logger.WriteEvent(s);
-				return true;
+				x[property.Key] = property.Value;
 			}
-			else return false;
-		}))
-		{
-			return kLegacy;
+			// add in things that aren't settings but are used by the BookSettings UI
+			x["firstPossiblyLegacyCss"] = _firstPossiblyLegacyCss;
+			return x;
 		}
-		return "default";
 	}
 }
 
