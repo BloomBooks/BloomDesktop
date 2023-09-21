@@ -285,6 +285,7 @@ namespace Bloom.web.controllers
 				DialogBeingEdited.PendingDefaultBookshelf = "";
 		}
 
+		// Used by BooksOnBlorgProgressBar.
 		private void HandleWebGoalRequest(ApiRequest request)
 		{
 			if (request.HttpMethod == HttpMethods.Post)
@@ -294,6 +295,7 @@ namespace Bloom.web.controllers
 			request.ReplyWithText(goal.ToString());
 		}
 
+		// Used by BooksOnBlorgProgressBar.
 		private void HandleLanguageDataRequest(ApiRequest request)
 		{
 			if (request.HttpMethod == HttpMethods.Post)
@@ -301,6 +303,12 @@ namespace Bloom.web.controllers
 
 			var languageName = _collectionSettings.GetLanguageName(_collectionSettings.Language1Tag, _collectionSettings.Language1Tag);
 			var langTag = _collectionSettings.Language1Tag;
+			// But if we have a Sign Language in the collection, use that for the Progress Bar.
+			if (!string.IsNullOrEmpty(_collectionSettings.SignLanguageTag))
+			{
+				langTag = _collectionSettings.SignLanguageTag;
+				languageName = _collectionSettings.GetLanguageName(_collectionSettings.SignLanguageTag, _collectionSettings.Language1Tag);
+			}
 			var jsonString = $"{{\"languageName\":\"{languageName}\",\"languageCode\":\"{langTag}\"}}";
 			request.ReplyWithJson(jsonString);
 		}
