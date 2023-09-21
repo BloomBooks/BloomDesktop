@@ -1,13 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.web;
+using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
+using Newtonsoft.Json.Linq;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
@@ -431,6 +438,45 @@ namespace Bloom.Collection
 				return;
 			_bookInfos = null; // Possibly obsolete; next request will update it.
 			DebounceFolderChanged(fileSystemEventArgs.FullPath);
+		}
+
+		public void UpdateBloomLibraryStatusOfBooks(List<BookInfo> bookInfos, bool skipBadgeUpdate = false)
+		{
+			if (bookInfos == null || bookInfos.Count == 0)
+				return;
+			// This queries Parse for the status of each book in bookInfos, adds (or clears)
+			// the status to each BookInfo, and signals the UI to update the thumbnail badge
+			// (unless told not to).
+			var parseClient = new BloomParseClient();
+			var bloomLibraryStatusesById = parseClient.GetLibraryStatusForBooks(bookInfos);
+			// Now to store the data into the BookInfos and signal the UI to update.
+			foreach (var bookInfo in bookInfos)
+			{
+				bool updateThumbnailBadge = false;
+				if (bloomLibraryStatusesById.TryGetValue(bookInfo.Id, out var status))
+				{
+					if (bookInfo.BloomLibraryStatus == null || bookInfo.BloomLibraryStatus != status)
+					{
+						bookInfo.BloomLibraryStatus = status;
+						updateThumbnailBadge = true;
+					}
+				}
+				else if (bookInfo.BloomLibraryStatus != null)
+				{
+					bookInfo.BloomLibraryStatus = null;
+					updateThumbnailBadge = true;
+				}
+				if (updateThumbnailBadge && !skipBadgeUpdate)
+				{
+					// signal the UI to update the thumbnail badge for this book.
+					dynamic result = new DynamicJson();
+					result.bookId = bookInfo.Id;
+					result.url = status?.BloomLibraryBookUrl ?? "";
+					//Debug.WriteLine($"DEBUG signaling web code to update badge id={bookInfo.Id}, url=\"{result.url}\"");
+					_webSocketServer.SendBundle(LibraryPublishApi.kWebSocketContext,
+						LibraryPublishApi.kWebSocketEventId_uploadSuccessful, result);
+				}
+			}
 		}
 	}
 

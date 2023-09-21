@@ -116,12 +116,19 @@ namespace Bloom.ToPalaso
 			BringDesiredWindowToFront("", processList, windowMap);
 		}
 
-		public static void StartInFront(ProcessStartInfo startInfo)
+		public static void StartInFront(ProcessStartInfo startInfo, EventHandler exitHandler = null)
 		{
 			LogDebugInfo($"DEBUG StartInFront(\"{startInfo}\")");
 			var processList = Process.GetProcesses();
 			var windowMap = GetAllWindows();
-			Process.Start(startInfo);
+			var process = new Process();
+			process.StartInfo = startInfo;
+			if (exitHandler != null)
+			{
+				process.EnableRaisingEvents = true;
+				process.Exited += new EventHandler(exitHandler);
+			}
+			process.Start();
 
 			// The rest of this happens on a timeout, so that we don't have to sleep and hold things up
 			BringDesiredWindowToFront("", processList, windowMap);

@@ -15,6 +15,7 @@ using Bloom.ToPalaso;
 using Bloom.web;
 using SIL.Windows.Forms.SettingProtection;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Bloom.CollectionTab
 {
@@ -356,6 +357,19 @@ namespace Bloom.CollectionTab
 		private void _tcStatusButton_Click(object sender, EventArgs e)
 		{
 			// probably will do GetWorkspaceView().OpenTCStatus();
+		}
+
+		/// <summary>
+		/// Update the Bloom Library status of all the books in the editable collection.
+		/// </summary>
+		/// <remarks>
+		/// I'd much rather not have this method, but code keeping track of which tab is active
+		/// only has access to the View classes, not the Model classes. So we have to put it here,
+		/// at least for now.
+		/// </remarks>
+		internal void UpdateBloomLibraryStatus()
+		{
+			_model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(_model.TheOneEditableCollection.GetBookInfos().ToList());
 		}
 	}
 }

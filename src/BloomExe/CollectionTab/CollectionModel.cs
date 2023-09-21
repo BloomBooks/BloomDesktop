@@ -580,6 +580,10 @@ namespace Bloom.CollectionTab
 			// but may be useful if we optimize.
 			// optimize: I think this will reload all of them
 			_webSocketServer.SendString("bookImage", "reload", bookInfo.Id);
+			// Update the badge as well.  We need to use the exact BookInfo object stored in the BookCollection
+			// because that is the one the API server uses to provide data to the web client.
+			TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(
+				TheOneEditableCollection.GetBookInfos().Where(info => info.Id == bookInfo.Id).ToList());
 		}
 
 		private void HandleThumbnailerErrror(Book.BookInfo bookInfo, Exception error)

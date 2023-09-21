@@ -16,6 +16,7 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
 
     enum BadgeType {
         None,
+        Harvesting,
         Published,
         Draft,
         OutOfCirculation
@@ -30,9 +31,15 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                 if (result.data.bookUrl) {
                     setBookOnBlorgUrl(result.data.bookUrl);
 
-                    if (result.data.inCirculation === false) {
+                    if (
                         // if inCirculation is null, book is in circulation
+                        result.data.inCirculation === false ||
+                        result.data.harvestState === "failed" ||
+                        result.data.harvestState === "failedindefinitely"
+                    ) {
                         setBadge(BadgeType.OutOfCirculation);
+                    } else if (result.data.harvestState === "inprogress") {
+                        setBadge(BadgeType.Harvesting);
                     } else if (result.data.draft) {
                         setBadge(BadgeType.Draft);
                     } else {
@@ -90,6 +97,10 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                                         <LocalizedString l10nKey="CollectionTab.OnBlorgBadge.MarkedAsDraft">
                                             Marked As Draft
                                         </LocalizedString>
+                                    ) : badge === BadgeType.Harvesting ? (
+                                        <LocalizedString l10nKey="CollectionTab.OnBlorgBadge.Harvesting">
+                                            Harvesting in Progress
+                                        </LocalizedString>
                                     ) : (
                                         <LocalizedString l10nKey="CollectionTab.OnBlorgBadge.Problem">
                                             Problem
@@ -121,6 +132,8 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                                     ? "/bloom/images/on-blorg-badges/on-blorg-badge.svg"
                                     : badge === BadgeType.Draft
                                     ? "/bloom/images/on-blorg-badges/on-blorg-draft.svg"
+                                    : badge === BadgeType.Harvesting
+                                    ? "/bloom/images/on-blorg-badges/on-blorg-harvesting.svg"
                                     : "/bloom/images/on-blorg-badges/on-blorg-problem.svg"
                             }
                         />
