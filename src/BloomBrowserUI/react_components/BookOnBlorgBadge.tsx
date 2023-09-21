@@ -6,7 +6,7 @@ import { get } from "../utils/bloomApi";
 import { useEffect, useState } from "react";
 import { BloomTooltip } from "./BloomToolTip";
 import { Link } from "../react_components/link";
-import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
+import { useSubscribeToWebSocketForStringMessage } from "../utils/WebSocketManager";
 import { LocalizedString } from "./l10nComponents";
 
 export const BookOnBlorgBadge: React.FunctionComponent<{
@@ -16,9 +16,10 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
 
     enum BadgeType {
         None,
+        Harvesting,
         Published,
         Draft,
-        OutOfCirculation
+        Problem
     }
 
     const [badge, setBadge] = useState<BadgeType>(BadgeType.None);
@@ -30,9 +31,16 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                 if (result.data.bookUrl) {
                     setBookOnBlorgUrl(result.data.bookUrl);
 
-                    if (result.data.inCirculation === false) {
-                        // if inCirculation is null, book is in circulation
-                        setBadge(BadgeType.OutOfCirculation);
+                    if (
+                        // if inCirculation is null or undefined, book is in circulation
+                        result.data.inCirculation === false ||
+                        result.data.harvestState === "failed" ||
+                        result.data.harvestState === "failedindefinitely" ||
+                        result.data.harvestState === "multiple"
+                    ) {
+                        setBadge(BadgeType.Problem);
+                    } else if (result.data.harvestState === "inprogress") {
+                        setBadge(BadgeType.Harvesting);
                     } else if (result.data.draft) {
                         setBadge(BadgeType.Draft);
                     } else {
@@ -45,11 +53,11 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
         );
     };
 
-    useSubscribeToWebSocketForObject<{ bookId: string; url: string }>(
-        "libraryPublish",
-        "uploadSuccessful",
-        results => {
-            if (results.bookId === props.book.id) {
+    useSubscribeToWebSocketForStringMessage(
+        "bookCollection",
+        "updateBookBadge",
+        idMsg => {
+            if (idMsg === props.book.id) {
                 updateBadge();
             }
         }
@@ -57,7 +65,7 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
 
     useEffect(() => {
         updateBadge();
-    }, []);
+    });
 
     return (
         <div
@@ -90,6 +98,11 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                                         <LocalizedString l10nKey="CollectionTab.OnBlorgBadge.MarkedAsDraft">
                                             Marked As Draft
                                         </LocalizedString>
+                                    ) : badge === BadgeType.Harvesting ? (
+                                        <LocalizedString l10nKey="CollectionTab.OnBlorgBadge.Harvesting">
+                                            BloomLibrary.org is processing this
+                                            book
+                                        </LocalizedString>
                                     ) : (
                                         <LocalizedString l10nKey="CollectionTab.OnBlorgBadge.Problem">
                                             Problem
@@ -121,6 +134,8 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                                     ? "/bloom/images/on-blorg-badges/on-blorg-normal.svg"
                                     : badge === BadgeType.Draft
                                     ? "/bloom/images/on-blorg-badges/on-blorg-draft.svg"
+                                    : badge === BadgeType.Harvesting
+                                    ? "/bloom/images/on-blorg-badges/on-blorg-harvesting.svg"
                                     : "/bloom/images/on-blorg-badges/on-blorg-problem.svg"
                             }
                         />
