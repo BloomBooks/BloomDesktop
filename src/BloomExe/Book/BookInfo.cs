@@ -807,6 +807,13 @@ namespace Bloom.Book
 				sortedFilepaths.Add(lastWriteTime, bookFolder);
 			}
 		}
+
+		/// <summary>
+		/// Store the book's status in the Bloom Library.  This is not saved in either the meta.json file
+		/// or in the publish-settings.json file.  It is always retrieved from the Bloom Library when the
+		/// collection is loaded or when books are uploaded.
+		/// </summary>
+		public IBloomLibraryStatus BloomLibraryStatus;
 	}
 
 	public class ErrorBookInfo : BookInfo

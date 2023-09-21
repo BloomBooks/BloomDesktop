@@ -303,6 +303,11 @@
         <source xml:lang="en">Marked as Draft</source>
         <note>CollectionTab.OnBlorgBadge.MarkedAsDraft</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Harvesting" sil:dynamic="true" translate="no">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">Harvesting in Progress</source>
+        <note>CollectionTab.OnBlorgBadge.Harvesting</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true" translate="no">
         <!-- Added in 5.6 -->
         <source xml:lang="en">Problem</source>

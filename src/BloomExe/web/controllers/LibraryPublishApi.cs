@@ -1,4 +1,5 @@
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Publish;
 using Bloom.Publish.BloomLibrary;
 using Bloom.WebLibraryIntegration;
@@ -6,6 +7,7 @@ using Bloom.Workspace;
 using SIL.Progress;
 using SIL.Reporting;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -22,9 +24,9 @@ namespace Bloom.web.controllers
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
 		// down to the context (usualy a screen) that requested them.
-		private const string kWebSocketContext = "libraryPublish"; // must match what is in LibraryPublishScreen.tsx
+		internal const string kWebSocketContext = "libraryPublish"; // must match what is in LibraryPublishScreen.tsx
 
-		private const string kWebSocketEventId_uploadSuccessful = "uploadSuccessful"; // must match what is in LibraryPublishSteps.tsx
+		internal const string kWebSocketEventId_uploadSuccessful = "uploadSuccessful"; // must match what is in LibraryPublishSteps.tsx
 		private const string kWebSocketEventId_uploadCanceled = "uploadCanceled"; // must match what is in LibraryPublishSteps.tsx
 		private const string kWebSocketEventId_loginSuccessful = "loginSuccessful"; // must match what is in LibraryPublishSteps.tsx
 
@@ -194,10 +196,8 @@ namespace Bloom.web.controllers
 				{
 					var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(parseId, true);
 					Model.AddHistoryRecordForLibraryUpload(url);
-					dynamic result = new DynamicJson();
-					result.bookId = Model.Book.BookInfo.Id;
-					result.url = url;
-					_webSocketServer.SendBundle(kWebSocketContext, kWebSocketEventId_uploadSuccessful, result);
+					var bookList = new List<BookInfo> { Model.Book.BookInfo };
+					_publishModel.CurrentBookCollection.UpdateBloomLibraryStatusOfBooks(bookList);
 				}
 			};
 			SetParentControlsState(false); // Last thing we do before launching the worker, so we can't get stuck in this state.

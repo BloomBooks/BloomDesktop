@@ -1,13 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.web;
+using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
+using Newtonsoft.Json.Linq;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
@@ -431,6 +438,109 @@ namespace Bloom.Collection
 				return;
 			_bookInfos = null; // Possibly obsolete; next request will update it.
 			DebounceFolderChanged(fileSystemEventArgs.FullPath);
+		}
+
+		public void UpdateBloomLibraryStatusOfBooks(List<BookInfo> bookInfos, bool updateBadges = true)
+		{
+			if (bookInfos == null || bookInfos.Count == 0)
+				return;
+			/* This does
+				a minimal number of Parse queries
+				puts the results into each BookInfo
+				If the value changes, signals to redraw the thumbnail badge (unless told not to)
+			*/
+			var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
+			var parseClient = new BloomParseClient();
+			var queryBldr = new StringBuilder();
+			queryBldr.Append("{\"bookInstanceId\":{\"$in\":[\"");
+			var bookIds = new List<string>();
+			for (int i = 0; i < bookInfos.Count; ++i)
+			{
+				// More than 21 bookIds in a query causes a 400 error.
+				// Just to be safe, we'll limit it to 20.
+				bookIds.Add(bookInfos[i].Id);
+				if (bookIds.Count % 20 == 0 || i == bookInfos.Count - 1)
+				{
+					queryBldr.Append(string.Join("\",\"", bookIds.ToArray()));
+					queryBldr.Append("\"]}}");
+					var response = parseClient.GetBookRecordsByQuery(queryBldr.ToString(), false);
+					if (response.StatusCode != HttpStatusCode.OK)
+						continue;
+					dynamic json = JObject.Parse(response.Content);
+					if (json == null)
+						continue;
+					// store data from the dynamic json object into BloomLibraryStatus objects
+					var bookStates = JArray.FromObject(json.results);
+					for (int j = 0; j < bookStates.Count; ++j)
+					{
+						var status = GetBloomLibraryStatusFromDynamicJson(bookStates[j]);
+						bloomLibraryStatusesById[bookStates[j].bookInstanceId.ToString()] = status;
+					}
+					queryBldr.Clear();
+					queryBldr.Append("{\"bookInstanceId\":{\"$in\":[\"");
+					bookIds.Clear();
+				}
+			}
+			// Now to store the data into the BookInfos and signal the UI to update.
+			foreach (var bookInfo in bookInfos)
+			{
+				bool updateThumbnailBadge = false;
+				if (bloomLibraryStatusesById.TryGetValue(bookInfo.Id, out var status))
+				{
+					if (bookInfo.BloomLibraryStatus == null || bookInfo.BloomLibraryStatus as BloomLibraryStatus != status)
+					{
+						bookInfo.BloomLibraryStatus = status;
+						updateThumbnailBadge = true;
+					}
+				}
+				else if (bookInfo.BloomLibraryStatus != null)
+				{
+					bookInfo.BloomLibraryStatus = null;
+					updateThumbnailBadge = true;
+				}
+				if (updateBadges && updateThumbnailBadge)
+				{
+					// signal the UI to update the thumbnail badge for this book.
+					dynamic result = new DynamicJson();
+					result.bookId = bookInfo.Id;
+					result.url = status?.BloomLibraryBookUrl ?? "";
+					//Debug.WriteLine($"DEBUG signaling web code to update badge id={bookInfo.Id}, url=\"{result.url}\"");
+					_webSocketServer.SendBundle(LibraryPublishApi.kWebSocketContext,
+						LibraryPublishApi.kWebSocketEventId_uploadSuccessful, result);
+				}
+			}
+		}
+
+		private static BloomLibraryStatus GetBloomLibraryStatusFromDynamicJson(dynamic bookState)
+		{
+			//Debug.WriteLine($"DEBUG draft={bookState.draft}, inCirculation={bookState.inCirculation}, harvestState={bookState.harvestState}, objectId={bookState.objectId}");
+			HarvesterState harvesterState = HarvesterState.Failed;
+			switch (bookState.harvestState?.ToString().ToLowerInvariant())
+			{
+				case "done":
+					harvesterState = HarvesterState.Done;
+					break;
+				case "new":
+				case "updated":
+				case "inprogress":
+					harvesterState = HarvesterState.InProgress;
+					break;
+				case "failed":
+					harvesterState = HarvesterState.Failed;
+					break;
+				case "failedindefinitely":
+					harvesterState = HarvesterState.FailedIndefinitely;
+					break;
+				default:
+					// undefined or unrecognized value will just leave it as Failed
+					break;
+			}
+			// Draft only if explicitly marked as such.  Undefined means not draft.
+			var draft = (bookState.draft != null) && bookState.draft.ToString().ToLowerInvariant() == "true";
+			// In circulation unless explicitly marked false.  Undefined means in circulation.
+			var inCirculation = (bookState.inCirculation == null ) || bookState.inCirculation.ToString().ToLowerInvariant() == "true";
+			var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(bookState.objectId.ToString());
+			return new BloomLibraryStatus(draft, !inCirculation, harvesterState, url);
 		}
 	}
 

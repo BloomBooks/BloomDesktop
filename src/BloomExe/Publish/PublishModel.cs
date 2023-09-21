@@ -81,6 +81,8 @@ namespace Bloom.Publish
 
 		private BackgroundWorker _makePdfBackgroundWorker = new BackgroundWorker();
 
+		internal BookCollection CurrentBookCollection => _currentBookCollectionSelection?.CurrentSelection;
+
 		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings,
 			BookServer bookServer, BookThumbNailer thumbNailer)
 		{

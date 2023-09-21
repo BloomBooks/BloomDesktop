@@ -453,7 +453,7 @@ namespace Bloom.Publish.BloomLibrary
 					Environment.SetEnvironmentVariable("LD_PRELOAD", $"{xulRunner}/libgeckofix.so");
 			}
 
-			ProcessExtra.StartInFront(startInfo);
+			ProcessExtra.StartInFront(startInfo, updateBloomLibraryInfo);
 			progress.WriteMessage("Starting bulk upload in a terminal window...");
 			progress.WriteMessage("This process will skip books if it can tell that nothing has changed since the last bulk upload.");
 			progress.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
@@ -461,6 +461,12 @@ namespace Bloom.Publish.BloomLibrary
 			progress.WriteMessage("Your books will show up at {0}", url);
 			if (SIL.PlatformUtilities.Platform.IsLinux) // LD_PRELOAD interferes with CommandLineRunner and GeckoFx60 on Linux
 				Environment.SetEnvironmentVariable("LD_PRELOAD", null);
+		}
+
+		private void updateBloomLibraryInfo(object sender, EventArgs e)
+		{
+			_publishModel.CurrentBookCollection.UpdateBloomLibraryStatusOfBooks(
+				_publishModel.CurrentBookCollection.GetBookInfos().ToList());
 		}
 
 		private string QuoteQuotes(string command)

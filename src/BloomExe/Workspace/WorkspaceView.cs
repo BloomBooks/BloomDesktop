@@ -947,6 +947,7 @@ namespace Bloom.Workspace
 
 		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
 		{
+			var previousTab = _tabSelection.ActiveTab;
 			if (_tabStrip.SelectedTab == _editTab)
 				_tabSelection.ActiveTab = WorkspaceTab.edit;
 			else if (_tabStrip.SelectedTab == _publishTab)
@@ -964,6 +965,12 @@ namespace Bloom.Workspace
 			Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
 			SelectPage((Control) e.SelectedTab.Tag);
 			AdjustTabStripDisplayForScreenSize();
+			Debug.WriteLine($"DEBUG _tabString_SelectedTabChanged(): active tab = {_tabSelection.ActiveTab}");
+			if (_tabSelection.ActiveTab == WorkspaceTab.collection && previousTab == WorkspaceTab.publish)
+			{
+				// update bloom library status for the collection.
+				_collectionTabView.UpdateBloomLibraryStatus();
+			}
 		}
 
 		public void ChangeTab(WorkspaceTab newTab)

@@ -360,6 +360,9 @@ namespace Bloom.web.controllers
 			// Note: the winforms version used ImproveAndRefreshBookButtons(), which may load the whole book.
 
 			var bookInfos = collection.GetBookInfos();
+			// Load the initial values for the bloom library status of each book.
+			if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+				collection.UpdateBloomLibraryStatusOfBooks(bookInfos.ToList(), updateBadges: false);
 			var jsonInfos = bookInfos
 				.Where(info => collection.Type == BookCollection.CollectionType.TheOneEditableCollection || info.ShowThisBookAsSource())
 				.Select(info =>
@@ -456,35 +459,37 @@ namespace Bloom.web.controllers
 		private void GetBookOnBloomBadgeInfo(ApiRequest apiRequest)
 		{
 			var bookId = apiRequest.RequiredParam("book-id");
-			BloomParseClient parseClient = new BloomParseClient();
 
-			var json = parseClient.GetBookRecords(bookId, includeLanguageInfo: false, includeBooksFromOtherUploaders: true);
-			if (json == null || json.Count < 1)
+			var info = _collectionModel.TheOneEditableCollection.GetBookInfos().Where(info => info.Id == bookId).FirstOrDefault();
+			if (info != null)
 			{
+				if (info.BloomLibraryStatus != null)
+				{
+					//Debug.WriteLine($"DEBUG GetBookOnBloomBadgeInfo({bookId}): status={info.BloomLibraryStatus}");
+					apiRequest.ReplyWithJson(new
+					{
+						bookUrl = info.BloomLibraryStatus.BloomLibraryBookUrl,
+						draft = info.BloomLibraryStatus.Draft,
+						inCirculation = !info.BloomLibraryStatus.NotInCirculation,
+						harvestState = info.BloomLibraryStatus.HarvesterState.ToString().ToLowerInvariant()
+					});
+				}
+				else
+				{
+					apiRequest.ReplyWithJson(new
+					{
+						bookUrl = "",
+					});
+				}
+			}
+			else
+			{
+				// This should never happen.
+				Debug.Fail($"DEBUG GetBookOnBloomBadgeInfo({bookId}): cannot find BookInfo");
 				apiRequest.ReplyWithJson(new
 				{
 					bookUrl = "",
 				});
-			}
-			else if (json.Count == 1)
-			{
-				var book = json[0];
-				apiRequest.ReplyWithJson(new
-				{
-					bookUrl = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(book.objectId.ToString()),
-					draft = book.draft,
-					inCirculation = book.inCirculation,
-				});
-			}
-			else
-			{
-				apiRequest.ReplyWithJson(new
-				{
-					bookUrl = BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(bookId),
-					draft = false,
-					inCirculation = true,
-				});
-
 			}
 		}
 
