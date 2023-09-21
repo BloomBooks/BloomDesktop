@@ -964,6 +964,11 @@ namespace Bloom.Workspace
 			Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
 			SelectPage((Control) e.SelectedTab.Tag);
 			AdjustTabStripDisplayForScreenSize();
+			if (_tabSelection.ActiveTab == WorkspaceTab.collection && _collectionTabView != null)
+			{
+				// update bloom library status for the collection.
+				_collectionTabView.UpdateBloomLibraryStatus();
+			}
 		}
 
 		public void ChangeTab(WorkspaceTab newTab)

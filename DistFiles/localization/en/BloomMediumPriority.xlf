@@ -319,6 +319,10 @@
         <source xml:lang="en">Marked as Draft</source>
         <note>CollectionTab.OnBlorgBadge.MarkedAsDraft</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Processing" sil:dynamic="true" translate="no">
+        <source xml:lang="en">BloomLibrary.org is processing this book</source>
+        <note>CollectionTab.OnBlorgBadge.Processing</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true" translate="no">
         <!-- Added in 5.6 -->
         <source xml:lang="en">Problem</source>
