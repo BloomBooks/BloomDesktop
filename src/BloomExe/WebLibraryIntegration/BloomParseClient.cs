@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Windows.Forms;
@@ -444,6 +445,63 @@ namespace Bloom.WebLibraryIntegration
 				result[i] = new ParseServerObjectPointer() {ClassName = "language", ObjectId = id};
 			}
 			return result;
+		}
+
+		/// <summary>
+		/// Query the parse server for the status of the given books.  The returned dictionary will have
+		/// an entry for each book that has been uploaded to the parse server.  The keys are the book ids
+		/// from the BookInfo objects.
+		/// Books with no entry in the dictionary have not been uploaded to Bloom Library.  Books that have
+		/// multiple uploads with the same bookInstanceId are flagged as having a problem by having an empty
+		/// string for the BloomLibraryStatus.BloomLibraryBookUrl field.  (The other fields are meaningless
+		/// in that case.)
+		/// </summary>
+		/// <remarks>
+		/// We want to minimize the number of queries we make to the parse server, so we batch up the book
+		/// ids as much as possible.
+		/// </remarks>
+		public Dictionary<string, BloomLibraryStatus> GetLibraryStatusForBooks(List<BookInfo> bookInfos)
+		{
+			var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
+			var queryBldr = new StringBuilder();
+			queryBldr.Append("{\"bookInstanceId\":{\"$in\":[\"");
+			var bookIds = new List<string>();
+			for (int i = 0; i < bookInfos.Count; ++i)
+			{
+				// More than 21 bookIds in a query causes a 400 error.
+				// Just to be safe, we'll limit it to 20.
+				bookIds.Add(bookInfos[i].Id);
+				if (bookIds.Count % 20 == 0 || i == bookInfos.Count - 1)
+				{
+					queryBldr.Append(string.Join("\",\"", bookIds.ToArray()));
+					queryBldr.Append("\"]}}");
+					var response = GetBookRecordsByQuery(queryBldr.ToString(), false);
+					if (response.StatusCode != HttpStatusCode.OK)
+						continue;
+					dynamic json = JObject.Parse(response.Content);
+					if (json == null)
+						continue;
+					// store data from the dynamic json object into BloomLibraryStatus objects
+					var bookStates = JArray.FromObject(json.results);
+					for (int j = 0; j < bookStates.Count; ++j)
+					{
+						var id = bookStates[j].bookInstanceId.ToString();
+						if (bloomLibraryStatusesById.ContainsKey(id))
+						{
+							bloomLibraryStatusesById[id] = new BloomLibraryStatus(false, false, HarvesterState.Multiple,
+								BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(id));
+						}
+						else
+						{
+							bloomLibraryStatusesById[id] = BloomLibraryStatus.FromDynamicJson(bookStates[j]);
+						}
+					}
+					queryBldr.Clear();
+					queryBldr.Append("{\"bookInstanceId\":{\"$in\":[\"");
+					bookIds.Clear();
+				}
+			}
+			return bloomLibraryStatusesById;
 		}
 	}
 }
