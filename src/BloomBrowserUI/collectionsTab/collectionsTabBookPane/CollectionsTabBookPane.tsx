@@ -6,7 +6,7 @@ import { get, getBoolean, postThatMightNavigate } from "../../utils/bloomApi";
 import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollectionBookStatusPanel";
 import {
     IBookTeamCollectionStatus,
-    initialBookStatus
+    initialBookStatus as initialBookTeamCollectionStatus
 } from "../../teamCollection/teamCollectionApi";
 import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
@@ -24,6 +24,7 @@ import {
     IBloomDialogEnvironmentParams,
     Mode
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
+import { BookInfoIndicator } from "../../react_components/BookInfoIndicator";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -35,7 +36,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     disableEventsInIframe: boolean;
 }> = props => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
-    const [bookStatus, setBookStatus] = useState(initialBookStatus);
+    const [bookTeamCollectionStatus, setBookTeamCollectionStatus] = useState(
+        initialBookTeamCollectionStatus
+    );
     const [reload, setReload] = useState(0);
     const [reloadStatus, setReloadStatus] = useState(0);
     const enterpriseAvailable = useEnterpriseAvailable();
@@ -43,7 +46,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     useSubscribeToWebSocketForEvent("bookContent", "reload", () =>
         setReload(old => old + 1)
     );
-    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
+    useSubscribeToWebSocketForEvent("bookTeamCollectionStatus", "reload", () =>
         setReloadStatus(old => old + 1)
     );
 
@@ -58,7 +61,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         get(
             "teamCollection/selectedBookStatus",
             data => {
-                setBookStatus(data.data as IBookTeamCollectionStatus);
+                setBookTeamCollectionStatus(
+                    data.data as IBookTeamCollectionStatus
+                );
             },
             err => {
                 // Something went wrong. Maybe the user has not registered. Maybe the network has gone
@@ -72,7 +77,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     err?.response?.statusText ??
                     "Bloom could not determine the status of this book";
 
-                setBookStatus(prevBookStatus => ({
+                setBookTeamCollectionStatus(prevBookStatus => ({
                     ...prevBookStatus,
                     disconnected: true,
                     error: errorMessage
@@ -309,19 +314,30 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                         >
                             <div
                                 css={css`
-                                    //position: absolute;
-                                    //top: 20px;
-                                    //left: 10px;
-                                    // overrides a material-ui tabs rule that applies to any div in the selected tab!
-                                    padding: 0 !important;
-                                    // keep the white background inside the button.
-                                    border-radius: 5px;
-                                    flex-shrink: 0;
-                                    margin-top: 6px;
-                                    margin-bottom: 10px;
+                                    // this is a row above the preview
+                                    display: flex;
+                                    flex-direction: row;
+                                    justify-content: space-between;
                                 `}
                             >
-                                {editOrMakeButton}
+                                <div
+                                    css={css`
+                                        // overrides a material-ui tabs rule that applies to any div in the selected tab!
+                                        padding: 0 !important;
+                                        // keep the white background inside the button.
+                                        border-radius: 5px;
+                                        flex-shrink: 0;
+                                        margin-top: 6px;
+                                        margin-bottom: 10px;
+                                    `}
+                                >
+                                    {editOrMakeButton}
+                                </div>
+                                {selectedBookId && (
+                                    <BookInfoIndicator
+                                        bookId={selectedBookId}
+                                    />
+                                )}
                             </div>
                             {selectedBookId && (
                                 <iframe
@@ -365,7 +381,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             // If that stops being true we might need another more specialized status flag.
             isTeamCollection && !canMakeBook ? (
                 <div id="teamCollection">
-                    <TeamCollectionBookStatusPanel {...bookStatus} />
+                    <TeamCollectionBookStatusPanel
+                        {...bookTeamCollectionStatus}
+                    />
                 </div>
             ) : null}
         </div>

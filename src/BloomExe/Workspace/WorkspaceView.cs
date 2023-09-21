@@ -363,7 +363,7 @@ namespace Bloom.Workspace
 			SafeInvoke.Invoke("sending reload status", this, false, true,
 				() =>
 				{
-					_webSocketServer.SendEvent("bookStatus", "reload");
+					_webSocketServer.SendEvent("bookTeamCollectionStatus", "reload");
 				});
 			if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
 				return; // change is not to the book we're interested in.

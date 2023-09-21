@@ -54,7 +54,7 @@ export function useTColBookStatus(
     const [bookStatus, setBookStatus] = useState(initialBookStatus);
     const [reload, setReload] = useState(0);
     // Force a reload when told some book's status changed
-    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
+    useSubscribeToWebSocketForEvent("bookTeamCollectionStatus", "reload", () =>
         setReload(old => old + 1)
     );
     React.useEffect(() => {
