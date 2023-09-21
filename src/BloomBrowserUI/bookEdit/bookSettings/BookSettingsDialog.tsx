@@ -168,7 +168,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                         <ConfigrGroup label="Appearance" level={1}>
                             {appearanceUIOptions?.firstPossiblyLegacyCss && (
                                 <WarningBox>
-                                    {`"${appearanceUIOptions?.firstPossiblyLegacyCss}" might not be compatible Appearance settings, so this book is in "legacy" mode. See (TODO) for more information.`}
+                                    {`"${appearanceUIOptions?.firstPossiblyLegacyCss}" might not be compatible with  modern Appearance settings, so this book is in "legacy" mode. See (TODO) for more information.`}
                                 </WarningBox>
                             )}
                             <ConfigrSubgroup

@@ -39,7 +39,7 @@ public class AppearanceSettings
 
 	public dynamic TestOnlyPropertiesAccess { get { return _properties; } }
 
-	internal string _firstPossiblyLegacyCss;
+	public string FirstPossiblyLegacyCss;
 
 	// create an array of properties and fill it in
 	private PropertyDef[] propertyDefinitions = new PropertyDef[]
@@ -95,7 +95,7 @@ public class AppearanceSettings
 		{
 			if (MayBeIncompatible(css))
 			{
-				_firstPossiblyLegacyCss = css.Item1;
+				FirstPossiblyLegacyCss = css.Item1;
 				CssThemeWeWillActuallyUse = "legacy-5-5";
 				SIL.Reporting.Logger.WriteEvent($"** Will use {CssThemeWeWillActuallyUse} BasePage and Theme");
 				return true;
@@ -233,7 +233,12 @@ public class AppearanceSettings
 
 		// just something to enable us easily visually point out that we are in legacy mode
 		// I don't think this is worth localizing at the moment. We might not keep it at all.
-		cssBuilder.AppendLine($"--cssThemeMessage: \"Theme '{_properties.cssThemeName}'\";");
+		if (!string.IsNullOrEmpty(FirstPossiblyLegacyCss)) {
+			cssBuilder.AppendLine($"--cssThemeMessage: \"{FirstPossiblyLegacyCss} issues found, using '{this.CssThemeWeWillActuallyUse}'\";");
+		}
+		else {
+			cssBuilder.AppendLine($"--cssThemeMessage: \"Theme '{this.CssThemeWeWillActuallyUse}'\";");
+		}
 
 		cssBuilder.AppendLine("}");
 		return cssBuilder.ToString();
@@ -332,7 +337,7 @@ public class AppearanceSettings
 		// theme that the UI may have let through (currently it doesn't let you change it).
 		// But if we are not in legacy mode, then go ahead and change the theme to match
 		// whatever the UI asked for, no need to check all the css files again.
-		if (string.IsNullOrEmpty(_firstPossiblyLegacyCss))
+		if (string.IsNullOrEmpty(FirstPossiblyLegacyCss))
 		{
 			this.CssThemeWeWillActuallyUse = this.CssThemeNameSelectedByUser;
 		}
@@ -347,7 +352,7 @@ public class AppearanceSettings
 			var x = new ExpandoObject() as IDictionary<string, object>;
 
 			x["themeNames"] = from name in names.ToArray<string>() select new { label = name, value = name };
-			x["firstPossiblyLegacyCss"] = _firstPossiblyLegacyCss;
+			x["firstPossiblyLegacyCss"] = FirstPossiblyLegacyCss;
 			return JsonConvert.SerializeObject(x); }
 	}
 

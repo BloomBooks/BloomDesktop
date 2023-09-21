@@ -139,6 +139,7 @@ namespace Bloom
 							typeof(BookSettingsApi),
 							typeof(SpreadsheetApi),
 							typeof(BookMetadataApi),
+							typeof(OtherBookInfoApi),
 							typeof(PublishToBloomPubApi),
 							typeof(PublishPdfApi),
 							typeof(PublishAudioVideoAPI),
@@ -349,6 +350,7 @@ namespace Bloom
 			_scope.Resolve<KeyboardingConfigApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<BookSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<BookMetadataApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<OtherBookInfoApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ImageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ReadersApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<MusicApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -432,7 +434,7 @@ namespace Bloom
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"collectionsTab/collectionsTabBookPane"));
 
 			var x = FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "performance"));
-			
+
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "performance"));
 
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"themes/bloom-jqueryui-theme"));
@@ -605,7 +607,7 @@ namespace Bloom
 			//a users's existing just-fine document. We have to somehow address that, too.
 			if (Directory.Exists(GetInstalledCollectionsDirectory()))
 			{
-				
+
 				foreach (var dir in SafeGetDirectories(GetInstalledCollectionsDirectory()))
 				{
 					yield return dir;
