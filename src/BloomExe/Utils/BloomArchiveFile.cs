@@ -1,8 +1,9 @@
-﻿using System;
+﻿using ICSharpCode.SharpZipLib.Zip;
+using SIL.Reporting;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Bloom.Utils
 {
@@ -118,32 +119,45 @@ namespace Bloom.Utils
 
 			var count = 0;
 			var files = Directory.GetFiles(directoryPath);
-			foreach (var path in files)
+			var currentFilename = "";
+			try
 			{
-				var entryName = path.Substring(dirNameOffest);
-				string zipEntryName = ICSharpCode.SharpZipLib.Zip.ZipEntry.CleanName(entryName);
-				entryName = CleanName(entryName);
-				var fileExtension = Path.GetExtension(entryName).ToLowerInvariant();
-				if (extensionsToExclude != null)
+				foreach (var path in files)
 				{
-					if (extensionsToExclude.Contains(fileExtension))
-						continue;
+					currentFilename = path;
+					var entryName = path.Substring(dirNameOffest);
+					string zipEntryName = ZipEntry.CleanName(entryName);
+					entryName = CleanName(entryName);
+					var fileExtension = Path.GetExtension(entryName).ToLowerInvariant();
+					if (extensionsToExclude != null)
+					{
+						if (extensionsToExclude.Contains(fileExtension))
+							continue;
+					}
+					if (!justCount)
+						AddFile(path, entryName, ShouldCompress(path));
+					perFileCallback?.Invoke(path);
+					count++;
 				}
-				if (!justCount)
-					AddFile(path, entryName, ShouldCompress(path));
-				perFileCallback?.Invoke(path);
-				count++;
+
+				var folders = Directory.GetDirectories(directoryPath);
+
+				foreach (var folder in folders)
+				{
+					var dirName = Path.GetFileName(folder);
+					if (dirName == null)
+						continue; // Don't want to bundle these up
+
+					count += AddDirectory(folder, dirNameOffest, extensionsToExclude, justCount);
+				}
 			}
-
-			var folders = Directory.GetDirectories(directoryPath);
-
-			foreach (var folder in folders)
+			catch (ZipException ze)
 			{
-				var dirName = Path.GetFileName(folder);
-				if (dirName == null)
-					continue; // Don't want to bundle these up
-
-				count += AddDirectory(folder, dirNameOffest, extensionsToExclude, justCount);
+				var msg = $"ZipException, there was an error writing {currentFilename} to a TC .bloomd file.";
+				if (ze.Message.Contains("crc"))
+					msg += ": CRC check failed";
+				Logger.WriteError(msg, ze);
+				throw ze;
 			}
 
 			return count;
