@@ -454,6 +454,11 @@ namespace Bloom
 		{
 			return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "AppearanceThemes"));
 		}
+		public static IEnumerable<string> GetPathsToThemeFiles()
+		{
+			return Directory.EnumerateFiles(GetFolderContainingAppearanceThemeFiles(), "*.css");
+		}
+
 		public static IEnumerable<string> GetAppearanceThemeFileNames()
 		{
 			string[] themes = { };
@@ -465,6 +470,10 @@ namespace Bloom
 				themes = x.ToArray();
 			});
 			return themes;
+		}
+		public static IEnumerable<string> GetAppearanceThemeNames()
+		{
+			return from path in GetAppearanceThemeFileNames() select Path.GetFileName(path).Replace("appearance-theme-", "");
 		}
 
 		/// <summary>

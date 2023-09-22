@@ -42,6 +42,7 @@ namespace Bloom.web.controllers
 							cssThemeWeWillActuallyUse = bookInfo.AppearanceSettings.CssThemeWeWillActuallyUse ?? "",
 							firstPossiblyOffendingCssFile = bookInfo.AppearanceSettings.FirstPossiblyOffendingCssFile,
 							offendingCss = bookInfo.AppearanceSettings.OffendingCssRule,
+							substitutedCssFile = bookInfo.AppearanceSettings.SubstitutedCssFile,
 							path = bookInfo.FolderPath,
 
 						};

@@ -1,9 +1,6 @@
-﻿using Amazon.Runtime.Internal.Util;
-using Bloom;
-using Bloom.MiscUI;
+﻿using Bloom;
+using Bloom.Book;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Sentry;
 using SIL.Extensions;
 using SIL.IO;
 using System;
@@ -15,11 +12,17 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
+
+
 public class AppearanceSettings
 {
 	public AppearanceSettings()
 	{
 		_properties = new ExpandoObject();
+		if (_substitutinator == null)
+		{
+			_substitutinator = new AppearanceCustomCssToThemeSubstitutinator();
+		}
 
 		// copy in the default values from each definition
 		foreach (var definition in propertyDefinitions)
@@ -31,8 +34,9 @@ public class AppearanceSettings
 	public static string kDoShowValueForDisplay = "doShow-css-will-ignore-this-and-use-default"; // by using an illegal value, we just get a no-op rule, which is what we want
 	public static string kHideValueForDisplay = "none";
 	public static string kOverrideGroupsArrayKey = "groupsToOverrideFromParent"; // e.g. "coverFields, xmatter"
-
+	private static AppearanceCustomCssToThemeSubstitutinator _substitutinator;
 	internal dynamic _properties;
+	
 
 	// it's a big hassle working directly with the ExpandoObject. By casting it this way, you can do the things you expect.
 	internal IDictionary<string, object> Properties => (IDictionary<string, object>)_properties;
@@ -41,6 +45,7 @@ public class AppearanceSettings
 
 	public string FirstPossiblyOffendingCssFile;
 	public string OffendingCssRule;
+	public string SubstitutedCssFile;
 
 	// create an array of properties and fill it in
 	private PropertyDef[] propertyDefinitions = new PropertyDef[]
@@ -86,12 +91,33 @@ public class AppearanceSettings
 			Debug.WriteLine($"{CssThemeNameSelectedByUser} theme is explicitly set by user, so we'll use that for basePage");
 			return;
 		}
+		bool foundUnsubstitutableCss = false;
 
 		// otherwise, we have to slog through all the css files that might be incompatible with the new system.
 		cssFilesToCheck.Where(css => !string.IsNullOrWhiteSpace(css.Item2)).AsParallel().FirstOrDefault(css =>
 		{
-			if (MayBeIncompatible(css.Item1, css.Item2, out OffendingCssRule))
+			// Note: we can only cope with one subsitution, so if the customBookStyles and the customCollectionStyles both have a substitution
+			// we just can't subsitute at all. So we'll let the second one we encounter, which finds that it is incompatible, cause
+			// us to use the legacy theme.
+			var substitutionThemeName =
+				// we aren't already trying to do a substitute...
+				string.IsNullOrEmpty(SubstitutedCssFile)
+				// and this is a substitutable file...
+				&& (css.Item1=="customBookStyles.css" || css.Item1== "customCollectionStyles.css" )
+				? _substitutinator.GetThemeThatSubstitutesForCustomCSS(css.Item2)
+				: null;
+			if (substitutionThemeName != null)
 			{
+				SubstitutedCssFile = css.Item1;
+				CssThemeWeWillActuallyUse = substitutionThemeName; // don't celebrate just yet... any other css file could still be incompatible
+				SIL.Reporting.Logger.WriteEvent($"** Could use {CssThemeWeWillActuallyUse} BasePage and Theme");
+				return false;
+			}
+			else if (MayBeIncompatible(css.Item1, css.Item2, out OffendingCssRule))
+			{
+				// ok, we can't substitute a theme for a custom css if some other css is incompatible with Appearance
+				SubstitutedCssFile = null;
+				foundUnsubstitutableCss = true;
 				FirstPossiblyOffendingCssFile = css.Item1;
 				CssThemeWeWillActuallyUse = "legacy-5-5";
 				SIL.Reporting.Logger.WriteEvent($"** Will use {CssThemeWeWillActuallyUse} BasePage and Theme");
@@ -99,6 +125,14 @@ public class AppearanceSettings
 			}
 			return false;
 		});
+
+		// If we found theme that was designed to substitute for the custom file they have,
+		// make it as though they had selected that theme. Note the the BookStorage is responsible for
+		// not adding a link the custom css matching the name of SubstitutedCssFile.
+		if (!string.IsNullOrEmpty(SubstitutedCssFile))
+		{
+			Properties["cssThemeName"] = CssThemeWeWillActuallyUse;
+		}
 
 		Debug.WriteLine($"** Will use {CssThemeWeWillActuallyUse}");
 	}
@@ -344,7 +378,7 @@ public class AppearanceSettings
 	{
 		get
 		{
-			var names = from path in ProjectContext.GetAppearanceThemeFileNames() select Path.GetFileName(path).Replace("appearance-theme-", "");
+			var names = ProjectContext.GetAppearanceThemeNames();
 			var x = new ExpandoObject() as IDictionary<string, object>;
 
 			x["themeNames"] = from name in names.ToArray<string>() select new { label = name, value = name };
