@@ -71,7 +71,12 @@ export function useGetEnterpriseBookshelves(): {
             // we don't get fields.collections as an empty array; we get nothing at all for collections,
             // and since that's the only field of the ES that we asked for, the result has 'fields' undefined.
             // So trying to get result[0].fields.collections will crash.
-            const collections: any[] = result[0].fields.collections;
+
+            // note that "Drafts" in contentful seem come in here, but don't have a fields property.
+            const collections: any[] = result[0].fields.collections.filter(
+                c => c.fields
+            );
+
             // If all is well and we've completed the contentful query, we got an object that
             // has a list of collections connected to this branding, and will
             // now generate the list of menu items (prepending the 'None' we already made).
