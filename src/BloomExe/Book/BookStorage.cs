@@ -3033,8 +3033,11 @@ namespace Bloom.Book
 			var customCollectionStylesPath = FolderPath.CombineForPath("../", "customCollectionStyles.css");
 			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
 
-			// TODO  regarding *.xmatter.css: we could figure this path out. Else the plan is to make sure that all the xmatters we are shipping
-			// are compatible with the new css system.
+			// find the first file in FolderPath that ends in "xmatter.css".
+			var xmatterPath = Directory.GetFiles(FolderPath, "*xmatter.css").FirstOrDefault();
+			var xmatterFileName = xmatterPath != null ? Path.GetFileName(xmatterPath) : "";
+			var xmatterCss = xmatterPath != null ? RobustFile.ReadAllText(xmatterPath) : "";
+		
 
 			return new Tuple<string, string>[]
 			{
@@ -3042,6 +3045,7 @@ namespace Bloom.Book
 			new Tuple<string, string>("customCollectionStyles.css", customCollectionCss),
 			new Tuple<string, string>("customBookStyles.css", customBookCss),
 			new Tuple<string, string>("branding.css", brandingCss),
+			new Tuple<string, string>(xmatterFileName, xmatterCss)
 			};
 		}
 
