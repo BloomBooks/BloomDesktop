@@ -74,9 +74,6 @@ public class AppearanceSettings
 	/// effectively just gives you the basePage.css that came with 5.5, now named "basePage-legacy-5-5.css"
 	/// </summary>
 	///
-
-
-	// TODO: we need to also switch to the legacy theme if we are going to use the legacy basepage... they go together
 	public void ComputeThemeAndBasePageCssVersionToUse(Tuple<string, string>[] cssFilesToCheck)
 	{
 		// Note that just because a book *used* to conform to an Appearance version (i.e. get "default" for cssThemeName),

@@ -49,13 +49,12 @@ export const BookInfoIndicator: React.FunctionComponent<{
                     <br />
                     {info.id}
                 </p>
-                {info.cssThemeWeWillActuallyUse && (
-                    <p>
-                        <b>Theme</b>
-                        <br />
-                        {info.cssThemeWeWillActuallyUse}
-                    </p>
-                )}
+
+                <p>
+                    <b>Theme</b>
+                    <br />
+                    {info.cssThemeWeWillActuallyUse}
+                </p>
 
                 {info.firstPossiblyOffendingCssFile && (
                     <React.Fragment>
@@ -81,7 +80,11 @@ export const BookInfoIndicator: React.FunctionComponent<{
             </div>
         );
 
-    return info === undefined || info.factoryInstalled || info.error ? null : (
+    return info === undefined ||
+        info.factoryInstalled ||
+        info.error ||
+        // we don't show if we don't have this because it is misleading to see info (instead of a warning) if we don't actually know
+        !info.cssThemeWeWillActuallyUse ? null : (
         <BloomTooltip enableClickInTooltip={true} tip={tip}>
             {info.firstPossiblyOffendingCssFile ? (
                 <WarningIcon color="warning" />
