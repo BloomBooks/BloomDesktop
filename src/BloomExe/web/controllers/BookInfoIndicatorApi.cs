@@ -2,6 +2,7 @@
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.CollectionTab;
 
 namespace Bloom.web.controllers
@@ -28,26 +29,32 @@ namespace Bloom.web.controllers
 			switch (request.HttpMethod)
 			{
 				case HttpMethods.Get:
-					var bookInfo = GetBookInfo(request);
-					if(bookInfo == null)
+					BookInfo bookInfo = null;
+					BookCollection collection;
+					if (GetBookInfo(request, out bookInfo, out collection))
 					{
-						request.ReplyWithJson(new {
-							// user won't see this message, the UI just sees that there is an error, which for now is fine, since we are
-							// only needing this with books that are in the editable collection, not the source books.
-							error = "The editable collection does not have a book with that id." });
+						var data = new
+						{
+							id = bookInfo.Id,
+							factoryInstalled = collection.IsFactoryInstalled,
+							// Note, sometimes CssThemeWeWillActuallyUse just hasn't been computed yet. For now, we're going to live with that.
+							// The UI will just not list it.
+							cssThemeWeWillActuallyUse = bookInfo.AppearanceSettings.CssThemeWeWillActuallyUse ?? "",
+							firstPossiblyLegacyCss = bookInfo.AppearanceSettings.FirstPossiblyLegacyCss,
+							path = bookInfo.FolderPath,
+
+						};
+						request.ReplyWithJson(data);
+					}
+					else
+					{
+						request.ReplyWithJson(new
+						{
+							// user won't see this message, the UI just sees that there is an error and hides the indicator
+							error = "Could not find a book with that id."
+						});
 						return;
 					}
-					var data = new
-					{
-						id = bookInfo.Id,
-						// Note, sometimes CssThemeWeWillActuallyUse just hasn't been computed yet. For now, we're going to live with that.
-						// The UI will just not list it.
-						cssThemeWeWillActuallyUse = bookInfo.AppearanceSettings.CssThemeWeWillActuallyUse ?? "",
-						firstPossiblyLegacyCss = bookInfo.AppearanceSettings.FirstPossiblyLegacyCss,
-						path = bookInfo.FolderPath,
-
-					};
-					request.ReplyWithJson(data);
 					break;
 
 				default:
@@ -55,10 +62,10 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private BookInfo GetBookInfo(ApiRequest request)
+		private bool GetBookInfo(ApiRequest request, out BookInfo bookInfoOut, out BookCollection collectionOut)
 		{
 			var id = request.RequiredParam("id").Trim();
-			BookInfo bookInfo=null;
+			BookInfo bookInfo = null;
 			// get the book info by looking in each of the collections in the _collectionModel for the book with this id
 			var collection = _collectionModel.GetBookCollections().FirstOrDefault(c => {
 					var bi = c.GetBookInfoById(id);
@@ -66,7 +73,10 @@ namespace Bloom.web.controllers
 						bookInfo = bi;
 					return bi != null;
 			});
-			return bookInfo;
+			bookInfoOut = bookInfo;
+			collectionOut = collection;
+
+			return bookInfo != null;
 		}
 	}
 }

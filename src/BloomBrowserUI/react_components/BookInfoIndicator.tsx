@@ -1,8 +1,5 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
-
 import * as React from "react";
-import { Card, CardContent, IconButton, Link, Typography } from "@mui/material";
+import { Link } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import WarningIcon from "@mui/icons-material/Warning";
 import { BloomTooltip } from "./BloomToolTip";
@@ -13,6 +10,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
 }> = props => {
     type IInfo = {
         id: string;
+        factoryInstalled: boolean;
         path: string;
         cssThemeWeWillActuallyUse: string;
         firstPossiblyLegacyCss: string;
@@ -66,8 +64,8 @@ export const BookInfoIndicator: React.FunctionComponent<{
                 )}
             </div>
         );
-    // the api gives an error when the book isn't in the editable collection, and we don't want to show this in that case anyhow.
-    return info === undefined || info.error ? null : (
+
+    return info === undefined || info.factoryInstalled || info.error ? null : (
         <BloomTooltip enableClickInTooltip={true} tip={tip}>
             {info.firstPossiblyLegacyCss ? (
                 <WarningIcon color="warning" />

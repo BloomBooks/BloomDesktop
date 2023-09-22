@@ -736,30 +736,22 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveNormalStyleSheetsLinks()
 		{
-			var links = RawDom.SafeSelectNodes("/html/head/link");
-			var linksToRemove	= new List<XmlElement>();
-			foreach (XmlElement linkNode in links)
+			//mystery: withtout this lock, some async process sometimes leads the linkNode to have a null parent when we go to remove it
+			lock (RawDom)
 			{
-				var href = linkNode.GetAttribute("href");
-				var name = Path.GetFileName(href).ToLowerInvariant();
-				if (
-					name.EndsWith("xmatter.css") || BookStorage.KnownCssFilePrefixesInOrder.Any(
-						prefix => name.StartsWith(prefix.ToLowerInvariant()))
-					)
+				var links = RawDom.SafeSelectNodes("/html/head/link");
+				var linksToRemove = new List<XmlElement>();
+				foreach (XmlElement linkNode in links)
 				{
-					linksToRemove.Add(linkNode);
-				}
-			}
-			// doing this in two passes because I kept getting linkNode.ParetNode==null, even though it wasn't null when I checked it
-			foreach (XmlElement linkNode in linksToRemove)
-			{
-				try
-				{
-					linkNode.ParentNode.RemoveChild(linkNode);
-				}
-				catch (Exception)
-				{
-					//ah well. Swallow
+					var href = linkNode.GetAttribute("href");
+					var name = Path.GetFileName(href).ToLowerInvariant();
+					if (
+						name.EndsWith("xmatter.css") || BookStorage.KnownCssFilePrefixesInOrder.Any(
+							prefix => name.StartsWith(prefix.ToLowerInvariant()))
+						)
+					{
+						linkNode.ParentNode.RemoveChild(linkNode);
+					}
 				}
 			}
 		}
