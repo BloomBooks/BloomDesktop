@@ -20,13 +20,6 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void GetCssRootDeclaration_IncludesThemeName()
-		{
-			var appearance = new AppearanceSettings();
-			Assert.IsTrue(appearance.GetCssRootDeclaration().Contains("--cssThemeName"));
-		}
-
-		[Test]
 		public void GetCssRootDeclaration_HasCorrectTitleFieldsVariableValues()
 		{
 			var appearance = new AppearanceSettings();
@@ -73,32 +66,67 @@ namespace BloomTests.Book
 		}
 		*/
 
-		//[Test]
-		//public void GetSafeThemeForBook_OneCSSIsEmpty_OthersAreNull_Default()
-		//{
-		//	Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(new string[] { "", null, null }));
-		//}
-		//[Test]
-		//public void GetSafeThemeForBook_OnCssICommentsOnly_OthersAreNull_Default()
-		//{
-		//	Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(new string[] { "/* hello */", null }));
-		//}
-		//[Test]
-		//public void GetSafeThemeForBook_AllCssDoesNotHavePostionOrSetWidth_Default()
-		//{
-		//	Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(new string[] { ".marginBox{ background-color:yellow}", ".marginBox{ background-color:yellow}", "" }));
-		//}
 
-		//[Test]
-		//public void GetSafeThemeForBook_OneCssIsCommentsOnly_AnotherHasMarginBoxLeft_Legacy()
-		//{
-		//	Assert.AreEqual("legacy-5-5", AppearanceSettings.GetSafeThemeForBook(new string[] { "/* hello */", null,"/* hello */\r\n.marginBox{ left: 2mm}" }));
-		//}
+		static bool MayBeIncompatible(string css)
+		{
+			string unused;
+			return AppearanceSettings.MayBeIncompatible("test", css, out unused);
+		}
 
-		//[Test]
-		//public void GetSafeThemeForBook_OneCssHasPositionsMarginBox_OthersNull_Legacy()
-		//{
-		//	Assert.AreEqual("legacy-5-5", AppearanceSettings.GetSafeThemeForBook(new string[] { ".position-right\r\n  > .split-pane-component-inner {\r\n  padding-left: 1mm;\r\n}", null, null }));
-		//}
+		[Test]
+		public void MayBeIncompatible_null_False()
+		{
+			Assert.IsFalse(MayBeIncompatible(null));
+		}
+		[Test]
+		public void MayBeIncompatible_empty_False()
+		{
+			Assert.IsFalse(MayBeIncompatible(""));
+		}
+		[Test]
+		public void MayBeIncompatible_NotRelatedToMarginBox_False()
+		{
+			Assert.IsFalse(MayBeIncompatible(".foo{ background-color:yellow}"));
+		}
+		[Test]
+		public void MayBeIncompatible_MarginBoxLeft_True()
+		{
+			Assert.IsTrue(MayBeIncompatible(".marginBox{ left: 2mm}"));
+			// with more spaces
+			Assert.IsTrue(MayBeIncompatible(" .marginBox {\r\n left: 2mm}"));
+		}
+		[Test]
+		public void MayBeIncompatible_MarginBoxWidth_True()
+		{
+			Assert.IsTrue(MayBeIncompatible(".marginBox{ width: 2mm}"));
+		}
+		[Test]
+		public void MayBeIncompatible_PaperSizeMarginBoxTop_True()
+		{
+			Assert.IsTrue(MayBeIncompatible(".A4Landscape .marginBox{ top: 2mm}"));
+		}
+		[Test]
+		public void MayBeIncompatible_PaperSizeMarginBoxHeight_True()
+		{
+			Assert.IsTrue(MayBeIncompatible(".A4Landscape .marginBox{ height: 2mm}"));
+		}
+		[Test]
+		public void MayBeIncompatible_Variables_False()
+		{
+			Assert.IsFalse(MayBeIncompatible(".marginBox { --page-margin-left: 2mm}"));
+		}
+		[Test]
+		public void MayBeIncompatible_InsideMarginBoxWidth_False()
+		{
+			Assert.IsFalse(MayBeIncompatible(".marginBox .foo{ width: 2mm}"));
+		}
+		[Test]
+		public void MayBeIncompatible_compatibleWithAppearanceVersion_False()
+		{
+			Assert.IsFalse(MayBeIncompatible(
+				"/*{label: \"some test\";\r\n compatibleWithAppearanceVersion: 5.6;\r\n}*/ .marginBox{ left: 2mm}"));
+		}
+
+		
 	}
 }
