@@ -2,11 +2,11 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { Card, CardContent, IconButton, Typography } from "@mui/material";
-import InfoIcon from "@mui/icons-material/Info";
+import { Card, CardContent, IconButton, Link, Typography } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import WarningIcon from "@mui/icons-material/Warning";
 import { BloomTooltip } from "./BloomToolTip";
-import { useApiObject } from "../utils/bloomApi";
+import { postJson, useApiObject } from "../utils/bloomApi";
 
 export const BookInfoIndicator: React.FunctionComponent<{
     bookId: string;
@@ -16,6 +16,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
         path: string;
         cssThemeWeWillActuallyUse: string;
         firstPossiblyLegacyCss: string;
+        error: string;
     };
     const info = useApiObject<IInfo | undefined>(
         `book/otherInfo?id=${props.bookId}`,
@@ -26,25 +27,6 @@ export const BookInfoIndicator: React.FunctionComponent<{
         info === undefined ? (
             ""
         ) : (
-            // <Card sx={{ minWidth: 400 }}>
-            //     <CardContent>
-            //         {info.firstPossiblyLegacyCss && (
-            //             <React.Fragment>
-            //                 <Typography>
-            //                     ⚠️{" "}
-            //                     {`One of this book's stylesheets, "${info.firstPossiblyLegacyCss}", might not be fully
-            //                 compatible with this version of Bloom. In order to preserve the layout, Bloom is showing this book using the "legacy" theme. See (TODO) for more
-            //                 information.`}
-            //                 </Typography>
-            //                 <br />
-            //             </React.Fragment>
-            //         )}
-            //         <Typography>
-            //             {`Theme: ${info.cssThemeWeWillActuallyUse}`}
-            //         </Typography>
-            //         <Typography color="text.secondary">{`Book ID: ${info.id}`}</Typography>
-            //     </CardContent>
-            // </Card>
             <div>
                 {info.firstPossiblyLegacyCss && (
                     <React.Fragment>
@@ -56,17 +38,41 @@ export const BookInfoIndicator: React.FunctionComponent<{
                         </p>
                     </React.Fragment>
                 )}
-                <p>{`Path on disk: ${info.path}`}</p>
-                <p>{`Book ID: ${info.id}`}</p>
-                <p>{`Theme: ${info.cssThemeWeWillActuallyUse}`}</p>
+                <p>
+                    <b>Path on disk</b>
+                    <br />
+                    <Link
+                        onClick={() => {
+                            postJson(
+                                "fileIO/showInFolder",
+                                JSON.stringify({ folderPath: info.path })
+                            );
+                        }}
+                    >
+                        {info.path}
+                    </Link>
+                </p>
+                <p>
+                    <b>Book ID</b>
+                    <br />
+                    {info.id}
+                </p>
+                {info.cssThemeWeWillActuallyUse && (
+                    <p>
+                        <b>Theme</b>
+                        <br />
+                        {info.cssThemeWeWillActuallyUse}
+                    </p>
+                )}
             </div>
         );
-    return info === undefined ? null : (
-        <BloomTooltip tip={tip}>
+    // the api gives an error when the book isn't in the editable collection, and we don't want to show this in that case anyhow.
+    return info === undefined || info.error ? null : (
+        <BloomTooltip enableClickInTooltip={true} tip={tip}>
             {info.firstPossiblyLegacyCss ? (
                 <WarningIcon color="warning" />
             ) : (
-                <InfoIcon color="primary" />
+                <InfoOutlinedIcon color="primary" />
             )}
         </BloomTooltip>
     );

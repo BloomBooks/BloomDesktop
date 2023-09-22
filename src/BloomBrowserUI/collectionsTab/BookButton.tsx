@@ -206,12 +206,6 @@ export const BookButton: React.FunctionComponent<{
                 command: "collections/duplicateBook"
             },
             {
-                label: "Show in File Explorer",
-                l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
-                command: "bookCommand/openFolderOnDisk",
-                shouldShow: () => !props.collection.isFactoryInstalled // show for all collections (except factory)
-            },
-            {
                 label: "Delete Book",
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
                 command: "collections/deleteBook",
@@ -419,7 +413,6 @@ export const BookButton: React.FunctionComponent<{
                 `}
                 variant="outlined"
                 size="large"
-                title={props.book.folderPath}
                 onDoubleClick={handleDoubleClick}
                 onClick={e => handleClick(e)}
                 onContextMenu={e => handleContextClick(e)}

@@ -124,7 +124,7 @@ namespace Bloom.web.controllers
 		private void EnhanceButtonNeedingSlowUpdate(object sender, EventArgs e)
 		{
 			Tuple<string, string> item;
-			
+
 			if (!_buttonsNeedingSlowUpdate.TryDequeue(out item))
 			{
 				Application.Idle -= EnhanceButtonNeedingSlowUpdate;
@@ -232,11 +232,6 @@ namespace Bloom.web.controllers
 			{
 				case "makeBloompack":
 					HandleMakeBloompack(book);
-					break;
-				case "openFolderOnDisk":
-					// Currently, the request comes with data to let us identify which book,
-					// but it will always be the current book, which is all the model api lets us open anyway.
-					_collectionModel.OpenFolderOnDisk();
 					break;
 				case "exportToWord":
 					HandleExportToWord(book);
