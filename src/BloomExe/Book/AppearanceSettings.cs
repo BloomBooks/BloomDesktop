@@ -39,7 +39,8 @@ public class AppearanceSettings
 
 	public dynamic TestOnlyPropertiesAccess { get { return _properties; } }
 
-	public string FirstPossiblyLegacyCss;
+	public string FirstPossiblyOffendingCssFile;
+	public string OffendingCssRule;
 
 	// create an array of properties and fill it in
 	private PropertyDef[] propertyDefinitions = new PropertyDef[]
@@ -60,7 +61,6 @@ public class AppearanceSettings
 	public string BasePageCssName => CssThemeWeWillActuallyUse == "legacy-5-5" ? "basePage-legacy-5-5.css" : "basePage.css";
 
 	public string CssThemeWeWillActuallyUse;
-
 
 	public string GetThemeToUse_BasedOnPriorComputation()
 	{
@@ -93,9 +93,9 @@ public class AppearanceSettings
 		// otherwise, we have to slog through all the css files that might be incompatible with the new system.
 		cssFilesToCheck.Where(css => !string.IsNullOrWhiteSpace(css.Item2)).AsParallel().FirstOrDefault(css =>
 		{
-			if (MayBeIncompatible(css))
+			if (MayBeIncompatible(css.Item1, css.Item2, out OffendingCssRule))
 			{
-				FirstPossiblyLegacyCss = css.Item1;
+				FirstPossiblyOffendingCssFile = css.Item1;
 				CssThemeWeWillActuallyUse = "legacy-5-5";
 				SIL.Reporting.Logger.WriteEvent($"** Will use {CssThemeWeWillActuallyUse} BasePage and Theme");
 				return true;
@@ -106,29 +106,36 @@ public class AppearanceSettings
 		Debug.WriteLine($"** Will use {CssThemeWeWillActuallyUse}");
 	}
 
-	private static bool MayBeIncompatible(Tuple<string /* label */, string /* css */> labelAndCss)
+	internal static bool MayBeIncompatible(string label, string css, out string offendingRule)
 	{
+		offendingRule = null;
+
+		if(string.IsNullOrEmpty(css))
+			return false;
+
 		// note: "AppearanceVersion" uses the version number of Bloom, but isn't intended to increment with each new release of Bloom.
 		// E.g., we do not expect to break CSS files very often. So initially we will have the a.v. = 5.6, and maybe the next one
 		// will be 6.2.  Note that there is current some discussion of jumping from 5.5 to 6.0 to make it easier to remember which
 		// Bloom version changed to the new css system.
-		var v = Regex.Match(labelAndCss.Item2, @"compatibleWithAppearanceVersion:\s*(\d+(\.\d+)?)")?.Groups[1]?.Value ?? "0";
+		var v = Regex.Match(css, @"compatibleWithAppearanceVersion:\s*(\d+(\.\d+)?)")?.Groups[1]?.Value ?? "0";
 
 		if (double.TryParse(v, out var appearanceVersion) && appearanceVersion >= 5.6)
 			return false; // this is a 5.6+ theme, so it's fine
 
 		// See if the css contains rules that nowadays should be using css variables, and would likely interfere with 5.6 and up
-		// Note that this is pessimistic, e.g. it doesn't look to see if the rule is on the .marginBox.
-		const string kProbablyWillInterfere = "padding-|left:|top:|right:|bottom:|margin-|width:";
-		if (Regex.IsMatch(labelAndCss.Item2, kProbablyWillInterfere, RegexOptions.IgnoreCase))
+		const string kProbablyWillInterfere = @"\.marginBox\s*{[^}]*?"+
+			"(?<![-\\w])" + // prevent matching things like --page-margin-left
+			"(padding-|left:|top:|right:|bottom:|margin-|width:|height:)[^}]*}";
+		var match = Regex.Match(css, kProbablyWillInterfere, RegexOptions.IgnoreCase);
+		if (match.Success)
 		{
-			var s = $"** {labelAndCss.Item1} matched regex for a css rule that is potentially incompatible with this version of the default Bloom Css system.";
+			offendingRule = match.Value;
+			var s = $"** {label} matched regex for a css rule that is potentially incompatible with this version of the default Bloom Css system: \r\n{offendingRule}";
 			Debug.WriteLine(s);
 			SIL.Reporting.Logger.WriteEvent(s);
 			return true;
 		}
 		else return false;
-
 	}
 
 	/// <summary>
@@ -329,7 +336,7 @@ public class AppearanceSettings
 		// theme that the UI may have let through (currently it doesn't let you change it).
 		// But if we are not in legacy mode, then go ahead and change the theme to match
 		// whatever the UI asked for, no need to check all the css files again.
-		if (string.IsNullOrEmpty(FirstPossiblyLegacyCss))
+		if (string.IsNullOrEmpty(FirstPossiblyOffendingCssFile))
 		{
 			this.CssThemeWeWillActuallyUse = this.CssThemeNameSelectedByUser;
 		}
@@ -344,7 +351,7 @@ public class AppearanceSettings
 			var x = new ExpandoObject() as IDictionary<string, object>;
 
 			x["themeNames"] = from name in names.ToArray<string>() select new { label = name, value = name };
-			x["firstPossiblyLegacyCss"] = FirstPossiblyLegacyCss;
+			x["firstPossiblyLegacyCss"] = FirstPossiblyOffendingCssFile;
 			return JsonConvert.SerializeObject(x); }
 	}
 

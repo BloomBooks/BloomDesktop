@@ -40,7 +40,8 @@ namespace Bloom.web.controllers
 							// Note, sometimes CssThemeWeWillActuallyUse just hasn't been computed yet. For now, we're going to live with that.
 							// The UI will just not list it.
 							cssThemeWeWillActuallyUse = bookInfo.AppearanceSettings.CssThemeWeWillActuallyUse ?? "",
-							firstPossiblyLegacyCss = bookInfo.AppearanceSettings.FirstPossiblyLegacyCss,
+							firstPossiblyOffendingCssFile = bookInfo.AppearanceSettings.FirstPossiblyOffendingCssFile,
+							offendingCss = bookInfo.AppearanceSettings.OffendingCssRule,
 							path = bookInfo.FolderPath,
 
 						};
