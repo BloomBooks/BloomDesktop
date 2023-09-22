@@ -231,14 +231,6 @@ public class AppearanceSettings
 				cssBuilder.AppendLine(((PropertyDef)definition).GetCssVariableDeclaration(keyValuePair));
 		}
 
-		// just something to enable us easily visually point out that we are in legacy mode
-		// I don't think this is worth localizing at the moment. We might not keep it at all.
-		if (!string.IsNullOrEmpty(FirstPossiblyLegacyCss)) {
-			cssBuilder.AppendLine($"--cssThemeMessage: \"{FirstPossiblyLegacyCss} issues found, using '{this.CssThemeWeWillActuallyUse}'\";");
-		}
-		else {
-			cssBuilder.AppendLine($"--cssThemeMessage: \"Theme '{this.CssThemeWeWillActuallyUse}'\";");
-		}
 
 		cssBuilder.AppendLine("}");
 		return cssBuilder.ToString();
