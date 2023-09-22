@@ -90,7 +90,7 @@ export const DialogFolderChooser: React.FunctionComponent<{
     // we can't just wait for the api call to return. Instead we get called back
     // via web socket iff they select a folder and close the dialog.
     useSubscribeToWebSocketForObject<{ success: boolean; path: string }>(
-        "common",
+        "fileIO",
         "chooseFolder-results",
         results => {
             if (results.success) {
@@ -106,7 +106,7 @@ export const DialogFolderChooser: React.FunctionComponent<{
     return (
         <DialogFolderChooserWithApi
             {...props}
-            apiCommandToChooseAndSetFolder={"common/chooseFolder?" + params}
+            apiCommandToChooseAndSetFolder={"fileIO/chooseFolder?" + params}
         />
     );
 };

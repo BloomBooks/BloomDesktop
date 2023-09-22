@@ -547,7 +547,7 @@ namespace Bloom.Api
 			if (Platform.IsLinux)
 			{
 				PathUtilities.OpenDirectoryInExplorer(path);
-				CommonApi.BringFolderToFrontInLinux("Sample Texts");
+				FileIOApi.BringFolderToFrontInLinux("Sample Texts");
 			}
 			else
 			{
