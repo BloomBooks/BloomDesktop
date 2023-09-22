@@ -1406,7 +1406,8 @@ namespace Bloom.Book
 				HtmlDom.RemoveClassFromBody(RawDom, "template");
 			}
 
-			var cssFiles = this.Storage.GetCssFilesToCheckForBasePageCompatibility();
+			var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
+			Debug.WriteLine(this.FolderPath); // todo remove
 			BookInfo.AppearanceSettings.ComputeThemeAndBasePageCssVersionToUse(cssFiles);
 		}
 

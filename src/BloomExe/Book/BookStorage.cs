@@ -95,7 +95,7 @@ namespace Bloom.Book
 
 		string[] GetCssFilesToLink();
 
-		Tuple<string, string>[] GetCssFilesToCheckForBasePageCompatibility();
+		Tuple<string, string>[] GetCssFilesToCheckForAppearanceCompatibility();
 	}
 
 	public class BookStorage : IBookStorage
@@ -2461,9 +2461,18 @@ namespace Bloom.Book
 
 			// the link will be added above as we go through DynamicallyUpdatedLocalBookCssInOrder,
 			// but for tidyness, let's take the link out if we don't have the file.
-			if (!RobustFile.Exists(Path.Combine(FolderPath, "customBookStyles.css")))
+			if (!RobustFile.Exists(Path.Combine(FolderPath, "customBookStyles.css"))
+			// if we're substituting a theme for this customBookStyles.css, we don't want to the link to it
+			|| BookInfo.AppearanceSettings.SubstitutedCssFile == "customBookStyles.css")
+			{
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
+			}
 
+			// if we're substituting a theme for this customBookStyles.css or customCollectionStyles.css, we don't want to the link to it
+			if (!string.IsNullOrEmpty(BookInfo.AppearanceSettings.SubstitutedCssFile))
+			{
+				EnsureDoesntHaveLinkToStyleSheet(dom, BookInfo.AppearanceSettings.SubstitutedCssFile);
+			}
 			dom.SortStyleSheetLinks();
 		}
 
@@ -3020,7 +3029,7 @@ namespace Bloom.Book
 		}
 
 
-		public Tuple<string, string>[] GetCssFilesToCheckForBasePageCompatibility()
+		public Tuple<string, string>[] GetCssFilesToCheckForAppearanceCompatibility()
 		{
 
 			var brandingCssPath = FolderPath.CombineForPath("branding.css");

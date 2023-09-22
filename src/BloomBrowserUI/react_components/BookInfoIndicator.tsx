@@ -17,6 +17,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
         path: string;
         cssThemeWeWillActuallyUse: string;
         firstPossiblyOffendingCssFile: string;
+        substitutedCssFile: string;
         offendingCss: string;
         error: string;
     };
@@ -55,7 +56,9 @@ export const BookInfoIndicator: React.FunctionComponent<{
                     <br />
                     {info.cssThemeWeWillActuallyUse}
                 </p>
-
+                {info.substitutedCssFile && (
+                    <p>{`😀Bloom will use the ${info.cssThemeWeWillActuallyUse} theme, which is designed to replace the old ${info.substitutedCssFile} that this book was using.`}</p>
+                )}
                 {info.firstPossiblyOffendingCssFile && (
                     <React.Fragment>
                         <p>
