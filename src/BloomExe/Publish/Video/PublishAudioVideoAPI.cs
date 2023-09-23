@@ -230,6 +230,11 @@ namespace Bloom.Publish.Video
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "isScalingActive",
 				request => IsScalingActive(),
 			null, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "abortMakingVideo", request =>
+			{
+				AbortMakingVideo();
+				request.PostSucceeded();
+			}, false);	
 		}
 
 		private void UpdatePreview(ApiRequest request)

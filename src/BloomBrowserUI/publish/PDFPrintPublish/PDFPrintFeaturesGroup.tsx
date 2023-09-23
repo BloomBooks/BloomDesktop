@@ -17,7 +17,7 @@ import { kSelectCss } from "../../bloomMaterialUITheme";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { ToggleButton, Typography } from "@mui/material";
 
-interface PdfReadyMessage {
+export interface PdfReadyMessage {
     path: string;
 }
 

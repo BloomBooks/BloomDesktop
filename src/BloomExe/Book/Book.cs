@@ -992,11 +992,6 @@ namespace Bloom.Book
 				Save();
 			}
 
-			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
-			{
-				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _bookData.Language1.Tag);
-			}
-
 			OurHtmlDom.FixDivOrdering();
 
 			Save();
@@ -4576,7 +4571,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Used by PublishView to tell the user they can't publish a book with Overlay elements w/o Enterprise.
+		/// Used by the publish tab to tell the user they can't publish a book with Overlay elements w/o Enterprise.
 		/// </summary>
 		/// <returns></returns>
 		public string GetNumberOfFirstPageWithOverlay()
