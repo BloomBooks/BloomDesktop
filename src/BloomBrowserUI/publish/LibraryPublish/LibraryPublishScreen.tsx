@@ -2,9 +2,6 @@
 import { jsx, css } from "@emotion/react";
 import ReactDOM = require("react-dom");
 import { Typography } from "@mui/material";
-import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-
-import { lightTheme } from "../../bloomMaterialUITheme";
 import { Link } from "../../react_components/link";
 import {
     PublishPanel,
@@ -99,16 +96,3 @@ export const LibraryPublishScreen = () => {
         </Typography>
     );
 };
-// a bit goofy... currently the html loads everything in publishUIBundlejs. So all the publish screens
-// get any not-in-a-class code called, including ours. But it only makes sense to get wired up
-// if that html has the root page we need.
-if (document.getElementById("LibraryPublishScreen")) {
-    ReactDOM.render(
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                <LibraryPublishScreen />
-            </ThemeProvider>
-        </StyledEngineProvider>,
-        document.getElementById("LibraryPublishScreen")
-    );
-}
