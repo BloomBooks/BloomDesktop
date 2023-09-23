@@ -11,7 +11,6 @@ import {
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import * as ReactDOM from "react-dom";
-import { lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,
@@ -29,8 +28,7 @@ import {
     useWatchBooleanEvent
 } from "../../utils/bloomApi";
 import { NoteBox } from "../../react_components/boxes";
-import { Div, P } from "../../react_components/l10nComponents";
-import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
+import { P } from "../../react_components/l10nComponents";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 
@@ -289,17 +287,3 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
         </React.Fragment>
     );
 };
-
-// a bit goofy... currently the html loads everything in publishUIBundlejs. So all the publish screens
-// get any not-in-a-class code called, including ours. But it only makes sense to get wired up
-// if that html has the root page we need.
-if (document.getElementById("ePUBPublishScreen")) {
-    ReactDOM.render(
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                <EPUBPublishScreen />
-            </ThemeProvider>
-        </StyledEngineProvider>,
-        document.getElementById("ePUBPublishScreen")
-    );
-}

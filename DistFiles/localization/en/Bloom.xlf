@@ -3015,37 +3015,30 @@
         <note>This shows in the popup before the font's version number.</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.BloomCommunityForum" translate="no">
-        <!-- Added in 5.6 -->
         <source xml:lang="en">Bloom Community Forum</source>
         <note>ID: ForumInvitationDialog.BloomCommunityForum</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.DoYouKnow" translate="no">
-        <!-- Added in 5.6 -->
         <source xml:lang="en">Do you know about our Bloom forum? Join us to:</source>
         <note>ID: ForumInvitationDialog.DoYouKnow</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.LearnAboutNewFeatures" translate="no">
-        <!-- Added in 5.6 -->
         <source xml:lang="en">learn about new features</source>
         <note>ID: ForumInvitationDialog.LearnAboutNewFeatures</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.RequestAndVote" translate="no">
-        <!-- Added in 5.6 -->
         <source xml:lang="en">request and vote on new features</source>
         <note>ID: ForumInvitationDialog.RequestAndVote</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.AskForAdvice" translate="no">
-        <!-- Added in 5.6 -->
         <source xml:lang="en">ask for advice or technical help</source>
         <note>ID: ForumInvitationDialog.AskForAdvice</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.ShowOff" translate="no">
-        <!-- Added in 5.6 -->
         <source xml:lang="en">show off what you're doing with Bloom!</source>
         <note>ID: ForumInvitationDialog.ShowOff</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.HowToJoin" translate="no">
-        <!-- Added in 5.6 -->
         <source xml:lang="en">How to Join</source>
         <note>ID: ForumInvitationDialog.HowToJoin</note>
       </trans-unit>
@@ -3989,6 +3982,11 @@
         <source xml:lang="en">Upload your book to BloomLibrary.org so that other people can read it, download it to their devices, and share it with other people.</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
       </trans-unit>
+      <!-- Added in 5.6 -->
+      <trans-unit id="PublishTab.CannotUpload" sil:dynamic="true" translate="no">
+        <source xml:lang="en">The creator of this book does not allow derivatives to be uploaded. Please contact the creator for more information.</source>
+        <note>ID: PublishTab.CannotUpload</note>
+      </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio">
         <source xml:lang="en">Booklet Cover</source>
         <note>ID: PublishTab.CoverOnlyRadio</note>
@@ -4410,6 +4408,11 @@
         <source xml:lang="en">PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.Button</note>
         <note>Text under button to select Print and PDF preview</note>
+      </trans-unit>
+      <!-- Added in 5.6 -->
+      <trans-unit id="PublishTab.PdfPrintButton-tooltip" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Generate a PDF document and/or print your book.</source>
+        <note>ID: PublishTab.PdfPrintButton-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfPrint.BannerTitle">
         <source xml:lang="en">Publish to PDF &amp; Print</source>
