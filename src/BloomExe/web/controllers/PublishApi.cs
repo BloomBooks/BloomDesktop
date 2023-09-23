@@ -13,6 +13,10 @@ using Bloom.Publish.BloomLibrary;
 using BloomTemp;
 using Newtonsoft.Json;
 using SIL.IO;
+using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
+using SIL.Reporting;
+using Bloom.ToPalaso;
 
 namespace Bloom.web.controllers
 {
@@ -22,6 +26,9 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class PublishApi
 	{
+		
+		private BookUpload _bookTransferrer;
+		private PublishModel _publishModel;
 		public static BloomLibraryPublishModel Model { get; set; }
 		private IBloomWebSocketServer _webSocketServer;
 		private readonly BookServer _bookServer;
@@ -48,6 +55,7 @@ namespace Bloom.web.controllers
 		private readonly WebSocketProgress _progress;
 
 		public static string PreviewUrl { get; set; }
+		private WorkspaceTabSelection _tabSelection;
 
 		/// <summary>
 		/// Conceptually, this is where we are currently building a book for preview.
@@ -57,15 +65,26 @@ namespace Bloom.web.controllers
 		/// </summary>
 		public static string CurrentPublicationFolder { get; private set; }
 
-		public PublishApi(BloomWebSocketServer webSocketServer, BookServer bookServer)
+		public PublishApi(BloomWebSocketServer webSocketServer, BookServer bookServer, BookUpload bookTransferrer, 
+			PublishModel model, WorkspaceTabSelection tabSelection)
 		{
 			_webSocketServer = webSocketServer;
 			_bookServer = bookServer;
 			_progress = new WebSocketProgress(_webSocketServer, PublishApi.kWebSocketContext);
+			_bookTransferrer = bookTransferrer;
+			_publishModel = model;
+			_tabSelection = tabSelection;
+
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
+			apiHandler.RegisterEndpointHandler("publish/getInitialPublishTabInfo", getInitialPublishTabInfo, false);
+			apiHandler.RegisterEndpointHandler("publish/switchingPublishMode", (request) => {
+				// Abort any work we're doing to prepare a preview (at least stop it interfering with other navigation)
+				PublishHelper.Cancel();
+				request.PostSucceeded();
+			}, false);
 			apiHandler.RegisterBooleanEndpointHandler("publish/signLanguage",
 				request => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage(),
 				(request, val) =>
@@ -271,6 +290,57 @@ namespace Bloom.web.controllers
 					writeRequest.CurrentBook.BookInfo.MetaData.Draft = value;
 					writeRequest.CurrentBook.BookInfo.Save(); // We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
 				}, false);
+
+			// openInBrowser, openPdf, and exportAudioFiles1PerPageToolStrip are for the right-click context menu
+			apiHandler.RegisterEndpointHandler("publish/openInBrowser", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Post)
+				{
+					_publishModel.DebugCurrentPDFLayout();
+				}
+				request.PostSucceeded();
+			}, false);
+
+			apiHandler.RegisterEndpointHandler("publish/openPdf", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Post)
+				{
+					ProcessExtra.SafeStartInFront(_publishModel.PdfFilePath);
+				}
+				request.PostSucceeded();
+			}, false);
+			
+			apiHandler.RegisterEndpointHandler("publish/exportAudioFiles1PerPageToolStrip", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Post)
+				{
+					_publishModel.ExportAudioFiles1PerPage();
+				}
+				request.PostSucceeded();
+			}, false);
+			
+		}
+
+		public void getInitialPublishTabInfo(ApiRequest request)
+		{
+				_publishModel.UpdateModelUponActivation();
+				// There should be a current selection by now but just in case:
+				if (_publishModel.BookSelection.CurrentSelection == null) 
+				{
+					request.ReplyWithJson(JsonConvert.SerializeObject(new {currentSelectionExists = false}));
+					return;
+				}
+				LibraryPublishApi.Model = Model = new BloomLibraryPublishModel(_bookTransferrer, _publishModel.BookSelection.CurrentSelection, _publishModel);
+				Logger.WriteEvent("Entered Publish Tab");
+				_publishModel.BookSelection.CurrentSelection.ReportIfBrokenAudioSentenceElements();
+				request.ReplyWithJson(JsonConvert.SerializeObject(new { 
+					currentSelectionExists = true,
+					canUpload = _publishModel.BookSelection.CurrentSelection.BookInfo.AllowUploading,
+					canPublish = _publishModel.CanPublish,
+					canDownloadPDF = _publishModel.PdfGenerationSucceeded, // To be used for the context menu
+					titleForDisplay = _publishModel.BookSelection.CurrentSelection.TitleBestForUserDisplay,
+					numberOfFirstPageWithOverlay = _publishModel.BookSelection.CurrentSelection.GetNumberOfFirstPageWithOverlay(),
+				}));
 		}
 
 		private void HandleChooseSignLanguage(ApiRequest request)
@@ -403,7 +473,7 @@ namespace Bloom.web.controllers
 				// I've made it a websocket broadcast when it is ready.
 				// If we've already left the publish tab...we can get a few of these requests queued up when
 				// a tester rapidly toggles between views...abandon the attempt
-				if (!PublishHelper.InPublishTab)
+				if (_tabSelection.ActiveTab != WorkspaceTab.publish)
 				{
 					request.Failed("aborted, no longer in publish tab");
 					return;

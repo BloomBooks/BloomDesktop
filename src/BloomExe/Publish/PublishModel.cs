@@ -30,7 +30,7 @@ using System.Xml;
 namespace Bloom.Publish
 {
 	/// <summary>
-	/// Contains the logic behind the PublishView control, which involves creating a pdf from the html book and letting you print it,
+	/// Contains the logic behind the publish tab, which involves creating a pdf from the html book and letting you print it,
 	/// making epubs, and various other publication paths.
 	/// </summary>
 	public class PublishModel : IDisposable
@@ -42,17 +42,6 @@ namespace Bloom.Publish
 		public string PdfFilePath { get; private set; }
 
 		public int HtmlPageCount { get; private set; }
-
-		public enum DisplayModes
-		{
-			WaitForUserToChooseSomething,
-			Upload,
-			BloomPUB,
-			AudioVideo,
-			EPUB,
-			PdfPrint,
-			NotPublishable
-		}
 
 		public enum BookletPortions
 		{
@@ -107,20 +96,11 @@ namespace Bloom.Publish
 
 		public PublishView View { get; set; }
 
-		// True when we are showing the controls for uploading. (Review: does this belong in the model or view?)
-		public bool UploadMode { get; set; }
-
-		// True when showing an ePUB preview.
-		public bool EpubMode;
-
-		// True when showing the controls for PDF generation and printing.
-		public bool PdfPrintMode;
-
 		bool _pdfSucceeded;
 		public bool PdfGenerationSucceeded
 		{
 			get { return _pdfSucceeded; }
-			set { _pdfSucceeded = value; View.UpdateDisplayFeatures(); }
+			set { _pdfSucceeded = value; }
 		}
 
 		private void OnBookSelectionChanged(object sender, BookSelectionChangedEventArgs bookSelectionChangedEventArgs)
@@ -459,23 +439,6 @@ namespace Bloom.Publish
 			return path;
 		}
 
-		DisplayModes _currentDisplayMode = DisplayModes.WaitForUserToChooseSomething;
-		internal DisplayModes DisplayMode
-		{
-			get
-			{
-				return _currentDisplayMode;
-			}
-			set
-			{
-				if (_currentDisplayMode != value)
-				{
-					_currentDisplayMode = value;
-					View?.Invoke((Action)(() => View.SetDisplayMode(value)));
-				}
-			}
-		}
-
 		public void Dispose()
 		{
 			if (RobustFile.Exists(PdfFilePath))
@@ -513,23 +476,13 @@ namespace Bloom.Publish
 			set { _pdfMaker.ShowCropMarks = value; }
 		}
 
-		public bool AllowEPUB => CanPublish;
-
-		public bool AllowBloomPub => CanPublish;
-
-		public bool AllowUpload => BookSelection.CurrentSelection.BookInfo.AllowUploading && CanPublish;
-
-		public bool AllowPdf => CanPublish;
-
-		public bool AllowRecordVideo => CanPublish;
-
 		public bool AllowPdfBooklet
 		{
 			get
 			{
 				// Large page sizes can't make booklets.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4155.
 				var size = PageLayout.SizeAndOrientation.PageSizeName;
-				return AllowPdf && BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
+				return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
 					(size != "A4" && size != "A3" && size != "B5" && size != "Letter" && size != "Device16x9");
 			}
 		}
@@ -714,9 +667,6 @@ namespace Bloom.Publish
 			CanPublish = DeterminePublishability(); // in case the user edited the book without changing the selected book
 		}
 
-		[Import("GetPublishingMenuCommands")]//, AllowDefault = true)]
-		private Func<IEnumerable<ToolStripItem>> _getExtensionMenuItems;
-
 		public IEnumerable<HtmlDom> GetPageDoms()
 		{
 			if (BookSelection.CurrentSelection.IsFolio)
@@ -775,32 +725,6 @@ namespace Bloom.Publish
 			};
 			dom.UseOriginalImages = true; // apparently these thumbnails can be big...anyway we want printable images.
 			_thumbNailer.HtmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions, onReady, onError);
-		}
-
-		public IEnumerable<ToolStripItem> GetExtensionMenuItems()
-		{
-			//for now we're not doing real extension dlls, just kind of faking it. So we will limit this load
-			//to books we know go with this currently "built-in" "extension" for SIL LEAD's SHRP Project.
-			if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection))
-			{
-				//load any extension assembly found in the template's root directory
-				//var catalog = new DirectoryCatalog(this.BookSelection.CurrentSelection.FindTemplateBook().FolderPath, "*.dll");
-				var catalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
-				var container = new CompositionContainer(catalog);
-				//inject what we have to offer for the extension to consume
-				container.ComposeExportedValue<string>("PathToBookFolder", BookSelection.CurrentSelection.FolderPath);
-				container.ComposeExportedValue<string>("Language1Tag", _currentlyLoadedBook.BookData.Language1.Tag);
-				container.ComposeExportedValue<Func<IEnumerable<HtmlDom>>>(GetPageDoms);
-				//  container.ComposeExportedValue<Func<string>>("pathToPublishedHtmlFile",GetFileForPrinting);
-				//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
-				container.ComposeExportedValue<Action<int, int, HtmlDom, Action<Image>, Action<Exception>>>(GetThumbnailAsync);
-				container.SatisfyImportsOnce(this);
-				return _getExtensionMenuItems == null ? new List<ToolStripItem>() : _getExtensionMenuItems();
-			}
-			else
-			{
-				return new List<ToolStripMenuItem>();
-			}
 		}
 
 		public void ReportAnalytics(string eventName)

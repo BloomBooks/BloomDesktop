@@ -68,7 +68,7 @@ namespace Bloom.Workspace
 		private ToastNotifier _returnToCollectionTabNotifier;
 		private BloomWebSocketServer _webSocketServer;
 		private BookServer _bookServer;
-		private WorkspaceTabSelection _tabSelection;
+		public static WorkspaceTabSelection _tabSelection; 	// static so PublishHelper can access it
 		private CollectionApi _collectionApi;
 		private AudioRecording _audioRecording;
 

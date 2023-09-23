@@ -252,8 +252,6 @@ namespace Bloom.web.controllers
 		}
 		private void SetParentControlsState(bool enable)
 		{
-			_publishView.SetStateOfNonUploadRadios(enable);
-
 			GetWorkspaceView()?.SetStateOfNonPublishTabs(enable);
 		}
 
