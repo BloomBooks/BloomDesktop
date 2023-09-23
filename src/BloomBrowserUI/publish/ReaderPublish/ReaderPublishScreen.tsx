@@ -16,8 +16,6 @@ import { CoverColorGroup } from "../commonPublish/CoverColorGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import ReactDOM = require("react-dom");
-import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,
@@ -113,7 +111,6 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         }
     );
 
-    const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
     const publishing = useL10n("Publishing", "PublishTab.Common.Publishing");
 
     useSubscribeToWebSocketForEvent(
@@ -149,8 +146,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     );
 
     const previewUrl =
-        pathToOutputBrowser +
-        "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
+        "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
         encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
         "&independent=false" + // you can temporarily comment this out to send BloomPlayer analytics from Bloom Editor
         "&host=bloomdesktop" +
@@ -317,17 +313,3 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         </React.Fragment>
     );
 };
-
-// a bit goofy... currently the html loads everything in publishUIBundlejs. So all the publish screens
-// get any not-in-a-class code called, including ours. But it only makes sense to get wired up
-// if that html has the root page we need.
-if (document.getElementById("BloomReaderPublishScreen")) {
-    ReactDOM.render(
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                <ReaderPublishScreen />
-            </ThemeProvider>
-        </StyledEngineProvider>,
-        document.getElementById("BloomReaderPublishScreen")
-    );
-}

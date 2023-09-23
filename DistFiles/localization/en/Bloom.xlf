@@ -3989,6 +3989,11 @@
         <source xml:lang="en">Upload your book to BloomLibrary.org so that other people can read it, download it to their devices, and share it with other people.</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
       </trans-unit>
+      <!-- Added in 5.6 -->
+      <trans-unit id="PublishTab.CannotUpload" sil:dynamic="true" translate="no">
+        <source xml:lang="en">The creator of this book does not allow derivatives to be uploaded. Please contact the creator for more information.</source>
+        <note>ID: PublishTab.CannotUpload</note>
+      </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio">
         <source xml:lang="en">Booklet Cover</source>
         <note>ID: PublishTab.CoverOnlyRadio</note>
@@ -4410,6 +4415,11 @@
         <source xml:lang="en">PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.Button</note>
         <note>Text under button to select Print and PDF preview</note>
+      </trans-unit>
+      <!-- Added in 5.6 -->
+      <trans-unit id="PublishTab.PdfPrintButton-tooltip" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Generate a PDF document and/or print your book.</source>
+        <note>ID: PublishTab.PdfPrintButton-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfPrint.BannerTitle">
         <source xml:lang="en">Publish to PDF &amp; Print</source>

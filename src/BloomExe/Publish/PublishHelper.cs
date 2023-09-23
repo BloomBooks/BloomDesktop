@@ -16,6 +16,7 @@ using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
 using Bloom.FontProcessing;
+using Bloom.Workspace;
 
 namespace Bloom.Publish
 {
@@ -27,7 +28,7 @@ namespace Bloom.Publish
 
 		public PublishHelper()
 		{
-			if (!InPublishTab && !Program.RunningUnitTests && !Program.RunningInConsoleMode)
+			if (!Program.RunningUnitTests && WorkspaceView._tabSelection.ActiveTab != WorkspaceTab.publish  && !Program.RunningUnitTests && !Program.RunningInConsoleMode)
 			{
 				throw new InvalidOperationException("Should not be creating bloom book while not in publish tab");
 			}
@@ -39,12 +40,6 @@ namespace Bloom.Publish
 		{
 			_latestInstance = null;
 		}
-
-		// I'm not sure this is the best global place to keep track of this, but various things should abort
-		// if we're trying to build previews and switch out of the publish tab entirely. The most important
-		// are ones that (because of NavigationIsolator) can hold up displaying the page back in one of the
-		// other views.
-		public static bool InPublishTab { get; set; }
 
 		private Browser _browser;
 		public Browser BrowserForPageChecks
@@ -83,10 +78,6 @@ namespace Bloom.Publish
 			// but things freeze up if we don't do it on the UI thread.
 			if (ControlForInvoke != null)
 			{
-				// Linux/Mono can choose a toast as the ActiveForm.  When it closes, bad things can happen
-				// trying to use it to Invoke.
-				if (ControlForInvoke.IsDisposed)
-					ControlForInvoke = Form.ActiveForm;
 				ControlForInvoke.Invoke((Action)(delegate
 				{
 					RemoveUnwantedContentInternal(dom, book, removeInactiveLanguages, epubMaker, warningMessages, keepPageLabels);
