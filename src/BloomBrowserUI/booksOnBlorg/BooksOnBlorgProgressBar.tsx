@@ -29,7 +29,9 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
         "BooksOnBlorg.Progress.CountOfBooksLabel",
         "Books on website label under progress bar on Collection tab.",
         bookCount.toString(),
-        languageName
+        languageName.length > 12
+            ? languageName.substring(0, 11) + "..."
+            : languageName
     );
 
     useEffect(() => {
