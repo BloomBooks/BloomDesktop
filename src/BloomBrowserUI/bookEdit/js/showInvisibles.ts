@@ -126,8 +126,8 @@ export function showInvisibles(e) {
             );
             $this.qtip({
                 position: {
-                    my: "top right",
-                    at: "bottom left",
+                    my: "top left",
+                    at: "bottom right",
                     container: bloomQtipUtils.qtipZoomContainer()
                 },
                 content: $this.attr("data-name-of-invisible"),
@@ -135,7 +135,10 @@ export function showInvisibles(e) {
                     ready: true
                 },
                 hide: {
-                    leave: false
+                    inactive: 2000,
+                    effect: function() {
+                        $(this).fadeOut(250);
+                    }
                 }
             });
         }
