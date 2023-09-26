@@ -498,7 +498,7 @@ namespace Bloom
 			{
 				// Note: this is only used for the Undo button in the toolbar;
 				// ctrl-z is handled in JavaScript directly.
-				RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.handleUndo()"); // I'm leaving this async for this late update to 5.5, but Can it by async?
+				RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.handleUndo()"); // I'm leaving this async for this late update to 5.5, but can it be async?
 			};
 		}
 
@@ -519,7 +519,7 @@ namespace Bloom
 		}
 
 		bool _currentlyInUpdateButtons = false;
-		public override async void UpdateEditButtons()
+		public override async void UpdateEditButtonsAsync()
 		{
 			if (_currentlyInUpdateButtons)
 				return;
@@ -532,7 +532,7 @@ namespace Bloom
 
 				if (InvokeRequired)
 				{
-					Invoke(new Action(UpdateEditButtons));
+					Invoke(new Action(UpdateEditButtonsAsync));
 					return;
 				}
 
@@ -543,7 +543,7 @@ namespace Bloom
 					_copyCommand.Enabled = isTextSelection;
 					_pasteCommand.Enabled = PortableClipboard.ContainsText();
 
-					_undoCommand.Enabled = await CanUndo();
+					_undoCommand.Enabled = await CanUndoAsync();
 
 				}
 				catch (Exception)
@@ -562,7 +562,7 @@ namespace Bloom
 		}
 
 		bool _currentlyRunningCanUndo = false;
-		private async Task<bool> CanUndo()
+		private async Task<bool> CanUndoAsync()
 		{
 			// once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
 			if (_currentlyRunningCanUndo)

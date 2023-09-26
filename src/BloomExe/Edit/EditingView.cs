@@ -1332,7 +1332,7 @@ namespace Bloom.Edit
 			// Note that this method is called by a timer (probably about 110msec cycle).
 			if (!_browser1.Visible)
 				return;	
-			_browser1.UpdateEditButtons();
+			_browser1.UpdateEditButtonsAsync();
 			UpdateButtonEnabled(_cutButton, _cutCommand);
 			UpdateButtonEnabled(_copyButton, _copyCommand);
 			UpdateButtonEnabled(_pasteButton, _pasteCommand);
@@ -1348,7 +1348,7 @@ namespace Bloom.Edit
 
 		private void CycleEditButtons()
 		{
-			_browser1.UpdateEditButtons();
+			_browser1.UpdateEditButtonsAsync();
 			CycleOneButton(_cutButton, _cutCommand);
 			CycleOneButton(_copyButton, _copyCommand);
 			CycleOneButton(_pasteButton, _pasteCommand);

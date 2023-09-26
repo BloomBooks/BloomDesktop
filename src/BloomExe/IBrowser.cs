@@ -372,7 +372,7 @@ namespace Bloom
 		}
 		public abstract void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand);
 		public abstract void ShowHtml(string html);
-		public abstract void UpdateEditButtons();
+		public abstract void UpdateEditButtonsAsync();
 
 		protected void AdjustContextMenu(IMenuItemAdder adder)
 		{
