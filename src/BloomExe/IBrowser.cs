@@ -14,7 +14,7 @@ using System.Xml;
 
 namespace Bloom
 {
-	// This is just a temporary thing to centralize switching during progressive coding and testing. 
+	// This is just a temporary thing to centralize switching during progressive coding and testing.
 	public class BrowserMaker
 	{
 		/// <summary>
@@ -409,12 +409,7 @@ namespace Bloom
 				OnOpenPageInEdge);
 		}
 
-		public abstract void SaveDocument(string path);
-
-		public async virtual Task SaveDocumentAsync(string path)
-		{
-			SaveDocument(path);
-		}
+		public abstract Task SaveDocumentAsync(string path);
 	}
 
 	public interface IMenuItemAdder

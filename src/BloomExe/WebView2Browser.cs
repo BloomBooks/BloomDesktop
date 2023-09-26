@@ -424,12 +424,6 @@ namespace Bloom
 			return new Bitmap(stream);
 		}
 
-		public override void SaveDocument(string path)
-		{
-			var html = RunJavascriptWithStringResult_Sync_Dangerous("document.documentElement.outerHTML");
-			RobustFile.WriteAllText(path, html, Encoding.UTF8);
-		}
-
 		public override async Task SaveDocumentAsync(string path)
 		{
 			var html = await GetStringFromJavascriptAsync("document.documentElement.outerHTML");
@@ -569,7 +563,7 @@ namespace Bloom
 
 		bool _currentlyRunningCanUndo = false;
 		private async Task<bool> CanUndo()
-		{		
+		{
 			// once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
 			if (_currentlyRunningCanUndo)
 				return true;
@@ -583,7 +577,7 @@ namespace Bloom
 			{
 				_currentlyRunningCanUndo = false;
 			}
-			
+
 		}
 	}
 
