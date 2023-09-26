@@ -14,7 +14,7 @@ using System.Xml;
 
 namespace Bloom
 {
-	// This is just a temporary thing to centralize switching during progressive coding and testing. 
+	// This is just a temporary thing to centralize switching during progressive coding and testing.
 	public class BrowserMaker
 	{
 		/// <summary>
@@ -76,7 +76,7 @@ namespace Bloom
 		/// Get a bitmap showing the current state of the browser. Caller should dispose.
 		/// </summary>
 		/// <returns></returns>
-		public abstract Bitmap GetPreview();
+		public abstract Bitmap CapturePreview_Synchronous_Dangerous();
 
 		/// <summary>
 		/// If it returns true these are in place of our standard extensions; if false, the
@@ -358,9 +358,11 @@ namespace Bloom
 			_pageEditDom.GetElementsByTagName("head")[0].InnerXml = HtmlDom.CreateUserModifiedStyles(userCssContent);
 		}
 
-		public abstract string RunJavaScript(string script);
+		[Obsolete("This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred.")]
+		public abstract string RunJavascriptWithStringResult_Sync_Dangerous(string script);
 
-		public abstract Task<string> RunJavaScriptAsync(string script);
+		public abstract Task<string> GetStringFromJavascriptAsync(string script);
+		public abstract Task RunJavascriptAsync(string script);
 
 		public abstract void SaveHTML(string path);
 
@@ -370,7 +372,7 @@ namespace Bloom
 		}
 		public abstract void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand);
 		public abstract void ShowHtml(string html);
-		public abstract void UpdateEditButtons();
+		public abstract void UpdateEditButtonsAsync();
 
 		protected void AdjustContextMenu(IMenuItemAdder adder)
 		{
@@ -407,12 +409,7 @@ namespace Bloom
 				OnOpenPageInEdge);
 		}
 
-		public abstract void SaveDocument(string path);
-
-		public async virtual Task SaveDocumentAsync(string path)
-		{
-			SaveDocument(path);
-		}
+		public abstract Task SaveDocumentAsync(string path);
 	}
 
 	public interface IMenuItemAdder

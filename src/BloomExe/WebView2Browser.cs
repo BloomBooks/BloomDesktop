@@ -411,7 +411,7 @@ namespace Bloom
 		public WebView2 InternalBrowser => _webview;
 
 		public override string Url => _webview.Source.ToString();
-		public override Bitmap GetPreview()
+		public override Bitmap CapturePreview_Synchronous_Dangerous()
 		{
 			var stream = new MemoryStream();
 			var task = _webview.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, stream);
@@ -424,35 +424,31 @@ namespace Bloom
 			return new Bitmap(stream);
 		}
 
-		public override void SaveDocument(string path)
-		{
-			var html = RunJavaScript("document.documentElement.outerHTML");
-			RobustFile.WriteAllText(path, html, Encoding.UTF8);
-		}
-
 		public override async Task SaveDocumentAsync(string path)
 		{
-			var html = await RunJavaScriptAsync("document.documentElement.outerHTML");
+			var html = await GetStringFromJavascriptAsync("document.documentElement.outerHTML");
 			RobustFile.WriteAllText(path, html, Encoding.UTF8);
 		}
 
-		public override string RunJavaScript(string script)
+		[Obsolete("This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred.")]
+		public override string RunJavascriptWithStringResult_Sync_Dangerous(string script)
 		{
-			Task<string> task = RunJavaScriptAsync(script);
-			// I don't fully understand why this works and many other things I tried don't (typically deadlock,
-			// or complain that ExecuteScriptAsync must be done on the main thread).
+			Task<string> task = GetStringFromJavascriptAsync(script);
+			// This is dangerous. E.g. it caused this bug: https://issues.bloomlibrary.org/youtrack/issue/BL-12614
 			// Came from an answer in https://stackoverflow.com/questions/65327263/how-to-get-sync-return-from-executescriptasync-in-webview2'
-			// The more elegant thing would be a drastic rewrite of many levels of callers to all be async.
 			while (!task.IsCompleted)
 			{
 				Application.DoEvents();
 				System.Threading.Thread.Sleep(10);
 			}
-			var result = task.Result;
-			return result;
-		}
 
-		public override async Task<string> RunJavaScriptAsync(string script)
+			return task.Result;
+		}
+		public override async Task RunJavascriptAsync(string script)
+		{
+			await _webview.ExecuteScriptAsync(script);
+		}
+		public override async Task<string> GetStringFromJavascriptAsync(string script)
 		{
 			var result = await _webview.ExecuteScriptAsync(script);
 			// Whatever the javascript produces gets JSON encoded automatically by ExecuteScriptAsync.
@@ -481,22 +477,22 @@ namespace Bloom
 			// result (we only care about the side effects on the clipboard and document)
 			_cutCommand.Implementer = () =>
 			{
-				RunJavaScriptAsync("editTabBundle?.getEditablePageBundleExports()?.cutSelection()");
+				RunJavascriptAsync("editTabBundle?.getEditablePageBundleExports()?.cutSelection()");
 			};
 			_copyCommand.Implementer = () =>
 			{
-				RunJavaScriptAsync("editTabBundle?.getEditablePageBundleExports()?.copySelection()");
+				RunJavascriptAsync("editTabBundle?.getEditablePageBundleExports()?.copySelection()");
 			};
 			_pasteCommand.Implementer = () =>
 			{
-				RunJavaScriptAsync("editTabBundle?.getEditablePageBundleExports()?.pasteClipboardText()");
+				RunJavascriptAsync("editTabBundle?.getEditablePageBundleExports()?.pasteClipboardText()");
 
 			};
 			_undoCommand.Implementer = () =>
 			{
 				// Note: this is only used for the Undo button in the toolbar;
 				// ctrl-z is handled in JavaScript directly.
-				RunJavaScript("editTabBundle.handleUndo()");
+				RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.handleUndo()"); // I'm leaving this async for this late update to 5.5, but can it be async?
 			};
 		}
 
@@ -516,56 +512,66 @@ namespace Bloom
 			return EditingModel.IsTextSelected;
 		}
 
-		public override void UpdateEditButtons()
+		bool _currentlyInUpdateButtons = false;
+		public override async void UpdateEditButtonsAsync()
 		{
-			if (_copyCommand == null)
+			if (_currentlyInUpdateButtons)
 				return;
-
-			if (InvokeRequired)
-			{
-				Invoke(new Action(UpdateEditButtons));
-				return;
-			}
+			_currentlyInUpdateButtons = true;
 
 			try
 			{
-				var isTextSelection = IsThereACurrentTextSelection();
-				_cutCommand.Enabled = isTextSelection;
-				_copyCommand.Enabled = isTextSelection;
-				_pasteCommand.Enabled = PortableClipboard.ContainsText();
+				if (_copyCommand == null)
+					return;
 
-				_undoCommand.Enabled = CanUndo;
+				if (InvokeRequired)
+				{
+					Invoke(new Action(UpdateEditButtonsAsync));
+					return;
+				}
 
+				try
+				{
+					var isTextSelection = IsThereACurrentTextSelection();
+					_cutCommand.Enabled = isTextSelection;
+					_copyCommand.Enabled = isTextSelection;
+					_pasteCommand.Enabled = PortableClipboard.ContainsText();
+
+					_undoCommand.Enabled = await CanUndoAsync();
+
+				}
+				catch (Exception)
+				{
+					_pasteCommand.Enabled = false;
+					Logger.WriteMinorEvent("UpdateEditButtons(): Swallowed exception.");
+					//REf jira.palaso.org/issues/browse/BL-197
+					//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
+					//so it's probably just not ok to check if you're not front-most.
+				}
 			}
-			catch (Exception)
+			finally
 			{
-				_pasteCommand.Enabled = false;
-				Logger.WriteMinorEvent("UpdateEditButtons(): Swallowed exception.");
-				//REf jira.palaso.org/issues/browse/BL-197
-				//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
-				//so it's probably just not ok to check if you're not front-most.
+				_currentlyInUpdateButtons = false;
 			}
 		}
 
-		bool currentlyRunningCanUndo = false;
-		private bool CanUndo
+		bool _currentlyRunningCanUndo = false;
+		private async Task<bool> CanUndoAsync()
 		{
-			get
+			// once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
+			if (_currentlyRunningCanUndo)
+				return true;
+			try
 			{
-				// once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
-				if (currentlyRunningCanUndo)
-					return true;
-				try
-				{
-					currentlyRunningCanUndo = true;
-					var result = RunJavaScript("editTabBundle?.canUndo?.()");
-					return result == "yes"; // currently only returns 'yes' or 'fail'
-				}
-				finally
-				{
-					currentlyRunningCanUndo = false;
-				}
+				_currentlyRunningCanUndo = true;
+				return "yes" == await GetStringFromJavascriptAsync("editTabBundle?.canUndo?.()");
 			}
+
+			finally
+			{
+				_currentlyRunningCanUndo = false;
+			}
+
 		}
 	}
 
