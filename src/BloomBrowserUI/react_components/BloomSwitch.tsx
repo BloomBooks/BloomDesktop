@@ -8,29 +8,62 @@ interface IProps extends SwitchProps {
     className?: string; // carry in the css props from the caller
     english?: string;
     l10nKey: string;
-    highlightWhenTrue?: boolean;
+    highlightWhenChecked?: boolean;
+    englishWhenChecked?: string;
+    l10nKeyWhenChecked?: string;
 }
 // Displays a Switch control
 export const BloomSwitch: React.FunctionComponent<IProps> = props => {
     const label = useL10n(props.english ?? "", props.l10nKey);
+
+    // Rules of hooks mean we have to call useL10n even if we won't use the result.
+    const possibleLabelWhenChecked = useL10n(
+        props.englishWhenChecked ?? "",
+        props.l10nKeyWhenChecked ?? props.l10nKey
+    );
+    const labelWhenChecked = props.l10nKeyWhenChecked
+        ? possibleLabelWhenChecked
+        : label;
+
+    const [checked, setChecked] = React.useState<boolean | undefined>(
+        props.checked
+    );
+
+    const {
+        english: _english,
+        l10nKey: _l10nKey,
+        highlightWhenChecked: _highlightWhenChecked,
+        englishWhenChecked: _englishWhenChecked,
+        l10nKeyWhenChecked: _l10nKeyWhenChecked,
+        ...switchProps
+    } = props;
     return (
         <FormControlLabel
             value="end"
-            control={<Switch {...props} />}
-            label={label}
+            control={
+                <Switch
+                    {...switchProps}
+                    checked={checked}
+                    onChange={(event, checked) => {
+                        setChecked(checked);
+                        props.onChange?.(event, checked);
+                    }}
+                />
+            }
+            label={checked ? labelWhenChecked : label}
             labelPlacement="end"
             css={
                 props.checked &&
-                (props.highlightWhenTrue
-                    ? kHighlightSwitchWhenTrueCSS
-                    : kNormalStylingWhenTrueCSS)
+                (props.highlightWhenChecked
+                    ? kHighlightSwitchWhenCheckedCSS
+                    : kNormalStylingWhenCheckedCSS)
             }
             className={props.className} // carry in the css props from the caller
         />
     );
 };
 
-const kHighlightSwitchWhenTrueCSS = css`
+const kHighlightSwitchWhenCheckedCSS = css`
     color: ${kBloomGold};
     .MuiSwitch-thumb {
         background-color: ${kBloomGold};
@@ -39,7 +72,7 @@ const kHighlightSwitchWhenTrueCSS = css`
         background-color: ${kBloomGold} !important;
     }
 `;
-const kNormalStylingWhenTrueCSS = css`
+const kNormalStylingWhenCheckedCSS = css`
     .MuiSwitch-thumb {
         background-color: ${kBloomBlue};
     }

@@ -7,7 +7,6 @@ import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     theOneLanguageDataInstance,
-    LanguageData,
     theOneLibSynphony,
     ResetLanguageDataInstance
 } from "./libSynphony/synphony_lib";
@@ -19,6 +18,9 @@ import "../../../lib/jquery.onSafe";
 import axios from "axios";
 import { get } from "../../../utils/bloomApi";
 import * as _ from "underscore";
+import ReactDOM = require("react-dom");
+import React = require("react");
+import { ReaderToolSwitch } from "./ReaderToolSwitch";
 
 interface textMarkup extends JQueryStatic {
     cssSentenceTooLong(): JQuery;
@@ -483,6 +485,11 @@ export function resizeWordList(startTimeout: boolean = true): void {
                 ht -= div.find("#make-letter-word-list-div").height();
             }
 
+            ht -=
+                div
+                    .find("#decodable-reader-tool-toggle-react-container")
+                    .height() || 0;
+
             // for a reason I haven't discovered, the height calculation is always off by 6 pixels
             ht += 6;
 
@@ -496,4 +503,15 @@ export function resizeWordList(startTimeout: boolean = true): void {
         setTimeout(() => {
             resizeWordList();
         }, 500);
+}
+
+export function createToggle(isForLeveled: boolean) {
+    ReactDOM.render(
+        React.createElement(ReaderToolSwitch, { isForLeveled }),
+        document.getElementById(
+            `${
+                isForLeveled ? "leveled" : "decodable"
+            }-reader-tool-toggle-react-container`
+        )
+    );
 }

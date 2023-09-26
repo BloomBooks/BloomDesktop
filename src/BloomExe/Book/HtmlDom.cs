@@ -3115,5 +3115,25 @@ namespace Bloom.Book
 				userStylesNode.InnerXml = WrapUserStyleInCdata(rawCSS);
 			}
 		}
+
+		public bool HasClassOnBody(string className)
+		{
+			return HasClass(Body, className);
+		}
+
+		public void SetClassOnBody(bool shouldHaveClass, string className)
+		{
+			if (Body == null)
+				return;
+
+			if (shouldHaveClass && !HasClassOnBody(className))
+			{
+				AddClass(Body, className);
+			}
+			else if (!shouldHaveClass && HasClassOnBody(className))
+			{
+				RemoveClass(Body, className);
+			}
+		}
 	}
 }

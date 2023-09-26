@@ -5,6 +5,22 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true">
+        <source xml:lang="en">Book is Decodable</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsDecodable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable" sil:dynamic="true">
+        <source xml:lang="en">Book is not Decodable</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsLeveled" sil:dynamic="true">
+        <source xml:lang="en">Book is Leveled</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsLeveled</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled" sil:dynamic="true">
+        <source xml:lang="en">Book is not Leveled</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled</note>
+      </trans-unit>
       <!-- Talking Book Advanced -->
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
         <source xml:lang="en">eSpeak failed.</source>

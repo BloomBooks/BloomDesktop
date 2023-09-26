@@ -1,6 +1,6 @@
 ﻿/// <reference path="../../toolbox.ts" />
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
-import { beginInitializeLeveledReaderTool } from "../readerTools";
+import { beginInitializeLeveledReaderTool, createToggle } from "../readerTools";
 import { ITool } from "../../toolbox";
 import { get } from "../../../../utils/bloomApi";
 
@@ -46,6 +46,8 @@ export class LeveledReaderToolboxTool implements ITool {
     public showTool() {
         // change markup based on visible options
         getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
+
+        createToggle(true);
     }
 
     public hideTool() {

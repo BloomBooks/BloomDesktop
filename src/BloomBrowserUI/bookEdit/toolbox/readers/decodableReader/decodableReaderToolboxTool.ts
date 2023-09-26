@@ -6,7 +6,10 @@ import {
     getTheOneReaderToolsModel,
     MarkupType
 } from "../readerToolsModel";
-import { beginInitializeDecodableReaderTool } from "../readerTools";
+import {
+    beginInitializeDecodableReaderTool,
+    createToggle
+} from "../readerTools";
 import { ITool } from "../../toolbox";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { get } from "../../../../utils/bloomApi";
@@ -161,6 +164,8 @@ export class DecodableReaderToolboxTool implements ITool {
     public showTool() {
         // change markup based on visible options
         getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
+
+        createToggle(false);
     }
 
     public newPageReady() {

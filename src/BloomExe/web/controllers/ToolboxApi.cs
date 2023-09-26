@@ -21,8 +21,18 @@ namespace BloomTests.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointLegacy("toolbox/enabledTools", HandleEnabledToolsRequest, true);
+			apiHandler.RegisterEndpointHandler("toolbox/enabledTools", HandleEnabledToolsRequest, true);
 			apiHandler.RegisterEndpointLegacy("toolbox/fileExists", HandleFileExistsRequest, true);
+			apiHandler.RegisterBooleanEndpointHandler("toolbox/decodable",
+				null,
+				(request, b) => { CurrentBook.SetIsDecodable(b); },
+				true
+			);
+			apiHandler.RegisterBooleanEndpointHandler("toolbox/leveled",
+				null,
+				(request, b) => { CurrentBook.SetIsLeveled(b); },
+				true
+			);
 		}
 
 		private Bloom.Book.Book CurrentBook => _bookSelection.CurrentSelection;

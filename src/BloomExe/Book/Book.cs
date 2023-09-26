@@ -4728,6 +4728,15 @@ namespace Bloom.Book
 		{
 			return languagesSuperset.Intersect(AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: false).Keys);
 		}
+
+		public void SetIsDecodable(bool isDecodable)
+		{
+			OurHtmlDom.SetClassOnBody(isDecodable, "decodable-reader");
+		}
+		public void SetIsLeveled(bool isLeveled)
+		{
+			OurHtmlDom.SetClassOnBody(isLeveled, "leveled-reader");
+		}
 	}
 }
 
