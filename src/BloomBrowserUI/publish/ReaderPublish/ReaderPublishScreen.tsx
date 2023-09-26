@@ -39,6 +39,7 @@ import {
     showBulkBloomPubDialog
 } from "./BulkBloomPub/BulkBloomPubDialog";
 import { EmbeddedProgressDialog } from "../../react_components/Progress/ProgressDialog";
+import { MustBeCheckedOut } from "../../react_components/MustBeCheckedOut";
 
 export const ReaderPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -214,7 +215,9 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 generation={generation}
                 onChange={() => setHighlightPreview(true)}
             />
-            <CoverColorGroup onChange={() => setHighlightPreview(true)} />
+            <MustBeCheckedOut>
+                <CoverColorGroup onChange={() => setHighlightPreview(true)} />
+            </MustBeCheckedOut>
             {/* push everything to the bottom */}
             <div
                 css={css`

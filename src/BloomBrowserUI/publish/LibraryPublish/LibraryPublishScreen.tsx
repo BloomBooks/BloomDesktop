@@ -19,6 +19,7 @@ import { PublishLanguagesGroup } from "../commonPublish/PublishLanguagesGroup";
 import { CoverColorGroup } from "../commonPublish/CoverColorGroup";
 import { useState } from "react";
 import { PublishVisibilityGroup } from "../commonPublish/PublishVisibilityGroup";
+import { MustBeCheckedOut } from "../../react_components/MustBeCheckedOut";
 import HelpLink from "../../react_components/helpLink";
 
 export const kWebSocketContext = "libraryPublish";
@@ -41,7 +42,9 @@ export const LibraryPublishScreen = () => {
                 }}
             />
             <PublishFeaturesGroup generation={generation} />
-            <CoverColorGroup />
+            <MustBeCheckedOut>
+                <CoverColorGroup />
+            </MustBeCheckedOut>
             <PublishVisibilityGroup />
 
             {/* push everything below this to the bottom */}
