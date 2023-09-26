@@ -445,7 +445,7 @@ namespace Bloom
 		[Obsolete("This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred.")]
 		public override string RunJavascriptWithStringResult_Sync_Dangerous(string script)
 		{
-			Task<string> task = _webview.ExecuteScriptAsync(script);
+			Task<string> task = GetStringFromJavascriptAsync(script);
 			// This is dangerous. E.g. it caused this bug: https://issues.bloomlibrary.org/youtrack/issue/BL-12614
 			// Came from an answer in https://stackoverflow.com/questions/65327263/how-to-get-sync-return-from-executescriptasync-in-webview2'
 			while (!task.IsCompleted)
@@ -453,8 +453,8 @@ namespace Bloom
 				Application.DoEvents();
 				System.Threading.Thread.Sleep(10);
 			}
-			var result = task.Result;
-			return result;
+
+			return task.Result;
 		}
 		public override async Task RunJavascriptAsync(string script)
 		{
