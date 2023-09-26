@@ -422,6 +422,24 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		internal bool IsBookLicenseOK(Book.Book book, BloomPubPublishSettings settings, WebSocketProgress progress)
+		{
+			if (settings?.LanguagesToInclude != null)
+			{
+				var message = new LicenseChecker().CheckBook(book, settings.LanguagesToInclude.ToArray());
+				if (message != null)
+				{
+					if (progress != null)
+						progress.MessageWithoutLocalizing(message, ProgressKind.Error);
+					LicenseOK = false;
+					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "false");
+					return false;
+				}
+			}
+			LicenseOK = true;
+			return true;
+		}
+
 		/// <summary>
 		/// Generates an unzipped, staged BloomPUB from the book
 		/// </summary>
@@ -430,18 +448,8 @@ namespace Bloom.web.controllers
 		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");  // message shared with Epub publishing
-			if (settings?.LanguagesToInclude != null)
-			{
-				var message = new LicenseChecker().CheckBook(book, settings.LanguagesToInclude.ToArray());
-				if (message != null)
-				{
-					progress.MessageWithoutLocalizing(message, ProgressKind.Error);
-					LicenseOK = false;
-					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "false");
-					return null;
-				}
-			}
-			LicenseOK = true;
+			if (!IsBookLicenseOK(book, settings, progress))
+				return null;
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
 
 			_stagingFolder?.Dispose();
