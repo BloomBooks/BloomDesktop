@@ -8,6 +8,7 @@ import { useL10n } from "./l10nHooks";
 import { LightTooltip } from "./lightTooltip";
 import { Check } from "@mui/icons-material";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
+import { DisabledContext } from "./BloomToolTip";
 
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate
 export const BloomCheckbox: React.FunctionComponent<{
@@ -54,6 +55,9 @@ export const BloomCheckbox: React.FunctionComponent<{
         props.l10nParam1
     );
 
+    const disabled =
+        React.useContext(DisabledContext).valueOf() || props.disabled;
+
     // if the label is a string, we need to localize it. If it's a react node, we assume it's already localized.
     const labelComponent =
         typeof props.label === "string" ? localizedLabel : props.label;
@@ -78,7 +82,7 @@ export const BloomCheckbox: React.FunctionComponent<{
                         margin-left: -2px;
                     `}
                     className={props.className}
-                    disabled={props.disabled}
+                    disabled={disabled}
                     checked={!!props.checked}
                     indeterminate={props.checked == null}
                     //enhance; I would like  it to show a square with a question mark inside: indeterminateIcon={"?"}
@@ -134,14 +138,13 @@ export const BloomCheckbox: React.FunctionComponent<{
                     <UniformInlineIcon
                         icon={props.icon}
                         iconScale={props.iconScale}
-                        disabled={props.disabled}
+                        disabled={disabled}
                     />
                 )}
                 <div
                     className="bloom-checkbox-label" // this classname is to help overlay toolbox hack a fix
                     css={css`
-                        ${props.disabled &&
-                            `opacity: ${kBloomDisabledOpacity}`};
+                        ${disabled && `opacity: ${kBloomDisabledOpacity}`};
                         // this rule is about helping this to keep working even when font is small, as in the Overlay Tool
                         min-height: 15px;
                         //border: solid red 0.1px;
