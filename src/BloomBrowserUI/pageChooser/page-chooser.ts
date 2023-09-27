@@ -303,20 +303,19 @@ export class PageChooser {
     // Set the text of the given element to the appropriate localization of defaultText
     // (or to defaultText, if no localization is available).
     // If defaultText is empty, set the element text to empty.
-    // The localization ID to look up is made by concatenating the supplied prefix and the id
-    // parameter, which defaults to the defaultText since we often use the English text of a
-    // label as the last part of its ID.
+    // The localization ID to look up is made by concatenating the supplied prefix and the
+    // defaultText since we use the English text of the label as the last part of its ID.
+    // (at least for the labels that make use of this method)
     private setLocalizedText(
         elt: HTMLElement,
         idPrefix: string,
-        defaultText: string,
-        id: string = defaultText
+        defaultText: string
     ) {
         defaultText = defaultText.trim();
         if (defaultText) {
             const comment = this.getAttributeStringSafely(elt, "l10nComment");
             theOneLocalizationManager
-                .asyncGetText(idPrefix + id, defaultText, comment)
+                .asyncGetText(idPrefix + defaultText, defaultText, comment)
                 .done(translation => {
                     elt.textContent = translation;
                 });
