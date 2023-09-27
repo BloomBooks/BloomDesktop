@@ -45,11 +45,8 @@ module.exports = merge(core, {
             "./bookEdit/pageThumbnailList/pageThumbnailList.tsx",
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
-        publishUIBundle: globule.find([
-            //currently only used by accesibilityCheckScreen
-            "./publish/**/*.tsx",
-            "!./publish/**/stories.tsx",
-            "!./publish/**/*.stories.tsx"
+        accessibilityCheckBundle: globule.find([
+            "./publish/accessibilityCheck/**/*.tsx"
         ]),
         enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
 
