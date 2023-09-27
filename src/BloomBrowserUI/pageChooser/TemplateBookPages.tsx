@@ -14,6 +14,7 @@ import {
 import PageThumbnail from "./PageThumbnail";
 import TemplateBookErrorReplacement from "./TemplateBookErrorReplacement";
 import { kBloomBlue50Transparent, kBloomPurple } from "../bloomMaterialUITheme";
+import { Span } from "../react_components/l10nComponents";
 
 interface ITemplateBookPagesProps {
     // If defined, either the default selection, or a user selection has been made. Highlight this page
@@ -254,7 +255,12 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                             display: block;
                         `}
                     >
-                        {groupTitle}
+                        <Span
+                            contentEditable={false}
+                            l10nKey={"TemplateBooks.BookName." + groupTitle}
+                        >
+                            {groupTitle}
+                        </Span>
                     </Typography>
                     <div
                         className="templateBookGroup"
