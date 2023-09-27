@@ -32,6 +32,10 @@ function isL10nDefinition(obj: any): obj is l10nDefinition {
         typeof obj.l10nKey === "string"
     );
 }
+// To encourage the practice of always explaining why something is disabled using a tooltip,
+// we say that the way to disable things is to set disabled status on the tooltip. Then
+// the children of the tooltip consume that context and display/act appropriately.
+export const DisabledContext = React.createContext(false);
 
 export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props => {
     let tipContent: React.ReactNode;
@@ -63,7 +67,11 @@ export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props =
             className={props.className} // carry in the css props from the caller
         >
             {/* The added <span> here allows the tooltip to show even when the target control is disabled */}
-            <span>{props.children}</span>
+            <span>
+                <DisabledContext.Provider value={!!props.showDisabled}>
+                    {props.children}
+                </DisabledContext.Provider>
+            </span>
         </Tooltip>
     );
 };
