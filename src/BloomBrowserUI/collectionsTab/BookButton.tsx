@@ -132,21 +132,6 @@ export const BookButton: React.FunctionComponent<{
 
     const bookSubMenuItemsSpecs: MenuItemSpec[] = [
         {
-            label: "Leveled Reader",
-            l10nId: "TemplateBooks.BookName.Leveled Reader", // not the most appropriate ID, but we have it already
-            command: "bookCommand/leveled",
-            requiresSavePermission: true,
-            checkbox: true
-        },
-        {
-            label: "Decodable Reader",
-            l10nId: "TemplateBooks.BookName.Decodable Reader", // not the most appropriate ID, but we have it already
-            command: "bookCommand/decodable",
-            requiresSavePermission: true,
-            checkbox: true
-        },
-        { label: "-" },
-        {
             label: "Export to Word or LibreOffice...",
             l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
             command: "bookCommand/exportToWord"

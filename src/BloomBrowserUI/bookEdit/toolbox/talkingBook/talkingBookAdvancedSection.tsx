@@ -281,7 +281,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             )
                         }
                         l10nKey="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder"
-                        highlightWhenTrue={true}
+                        highlightWhenChecked={true}
                     />
                 </BloomTooltip>
                 <BloomSwitch
@@ -292,7 +292,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             !props.showingImageDescriptions
                         )
                     }
-                    highlightWhenTrue={true}
+                    highlightWhenChecked={true}
                     l10nKey="EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions"
                 />
             </TriangleCollapse>

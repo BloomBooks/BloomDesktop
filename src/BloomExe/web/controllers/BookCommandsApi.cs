@@ -64,14 +64,6 @@ namespace Bloom.web.controllers
 				RequestButtonLabelUpdate(collection, id);
 				request.PostSucceeded();
 			}, false, false);
-			apiHandler.RegisterBooleanEndpointHandler("bookCommand/decodable",
-				request => { return _collectionModel.IsBookDecodable;},
-				(request, b) => { _collectionModel.SetIsBookDecodable(b);},
-				true);
-			apiHandler.RegisterBooleanEndpointHandler("bookCommand/leveled",
-				request => { return _collectionModel.IsBookLeveled; },
-				(request, b) => { _collectionModel.SetIsBookLeveled(b); },
-				true);
 			apiHandler.RegisterEndpointLegacy("bookCommand/", HandleBookCommand, true);
 		}
 

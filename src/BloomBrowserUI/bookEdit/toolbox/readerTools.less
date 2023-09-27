@@ -1,5 +1,19 @@
 @import "../../bloomUI.less";
 
+#leveled-reader-tool-content,
+#decodable-reader-tool-content {
+    // Slide/fade the content in and out when toggled.
+    transition-property: max-height, opacity;
+    transition-duration: 0.5s;
+    transition-timing-function: ease-in-out;
+    max-height: 100%;
+    overflow: hidden;
+    &.turned-off {
+        max-height: 0;
+        opacity: 0;
+    }
+}
+
 /*Styles for ReaderTools.htm*/
 div.stageLine {
     display: block;
@@ -7,7 +21,7 @@ div.stageLine {
 }
 span.stageLine {
     float: left;
-    -moz-user-select: none;
+    user-select: none;
 }
 td.acceptable {
     color: lightgreen;
@@ -126,7 +140,7 @@ div.section ul li {
 }
 
 .noSelect {
-    -moz-user-select: none;
+    user-select: none;
 }
 
 #decodable-edit {
