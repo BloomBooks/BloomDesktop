@@ -10,7 +10,6 @@ using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
-using SIL.Code;
 using SIL.IO;
 
 namespace Bloom.TeamCollection
