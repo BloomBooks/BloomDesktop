@@ -8,6 +8,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Utils;
 using Bloom.web;
+using Bloom.Workspace;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
@@ -37,6 +38,7 @@ namespace Bloom.Publish.Epub
 
 		private string _previewSrc;
 		private string _bookVersion;
+		private WorkspaceTabSelection _tabSelection;
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
 		// down to the context (usually a screen) that requested them.
@@ -51,7 +53,8 @@ namespace Bloom.Publish.Epub
 		public static Control ControlForInvoke { get; set; }
 
 		public PublishEpubApi(BookThumbNailer thumbNailer, BookServer bookServer,
-			BookSelection bookSelection, CollectionSettings collectionSettings, BloomWebSocketServer webSocketServer)
+			BookSelection bookSelection, CollectionSettings collectionSettings, BloomWebSocketServer webSocketServer,
+			WorkspaceTabSelection tabSelection)
 		{
 			_thumbNailer = thumbNailer;
 			_bookServer = bookServer;
@@ -59,6 +62,7 @@ namespace Bloom.Publish.Epub
 			_collectionSettings = collectionSettings;
 			_webSocketServer = webSocketServer;
 			_standardProgress = new WebSocketProgress(_webSocketServer, kWebsocketContext);
+			_tabSelection = tabSelection;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -274,8 +278,8 @@ namespace Bloom.Publish.Epub
 		{
 			// This gets called on a background thread but one step needs to happen on the UI thread,
 			// so the Maker needs a control to Invoke on. An Api class doesn't naturally have one to give it,
-			// so we arrange that this class is given the Bloom main window by the PublishView when the preview
-			// window first comes up. In production, this is roughly equivalent to just using
+			// so we arrange that this class is given the Bloom main window by the PublishView when the 
+			// publish tab is activated. In production, this is roughly equivalent to just using
 			// Form.ActiveForms.Last(), but that fails when debugging; this is more robust.
 			EpubMaker.ControlForInvoke = ControlForInvoke;
 			EpubMaker.StageEpub(_progress);
@@ -369,7 +373,7 @@ namespace Bloom.Publish.Epub
 			{
 				try
 				{
-					if (!PublishHelper.InPublishTab)
+					if (_tabSelection.ActiveTab != WorkspaceTab.publish)
 					{
 						return false;
 					}
