@@ -91,7 +91,6 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
     .add("Available", () =>
         testPage(
             <StatusPanelCommon
-                lockState="unlocked"
                 title="This book is available for editing"
                 subTitle="When you check it out, no one on the team will be able to modify it or see your changes until you check it back in."
                 icon={<img src={"Team Collection.svg"} alt="available" />}
@@ -139,11 +138,11 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
 
         return testPage(
             <StatusPanelCommon
-                lockState="lockedByMe"
                 title="This book is checked out to you"
                 subTitle="Are you done for now? Click this button to send your changes to your team."
                 icon={avatar(true)}
                 button={checkinButton}
+                useWarningColorForButton={true}
                 menu={<div style={menuStyles}>Menu</div>}
             >
                 {messageLogStub}
@@ -153,7 +152,6 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
     .add("Checked out by (Fred)", () =>
         testPage(
             <StatusPanelCommon
-                lockState="locked"
                 title="This book is checked out to Fred"
                 subTitle="You cannot edit the book until Fred checks it in."
                 icon={avatar(false)}
@@ -164,10 +162,9 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
             </StatusPanelCommon>
         )
     )
-    .add("Problem state", () =>
+    .add("Conflicting Change state", () =>
         testPage(
             <StatusPanelCommon
-                lockState="problem"
                 title="The Team Collection folder received a changed version of the book you were editing."
                 subTitle="The Checkin/Checkout system should normally prevent this, but it has happened. Bloom cannot automatically join the work that came in with the work you were doing; you will need Bloom team support for that. Bloom will move your version of the book to the Team Collection Lost & Found when you Reload."
                 icon={emptyAvatarForProblemState}
@@ -180,7 +177,6 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
     .add("Checked out by me on MyTablet", () =>
         testPage(
             <StatusPanelCommon
-                lockState="lockedByMeElsewhere"
                 title="This book is checked out to you, but on a different computer"
                 subTitle="You cannot edit the book on this computer, until you check it in on MyTablet."
                 icon={avatar(false)}
