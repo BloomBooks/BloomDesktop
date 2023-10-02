@@ -221,14 +221,16 @@ namespace Bloom.web.controllers
 				return;
 			}
 		}
-		
+
+		// Currently only used by Books on Blorg Progress Bar; if a Sign Language is defined, we use that.
 		private void HandleGetBookCountByLanguage(ApiRequest request)
 		{
 			if (request.HttpMethod == HttpMethods.Post)
 				return; // should be Get
 
 			var client = new BloomParseClient();
-			var count = client.GetBookCountByLanguage(_settings.Language1Tag);
+			var langTag = string.IsNullOrEmpty(_settings.SignLanguageTag) ? _settings.Language1Tag : _settings.SignLanguageTag;
+			var count = client.GetBookCountByLanguage(langTag);
 			request.ReplyWithText(count.ToString());
 		}
 
