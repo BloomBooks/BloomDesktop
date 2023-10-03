@@ -316,21 +316,25 @@ namespace Bloom.web.controllers
 			_webSocketProgress.Message("FindingAce", "Finding Ace by DAISY on this computer...");
 			var whereProgram = Platform.IsWindows ? "where" : "which";
 			var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
-			var whereResult = CommandLineRunner.Run(whereProgram, npmFileName, Encoding.ASCII, "", 2, new NullProgress());
+			// Previously we had a parameter that limited CLR to Encoding.ASCII, but this no longer works correctly somehow.
+			var whereResult = CommandLineRunner.Run(whereProgram, npmFileName, "", 2, new NullProgress());
 			if (!String.IsNullOrEmpty(whereResult.StandardError))
 			{
 				_webSocketProgress.MessageWithoutLocalizing(whereResult.StandardError, ProgressKind.Error);
 			}
-			if (!whereResult.StandardOutput.Contains(npmFileName))
+			if (string.IsNullOrEmpty(whereResult.StandardOutput) || !whereResult.StandardOutput.Contains(npmFileName))
 			{
 				ReportErrorAndFailTheRequest(request, whereResult, "Could not find npm.");
 				return null;
 			}
-
-			var fullNpmPath = whereResult.StandardOutput.Split('\n')[0].Trim();
+			// Adding Volta created a situation where there can be more than one location for npm.cmd.
+			// If we get more than one result, we need the last non-empty one. (non-Volta)
+			var outputArray = whereResult.StandardOutput.Split(new []{'\n' }, StringSplitOptions.RemoveEmptyEntries);
+			var fullNpmPath = outputArray[outputArray.Length - 1].Trim();
 			// note: things like nvm will mess with where the global node_modules lives. The best way seems to be
 			// to ask npm:
-			var result = CommandLineRunner.Run(npmFileName, "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
+			// Previously we had a parameter that limited CLR to Encoding.ASCII, but this no longer works correctly somehow.
+			var result = CommandLineRunner.Run(npmFileName, "root -g", Path.GetDirectoryName(fullNpmPath), 10,
 				new NullProgress());
 
 			const string kCoreError = "Could not get \"npm -g root\" to work. Is Node & npm installed and working?";
