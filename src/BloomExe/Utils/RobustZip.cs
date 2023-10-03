@@ -72,7 +72,11 @@ namespace Bloom.Utils
 		// We shouldn't store these in the zip, and we don't want to try to overwrite them if we have stored them.
 		private static string[] _systemFilesToIgnore = new[] { "thumbs.db", "desktop.ini" };
 
-		private static bool ShouldFileBeIgnored(string path)
+		/// <summary>
+		/// Hidden files should be ignored for zipping / unzipping.  A limited set of system files
+		/// ("thumbs.db" and "desktop.ini") should also be ignored even if they aren't hidden.
+		/// </summary>
+		public static bool ShouldFileBeIgnored(string path)
 		{
 			if (RobustFile.Exists(path))
 			{

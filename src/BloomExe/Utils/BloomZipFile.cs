@@ -59,6 +59,8 @@ namespace Bloom.Utils
 
 		protected override void AddFile(string path, string entryName, bool compressIfAble=true)
 		{
+			if (RobustZip.ShouldFileBeIgnored(path))
+				return; //don't add hidden files (BL-12680)
 			var fi = new FileInfo(path);
 			var newEntry = new ZipEntry(entryName) {DateTime = fi.LastWriteTime, Size = fi.Length, IsUnicodeText = true,
 				CompressionMethod=compressIfAble?CompressionMethod.Deflated:CompressionMethod.Stored};
