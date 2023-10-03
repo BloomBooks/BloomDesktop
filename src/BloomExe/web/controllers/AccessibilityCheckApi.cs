@@ -317,17 +317,21 @@ namespace Bloom.web.controllers
 			var whereProgram = Platform.IsWindows ? "where" : "which";
 			var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
 			var whereResult = CommandLineRunner.Run(whereProgram, npmFileName, Encoding.ASCII, "", 2, new NullProgress());
-			if (!String.IsNullOrEmpty(whereResult.StandardError))
+			if (!string.IsNullOrEmpty(whereResult.StandardError))
 			{
 				_webSocketProgress.MessageWithoutLocalizing(whereResult.StandardError, ProgressKind.Error);
 			}
-			if (!whereResult.StandardOutput.Contains(npmFileName))
+			if (string.IsNullOrEmpty(whereResult.StandardOutput) || !whereResult.StandardOutput.Contains(npmFileName))
 			{
 				ReportErrorAndFailTheRequest(request, whereResult, "Could not find npm.");
 				return null;
 			}
-
-			var fullNpmPath = whereResult.StandardOutput.Split('\n')[0].Trim();
+			// Adding Volta created a situation where there can be more than one location for 'npm.cmd'.
+			// If we get more than one result, we need the non-Volta one.
+			// If you start the "root -g" command in the Volta directory, it will cause Volta to spawn
+			// 1000s of spurious npm processes!
+			var outputArray = whereResult.StandardOutput.Split(new []{'\n' }, StringSplitOptions.RemoveEmptyEntries);
+			var fullNpmPath = outputArray.FirstOrDefault(path => !path.ToLowerInvariant().Contains("volta")).Trim();
 			// note: things like nvm will mess with where the global node_modules lives. The best way seems to be
 			// to ask npm:
 			var result = CommandLineRunner.Run(npmFileName, "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
@@ -357,7 +361,7 @@ namespace Bloom.web.controllers
 				return null;
 			}
 
-			var nodeModulesDirectory = result.StandardOutput.Trim();
+			var nodeModulesDirectory = result.StandardOutput.Trim(); // Standard Output result has an ending carriage return for some reason.
 
 			if (!Directory.Exists((nodeModulesDirectory)))
 			{
