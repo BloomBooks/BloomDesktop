@@ -4247,7 +4247,6 @@ export default class AudioRecording {
         }
         ReactDOM.render(
             React.createElement(TalkingBookAdvancedSection, {
-                isXmatter: ToolBox.isXmatterPage(),
                 recordingMode: this.recordingMode,
                 haveACurrentTextboxModeRecording:
                     this.haveAudio &&

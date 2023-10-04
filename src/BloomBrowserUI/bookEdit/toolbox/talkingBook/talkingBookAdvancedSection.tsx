@@ -18,7 +18,6 @@ import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { LocalizedString } from "../../../react_components/l10nComponents";
 
 export const TalkingBookAdvancedSection: React.FunctionComponent<{
-    isXmatter: boolean;
     hasAudio: boolean;
     lastTimingsFilePath?: string;
     //enableRecordingModeControl: boolean;
@@ -90,12 +89,8 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                 </BloomTooltip>
                 <Divider />
                 <BloomTooltip
-                    showDisabled={props.isXmatter || !props.hasAudio}
+                    showDisabled={!props.hasAudio}
                     tipWhenDisabled={
-                        (props.isXmatter && {
-                            l10nKey:
-                                "EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter"
-                        }) ||
                         (!props.hasRecordableDivs && {
                             l10nKey:
                                 "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip"
@@ -131,7 +126,6 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                                     "EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip"
                             }}
                             showDisabled={
-                                props.isXmatter ||
                                 !props.hasRecordableDivs ||
                                 // we don't allow you to go from textbox to sentence mode if you have audio
                                 props.hasAudio
@@ -143,7 +137,6 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                         >
                             <MuiRadio
                                 disabled={
-                                    props.isXmatter ||
                                     !props.hasRecordableDivs ||
                                     // we don't allow you to go from textbox to sentence mode if you have audio
                                     //props.hasAudio
@@ -155,9 +148,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             />
                         </BloomTooltip>
                         <BloomTooltip
-                            showDisabled={
-                                props.isXmatter || !props.hasRecordableDivs
-                            }
+                            showDisabled={!props.hasRecordableDivs}
                             tip={{
                                 l10nKey:
                                     "EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip"
@@ -165,9 +156,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             {...commonTooltipProps}
                         >
                             <MuiRadio
-                                disabled={
-                                    props.isXmatter || !props.hasRecordableDivs
-                                }
+                                disabled={!props.hasRecordableDivs}
                                 value={RecordingMode.TextBox}
                                 label="By Whole Text Box"
                                 l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
