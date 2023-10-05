@@ -940,9 +940,9 @@ namespace Bloom.Book
 		// this is true (as far as we know) until BringBookUpToDate is first called for this session.
 		private bool _needsUpdate = true;
 
-		public void EnsureUpToDate()
+		public void EnsureUpToDate(bool forceUpdate=false)
 		{
-			if (_needsUpdate)
+			if (_needsUpdate || forceUpdate)
 				BringBookUpToDate(new NullProgress());
 		}
 

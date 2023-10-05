@@ -104,7 +104,7 @@ export const BookButton: React.FunctionComponent<{
     // Don't use useApiStringState to get this function because it does an unnecessary server query
     // to get the value, which we are not using, and this hurts performance.
     const setSelectedBookIdWithApi = value =>
-        postString(`collections/selected-book-id?${collectionQuery}`, value);
+        postString(`collections/selected-book?${collectionQuery}`, value);
 
     const renameDiv = useRef<HTMLElement | null>();
 

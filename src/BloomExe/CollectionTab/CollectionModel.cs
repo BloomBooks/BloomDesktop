@@ -78,6 +78,8 @@ namespace Bloom.CollectionTab
 			createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
 		}
 
+		public BookCollection CurrentEditableCollection => _currentEditableCollectionSelection.CurrentSelection;
+
 		/// <summary>
 		/// The constructor of BookCommandsApi calls this to work around an Autofac circularity problem.
 		/// </summary>
@@ -386,7 +388,7 @@ namespace Bloom.CollectionTab
 		public void DoubleClickedBook()
 		{
 			// If we need the book to be checked out for editing, make sure it is. Do not allow double click
-			// to check it out. 
+			// to check it out.
 			if (_bookSelection.CurrentSelection?.IsSaveable ?? false)
 			{
 				_editBookCommand.Raise(_bookSelection.CurrentSelection);

@@ -51,12 +51,13 @@ namespace Bloom.web.controllers
 		private readonly CollectionSettings _collectionSettings;
 		private readonly List<object> _numberingStyles = new List<object>();
 		private readonly XMatterPackFinder _xmatterPackFinder;
+		private readonly BookSelection _bookSelection;
 
-		public CollectionSettingsApi(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder)
+		public CollectionSettingsApi(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, BookSelection bookSelection)
 		{
 			_collectionSettings = collectionSettings;
 			_xmatterPackFinder = xmatterPackFinder;
-
+			this._bookSelection = bookSelection;
 			SetSubscriptionCode(_collectionSettings.SubscriptionCode, _collectionSettings.IsSubscriptionCodeKnown(), _collectionSettings.GetEnterpriseStatus());
 		}
 
@@ -257,6 +258,23 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}
 			}, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "branding", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithJson(_collectionSettings.BrandingProjectKey);
+				}
+				else
+				{
+					// At least as of 5.6, this is only used by the visual regression tests
+					// Normally, we require a restart to change branding.
+					var key = request.RequiredPostString();
+					_collectionSettings.BrandingProjectKey = key;
+					_bookSelection.CurrentSelection?.EnsureUpToDate(forceUpdate:true); // in case we changed the book's branding
+					_bookSelection.CurrentSelection?.Storage.UpdateSupportFiles();
+					request.PostSucceeded();
+				}
+			}, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "xmatter", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
@@ -347,7 +365,7 @@ namespace Bloom.web.controllers
 			// This will switch to the default factory xmatter if the current one is not valid.
 			var currentXmatter =
 				_xmatterPackFinder.GetValidXmatter(xmatterKeyForcedByBranding, _collectionSettings.XMatterPackName);
-			
+
 			return new { currentXmatter, xmatterOfferings = xmatterOfferings.ToArray() };
 		}
 
@@ -542,7 +560,7 @@ namespace Bloom.web.controllers
 		}
 
 		// Used to initialize things in the constructor.
-		// 
+		//
 		// Also used by the settings dialog to ensure things are initialized properly there for a special "legacy" case.
 		public static void SetSubscriptionCode(string code, bool knownCode, EnterpriseStatus status)
 		{

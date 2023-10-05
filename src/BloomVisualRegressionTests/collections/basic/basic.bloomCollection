@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Collection version="0.2">
+  <CollectionId>da7e9ee7-b796-4497-bb45-95ad70b2c094</CollectionId>
+  <Language1Name>English</Language1Name>
+  <Language1IsCustomName>false</Language1IsCustomName>
+  <Language1Iso639Code>en</Language1Iso639Code>
+  <DefaultLanguage1FontName>Andika</DefaultLanguage1FontName>
+  <IsLanguage1Rtl>false</IsLanguage1Rtl>
+  <Language1LineHeight>0</Language1LineHeight>
+  <Language1BreaksLinesOnlyAtSpaces>false</Language1BreaksLinesOnlyAtSpaces>
+  <Language1BaseUIFontSizeInPoints>0</Language1BaseUIFontSizeInPoints>
+  <Language2Name>English</Language2Name>
+  <Language2IsCustomName>false</Language2IsCustomName>
+  <Language2Iso639Code>en</Language2Iso639Code>
+  <DefaultLanguage2FontName>Andika</DefaultLanguage2FontName>
+  <IsLanguage2Rtl>false</IsLanguage2Rtl>
+  <Language2LineHeight>0</Language2LineHeight>
+  <Language2BreaksLinesOnlyAtSpaces>false</Language2BreaksLinesOnlyAtSpaces>
+  <Language2BaseUIFontSizeInPoints>0</Language2BaseUIFontSizeInPoints>
+  <Language3Name></Language3Name>
+  <Language3IsCustomName>false</Language3IsCustomName>
+  <Language3Iso639Code></Language3Iso639Code>
+  <DefaultLanguage3FontName>Andika</DefaultLanguage3FontName>
+  <IsLanguage3Rtl>false</IsLanguage3Rtl>
+  <Language3LineHeight>0</Language3LineHeight>
+  <Language3BreaksLinesOnlyAtSpaces>false</Language3BreaksLinesOnlyAtSpaces>
+  <Language3BaseUIFontSizeInPoints>0</Language3BaseUIFontSizeInPoints>
+  <SignLanguageName></SignLanguageName>
+  <SignLanguageIsCustomName>false</SignLanguageIsCustomName>
+  <SignLanguageIso639Code></SignLanguageIso639Code>
+  <OneTimeCheckVersionNumber>1</OneTimeCheckVersionNumber>
+  <IsSourceCollection>False</IsSourceCollection>
+  <XMatterPack>Factory</XMatterPack>
+  <PageNumberStyle>Decimal</PageNumberStyle>
+  <BrandingProjectName>Default</BrandingProjectName>
+  <SubscriptionCode />
+  <Country>United States</Country>
+  <Province></Province>
+  <District></District>
+  <AllowNewBooks>True</AllowNewBooks>
+  <AudioRecordingMode>Sentence</AudioRecordingMode>
+  <AudioRecordingTrimEndMilliseconds>40</AudioRecordingTrimEndMilliseconds>
+  <BooksOnWebGoal>200</BooksOnWebGoal>
+  <BulkPublishBloomPubSettings>
+    <MakeBookshelfFile>True</MakeBookshelfFile>
+    <MakeBloomBundle>True</MakeBloomBundle>
+    <BookshelfColor>#B0DEE4</BookshelfColor>
+    <DistributionTag></DistributionTag>
+    <BookshelfLabel></BookshelfLabel>
+  </BulkPublishBloomPubSettings>
+  <Palette id="cover-background">#c6c6c6 #6d6d6d</Palette>
+</Collection>
