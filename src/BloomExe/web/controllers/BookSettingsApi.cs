@@ -45,9 +45,6 @@ namespace Bloom.Api
 					};
 					var jsonData = JsonConvert.SerializeObject(settings);
 
-#if UserControlledTemplate
-					settings.isTemplateBook = GetIsBookATemplate();
-#endif
 					request.ReplyWithJson(jsonData);
 					break;
 				case HttpMethods.Post:
@@ -65,13 +62,6 @@ namespace Bloom.Api
 
 					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 
-#if UserControlledTemplate
-					UpdateBookTemplateMode(settings.isTemplateBook);
-					// Now we need to update the active version of the page with possible new template settings
-					// It's a bit wasteful to raise this twice...but we need to save any changes the user made to the page,
-					// and we have no access to put the editable DOM into the right template/non-template state.
-					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
-#endif
 					request.PostSucceeded();
 					break;
 				default:
@@ -83,26 +73,5 @@ namespace Bloom.Api
 		{
 			return _bookSelection.CurrentSelection.IsSuitableForMakingShells;
 		}
-#if UserControlledTemplate
-		private void UpdateBookTemplateMode(bool isTemplateBook)
-		{
-			_bookSelection.CurrentSelection.SwitchSuitableForMakingShells(isTemplateBook);
-
-			/* TODO (non-exhaustive)
-			 * For each page, data-page="extra"; but that should be an option on each page.
-			 * Add visual feedback that this is a template
-			 * Add UI pointer to more help on this topic.
-			 *
-			 * Other things to think about/test
-				User modified styles
-				filename endcoding tests
-				src vs vern collections
-				same name in src collections already
-				multiple copies (different versions) in src collections
-				"template" in name?
-				new pages as extra?
-			 */
-		}
-#endif
 	}
 }

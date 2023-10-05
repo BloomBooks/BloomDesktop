@@ -520,35 +520,6 @@ namespace Bloom.Book
 
 		private void UpdateEditabilityMetadata(BookStorage storage)
 		{
-
-			//Here's the logic: If we're in a shell-making library, then it's safe to say that a newly-
-			//created book is going to be a shell. Any derivatives will then act as shells.  But it won't
-			//prevent us from editing it while in a shell-making collections, since we don't honor this
-			//tag in shell-making collections.
-
-			//The problem is, if you make a book in some vernacular library, then share it so that others
-			//can use it as a shell, then (as of version 2) Bloom doesn't have a way of realizing that it's
-			//being used as a shell. So everything is editable (not a big deal) but you're also locked out
-			// of editing the acknowledgments for translated version.
-
-			//It seems to me at the moment (May 2014) that the time to mark something as locked down should
-			//be when the they create a book based on a source-with-content book. So the current approach
-			//below, of pre-locking it, would go away.
-
-			// JohnT: added the possibility that the source book is 'suitableForMakingTemplates', that is,
-			// a template factory like the Template Starter book. In this case we want the resulting book
-			// to be a template. Note that the initial state of storage is a copy of the template.
-			// (The only way suitableForMakingTemplates currently becomes true is when loaded that way
-			// from meta.json, which only happens if someone edited it by hand to be that way.)
-			// If we're making a template, the resulting book needs to be suitableForMakingShells
-			// and also needs to NOT be RecordedAsLockedDown, because that suppresses options
-			// we want in the options tab.
-			// If we change this see also Book.SwitchSuitableForMakingShells().
-			if (!storage.BookInfo.IsSuitableForMakingTemplates)
-			{
-				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");
-			}
-
 			storage.BookInfo.IsSuitableForMakingShells = storage.BookInfo.IsSuitableForMakingTemplates;
 			// a newly created book is never suitable for making templates, even if its source was.
 			storage.BookInfo.IsSuitableForMakingTemplates = false;

@@ -820,6 +820,7 @@
         <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
       </trans-unit>
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
+        <!-- obsolete after 5.4 -->
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
       </trans-unit>
@@ -3333,6 +3334,7 @@
         <note>ID: NewCollectionWizard.CollectionName</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
+        <!-- obsolete after 5.4 -->
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.ExampleText</note>
       </trans-unit>

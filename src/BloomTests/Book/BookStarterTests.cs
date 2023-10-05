@@ -1199,7 +1199,7 @@ namespace BloomTests.Book
 			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
 			var dom = new HtmlDom(
 				@"<html>
-				  <head><meta name='lockedDownAsShell' content='true'></meta></head>
+				  <head></head>
 				  <body>
 				    <div id='bloomDataDiv'>
 				      <div data-book='copyright' lang='*'>
@@ -1259,7 +1259,7 @@ namespace BloomTests.Book
 		{
 			// All of the tests using this method require that the book is locked down (that is, a derivative that
 			// is expected to have original copyright and license information).
-			var html = "<html><head><meta name='lockedDownAsShell' content='true'></meta></head><body>" + dataDivString + "</body></html>";
+			var html = "<html><head></head><body>" + dataDivString + "</body></html>";
 			var dom = new HtmlDom(html);
 			using (var folder = new TemporaryFolder("TransformCreditPageData"))
 			{
@@ -1275,7 +1275,7 @@ namespace BloomTests.Book
 		{
 			// All of the tests using this method require that the book is locked down (that is, a derivative that
 			// is expected to have original copyright and license information).
-			var html = "<html><head><meta name='lockedDownAsShell' content='true'></meta></head><body>" + dataDivString + "</body></html>";
+			var html = "<html><head></head><body>" + dataDivString + "</body></html>";
 			var dom = new HtmlDom(html);
 			var bookData = new BookData(dom, _alternateCollectionSettings, null);
 			BookStarter.SetOriginalCopyrightAndLicense(dom, bookData, _defaultCollectionSettings);

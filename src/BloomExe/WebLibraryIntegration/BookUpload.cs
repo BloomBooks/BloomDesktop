@@ -156,15 +156,7 @@ namespace Bloom.WebLibraryIntegration
 			string pdfToInclude, bool includeNarrationAudio, bool includeMusic, string[] textLanguages, string[] audioLanguages,
 			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code, bool isForBulkUpload = false)
 		{
-			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
-			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
-			// Such books must never be locked.
-			// So, typically we will try to lock it. What we want to do is Book.RecordedAsLockedDown = true; Book.Save().
-			// But all kinds of things have to be set up before we can create a Book. So we duplicate a few bits of code.
 			var htmlFile = BookStorage.FindBookHtmlInFolder(bookFolder);
-			bool wasLocked = false;
-			bool allowLocking = false;
-			HtmlDom domForLocking = null;
 			// Using this rather than FromFolder because it will throw if we can't get some metadata, which I think is
 			// appropriate here...don't want to upload a badly messed-up book.
 			var metadata = BookMetaData.FromFile(Path.Combine(bookFolder, BookInfo.MetaDataFileName));
