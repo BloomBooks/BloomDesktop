@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -187,10 +188,7 @@ namespace Bloom.CollectionCreating
 			_collectionInfo.SetAnalyticsProperties();
 
 			Logger.WriteEvent("Finshed New Collection Wizard");
-			if (_collectionInfo.IsSourceCollection)
-				Analytics.Track("Created New Source Collection");
-			else
-				Analytics.Track("Create New Vernacular Collection");
+			Analytics.Track("Create New Vernacular Collection");
 			
 			Close();
 		}

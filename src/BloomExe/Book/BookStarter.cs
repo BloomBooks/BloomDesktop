@@ -23,7 +23,6 @@ namespace Bloom.Book
 		private readonly IFileLocator _fileLocator;
 		private readonly BookStorage.Factory _bookStorageFactory;
 		private readonly CollectionSettings _collectionSettings;
-		private bool _isSourceCollection;
 
 		public delegate BookStarter Factory();//autofac uses this
 
@@ -32,7 +31,6 @@ namespace Bloom.Book
 			_fileLocator = fileLocator;
 			_bookStorageFactory = bookStorageFactory;
 			_collectionSettings = collectionSettings;
-			_isSourceCollection = collectionSettings.IsSourceCollection;
 		}
 
 		public bool TestingSoSkipAddingXMatter { get; set; }
@@ -546,7 +544,7 @@ namespace Bloom.Book
 			// and also needs to NOT be RecordedAsLockedDown, because that suppresses options
 			// we want in the options tab.
 			// If we change this see also Book.SwitchSuitableForMakingShells().
-			if (_isSourceCollection && !storage.BookInfo.IsSuitableForMakingTemplates)
+			if (!storage.BookInfo.IsSuitableForMakingTemplates)
 			{
 				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");
 			}
@@ -712,16 +710,7 @@ namespace Bloom.Book
 			{
 				return; //leave the original there.
 			}
-			// If there's no copyright information in a source-collection book, we're presumably making
-			// a new original book, and shouldn't try to record any original copyright and license information.
-			// This is somewhat redundant with the check in BookStarter.SetupNewDocumentContents(), the one
-			// non-unit-test current caller of this method, that doesn't call this at all if the source is
-			// a template book. I was trying for a minimal reasonable change for BL-5131, and therefore
-			// put in this extra check, since previously this method was simply NEVER called in a source
-			// collection.
 			var copyrightNotice = BookCopyrightAndLicense.GetMetadata(dom, bookData).CopyrightNotice;
-			if (String.IsNullOrEmpty(copyrightNotice) && collectionSettings.IsSourceCollection)
-				return;
 			bookData.Set("originalLicenseUrl", XmlString.FromXml(BookCopyrightAndLicense.GetLicenseUrl(dom)), "*");
 			bookData.Set("originalCopyright", XmlString.FromUnencoded(copyrightNotice), "*");
 			bookData.Set("originalLicenseNotes", XmlString.FromXml(dom.GetBookSetting("licenseNotes").GetFirstAlternative()), "*");

@@ -28,7 +28,6 @@ namespace BloomTests.Edit
 		{
 			var collection = new CollectionSettings
 			{
-				IsSourceCollection = false,
 				Language2Tag = "en",
 				Language1Tag = "xyz",
 				XMatterPackName = "Factory"

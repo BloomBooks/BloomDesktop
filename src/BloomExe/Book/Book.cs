@@ -2102,12 +2102,12 @@ namespace Bloom.Book
 		//hack. Eventually we might be able to lock books so that you can't edit them.
 		public bool IsShellOrTemplate => !IsEditable;
 
-		public bool HasOriginalCopyrightInfoInSourceCollection
+		public bool HasOriginalCopyrightInfo
 		{
 			get
 			{
 				var x = OurHtmlDom.SafeSelectNodes("//div[contains(@id, 'bloomDataDiv')]/div[contains(@data-book, 'originalCopyright') and string-length(translate(normalize-space(text()), ' ', '')) > 0]");
-				return x.Count > 0 && CollectionSettings.IsSourceCollection;
+				return x.Count > 0;
 			}
 		}
 
@@ -2115,13 +2115,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				if (CollectionSettings.IsSourceCollection)
-				{
-					// This won't happen any more except for legacy source collections
-					// since we are no longer creating them.
-					return "ShellEditing";
-				}
-				else if (IsSuitableForMakingShells)
+				if (IsSuitableForMakingShells)
 				{
 					// We might also be making something intended to be a new shell, but we can't tell the difference
 					// between that and a custom vernacular book any more.

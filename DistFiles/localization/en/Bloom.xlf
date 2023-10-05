@@ -514,16 +514,19 @@
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+        <!-- obsolete after 5.4 -->
         <source xml:lang="en">Language 1</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
         <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+        <!-- obsolete after 5.4 -->
         <source xml:lang="en">Language 2</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
         <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+        <!-- obsolete after 5.4 -->
         <source xml:lang="en">Language 3</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
         <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
