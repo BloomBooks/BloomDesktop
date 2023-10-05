@@ -61,23 +61,31 @@ describe("All books", () => {
         async (bookFolder, branding) => {
             await setBranding(branding);
             await selectBook(bookFolder);
-            var screenshots = ensureDir(Path.join(bookFolder, "screenshots"));
-            var reference = Path.join(screenshots, `${branding}-reference.png`);
-            if (!fs.existsSync(reference)) {
+            var screenshotsDir = ensureDir(
+                Path.join(bookFolder, "screenshots")
+            );
+            var referenceScreenPath = Path.join(
+                screenshotsDir,
+                `${branding}-reference.png`
+            );
+            if (!fs.existsSync(referenceScreenPath)) {
                 console.log(
                     chalk.blueBright(
                         `Creating reference image for ${bookFolder}`
                     )
                 );
-                await saveScreenshot(reference);
+                await saveScreenshot(referenceScreenPath);
                 return;
             }
-            var current = Path.join(screenshots, `${branding}-current.png`);
-            await saveScreenshot(current);
+            var currentScreenshotPath = Path.join(
+                screenshotsDir,
+                `${branding}-current.png`
+            );
+            await saveScreenshot(currentScreenshotPath);
             await comparePreviewImage(
-                reference,
-                current,
-                Path.join(screenshots, `${branding}-diff.png`)
+                referenceScreenPath,
+                currentScreenshotPath,
+                Path.join(screenshotsDir, `${branding}-diff.png`)
             );
         }
     );
@@ -101,7 +109,7 @@ describe("All books", () => {
     async function setBranding(branding: string) {
         // Enhance: get us on the correct collection (currently we can only handle the one collection)
 
-        // get us on the correct book
+        // get us on the correct branding
         let result = await fetch(
             `http://localhost:8089/bloom/api/settings/branding`,
             {
