@@ -170,8 +170,7 @@ namespace BloomTests.WebLibraryIntegration
 			// Data uploaded with the same id but a different uploader should form a distinct book; the Jill data
 			// should not overwrite the Jack data. Likewise, data uploaded with a distinct Id by the same uploader should be separate.
 			var jacksFirstData = File.ReadAllText(firstPair.Item2.CombineForPath("one.htm"));
-			// We use stringContaining here because upload does make some changes...for example connected with marking the
-			// book as lockedDown.
+			// We use stringContaining here because upload does make some changes.
 			Assert.That(jacksFirstData, Does.Contain("Jack's data"));
 			var jillsData = File.ReadAllText(secondPair.Item2.CombineForPath("one.htm"));
 			Assert.That(jillsData, Does.Contain("Jill's data"));
@@ -179,35 +178,6 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(jacksSecondData, Does.Contain("Jack's other data"));
 
 			// Todo: verify that we got three distinct book records in parse.com
-		}
-
-		/// <summary>
-		/// These two tests were worth writing but I don't think they are worth running every time.
-		/// Real uploads are slow and we get occasional failures when S3 is slow or something similar.
-		/// Use these tests if you are messing with the upload, download, or locking code.
-		/// </summary>
-		[Test, Ignore("slow and unlikely to fail")]
-		public void RoundTripBookLocksIt()
-		{
-			var pair = UploadAndDownLoadNewBook("first", "book1", "Jack", "Jack's data");
-			var originalFolder = pair.Item1;
-			var newFolder = pair.Item2;
-			var originalHtml = BookStorage.FindBookHtmlInFolder(originalFolder);
-			var newHtml = BookStorage.FindBookHtmlInFolder(newFolder);
-			AssertThatXmlIn.HtmlFile(originalHtml).HasNoMatchForXpath("//meta[@name='lockedDownAsShell' and @content='true']");
-			AssertThatXmlIn.HtmlFile(newHtml).HasAtLeastOneMatchForXpath("//meta[@name='lockedDownAsShell' and @content='true']");
-		}
-
-		[Test, Ignore("slow and unlikely to fail")]
-		public void RoundTripOfTemplateBookDoesNotLockIt()
-		{
-			var pair = UploadAndDownLoadNewBook("first", "book1", "Jack", "Jack's data", true);
-			var originalFolder = pair.Item1;
-			var newFolder = pair.Item2;
-			var originalHtml = BookStorage.FindBookHtmlInFolder(originalFolder);
-			var newHtml = BookStorage.FindBookHtmlInFolder(newFolder);
-			AssertThatXmlIn.HtmlFile(originalHtml).HasNoMatchForXpath("//meta[@name='lockedDownAsShell' and @content='true']");
-			AssertThatXmlIn.HtmlFile(newHtml).HasNoMatchForXpath("//meta[@name='lockedDownAsShell' and @content='true']");
 		}
 
 		[Test]

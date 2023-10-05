@@ -2161,8 +2161,7 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells.
-		/// Note: the setter on this property just sets the flag to the appropriate state. To actually change
-		/// a book to or from a template, use SwitchSuitableForMakingShells()
+		/// Note: the setter on this property just sets the flag to the appropriate state for testing.
 		/// </summary>
 		public bool IsSuitableForMakingShells
 		{
