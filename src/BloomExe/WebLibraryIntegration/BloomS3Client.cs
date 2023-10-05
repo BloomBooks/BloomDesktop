@@ -18,6 +18,7 @@ using Bloom.Publish;
 using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
+using RestSharp;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -207,31 +208,20 @@ namespace Bloom.WebLibraryIntegration
 		/// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
 		/// except the one we want.
 		/// </summary>
-		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
+		public void UploadBook(string bookInstanceId, BloomParseClient parseClient, string pathToBloomBookDirectory, IProgress progress,
 			string pdfToInclude, bool includeNarrationAudio, bool includeMusic,
 			string[] textLanguagesToInclude, string[] audioLanguagesToInclude, string metadataLang1Code, string metadataLang2Code,
-			string collectionSettingsPath = null, bool isForBulkUpload = false)
+			string collectionSettingsPath = null, bool isForBulkUpload = false, string parseIdOfBookToUpdate = null)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
-			DeleteBookData(_bucketName, storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
 
-			//first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
-			//and at the same time introduce a wrapper with the last part of the unique key for this person+book
-			string prefix = ""; // storageKey up to last slash (or empty)
-			string tempFolderName = storageKeyOfBookFolder; // storage key after last slash (or all of it)
+			var wrapperPath = Path.Combine(Path.GetTempPath(), bookInstanceId);
 
-			// storageKeyOfBookFolder typically has a slash in it, email/id.
-			// We only want the id as the temp folder name.
-			// If there is anything before it, though, we want that as a prefix to make a parent 'folder' on parse.com.
-			int index = storageKeyOfBookFolder.LastIndexOf('/');
-			if (index >= 0)
-			{
-				prefix = storageKeyOfBookFolder.Substring(0, index + 1); // must include the slash
-				tempFolderName = storageKeyOfBookFolder.Substring(index + 1);
-			}
+			string presignedUrl = parseClient.getPresignedUrlForUpload(parseIdOfBookToUpdate, bookInstanceId);
 
-			var wrapperPath = Path.Combine(Path.GetTempPath(), tempFolderName);
+			DeleteBookData(_bucketName, bookInstanceId); // In case we're overwriting, get rid of any deleted files.
+
 
 			//If we previously uploaded the book, but then had a problem, this directory could still be on our harddrive. Clear it out.
 			if (Directory.Exists(wrapperPath))
@@ -265,6 +255,7 @@ namespace Bloom.WebLibraryIntegration
 
 			PublishHelper.ReportInvalidFonts(destDirName, progress);
 
+			string prefix = parseClient.Account + kDirectoryDelimeterForS3;
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));

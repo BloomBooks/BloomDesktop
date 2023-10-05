@@ -445,5 +445,34 @@ namespace Bloom.WebLibraryIntegration
 			}
 			return result;
 		}
+
+		public string getPresignedUrlForUpload(string parseIdOfBookToUpdate, string bookInstanceId) {
+			if (!LoggedIn)
+				throw new ApplicationException("Must be logged in to upload book");
+
+			string parseFunctionUrlBase = "http://localhost:7071/v1/";
+
+			bool isNewBook = string.IsNullOrEmpty(parseIdOfBookToUpdate);
+			string actionTypeParam = isNewBook ? "get-new-book-url" : "get-update-url";
+			string path = parseFunctionUrlBase + "book-upload/" + actionTypeParam;
+			var request = new RestRequest(path, Method.GET);
+			request.AddParameter("src", "dev"); // TODO get dev vs prod
+			request.AddParameter("session-token", _sessionToken);
+			if (isNewBook)
+			{
+				request.AddParameter("book-instance-id", bookInstanceId);
+			}
+			else
+			{
+				request.AddParameter("book-object-id", parseIdOfBookToUpdate);
+			}
+			var response = Client.Execute(request);
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				return null;
+
+			}
+			return response.Content;
+		}	
 	}
 }

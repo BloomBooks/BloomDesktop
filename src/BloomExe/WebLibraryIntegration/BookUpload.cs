@@ -154,7 +154,8 @@ namespace Bloom.WebLibraryIntegration
 
 		private string UploadBook(string bookFolder, IProgress progress, out string parseId,
 			string pdfToInclude, bool includeNarrationAudio, bool includeMusic, string[] textLanguages, string[] audioLanguages,
-			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code, bool isForBulkUpload = false)
+			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code, bool isForBulkUpload = false,
+			string parseIdOfBookToUpdate = null)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -189,7 +190,7 @@ namespace Bloom.WebLibraryIntegration
 			var msgBookId = "s3BookId: " + s3BookId;
 			progress.WriteMessage(msgBookId);
 #endif
-			metadata.DownloadSource = s3BookId;
+			metadata.DownloadSource = s3BookId; //TODO check and fix DownloadSource and progress message of s3bookid
 			// If the collection has a default bookshelf, make sure the book has that tag.
 			// Also make sure it doesn't have any other bookshelf tags (which would typically be
 			// from a previous default bookshelf upload), including a duplicate of the one
@@ -229,8 +230,8 @@ namespace Bloom.WebLibraryIntegration
 			parseId = "";
 			try
 			{
-				_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
-					textLanguages, audioLanguages, metadataLang1Code, metadataLang2Code, collectionSettings?.SettingsFilePath, isForBulkUpload);
+				_s3Client.UploadBook(metadata.Id, ParseClient, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
+					textLanguages, audioLanguages, metadataLang1Code, metadataLang2Code, collectionSettings?.SettingsFilePath, isForBulkUpload, parseIdOfBookToUpdate);
 				metadata.BaseUrl = _s3Client.BaseUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 				var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
@@ -243,6 +244,7 @@ namespace Bloom.WebLibraryIntegration
 					// Do NOT save this change in the book folder!
 					metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles,
 						textLanguages);
+					// TODO make sure we are updating the right parse book 
 					var response = ParseClient.SetBookRecord(metadata.WebDataJson);
 					parseId = response.ResponseUri.LocalPath;
 					int index = parseId.LastIndexOf('/');
@@ -251,6 +253,7 @@ namespace Bloom.WebLibraryIntegration
 					{
 						// For NEW books the response URL is useless...need to do a new query to get the ID.
 						var json = ParseClient.GetSingleBookRecord(metadata.Id);
+						// todo can i use this?
 						parseId = json.objectId.Value;
 					}
 					//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
@@ -363,6 +366,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		//TODO do we still need this?
 		private string S3BookId(BookMetaData metadata)
 		{
 			var s3BookId = ParseClient.Account + BloomS3Client.kDirectoryDelimeterForS3 + metadata.Id;
