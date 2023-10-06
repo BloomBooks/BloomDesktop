@@ -234,7 +234,7 @@ namespace Bloom.Publish.Video
 			{
 				AbortMakingVideo();
 				request.PostSucceeded();
-			}, false);	
+			}, true);	
 		}
 
 		private void UpdatePreview(ApiRequest request)
@@ -391,8 +391,8 @@ namespace Bloom.Publish.Video
 		{
 			if (_recordVideoWindow != null)
 			{
-				_recordVideoWindow.Close();
 				_recordVideoWindow.Cleanup();
+				_recordVideoWindow.Close();
 				_recordVideoWindow = null;
 			}
 		}

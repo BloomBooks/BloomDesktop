@@ -165,10 +165,11 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                 flex-direction: row;
                                 .react-tabs__tab-list {
                                     box-sizing: border-box;
-                                    height: 100%;
                                     width: min-content;
+                                    overflow-y: auto;
                                     display: flex;
                                     flex-direction: column;
+                                    flex-shrink: 0;
                                     justify-content: flex-start; // keeps the first button up near the top of the page controls panel.
                                     align-items: center; // buttons will be in the center of the (side) panel.
                                     margin: 0px;
@@ -337,7 +338,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                     css={css`
                                         background-color: ${kBloomUnselectedTabBackground};
                                         width: 100%;
-                                        height: 100%;
+                                        // height: 100%;
                                     `}
                                 ></div>
                             </TabPanel>
