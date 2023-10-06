@@ -22,7 +22,6 @@ namespace BloomTests.Book
 		{
 			_collectionSettings = new CollectionSettings
 			{
-				IsSourceCollection = false,
 				Language1Tag = "xyz",
 				Language2Tag = "fr",
 				Language3Tag = "es",

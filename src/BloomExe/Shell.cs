@@ -178,12 +178,6 @@ namespace Bloom
 			{
 				formattedText = string.Format("{0} - {1}", bookName, formattedText);
 			}
-
-			if (_collectionSettings.IsSourceCollection)
-			{
-				formattedText += " SOURCE COLLECTION";
-			}
-
 			Text = formattedText;
 		}
 
