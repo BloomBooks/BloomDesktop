@@ -66,9 +66,29 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "books", HandleBooksRequest, false, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "book/thumbnail", HandleThumbnailRequest, false, false);
 
+			// used by visual regression tests to name screenshots
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "selected-book-info", request =>{
+
+				var book = _collectionModel.GetSelectedBookOrNull();
+				if (book == null)
+				{
+					request.Failed();
+					return;
+				}
+				var bookInfo = book.BookInfo;
+				var json = new
+				{
+					id = bookInfo.Id,
+					title = bookInfo.QuickTitleUserDisplay,
+					folderPath = bookInfo.FolderPath,
+					folderName = book.Storage.FolderName,
+				};
+				request.ReplyWithJson(json);
+			}, true);
+
 			// Note: the get part of this doesn't need to run on the UI thread, or even requiresSync. If it gets called a lot, consider
 			// using different patterns for get and set so we can not use the uI thread for get.
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "selected-book-id", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "selected-book", request =>
 			{
 				switch (request.HttpMethod)
 				{
@@ -383,7 +403,7 @@ namespace Bloom.web.controllers
 			// getting at least two requests. Fortunately, waiting for those seems to be enough to make it look
 			// as if we're prioritizing the whole primary collection.
 			// We need the count to be at least one, even if the main collection is empty, so that the milestone
-			// will always be reported. 
+			// will always be reported.
 			lock (_thumbnailEventsLock)
 			{
 				if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
@@ -397,11 +417,18 @@ namespace Bloom.web.controllers
 		// This needs to be thread-safe.
 		private BookCollection GetCollectionOfRequest(ApiRequest request)
 		{
-			var id = request.RequiredParam("collection-id").Trim();
-			var collection = _collectionModel.GetBookCollections().FirstOrDefault(c => c.PathToDirectory == id);
+			// Collection can be specified by id, which is the equal to the directory path on disk. If this is not specified, we default to the editable collection.
+			var id = request.GetParamOrNull("collection-id")?.Trim();
+			BookCollection collection;
+			if(string.IsNullOrWhiteSpace(id)){
+				collection = _collectionModel.CurrentEditableCollection;
+			}
+			else{
+				collection = _collectionModel.GetBookCollections().FirstOrDefault(c => c.PathToDirectory == id);
+			}
 			if (collection == null)
 			{
-				request.Failed($"Collection named '{id}' was not found.");
+				request.Failed($"Collection with path '{id}' was not found.");
 			}
 
 			return collection;
@@ -419,7 +446,7 @@ namespace Bloom.web.controllers
 				}
 			}
 
-			var bookInfo = GetBookInfoFromRequestParam(request);			
+			var bookInfo = GetBookInfoFromRequestParam(request);
 
 			// Not sure what causes bookInfo to be null, but apparently it's possible: See BL-12354
 			// Let's gracefully fail in this scenario
@@ -511,8 +538,22 @@ namespace Bloom.web.controllers
 		// Needs to be thread-safe
 		private BookInfo GetBookInfoFromPost(ApiRequest request)
 		{
-			var bookId = request.RequiredPostString();
-			return GetCollectionOfRequest(request).GetBookInfos().FirstOrDefault(info => info.Id == bookId);
+			// We can specify the book by id or by path explicitly, or by just sending the id as the body of the post.
+			Func<BookInfo, bool> predicate;
+			if (request.GetParamOrNull("path") != null)
+			{
+				predicate = info => info.FolderPath == request.GetParamOrNull("path");
+			}
+			else if (request.GetParamOrNull("id") != null)
+			{
+				predicate = info => info.Id == request.GetParamOrNull("id");
+			}
+			else {
+				// the original version of this just handled id as the body of the post
+			 	predicate = info => info.Id == request.RequiredPostString();
+			}
+			var collection = GetCollectionOfRequest(request);
+			return collection.GetBookInfos().FirstOrDefault(predicate);
 		}
 
 		private Book.Book GetBookObjectFromPost(ApiRequest request, bool fullyUpdateBookFiles = false)
