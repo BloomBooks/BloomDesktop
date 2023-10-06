@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.Code;
@@ -68,6 +69,26 @@ namespace Bloom.Utils
 			return result;
 		}
 
+		// We shouldn't store these in the zip, and we don't want to try to overwrite them if we have stored them.
+		private static string[] _systemFilesToIgnore = new[] { "thumbs.db", "desktop.ini" };
+
+		/// <summary>
+		/// Hidden files should be ignored for zipping / unzipping.  A limited set of system files
+		/// ("thumbs.db" and "desktop.ini") should also be ignored even if they aren't hidden.
+		/// </summary>
+		public static bool ShouldFileBeIgnored(string path)
+		{
+			if (RobustFile.Exists(path))
+			{
+				// Don't save or overwrite hidden files: Bloom never hides any of its files anyway.
+				var attrs = RobustFile.GetAttributes(path);
+				if (attrs.HasFlag(FileAttributes.Hidden))
+					return true;
+			}
+			// The listed files are usually hidden, but let's be sure.
+			return _systemFilesToIgnore.Contains(Path.GetFileName(path).ToLowerInvariant());
+		}
+
 		public static void UnzipDirectory(string destFolder, string zipPath)
 		{
 			byte[] buffer = new byte[4096]; // 4K is optimum
@@ -86,6 +107,8 @@ namespace Bloom.Utils
 							// an issue.
 							continue;
 						}
+						if (ShouldFileBeIgnored(fullOutputPath))
+							continue;
 
 						var directoryName = Path.GetDirectoryName(fullOutputPath);
 						if (!String.IsNullOrEmpty(directoryName))
@@ -116,6 +139,8 @@ namespace Bloom.Utils
 					var path = Path.Combine(sourceFolder, name);
 					if (!RobustFile.Exists(path))
 						continue;
+					if (ShouldFileBeIgnored(path))
+						continue;
 					zipFile.AddTopLevelFile(path, true);
 				}
 
@@ -131,6 +156,8 @@ namespace Bloom.Utils
 				var zipFile = new BloomZipFile(destPath);
 				foreach (var path in Directory.EnumerateFiles(sourceDir))
 				{
+					if (ShouldFileBeIgnored(path))
+						continue;
 					zipFile.AddTopLevelFile(path);
 				}
 
@@ -155,6 +182,8 @@ namespace Bloom.Utils
 					{
 						filesInZip.Add(entry.Name);
 						var fullOutputPath = Path.Combine(destFolder, entry.Name);
+						if (ShouldFileBeIgnored(fullOutputPath))
+							continue;
 
 						var directoryName = Path.GetDirectoryName(fullOutputPath);
 						if (!String.IsNullOrEmpty(directoryName))

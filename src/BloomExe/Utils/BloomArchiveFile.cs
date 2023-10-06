@@ -124,6 +124,8 @@ namespace Bloom.Utils
 			{
 				foreach (var path in files)
 				{
+					if (RobustZip.ShouldFileBeIgnored(path))
+						continue; //don't add hidden files (BL-12680)
 					currentFilename = path;
 					var entryName = path.Substring(dirNameOffest);
 					string zipEntryName = ZipEntry.CleanName(entryName);
