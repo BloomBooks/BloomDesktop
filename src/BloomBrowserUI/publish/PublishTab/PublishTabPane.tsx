@@ -86,7 +86,7 @@ export const EnterpriseNeededScreen: React.FunctionComponent<{
 
 export const PublishTabPane: React.FunctionComponent<{}> = () => {
     const kWaitForUserToChooseTabIndex = 5;
-    const kAudioVideoTabIndex = 3;
+    const kAudioVideoTabIndex = 4;
 
     const [publishTabReady, setPublishTabReady] = React.useState(false);
     const [publishTabInfo, setPublishTabInfo] = React.useState({
@@ -166,7 +166,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                 .react-tabs__tab-list {
                                     box-sizing: border-box;
                                     height: 100%;
-                                    width: 120px;
+                                    width: min-content;
                                     display: flex;
                                     flex-direction: column;
                                     justify-content: flex-start; // keeps the first button up near the top of the page controls panel.
@@ -179,13 +179,15 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
 
                                 .react-tabs__tab.react-tabs__tab {
                                     min-height: 80px;
-                                    width: 80%; // for border placement
+                                    min-width: 100px;
+                                    width: fit-content;
                                     flex: 0 0 auto;
-                                    margin: 10px 0px;
+                                    margin: 10px 10px;
                                     border: 3px solid transparent; // to be colored when selected
                                     border-radius: 10px;
                                     padding: 0;
                                     align-items: center;
+                                    font-size: 14px;
 
                                     .sidebar-tab-label {
                                         display: block;
@@ -200,6 +202,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                 }
                                 .react-tabs__tab--selected {
                                     border-color: ${kBloomBlue} !important;
+                                    font-weight: normal;
                                 }
                                 .react-tabs__tab-panel {
                                     flex-grow: 1;
@@ -262,22 +265,6 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                     <BloomTooltip
                                         tip={{
                                             l10nKey:
-                                                "PublishTab.RecordVideoButton-tooltip"
-                                        }}
-                                    >
-                                        <img src="/bloom/publish/PublishTab/publish video.png" />
-                                        <Span
-                                            l10nKey="PublishTab.RecordVideoButton"
-                                            className="sidebar-tab-label"
-                                        >
-                                            Audio or Video
-                                        </Span>
-                                    </BloomTooltip>
-                                </Tab>
-                                <Tab>
-                                    <BloomTooltip
-                                        tip={{
-                                            l10nKey:
                                                 "PublishTab.EpubRadio-tooltip"
                                         }}
                                     >
@@ -290,6 +277,23 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                         </Span>
                                     </BloomTooltip>
                                 </Tab>
+                                <Tab>
+                                    <BloomTooltip
+                                        tip={{
+                                            l10nKey:
+                                                "PublishTab.RecordVideoButton-tooltip"
+                                        }}
+                                    >
+                                        <img src="/bloom/publish/PublishTab/publish video.png" />
+                                        <Span
+                                            l10nKey="PublishTab.RecordVideoButton"
+                                            className="sidebar-tab-label"
+                                        >
+                                            Audio or Video
+                                        </Span>
+                                    </BloomTooltip>
+                                </Tab>
+
                                 <Tab className={"invisible_tab"}>
                                     {/* The default tab for before user has selected a publish mode. Should not be visible or clickable */}
                                 </Tab>
@@ -322,10 +326,10 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                 <ReaderPublishScreen />
                             </TabPanel>
                             <TabPanel>
-                                <PublishAudioVideo />
+                                <EPUBPublishScreen />
                             </TabPanel>
                             <TabPanel>
-                                <EPUBPublishScreen />
+                                <PublishAudioVideo />
                             </TabPanel>
                             <TabPanel>
                                 {/* Before user has selected a publish mode, show a blank panel */}
