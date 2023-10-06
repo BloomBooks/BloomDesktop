@@ -137,7 +137,11 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
                         `}
                     >
                         <div>{countOfBooksLabel}</div>
-                        <div>
+                        <div
+                            css={css`
+                                align-self: center;
+                            `}
+                        >
                             {goalLabel} {webGoal}
                         </div>
                     </div>
