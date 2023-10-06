@@ -991,7 +991,7 @@ namespace Bloom.Edit
 		///
 		//		public void HandleAddNewPageKeystroke(string unused)
 		//		{
-		//			if (!HaveCurrentEditableBook || _currentlyDisplayedBook.LockedDown)
+		//			if (!HaveCurrentEditableBook)
 		//				return;
 		//
 		//			try

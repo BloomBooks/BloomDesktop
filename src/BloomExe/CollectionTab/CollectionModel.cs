@@ -216,11 +216,6 @@ namespace Bloom.CollectionTab
 			get { return _collectionSettings.VernacularCollectionNamePhrase; }
 		}
 
-		public bool IsSourceCollection
-		{
-			get { return _collectionSettings.IsSourceCollection; }
-		}
-
 		public bool ShowSourceCollections
 		{
 			get { return _collectionSettings.AllowNewBooks; }

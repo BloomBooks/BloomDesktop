@@ -258,8 +258,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             l10nId: "CollectionTab.MakeBloomPackOfShellBooks",
             command: "collections/makeShellBooksBloompack",
             addEllipsis: true
-            // BL-11761: Always show this command
-            // shouldShow: () => collections[0].isSourceCollection
+            // BL-11761: Always show
         },
         {
             label: "Make Reader Template Bloom Pack...",
@@ -335,14 +334,8 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         );
     });
 
-    const editingSourceCollection =
-        collections.length > 0 ? collections[0].isSourceCollection : false;
-    const collectionsHeaderKey = editingSourceCollection
-        ? "CollectionTab.SourcesForNewShellsHeading"
-        : "CollectionTab.BookSourceHeading";
-    const collectionsHeaderText = editingSourceCollection
-        ? "Sources For New Shells"
-        : "Sources For New Books";
+    const collectionsHeaderKey = "CollectionTab.BookSourceHeading";
+    const collectionsHeaderText = "Sources For New Books";
 
     return (
         <div
