@@ -86,7 +86,6 @@ export const EnterpriseNeededScreen: React.FunctionComponent<{
 
 export const PublishTabPane: React.FunctionComponent<{}> = () => {
     const kWaitForUserToChooseTabIndex = 5;
-    const kAudioVideoTabIndex = 4;
 
     const [publishTabReady, setPublishTabReady] = React.useState(false);
     const [publishTabInfo, setPublishTabInfo] = React.useState({
@@ -149,13 +148,6 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                             selectedIndex={tabIndex}
                             onSelect={newIndex => {
                                 post("publish/switchingPublishMode");
-                                if (
-                                    tabIndex === kAudioVideoTabIndex &&
-                                    newIndex !== kAudioVideoTabIndex
-                                ) {
-                                    // TODO as part of round 2 for this card, this should instead be done in a cleanup hook in the PublishAudioVideo component
-                                    post("publish/av/abortMakingVideo");
-                                }
                                 setTabIndex(newIndex);
                             }}
                             css={css`
@@ -165,10 +157,11 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                 flex-direction: row;
                                 .react-tabs__tab-list {
                                     box-sizing: border-box;
-                                    height: 100%;
                                     width: min-content;
+                                    overflow-y: auto;
                                     display: flex;
                                     flex-direction: column;
+                                    flex-shrink: 0;
                                     justify-content: flex-start; // keeps the first button up near the top of the page controls panel.
                                     align-items: center; // buttons will be in the center of the (side) panel.
                                     margin: 0px;
@@ -337,7 +330,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                     css={css`
                                         background-color: ${kBloomUnselectedTabBackground};
                                         width: 100%;
-                                        height: 100%;
+                                        // height: 100%;
                                     `}
                                 ></div>
                             </TabPanel>

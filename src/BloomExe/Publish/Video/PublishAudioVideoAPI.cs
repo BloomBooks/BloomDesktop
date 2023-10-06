@@ -234,7 +234,7 @@ namespace Bloom.Publish.Video
 			{
 				AbortMakingVideo();
 				request.PostSucceeded();
-			}, false);	
+			}, true); // The RecordVideoWindow can only be accessed and stopped from the thread it was created on which is the UI thread
 		}
 
 		private void UpdatePreview(ApiRequest request)
@@ -391,8 +391,8 @@ namespace Bloom.Publish.Video
 		{
 			if (_recordVideoWindow != null)
 			{
-				_recordVideoWindow.Close();
 				_recordVideoWindow.Cleanup();
+				_recordVideoWindow.Close();
 				_recordVideoWindow = null;
 			}
 		}
