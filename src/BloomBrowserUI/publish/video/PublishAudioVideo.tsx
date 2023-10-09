@@ -257,6 +257,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         window.addEventListener("message", listener);
         return () => {
             window.removeEventListener("message", listener);
+            post("publish/av/abortMakingVideo"); // in case we're in the middle of making a video, abort on unmount
         };
     }, []);
     // The param is added because, if anything has changed that forces us to re-render
