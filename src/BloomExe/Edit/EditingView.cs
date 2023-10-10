@@ -84,6 +84,7 @@ namespace Bloom.Edit
 			// 
 			this._browser1.BackColor = System.Drawing.Color.DarkGray;
 			this._browser1.ContextMenuProvider = null;
+			this._browser1.ReplaceContextMenu = null;
 			this._browser1.ControlKeyEvent = null;
 			this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._browser1.Location = new System.Drawing.Point(0, 0);

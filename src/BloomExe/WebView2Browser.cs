@@ -120,6 +120,13 @@ namespace Bloom
 
 		private void ContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
 		{
+			if (ReplaceContextMenu != null)
+			{
+				e.Handled = true;
+				ReplaceContextMenu();
+				return;
+			}
+
 			var wantDebug = WantDebugMenuItems;
 			// Remove built-in items (except "Inspect" and "Refresh", if we're in a debugging context)
 			var menuList = e.MenuItems;
