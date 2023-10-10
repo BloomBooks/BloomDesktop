@@ -37,6 +37,7 @@ namespace Bloom.Publish.Video
 	{
 		// We only want to calculate this once per run and cache it.
 		private static Resolution s_maxResolution;
+		private static Resolution s_screenResolution;
 
 		private UserControl _content;
 		private Process _ffmpegProcess;
@@ -64,6 +65,7 @@ namespace Bloom.Publish.Video
 		private string _videoSettingsFromPreview;
 		private bool _shouldRotateBook = false;
 		private bool _shouldUseOriginalPageSize = false;
+		private bool _showFullScreen;
 		private int[] _pageRange = new int[0];
 
 		// H.263, at least in its original revision, only supports certain specific resolutions, e.g. CIF = 352x288
@@ -170,6 +172,22 @@ namespace Bloom.Publish.Video
 		/// </summary>
 		public void Show(string bookUrl, string pathToRealBook)
 		{
+			this.WindowState = FormWindowState.Normal;	// should be default, but make sure
+			if (_showFullScreen)
+			{
+				this.FormBorderStyle = FormBorderStyle.None;
+				this.Bounds = new Rectangle(0, 0, s_screenResolution.Width, s_screenResolution.Height);
+				((Browser)_content).ContextMenuProvider = (adder) =>
+				{
+					adder.Add(LocalizationManager.GetString("PublishTab.RecordVideo.StopRecording", "Stop Recording"),
+						(s1, e1) => { this.Close(); });	// OnClosed() handles cleanup.
+					return true;
+				};
+			}
+			else
+			{
+				this.FormBorderStyle = FormBorderStyle.Sizable;
+			}
 			_pathToRealBook = pathToRealBook;
 			// We don't need to spend any time on pages that have no narration if we're not
 			// recording video. (Review: I suppose its technically possible that something
@@ -1310,10 +1328,12 @@ namespace Bloom.Publish.Video
 		/// <returns>A warning message, if we can't make the window big enough to record
 		/// the optimum resolution for the format; otherwise, an empty string.</returns>
 		public static string GetDataForFormat(string format, bool landscape, Layout pageLayout,
-			out Resolution desiredResolution, out Resolution actualResolution, out Codec codec, out bool shouldRotateBook, out bool shouldUseOriginalPageSize)
+			out Resolution desiredResolution, out Resolution actualResolution, out Codec codec,
+			out bool shouldRotateBook, out bool shouldUseOriginalPageSize, out bool fullScreen)
 		{
 			shouldRotateBook = false;
 			shouldUseOriginalPageSize = false;
+			fullScreen = false;
 
 			int desiredWidth;
 			int desiredHeight;
@@ -1408,6 +1428,7 @@ namespace Bloom.Publish.Video
 					var deltaH = proto.Width - proto._content.Width;
 
 					s_maxResolution = new Resolution(bounds.Width - deltaH, bounds.Height - deltaV);
+					s_screenResolution = new Resolution(bounds.Width, bounds.Height);
 				}
 
 				actualResolution = GetBestResolutionForFormat(format, desiredResolution, s_maxResolution, landscape);
@@ -1423,6 +1444,24 @@ namespace Bloom.Publish.Video
 
 			if (format != "mp3" && IsVideoTooSmall(actualResolution, desiredResolution))
 			{
+				if (s_screenResolution.Width == desiredResolution.Width &&
+					s_screenResolution.Height == desiredResolution.Height)
+				{
+					// If the screen matches the desired resolution, we can make the window full screen.
+					fullScreen = true;
+					actualResolution = desiredResolution;
+					return "";
+				}
+				else
+				{
+					// If the screen is too small, we'll have to make the window smaller.
+					// This will result in a video that is smaller than the desired resolution.
+					// We'll warn the user about this.
+					// Enhance: We could try to make the window as big as possible, and then
+					// crop the video to the desired resolution. But that's a lot of work,
+					// and it's not clear that it would be worth it.
+					actualResolution = s_maxResolution;
+				}
 				var frame = LocalizationManager.GetString("PublishTab.RecordVideo.ScreenTooSmall",
 					"Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.");
 				return string.Format(frame, $"{desiredResolution.Width} x {desiredResolution.Height}", $"{actualResolution.Width} x {actualResolution.Height}");
@@ -1537,7 +1576,8 @@ namespace Bloom.Publish.Video
 
 		public void SetFormat(string format, bool landscape, Layout pageLayout)
 		{
-			GetDataForFormat(format, landscape, pageLayout, out _, out Resolution videoResolution, out _codec, out _shouldRotateBook, out _shouldUseOriginalPageSize);
+			GetDataForFormat(format, landscape, pageLayout, out _, out Resolution videoResolution,
+				out _codec, out _shouldRotateBook, out _shouldUseOriginalPageSize, out _showFullScreen);
 			_videoWidth = videoResolution.Width;
 			_videoHeight = videoResolution.Height;
 		}

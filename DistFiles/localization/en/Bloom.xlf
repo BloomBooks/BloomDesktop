@@ -4533,6 +4533,10 @@
         <source xml:lang="en">Record These Pages:</source>
         <note>ID: PublishTab.RecordVideo.RecordThesePages</note>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.StopRecording">
+        <source xml:lang="en">Stop Recording</source>
+        <note>ID: PublishTab.RecordVideo.StopRecording</note>
+      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.TurnPageAfter">
         <source xml:lang="en">Turn pages without narration after:</source>
         <note>ID: PublishTab.RecordVideo.TurnPageAfter</note>
