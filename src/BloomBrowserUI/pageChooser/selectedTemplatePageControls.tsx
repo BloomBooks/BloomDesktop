@@ -52,8 +52,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
     const [numberToAdd, setNumberToAdd] = useState<number>(minimumPagesToAdd);
 
     const captionKey = "TemplateBooks.PageLabel." + props.caption;
-    const descriptionKey =
-        "TemplateBooks.PageDescription." + props.pageDescription;
+    const descriptionKey = "TemplateBooks.PageDescription." + props.caption;
     const buttonKey = props.forChangeLayout
         ? "EditTab.AddPageDialog.ChooseLayoutButton"
         : "EditTab.AddPageDialog.AddPageButton";
