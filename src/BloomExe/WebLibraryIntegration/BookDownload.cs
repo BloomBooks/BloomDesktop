@@ -12,7 +12,6 @@ using Bloom.Collection;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
-using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
@@ -21,54 +20,56 @@ using Bloom.web.controllers;
 namespace Bloom.WebLibraryIntegration
 {
 	/// <summary>
-	/// Gets files from Amazon S3.
+	/// Gets book files from Amazon S3.
 	/// </summary>
 	public class BookDownload
 	{
-		
 		private readonly BloomS3Client _s3Client;
-		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
 		public IProgress Progress;
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
-		public BookDownload(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, BookDownloadStartingEvent bookDownloadStartingEvent)
+		public BookDownload(BloomS3Client bloomS3Client)
 		{
-			this._s3Client = bloomS3Client;
-			_bookDownloadStartingEvent = bookDownloadStartingEvent;
+			_s3Client = bloomS3Client;
 		}
 
 		public string LastBookDownloadedPath { get; set; }
 
 		/// <summary>
-		/// Download a book
+		/// Download a book, given a bookOrder URL
 		/// </summary>
-		/// <param name="orderUrl">bloom://localhost/order?orderFile=BloomLibraryBooks-UnitTests/unittest@example.com/a211f07b-2c9f-4b97-b0b1-71eb24fdbed79887cda9_bb1d_4422_aa07_bc8c19285ca9/My Url Book/My Url Book.BloomBookOrder</param>
-		/// <param name="destPath"></param>
-		/// <param name="title"></param>
-		/// <returns></returns>
-		public string DownloadFromOrderUrl(string orderUrl, string destPath, string title = "unknown")
+		/// <param name="orderUrl">bloom://localhost/order?orderFile=BloomLibraryBooks-UnitTests/unittest%40example.com%2fa211f07b-2c9f-4b97-b0b1-71eb24fd%2f</param>
+		public string DownloadFromOrderUrl(string orderUrl, string destPath, string bookTitleForAnalytics = "unknown")
 		{
-			var uri = new Uri(orderUrl);
-			var order  = HttpUtility.ParseQueryString(uri.Query)["orderFile"];
-			IEnumerable<string> parts = order.Split(new char[] {'/'});
-			string bucket = parts.First();
-			var s3OrderKey = string.Join("/",parts.Skip(1));
-
-			string url = "unknown";
+			string storageKeyOfBookFolderOnS3 = "unknown";
 			try
 			{
-				GetUrlAndTitle(bucket, s3OrderKey, ref url, ref title);
-				if (_progressDialog != null)
-					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
-				// downloading the metadata is considered step 1.
+				var uri = new Uri(orderUrl);
+				var order = HttpUtility.ParseQueryString(uri.Query)["orderFile"];
+
+				// Starting in 5.6, we simplified the bookOrder URL to not include the full path to the obsolete .BloomBookOrder file.
+				// Instead, the meaningful info includes just the bucket name and the prefix (folder) where we can locate the book folder.
+				// (Until these changes for 5.6, that was always the user email address followed by the book instance ID, with a slash between.)
+				// Unfortunately, older Blooms assume that the prefix part must have two slashes. So we'll have to maintain 2 slashes in the URL
+				// as long as we want to keep download working in older versions.
+				//
+				// But this code is ready for some day when we may stop enforcing two slashes.
+				var index = order.IndexOf('/');
+				var bucket = order.Substring(0, index);
+				storageKeyOfBookFolderOnS3 = order.Substring(index + 1);
+
+				// getting the url is considered step 1. (Note, this used to take longer because we actually downloaded a file.)
+				_progressDialog?.Invoke(() => { _progressDialog.Progress = 1; });
+				
 				// uncomment line below to simulate bad internet connection
 				// throw new WebException();
-				var destinationPath = DownloadBook(bucket, url, destPath);
+
+				var destinationPath = DownloadBook(bucket, storageKeyOfBookFolderOnS3, destPath);
 				LastBookDownloadedPath = destinationPath;
 
 				Analytics.Track("DownloadedBook-Success",
-					new Dictionary<string, string>() {{"url", url}, {"title", title}});
+					new Dictionary<string, string>() {{"url", storageKeyOfBookFolderOnS3}, {"title", bookTitleForAnalytics}});
 				return destinationPath;
 			}
 			catch (Exception e)
@@ -78,7 +79,7 @@ namespace Bloom.WebLibraryIntegration
 					// We want to try this before we give a report that may terminate the program. But if something
 					// more goes wrong, ignore it.
 					Analytics.Track("DownloadedBook-Failure",
-						new Dictionary<string, string>() { { "url", url }, { "title", title } });
+						new Dictionary<string, string>() { { "url", storageKeyOfBookFolderOnS3 }, { "title", bookTitleForAnalytics } });
 					Analytics.ReportException(e);
 				}
 				catch (Exception)
@@ -111,22 +112,6 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private void GetUrlAndTitle(string bucket, string s3orderKey, ref string url, ref string title)
-		{
-			int index = s3orderKey.IndexOf('/');
-			if (index > 0)
-				index = s3orderKey.IndexOf('/', index + 1); // second slash
-			if (index > 0)
-				url = s3orderKey.Substring(0,index);
-			if (url == "unknown" || string.IsNullOrWhiteSpace(title) || title == "unknown")
-			{
-				// not getting the info we want in the expected way. This old algorithm may work.
-				var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey, bucket));
-				url = metadata.DownloadSource;
-				title = metadata.Title;
-			}
-		}
-
 		private static void DisplayProblem(Exception e, string message, bool showSendReport = true)
 		{
 			var action = new Action(() => NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, message, null, e, showSendReport));
@@ -148,25 +133,25 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		private IProgressDialog _progressDialog;
-		private string _downloadRequest;
+		private string _bookOrderUrl;
 
-		internal void HandleBloomBookOrder(string order)
+		internal void HandleBloomBookOrder(string bookOrderUrl)
 		{
-			_downloadRequest = order;
+			_bookOrderUrl = bookOrderUrl;
 			using (var progressDialog = new ProgressDialog())
 			{
 				_progressDialog = new ProgressDialogWrapper(progressDialog);
 				progressDialog.CanCancel = true;
 				progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
 				progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
-				if (IsUrlOrder(order))
+				if (IsUrlOrder(bookOrderUrl))
 				{
-					var link = new BloomLinkArgs(order);
+					var link = new BloomLinkArgs(bookOrderUrl);
 					progressDialog.StatusText = link.Title;
 				}
 				else
 				{
-					progressDialog.StatusText = Path.GetFileNameWithoutExtension(order);
+					// There is no other kind anymore. We used to handle a .BloomBookOrder file.
 				}
 
 				// We must do the download in a background thread, even though the whole process is doing nothing else,
@@ -190,14 +175,14 @@ namespace Bloom.WebLibraryIntegration
 		/// Note: if you copy the url from part of the link to a file in the folder from AWS,
 		/// you typically need to change %40 to @ in the uploader's email.
 		/// </summary>
-		/// <param name="url"></param>
-		/// <param name="destRoot"></param>
 		internal string HandleDownloadWithoutProgress(string url, string destRoot)
 		{
+			const string BloomS3UrlPrefix = "https://s3.amazonaws.com/";
+
 			_progressDialog = new ConsoleProgress();
 			if (!url.StartsWith(BloomS3UrlPrefix))
 			{
-				Console.WriteLine("Url unexpectedly does not start with https://s3.amazonaws.com/");
+				Console.WriteLine($"Url unexpectedly does not start with {BloomS3UrlPrefix}");
 				return "";
 			}
 			var bookOrder = url.Substring(BloomS3UrlPrefix.Length);
@@ -214,16 +199,14 @@ namespace Bloom.WebLibraryIntegration
 		private void OnDoDownload(object sender, DoWorkEventArgs args)
 		{
 			// If we are passed a bloom book order URL, download the corresponding book and open it.
-			if (IsUrlOrder(_downloadRequest))
+			if (IsUrlOrder(_bookOrderUrl))
 			{
-				var link = new BloomLinkArgs(_downloadRequest);
-				DownloadFromOrderUrl(_downloadRequest, DownloadFolder, link.Title);
+				var link = new BloomLinkArgs(_bookOrderUrl);
+				DownloadFromOrderUrl(_bookOrderUrl, DownloadFolder, link.Title);
 			}
-				// If we are passed a bloom book order, download the corresponding book and open it.
-			else if (_downloadRequest.ToLowerInvariant().EndsWith(BookInfo.BookOrderExtension.ToLowerInvariant()) &&
-					 RobustFile.Exists(_downloadRequest))
+			else
 			{
-				HandleBookOrder(_downloadRequest);
+				// There is no other kind anymore. We used to handle a .BloomBookOrder file.
 			}
 		}
 
@@ -237,27 +220,10 @@ namespace Bloom.WebLibraryIntegration
 			return argument.ToLowerInvariant().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
 		}
 
-		private void HandleBookOrder(string bookOrderPath)
+		// Internal for testing
+		internal string DownloadBook(string bucket, string storageKeyOfBookFolderOnS3, string dest)
 		{
-			HandleBookOrder(bookOrderPath, DownloadFolder);
-		}
-
-		internal const string BloomS3UrlPrefix = "https://s3.amazonaws.com/";
-
-		
-		private static string MetaDataText(string bookFolder)
-		{
-			return RobustFile.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
-		}
-
-		/// <summary>
-		/// Internal for testing because it's not yet clear this is the appropriate public routine.
-		/// Probably some API gets a list of BloomInfo objects from the parse.com data, and we pass one of
-		/// them as the argument for the public method.
-		/// </summary>
-		internal string DownloadBook(string bucket, string s3BookId, string dest)
-		{
-			var destinationPath = _s3Client.DownloadBook(bucket, s3BookId, dest, _progressDialog);
+			var destinationPath = _s3Client.DownloadBook(bucket, storageKeyOfBookFolderOnS3, dest, _progressDialog);
 			if (BookDownLoaded != null)
 			{
 				var bookInfo = new BookInfo(destinationPath, false); // A downloaded book is a template, so never editable.
@@ -281,14 +247,6 @@ namespace Bloom.WebLibraryIntegration
 				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
 
 			return destinationPath;
-		}
-
-		public void HandleBookOrder(string bookOrderPath, string projectPath)
-		{
-			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookOrderPath));
-			var s3BookId = metadata.DownloadSource;
-			var bucket = BloomS3Client.ProductionBucketName; //TODO
-			_s3Client.DownloadBook(bucket, s3BookId, Path.GetDirectoryName(projectPath));
 		}
 	}
 }

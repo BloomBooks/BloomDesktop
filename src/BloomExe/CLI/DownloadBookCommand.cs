@@ -25,8 +25,7 @@ namespace Bloom.CLI
 				{
 					Program.SetUpLocalization(applicationContainer);
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-					var downloader = new BookDownload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-						 new BookDownloadStartingEvent()); /*not hooked to anything*/;
+					var downloader = new BookDownload(ProjectContext.CreateBloomS3Client());
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt
 					// appears at once. The extra newlines here are attempting to separate this from our output.
 					Console.WriteLine("\nstarting download");

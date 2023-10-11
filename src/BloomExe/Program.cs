@@ -680,7 +680,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// This routine handles the old-style download requests which come as an order URL from BloomLibrary.
+		/// This routine handles the download requests which come as an order URL from BloomLibrary.
 		/// Enhance: it's unfortunate that we have two command-line methods of downloading a book. However, they have
 		/// rather different requirements:
 		///   - this one displays a progress UI, the other doesn't.
@@ -693,7 +693,7 @@ namespace Bloom
 		/// older Bloom will be in trouble.
 		/// Most of the core implementation of the download process is common.
 		/// </summary>
-		private static void HandleDownload(string order)
+		private static void HandleDownload(string bookOrderUrl)
 		{
 			// We will start up just enough to download the book. This avoids the code that normally tries to keep only a single instance running.
 			// There is probably a pathological case here where we are overwriting an existing template just as the main instance is trying to
@@ -708,9 +708,8 @@ namespace Bloom
 				//JT please review: is this needed? InstallerSupport.MakeBloomRegistryEntries(args);
 				BookDownloadSupport.EnsureDownloadFolderExists();
 				LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-				var downloader = new BookDownload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-					new BookDownloadStartingEvent()) /*not hooked to anything*/;
-				downloader.HandleBloomBookOrder(order);
+				var downloader = new BookDownload(ProjectContext.CreateBloomS3Client());
+				downloader.HandleBloomBookOrder(bookOrderUrl);
 				PathToBookDownloadedAtStartup = downloader.LastBookDownloadedPath;
 				// BL-2143: Don't show download complete message if download was not successful
 				if (!string.IsNullOrEmpty(PathToBookDownloadedAtStartup))

@@ -42,8 +42,13 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>Command-line argument: This is redundant for now, but just in case Bloom comes to handle any other kinds of URLs</summary>
 		public const string kOrder = "order";
 
+		//todo fix comment
 		/// <summary>
-		/// The one-and-only argument in a bloom order link: the path to the file.
+		/// The name "orderFile" is a hold over from when we used to use an actual file with .BloomBookOrder extension.
+		/// Those are now obsolete, but the URL maintains its general form so as not to break downloads in older Blooms.
+		/// Now, "orderFile" is the prefix of the book's folder on S3. For example,
+		/// andrew_polk%40sil.org%2f7195f6af-caa2-44b1-8aab-df0703ab5c4a%2f
+		/// where %2f is the url encoding for a slash.
 		/// </summary>
 		public const string kOrderFile = "orderFile";
 		public const string kBloomUrlPrefix = kBloomScheme + "://" + kLocalHost + "/" + kOrder + "?";
@@ -67,15 +72,6 @@ namespace Bloom.WebLibraryIntegration
 			OrderUrl = HttpUtility.UrlDecode(parts[1]);
 			if (qparams.Length > 1 && qparams[1].StartsWith("title="))
 				Title = HttpUtility.UrlDecode(qparams[1].Substring("title=".Length));
-			else
-			{
-				// Make up a title from the book order. This should be obsolete once all instances of Bloom Library
-				// are supplying titles.
-				var indexOfSlash = OrderUrl.LastIndexOf('/');
-				var bookOrder = OrderUrl.Substring(indexOfSlash + 1);
-				Title = Path.GetFileNameWithoutExtension(bookOrder);
-
-			}
 		}
 	}
 }

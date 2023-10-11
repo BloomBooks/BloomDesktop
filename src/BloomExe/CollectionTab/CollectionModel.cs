@@ -833,6 +833,7 @@ namespace Bloom.CollectionTab
 			exception = null;
 			try
 			{
+				// Note, .bloombookorder files are no longer created; they are obsolete.
 				var excludedExtensions = new[] { ".pdf", ".bloombookorder", ".map", ".bloompack", ".db" };
 
 				Logger.WriteEvent("Zipping up {0} ...", destFileName);

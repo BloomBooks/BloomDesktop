@@ -136,13 +136,12 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		/// <summary>
-		/// The Parse.com object ID of the person who is uploading the book.
+		/// The parse-server object ID of the person who is uploading the book.
 		/// </summary>
 		public string UserId
 		{
 			get { return ParseClient.UserId; }
 		}
-		internal string BookOrderUrlOfLastUploadForUnitTest { get { return _s3Client.BookOrderUrlOfRecentUpload; } }
 
 		/// <summary>
 		/// Only for use in tests
@@ -161,7 +160,7 @@ namespace Bloom.WebLibraryIntegration
 			// appropriate here...don't want to upload a badly messed-up book.
 			var metadata = BookMetaData.FromFile(Path.Combine(bookFolder, BookInfo.MetaDataFileName));
 			
-			string s3BookId;
+			string storageKeyOfBookFolderOnS3;
 			// In case we somehow have a book with no ID, we must have one to upload it.
 			if (String.IsNullOrEmpty(metadata.Id))
 			{
@@ -173,15 +172,14 @@ namespace Bloom.WebLibraryIntegration
 				metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
 			}
 			metadata.SetUploader(UserId);
-			s3BookId = S3BookId(metadata);
+			storageKeyOfBookFolderOnS3 = S3BookId(metadata);
 #if DEBUG
 			// S3 URL can be reasonably deduced, as long as we have the S3 ID, so print that out in Debug mode.
 			// Format: $"https://s3.amazonaws.com/BloomLibraryBooks{isSandbox}/{s3BookId}/{title}"
 			// Example: https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/jeffrey_su@sil.org/8d0d9043-a1bb-422d-aa5b-29726cdcd96a/AutoSplit+Timings
-			var msgBookId = "s3BookId: " + s3BookId;
+			var msgBookId = "s3BookId: " + storageKeyOfBookFolderOnS3;
 			progress.WriteMessage(msgBookId);
 #endif
-			metadata.DownloadSource = s3BookId;
 			// If the collection has a default bookshelf, make sure the book has that tag.
 			// Also make sure it doesn't have any other bookshelf tags (which would typically be
 			// from a previous default bookshelf upload), including a duplicate of the one
@@ -203,28 +201,21 @@ namespace Bloom.WebLibraryIntegration
 			metadata.Tags = tags.ToArray();
 
 			// Any updated ID at least needs to become a permanent part of the book.
-			// The file uploaded must also contain the correct DownloadSource data, so that it can be used
-			// as an 'order' to download the book.
 			// It simplifies unit testing if the metadata file is also updated with the uploadedBy value.
 			// Not sure if there is any other reason to do it (or not do it).
 			// For example, do we want to send/receive who is the latest person to upload?
 			metadata.WriteToFolder(bookFolder);
-			// The metadata is also a book order...but we need it on the server with the desired file name,
-			// because we can't rename on download. The extension must be the one Bloom knows about,
-			// and we want the file name to indicate which book, so use the name of the book folder.
-			// We also want to clear out old book orders with previous (other language?) filenames.
-			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7616.
+
+			// We no longer use these book order files. Delete any remnants.
 			foreach (var file in Directory.GetFiles(bookFolder, $"*{BookInfo.BookOrderExtension}"))
 				RobustFile.Delete(file);
-			var metadataPath = BookMetaData.MetaDataPath(bookFolder);
-			RobustFile.Copy(metadataPath, BookInfo.BookOrderPath(bookFolder), true);
+
 			parseId = "";
 			try
 			{
-				_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
+				_s3Client.UploadBook(storageKeyOfBookFolderOnS3, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
 					textLanguages, audioLanguages, metadataLang1Code, metadataLang2Code, collectionSettings?.SettingsFilePath, isForBulkUpload);
 				metadata.BaseUrl = _s3Client.BaseUrl;
-				metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 				var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
 				if (IsDryRun)
 					metaMsg = "(Dry run) Would upload book metadata";	// TODO: localize?
@@ -247,7 +238,7 @@ namespace Bloom.WebLibraryIntegration
 					}
 					//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
 					{
-						Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title } });
+						Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title } });
 					}
 				}
 			}
@@ -255,7 +246,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				DisplayNetworkUploadProblem(e, progress);
 				if (IsProductionRun) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
-					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title }, { "error", e.Message } });
 				return "";
 			}
 			catch (AmazonS3Exception e)
@@ -273,7 +264,7 @@ namespace Bloom.WebLibraryIntegration
 					if (IsProductionRun)
 						// don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
 						Analytics.Track("UploadBook-Failure",
-							new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+							new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title }, { "error", e.Message } });
 				}
 				return "";
 			}
@@ -281,7 +272,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				DisplayNetworkUploadProblem(e, progress);
 				if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title }, { "error", e.Message } });
 				return "";
 			}
 			catch (Exception e)
@@ -294,11 +285,11 @@ namespace Bloom.WebLibraryIntegration
 				progress.WriteVerbose(e.StackTrace);
 
 				if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title }, { "error", e.Message } });
 				return "";
 			}
 
-			return s3BookId;
+			return storageKeyOfBookFolderOnS3;
 		}
 
 		/// <summary>
