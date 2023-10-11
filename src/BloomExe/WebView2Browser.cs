@@ -571,7 +571,31 @@ namespace Bloom
 			{
 				_currentlyRunningCanUndo = false;
 			}
+		}
 
+		public static string kWebView2NotInstalled = "not installed";
+
+		// If we change this minimum WebView2 version, consider updating the rule near the end of
+		// "BloomBrowserUI/webpack.common.js".
+		public static string kMinimumWebView2Version= "112.0.0.0";
+		public static bool GetIsWebView2NewEnough(out string version)
+		{
+			version = GetWebView2Version();
+			if(kWebView2NotInstalled == version)
+				return false;
+			return (CoreWebView2Environment.CompareBrowserVersions(version, kMinimumWebView2Version) >= 0);
+		}
+
+		public static string GetWebView2Version()
+		{
+			try
+			{
+				return CoreWebView2Environment.GetAvailableBrowserVersionString();
+			}
+			catch (WebView2RuntimeNotFoundException)
+			{
+				return kWebView2NotInstalled;
+			}
 		}
 	}
 
@@ -595,4 +619,5 @@ namespace Bloom
 			_menuList.Insert(_menuList.Count, newItem);
 		}
 	}
+
 }
