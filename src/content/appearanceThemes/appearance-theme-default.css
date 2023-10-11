@@ -1,4 +1,4 @@
-:root {
+.bloom-page {
     --top-bottom-gap: 1mm;
     --pageNumber-font-size: 14pt;
     --pageNumber-bottom: 10px;
@@ -21,7 +21,7 @@
 > We also want to be sure that all the title pages and credit pages and inside cover pages have the same margins as the rest of the book.
 */
 
-:root {
+.bloom-page {
     /* these are just defaults in case we miss some */
     --page-margin-top: 12mm;
     --page-margin-bottom: 12mm;

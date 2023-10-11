@@ -2,7 +2,7 @@
 /* {
     substitutionChecksums: "6d540d3c796842b382db5dbd10826655"
 } */
-:root {
+.bloom-page {
     --marginBox-border-radius: 25px;
     /*--marginBox-border-color: rgb(77, 68, 68);*/
     --marginBox-border-style: none;

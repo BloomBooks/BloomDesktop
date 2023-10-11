@@ -5,8 +5,8 @@
 @XMatterPackName: "Uzbekistan2023";
 @bleed: 3mm;
 
-// :root {
-//   Normally, we would put the defaults in a :root psuedo-element like this.
+// .bloom-page {
+//   Normally, we would put the defaults in a .bloom-page psuedo-element like this.
 //   But something about the way scoped styles work in bloom-player causes this not to work.
 //   So instead, we set the defaults on the .bloom-page class and override on the specific
 //   layouts as necessary.
@@ -113,7 +113,7 @@
 @headerHeightMinusBleed: calc(var(--HeaderHeight) - @bleed);
 
 
-:root {
+.bloom-page {
     // I don't know how 5mm was chosen, but this is what the old Bloom 5.5 rules did.
     --page-split-vertical-gap: 5mm;
     --page-split-horizontal-gap: 5mm;
