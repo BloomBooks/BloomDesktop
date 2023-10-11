@@ -980,7 +980,7 @@ namespace Bloom.web.controllers
 				bldr.AppendLine(label == Version ? "**" : "");
 			}
 
-			bldr.AppendLine("WebView2: "+WebView2Browser.GetVewView2Version());
+			bldr.AppendLine("WebView2: "+WebView2Browser.GetWebView2Version());
 
 			if (appendLog || Logger.Singleton == null)
 			{

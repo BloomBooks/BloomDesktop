@@ -32,7 +32,7 @@ namespace Bloom
 		private UndoCommand _undoCommand;
 		private CutCommand _cutCommand;
 		public WebView2Browser()
-			{
+		{
 			InitializeComponent();
 
 			// I don't think anything we're doing here will take long enough for us to need to await it.
@@ -580,13 +580,13 @@ namespace Bloom
 		public static string kMinimumWebView2Version= "112.0.0.0";
 		public static bool GetIsWebView2NewEnough(out string version)
 		{
-			version = GetVewView2Version();
+			version = GetWebView2Version();
 			if(kWebView2NotInstalled == version)
 				return false;
 			return (CoreWebView2Environment.CompareBrowserVersions(version, kMinimumWebView2Version) >= 0);
 		}
 
-		public static string GetVewView2Version()
+		public static string GetWebView2Version()
 		{
 			try
 			{
