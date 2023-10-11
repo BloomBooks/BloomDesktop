@@ -623,7 +623,7 @@ namespace Bloom.web.controllers
 					// In any case, both of the errors will be logged by now.
 					var message = "Bloom's error reporting failed: " + problemReportException.Message;
 
-					// Fallback to Winforms in case of trouble getting the browser up					
+					// Fallback to Winforms in case of trouble getting the browser up
 					var fallbackReporter = new WinFormsErrorReporter();
 					// ENHANCE?: If reporting a non-fatal problem failed, why is the program required to abort? It might be able to handle other tasks successfully
 					fallbackReporter.ReportFatalException(new ApplicationException(message, exception ?? problemReportException));
@@ -676,7 +676,7 @@ namespace Bloom.web.controllers
 				// NOTE: Taking screenshots not supported in this mode (yet)
 
 				// NOTE: kFailureResult may be returned (if submitting the issue failed).
-				issueLink = SubmitToYouTrack(levelOfProblem, "", SIL.Windows.Forms.Registration.Registration.Default.Email, false, false, additionalPathsToInclude);				
+				issueLink = SubmitToYouTrack(levelOfProblem, "", SIL.Windows.Forms.Registration.Registration.Default.Email, false, false, additionalPathsToInclude);
 			}
 			catch (Exception)
 			{
@@ -724,7 +724,7 @@ namespace Bloom.web.controllers
 			var userFirstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
 			var userSurname = SIL.Windows.Forms.Registration.Registration.Default.Surname;
 
-			_reportInfo = new ReportInfo(heading, detailedMessage, exception, book, bestBookName, userEmail, userFirstName, userSurname, isHeadingPreEncoded);			
+			_reportInfo = new ReportInfo(heading, detailedMessage, exception, book, bestBookName, userEmail, userFirstName, userSurname, isHeadingPreEncoded);
 		}
 
 
@@ -786,7 +786,7 @@ namespace Bloom.web.controllers
 						{
 							// Release lock (Unblock others)
 							if (_takingScreenshotLock.CurrentCount == 0)
-								_takingScreenshotLock.Release();	
+								_takingScreenshotLock.Release();
 						}
 					}
 				);
@@ -795,7 +795,7 @@ namespace Bloom.web.controllers
 			{
 				// Release lock (Unblock others)
 				if (_takingScreenshotLock.CurrentCount == 0)
-					_takingScreenshotLock.Release();	
+					_takingScreenshotLock.Release();
 
 				Debug.Fail("This error would be swallowed in release version: " + error.Message);
 				SIL.Reporting.Logger.WriteEvent("**** "+error.Message);
@@ -980,6 +980,8 @@ namespace Bloom.web.controllers
 				bldr.AppendLine(label == Version ? "**" : "");
 			}
 
+			bldr.AppendLine("WebView2: "+WebView2Browser.GetVewView2Version());
+
 			if (appendLog || Logger.Singleton == null)
 			{
 				bldr.AppendLine();
@@ -1147,7 +1149,7 @@ namespace Bloom.web.controllers
 				ListFolderContents(sub, listOfFilePaths);
 		}
 
-	
+
 		public void Dispose()
 		{
 			_reportInfo.ScreenshotTempFile?.Dispose();
