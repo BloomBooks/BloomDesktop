@@ -861,14 +861,20 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 // would conflict with the rules that determine which of them are
 // visible. The rules that make them something other than display:none
 // must use display:flex. I think all of those are in langVisibility.less.
-.bloom-vertical-align-center {
+
+// The role of :not(:has(.overflow)) is to avoid an apparent bug where paragraphs will
+// be drawn on top of each other. If we're overflowing anyways, then vertical centering
+// has no meaning, so we can side-step that bug. See BL-12750
+.bloom-vertical-align-center:not(:has(.overflow)) {
     justify-content: center;
     &:not(.bloom-bilingual):not(.bloom-trilingual) .bloom-editable {
         justify-content: center;
     }
 }
-
-.bloom-vertical-align-bottom {
+// The role of :not(:has(.overflow)) is to avoid an apparent bug where paragraphs will
+// be drawn on top of each other. If we're overflowing anyways, then vertical centering
+// has no meaning, so we can side-step that bug. See BL-12750
+.bloom-vertical-align-bottom:not(:has(.overflow)) {
     justify-content: flex-end;
     &:not(.bloom-bilingual):not(.bloom-trilingual) .bloom-editable {
         justify-content: flex-end;
