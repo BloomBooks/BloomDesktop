@@ -13,14 +13,14 @@ using SIL.Code;
 namespace BloomTests.WebLibraryIntegration
 {
 	[TestFixture]
-	public class BloomParseClientTests
+	public class BloomLibraryBookApiClientTests
 	{
-		private BloomParseClientTestDouble _client;
+		private BloomLibraryBookApiClientTestDouble _client;
 
 		[SetUp]
 		public void Setup()
 		{
-			_client = new BloomParseClientTestDouble();
+			_client = new BloomLibraryBookApiClientTestDouble();
 		}
 
 		/// <summary>
@@ -122,11 +122,11 @@ namespace BloomTests.WebLibraryIntegration
 		//{"authors":["Heinrich Poschinger"],"categories":[],"description":"This is an EXACT reproduction of a book published before 1923. This IS NOT an OCR\"d book with strange characters, introduced typographical errors, and jumbled words. This book may have occasional imperfections such as missing or blurred pages, poor pictures, errant marks, etc. that were either part of the original artifact, or were introduced by the scanning process. We believe this work is culturally important, and despite the imperfections, have elected to bring it back into print as part of our continuing commitment to the preservation of printed works worldwide. We appreciate your understanding of the imperfections in the preservation process, and hope you enjoy this valuable book.","imageLinks":{"smallThumbnail":"http://bks1.books.google.co.th/books?id=MxhvSQAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api","thumbnail":"http://bks1.books.google.co.th/books?id=MxhvSQAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"},"industryIdentifiers":[{"identifier":"1148362096","type":"ISBN_10"},{"identifier":"9781148362090","type":"ISBN_13"}],"language":"en","pageCount":270,"previewLink":"http://books.google.co.th/books?id=MxhvSQAACAAJ&dq=hamburger&hl=&cd=520&source=gbs_api","printType":"BOOK","publishedDate":"2010-04","publisher":"Nabu Press","title":"Fürst Bismarck und Seine Hamburger Freunde"}
 	}
 
-	public class BloomParseClientTestDouble : BloomParseClient
+	public class BloomLibraryBookApiClientTestDouble : BloomLibraryBookApiClient
 	{
-		public BloomParseClientTestDouble() { }
+		public BloomLibraryBookApiClientTestDouble() { }
 
-		public BloomParseClientTestDouble(string testId)
+		public BloomLibraryBookApiClientTestDouble(string testId)
 		{
 			// Do NOT do this...it results in creating a garbage class in Parse.com which is hard to delete (manual only).
 			//ClassesLanguagePath = "classes/language_" + testId;

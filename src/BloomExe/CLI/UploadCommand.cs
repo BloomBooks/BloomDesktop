@@ -44,8 +44,8 @@ namespace Bloom.CLI
 					Console.WriteLine($"Error: Upload destination (-d) must be one of {UploadDestination.Development} or {UploadDestination.Production}");
 					return Task.FromResult(1);
 			}
-			BookUpload.Destination = options.Dest;    // must be set before calling SetupErrorHandling() (or BloomParseClient constructor)
-			BookUpload.IsDryRun = options.DryRun;	  // must be set before calling SetupErrorHandling() (or BloomParseClient constructor)
+			BookUpload.Destination = options.Dest;    // must be set before calling SetupErrorHandling() (or BloomLibraryBookApiClient constructor)
+			BookUpload.IsDryRun = options.DryRun;     // must be set before calling SetupErrorHandling() (or BloomLibraryBookApiClient constructor)
 
 			// This task will be all the program does. We need to do enough setup so that
 			// the upload code can work, then tear it down.
@@ -56,7 +56,7 @@ namespace Bloom.CLI
 				{
 					Program.SetUpLocalization(applicationContainer);
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-					var singleBookUploader = new BookUpload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+					var singleBookUploader = new BookUpload(new BloomLibraryBookApiClient(), ProjectContext.CreateBloomS3Client(),
 						applicationContainer.BookThumbNailer);
 					var uploader = new BulkUploader(singleBookUploader);
 

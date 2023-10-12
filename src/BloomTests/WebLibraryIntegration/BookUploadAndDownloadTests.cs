@@ -23,7 +23,7 @@ namespace BloomTests.WebLibraryIntegration
 		private string _workFolderPath;
 		private BookUpload _uploader;
 		private BookDownload _downloader;
-		private BloomParseClientTestDouble _parseClient;
+		private BloomLibraryBookApiClientTestDouble _bloomLibraryBookApiClient;
 		List<BookInfo> _downloadedBooks = new List<BookInfo>();
 		private HtmlThumbNailer _htmlThumbNailer;
 		private string _thisTestId;
@@ -39,9 +39,9 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.AreEqual(0, Directory.GetFiles(_workFolderPath).Count(),"Some stuff was left over from a previous test");
 			// Todo: Make sure the S3 unit test bucket is empty.
 			// Todo: Make sure the parse.com unit test book table is empty
-			_parseClient = new BloomParseClientTestDouble(_thisTestId);
+			_bloomLibraryBookApiClient = new BloomLibraryBookApiClientTestDouble(_thisTestId);
 			_htmlThumbNailer = new HtmlThumbNailer();
-			_uploader = new BookUpload(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer));
+			_uploader = new BookUpload(_bloomLibraryBookApiClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer));
 			BookUpload.IsDryRun = false;
 			_downloader = new BookDownload(new BloomS3Client(BloomS3Client.UnitTestBucketName));
 			_downloader.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
@@ -69,7 +69,7 @@ namespace BloomTests.WebLibraryIntegration
 
 		private void Login()
 		{
-			Assert.That(_parseClient.TestOnly_LegacyLogIn("unittest@example.com", "unittest"), Is.True,
+			Assert.That(_bloomLibraryBookApiClient.TestOnly_LegacyLogIn("unittest@example.com", "unittest"), Is.True,
 				"Could not log in using the unittest@example.com account");
 		}
 
@@ -211,7 +211,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(File.Exists(newBookFolder.CombineForPath("one.css")), Is.False, "We should have deleted the obsolete file");
 
 			// Verify that metadata was overwritten, new record not created.
-			var records = _parseClient.GetBookRecords("myId" + _thisTestId, false);
+			var records = _bloomLibraryBookApiClient.GetBookRecords("myId" + _thisTestId, false);
 			Assert.That(records.Count, Is.EqualTo(1), "Should have overwritten parse server record, not added or deleted");
 			var bookRecord = records[0];
 			Assert.That(bookRecord.bookLineage.Value, Is.EqualTo("other"));
@@ -224,7 +224,7 @@ namespace BloomTests.WebLibraryIntegration
 			var bookFolder = MakeBook(MethodBase.GetCurrentMethod().Name, "myId", "me", "something");
 			_uploader.UploadBook(bookFolder, new NullProgress());
 			var bookInstanceId = "myId" + _thisTestId;
-			var bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+			var bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
 
 			// Verify new upload
 			Assert.That(bookRecord.harvestState.Value, Is.EqualTo("New"));
@@ -237,7 +237,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
 
 			// Set up for re-upload
-			_parseClient.SetBookRecord(JsonConvert.SerializeObject(
+			_bloomLibraryBookApiClient.SetBookRecord(JsonConvert.SerializeObject(
 				new
 				{
 					bookInstanceId,
@@ -246,14 +246,14 @@ namespace BloomTests.WebLibraryIntegration
 					lastUploaded = (ParseServerDate)null,
 					harvestState = "Done"
 				}));
-			bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+			bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
 			Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Done"));
 			Assert.That(bookRecord.tags, Is.Empty);
 			Assert.That(bookRecord.updateSource.Value, Is.EqualTo("not Bloom"));
 			Assert.That(bookRecord.lastUploaded.Value, Is.Null);
 
 			_uploader.UploadBook(bookFolder, new NullProgress());
-			bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+			bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
 
 			// Verify re-upload
 			Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Updated"));
@@ -265,7 +265,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromSeconds(0)), "lastUploaded should be a valid date representing now-ish");
 			Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
 
-			_parseClient.DeleteBookRecord(bookRecord.objectId.Value);
+			_bloomLibraryBookApiClient.DeleteBookRecord(bookRecord.objectId.Value);
 		}
 
 		// This is really testing parse server cloud code.
@@ -277,13 +277,13 @@ namespace BloomTests.WebLibraryIntegration
 		{
 			try
 			{
-				_parseClient.SimulateOldBloomUpload = true;
+				_bloomLibraryBookApiClient.SimulateOldBloomUpload = true;
 
 				Login();
 				var bookFolder = MakeBook(MethodBase.GetCurrentMethod().Name, "myId", "me", "something");
 				_uploader.UploadBook(bookFolder, new NullProgress());
 				var bookInstanceId = "myId" + _thisTestId;
-				var bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+				var bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
 
 				// Verify new upload
 				Assert.That(bookRecord.harvestState.Value, Is.EqualTo("New"));
@@ -296,8 +296,8 @@ namespace BloomTests.WebLibraryIntegration
 				Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromMinutes(5)), "lastUploaded should be a valid date representing now-ish");
 
 				// Set up for re-upload
-				_parseClient.SimulateOldBloomUpload = false;
-				_parseClient.SetBookRecord(JsonConvert.SerializeObject(
+				_bloomLibraryBookApiClient.SimulateOldBloomUpload = false;
+				_bloomLibraryBookApiClient.SetBookRecord(JsonConvert.SerializeObject(
 					new
 					{
 						bookInstanceId,
@@ -306,15 +306,15 @@ namespace BloomTests.WebLibraryIntegration
 						lastUploaded = (ParseServerDate) null,
 						harvestState = "Done"
 					}));
-				bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+				bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
 				Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Done"));
 				Assert.That(bookRecord.tags, Is.Empty);
 				Assert.That(bookRecord.updateSource.Value, Is.EqualTo("not Bloom"));
 				Assert.That(bookRecord.lastUploaded.Value, Is.Null);
-				_parseClient.SimulateOldBloomUpload = true;
+				_bloomLibraryBookApiClient.SimulateOldBloomUpload = true;
 
 				_uploader.UploadBook(bookFolder, new NullProgress());
-				bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+				bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
 
 				// Verify re-upload
 				Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Updated"));
@@ -326,11 +326,11 @@ namespace BloomTests.WebLibraryIntegration
 				Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromMinutes(-5)), "lastUploaded should be a valid date representing now-ish");
 				Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromMinutes(5)), "lastUploaded should be a valid date representing now-ish");
 
-				_parseClient.DeleteBookRecord(bookRecord.objectId.Value);
+				_bloomLibraryBookApiClient.DeleteBookRecord(bookRecord.objectId.Value);
 			}
 			finally
 			{
-				_parseClient.SimulateOldBloomUpload = false;
+				_bloomLibraryBookApiClient.SimulateOldBloomUpload = false;
 			}
 		}
 
@@ -348,9 +348,9 @@ namespace BloomTests.WebLibraryIntegration
 			var newBookFolder = _downloader.DownloadBook(BloomS3Client.UnitTestBucketName, storageKeyOfBookFolderOnS3, dest);
 			var metadata = BookMetaData.FromString(File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName)));
 			Assert.That(string.IsNullOrEmpty(metadata.Id), Is.False, "should have filled in missing ID");
-			Assert.That(metadata.Uploader.ObjectId, Is.EqualTo(_parseClient.UserId), "should have set uploader to id of logged-in user");
+			Assert.That(metadata.Uploader.ObjectId, Is.EqualTo(_bloomLibraryBookApiClient.UserId), "should have set uploader to id of logged-in user");
 
-			var record = _parseClient.GetSingleBookRecord(metadata.Id);
+			var record = _bloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id);
 			string baseUrl = record.baseUrl;
 			Assert.That(baseUrl.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "baseUrl should start with s3 prefix");
 
@@ -387,7 +387,7 @@ namespace BloomTests.WebLibraryIntegration
 
 		/// <summary>
 		/// This test has a possible race condition which we attempted to fix by setting ClassesLanguagePath to something unique
-		/// in the BloomParseClientDouble constructor. This had a disastrous side effect documented there. Disable until we find
+		/// in the BloomLibraryBookApiClientDouble constructor. This had a disastrous side effect documented there. Disable until we find
 		/// a better way.
 		/// </summary>
 		[Test, Ignore("This test in its current form can fail when multiple clients are running tests")]
@@ -396,31 +396,31 @@ namespace BloomTests.WebLibraryIntegration
 			Login();
 			try
 			{
-				_parseClient.CreateLanguage(new LanguageDescriptor() {LangTag = "en", Name="English", EthnologueCode = "eng"});
-				_parseClient.CreateLanguage(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" });
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" }));
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyj", Name = "MyLang", EthnologueCode = "xyk" }), Is.False);
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }), Is.False);
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyj" }), Is.False);
+				_bloomLibraryBookApiClient.CreateLanguage(new LanguageDescriptor() {LangTag = "en", Name="English", EthnologueCode = "eng"});
+				_bloomLibraryBookApiClient.CreateLanguage(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" });
+				Assert.That(_bloomLibraryBookApiClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" }));
+				Assert.That(_bloomLibraryBookApiClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyj", Name = "MyLang", EthnologueCode = "xyk" }), Is.False);
+				Assert.That(_bloomLibraryBookApiClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }), Is.False);
+				Assert.That(_bloomLibraryBookApiClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyj" }), Is.False);
 
-				var pointers = _parseClient.GetLanguagePointers(new[]
+				var pointers = _bloomLibraryBookApiClient.GetLanguagePointers(new[]
 				{
 					new LanguageDescriptor() {LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk"},
 					new LanguageDescriptor() {LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk"}
 				});
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }));
-				Assert.That(_parseClient.LanguageCount(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" }), Is.EqualTo(1));
+				Assert.That(_bloomLibraryBookApiClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }));
+				Assert.That(_bloomLibraryBookApiClient.LanguageCount(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" }), Is.EqualTo(1));
 
 				Assert.That(pointers[0], Is.Not.Null);
 				Assert.That(pointers[0].ClassName, Is.EqualTo("language"));
-				var first = _parseClient.GetLanguage(pointers[0].ObjectId);
+				var first = _bloomLibraryBookApiClient.GetLanguage(pointers[0].ObjectId);
 				Assert.That(first.name.Value, Is.EqualTo("MyLang"));
-				var second = _parseClient.GetLanguage(pointers[1].ObjectId);
+				var second = _bloomLibraryBookApiClient.GetLanguage(pointers[1].ObjectId);
 				Assert.That(second.name.Value, Is.EqualTo("MyOtherLang"));
 			}
 			finally
 			{
-				_parseClient.DeleteLanguages();
+				_bloomLibraryBookApiClient.DeleteLanguages();
 			}
 		}
 	}

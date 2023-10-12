@@ -29,7 +29,7 @@ namespace Bloom.WebLibraryIntegration
 		private int _booksWithErrors;
 
 		public const string HashInfoFromLastUpload = ".lastUploadInfo";   // this filename must begin with a period
-		public bool LoggedIn => _singleBookUploader.ParseClient.LoggedIn;
+		public bool LoggedIn => _singleBookUploader.BloomLibraryBookApiClient.LoggedIn;
 		
 
 		public BulkUploader(BookUpload singleBookUploader)
@@ -71,7 +71,7 @@ namespace Bloom.WebLibraryIntegration
 
 				Debug.Assert(!String.IsNullOrWhiteSpace(options.UploadUser));
 
-				if (!_singleBookUploader.ParseClient.AttemptSignInAgainForCommandLine(options.UploadUser, options.Dest, progress))
+				if (!_singleBookUploader.BloomLibraryBookApiClient.AttemptSignInAgainForCommandLine(options.UploadUser, options.Dest, progress))
 				{
 					progress.WriteError("Problem logging in. See messages above.");
 					System.Environment.Exit(1); 
