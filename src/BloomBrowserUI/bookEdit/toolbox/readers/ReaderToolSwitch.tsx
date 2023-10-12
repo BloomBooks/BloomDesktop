@@ -54,9 +54,7 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                     //  and I don't know if adding such an update is safe.)
                     postBoolean(`toolbox/${prefix}`, checked);
                 }}
-            >
-                {props.children}
-            </BloomSwitch>
+            />
         </ThemeProvider>
     );
 };
