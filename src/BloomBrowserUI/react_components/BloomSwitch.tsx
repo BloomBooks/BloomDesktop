@@ -12,6 +12,7 @@ interface IProps extends SwitchProps {
     englishWhenChecked?: string;
     l10nKeyWhenChecked?: string;
 }
+
 // Displays a Switch control
 export const BloomSwitch: React.FunctionComponent<IProps> = props => {
     const label = useL10n(props.english ?? "", props.l10nKey);
@@ -37,6 +38,21 @@ export const BloomSwitch: React.FunctionComponent<IProps> = props => {
         l10nKeyWhenChecked: _l10nKeyWhenChecked,
         ...switchProps
     } = props;
+
+    // This is a hack. The amount of padding needed to make the first label line center vertically
+    // with the switch depends on both the font size of the text and the height of the switch. I've
+    // managed to deal with the size of the switch here, but not the font size.
+    const kCommonSwitchLabelCss = `.MuiFormControlLabel-label {
+        padding-top: ${props.size === "small" ? 5 : 12}px;
+    }`;
+
+    const switchCss =
+        kCommonSwitchLabelCss +
+        (props.checked &&
+            (props.highlightWhenChecked
+                ? kHighlightSwitchWhenCheckedCSS
+                : kNormalStylingWhenCheckedCSS));
+
     return (
         <FormControlLabel
             value="end"
@@ -52,27 +68,24 @@ export const BloomSwitch: React.FunctionComponent<IProps> = props => {
             }
             label={checked ? labelWhenChecked : label}
             labelPlacement="end"
-            css={
-                props.checked &&
-                (props.highlightWhenChecked
-                    ? kHighlightSwitchWhenCheckedCSS
-                    : kNormalStylingWhenCheckedCSS)
-            }
+            css={css`
+                ${switchCss}
+            `}
             className={props.className} // carry in the css props from the caller
         />
     );
 };
 
-const kHighlightSwitchWhenCheckedCSS = css`
+const kHighlightSwitchWhenCheckedCSS = `
     color: ${kBloomGold};
     .MuiSwitch-thumb {
         background-color: ${kBloomGold};
     }
     .MuiSwitch-track {
         background-color: ${kBloomGold} !important;
-    }
+}
 `;
-const kNormalStylingWhenCheckedCSS = css`
+const kNormalStylingWhenCheckedCSS = `
     .MuiSwitch-thumb {
         background-color: ${kBloomBlue};
     }
