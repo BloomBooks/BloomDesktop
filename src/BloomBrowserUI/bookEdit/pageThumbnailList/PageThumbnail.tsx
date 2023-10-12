@@ -68,6 +68,9 @@ export const PageThumbnail: React.FunctionComponent<{
     };
     const reForOverflow = /^[^>]*class="[^"]*pageOverflows/;
     const overflowing = reForOverflow.test(content); // enhance: memo?
+
+    const scrollingWillBeAvailable = props.pageSize.indexOf("Device") > -1;
+
     useEffect(() => {
         if (Math.abs(Date.now() - lastPageRequestTime) > 5000) {
             activePageRequestCount = 0; // something weird happened, don't block forever
@@ -95,7 +98,9 @@ export const PageThumbnail: React.FunctionComponent<{
                             onClick={props.onClick}
                             onContextMenu={props.onContextMenu}
                         />
-                        {overflowing && <div className="pageOverflowsIcon" />}
+                        {overflowing && !scrollingWillBeAvailable && (
+                            <div className="pageOverflowsIcon" />
+                        )}
                     </div>
                     <div className="thumbnailCaption">{props.page.caption}</div>
                 </>
