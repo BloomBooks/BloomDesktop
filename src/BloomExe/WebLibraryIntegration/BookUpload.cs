@@ -30,7 +30,7 @@ namespace Bloom.WebLibraryIntegration
 	/// </summary>
 	public class BookUpload
 	{
-		public BloomParseClient ParseClient;
+		public BloomLibraryBookApiClient BloomLibraryBookApiClient;
 		private BloomS3Client _s3Client;
 		internal readonly BookThumbNailer _thumbnailer;
 		public IProgress Progress;
@@ -39,9 +39,9 @@ namespace Bloom.WebLibraryIntegration
 
 		static string _destination;
 
-		public BookUpload(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, BookThumbNailer htmlThumbnailer)
+		public BookUpload(BloomLibraryBookApiClient bloomLibraryBookApiClient, BloomS3Client bloomS3Client, BookThumbNailer htmlThumbnailer)
 		{
-			this.ParseClient = bloomParseClient;
+			this.BloomLibraryBookApiClient = bloomLibraryBookApiClient;
 			this._s3Client = bloomS3Client;
 			_thumbnailer = htmlThumbnailer;
 		}
@@ -103,10 +103,10 @@ namespace Bloom.WebLibraryIntegration
 
 		public void Logout()
 		{
-			ParseClient.Logout();
+			BloomLibraryBookApiClient.Logout();
 		}
 
-		public bool LoggedIn => ParseClient.LoggedIn;
+		public bool LoggedIn => BloomLibraryBookApiClient.LoggedIn;
 
 		internal const string BloomS3UrlPrefix = "https://s3.amazonaws.com/";
 
@@ -122,15 +122,15 @@ namespace Bloom.WebLibraryIntegration
 		{
 			get
 			{
-				if (_accountWhenUploadedByLastSet == ParseClient.Account)
+				if (_accountWhenUploadedByLastSet == BloomLibraryBookApiClient.Account)
 					return _uploadedBy;
 				// If a different login has since occurred, default to uploaded by that account.
-				UploadedBy = ParseClient.Account;
+				UploadedBy = BloomLibraryBookApiClient.Account;
 				return _uploadedBy;
 			}
 			set
 			{
-				_accountWhenUploadedByLastSet = ParseClient.Account;
+				_accountWhenUploadedByLastSet = BloomLibraryBookApiClient.Account;
 				_uploadedBy = value;
 			}
 		}
@@ -140,7 +140,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		public string UserId
 		{
-			get { return ParseClient.UserId; }
+			get { return BloomLibraryBookApiClient.UserId; }
 		}
 
 		/// <summary>
@@ -226,14 +226,14 @@ namespace Bloom.WebLibraryIntegration
 					// Do NOT save this change in the book folder!
 					metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles,
 						textLanguages);
-					var response = ParseClient.SetBookRecord(metadata.WebDataJson);
+					var response = BloomLibraryBookApiClient.SetBookRecord(metadata.WebDataJson);
 					parseId = response.ResponseUri.LocalPath;
 					int index = parseId.LastIndexOf('/');
 					parseId = parseId.Substring(index + 1);
 					if (parseId == "books")
 					{
 						// For NEW books the response URL is useless...need to do a new query to get the ID.
-						var json = ParseClient.GetSingleBookRecord(metadata.Id);
+						var json = BloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id);
 						parseId = json.objectId.Value;
 					}
 					//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
@@ -295,8 +295,8 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// The upload destination possibly set from the command line.  This must be set even before calling
 		/// the constructor of this class because it is used in UploadBucketNameForCurrentEnvironment
-		/// which is called by the BloomParseClient constructor.  And the constructor for this class has a
-		/// BloomParseClient argument.
+		/// which is called by the BloomLibraryBookApiClient constructor.  And the constructor for this class has a
+		/// BloomLibraryBookApiClient argument.
 		/// </summary>
 		/// <remarks>
 		/// If not set explicitly before accessing, the destination is set according to <see cref="UseSandboxByDefault"/>.
@@ -348,14 +348,14 @@ namespace Bloom.WebLibraryIntegration
 
 		private string S3BookId(BookMetaData metadata)
 		{
-			var s3BookId = ParseClient.Account + BloomS3Client.kDirectoryDelimeterForS3 + metadata.Id;
+			var s3BookId = BloomLibraryBookApiClient.Account + BloomS3Client.kDirectoryDelimeterForS3 + metadata.Id;
 			return s3BookId;
 		}
 
 		public bool IsBookOnServer(string bookPath)
 		{
 			var metadata = BookMetaData.FromFile(bookPath.CombineForPath(BookInfo.MetaDataFileName));
-			return ParseClient.GetSingleBookRecord(metadata.Id) != null;
+			return BloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id) != null;
 		}
 
 		/// <summary>
@@ -365,7 +365,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var metadata = BookMetaData.FromFile(bookPath.CombineForPath(BookInfo.MetaDataFileName));
 			// 'true' parameter tells the query to include language information so we can get the names.
-			return ParseClient.GetSingleBookRecord(metadata.Id, true);
+			return BloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id, true);
 		}
 
 		// Wait (up to three seconds) for data uploaded to become available.
@@ -490,7 +490,7 @@ namespace Bloom.WebLibraryIntegration
 				// These bits of data can't easily be set while saving the book because we save one page at a time
 				// and they apply to the book as a whole.
 				book.BookInfo.LanguageTableReferences =
-					ParseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(languagesToAdvertiseOnBlorg));
+					BloomLibraryBookApiClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(languagesToAdvertiseOnBlorg));
 				book.BookInfo.PageCount = book.GetPages().Count();
 				book.BookInfo.Save();
 				// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.
@@ -627,7 +627,7 @@ namespace Bloom.WebLibraryIntegration
 
 		internal bool IsThisVersionAllowedToUpload()
 		{
-			return ParseClient.IsThisVersionAllowedToUpload();
+			return BloomLibraryBookApiClient.IsThisVersionAllowedToUpload();
 		}
 
 		/// <summary>

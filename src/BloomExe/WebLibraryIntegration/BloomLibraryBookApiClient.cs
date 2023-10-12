@@ -13,13 +13,19 @@ using SIL.Progress;
 
 namespace Bloom.WebLibraryIntegration
 {
-	public class BloomParseClient
+	// This class began its life as BloomParseClient, and it encapsulated all the interactions with parse server.
+	// But we are trying to move away from any direct interaction with parse server to favor our own bloomlibrary.org/api calls.
+	// This will help facilitate moving away from parse server altogether in the future.
+	// Why not just a new class which we start using now and gradually move things over to? Because this class already contains
+	// things we need like logged-in status and the session token.
+	// So we'll start with this and replace the parse-server-specific bits as we go.
+	public class BloomLibraryBookApiClient
 	{
 		protected RestClient _client;
 		protected string _sessionToken = String.Empty;
 		protected string _userId;
 
-		public BloomParseClient()
+		public BloomLibraryBookApiClient()
 		{
 			var keys = AccessKeys.GetAccessKeys(BookUpload.UploadBucketNameForCurrentEnvironment);
 
@@ -262,7 +268,7 @@ namespace Bloom.WebLibraryIntegration
 		public IRestResponse SetBookRecord(string metadataJson)
 		{
 			if (!LoggedIn)
-				throw new ApplicationException("BloomParseClient got SetBookRecord, but the user is not logged in.");
+				throw new ApplicationException("BloomLibraryBookApiClient got SetBookRecord, but the user is not logged in.");
 			if (BookUpload.IsDryRun)
 				throw new ApplicationException("Should not call SetBookRecord during dry run!");
 			var metadata = BookMetaData.FromString(metadataJson);
@@ -275,7 +281,7 @@ namespace Bloom.WebLibraryIntegration
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
 			var response = Client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.OK)
-				throw new ApplicationException("BloomParseClient.SetBookRecord: "+response.StatusDescription + " " + response.Content);
+				throw new ApplicationException("BloomLibraryBookApiClient.SetBookRecord: " + response.StatusDescription + " " + response.Content);
 			return response;
 		}
 
