@@ -12,6 +12,7 @@ interface IProps extends SwitchProps {
     englishWhenChecked?: string;
     l10nKeyWhenChecked?: string;
 }
+
 // Displays a Switch control
 export const BloomSwitch: React.FunctionComponent<IProps> = props => {
     const label = useL10n(props.english ?? "", props.l10nKey);
@@ -37,42 +38,55 @@ export const BloomSwitch: React.FunctionComponent<IProps> = props => {
         l10nKeyWhenChecked: _l10nKeyWhenChecked,
         ...switchProps
     } = props;
+
+    const switchCss =
+        props.checked &&
+        (props.highlightWhenChecked
+            ? kHighlightSwitchWhenCheckedCSS
+            : kNormalStylingWhenCheckedCSS);
+
     return (
         <FormControlLabel
             value="end"
             control={
-                <Switch
-                    {...switchProps}
-                    checked={checked}
-                    onChange={(event, checked) => {
-                        setChecked(checked);
-                        props.onChange?.(event, checked);
-                    }}
-                />
+                // Without this empty div, the vertical alignment between the button
+                // and the label is wrong (from muiRadio). Probably the default 'div' display: block
+                // interrupts the default flex layout.
+                <div>
+                    <Switch
+                        css={css`
+                            margin-top: -1px !important;
+                        `}
+                        {...switchProps}
+                        checked={checked}
+                        onChange={(event, checked) => {
+                            setChecked(checked);
+                            props.onChange?.(event, checked);
+                        }}
+                    />
+                </div>
             }
             label={checked ? labelWhenChecked : label}
             labelPlacement="end"
-            css={
-                props.checked &&
-                (props.highlightWhenChecked
-                    ? kHighlightSwitchWhenCheckedCSS
-                    : kNormalStylingWhenCheckedCSS)
-            }
+            css={css`
+                align-items: baseline !important; // !important needed to override MUI default (from muiRadio)
+                ${switchCss}
+            `}
             className={props.className} // carry in the css props from the caller
         />
     );
 };
 
-const kHighlightSwitchWhenCheckedCSS = css`
+const kHighlightSwitchWhenCheckedCSS = `
     color: ${kBloomGold};
     .MuiSwitch-thumb {
         background-color: ${kBloomGold};
     }
     .MuiSwitch-track {
         background-color: ${kBloomGold} !important;
-    }
+}
 `;
-const kNormalStylingWhenCheckedCSS = css`
+const kNormalStylingWhenCheckedCSS = `
     .MuiSwitch-thumb {
         background-color: ${kBloomBlue};
     }
