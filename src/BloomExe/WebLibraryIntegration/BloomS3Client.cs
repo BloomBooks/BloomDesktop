@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -13,7 +14,6 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Bloom.Book;
-using Bloom.Collection;
 using Bloom.Publish;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -21,16 +21,24 @@ using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Xml;
 
 namespace Bloom.WebLibraryIntegration
 {
+	public class AmazonS3Credentials
+	{
+		public string AccessKey;
+		public string SecretAccessKey;
+		public string SessionToken;
+	}
+
 	/// <summary>
 	/// Handles Bloom file/folder operations on Amazon Web Services S3 service.
 	/// </summary>
 	public class BloomS3Client:IDisposable
 	{
 		private IAmazonS3 _amazonS3;
+		private IAmazonS3 _legacyAmazonS3;
+		private IAmazonS3 _amazonS3WithoutCredentials;
 		public const string kDirectoryDelimeterForS3 = "/";
 		public const string UnitTestBucketName = "BloomLibraryBooks-UnitTests";
 		public const string SandboxBucketName = "BloomLibraryBooks-Sandbox";
@@ -57,28 +65,60 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		protected IAmazonS3 GetAmazonS3(string bucketName)
+		public void SetCredentials(AmazonS3Credentials credentials)
+		{
+			if (credentials.AccessKey != _previousAccessKey)
+			{
+				if (_amazonS3 != null)
+					_amazonS3.Dispose();
+				_amazonS3 = CreateAmazonS3Client(_s3Config, credentials);
+
+				_previousAccessKey = credentials.AccessKey;
+			}
+		}
+
+		public void SetLegacyCredentialsForUnitTest()
+		{
+			SetCredentials(GetLegacyS3Credentials(UnitTestBucketName));
+		}
+
+		protected IAmazonS3 GetLegacyAmazonS3(string bucketName)
 		{
 			//Note, it would probably be fine to just generate this each time,
 			//but this was the more conservative approach when refactoring
 			//to allow a single client to access arbitrary buckets, thus requiring
 			//appropriate change of access keys, thus requiring changing AmazonS3Client objects.
-			if(bucketName != _previousBucketName)
+			if (bucketName != _previousBucketName)
 			{
-				if (_amazonS3 != null)
-					_amazonS3.Dispose();
-				_amazonS3 = CreateAmazonS3Client(bucketName, _s3Config);
+				if (_legacyAmazonS3 != null)
+					_legacyAmazonS3.Dispose();
+				_legacyAmazonS3 = CreateAmazonS3Client(_s3Config, GetLegacyS3Credentials(bucketName));
 
 				_previousBucketName = bucketName;
 			}
-			return _amazonS3; // we keep this so that we can dispose of it later.
+			return _legacyAmazonS3; // we keep this so that we can dispose of it later.
 		}
 
-		protected virtual IAmazonS3 CreateAmazonS3Client(string bucketName, AmazonS3Config s3Config)
+		protected IAmazonS3 GetAmazonS3WithoutCredentials()
+		{
+			if (_amazonS3WithoutCredentials == null)
+				_amazonS3WithoutCredentials = new AmazonS3Client();
+
+			return _amazonS3WithoutCredentials;
+		}
+
+		protected AmazonS3Credentials GetLegacyS3Credentials(string bucketName)
 		{
 			var accessKeys = AccessKeys.GetAccessKeys(bucketName);
-			return new AmazonS3Client(accessKeys.S3AccessKey,
-				accessKeys.S3SecretAccessKey, s3Config);
+			return new AmazonS3Credentials { AccessKey = accessKeys.S3AccessKey, SecretAccessKey = accessKeys.S3SecretAccessKey };
+		}
+
+		protected virtual IAmazonS3 CreateAmazonS3Client(AmazonS3Config s3Config, AmazonS3Credentials credentials)
+		{
+			if (!string.IsNullOrEmpty(credentials.SessionToken))
+				return new AmazonS3Client(credentials.AccessKey, credentials.SecretAccessKey, credentials.SessionToken, s3Config);
+
+			return new AmazonS3Client(credentials.AccessKey, credentials.SecretAccessKey, s3Config);
 		}
 
 		/// <summary>
@@ -108,46 +148,38 @@ namespace Bloom.WebLibraryIntegration
 			set { _s3Config.MaxErrorRetry = value; }
 		}
 
-		/// <summary>
-		/// This is set during UploadBook to the URL holding files like various thumbnails, preview, etc.
-		/// It ends up in a parse-server column named "baseUrl", and blorg appends things like "/thumbnail256.png" to it.
-		/// It only contains useful information after UploadBook.
-		/// </summary>
-		public string BaseUrl { get; private set; }
-
 		internal List<S3Object> GetMatchingItems(string bucketName, string key)
 		{
-			return GetAmazonS3(bucketName).ListAllObjects(new ListObjectsRequest()
+			return GetLegacyAmazonS3(bucketName).ListAllObjects(new ListObjectsV2Request()
 			{
 				BucketName = bucketName,
 				Prefix = key
 			});
 		}
 
-		internal int GetBookFileCount(string key, string bucketName)
+		internal int GetBookFileCountForUnitTest(string key)
 		{
-			var count = GetMatchingItems(key, bucketName).Count;
+			var count = GetMatchingItems(UnitTestBucketName, key).Count;
 			return count;
 		}
 
-		public void DeleteBookData(string bucketName, string key)
+		public void EmptyUnitTestBucket(string key)
 		{
-			if (BookUpload.IsDryRun)
-				return;
+			var bucketName = UnitTestBucketName;
 
-			var listMatchingObjectsRequest = new ListObjectsRequest()
+			var listMatchingObjectsRequest = new ListObjectsV2Request()
 			{
 				BucketName = bucketName,
 				Prefix = key
 			};
 
-			ListObjectsResponse matchingFilesResponse;
+			ListObjectsV2Response matchingFilesResponse;
 			do
 			{
 				// Note: ListObjects can only return 1,000 objects at a time,
 				//       and DeleteObjects can only delete 1,000 objects at a time.
 				//       So a loop is needed if the book contains 1,001+ objects.
-				matchingFilesResponse = GetAmazonS3(bucketName).ListObjects(listMatchingObjectsRequest);
+				matchingFilesResponse = _amazonS3.ListObjectsV2(listMatchingObjectsRequest);
 				if (matchingFilesResponse.S3Objects.Count == 0)
 					return;
 
@@ -157,28 +189,24 @@ namespace Bloom.WebLibraryIntegration
 					Objects = matchingFilesResponse.S3Objects.Select(s3Object => new KeyVersion() { Key = s3Object.Key }).ToList()
 				};
 
-				var response = GetAmazonS3(bucketName).DeleteObjects(deleteObjectsRequest);
+				var response = _amazonS3.DeleteObjects(deleteObjectsRequest);
 				Debug.Assert(response.DeleteErrors.Count == 0);
 
 				// Prep the next request (if needed)
-				listMatchingObjectsRequest.Marker = matchingFilesResponse.NextMarker;
+				listMatchingObjectsRequest.ContinuationToken = matchingFilesResponse.ContinuationToken;
 			}
-			while (matchingFilesResponse.IsTruncated);	// Returns true if haven't reached the end yet
-		}
-
-		public void EmptyUnitTestBucket(string prefix)
-		{
-			DeleteBookData(BloomS3Client.UnitTestBucketName, prefix);
+			while (matchingFilesResponse.IsTruncated);  // Returns true if haven't reached the end yet
 		}
 
 		/// <summary>
 		/// Allows a file to be put into the root of the bucket.
 		/// Could be enhanced to specify a sub folder path, but I don't need that for the current use.
+		/// (Current use is to upload problem books.)
 		/// </summary>
 		/// <returns>url to the uploaded file</returns>
 		public string UploadSingleFile(string pathToFile, IProgress progress)
 		{
-			using (var transferUtility =  (BookUpload.IsDryRun) ? null : new TransferUtility(GetAmazonS3(_bucketName)))
+			using (var transferUtility =  (BookUpload.IsDryRun) ? null : new TransferUtility(GetLegacyAmazonS3(_bucketName)))
 			{
 				var request = new TransferUtilityUploadRequest
 				{
@@ -198,68 +226,42 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-
 		/// <summary>
 		/// The thing here is that we need to guarantee unique names at the top level, so we wrap the books inside a folder
 		/// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
 		/// except the one we want.
 		/// </summary>
-		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
-			string pdfToInclude, bool includeNarrationAudio, bool includeMusic,
-			string[] textLanguagesToInclude, string[] audioLanguagesToInclude, string metadataLang1Code, string metadataLang2Code,
-			string collectionSettingsPath = null, bool isForBulkUpload = false)
+		public void UploadBook(string storageKeyOfBookFolderParent, string pathToBloomBookDirectory, IProgress progress,
+				string pdfToInclude, bool includeNarrationAudio, bool includeMusic,
+				string[] textLanguagesToInclude, string[] audioLanguagesToInclude, string metadataLang1Code, string metadataLang2Code,
+				string collectionSettingsPath = null, bool isForBulkUpload = false)
 		{
-			BaseUrl = null;
-			DeleteBookData(_bucketName, storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
-
-			//first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
-			//and at the same time introduce a wrapper with the last part of the unique key for this person+book
-			string prefix = ""; // storageKey up to last slash (or empty)
-			string tempFolderName = storageKeyOfBookFolder; // storage key after last slash (or all of it)
-
-			// storageKeyOfBookFolder typically has a slash in it, email/id.
-			// We only want the id as the temp folder name.
-			// If there is anything before it, though, we want that as a prefix to make a parent 'folder' on parse.com.
-			int index = storageKeyOfBookFolder.LastIndexOf('/');
-			if (index >= 0)
+			using (var stagingParentDirectory = new TemporaryFolder("BloomUploadStaging"))
 			{
-				prefix = storageKeyOfBookFolder.Substring(0, index + 1); // must include the slash
-				tempFolderName = storageKeyOfBookFolder.Substring(index + 1);
+				var stagingDirectory = Path.Combine(stagingParentDirectory.FolderPath, Path.GetFileName(pathToBloomBookDirectory));
+				var filter = new BookFileFilter(pathToBloomBookDirectory)
+				{
+					IncludeFilesForContinuedEditing = true,
+					NarrationLanguages = (includeNarrationAudio ? audioLanguagesToInclude : Array.Empty<string>()),
+					WantVideo = true,
+					WantMusic = includeMusic
+				};
+				if (pdfToInclude != null)
+					filter.AlwaysAccept(pdfToInclude);
+				if (isForBulkUpload)
+					filter.AlwaysAccept(".lastUploadInfo");
+				filter.CopyBookFolderFiltered(stagingDirectory);
+
+				ProcessVideosInTempDirectory(stagingDirectory);
+				CopyCollectionSettingsToTempDirectory(collectionSettingsPath, stagingDirectory);
+
+				if (textLanguagesToInclude != null && textLanguagesToInclude.Count() > 0)
+					RemoveUnwantedLanguageData(stagingDirectory, textLanguagesToInclude, metadataLang1Code, metadataLang2Code);
+
+				PublishHelper.ReportInvalidFonts(stagingDirectory, progress);
+
+				SyncBookFiles(storageKeyOfBookFolderParent, stagingParentDirectory.FolderPath, progress);
 			}
-
-			var wrapperPath = Path.Combine(Path.GetTempPath(), tempFolderName);
-
-			//If we previously uploaded the book, but then had a problem, this directory could still be on our harddrive. Clear it out.
-			if (Directory.Exists(wrapperPath))
-			{
-				DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
-			}
-
-			Directory.CreateDirectory(wrapperPath);
-
-			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
-			var filter = new BookFileFilter(pathToBloomBookDirectory) { IncludeFilesForContinuedEditing = true,
-				NarrationLanguages = (includeNarrationAudio? audioLanguagesToInclude : Array.Empty<string>()),
-				WantVideo = true,
-				WantMusic = includeMusic
-			};
-			if (pdfToInclude != null)
-				filter.AlwaysAccept(pdfToInclude);
-			if (isForBulkUpload)
-				filter.AlwaysAccept(".lastUploadInfo");
-			filter.CopyBookFolderFiltered(destDirName);
-
-			ProcessVideosInTempDirectory(destDirName);
-			CopyCollectionSettingsToTempDirectory(collectionSettingsPath, destDirName);
-
-			if (textLanguagesToInclude != null && textLanguagesToInclude.Count() > 0)
-				RemoveUnwantedLanguageData(destDirName, textLanguagesToInclude, metadataLang1Code, metadataLang2Code);
-
-			PublishHelper.ReportInvalidFonts(destDirName, progress);
-
-			UploadDirectory(prefix, wrapperPath, progress);
-
-			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
 		}
 
 		private void ProcessVideosInTempDirectory(string destDirName)
@@ -298,60 +300,6 @@ namespace Bloom.WebLibraryIntegration
 			doc.Save(Path.Combine(tempBookFolder, "collectionFiles", "book.uploadCollectionSettings"));
 		}
 
-		private static void RemoveUnwantedVideoFiles(string destDirName, IEnumerable<string> videoFilesToInclude)
-		{
-			// If videoFilesToInclude is null or empty, ALL video files in the video subdirectory will be deleted.
-			// This likely means that they aren't referenced in the Book's .htm file, although someday there could be
-			// other reasons to not include them.
-			var videoDir = BookStorage.GetVideoFolderPath(destDirName);
-			if (!Directory.Exists(videoDir))
-				return;
-
-			foreach (var videoFilePath in Directory.EnumerateFiles(videoDir))
-			{
-				// videoFilesToInclude strings do not include timings, but do include "video/" prefix,
-				// so include the prefix in our Contains() test.
-				var fileName = BookStorage.GetNormalizedPathForOS(Path.GetFileName(videoFilePath));
-				if (videoFilesToInclude == null || !videoFilesToInclude.Contains(BookStorage.GetVideoFolderName + fileName))
-					RobustFile.Delete(videoFilePath);
-			}
-		}
-
-		private static void RemoveUnwantedAudioFiles(string destDirName, ISet<string> audioFilesToInclude)
-		{
-			// If audioFilesToInclude is null or empty, ALL audio files in the audio subdirectory will be deleted.
-			// This could mean that none of them are referenced in the Book's .htm file, but the user can also choose
-			// not to upload audio files.
-			string audioDir = AudioProcessor.GetAudioFolderPath(destDirName);
-			if (!Directory.Exists(audioDir))
-				return;
-
-			foreach (var audioFile in Directory.EnumerateFiles(audioDir))
-			{
-				var fileName = BookStorage.GetNormalizedPathForOS(Path.GetFileName(audioFile));
-				if (audioFilesToInclude == null || !audioFilesToInclude.Contains(fileName))
-					RobustFile.Delete(Path.Combine(audioDir, fileName));
-			}
-		}
-
-		private static void DeleteFileSystemInfo(FileSystemInfo fileSystemInfo)
-		{
-			var directoryInfo = fileSystemInfo as DirectoryInfo;
-			if (directoryInfo != null)
-			{
-				foreach (var childInfo in directoryInfo.GetFileSystemInfos())
-				{
-					DeleteFileSystemInfo(childInfo);
-				}
-				SIL.IO.RobustIO.DeleteDirectory(fileSystemInfo.FullName);
-			}
-			else
-			{
-				fileSystemInfo.Attributes = FileAttributes.Normal; // thumbnails can be intentionally readonly (when they are created by hand)
-				RobustFile.Delete(fileSystemInfo.FullName);
-			}
-		}
-
 		public void RemoveUnwantedLanguageData(string destDirName, IEnumerable<string> languagesToInclude,
 			string metadataLang1Code, string metadataLang2Code)
 		{
@@ -375,98 +323,148 @@ namespace Bloom.WebLibraryIntegration
 			metadata.WriteToFolder(destDirName);
 		}
 
-		//Note: there is a similar list for BloomPacks, but it is not identical, so don't just copy/paste
-		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".bloompack", ".bak", ".userprefs", ".md", ".map" };
 		private AmazonS3Config _s3Config;
 		private string _previousBucketName;
+		private string _previousAccessKey;
 		protected string _bucketName;
 
-		/// <summary>
-		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
-		/// and it will name it that, and gui client apps then treat that like a folder structure, so you feel like there are folders.
-		/// </summary>
-		private void UploadDirectory(string prefix, string directoryPath, IProgress progress)
+		//TODO: use async versions of the s3 sdk methods? design calls for them, but would be very painful. and I'm not sure it would do anything for us
+		public void SyncBookFiles(string storageKeyOfBookFolderParent, string stagingDirectory, IProgress progress)
 		{
-			if (!Directory.Exists(directoryPath))
+			if (!Directory.Exists(stagingDirectory))
+				throw new DirectoryNotFoundException("Source directory does not exist or could not be found: " + stagingDirectory);
+
+			// sync all files which are already on S3
+			var listObjectRequest = new ListObjectsV2Request { BucketName = _bucketName, Prefix = storageKeyOfBookFolderParent };
+			foreach (S3Object s3Object in _amazonS3.ListAllObjects(listObjectRequest))
 			{
-				throw new DirectoryNotFoundException(
-					"Source directory does not exist or could not be found: "
-					+ directoryPath);
-			}
+				if (progress.CancelRequested)
+					return;
 
-			prefix = prefix + Path.GetFileName(directoryPath) + kDirectoryDelimeterForS3;
-
-			var filesToUpload = Directory.GetFiles(directoryPath);
-
-			// Remember the url that can be used to download files like thumbnails and preview.pdf. This seems to work but I wish
-			// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
-			// This method gets called for the root directory (ending in guid), the main directory (ending in book name), and subdirectories.
-			// We want to keep the one that ends in the book name...the main root directory.
-			// This should be the first non-empty directory we are passed (the root only has a folder in it)
-			if (BaseUrl == null && filesToUpload.Length > 0)
-				BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);
-
-			using (var transferUtility = (BookUpload.IsDryRun) ? null : new TransferUtility(_amazonS3))
-			{
-				foreach(string file in filesToUpload)
+				string localFilePath = Path.Combine(stagingDirectory, s3Object.Key.Substring(storageKeyOfBookFolderParent.Length));
+				if (IsExcludedFromUploadByExtension(localFilePath) || !RobustFile.Exists(localFilePath))
 				{
-					var fileName = Path.GetFileName(file);
-					if(excludedFileExtensionsLowerCase.Contains(Path.GetExtension(fileName.ToLowerInvariant())))
-						continue; // BL-2246: skip uploading this one
-
-					var request = new TransferUtilityUploadRequest()
+					if (!BookUpload.IsDryRun)
+						_amazonS3.DeleteObject(_bucketName, s3Object.Key);
+				}
+				else
+				{
+					string localFileEtag = GetEtag(localFilePath);
+					if (localFileEtag != s3Object.ETag)
 					{
-						BucketName = _bucketName,
-						FilePath = file,
-						Key = prefix + fileName
-					};
-					// The effect of this is that navigating to the file's URL is always treated as an attempt to download the file.
-					// This is definitely not desirable for the PDF (typically a preview) which we want to navigate to in the Preview button
-					// of BloomLibrary.
-					// I'm not sure whether there is still any reason to do it for other files.
-					// It was temporarily important for the BookOrder file when the Open In Bloom button just downloaded it.
-					// However, now the download link uses the bloom: prefix to get the URL passed directly to Bloom,
-					// it may not be needed for anything. Still, at least for the files a browser would not know how to
-					// open, it seems desirable to download them with their original names, if such a thing should ever happen.
-					// So I'm leaving the code in for now except in cases where we know we don't want it.
-					// It is possible to also set the filename ( after attachment, put ; filename='" + Path.GetFileName(file) + "').
-					// In principle this would be a good thing, since the massive AWS filenames are not useful.
-					// However, AWSSDK can't cope with setting this for files with non-ascii names.
-					// It seems that the header we insert here eventually becomes a header for a web request, and these allow only ascii.
-					// There may be some way to encode non-ascii filenames to get the effect, if we ever want it again. Or AWS may fix the problem.
-					// If you put setting the filename back in without such a workaround, be sure to test with a non-ascii book title.
-					if(Path.GetExtension(file).ToLowerInvariant() != ".pdf")
-						request.Headers.ContentDisposition = "attachment";
-					// no-cache means "The response may be stored by any cache, even if the response is normally non-cacheable. However,
-					// the stored response MUST always go through validation with the origin server first before using it..."
-					request.Headers.CacheControl = "no-cache";
-					request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
-					var uploadMsgFmt = LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}");
-					if (BookUpload.IsDryRun)
-						uploadMsgFmt = "(Dry run) Would upload {0}";	// TODO: localize?
-					progress.WriteStatus(uploadMsgFmt, fileName);
-					if (progress.CancelRequested)
-						return;
-
-					try
-					{
-						if (!BookUpload.IsDryRun)
-							transferUtility.Upload(request);
+						PutFileOnS3(localFilePath, s3Object.Key, progress);
 					}
-					catch (Exception e)
+					else
 					{
-						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-						throw;
+						progress.WriteStatus(
+							LocalizationManager.GetString(
+								"PublishTab.Upload.FileIsUnchanged",
+								"{0} is unchanged",
+								"{0} is a file name; this message indicates we are not uploading the file because the contents are the same they were when it was uploaded previously"),
+								Path.GetFileName(localFilePath));
 					}
 				}
+			}
 
-				foreach(string subdir in Directory.GetDirectories(directoryPath))
+			// We've synced all the existing files on S3.
+			// Now upload any files which are not on S3.
+			foreach (var localFilePath in Directory.GetFiles(stagingDirectory, "*.*", SearchOption.AllDirectories))
+			{
+				if (progress.CancelRequested)
+					return;
+
+				if (IsExcludedFromUploadByExtension(localFilePath))
+					continue; // BL-2246: skip uploading this one
+
+				string key = storageKeyOfBookFolderParent + localFilePath.Substring(stagingDirectory.Length).Replace("\\", "/");
+				key = key.Replace("//", "/"); // safety net
+				if (!DoesS3ObjectExist(_amazonS3, _bucketName, key))
 				{
-					UploadDirectory(prefix, subdir, progress);
-					if (progress.CancelRequested)
-						return;
+					PutFileOnS3(localFilePath, key, progress);
 				}
 			}
+		}
+
+		//Note: there is a similar list for BloomPacks, but it is not identical, so don't just copy/paste
+		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".bloompack", ".bak", ".userprefs", ".md", ".map" };
+
+		// Argh! Why isn't this handled by the BookFileFilter??
+		private bool IsExcludedFromUploadByExtension(string localFilePath)
+		{
+			return excludedFileExtensionsLowerCase.Contains(Path.GetExtension(localFilePath).ToLowerInvariant());
+		}
+
+		private void PutFileOnS3(string localFilePath, string s3Key, IProgress progress)
+		{
+			var request = new PutObjectRequest
+			{
+				FilePath = localFilePath,
+				BucketName = _bucketName,
+				Key = s3Key
+			};
+
+			SetContentDisposition(request, localFilePath);
+
+			// no-cache means "The response may be stored by any cache, even if the response is normally non-cacheable. However,
+			// the stored response MUST always go through validation with the origin server first before using it..."
+			request.Headers.CacheControl = "no-cache";
+
+			var uploadMsgFmt = LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}");
+			if (BookUpload.IsDryRun)
+				uploadMsgFmt = "(Dry run) Would upload {0}";
+			progress.WriteStatus(uploadMsgFmt, Path.GetFileName(localFilePath));
+
+			if (!BookUpload.IsDryRun)
+				_amazonS3.PutObject(request);
+		}
+
+		private string GetEtag(string filePath)
+		{
+			using (var md5 = MD5.Create())
+			{
+				using (var stream = RobustFile.OpenRead(filePath))
+				{
+					byte[] hash = md5.ComputeHash(stream);
+					return "\"" + BitConverter.ToString(hash).Replace("-", "").ToLower() + "\"";
+				}
+			}
+		}
+		private bool DoesS3ObjectExist(IAmazonS3 s3Client, string bucketName, string key)
+		{
+			try
+			{
+				s3Client.GetObjectMetadata(bucketName, key);
+				return true;
+			}
+			catch (AmazonS3Exception e)
+			{
+				if (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+					return false;
+
+				// We have an error other than NotFound; throw the exception
+				throw;
+			}
+		}
+
+		private void SetContentDisposition(PutObjectRequest request, string localFilePath)
+		{
+			// The effect of this is that navigating to the file's URL is always treated as an attempt to download the file.
+			// This is definitely not desirable for the PDF (typically a preview) which we want to navigate to in the Preview button
+			// of BloomLibrary.
+			// I'm not sure whether there is still any reason to do it for other files.
+			// It was temporarily important for the BookOrder file when the Open In Bloom button just downloaded it.
+			// However, now the download link uses the bloom: prefix to get the URL passed directly to Bloom,
+			// it may not be needed for anything. Still, at least for the files a browser would not know how to
+			// open, it seems desirable to download them with their original names, if such a thing should ever happen.
+			// So I'm leaving the code in for now except in cases where we know we don't want it.
+			// It is possible to also set the filename ( after attachment, put ; filename='" + Path.GetFileName(file) + "').
+			// In principle this would be a good thing, since the massive AWS filenames are not useful.
+			// However, AWSSDK can't cope with setting this for files with non-ascii names.
+			// It seems that the header we insert here eventually becomes a header for a web request, and these allow only ascii.
+			// There may be some way to encode non-ascii filenames to get the effect, if we ever want it again. Or AWS may fix the problem.
+			// If you put setting the filename back in without such a workaround, be sure to test with a non-ascii book title.
+			if (Path.GetExtension(localFilePath).ToLowerInvariant() != ".pdf")
+				request.Headers.ContentDisposition = "attachment";
 		}
 
 		/// <summary>
@@ -544,7 +542,7 @@ namespace Bloom.WebLibraryIntegration
 		public string DownloadFile(string bucketName, string storageKeyOfFile)
 		{
 			var request = new GetObjectRequest() {BucketName = bucketName, Key = storageKeyOfFile};
-			using (var response = GetAmazonS3(bucketName).GetObject(request))
+			using (var response = GetAmazonS3WithoutCredentials().GetObject(request))
 			using (var stream = response.ResponseStream)
 			using (var reader = new StreamReader(stream, Encoding.UTF8))
 			{
@@ -604,8 +602,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Warning, if the book already exists in the location, this is going to delete it an over-write it. So it's up to the caller to check the sanity of that.
 		/// </summary>
-		/// <param name="storageKeyOfBookFolder"></param>
-		public string DownloadBook(string bucketName, string storageKeyOfBookFolder, string pathToDestinationParentDirectory,
+		public string DownloadBook(string bucketName, string storageKeyOfBookFolderParent, string pathToDestinationParentDirectory,
 			IProgressDialog downloadProgress = null)
 		{
 			//review: should we instead save to a newly created folder so that we don't have to worry about the
@@ -614,18 +611,18 @@ namespace Bloom.WebLibraryIntegration
 			// We need to download individual files to avoid downloading unwanted files (PDFs and thumbs.db to
 			// be specific).  See https://silbloom.myjetbrains.com/youtrack/issue/BL-2312.  So we need the list
 			// of items, not just the count.
-			var matching = GetMatchingItems(bucketName, storageKeyOfBookFolder);
+			var matching = GetMatchingItems(bucketName, storageKeyOfBookFolderParent);
 			var totalItems = CountDesiredFiles(matching);
 			if(totalItems == 0)
 				throw new DirectoryNotFoundException("The book we tried to download is no longer in the BloomLibrary");
 
-			if (!storageKeyOfBookFolder.EndsWith("/"))
-				storageKeyOfBookFolder += '/';
+			if (!storageKeyOfBookFolderParent.EndsWith("/"))
+				storageKeyOfBookFolderParent += '/';
 			
-			Debug.Assert(matching[0].Key.StartsWith(storageKeyOfBookFolder), "Matched object does not start with storageKey");
+			Debug.Assert(matching[0].Key.StartsWith(storageKeyOfBookFolderParent), "Matched object does not start with storageKey");
 
 			// Get the top-level directory name of the book from the first object key.
-			var bookFolderName = matching[0].Key.Substring(storageKeyOfBookFolder.Length);
+			var bookFolderName = matching[0].Key.Substring(storageKeyOfBookFolderParent.Length);
 			while (bookFolderName.Contains("/") || bookFolderName.Contains("\\"))
 			{
 				// Note: Path.GetDirectoryName may replace "/" (URL format) with "\" (Windows format),
@@ -655,7 +652,7 @@ namespace Bloom.WebLibraryIntegration
 						progressStep = (float)(downloadProgress.ProgressRangeMaximum - downloadProgress.Progress) / (float)totalItems;
 						progress = (float)downloadProgress.Progress;
 					}));
-				using(var transferUtility = new TransferUtility(_amazonS3))
+				using(var transferUtility = new TransferUtility(GetLegacyAmazonS3(_bucketName)))
 				{
 					for(int i = 0; i < matching.Count; ++i)
 					{
@@ -664,7 +661,7 @@ namespace Bloom.WebLibraryIntegration
 							continue;
 						// Removing the book's prefix from the object key, then using the remainder of the key
 						// in the filepath allows for nested subdirectories.
-						var filepath = objKey.Substring(storageKeyOfBookFolder.Length);
+						var filepath = objKey.Substring(storageKeyOfBookFolderParent.Length);
 						// Download this file then bump progress.
 						var req = new TransferUtilityDownloadRequest()
 						{
@@ -764,12 +761,53 @@ namespace Bloom.WebLibraryIntegration
 			return name;
 		}
 
+		public string GetBaseUrl(string storageKeyOfBookFolder)
+		{
+			// Yes, this encoding means the slashes are converted to %2f.
+			// That's unfortunate, but that's how we've always done it.
+			// And that's how old Blooms expect to receive it, so we're stuck with it.
+			return $"https://s3.amazonaws.com/{_bucketName}/{HttpUtility.UrlEncode(storageKeyOfBookFolder)}";
+		}
+
+
+		// We get the full URL from the server, like https://s3.amazonaws.com/BloomLibraryBooks/5b4b4b4b/1234567890/
+		// We want the part after the bucket name, like 5b4b4b4b/1234567890/
+		public static string GetStorageKeyOfBookFolderParentFromUrl(string url)
+		{
+			Regex s3UrlRegex = new Regex(@"^https?://s3\.amazonaws\.com/[^/]+/(.*)$");
+			var match = s3UrlRegex.Match(url);
+			if (!match.Success)
+				throw new ArgumentException("Not an S3 URL", nameof(url));
+			return match.Groups[1].Value;
+		}
+
+		// baseUrl looks like https://s3.amazonaws.com/BloomLibraryBooks/5b4b4b4b%2f1234567890%2fBook+Title%2f
+		// We want the part after the bucket name, without encoding, like 5b4b4b4b/1234567890/Book Title
+		public static string GetStorageKeyOfBookFolder(string baseUrl)
+		{
+			Regex baseUrlRegex = new Regex(@"^https?://s3\.amazonaws\.com/[^/]+/(.*)$");
+			var match = baseUrlRegex.Match(baseUrl.Replace("%2f", "/"));
+			if (!match.Success)
+				throw new ArgumentException("Not a valid base URL", nameof(baseUrl));
+			return HttpUtility.UrlDecode(match.Groups[1].Value);
+		}
+
 		public void Dispose()
 		{
 			if (_amazonS3 != null)
 			{
 				_amazonS3.Dispose();
 				_amazonS3 = null;
+			}
+			if (_legacyAmazonS3 != null)
+			{
+				_legacyAmazonS3.Dispose();
+				_legacyAmazonS3 = null;
+			}
+			if (_amazonS3WithoutCredentials != null)
+			{
+				_amazonS3WithoutCredentials.Dispose();
+				_amazonS3WithoutCredentials = null;
 			}
 
 			GC.SuppressFinalize(this);

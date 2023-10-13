@@ -14,21 +14,21 @@ namespace Bloom.WebLibraryIntegration
 		/// Similar to the S3 API's ListObjects, but instead of returning only the first 1,000 objects, returns all of them.
 		/// (Multiple calls to ListObjects may be made internally if there are many matching objects)
 		/// </summary>
-		/// <param name="request">The request to list objects for. Note that request may be modified by this function (specifically, its Marker property may change)</param>
+		/// <param name="request">The request to list objects for. Note that request may be modified by this function (specifically, its ContinuationToken property may change)</param>
 		/// <returns>All matching objects as a single concatenated (non-lazy) list of S3Object</returns>
-		static internal List<S3Object> ListAllObjects(this IAmazonS3 s3, ListObjectsRequest request)
+		static internal List<S3Object> ListAllObjects(this IAmazonS3 s3, ListObjectsV2Request request)
 		{
 			Debug.Assert(s3 != null, "s3 must not be null");
 
 			var allMatchingItems = new List<S3Object>();
-			ListObjectsResponse matchingItemsResponse;
+			ListObjectsV2Response matchingItemsResponse;
 
 			// Note: S3 only allows a max of 1,000 objects in one go.
 			do
 			{
-				matchingItemsResponse = s3.ListObjects(request);
+				matchingItemsResponse = s3.ListObjectsV2(request);
 				allMatchingItems.AddRange(matchingItemsResponse.S3Objects);
-				request.Marker = matchingItemsResponse.NextMarker;	// NextMarker indicates where the next request should start
+				request.ContinuationToken = matchingItemsResponse.ContinuationToken;    // ContinuationToken indicates where the next request should start
 			}
 			while (matchingItemsResponse.IsTruncated);	// IsTruncated returns true if it's not at the end
 
