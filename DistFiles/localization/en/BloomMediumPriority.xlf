@@ -248,6 +248,11 @@
         <source xml:lang="en">Do not show this book to the public yet. I will share its URL with reviewers for feedback.</source>
         <note>ID: PublishTab.Upload.Draft</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.FileIsUnchanged" translate="no">
+        <source xml:lang="en">{0} is unchanged</source>
+        <note>ID: PublishTab.Upload.NotUploadingStatus</note>
+        <note>{0} is a file name; this progress message indicates we are not uploading the file because the contents are the same they were when it was uploaded previously</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.Visibility">
         <source xml:lang="en">Visibility</source>
         <note>ID: PublishTab.Upload.Visibility</note>

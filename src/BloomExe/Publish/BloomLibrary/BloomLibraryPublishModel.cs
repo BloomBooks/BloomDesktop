@@ -116,9 +116,11 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool IsBookPublicDomain => _license?.Url != null && _license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/");
 
-		internal bool BookIsAlreadyOnServer => LoggedIn && _uploader.IsBookOnServer(Book.FolderPath);
-
-		internal dynamic ConflictingBookInfo => _uploader.GetBookOnServer(Book.FolderPath);
+		internal dynamic GetConflictingBookInfoFromServer()
+		{
+			// Include language information so we can get the names.
+			return _uploader.GetBookOnServer(Book.BookInfo.Id, includeLanguageInfo: true);
+		}
 
 		private string Uploader => _uploader.UserId;
 
@@ -159,7 +161,8 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool IsThisVersionAllowedToUpload => _uploader.IsThisVersionAllowedToUpload();
 
-		internal string UploadOneBook(BookInstance book, IProgress progress, PublishModel publishModel, bool excludeMusic, out string parseId)
+		/// <returns>On success, returns the book objectId; on failure, returns empty string</returns>
+		internal string UploadOneBook(BookInstance book, IProgress progress, PublishModel publishModel, bool excludeMusic, string existingBookObjectIdOrNull)
 		{
 			using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 			{
@@ -171,7 +174,7 @@ namespace Bloom.Publish.BloomLibrary
 					ExcludeMusic = excludeMusic,
 					PreserveThumbnails = false,
 				};
-				return _uploader.FullUpload(book, progress, publishModel, bookParams, out parseId);
+				return _uploader.FullUpload(book, progress, publishModel, bookParams, existingBookObjectIdOrNull);
 			}
 		}
 
@@ -514,6 +517,16 @@ namespace Bloom.Publish.BloomLibrary
 
 		public dynamic GetUploadCollisionDialogProps(IEnumerable<string> languagesToAdvertise, bool signLanguageFeatureSelected)
 		{
+			var existingBookInfo = GetConflictingBookInfoFromServer();
+
+			if (existingBookInfo == null)
+			{
+				return new
+				{
+					shouldShow = false
+				};
+			}
+
 			var newThumbPath = ChooseBestUploadingThumbnailPath(Book).ToLocalhost();
 			var newTitle = Book.TitleBestForUserDisplay;
 			var newLanguages = ConvertLanguageCodesToNames(languagesToAdvertise, Book.BookData);
@@ -525,7 +538,6 @@ namespace Bloom.Publish.BloomLibrary
 				newLanguages = newLangs;
 			}
 
-			var existingBookInfo = ConflictingBookInfo;
 			var updatedDateTime = (DateTime)existingBookInfo.updatedAt;
 			var createdDateTime = (DateTime)existingBookInfo.createdAt;
 			// Find the best title available (BL-11027)
@@ -571,11 +583,12 @@ namespace Bloom.Publish.BloomLibrary
 			// Must match IUploadCollisionDlgProps in uploadCollisionDlg.tsx.
 			return new
 			{
-				shouldShow = BookIsAlreadyOnServer,
+				shouldShow = true,
 				userEmail = LoggedIn ? WebUserId : "",
 				newThumbUrl = newThumbPath,
 				newTitle,
 				newLanguages,
+				existingBookObjectId = existingId,
 				existingTitle,
 				existingLanguages,
 				existingCreatedDate = createdDate,

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
+using System.Text;
 using Bloom.WebLibraryIntegration;
 using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using RestSharp;
 using SIL.Code;
 
 namespace BloomTests.WebLibraryIntegration
@@ -21,19 +21,6 @@ namespace BloomTests.WebLibraryIntegration
 		public void Setup()
 		{
 			_client = new BloomLibraryBookApiClientTestDouble();
-		}
-
-		/// <summary>
-		/// When we restore this, we should also fix it so it deletes the book it creates. The inaccuracies were partly
-		/// caused by accumulating over 1000 books (actually, over 17,000) from repeatedly running this and other tests.
-		/// </summary>
-		[Test, Ignore("parse.com has gotten into a state where count is not accurate in the unit test database")]
-		public void GetBookCount_AfterAddingABook_Increases()
-		{
-			var initialCount = _client.GetBookCount();
-			CreateBookRecord();
-			Thread.Sleep(3000);//jh added this because the test failed frequently, but not when stepping through. Hypothesizing that AWS S3 doesn't update the count immediately
-			Assert.Greater(_client.GetBookCount(), initialCount);
 		}
 
 		[Test]
@@ -66,12 +53,6 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.IsFalse(_client.LoggedIn);
 		}
 
-		[Test]
-		public void CreateBookRecord_NotLoggedIn_Throws()
-		{
-			Assert.Throws<ApplicationException>(() =>_client.CreateBookRecord("{\"bookInstanceId\":\"123\"}"));
-		}
-
 		/// <summary>
 		/// Could be an independent test, but it is needed as part of others.
 		/// </summary>
@@ -81,7 +62,7 @@ namespace BloomTests.WebLibraryIntegration
 			Login();
 			string bookInstanceId = Guid.NewGuid().ToString();
 			var title = "unittest" + bookInstanceId;
-			var result = _client.CreateBookRecord(string.Format("{{\"bookInstanceId\":\"{0}\",\"title\":\"{1}\",{2}}}", bookInstanceId, title, _client.UploaderJsonString));
+			var result = _client.TestOnly_CreateBookRecord(string.Format("{{\"bookInstanceId\":\"{0}\",\"title\":\"{1}\",{2}}}", bookInstanceId, title, _client.UploaderJsonString));
 			Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
 			return bookInstanceId;
 		}
@@ -124,26 +105,14 @@ namespace BloomTests.WebLibraryIntegration
 
 	public class BloomLibraryBookApiClientTestDouble : BloomLibraryBookApiClient
 	{
-		public BloomLibraryBookApiClientTestDouble() { }
-
-		public BloomLibraryBookApiClientTestDouble(string testId)
+		private RestRequest MakeParsePutRequest(string path)
 		{
-			// Do NOT do this...it results in creating a garbage class in Parse.com which is hard to delete (manual only).
-			//ClassesLanguagePath = "classes/language_" + testId;
+			return MakeParseRequest(path, Method.PUT);
 		}
 
-		public bool SimulateOldBloomUpload = false;
-
-		public override string ChangeJsonBeforeCreatingOrModifyingBook(string json)
+		private RestRequest MakeParseDeleteRequest(string path)
 		{
-			if (SimulateOldBloomUpload)
-			{
-				var bookRecord = JObject.Parse(json);
-				bookRecord.Remove("lastUploaded");
-				bookRecord.Remove("updateSource");
-				return bookRecord.ToString();
-			}
-			return base.ChangeJsonBeforeCreatingOrModifyingBook(json);
+			return MakeParseRequest(path, Method.DELETE);
 		}
 
 		// Log in directly to parse server with name and password.
@@ -153,13 +122,13 @@ namespace BloomTests.WebLibraryIntegration
 		{
 			_sessionToken = string.Empty;
 			Account = string.Empty;
-			var request = MakeGetRequest("login");
+			var request = MakeParseGetRequest("login");
 			request.AddParameter("username", account.ToLowerInvariant());
 			request.AddParameter("password", password);
 
 			bool result = false;
 			RetryUtility.Retry(() => {
-				var response = Client.Execute(request);
+				var response = RestClientForParse.Execute(request);
 				var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 				try
 				{
@@ -189,6 +158,55 @@ namespace BloomTests.WebLibraryIntegration
 				result = LoggedIn;
 			}, 3, 2000, new HashSet<Type> { typeof(RuntimeBinderException).Assembly.GetType("Microsoft.CSharp.RuntimeBinder.RuntimeBinderException") });
 			return result;
+		}
+
+		public IRestResponse TestOnly_UpdateBookRecord(string metadataJson, string bookObjectId)
+		{
+			if (!LoggedIn)
+				throw new ApplicationException("user is not logged in.");
+
+			var request = MakeParsePutRequest("classes/books/" + bookObjectId);
+			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
+
+			var response = RestClientForParse.Execute(request);
+
+			if (response.StatusCode != HttpStatusCode.OK)
+				throw new ApplicationException("TestOnly_UpdateBookRecord: " + response.StatusDescription + " " + response.Content);
+			return response;
+		}
+
+		public IRestResponse TestOnly_CreateBookRecord(string metadataJson)
+		{
+			if (!LoggedIn)
+				throw new ApplicationException("user is not logged in.");
+
+			var request = MakeParsePostRequest("classes/books");
+			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
+
+			var response = RestClientForParse.Execute(request);
+
+			if (response.StatusCode != HttpStatusCode.Created)
+			{
+				var message = new StringBuilder();
+				message.AppendLine("Request.Json: " + metadataJson);
+				message.AppendLine("Response.Code: " + response.StatusCode);
+				message.AppendLine("Response.Uri: " + response.ResponseUri);
+				message.AppendLine("Response.Description: " + response.StatusDescription);
+				message.AppendLine("Response.Content: " + response.Content);
+				throw new ApplicationException(message.ToString());
+			}
+			return response;
+		}
+
+		public void TestOnly_DeleteBookRecord(string bookObjectId)
+		{
+			if (!LoggedIn)
+				throw new ApplicationException("Must be logged in to delete book");
+
+			var request = MakeParseDeleteRequest("classes/books/" + bookObjectId);
+			var response = RestClientForParse.Execute(request);
+			if (response.StatusCode != HttpStatusCode.OK)
+				throw new ApplicationException(response.StatusDescription + " " + response.Content);
 		}
 	}
 }

@@ -1039,7 +1039,7 @@ namespace Bloom.Book
 				return JsonConvert.SerializeObject(
 					new
 					{
-						bookInstanceId = Id, // our master key; worth uploading though BloomLibrary doesn't use directly.
+						bookInstanceId = Id,
 						suitableForMakingShells = IsSuitableForMakingShells, // not yet used by BL, potentially useful filter
 						suitableForVernacularLibrary = IsSuitableForVernacularLibrary,  // not yet used by BL, potentially useful filter
 						experimental = IsExperimental,  // not yet used by BL (I think), potentially useful filter

@@ -33,6 +33,9 @@ namespace Bloom.web.controllers
 		private IBloomWebSocketServer _webSocketServer;
 		private WebSocketProgress _webSocketProgress;
 		private IProgress _progress;
+
+		private string _existingBookObjectIdOrNull;
+
 		public LibraryPublishApi(BloomWebSocketServer webSocketServer, PublishView publishView, PublishModel publishModel)
 		{
 			_publishView = publishView;
@@ -173,9 +176,10 @@ namespace Bloom.web.controllers
 					return;
 				}
 
-				(string uploadResult, string parseId) workerResult = ((string uploadResult, string parseId))completedEvent.Result;
-				var uploadResult = workerResult.uploadResult;
-				var parseId = workerResult.parseId;
+				// the book objectId if successful
+				// or "quiet" to suppress more failure messages
+				// or empty if otherwise failed
+				var uploadResult = (string)completedEvent.Result;
 
 				if (uploadResult == "quiet")
 				{
@@ -185,14 +189,15 @@ namespace Bloom.web.controllers
 				{
 					// Something went wrong, possibly already reported.
 					// If the book has sign language videos, we don't create a PDF, so we don't want to report a PDF generation failure.
-					if (Model.PdfGenerationSucceeded || Model.Book.HasSignLanguageVideos())
-						ReportTryAgainDuringUpload();
-					else
-						ReportPdfGenerationFailed();
+					// Somewhere in 5.5, we lost setting PdfGenerationSucceeded; so I'm just commenting this out for now.
+					//if (Model.PdfGenerationSucceeded || Model.Book.HasSignLanguageVideos())
+					ReportTryAgainDuringUpload();
+					//else
+					//	ReportPdfGenerationFailed();
 				}
 				else
 				{
-					var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(parseId, true);
+					var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(bookId: uploadResult, true);
 					Model.AddHistoryRecordForLibraryUpload(url);
 					dynamic result = new DynamicJson();
 					result.bookId = Model.Book.BookInfo.Id;
@@ -202,7 +207,6 @@ namespace Bloom.web.controllers
 			};
 			SetParentControlsState(false); // Last thing we do before launching the worker, so we can't get stuck in this state.
 			worker.RunWorkerAsync(Model);
-
 		}
 
 		void BackgroundUpload(object _, DoWorkEventArgs e)
@@ -211,7 +215,7 @@ namespace Bloom.web.controllers
 			if (checkerResult != null)
 			{
 				_webSocketProgress.MessageWithoutLocalizing(checkerResult, ProgressKind.Error);
-				e.Result = ("quiet", ""); // suppress other completion/fail messages
+				e.Result = "quiet"; // suppress other completion/fail messages
 				return;
 			}
 
@@ -223,9 +227,9 @@ namespace Bloom.web.controllers
 			// We currently have no way to turn this off. This is by design, we don't think it is a needed complication.
 			var includeBackgroundMusic = true;
 
-			var uploadResult = Model.UploadOneBook(Model.Book, _progress, _publishModel, !includeBackgroundMusic, out var parseId);
+			var bookObjectId = Model.UploadOneBook(Model.Book, _progress, _publishModel, !includeBackgroundMusic, _existingBookObjectIdOrNull);
 
-			e.Result = (uploadResult, parseId);
+			e.Result = bookObjectId;
 		}
 
 		private void ReportBasicErrorDuringUpload()
@@ -302,18 +306,11 @@ namespace Bloom.web.controllers
 		{			
 			_webSocketProgress.Message("CheckingExistingCopy", "Checking for existing copy on server...");
 
-			dynamic collisionDialogInfo;
-			if (Model.BookIsAlreadyOnServer)
-			{
-				collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToAdvertiseOnBloomLibrary, ModelIndicatesSignLanguageChecked);
-			}
-			else
-			{
-				collisionDialogInfo = new
-				{
-					shouldShow = false
-				};
-			}
+			_existingBookObjectIdOrNull = null;
+
+			dynamic collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToAdvertiseOnBloomLibrary, ModelIndicatesSignLanguageChecked);
+			if (collisionDialogInfo.shouldShow)
+				_existingBookObjectIdOrNull = collisionDialogInfo.existingBookObjectId.ToString();
 
 			request.ReplyWithJson(collisionDialogInfo);
 		}
