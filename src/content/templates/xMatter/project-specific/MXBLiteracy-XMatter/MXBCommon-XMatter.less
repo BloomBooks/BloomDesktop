@@ -5,6 +5,7 @@
 @trimmerLineHeight: 1.1;
 @creditsLineHeight: 1.2;
 @MarginBetweenMajorItems: 3em;
+@MarginBetweenMinorItems: 1.5em;
 @contentMinimumHeight: 1em;
 
 // trying to snug things up a bit around the license
@@ -84,8 +85,9 @@
     }
     #originalAcknowledgments {
         // The spec says to "add a line space" between the copyright/license block and
-        // the original acknowledgments.
-        margin-top: calc(@creditsPageFontSize * @creditsLineHeight);
+        // the original acknowledgments, but they also shrank the text at the same time, so "a line space"
+        // needed a bit more.
+        margin-top: @MarginBetweenMinorItems;
     }
     // default values for the Original Acknowledgments section
     .OriginalAcknowledgments-style.bloom-contentNational1 {
