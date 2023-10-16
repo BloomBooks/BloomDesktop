@@ -84,7 +84,7 @@ namespace Bloom
 		/// </summary>
 		public Func<IMenuItemAdder, bool> ContextMenuProvider { get; set; }
 
-		public Func<bool> ReplaceContextMenu { get; set; }
+		public Action ReplaceContextMenu { get; set; }
 
 		protected bool WantDebugMenuItems => ApplicationUpdateSupport.IsDevOrAlpha || ((ModifierKeys & Keys.Control) == Keys.Control);
 
