@@ -379,9 +379,9 @@ namespace Bloom
 		/// <param name="callback"></param>
 		/// <param name="errorCallback"></param>
 		public void RebuildThumbNailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
-			Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
+			Action<BookInfo, Image, bool> callback, Action<BookInfo, Exception> errorCallback, bool refreshBadge)
 		{
-			RebuildThumbNail(book, thumbnailOptions, callback, errorCallback, true);
+			RebuildThumbNail(book, thumbnailOptions, callback, errorCallback, true, refreshBadge);
 		}
 
 		/// <summary>
@@ -391,7 +391,7 @@ namespace Bloom
 		/// <param name="thumbnailOptions"></param>
 		private void RebuildThumbNailNow(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions)
 		{
-			RebuildThumbNail(book, thumbnailOptions, (info, image) => { },
+			RebuildThumbNail(book, thumbnailOptions, (info, image, refreshBadge) => { },
 				(info, ex) =>
 				{
 					throw ex;
@@ -413,7 +413,7 @@ namespace Bloom
 		/// <param name="callback"></param>
 		/// <param name="errorCallback"></param>
 		private void RebuildThumbNail(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
-			Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback, bool async)
+			Action<BookInfo, Image, bool> callback, Action<BookInfo, Exception> errorCallback, bool async, bool refreshBadge=false)
 		{
 			try
 			{
@@ -422,14 +422,14 @@ namespace Bloom
 					// thumbnail is marked readonly, so just use it
 					Image thumb;
 					book.Storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb);
-					callback(book.BookInfo, thumb);
+					callback(book.BookInfo, thumb, refreshBadge);
 					return;
 				}
 
 				_thumbnailProvider.RemoveFromCache(book.Storage.Key);
 
 				thumbnailOptions.BorderStyle = GetThumbnailBorderStyle(book);
-				GetThumbNailOfBookCover(book, thumbnailOptions, image => callback(book.BookInfo, image),
+				GetThumbNailOfBookCover(book, thumbnailOptions, image => callback(book.BookInfo, image, refreshBadge),
 					error =>
 					{
 						//Enhance; this isn't a very satisfying time to find out, because it's only going to happen if we happen to be rebuilding the thumbnail.

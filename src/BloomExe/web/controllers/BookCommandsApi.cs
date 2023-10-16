@@ -321,7 +321,7 @@ namespace Bloom.web.controllers
 
 		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
-			_collectionModel.UpdateThumbnailAsync(book);
+			_collectionModel.UpdateThumbnailAsync(book, refreshBadge: true);
 		}
 
 		internal void HandleSaveAsDotBloomSource(Book.Book book)

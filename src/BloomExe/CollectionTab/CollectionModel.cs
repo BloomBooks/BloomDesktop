@@ -518,30 +518,33 @@ namespace Bloom.CollectionTab
 			return dom.RawDom;
 		}
 
-		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
+		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image, bool> callback, Action<Book.BookInfo, Exception> errorCallback, bool refreshBadge)
 		{
 			if (!(book is ErrorBook))
 			{
-				_thumbNailer.RebuildThumbNailAsync(book, thumbnailOptions, callback, errorCallback);
+				_thumbNailer.RebuildThumbNailAsync(book, thumbnailOptions, callback, errorCallback, refreshBadge);
 			}
 
 		}
 
-		public void UpdateThumbnailAsync(Book.Book book)
+		public void UpdateThumbnailAsync(Book.Book book, bool refreshBadge = false)
 		{
-			UpdateThumbnailAsync(book, new HtmlThumbNailer.ThumbnailOptions(), RefreshOneThumbnail, HandleThumbnailerErrror);
+			UpdateThumbnailAsync(book, new HtmlThumbNailer.ThumbnailOptions(), RefreshOneThumbnail, HandleThumbnailerErrror, refreshBadge);
 		}
 
-		private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image)
+		private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image, bool refreshBadge = false)
 		{
 			// The arguments here are not currently used (method signature is legacy),
 			// but may be useful if we optimize.
 			// optimize: I think this will reload all of them
 			_webSocketServer.SendString("bookImage", "reload", bookInfo.Id);
-			// Update the badge as well.  We need to use the exact BookInfo object stored in the BookCollection
-			// because that is the one the API server uses to provide data to the web client.
-			TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(
-				TheOneEditableCollection.GetBookInfos().Where(info => info.Id == bookInfo.Id).ToList());
+			if (refreshBadge)
+			{
+				// Update the badge as well.  We need to use the exact BookInfo object stored in the BookCollection
+				// because that is the one the API server uses to provide data to the web client.
+				TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(
+					TheOneEditableCollection.GetBookInfos().Where(info => info.Id == bookInfo.Id).ToList());
+			}
 		}
 
 		private void HandleThumbnailerErrror(Book.BookInfo bookInfo, Exception error)

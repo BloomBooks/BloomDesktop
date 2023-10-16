@@ -367,9 +367,13 @@ namespace Bloom.CollectionTab
 		/// only has access to the View classes, not the Model classes. So we have to put it here,
 		/// at least for now.
 		/// </remarks>
-		internal void UpdateBloomLibraryStatus()
+		internal void UpdateBloomLibraryStatus(string bookId)
 		{
-			_model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(_model.TheOneEditableCollection.GetBookInfos().ToList());
+			if (String.IsNullOrEmpty(bookId))
+				_model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(_model.TheOneEditableCollection.GetBookInfos().ToList());
+			else
+				_model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(_model.TheOneEditableCollection.GetBookInfos()
+					.Where(info => info.Id == bookId).ToList());
 		}
 	}
 }
