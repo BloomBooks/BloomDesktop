@@ -33,6 +33,7 @@
 			// 
 			this._browser.BackColor = System.Drawing.Color.DarkGray;
 			this._browser.ContextMenuProvider = null;
+			this._browser.ReplaceContextMenu = null;
 			this._browser.ControlKeyEvent = null;
 			this._browser.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._browser.Location = new System.Drawing.Point(0, 0);
