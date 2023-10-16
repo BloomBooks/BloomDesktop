@@ -462,6 +462,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </remarks>
 		public Dictionary<string, BloomLibraryStatus> GetLibraryStatusForBooks(List<BookInfo> bookInfos)
 		{
+			System.Diagnostics.Debug.WriteLine($"DEBUG BloomParseClient.GetLibraryStatusForBooks(): {bookInfos.Count} books");
 			var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
 			var queryBldr = new StringBuilder();
 			queryBldr.Append("{\"bookInstanceId\":{\"$in\":[\"");

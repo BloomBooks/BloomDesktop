@@ -966,8 +966,13 @@ namespace Bloom.Workspace
 			AdjustTabStripDisplayForScreenSize();
 			if (_tabSelection.ActiveTab == WorkspaceTab.collection && _collectionTabView != null)
 			{
-				// update bloom library status for the collection.
-				_collectionTabView.UpdateBloomLibraryStatus();
+				if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
+				{
+					// update bloom library status for the either the selected book or the entire collection.
+					_collectionTabView.UpdateBloomLibraryStatus(Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId);
+					Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded = false;
+					Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId = null;
+				}
 			}
 		}
 

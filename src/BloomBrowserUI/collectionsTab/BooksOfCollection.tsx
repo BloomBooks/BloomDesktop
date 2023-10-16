@@ -45,9 +45,26 @@ export const BooksOfCollection: React.FunctionComponent<{
     if (!props.collectionId) {
         window.alert("null collectionId");
     }
+
+    const [reloadParameter, setReloadParameter] = useState("");
+    useEffect(() => {
+        // We want to know if the page was reloaded, because if so, we want to tell the
+        // server to reload the collection's parse data for use in displaying badges.
+        // Otherwise, we can use previously loaded parse data, which minimizes the
+        // internet accesses to the parse database.  See
+        // https://stackoverflow.com/questions/70784027/how-to-get-check-if-a-page-gets-reloaded-with-js
+        // and https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming.
+        let isReload = false;
+        const entries = performance.getEntriesByType("navigation");
+        if (entries?.length) {
+            isReload = entries[0]["type"] === "reload"; // Typescript doesn't define the type entry, but it's there.
+        }
+        setReloadParameter(isReload ? "&reload=true" : "");
+    }, []);
+
     const collectionQuery = `collection-id=${encodeURIComponent(
         props.collectionId
-    )}`;
+    )}${reloadParameter}`;
 
     const books = useWatchApiData<Array<IBookInfo>>(
         `collections/books?${collectionQuery}`,
