@@ -379,6 +379,7 @@ namespace Bloom.web.controllers
 			return RobustFile.Exists(linkFile);
 		}
 
+		private string _currentCollectionPath;
 		public void HandleBooksRequest(ApiRequest request)
 		{
 			var collection = GetCollectionOfRequest(request);
@@ -392,7 +393,14 @@ namespace Bloom.web.controllers
 			var bookInfos = collection.GetBookInfos();
 			// Load the initial values for the bloom library status of each book.
 			if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
-				collection.UpdateBloomLibraryStatusOfBooks(bookInfos.ToList(), skipBadgeUpdate: true);
+			{
+				var reload = request.Parameters["reload"] == "true";
+				if (reload || collection.PathToDirectory != _currentCollectionPath)
+				{
+					_currentCollectionPath = collection.PathToDirectory;
+					collection.UpdateBloomLibraryStatusOfBooks(bookInfos.ToList(), skipBadgeUpdate: true);
+				}
+			}
 			var jsonInfos = bookInfos
 				.Where(info => collection.Type == BookCollection.CollectionType.TheOneEditableCollection || info.ShowThisBookAsSource())
 				.Select(info =>
