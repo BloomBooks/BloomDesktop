@@ -50,7 +50,7 @@
       <HintPath>..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\lib\net45\Microsoft.Web.WebView2.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Core, Version=12.1.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.12.1.0-beta0015\lib\net461\SIL.Core.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Core.13.0.0-beta0067\lib\net461\SIL.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
