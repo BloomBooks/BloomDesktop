@@ -38,11 +38,11 @@ ENDLAYOUTS
             margin-top: 18pt;
         }
     }
-    // Make the title page's Scripture reference field bold, (already centered) and 18pt
+    // Make the title page's Scripture reference field bold, (already centered) and 16pt
     &.titlePage {
         .Reference-TitlePage-style {
             font-weight: bold;
-            font-size: 18pt;
+            font-size: 16pt;
             line-height: @trimmerLineHeight;
         }
     }
@@ -62,11 +62,10 @@ ENDLAYOUTS
 }
 
 // Scripture book contributions on credits page
-#contributions .bloom-editable {
-    font-size: @creditsPageFontSize;
-    line-height: 1.2;
-}
-
-#printingHistory {
-    margin-top: auto; // push to bottom of page
+#contributions {
+    margin-bottom: @MarginBetweenMinorItems;
+    .bloom-editable {
+        font-size: @creditsPageFontSize;
+        line-height: 1.2;
+    }
 }
