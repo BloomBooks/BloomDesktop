@@ -38,6 +38,7 @@ using SIL.WritingSystems;
 using SIL.Xml;
 using Microsoft.Web.WebView2.Core;
 using System.Text;
+using Bloom.Utils;
 
 namespace Bloom
 {
@@ -853,10 +854,21 @@ namespace Bloom
 				System.Environment.FailFast(exceptMsg);
 			}
 
-			Settings.Default.Save();
+			try
+			{
+				Settings.Default.Save();
+			}
+			catch (ArgumentException e)
+			{
+				if (MiscUtils.ContainsSurrogatePairs(Settings.Default.CurrentBookPath) && e.Message.Contains("surrogate"))
+				{
+					Settings.Default.CurrentBookPath = "";
+					Settings.Default.Save();
+				}
+			}
+
 			Sldr.Cleanup();
 			Logger.ShutDown();
-
 
 			if (_projectContext != null)
 				_projectContext.Dispose();

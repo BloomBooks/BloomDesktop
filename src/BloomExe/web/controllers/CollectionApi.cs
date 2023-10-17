@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -100,10 +101,17 @@ namespace Bloom.web.controllers
 						{
 							if (newBookInfo?.FolderPath != null)
 							{
-								var ex = new Exception("Error selecting book: " + newBookInfo.FolderPath, e);
+								var folderPath = newBookInfo.FolderPath;
+								if (MiscUtils.ContainsSurrogatePairs(folderPath))
+									folderPath = MiscUtils.QuoteUnicodeCodePointsInPath(folderPath);
+								var msg = "Error selecting book: " + folderPath;
+								var ex = new Exception(msg, e);
 								// For some reason, BookInfo can't be serialized, so we'll add the pieces to the exception.
-								ex.Data.Add("ErrorBookFolder", newBookInfo.FolderPath);
-								ex.Data.Add("ErrorBookName", newBookInfo.QuickTitleUserDisplay);
+								ex.Data.Add("ErrorBookFolder", folderPath);
+								if (MiscUtils.ContainsSurrogatePairs(newBookInfo.QuickTitleUserDisplay))
+									ex.Data.Add("ErrorBookName", MiscUtils.QuoteUnicodeCodePointsInPath(newBookInfo.QuickTitleUserDisplay));
+								else
+									ex.Data.Add("ErrorBookName", newBookInfo.QuickTitleUserDisplay);
 								throw ex;
 							}
 							throw e;

@@ -547,5 +547,32 @@ namespace Bloom.Utils
 				return new TimeSpan(new FileInfo(path).Length * 7 * 10000000 / 61000);
 			}
 		}
+
+		public static string QuoteUnicodeCodePointsInPath(string folderPath)
+		{
+			var bldr = new StringBuilder();
+			foreach (var ch in folderPath.ToCharArray())
+			{
+				if (ch == '\\')
+					bldr.Append('/');
+				else if (ch >= 0x20 && ch <= 0x7f)
+					bldr.Append(ch);
+				else if (ch == '\r' || ch == '\n' || ch == '\t')
+					bldr.Append(ch);
+				else
+					bldr.Append("\\u" + ((int)ch).ToString("x4"));
+			}
+			return bldr.ToString();
+		}
+
+		public static bool ContainsSurrogatePairs(string s)
+		{
+			foreach (char ch in s.ToCharArray())
+			{
+				if (char.IsHighSurrogate(ch) || char.IsLowSurrogate(ch))
+					return true;
+			}
+			return false;
+		}
 	}
 }
