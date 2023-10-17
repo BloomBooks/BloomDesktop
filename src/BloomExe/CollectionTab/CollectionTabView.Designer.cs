@@ -145,10 +145,10 @@ namespace Bloom.CollectionTab
             this._L10NSharpExtender.SetLocalizableToolTip(this._legacySettingsButton, null);
             this._L10NSharpExtender.SetLocalizationComment(this._legacySettingsButton, null);
             this._L10NSharpExtender.SetLocalizationPriority(this._legacySettingsButton, L10NSharp.LocalizationPriority.NotLocalizable);
-            this._L10NSharpExtender.SetLocalizingId(this._legacySettingsButton, "._legacySettingsButton");
+            this._L10NSharpExtender.SetLocalizingId(this._legacySettingsButton, "CollectionTab.SettingsButton");
             this._legacySettingsButton.Name = "_legacySettingsButton";
             this._legacySettingsButton.Size = new System.Drawing.Size(75, 66);
-            this._legacySettingsButton.Text = "Legacy Settings";
+            this._legacySettingsButton.Text = "Settings";
             this._legacySettingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this._legacySettingsButton.Click += new System.EventHandler(this._legacySettingsButton_Click);
 			// 
