@@ -291,6 +291,7 @@ export const BookButton: React.FunctionComponent<{
         color: white;
         text-transform: none;
         font-size: 12px;
+        font-family: ${props.collection.languageFont};
         line-height: 14px;
         margin-top: 5px;
         width: 75px;
