@@ -30,6 +30,7 @@ export interface ICollection {
     isFactoryInstalled: boolean;
     containsDownloadedBooks: boolean;
     id: string;
+    vernacularFont: string;
 }
 
 export const BooksOfCollection: React.FunctionComponent<{
@@ -62,7 +63,8 @@ export const BooksOfCollection: React.FunctionComponent<{
             isEditableCollection: props.isEditableCollection,
             isFactoryInstalled: true,
             containsDownloadedBooks: false,
-            id: props.collectionId
+            id: props.collectionId,
+            vernacularFont: "Andika"
         }
     );
     // not getting these from the api currently, and I'm not sure the initial defaults will carry over
