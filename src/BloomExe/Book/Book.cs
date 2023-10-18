@@ -1448,11 +1448,11 @@ namespace Bloom.Book
 			// from those templates, then add the required classes if they are missing.
 			const string kDecodableParentGuid = "f0434a0b-791f-408e-b6e6-ee92f0f02f2d";
 			const string kLeveledParentGuid = "ea43ce61-a752-429d-ad1a-ec282db33328";
-			if(BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kDecodableParentGuid))
+			if(!bookDom.HasClassOnBody("decodable-reader-off") && BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kDecodableParentGuid))
 			{
 				HtmlDom.AddClassIfMissing(bookDom.Body,"decodable-reader");
 			}
-			else if(BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kLeveledParentGuid))
+			else if(!bookDom.HasClassOnBody("leveled-reader-off") && BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kLeveledParentGuid))
 			{
 				HtmlDom.AddClassIfMissing(bookDom.Body,"leveled-reader");
 			}
@@ -4720,10 +4720,12 @@ namespace Bloom.Book
 		public void SetIsDecodable(bool isDecodable)
 		{
 			OurHtmlDom.SetClassOnBody(isDecodable, "decodable-reader");
+			OurHtmlDom.SetClassOnBody(!isDecodable, "decodable-reader-off");
 		}
 		public void SetIsLeveled(bool isLeveled)
 		{
 			OurHtmlDom.SetClassOnBody(isLeveled, "leveled-reader");
+			OurHtmlDom.SetClassOnBody(!isLeveled, "leveled-reader-off");
 		}
 	}
 }
