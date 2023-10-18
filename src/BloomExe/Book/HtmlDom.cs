@@ -3121,18 +3121,27 @@ namespace Bloom.Book
 			return HasClass(Body, className);
 		}
 
-		public void SetClassOnBody(bool shouldHaveClass, string className)
+		/// <summary>
+		/// Made for Decodable and Leveled Reader classes on the Body tag. As of BL-12444, we introduced the need
+		/// for an "X-off" version of the class to be present if the user turned off the feature. Parameter 'className'
+		/// now becomes the "on" version of the class and {className}-off becomes the "off" version.
+		/// </summary>
+		/// <param name="shouldHaveClass"></param>
+		/// <param name="className"></param>
+		public void ToggleClassOnBody(bool shouldHaveClass, string className)
 		{
 			if (Body == null)
 				return;
 
-			if (shouldHaveClass && !HasClassOnBody(className))
+			if (shouldHaveClass)
 			{
-				AddClass(Body, className);
+				RemoveClass(Body, className + "-off");
+				AddClassIfMissing(Body, className);
 			}
-			else if (!shouldHaveClass && HasClassOnBody(className))
+			else
 			{
 				RemoveClass(Body, className);
+				AddClassIfMissing(Body, className + "-off");
 			}
 		}
 	}

@@ -521,3 +521,10 @@ export function createToggle(isForLeveled: boolean) {
         )
     );
 }
+
+export function isToggleOff(isForLeveled: boolean): boolean {
+    const prefix = isForLeveled ? "leveled" : "decodable";
+    const classes = document.getElementById(prefix + "-reader-tool-content")
+        ?.classList;
+    return classes?.contains("turned-off") ?? false;
+}
