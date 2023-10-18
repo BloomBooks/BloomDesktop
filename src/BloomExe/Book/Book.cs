@@ -603,7 +603,7 @@ namespace Bloom.Book
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.SortStyleSheetLinks();
 			AddPreviewJavascript(pageDom);
-			HtmlDom.AddClassIfMissing(pageDom.Body, "bloom-templateThumbnail");
+			HtmlDom.AddClass(pageDom.Body, "bloom-templateThumbnail");
 			return pageDom;
 		}
 
@@ -1448,13 +1448,13 @@ namespace Bloom.Book
 			// from those templates, then add the required classes if they are missing.
 			const string kDecodableParentGuid = "f0434a0b-791f-408e-b6e6-ee92f0f02f2d";
 			const string kLeveledParentGuid = "ea43ce61-a752-429d-ad1a-ec282db33328";
-			if(BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kDecodableParentGuid))
+			if(!bookDom.HasClassOnBody("decodable-reader-off") && BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kDecodableParentGuid))
 			{
-				HtmlDom.AddClassIfMissing(bookDom.Body,"decodable-reader");
+				HtmlDom.AddClass(bookDom.Body,"decodable-reader");
 			}
-			else if(BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kLeveledParentGuid))
+			else if(!bookDom.HasClassOnBody("leveled-reader-off") && BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kLeveledParentGuid))
 			{
-				HtmlDom.AddClassIfMissing(bookDom.Body,"leveled-reader");
+				HtmlDom.AddClass(bookDom.Body,"leveled-reader");
 			}
 
 			// (Semi-Implemented)
@@ -1731,7 +1731,7 @@ namespace Bloom.Book
 			foreach (XmlElement nonPrintingPageElement in nonPrintingPages)
 			{
 				nonPrintingPageElement.Attributes["class"].InnerText = HtmlDom.RemoveClass("nonprinting", nonPrintingPageElement.Attributes["class"].InnerText);
-				HtmlDom.AddClassIfMissing(nonPrintingPageElement, "bloom-nonprinting");
+				HtmlDom.AddClass(nonPrintingPageElement, "bloom-nonprinting");
 			}
 		}
 
@@ -1755,8 +1755,8 @@ namespace Bloom.Book
 			{
 				if (!HtmlDom.HasClass(quizContentsElement, "bloom-noAudio")) // Needs migration
 				{
-					HtmlDom.AddClassIfMissing(quizContentsElement, classNoStyleMods);
-					HtmlDom.AddClassIfMissing(quizContentsElement, classNoAudio);
+					HtmlDom.AddClass(quizContentsElement, classNoStyleMods);
+					HtmlDom.AddClass(quizContentsElement, classNoAudio);
 					HtmlDom.StripUnwantedTagsPreservingText(bookDOM.RawDom, quizContentsElement, new []{ "div", "p", "br" });
 				}
 			}
@@ -4720,10 +4720,12 @@ namespace Bloom.Book
 		public void SetIsDecodable(bool isDecodable)
 		{
 			OurHtmlDom.SetClassOnBody(isDecodable, "decodable-reader");
+			OurHtmlDom.SetClassOnBody(!isDecodable, "decodable-reader-off");
 		}
 		public void SetIsLeveled(bool isLeveled)
 		{
 			OurHtmlDom.SetClassOnBody(isLeveled, "leveled-reader");
+			OurHtmlDom.SetClassOnBody(!isLeveled, "leveled-reader-off");
 		}
 	}
 }

@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { ThemeProvider } from "@emotion/react";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
-import { ToolBox } from "../toolbox";
+import { ToolBox, applyToolboxStateToUpdatedPage } from "../toolbox";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
 import { postBoolean } from "../../../utils/bloomApi";
 
@@ -48,6 +48,9 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                     // Set the class on the page we are currently working with in edit mode.
                     // This just ensures our display is correct while editing. Persisting the value is done below.
                     ToolBox.getPage()?.classList.toggle(`${prefix}-reader`);
+
+                    // If we toggle the reader tool, we need to update the markup.
+                    applyToolboxStateToUpdatedPage();
 
                     // Tell the server to update the body of the actual book.
                     // (Currently nothing automatically updates the classes from the page body back up to the book body,

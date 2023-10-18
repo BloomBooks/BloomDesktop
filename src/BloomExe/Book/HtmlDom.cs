@@ -428,9 +428,14 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// Adds a string to the class attribute, if there isn't already an exact match.
+		/// </summary>
 		public static void AddClass(XmlElement e, string className)
 		{
-			e.SetAttribute("class", (e.GetAttribute("class").Replace(className, "").Trim() + " " + className).Trim());
+			if (HasClass(e, className))
+				return;
+			e.SetAttribute("class", (e.GetAttribute("class").Trim() + " " + className).Trim());
 		}
 
 		public static void AddRtlDir(XmlElement e)
@@ -462,15 +467,6 @@ namespace Bloom.Book
 			xmlElement.SetAttribute("class", classes.Trim());
 
 			//	Debug.WriteLine("RemoveClassesBeginingWith    " + xmlElement.InnerText+"     |    "+original + " ---> " + classes);
-		}
-
-
-		public static void AddClassIfMissing(XmlElement element, string className)
-		{
-			string classes = element.GetAttribute("class");
-			if(classes.Contains(className))
-				return;
-			element.SetAttribute("class", (classes + " " + className).Trim());
 		}
 
 		public static bool HasClass(XmlElement element, string className)
@@ -1850,7 +1846,7 @@ namespace Bloom.Book
 			foreach(var c in GetClasses(sourcePage))
 			{
 				if(!classesToDrop.Contains(c))
-					AddClassIfMissing(targetPage, c);
+					AddClass(targetPage, c);
 			}
 		}
 
@@ -2676,7 +2672,7 @@ namespace Bloom.Book
 		{
 			RemoveClassesBeginingWith(pageDiv, "side-");
 			var rightSideRemainder = languageIsRightToLeft ? 1 : 0;
-			AddClassIfMissing(pageDiv, indexOfPageZeroBased % 2 == rightSideRemainder ? "side-right" : "side-left");
+			AddClass(pageDiv, indexOfPageZeroBased % 2 == rightSideRemainder ? "side-right" : "side-left");
 		}
 
 		/// <summary>
@@ -2976,7 +2972,7 @@ namespace Bloom.Book
 
 		public static void InsertFullBleedMarkup(XmlElement body)
 		{
-			AddClassIfMissing(body, "bloom-fullBleed");
+			AddClass(body, "bloom-fullBleed");
 			foreach (XmlElement page in body.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
 			{
 				var mediaBoxDiv = page.OwnerDocument.CreateElement("div");

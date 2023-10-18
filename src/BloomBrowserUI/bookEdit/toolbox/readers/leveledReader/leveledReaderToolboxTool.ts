@@ -1,6 +1,10 @@
 ﻿/// <reference path="../../toolbox.ts" />
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
-import { beginInitializeLeveledReaderTool, createToggle } from "../readerTools";
+import {
+    beginInitializeLeveledReaderTool,
+    createToggle,
+    isToggleOff
+} from "../readerTools";
 import { ITool } from "../../toolbox";
 import { get } from "../../../../utils/bloomApi";
 
@@ -65,7 +69,11 @@ export class LeveledReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().clearWholeBookCache();
         // Most cases don't require setMarkupType(), but when switching pages
         // it will have been set to 0 by detachFromPage() on the old page.
-        getTheOneReaderToolsModel().setMarkupType(2);
+        // So we do want to set the appropriate markup, but if the toggle is off, we want the markup off.
+        const isForLeveled = true;
+        getTheOneReaderToolsModel().setMarkupType(
+            isToggleOff(isForLeveled) ? 0 : 2
+        );
         // usually updateMarkup will do this, unless we are coming from showTool
         getTheOneReaderToolsModel().doMarkup();
     }
