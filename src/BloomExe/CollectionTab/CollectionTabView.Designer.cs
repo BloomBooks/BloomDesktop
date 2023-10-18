@@ -144,7 +144,7 @@ namespace Bloom.CollectionTab
             this._legacySettingsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this._L10NSharpExtender.SetLocalizableToolTip(this._legacySettingsButton, null);
             this._L10NSharpExtender.SetLocalizationComment(this._legacySettingsButton, null);
-            this._L10NSharpExtender.SetLocalizationPriority(this._legacySettingsButton, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizationPriority(this._legacySettingsButton, L10NSharp.LocalizationPriority.Medium);
             this._L10NSharpExtender.SetLocalizingId(this._legacySettingsButton, "CollectionTab.SettingsButton");
             this._legacySettingsButton.Name = "_legacySettingsButton";
             this._legacySettingsButton.Size = new System.Drawing.Size(75, 66);
