@@ -354,7 +354,7 @@
         <note>BookSettings.BloomPub.Resolution.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.BloomPub.Resolution.Directions" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Set the maximum image resolution when making BloomPubs (including display on BloomLibrary)</source>
+        <source xml:lang="en">Set the maximum image resolution when making BloomPUBs (including display on BloomLibrary)</source>
         <note>BookSettings.BloomPub.Resolution.Directions</note>
         <note>displayed below the slider that is used to set the image resolution</note>
       </trans-unit>
