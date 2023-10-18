@@ -430,7 +430,9 @@ namespace Bloom.Book
 
 		public static void AddClass(XmlElement e, string className)
 		{
-			e.SetAttribute("class", (e.GetAttribute("class").Replace(className, "").Trim() + " " + className).Trim());
+			if (HasClass(e, className))
+				return;
+			e.SetAttribute("class", (e.GetAttribute("class").Trim() + " " + className).Trim());
 		}
 
 		public static void AddRtlDir(XmlElement e)
@@ -464,13 +466,10 @@ namespace Bloom.Book
 			//	Debug.WriteLine("RemoveClassesBeginingWith    " + xmlElement.InnerText+"     |    "+original + " ---> " + classes);
 		}
 
-
+		// The "IfMissing" part was added to AddClass
 		public static void AddClassIfMissing(XmlElement element, string className)
 		{
-			string classes = element.GetAttribute("class");
-			if(classes.Contains(className))
-				return;
-			element.SetAttribute("class", (classes + " " + className).Trim());
+			AddClass(element, className);
 		}
 
 		public static bool HasClass(XmlElement element, string className)
