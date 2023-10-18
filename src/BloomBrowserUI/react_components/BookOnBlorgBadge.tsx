@@ -118,7 +118,7 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                             title="" // overwrite ancestor's title so we don't get two tooltips
                             src={
                                 badge === BadgeType.Published
-                                    ? "/bloom/images/on-blorg-badges/on-blorg-badge.svg"
+                                    ? "/bloom/images/on-blorg-badges/on-blorg-normal.svg"
                                     : badge === BadgeType.Draft
                                     ? "/bloom/images/on-blorg-badges/on-blorg-draft.svg"
                                     : "/bloom/images/on-blorg-badges/on-blorg-problem.svg"
