@@ -189,7 +189,7 @@ const BloomResolutionSlider: React.FunctionComponent<React.PropsWithChildren<{
                     font-size: 9pt;
                 `}
             >
-                Set the maximum image resolution when making BloomPubs
+                Set the maximum image resolution when making BloomPUBs
                 (including display on BloomLibrary)
             </Div>
         </div>
