@@ -288,6 +288,8 @@ namespace Bloom.web.controllers
 			dynamic props = new ExpandoObject();
 			props.isFactoryInstalled = collection.IsFactoryInstalled;
 			props.containsDownloadedBooks = collection.ContainsDownloadedBooks;
+			if (collection.PathToDirectory == _settings.FolderPath)
+				props.languageFont = _settings.Language1.FontName;
 			request.ReplyWithJson(JsonConvert.SerializeObject(props));
 		}
 
