@@ -45,6 +45,8 @@ export const kSelectCss = `
 // Should match @UIFontStack in bloomWebFonts.less
 export const kUiFontStack = "Roboto, NotoSans, sans-serif";
 
+export const kDefaultLanguageFontStack = "Andika, sans-serif";
+
 // the value that gets us to the 4.5 AA ratio depends on the background.
 // So the "aside"/features right-panel color effects this.
 //const AACompliantBloomBlue = "#177c8a";
