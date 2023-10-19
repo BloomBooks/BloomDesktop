@@ -1,3 +1,4 @@
+import { beginLoadSynphonySettings } from "../readers/readerTools";
 import { getTheOneToolbox, ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import * as AudioRecorder from "./audioRecording";
@@ -7,10 +8,9 @@ export default class TalkingBookTool implements ITool {
         throw new Error("Method not implemented.");
     }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
-        // Nothing to do, so return an already-resolved promise.
-        const result = $.Deferred<void>();
-        result.resolve();
-        return result;
+        // Nothing to do except that we need the sentence ending punctuation settings
+        // from the leveled reader tool.  (We share sentence parsing via libSynphony.)
+        return beginLoadSynphonySettings();
     }
 
     public isAlwaysEnabled(): boolean {
