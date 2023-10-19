@@ -221,7 +221,7 @@ export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
     });
 }
 
-function beginLoadSynphonySettings(): JQueryPromise<void> {
+export function beginLoadSynphonySettings(): JQueryPromise<void> {
     // make sure synphony is initialized
     const result = $.Deferred<void>();
     if (readerToolsInitialized) {
