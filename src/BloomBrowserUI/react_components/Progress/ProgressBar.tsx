@@ -19,6 +19,7 @@ export const ProgressBar: React.FunctionComponent<{
                 background-color: transparent;
                 height: 2px;
                 display: block;
+                margin-top: 2px;
             `}
         >
             <span
