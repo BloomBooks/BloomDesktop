@@ -110,21 +110,18 @@ namespace Bloom.WebLibraryIntegration
 
 		/// <summary>
 		/// This is set during UploadBook to the URL holding files like various thumbnails, preview, etc.
-		/// It ends up in a parse.com column named "baseUrl", and the angular appends things like "/thumbnail256.png" to it.
+		/// It ends up in a parse-server column named "baseUrl", and blorg appends things like "/thumbnail256.png" to it.
 		/// It only contains useful information after UploadBook.
 		/// </summary>
 		public string BaseUrl { get; private set; }
 
-		// Similarly for the book order file.
-		public string BookOrderUrlOfRecentUpload { get; private set; }
-
 		internal List<S3Object> GetMatchingItems(string bucketName, string key)
 		{
 			return GetAmazonS3(bucketName).ListAllObjects(new ListObjectsRequest()
-				{
-					BucketName = bucketName,
-					Prefix = key
-				});
+			{
+				BucketName = bucketName,
+				Prefix = key
+			});
 		}
 
 		internal int GetBookFileCount(string key, string bucketName)
@@ -213,7 +210,6 @@ namespace Bloom.WebLibraryIntegration
 			string collectionSettingsPath = null, bool isForBulkUpload = false)
 		{
 			BaseUrl = null;
-			BookOrderUrlOfRecentUpload = null;
 			DeleteBookData(_bucketName, storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
 
 			//first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
@@ -249,10 +245,6 @@ namespace Bloom.WebLibraryIntegration
 			};
 			if (pdfToInclude != null)
 				filter.AlwaysAccept(pdfToInclude);
-			// The book folder name is the same as the book file name, but without an extension.  The book
-			// name may contain periods, so we certainly don't want to use Path.GetFileNameWithoutExtension.
-			// See https://issues.bloomlibrary.org/youtrack/issue/BL-12649/.
-			filter.AlwaysAccept(Path.GetFileName(pathToBloomBookDirectory) + BookInfo.BookOrderExtension);
 			if (isForBulkUpload)
 				filter.AlwaysAccept(".lastUploadInfo");
 			filter.CopyBookFolderFiltered(destDirName);
@@ -401,6 +393,7 @@ namespace Bloom.WebLibraryIntegration
 					"Source directory does not exist or could not be found: "
 					+ directoryPath);
 			}
+
 			prefix = prefix + Path.GetFileName(directoryPath) + kDirectoryDelimeterForS3;
 
 			var filesToUpload = Directory.GetFiles(directoryPath);
@@ -411,7 +404,7 @@ namespace Bloom.WebLibraryIntegration
 			// We want to keep the one that ends in the book name...the main root directory.
 			// This should be the first non-empty directory we are passed (the root only has a folder in it)
 			if (BaseUrl == null && filesToUpload.Length > 0)
-				BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);;
+				BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);
 
 			using (var transferUtility = (BookUpload.IsDryRun) ? null : new TransferUtility(_amazonS3))
 			{
@@ -464,13 +457,6 @@ namespace Bloom.WebLibraryIntegration
 					{
 						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 						throw;
-					}
-					if(fileName.EndsWith(BookInfo.BookOrderExtension))
-					{
-						// Remember the url that can be used to download the book. This seems to work but I wish
-						// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
-						BookOrderUrlOfRecentUpload = BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "=" + _bucketName + "/" +
-						                             HttpUtility.UrlEncode(prefix + fileName);
 					}
 				}
 

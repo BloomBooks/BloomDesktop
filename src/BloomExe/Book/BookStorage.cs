@@ -2721,6 +2721,7 @@ namespace Bloom.Book
 			Directory.CreateDirectory(newBookDir);
 
 			// copy files
+			// Note, .bloombookorder files are no longer created; they are obsolete.
 			CopyDirectory(FolderPath, newBookDir, new[]{".bak", ".bloombookorder", ".pdf", ".map"});
 			var metaPath = Path.Combine(newBookDir, "meta.json");
 
