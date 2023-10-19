@@ -134,6 +134,7 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
                             font-size: 12px;
                             color: ${kBloomBlue};
                             margin-top: 2px;
+                            margin-bottom: 2px;
                         `}
                     >
                         <div>{countOfBooksLabel}</div>
