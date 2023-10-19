@@ -50,7 +50,7 @@ export const EnterpriseNeededScreen: React.FunctionComponent<{
     return (
         <div
             css={css`
-                background-color: ${kPanelBackground};
+                background-color: ${kBloomUnselectedTabBackground};
                 margin: 0;
                 height: 100%;
                 width: 100%;
@@ -330,7 +330,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                     css={css`
                                         background-color: ${kBloomUnselectedTabBackground};
                                         width: 100%;
-                                        // height: 100%;
+                                        height: 100%;
                                     `}
                                 ></div>
                             </TabPanel>
