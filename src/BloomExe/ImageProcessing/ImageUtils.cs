@@ -1140,7 +1140,8 @@ namespace Bloom.ImageProcessing
 					parameters.Param[0] = new EncoderParameter(encoder, 100L);
 					SIL.IO.RobustImageIO.SaveImage(safetyImage, temp.Path, jpgEncoder, parameters);
 				}
-				FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, destinationPath, null);
+				// Enhance: write SIL.IO.RobustFile.Replace() and fix SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded to use it.
+				SIL.Code.RetryUtility.Retry(() => FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, destinationPath, null));
 			}
 		}
 

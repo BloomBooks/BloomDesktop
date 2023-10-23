@@ -483,7 +483,10 @@ namespace Bloom.Book
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!String.IsNullOrEmpty(tempPath))
-					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath());
+				{
+					// Enhance: write SIL.IO.RobustFile.Replace() and fix SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded to use it.
+					SIL.Code.RetryUtility.Retry(() => FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath()));
+				}
 			}
 		}
 
