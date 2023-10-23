@@ -115,6 +115,10 @@ namespace Bloom.History
 		{
 			AddEvent(book.FolderPath, book.NameBestForUserDisplay, book.ID, eventType, message);
 		}
+		public static void AddEvent(Book.BookInfo bookInfo, BookHistoryEventType eventType, string message = "")
+		{
+			AddEvent(bookInfo.FolderPath, bookInfo.FolderName, bookInfo.Id, eventType, message);
+		}
 
 		public static void AddEvent(string folderPath, string bookName, string bookId,  BookHistoryEventType eventType, string message="")
 		{

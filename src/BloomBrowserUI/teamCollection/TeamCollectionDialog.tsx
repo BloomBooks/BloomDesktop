@@ -130,16 +130,45 @@ const TeamCollectionDialog: React.FunctionComponent<{
                                     </Tab>
                                 </TabList>
                                 <TabPanel>
-                                    <ProgressBox
-                                        preloadedProgressEvents={events}
+                                    <div
                                         css={css`
-                                            // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
-                                            // Maybe we could have that approach *all* the time?
-                                            height: 350px;
-                                            // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
-                                            min-width: 530px;
+                                            display: flex;
+                                            flex-direction: column;
+                                            align-items: flex-start;
+                                            height: 100%;
                                         `}
-                                    />
+                                    >
+                                        <ProgressBox
+                                            webSocketContext="teamCollection-status"
+                                            preloadedProgressEvents={events}
+                                            css={css`
+                                                // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
+                                                // Maybe we could have that approach *all* the time?
+                                                //height: 350px;
+                                                // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
+                                                min-width: 530px;
+                                                flex-grow: 1;
+                                            `}
+                                        />
+                                        <BloomButton
+                                            id="checkInAll"
+                                            l10nKey="TeamCollection.checkInAll"
+                                            temporarilyDisableI18nWarning={true}
+                                            enabled={true}
+                                            hasText={true}
+                                            variant="text"
+                                            onClick={() => {
+                                                // we would like to show status tab if we aren't already in it
+                                                // however currently BloomTabs is in "uncontrolled mode" and
+                                                // react-tabs says "In this mode you cannot force a tab change during runtime."
+                                                post(
+                                                    "teamCollection/checkInAllBooks"
+                                                );
+                                            }}
+                                        >
+                                            Check In All Books
+                                        </BloomButton>
+                                    </div>
                                 </TabPanel>
                                 <TabPanel>
                                     <CollectionHistoryTable />
@@ -149,8 +178,8 @@ const TeamCollectionDialog: React.FunctionComponent<{
                     </DialogMiddle>
 
                     <DialogBottomButtons>
-                        {props.showReloadButton && (
-                            <DialogBottomLeftButtons>
+                        <DialogBottomLeftButtons>
+                            {props.showReloadButton && (
                                 <BloomButton
                                     id="reload"
                                     l10nKey="TeamCollection.Reload"
@@ -164,8 +193,8 @@ const TeamCollectionDialog: React.FunctionComponent<{
                                 >
                                     Reload Collection
                                 </BloomButton>
-                            </DialogBottomLeftButtons>
-                        )}
+                            )}
+                        </DialogBottomLeftButtons>
                         <DialogCloseButton
                             onClick={props.closeDialog}
                             // default action is to close *unless* we're showing reload

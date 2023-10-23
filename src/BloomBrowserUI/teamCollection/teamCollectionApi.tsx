@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { get } from "../utils/bloomApi";
+import { get, getBoolean } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
 // The TS end of various interactions with the TeamCollectionApi class in C#
@@ -84,4 +84,14 @@ export function useTColBookStatus(
         }
     }, [reload]);
     return bookStatus;
+}
+
+export function useIsTeamCollection() {
+    const [isTeamCollection, setIsTeamCollection] = React.useState(false);
+    React.useEffect(() => {
+        getBoolean("teamCollection/isTeamCollectionEnabled", teamCollection =>
+            setIsTeamCollection(teamCollection)
+        );
+    });
+    return isTeamCollection;
 }
