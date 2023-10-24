@@ -200,6 +200,10 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                 .react-tabs__tab-panel {
                                     flex-grow: 1;
                                 }
+                                .react-tabs__tab.react-tabs__tab--selected::after {
+                                    // get rid of a white bar at the bottom of the icon (BL-12791)
+                                    display: none;
+                                }
                                 .invisible_tab {
                                     display: none;
                                 }
