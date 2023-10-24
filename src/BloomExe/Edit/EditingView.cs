@@ -1101,8 +1101,16 @@ namespace Bloom.Edit
 				var taglibMetadata = metaInfo.GetValue(palasoImage.Metadata);
 				var widthInfo = taglibMetadata.GetType().GetField("width", bindFlags);
 				var heightInfo = taglibMetadata.GetType().GetField("height", bindFlags);
-				width = (int)widthInfo.GetValue(taglibMetadata);
-				height = (int)heightInfo.GetValue(taglibMetadata);
+				var widthObj = widthInfo.GetValue(taglibMetadata);
+				if (widthObj is short || widthObj is ushort || widthObj is int || widthObj is uint)
+					width = Convert.ToInt32(widthObj);
+				else
+					return false;
+				var heightObj = heightInfo.GetValue(taglibMetadata);
+				if (heightObj is short || heightObj is ushort || heightObj is int || heightObj is uint)
+					height = Convert.ToInt32(heightObj);
+				else
+					return false;
 				return true;
 			}
 			catch

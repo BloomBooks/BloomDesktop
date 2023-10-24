@@ -138,26 +138,26 @@ namespace BloomTests.ImageProcessing
 		}
 
 		[Test]
-		[TestCase(3500, 2550, 3500, 2550)]	// maximum size landscape
-		[TestCase(2550, 3500, 2550, 3500)]	// maximum size portrait
+		[TestCase(3840, 2800, 3840, 2800)]	// maximum size landscape
+		[TestCase(2800, 3840, 2800, 3840)]	// maximum size portrait
 		[TestCase(3400, 2500, 3400, 2500)]	// smaller than bounds landscape
 		[TestCase(2500, 3400, 2500, 3400)]	// smaller than bounds portrait
-		[TestCase(3000, 3000, 2550, 2550)]	// square too large
-		[TestCase(4000, 3000, 3400, 2550)]	// landscape, both too large squashed
-		[TestCase(5250, 3825, 3500, 2550)]	// landscape, both too large same aspect ratio
-		[TestCase(5000, 3000, 3500, 2100)]	// landscape, both too large elongated
-		[TestCase(3000, 4000, 2550, 3400)]	// portrait, both too large squashed
-		[TestCase(3825, 5250, 2550, 3500)]	// portrait, both too large same aspect ratio
-		[TestCase(3000, 5000, 2100, 3500)]	// portrait, both too large elongated
-		[TestCase(2500, 5000, 1750, 3500)]	// portrait, height too large
-		[TestCase(5000, 2500, 3500, 1750)]	// landscape, width too large
-		[TestCase(3400, 2700, 3211, 2550)]	// landscape, height too large
-		[TestCase(2700, 3400, 2550, 3211)]	// portrait, width too large
+		[TestCase(3000, 3000, 2800, 2800)]	// square too large
+		[TestCase(4000, 3000, 3733, 2800)]	// landscape, both too large squashed
+		[TestCase(5376, 3920, 3840, 2800)]	// landscape, both too large same aspect ratio
+		[TestCase(5000, 3000, 3840, 2304)]	// landscape, both too large elongated
+		[TestCase(3000, 4000, 2800, 3733)]	// portrait, both too large squashed
+		[TestCase(3920, 5376, 2800, 3840)]	// portrait, both too large same aspect ratio
+		[TestCase(3000, 5000, 2304, 3840)]	// portrait, both too large elongated
+		[TestCase(2500, 5000, 1920, 3840)]	// portrait, height too large
+		[TestCase(5000, 2500, 3840, 1920)]	// landscape, width too large
+		[TestCase(3800, 3000, 3546, 2800)]	// landscape, height too large
+		[TestCase(3000, 3800, 2800, 3546)]	// portrait, width too large
 		public static void TestGetImageSizes(int width, int height, int newWidth, int newHeight)
 		{
 			var size = ImageUtils.GetDesiredImageSize(width, height);
-			Assert.AreEqual(size.Width, newWidth, $"Computed width for {width},{height} is correct.");
-			Assert.AreEqual(size.Height, newHeight, $"Computed height for {width},{height} is correct.");
+			Assert.AreEqual(newWidth, size.Width, $"Computed width for {width},{height} is correct.");
+			Assert.AreEqual(newHeight, size.Height, $"Computed height for {width},{height} is correct.");
 		}
 
 		[Test]

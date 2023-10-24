@@ -2828,7 +2828,8 @@ namespace Bloom.Book
 				// this.
 
 				// Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
-				// order to avoid out of memory errors that can happen with really large images.  Some older
+				// order to avoid out of memory errors that can happen with really large images.
+				// Bloom 5.6 changed this to 3840x2800 to accomodate Ultra HD (aka "4K"). Some older
 				// books have images larger than this that can cause these out of memory problems.  This
 				// method is used to fix these overlarge images before the user starts to edit or publish
 				// the book.  The method also ensures that the images are all opaque since some old versions
