@@ -30,10 +30,10 @@ namespace Bloom.ImageProcessing
 {
 	static class ImageUtils
 	{
-		public const int MaxLength = 3500;		// 8 pixels less than length of A4 at 300dpi (max width for landscape, height for portrait)
-		public const int MaxBreadth = 2550;		// = 8.5 inches at 300dpi (max height for landscape, width for portrait)
-		public const double MaxImageAspectPortrait = 3500.0 / 2550.0;
-		public const double MaxImageAspectLandscape = 2550.0 / 3500.0;
+		public const int MaxLength = 3840;		// equals Ultra HD ("4K") long dimension (max width for landscape, height for portrait)
+		public const int MaxBreadth = 2800;     // balanced lesser size for print, larger than Ultra HD short dimension (max height for landscape, width for portrait)
+		public const double MaxImageAspectPortrait = 3840.0 / 2800.0;
+		public const double MaxImageAspectLandscape = 2800.0 / 3840.0;
 
 		public static bool AppearsToBeJpeg(PalasoImage imageInfo)
 		{
@@ -597,7 +597,7 @@ namespace Bloom.ImageProcessing
 		}
 
 		/// <summary>
-		/// Shrink any images in the folder that are bigger than our maximum reasonable size (3500x2550)
+		/// Shrink any images in the folder that are bigger than our maximum reasonable size (3840x2800)
 		/// to fit within that size.
 		/// Also remove transparency on desired images (which there usually won't be any).
 		/// </summary>
@@ -880,6 +880,7 @@ namespace Bloom.ImageProcessing
 					{
 						if(new FileInfo(destPath).Length > new FileInfo(sourcePath).Length){
 							// The new file is actually larger (BL-11441) so bail out
+							Debug.WriteLine($"New file for {Path.GetFileName(sourcePath)} at {size} is larger than original at {imageInfo.Image.Size}.");
 							return null;
 						}
 						imageInfo.SetCurrentFilePath(destPath);
