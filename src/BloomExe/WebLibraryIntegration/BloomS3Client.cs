@@ -18,6 +18,7 @@ using Bloom.Publish;
 using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
+using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -36,8 +37,13 @@ namespace Bloom.WebLibraryIntegration
 	/// </summary>
 	public class BloomS3Client:IDisposable
 	{
+		// An S3 client which uses the newest (Oct 2023) way of handling upload credentials.
+		// Namely, it gets temporary permission from our API to upload book files.
 		private IAmazonS3 _amazonS3;
+		// An S3 client which uses the legacy open-write credentials to list and upload book files.
+		// We are moving away from this.
 		private IAmazonS3 _legacyAmazonS3;
+		// An S3 client which does not need any credentials. 
 		private IAmazonS3 _amazonS3WithoutCredentials;
 		public const string kDirectoryDelimeterForS3 = "/";
 		public const string UnitTestBucketName = "BloomLibraryBooks-UnitTests";
@@ -163,14 +169,14 @@ namespace Bloom.WebLibraryIntegration
 			return count;
 		}
 
-		public void EmptyUnitTestBucket(string key)
+		public void DeleteFromUnitTestBucket(string prefix)
 		{
 			var bucketName = UnitTestBucketName;
 
 			var listMatchingObjectsRequest = new ListObjectsV2Request()
 			{
 				BucketName = bucketName,
-				Prefix = key
+				Prefix = prefix
 			};
 
 			ListObjectsV2Response matchingFilesResponse;
@@ -201,7 +207,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Allows a file to be put into the root of the bucket.
 		/// Could be enhanced to specify a sub folder path, but I don't need that for the current use.
-		/// (Current use is to upload problem books.)
+		/// (Current use is to upload problem books to YouTrack reports.)
 		/// </summary>
 		/// <returns>url to the uploaded file</returns>
 		public string UploadSingleFile(string pathToFile, IProgress progress)
@@ -236,6 +242,9 @@ namespace Bloom.WebLibraryIntegration
 				string[] textLanguagesToInclude, string[] audioLanguagesToInclude, string metadataLang1Code, string metadataLang2Code,
 				string collectionSettingsPath = null, bool isForBulkUpload = false)
 		{
+			// This currently (unfortunately) enforces a single upload at a time.
+			// We considered modifying it now, but decided we would discover the problem
+			// if and when we try to implement parallel uploads.
 			using (var stagingParentDirectory = new TemporaryFolder("BloomUploadStaging"))
 			{
 				var stagingDirectory = Path.Combine(stagingParentDirectory.FolderPath, Path.GetFileName(pathToBloomBookDirectory));
@@ -328,9 +337,12 @@ namespace Bloom.WebLibraryIntegration
 		private string _previousAccessKey;
 		protected string _bucketName;
 
-		//TODO: use async versions of the s3 sdk methods? design calls for them, but would be very painful. and I'm not sure it would do anything for us
+		//TODO: This is currently synchronous. Research how we can make use of the async SDK methods to enable parallel uploads
+		// or whatever other performance enhancements we can gain.
 		public void SyncBookFiles(string storageKeyOfBookFolderParent, string stagingDirectory, IProgress progress)
 		{
+			Guard.Against(BookUpload.IsDryRun, "We shouldn't try to sync files on S3 in a dry run");
+
 			if (!Directory.Exists(stagingDirectory))
 				throw new DirectoryNotFoundException("Source directory does not exist or could not be found: " + stagingDirectory);
 
@@ -344,8 +356,7 @@ namespace Bloom.WebLibraryIntegration
 				string localFilePath = Path.Combine(stagingDirectory, s3Object.Key.Substring(storageKeyOfBookFolderParent.Length));
 				if (IsExcludedFromUploadByExtension(localFilePath) || !RobustFile.Exists(localFilePath))
 				{
-					if (!BookUpload.IsDryRun)
-						_amazonS3.DeleteObject(_bucketName, s3Object.Key);
+					_amazonS3.DeleteObject(_bucketName, s3Object.Key);
 				}
 				else
 				{
@@ -396,6 +407,8 @@ namespace Bloom.WebLibraryIntegration
 
 		private void PutFileOnS3(string localFilePath, string s3Key, IProgress progress)
 		{
+			Guard.Against(BookUpload.IsDryRun, "We shouldn't try to put files on S3 in a dry run");
+
 			var request = new PutObjectRequest
 			{
 				FilePath = localFilePath,
@@ -410,12 +423,9 @@ namespace Bloom.WebLibraryIntegration
 			request.Headers.CacheControl = "no-cache";
 
 			var uploadMsgFmt = LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}");
-			if (BookUpload.IsDryRun)
-				uploadMsgFmt = "(Dry run) Would upload {0}";
 			progress.WriteStatus(uploadMsgFmt, Path.GetFileName(localFilePath));
 
-			if (!BookUpload.IsDryRun)
-				_amazonS3.PutObject(request);
+			_amazonS3.PutObject(request);
 		}
 
 		private string GetEtag(string filePath)
@@ -621,7 +631,7 @@ namespace Bloom.WebLibraryIntegration
 			
 			Debug.Assert(matching[0].Key.StartsWith(storageKeyOfBookFolderParent), "Matched object does not start with storageKey");
 
-			// Get the top-level directory name of the book from the first object key.
+			// Get the top-level directory name of the book from the first object prefix.
 			var bookFolderName = matching[0].Key.Substring(storageKeyOfBookFolderParent.Length);
 			while (bookFolderName.Contains("/") || bookFolderName.Contains("\\"))
 			{
@@ -659,7 +669,7 @@ namespace Bloom.WebLibraryIntegration
 						var objKey = matching[i].Key;
 						if(AvoidThisFile(objKey))
 							continue;
-						// Removing the book's prefix from the object key, then using the remainder of the key
+						// Removing the book's prefix from the object prefix, then using the remainder of the prefix
 						// in the filepath allows for nested subdirectories.
 						var filepath = objKey.Substring(storageKeyOfBookFolderParent.Length);
 						// Download this file then bump progress.

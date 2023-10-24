@@ -59,7 +59,7 @@ namespace BloomTests.WebLibraryIntegration
 		[OneTimeTearDown]
 		public void TearDown()
 		{
-			_client.EmptyUnitTestBucket(_storageKeyOfBookFolder);
+			_client.DeleteFromUnitTestBucket(_storageKeyOfBookFolder);
 			_workFolder.Dispose();
 			_client.Dispose();
 		}
