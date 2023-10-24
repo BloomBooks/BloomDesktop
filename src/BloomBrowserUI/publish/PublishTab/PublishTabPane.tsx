@@ -117,6 +117,10 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
     useSubscribeToWebSocketForEvent("publish", "switchToPublishTab", () => {
         setup();
     });
+    // User is switching out of publish tab, clear the display so the the old stuff doesn't flash when the user comes back on another book
+    useSubscribeToWebSocketForEvent("publish", "switchOutOfPublishTab", () => {
+        setPublishTabReady(false);
+    });
     React.useEffect(() => {
         // While the top bar is still in winforms, the first time the user loads the publish tab, the websocket event may occur before the component is ready
         setup();

@@ -81,6 +81,7 @@ namespace Bloom.Publish
 			// TODO-WV2: Can we clear the cache for WV2? Do we need to?
 			PublishHelper.Cancel();
 			PublishHelper.InPublishTab = false;
+			_webSocketServer.SendEvent("publish", "switchOutOfPublishTab");
 		}
 
 		private void Activate()
