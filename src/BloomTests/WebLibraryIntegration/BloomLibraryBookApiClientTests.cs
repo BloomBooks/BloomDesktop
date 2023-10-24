@@ -120,7 +120,7 @@ namespace BloomTests.WebLibraryIntegration
 		// except when Bloom is actually running.
 		public bool TestOnly_LegacyLogIn(string account, string password)
 		{
-			_sessionToken = string.Empty;
+			_authenticationToken = string.Empty;
 			Account = string.Empty;
 			var request = MakeParseGetRequest("login");
 			request.AddParameter("username", account.ToLowerInvariant());
@@ -128,11 +128,11 @@ namespace BloomTests.WebLibraryIntegration
 
 			bool result = false;
 			RetryUtility.Retry(() => {
-				var response = RestClientForParse.Execute(request);
+				var response = ParseRestClient.Execute(request);
 				var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 				try
 				{
-					_sessionToken = dy.sessionToken; //there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
+					_authenticationToken = dy.sessionToken; //there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
 				}
 				catch (RuntimeBinderException)
 				{
@@ -168,7 +168,7 @@ namespace BloomTests.WebLibraryIntegration
 			var request = MakeParsePutRequest("classes/books/" + bookObjectId);
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
 
-			var response = RestClientForParse.Execute(request);
+			var response = ParseRestClient.Execute(request);
 
 			if (response.StatusCode != HttpStatusCode.OK)
 				throw new ApplicationException("TestOnly_UpdateBookRecord: " + response.StatusDescription + " " + response.Content);
@@ -183,7 +183,7 @@ namespace BloomTests.WebLibraryIntegration
 			var request = MakeParsePostRequest("classes/books");
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
 
-			var response = RestClientForParse.Execute(request);
+			var response = ParseRestClient.Execute(request);
 
 			if (response.StatusCode != HttpStatusCode.Created)
 			{
@@ -204,7 +204,7 @@ namespace BloomTests.WebLibraryIntegration
 				throw new ApplicationException("Must be logged in to delete book");
 
 			var request = MakeParseDeleteRequest("classes/books/" + bookObjectId);
-			var response = RestClientForParse.Execute(request);
+			var response = ParseRestClient.Execute(request);
 			if (response.StatusCode != HttpStatusCode.OK)
 				throw new ApplicationException(response.StatusDescription + " " + response.Content);
 		}

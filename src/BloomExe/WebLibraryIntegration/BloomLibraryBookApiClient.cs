@@ -26,8 +26,8 @@ namespace Bloom.WebLibraryIntegration
 		const string kVersion = "v1";
 		const string kBookApiUrlPrefix = $"{kHost}/{kVersion}/book/";
 
-		protected RestClient _restClient;
-		protected string _sessionToken = String.Empty;
+		protected RestClient _azureRestClient;
+		protected string _authenticationToken = String.Empty;
 		protected string _userId;
 
 		public BloomLibraryBookApiClient()
@@ -55,7 +55,7 @@ namespace Bloom.WebLibraryIntegration
 			if (!string.IsNullOrEmpty(existingBookObjectId))
 				request.AddQueryParameter("existing-book-object-id", existingBookObjectId);
 
-			var response = RestClient.Execute(request);
+			var response = AzureRestClient.Execute(request);
 
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
@@ -94,7 +94,7 @@ namespace Bloom.WebLibraryIntegration
 
 			request.AddJsonBody(metadataJson);
 
-			var response = RestClient.Execute(request);
+			var response = AzureRestClient.Execute(request);
 
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
@@ -103,15 +103,15 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		protected RestClient RestClient
+		protected RestClient AzureRestClient
 		{
 			get
 			{
-				if (_restClient == null)
+				if (_azureRestClient == null)
 				{
-					_restClient = new RestClient();
+					_azureRestClient = new RestClient();
 				}
-				return _restClient;
+				return _azureRestClient;
 			}
 		}
 
@@ -135,8 +135,8 @@ namespace Bloom.WebLibraryIntegration
 
 		private void SetCommonHeadersAndParameters(RestRequest request)
 		{
-			if (!string.IsNullOrEmpty(_sessionToken))
-				request.AddHeader("Session-Token", _sessionToken);
+			if (!string.IsNullOrEmpty(_authenticationToken))
+				request.AddHeader("Authentication-Token", _authenticationToken);
 
 			if (Program.RunningUnitTests)
 				request.AddQueryParameter("env", "unit-test");
@@ -153,7 +153,7 @@ namespace Bloom.WebLibraryIntegration
 			Settings.Default.LastLoginParseObjectId = parseUserObjectId;
 			Settings.Default.Save();
 			_userId = parseUserObjectId;
-			_sessionToken = sessionToken;
+			_authenticationToken = sessionToken;
 		}
 
 		public bool AttemptSignInAgainForCommandLine(string userEmail, string destination, IProgress progress)
@@ -187,16 +187,16 @@ namespace Bloom.WebLibraryIntegration
 			return true;
 		}
 
-		protected RestClient _restClientForParse;
-		protected RestClient RestClientForParse
+		protected RestClient _parseRestClient;
+		protected RestClient ParseRestClient
 		{
 			get
 			{
-				if (_restClientForParse == null)
+				if (_parseRestClient == null)
 				{
-					_restClientForParse = new RestClient(GetRealUrl());
+					_parseRestClient = new RestClient(GetRealUrl());
 				}
-				return _restClientForParse;
+				return _parseRestClient;
 			}
 		}
 
@@ -208,7 +208,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public string Account { get; protected set; }
 
-		public bool LoggedIn => !string.IsNullOrEmpty(_sessionToken);
+		public bool LoggedIn => !string.IsNullOrEmpty(_authenticationToken);
 
 		public string GetRealUrl()
 		{
@@ -220,8 +220,8 @@ namespace Bloom.WebLibraryIntegration
 			// client.Authenticator = new HttpBasicAuthenticator(username, password);
 			var request = new RestRequest(path, requestType);
 			SetParseCommonHeaders(request);
-			if (!string.IsNullOrEmpty(_sessionToken))
-				request.AddHeader("X-Parse-Session-Token", _sessionToken);
+			if (!string.IsNullOrEmpty(_authenticationToken))
+				request.AddHeader("X-Parse-Session-Token", _authenticationToken);
 			return request;
 		}
 
@@ -250,7 +250,7 @@ namespace Bloom.WebLibraryIntegration
 			request.AddParameter("limit", "0");
 			if (!string.IsNullOrEmpty(query))
 				request.AddParameter("where", query, ParameterType.QueryString);
-			var response = RestClientForParse.Execute(request);
+			var response = ParseRestClient.Execute(request);
 			// If not successful return -1; this can happen if we aren't online.
 			if (!response.IsSuccessful)
 				return -1;
@@ -282,7 +282,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				request.AddParameter("include", "langPointers", ParameterType.QueryString);
 			}
-			return RestClientForParse.Execute(request);
+			return ParseRestClient.Execute(request);
 		}
 
 		public dynamic GetSingleBookRecord(string id, bool includeLanguageInfo = false)
@@ -328,7 +328,7 @@ namespace Bloom.WebLibraryIntegration
 		public void Logout(bool includeFirebaseLogout = true)
 		{
 			Settings.Default.WebUserId = ""; // Should not be able to log in again just by restarting
-			_sessionToken = null;
+			_authenticationToken = null;
 			Account = "";
 			_userId = "";
 			if (includeFirebaseLogout)
@@ -347,7 +347,7 @@ namespace Bloom.WebLibraryIntegration
 			var request = MakeParsePostRequest(ClassesLanguagePath);
 			var langjson = lang.Json;
 			request.AddParameter("application/json", langjson, ParameterType.RequestBody);
-			var response = RestClientForParse.Execute(request);
+			var response = ParseRestClient.Execute(request);
 			if (response.StatusCode != HttpStatusCode.Created)
 			{
 				var message = new StringBuilder();
@@ -366,7 +366,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var getLang = MakeParseGetRequest(ClassesLanguagePath);
 			getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
-			var response = RestClientForParse.Execute(getLang);
+			var response = ParseRestClient.Execute(getLang);
 			if (response.StatusCode != HttpStatusCode.OK)
 				return null;
 			dynamic json = JObject.Parse(response.Content);
@@ -378,7 +378,7 @@ namespace Bloom.WebLibraryIntegration
 		internal bool IsThisVersionAllowedToUpload()
 		{
 			var request = MakeParseGetRequest("classes/version");
-			var response = RestClientForParse.Execute(request);
+			var response = ParseRestClient.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			var row = dy.results[0];
 			string versionString = row.minDesktopVersion;
