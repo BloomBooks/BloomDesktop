@@ -389,7 +389,7 @@ namespace Bloom.TeamCollection
 			// writing a file. It may also help to ensure that repo writing doesn't interfere somehow with
 			// whatever is changing things.
 			// (Form.ActiveForm should not be null when Bloom is running normally. However, it can be when we're displaying
-			// a page in Firefox, or when we're reloading Bloom after saving collection settings.)
+			// a page in a browser, or when we're reloading Bloom after saving collection settings.)
 			if (Form.ActiveForm != null)
 			{
 				SafeInvoke.InvokeIfPossible("Add SyncCollectionFilesToRepoOnIdle", Form.ActiveForm, false,
@@ -463,7 +463,7 @@ namespace Bloom.TeamCollection
 				// a book that doesn't exist (by this name) in the repo should only exist locally if it's new
 				// (no status file) or renamed (the corresponding repo file is called oldName).
 				var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
-				if (File.Exists(statusFilePath))
+				if (RobustFile.Exists(statusFilePath))
 				{
 					// The book has to have been renamed since it has a status file.
 					// Or maybe it's been removed remotely, but the local collection hasn't caught up...
@@ -792,7 +792,7 @@ namespace Bloom.TeamCollection
 				{
 					if (RobustFile.Exists(path)) // won't usually be passed ones that don't, but useful for unit testing at least.
 					{
-						using (var input = new FileStream(path, FileMode.Open))
+						using (var input = ToPalaso.RobustIO.GetFileStream(path, FileMode.Open))
 						{
 							byte[] buffer = new byte[4096];
 							int count;
@@ -830,7 +830,7 @@ namespace Bloom.TeamCollection
 		{
 			var path = GetCollectionFileSyncLocation();
 			var nowString = DateTime.UtcNow.ToString("o"); // good for round-tripping
-			File.WriteAllText(path, nowString + @";" + checksum);
+			RobustFile.WriteAllText(path, nowString + @";" + checksum);
 		}
 
 		/// <summary>
@@ -867,10 +867,10 @@ namespace Bloom.TeamCollection
 		internal DateTime LocalCollectionFilesRecordedSyncTime()
 		{
 			var path = GetCollectionFileSyncLocation();
-			if (!File.Exists(path))
+			if (!RobustFile.Exists(path))
 				return DateTime.MinValue; // assume local files are really old!
 			DateTime result;
-			if (DateTime.TryParse(File.ReadAllText(path).Split(';')[0], out result))
+			if (DateTime.TryParse(RobustFile.ReadAllText(path).Split(';')[0], out result))
 				return result;
 			return DateTime.MinValue;
 		}
@@ -878,9 +878,9 @@ namespace Bloom.TeamCollection
 		internal string LocalCollectionFilesSavedChecksum()
 		{
 			var path = GetCollectionFileSyncLocation();
-			if (!File.Exists(path))
+			if (!RobustFile.Exists(path))
 				return "";
-			var parts = File.ReadAllText(path).Split(';');
+			var parts = RobustFile.ReadAllText(path).Split(';');
 			if (parts.Length > 1)
 				return parts[1];
 			return "";
@@ -920,7 +920,7 @@ namespace Bloom.TeamCollection
 			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
 			// Avoiding use of ChangeExtension as it's just possible the collectionName could have period.
 			var collectionPath = Path.Combine(parentFolder, collectionName + ".bloomCollection");
-			if (File.Exists(collectionPath))
+			if (RobustFile.Exists(collectionPath))
 				return collectionPath;
 			// occasionally, mainly when making a temp folder during joining, the bloomCollection file may not
 			// have the expected name
@@ -936,7 +936,7 @@ namespace Bloom.TeamCollection
 			files.Add(Path.GetFileName(CollectionPath(folder)));
 			foreach (var file in new[] {"customCollectionStyles.css", "configuration.txt"})
 			{
-				if (File.Exists(Path.Combine(folder, file)))
+				if (RobustFile.Exists(Path.Combine(folder, file)))
 					files.Add(file);
 			}
 			foreach (var path in Directory.EnumerateFiles(folder, "ReaderTools*.json"))
@@ -1158,15 +1158,42 @@ namespace Bloom.TeamCollection
 			if (!IsCheckedOutHereBy(localStatus))
 				return false;
 			var repoStatus = GetStatus(bookName);
-			var currentChecksum = MakeChecksum(Path.Combine(_localCollectionFolder,bookName));
+			var bookPath = Path.Combine(_localCollectionFolder, bookName);
+			var currentChecksum = MakeChecksum(bookPath);
+			if (String.IsNullOrEmpty(currentChecksum))
+			{
+				Logger.WriteEvent($"*** TeamCollection.HasLocalChangesThatMustBeClobbered() got an empty checksum for the local book.");
+				var haveHtm = BookStorage.FindBookHtmlInFolder(bookPath);
+				Logger.WriteEvent($"*** TeamCollection.HasLocalChangesThatMustBeClobbered() found htm file = {haveHtm}");
+			}
 			// If it hasn't actually been edited locally, we might have a problem, but not one that
 			// requires clobbering.
 			if (repoStatus.checksum == currentChecksum)
 				return false;
-			// We've checked it out and edited it...there's a problem if the repo disagrees
-			// about either content or status
-			return (!IsCheckedOutHereBy(repoStatus) || repoStatus.checksum != localStatus.checksum);
-		}
+
+			// We've checked it out and edited it...there's a problem if the repo disagrees about either content or status
+
+			var isConflictingCheckedOutStatus = !IsCheckedOutHereBy(repoStatus);
+			if (isConflictingCheckedOutStatus)
+			{
+				try //paranoia
+				{
+					Logger.WriteEvent($"*** TeamCollection.HasLocalChangesThatMustBeClobbered(): conflicting checked out status, local is {localStatus.ToSanitizedJson()}, repo is {repoStatus.ToSanitizedJson()}.");
+				}
+				catch (Exception)
+				{
+					// Don't crash for a log
+				}
+			}
+
+			// Note: localStatus.checksum is not the checksum of the local files,
+			// but rather a local record of what the remote checksum was when we checked it out.
+			var isConflictingCheckSum = repoStatus.checksum != localStatus.checksum;
+			if (isConflictingCheckSum)
+				Logger.WriteEvent($"*** TeamCollection.HasLocalChangesThatMustBeClobbered(): conflicting checksum. Current={currentChecksum} localStatus={localStatus.checksum} repoStatus={repoStatus.checksum}");
+
+			return isConflictingCheckedOutStatus || isConflictingCheckSum;
+		}				
 
 		private bool HasCheckoutConflict(string bookName)
 		{
@@ -1243,7 +1270,8 @@ namespace Bloom.TeamCollection
 					_tcLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.EditedFileChangedRemotely",
 						"One of your teammates has modified or checked out the book '{0}', which you have edited but not checked in. You need to reload the collection to sort things out.",
 						bookBaseName, null);
-				} else
+				}
+				else
 
 				// A lesser but still Error condition is that the repo has a conflicting notion of checkout status.
 				if (HasCheckoutConflict(bookBaseName))
@@ -1388,7 +1416,7 @@ namespace Bloom.TeamCollection
 			// sometimes we get a new book notification when all that happened is it got checked in or out remotely.
 			// If the book already exists and has status locally, then a new book notification is spurious,
 			// so we don't want a message about it.
-			if (!File.Exists(statusFilePath))
+			if (!RobustFile.Exists(statusFilePath))
 			{
 				var oldName = NewBookRenamedFrom(bookBaseName);
 				if (oldName == null)
@@ -1499,7 +1527,7 @@ namespace Bloom.TeamCollection
 
 		static void AddIfExists(List<string> paths, string path)
 		{
-			if (File.Exists(path))
+			if (RobustFile.Exists(path))
 			{
 				paths.Add(path);
 			}
@@ -1508,7 +1536,7 @@ namespace Bloom.TeamCollection
 		internal BookStatus GetLocalStatus(string bookFolderName, string collectionFolder = null)
 		{
 			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
-			if (File.Exists(statusFilePath))
+			if (RobustFile.Exists(statusFilePath))
 			{
 				return BookStatus.FromJson(RobustFile.ReadAllText(statusFilePath, Encoding.UTF8));
 			}
@@ -1777,7 +1805,7 @@ namespace Bloom.TeamCollection
 						}
 
 						// no sign of book in repo...should we delete it?
-						if (!File.Exists(localStatusFilePath))
+						if (!RobustFile.Exists(localStatusFilePath))
 						{
 							var id = GetBookId(bookFolderName);
 							if (id != null && repoBooksByIdMap.TryGetValue(id, out Tuple<string, bool> repoState))
@@ -1878,6 +1906,8 @@ namespace Bloom.TeamCollection
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
 					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage, path, null);
+					ReportProgressAndLog(progress, ProgressKind.Error, null, ex.Message);
+					Logger.WriteError(ex);
 					NonFatalProblem.ReportSentryOnly(ex, string.Format(englishSomethingWrongMessage, path));
 					hasProblems = true;
 				}
@@ -1931,7 +1961,7 @@ namespace Bloom.TeamCollection
 					var repoStatus =
 						GetStatus(bookName); // we know it's in the repo, so status will certainly be from there.
 					var statusFilePath = GetStatusFilePath(bookName, _localCollectionFolder);
-					if (!File.Exists(statusFilePath))
+					if (!RobustFile.Exists(statusFilePath))
 					{
 						var currentChecksum = MakeChecksum(localFolderPath);
 						if (currentChecksum == repoStatus.checksum)
@@ -1970,7 +2000,7 @@ namespace Bloom.TeamCollection
 									renameFolder = localFolderPath + count;
 								} while (Directory.Exists(renameFolder));
 
-								Directory.Move(localFolderPath, renameFolder);
+								SIL.IO.RobustIO.MoveDirectory(localFolderPath, renameFolder);
 								// Don't use ChangeExtension here, bookName may have arbitrary periods.
 								var renamePath = Path.Combine(renameFolder, Path.GetFileName(renameFolder) + ".htm");
 								var oldBookPath = Path.Combine(renameFolder, bookName + ".htm");
@@ -2006,18 +2036,26 @@ namespace Bloom.TeamCollection
 						continue;
 					}
 
+					var localAndRepoChecksumsMatch = localStatus.checksum == repoStatus.checksum;
+
 					// At this point, we know there's a version of the book in the repo
 					// and a local version that is checked out here according to local status.
 					if (IsCheckedOutHereBy(repoStatus))
 					{
-						// the repo agrees. We could check that the checksums match, but there's no
-						// likely scenario for them not to. Everything is consistent, so we can move on
-						continue;
+						if (localAndRepoChecksumsMatch)
+							continue;
+						else
+						{
+							// We don't expect this to happen. But it did in BL-12590
+							// (though it is possible that was the result of a "super user" doing file manipulation).
+							// Anyway, if it happens, better be safe and move the local version to lost and found.
+							// That's what the UI already said we would do. We just hadn't hooked up the back end to do it.
+						}
 					}
 
 					// Now we know there's some sort of conflict. The local and repo status of this
 					// book don't match.
-					if (localStatus.checksum == repoStatus.checksum)
+					if (localAndRepoChecksumsMatch)
 					{
 						if (String.IsNullOrEmpty(repoStatus.lockedBy))
 						{
@@ -2087,6 +2125,8 @@ namespace Bloom.TeamCollection
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
 					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage, bookName);
+					ReportProgressAndLog(progress, ProgressKind.Error, null, ex.Message);
+					Logger.WriteError(ex);
 					NonFatalProblem.ReportSentryOnly(ex, string.Format(englishSomethingWrongMessage, bookName));
 					hasProblems = true;
 				}

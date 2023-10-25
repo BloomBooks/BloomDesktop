@@ -92,7 +92,7 @@ namespace Bloom.web.controllers
 				if (!RobustFile.Exists(path))
 					continue;
 
-				var meta = Metadata.FromFile(path);
+				var meta = RobustFileIO.MetadataFromFile(path);
 				string dummy;
 				var credit = meta.MinimalCredits(langs, out dummy);
 				if (string.IsNullOrEmpty(credit))

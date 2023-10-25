@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using L10NSharp;
+using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileDialogExtender;
@@ -154,7 +155,7 @@ namespace Bloom.Utils
 			}
 			else
 			{
-				var meminfo = File.ReadAllText("/proc/meminfo");
+				var meminfo = RobustFile.ReadAllText("/proc/meminfo");
 				var match = new Regex(@"MemTotal:\s+(\d+) kB").Match(meminfo);
 				if (match.Success)
 					returnVal.TotalPhysicalMemory = ulong.Parse(match.Groups[1].Value) * 1024;

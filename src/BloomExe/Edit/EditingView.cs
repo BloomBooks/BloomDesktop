@@ -84,6 +84,7 @@ namespace Bloom.Edit
 			// 
 			this._browser1.BackColor = System.Drawing.Color.DarkGray;
 			this._browser1.ContextMenuProvider = null;
+			this._browser1.ReplaceContextMenu = null;
 			this._browser1.ControlKeyEvent = null;
 			this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._browser1.Location = new System.Drawing.Point(0, 0);
@@ -453,7 +454,7 @@ namespace Bloom.Edit
 					{
 						Logger.WriteEvent("changing page via editTabBundle.switchContentPage()");
 						var pageUrl = _model.GetUrlForCurrentPage();
-						RunJavaScript("editTabBundle.switchContentPage('" + pageUrl + "');");
+						RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.switchContentPage('" + pageUrl + "');");
 					}
 				}
 				else
@@ -537,9 +538,14 @@ namespace Bloom.Edit
 			_pageListView.SetBook(_model.CurrentBook);
 		}
 
-		internal string RunJavaScript(string script)
+		[Obsolete("This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred.")]
+		internal string RunJavascriptWithStringResult_Sync_Dangerous(string script)
 		{
-			return _browser1.RunJavaScript(script);
+			return _browser1.RunJavascriptWithStringResult_Sync_Dangerous(script);
+		}
+		internal async Task<string> GetStringFromJavascriptAsync(string script)
+		{
+			return await _browser1.GetStringFromJavascriptAsync(script);
 		}
 
 		private Metadata _originalImageMetadataFromImageToolbox;
@@ -1189,9 +1195,9 @@ namespace Bloom.Edit
 			// BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
 			// tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
 			// been editing, so there was an null.
-			RunJavaScript("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined' && editTabBundle.getToolboxBundleExports().removeToolboxMarkup()");
-			var bodyHtml = RunJavaScript("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined' && editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage()");
-			var userCssContent = RunJavaScript("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined' && editTabBundle.getEditablePageBundleExports().userStylesheetContent()");
+			RunJavascriptWithStringResult_Sync_Dangerous("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined' && editTabBundle.getToolboxBundleExports().removeToolboxMarkup()");
+			var bodyHtml = RunJavascriptWithStringResult_Sync_Dangerous("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined' && editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage()");
+			var userCssContent = RunJavascriptWithStringResult_Sync_Dangerous("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined' && editTabBundle.getEditablePageBundleExports().userStylesheetContent()");
 			_browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
 		}
 
@@ -1327,7 +1333,7 @@ namespace Bloom.Edit
 			// Note that this method is called by a timer (probably about 110msec cycle).
 			if (!_browser1.Visible)
 				return;	
-			_browser1.UpdateEditButtons();
+			_browser1.UpdateEditButtonsAsync();
 			UpdateButtonEnabled(_cutButton, _cutCommand);
 			UpdateButtonEnabled(_copyButton, _copyCommand);
 			UpdateButtonEnabled(_pasteButton, _pasteCommand);
@@ -1343,7 +1349,7 @@ namespace Bloom.Edit
 
 		private void CycleEditButtons()
 		{
-			_browser1.UpdateEditButtons();
+			_browser1.UpdateEditButtonsAsync();
 			CycleOneButton(_cutButton, _cutCommand);
 			CycleOneButton(_copyButton, _copyCommand);
 			CycleOneButton(_pasteButton, _pasteCommand);
@@ -1463,7 +1469,7 @@ namespace Bloom.Edit
 			Application.Idle -= SaveWhenIdle; // don't need to do again till next Deactivate.
 			_model.SaveNow();
 			// Restore any tool state removed by CleanHtmlAndCopyToPageDom(), which is called by _model.SaveNow().
-			RunJavaScript("if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxBundleExports().applyToolboxStateToPage();}");
+			RunJavascriptWithStringResult_Sync_Dangerous("if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxBundleExports().applyToolboxStateToPage();}");
 		}
 
 		public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
@@ -1497,14 +1503,14 @@ namespace Bloom.Edit
 		{
 			PageTemplatesApi.ForPageLayout = false;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("editTabBundle.showPageChooserDialog(false);");
+			RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.showPageChooserDialog(false);");
 		}
 
 		internal void ShowChangeLayoutDialog()
 		{
 			PageTemplatesApi.ForPageLayout = true;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("editTabBundle.showPageChooserDialog(true);");
+			RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.showPageChooserDialog(true);");
 		}
 
 		// The zoom factor that is shown in the top right of the toolbar (a percent).
@@ -1681,7 +1687,7 @@ namespace Bloom.Edit
 		private void _bookSettingsButton_Click(object sender, EventArgs e)
 		{
 			_model.SaveNow();
-			RunJavaScript("editTabBundle.showEditViewBookSettingsDialog();");
+			RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.showEditViewBookSettingsDialog();");
 		}
 	}
 }

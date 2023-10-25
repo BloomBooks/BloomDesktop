@@ -17,6 +17,8 @@ ENDLAYOUTS
 @import "../MXBLiteracy-XMatter/MXBCommon-XMatter.less";
 
 @XMatterPackName: "MXB Scripture";
+@creditsPageFontSize: 8pt;
+@trimmerLineHeight: 1.1em;
 
 .bloom-page {
     &.outsideFrontCover {
@@ -25,18 +27,23 @@ ENDLAYOUTS
             font-size: 16pt;
             font-weight: bold;
             text-align: center;
+            line-height: @trimmerLineHeight;
         }
         // Make the default Spanish title not bold on the Cover
         .bloom-translationGroup.bookTitle
             .bloom-contentNational1.Title-On-Cover-style.bloom-editable {
             font-weight: normal;
         }
+        .creditsRow {
+            margin-top: 18pt;
+        }
     }
-    // Make the title page's Scripture reference field bold, (already centered) and 14pt
+    // Make the title page's Scripture reference field bold, (already centered) and 16pt
     &.titlePage {
         .Reference-TitlePage-style {
             font-weight: bold;
-            font-size: 14pt;
+            font-size: 16pt;
+            line-height: @trimmerLineHeight;
         }
     }
 }
@@ -55,11 +62,10 @@ ENDLAYOUTS
 }
 
 // Scripture book contributions on credits page
-#contributions .bloom-editable {
-    font-size: 10pt;
-    line-height: 1.2;
-}
-
-#printingHistory {
-    margin-top: auto; // push to bottom of page
+#contributions {
+    margin-bottom: @MarginBetweenMinorItems;
+    .bloom-editable {
+        font-size: @creditsPageFontSize;
+        line-height: 1.2;
+    }
 }

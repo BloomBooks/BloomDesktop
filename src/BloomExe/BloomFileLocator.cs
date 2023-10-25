@@ -72,7 +72,7 @@ namespace Bloom
 			foreach (var path in GetSearchPaths(fileName))
 			{
 				var fullPath = Path.Combine(path, fileName);
-				if (File.Exists(fullPath))
+				if (RobustFile.Exists(fullPath))
 					return fullPath;
 			}
 			return string.Empty;
@@ -393,7 +393,7 @@ namespace Bloom
 		{
 
 			var path = LocateFile(fileName);
-			if (string.IsNullOrEmpty(path) || !File.Exists(path))
+			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 			{
 				ErrorReport.NotifyUserOfProblem(
 					"{0} could not find the {1}.  It expected to find it in one of these locations: {2}",
@@ -411,7 +411,7 @@ namespace Bloom
 		public string LocateOptionalFile(string fileName)
 		{
 			var path = LocateFile(fileName);
-			if (string.IsNullOrEmpty(path) || !File.Exists(path))
+			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 			{
 				return null;
 			}
@@ -424,7 +424,7 @@ namespace Bloom
 		public string LocateFileWithThrow(string fileName)
 		{
 			var path = LocateFile(fileName);
-			if (string.IsNullOrEmpty(path) || !File.Exists(path))
+			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 			{
 				throw new ApplicationException("Could not find " + fileName + ". It expected to find it in one of these locations: " + Environment.NewLine + string.Join(Environment.NewLine, GetSearchPaths(fileName)));
 			}

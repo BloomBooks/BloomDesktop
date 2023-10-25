@@ -203,7 +203,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "pretty-quick --staged && lint-staged --no-stash",
+            "pre-commit": "pretty-quick --staged && lint-staged --no-stash && ../../build/check-csharp-files.sh",
             "pre-commit-comments": "// The '--no-stash' option makes linting much faster and is safe since our lint-staged doesn't currently modify any files. If it did modify files, you could still use --no-stash but there are some corner cases where you'd need to manually resolve conflicts."
         }
     },

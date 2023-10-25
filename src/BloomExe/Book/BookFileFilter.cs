@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml;
 using Bloom.ToPalaso;
 using SIL.IO;
 using SIL.Xml;
@@ -289,7 +287,7 @@ namespace Bloom.Book
 					// I'm not sure whether we need includeSplitTextBoxAudio to be true.
 					// But it only makes a difference in an obsolete case, and it just might be wanted
 					// if it occurs, at least if we do further editing of the book, so it's simplest to just include it.
-					var narrationElements = HtmlDom.SelectRealChildNarrationAudioElements(Dom.Body, true).Cast<XmlElement>();
+					var narrationElements = HtmlDom.SelectRealChildNarrationAudioElements(Dom.Body, true);
 					if (NarrationLanguages != null)
 					{
 						var narrationLangs = new HashSet<string>(NarrationLanguages);

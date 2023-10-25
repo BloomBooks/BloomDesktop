@@ -119,7 +119,10 @@ namespace Bloom
 			// REVIEW: should the setting be used only for alpha and beta?
 			LocalizationManager.ReturnOnlyApprovedStrings = !Settings.Default.ShowUnapprovedLocalizations;
 
-			// Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
+			// Old comment: Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
+			// Aug 2023, we've moved away from GeckoFx/Firefox to wv2, but I don't know if this is still needed or not...
+			// Steve says he thinks Gtk3 is still better but that it likely only matters for Linux,
+			// which for now is not supported in 5.5+.
 			GraphicsManager.GtkVersionInUse = GraphicsManager.GtkVersion.Gtk3;
 
 #if DEBUG
@@ -550,19 +553,8 @@ namespace Bloom
 
 		private static bool IsWebviewMissingOrTooOld()
 		{
-			const string kBloomMinimum= "112.0.0.0";
 			string version;
-			bool missingOrAntique;
-			try
-			{
-				version = CoreWebView2Environment.GetAvailableBrowserVersionString();
-				missingOrAntique = (CoreWebView2Environment.CompareBrowserVersions(version, kBloomMinimum) < 0);
-			}
-			catch (WebView2RuntimeNotFoundException e)
-			{
-				version = "not installed";
-				missingOrAntique = true;
-			}
+			bool missingOrAntique = !WebView2Browser.GetIsWebView2NewEnough(out version);
 			if (missingOrAntique)
 			{
 				using (_applicationContainer = new ApplicationContainer())
@@ -570,9 +562,9 @@ namespace Bloom
 					SetUpLocalization();
 					var msgBldr = new StringBuilder();
 					var msgFmt1 = LocalizationManager.GetString("Webview.MissingOrTooOld", "Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.");
-					msgBldr.AppendFormat(msgFmt1, kBloomMinimum);
+					msgBldr.AppendFormat(msgFmt1, WebView2Browser.kMinimumWebView2Version);
 					msgBldr.AppendLine();
-					if (version == "not installed")
+					if (version == WebView2Browser.kWebView2NotInstalled)
 					{
 						msgBldr.Append(LocalizationManager.GetString("Webview.NotInstalled", "(Currently not installed)"));
 					}
@@ -614,6 +606,7 @@ namespace Bloom
 			propertiesThatGoWithEveryEvent.Remove("UserName");
 			propertiesThatGoWithEveryEvent.Remove("UserDomainName");
 			propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
+			DesktopAnalytics.Analytics.UrlThatReturnsExternalIpAddress = "http://icanhazip.com";
 
 #if DEBUG
 			_supressRegistrationDialog = true;
@@ -621,7 +614,11 @@ namespace Bloom
 				"rw21mh2piu",
 				RegistrationDialog.GetAnalyticsUserInfo(),
 				propertiesThatGoWithEveryEvent,
-				false); // change to true if you want to test sending
+				allowTracking: false, // change to true if you want to test sending
+				retainPii: true,
+				clientType: DesktopAnalytics.ClientType.Segment,
+				host: "https://analytics.bloomlibrary.org"
+			);
 #else
 			var feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
@@ -633,7 +630,11 @@ namespace Bloom
 				"c8ndqrrl7f0twbf2s6cv",
 				RegistrationDialog.GetAnalyticsUserInfo(),
 				propertiesThatGoWithEveryEvent,
-				allowTracking);
+				allowTracking,
+				retainPii: true,
+				clientType: DesktopAnalytics.ClientType.Segment,
+				host: "https://analytics.bloomlibrary.org"
+			);
 #endif
 		}
 
@@ -748,11 +749,11 @@ namespace Bloom
 
 				//give some time for that process.start to finish starting the new instance, which will see
 				//we have a mutex and wait for us to die.
-				
+
 				Thread.Sleep(2000);
 				if (hardExit || _projectContext?.ProjectWindow == null)
 				{
-					Application.Exit(); 
+					Application.Exit();
 				}
 				else
 				{
@@ -801,7 +802,7 @@ namespace Bloom
 		{
 			if (!IsInstallerLaunch(args))
 				StartupScreenManager.StartManaging();
-			
+
 			Settings.Default.Save();
 
 			// Note: MainContext needs to be set from WinForms land (Application.Run() from System.Windows.Forms), not from here.
@@ -886,7 +887,7 @@ namespace Bloom
 				}
 			}
 			string tempFileName = TempFile.WithExtension(".txt").Path;
-			using (var writer = File.CreateText(tempFileName))
+			using (var writer = RobustFile.CreateText(tempFileName))
 			{
 				writer.WriteLine("Something unusual happened and Bloom needs to quit.  A report has been sent to the Bloom Team.");
 				writer.WriteLine("If this keeps happening to you, please write to issues@BloomLibrary.org.");
@@ -1044,7 +1045,7 @@ namespace Bloom
 				{
 					Utils.LongPathAware.ReportLongPath(path);
 					return false;
-					
+
 				}
 
 				//NB: initially, you could have multiple blooms, if they were different projects.
@@ -1374,7 +1375,7 @@ namespace Bloom
 					if (IsSameActualLanguage(dirTag, UserInterfaceCulture.IetfLanguageTag))
 					{
 						var xliffPath = Path.Combine(subdir, "Bloom.xlf");
-						if (File.Exists(xliffPath))
+						if (RobustFile.Exists(xliffPath))
 						{
 							var doc = new XmlDocument();
 							doc.Load(xliffPath);
@@ -1456,7 +1457,7 @@ namespace Bloom
 			var orderedReporters = new IBloomErrorReporter[] { SentryErrorReporter.Instance, HtmlErrorReporter.Instance };
 			var htmlAndSentryReporter = new CompositeErrorReporter(orderedReporters, primaryReporter: HtmlErrorReporter.Instance);
 			ErrorReport.SetErrorReporter(htmlAndSentryReporter);
-			
+
 			var msgTemplate = @"If you don't care who reads your bug report, you can skip this notice.
 
 When you submit a crash report or other issue, the contents of your email go in our issue tracking system, ""YouTrack"", which is available via the web at {0}. This is the normal way to handle issues in an open-source project.
@@ -1471,7 +1472,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			{
 				ExceptionReportingDialog.PrivacyNotice = string.Format(msgTemplate, realUrl);
 			});
-			
+
 			ExceptionReportingDialog.PrivacyNotice = string.Format(msgTemplate, issueTrackingUrl);
 			SIL.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
 			SIL.Reporting.ErrorReport.AddStandardProperties();

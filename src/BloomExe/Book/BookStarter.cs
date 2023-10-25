@@ -23,7 +23,6 @@ namespace Bloom.Book
 		private readonly IFileLocator _fileLocator;
 		private readonly BookStorage.Factory _bookStorageFactory;
 		private readonly CollectionSettings _collectionSettings;
-		private bool _isSourceCollection;
 
 		public delegate BookStarter Factory();//autofac uses this
 
@@ -32,7 +31,6 @@ namespace Bloom.Book
 			_fileLocator = fileLocator;
 			_bookStorageFactory = bookStorageFactory;
 			_collectionSettings = collectionSettings;
-			_isSourceCollection = collectionSettings.IsSourceCollection;
 		}
 
 		public bool TestingSoSkipAddingXMatter { get; set; }
@@ -522,35 +520,6 @@ namespace Bloom.Book
 
 		private void UpdateEditabilityMetadata(BookStorage storage)
 		{
-
-			//Here's the logic: If we're in a shell-making library, then it's safe to say that a newly-
-			//created book is going to be a shell. Any derivatives will then act as shells.  But it won't
-			//prevent us from editing it while in a shell-making collections, since we don't honor this
-			//tag in shell-making collections.
-
-			//The problem is, if you make a book in some vernacular library, then share it so that others
-			//can use it as a shell, then (as of version 2) Bloom doesn't have a way of realizing that it's
-			//being used as a shell. So everything is editable (not a big deal) but you're also locked out
-			// of editing the acknowledgments for translated version.
-
-			//It seems to me at the moment (May 2014) that the time to mark something as locked down should
-			//be when the they create a book based on a source-with-content book. So the current approach
-			//below, of pre-locking it, would go away.
-
-			// JohnT: added the possibility that the source book is 'suitableForMakingTemplates', that is,
-			// a template factory like the Template Starter book. In this case we want the resulting book
-			// to be a template. Note that the initial state of storage is a copy of the template.
-			// (The only way suitableForMakingTemplates currently becomes true is when loaded that way
-			// from meta.json, which only happens if someone edited it by hand to be that way.)
-			// If we're making a template, the resulting book needs to be suitableForMakingShells
-			// and also needs to NOT be RecordedAsLockedDown, because that suppresses options
-			// we want in the options tab.
-			// If we change this see also Book.SwitchSuitableForMakingShells().
-			if (_isSourceCollection && !storage.BookInfo.IsSuitableForMakingTemplates)
-			{
-				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");
-			}
-
 			storage.BookInfo.IsSuitableForMakingShells = storage.BookInfo.IsSuitableForMakingTemplates;
 			// a newly created book is never suitable for making templates, even if its source was.
 			storage.BookInfo.IsSuitableForMakingTemplates = false;
@@ -712,16 +681,7 @@ namespace Bloom.Book
 			{
 				return; //leave the original there.
 			}
-			// If there's no copyright information in a source-collection book, we're presumably making
-			// a new original book, and shouldn't try to record any original copyright and license information.
-			// This is somewhat redundant with the check in BookStarter.SetupNewDocumentContents(), the one
-			// non-unit-test current caller of this method, that doesn't call this at all if the source is
-			// a template book. I was trying for a minimal reasonable change for BL-5131, and therefore
-			// put in this extra check, since previously this method was simply NEVER called in a source
-			// collection.
 			var copyrightNotice = BookCopyrightAndLicense.GetMetadata(dom, bookData).CopyrightNotice;
-			if (String.IsNullOrEmpty(copyrightNotice) && collectionSettings.IsSourceCollection)
-				return;
 			bookData.Set("originalLicenseUrl", XmlString.FromXml(BookCopyrightAndLicense.GetLicenseUrl(dom)), "*");
 			bookData.Set("originalCopyright", XmlString.FromUnencoded(copyrightNotice), "*");
 			bookData.Set("originalLicenseNotes", XmlString.FromXml(dom.GetBookSetting("licenseNotes").GetFirstAlternative()), "*");

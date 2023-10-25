@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using L10NSharp;
 
 namespace Bloom.TeamCollection
@@ -134,8 +135,17 @@ namespace Bloom.TeamCollection
 				}
 
 				var msg = string.IsNullOrEmpty(L10NId) ? RawEnglishMessageTemplate : LocalizationManager.GetString(L10NId, RawEnglishMessageTemplate);
+				// If the message contains a markdown link, we replace it with the appropriate HTML anchor tag.
+				msg = CreateLinkInMessageFromMarkdown(msg);
 				return leadIn + string.Format(msg, Param0, Param1);
 			}
+		}
+
+		private string CreateLinkInMessageFromMarkdown(string msg)
+		{
+			string pattern = @"\[(.*?)\]\((.*?)\)";
+			string replacement = "<a href=\'$2\'>$1</a>";
+			return Regex.Replace(msg, pattern, replacement);
 		}
 
 		public static TeamCollectionMessage FromPersistedForm(string form)

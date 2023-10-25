@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Management;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.ToPalaso;
@@ -80,7 +82,7 @@ namespace Bloom.Utils
 			}
 			catch (Exception)
 			{
-				// swallow. This happens when we call from firefox, while debugging.
+				// swallow. This happens when we call from a browser, while debugging.
 			}
 			using (Measure("Initial Memory Reading"))
 			{
@@ -291,26 +293,68 @@ namespace Bloom.Utils
 				using (var proc = Process.GetCurrentProcess())
 				{
 					pagedMemoryMb = proc.PagedMemorySize64 / bytesPerMegabyte;
-				}
+					workingSetKb = GetWorkingSetInKB(proc);
+					workingSetPrivateKb = GetWorkingSetPrivateInKB(proc);
+					privateBytesKb = GetPrivateBytesInKB(proc);
 
-				this.workingSetKb = GetWorkingSetInKB();
-				this.workingSetPrivateKb = GetWorkingSetPrivateInKB();
-				privateBytesKb = GetPrivateBytesInKB();
+					var subProcesses = new List<Process>();
+					try
+					{
+						var subsubProcs = GetSubProcesses(new List<Process> { proc });
+						while (subsubProcs.Any())
+						{
+							subProcesses.AddRange(subsubProcs);
+							subsubProcs = GetSubProcesses(subsubProcs);
+						}
+						// Enhance: we could report the bytes of each sub-process, but that would be a lot of data.
+						// Or: we could report the total bytes of all sub-processes, but would that be helpful?
+						// Or: we could report the maximum bytes of all sub-processes, but would that be helpful?
+						pagedMemoryMb += subProcesses.Sum(p => p.PagedMemorySize64 / bytesPerMegabyte);
+						workingSetKb += subProcesses.Sum(p => GetWorkingSetInKB(p));
+						workingSetPrivateKb += subProcesses.Sum(p => GetWorkingSetPrivateInKB(p));
+						privateBytesKb += subProcesses.Sum(p => GetPrivateBytesInKB(p));
+					}
+					finally
+					{
+						foreach (var subProc in subProcesses)
+							subProc.Dispose();
+					}
+				}
+			}
+
+			private static List<Process> GetSubProcesses(List<Process> processes)
+			{
+				var subProcesses = new List<Process>();
+				foreach (var proc in processes)
+				{
+					var listMOs = new List<ManagementObject>();
+					try
+					{
+						listMOs.AddRange(new ManagementObjectSearcher($"Select * From Win32_Process Where ParentProcessID={proc.Id}")
+							.Get()
+							.Cast<ManagementObject>());
+						var subProcs = listMOs.Select(mo => Process.GetProcessById(Convert.ToInt32(mo["ProcessID"])));
+						if (subProcs.Any())
+							subProcesses.AddRange(subProcs);
+					}
+					finally
+					{
+						foreach (var mo in listMOs)
+							mo.Dispose();
+					}
+				}
+				return subProcesses;
 			}
 
 			// Significance: This counter indicates the current number of bytes allocated to this process that cannot be shared with
 			// other processes.This counter is used for identifying memory leaks.
-			private long GetPrivateBytesInKB()
+			private long GetPrivateBytesInKB(Process proc)
 			{
 				if (SIL.PlatformUtilities.Platform.IsLinux)
 				{
-					using (var proc = Process.GetCurrentProcess())
-					{
-						return proc.PrivateMemorySize64 / 1024;
-					}
+					return proc.PrivateMemorySize64 / 1024;
 				}
-				using (var perfCounter = new PerformanceCounter("Process", "Private Bytes",
-					Process.GetCurrentProcess().ProcessName))
+				using (var perfCounter = new PerformanceCounter("Process", "Private Bytes", proc.ProcessName))
 				{
 					return perfCounter.RawValue / 1024;
 				}
@@ -325,34 +369,27 @@ namespace Bloom.Utils
 			// If you observe wide fluctuations in the working set, it might indicate a memory shortage.
 			// Higher values in the working set may also be due to multiple assemblies in your application.
 			// You can improve the working set by using assemblies shared in the global assembly cache.
-			private long GetWorkingSetInKB()
+			private long GetWorkingSetInKB(Process proc)
 			{
 				if (SIL.PlatformUtilities.Platform.IsLinux)
 				{
-					using (var proc = Process.GetCurrentProcess())
-					{
-						return proc.WorkingSet64 / 1024;
-					}
+					return proc.WorkingSet64 / 1024;
 				}
-				using (var perfCounter = new PerformanceCounter("Process", "Working Set",
-					Process.GetCurrentProcess().ProcessName))
+				using (var perfCounter = new PerformanceCounter("Process", "Working Set", proc.ProcessName))
 				{
 					return perfCounter.RawValue / 1024;
 				}
 			}
 
-			private long GetWorkingSetPrivateInKB()
+			private long GetWorkingSetPrivateInKB(Process proc)
 			{
 				if (SIL.PlatformUtilities.Platform.IsLinux)
 				{
 					// Can't get "private" working set on Linux.
-					using (var proc = Process.GetCurrentProcess())
-					{
-						return proc.WorkingSet64 / 1024;
-					}
+					return proc.WorkingSet64 / 1024;
 				}
 				using (var perfCounter = new PerformanceCounter("Process", "Working Set - Private",
-					Process.GetCurrentProcess().ProcessName))
+					proc.ProcessName))
 				{
 					return perfCounter.RawValue / 1024;
 				}

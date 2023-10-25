@@ -21,7 +21,7 @@ import { getBloomApiPrefix } from "../../utils/bloomApi";
  *   2. C# RuntimeInformationInjector.AddLocalizationTriggerToDom() is called, adding a script tag to the page that
  *      instructs the browser control to gather all elements that have a "data-i18n" attribute once the document has
  *      finished loading, and run the jQuery.fn.localize() function.
- *   3. C# loads the resulting html into a GeckoFx browser control.
+ *   3. C# loads the resulting html into a browser control.
  *   4. The browser executes the trigger script once the document has finished loading.
  *   5. The JS function jQuery.fn.localize() loops through each element with a "data-i18n" attribute and passes it to
  *      localizationManager.setElementText().

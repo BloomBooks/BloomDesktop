@@ -3307,7 +3307,7 @@
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionSingular">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the feature "{1}".</source>
-        <target xml:lang="hi" state="translated">इस पुस्तक के लिए ब्लूम {0} या इससे अधिक की आवश्यकता है क्योंकि यह \"{1}\" फीचर का उपयोग करता है।</target>
+        <target xml:lang="hi" state="translated">इस पुस्तक के लिए ब्लूम {0} या इससे अधिक की आवश्यकता है क्योंकि यह "{1}" फीचर का उपयोग करता है।</target>
         <note>ID: Errors.FeatureRequiresNewerVersionSingular</note>
       </trans-unit>
       <trans-unit id="Errors.MultipleHtmlFiles">
@@ -4160,17 +4160,17 @@
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
-        <target xml:lang="hi" state="needs-translation">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</target>
+        <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
+        <target xml:lang="hi" state="needs-translation">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</target>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
+        <source xml:lang="en">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</source>
         <target xml:lang="hi" state="translated">{0} फोंट की जांच हो रही है: लाइसेंस स्थापित करने की अनुमति नहीं देता।</target>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
+        <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
         <target xml:lang="hi" state="translated">{0} फोंट की जांच हो रही है: स्थापित करने के लिए कोई फोंट नहीं मिला।</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>
@@ -4185,7 +4185,7 @@
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
+        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
         <target xml:lang="hi" state="translated">की जगह "{0}" रखा जा रहा है</target>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
       </trans-unit>
@@ -6516,7 +6516,7 @@
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutError">
-        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>

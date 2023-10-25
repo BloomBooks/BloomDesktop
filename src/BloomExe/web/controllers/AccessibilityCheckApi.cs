@@ -243,7 +243,7 @@ namespace Bloom.web.controllers
 				}
 
 				var answerPath = Path.Combine(reportDirectory, "report.html");
-				if (!File.Exists(answerPath))
+				if (!RobustFile.Exists(answerPath))
 				{
 					// This hasn't been effectively reproduced, but there was a case where this would fail at least
 					// half the time on a book, reproducable. That book had 2 pages pointing at placeholder.png,
@@ -319,20 +319,23 @@ namespace Bloom.web.controllers
 			var whereProgram = Platform.IsWindows ? "where" : "which";
 			var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
 			var whereResult = CommandLineRunnerExtra.RunWithInvariantCulture(whereProgram, npmFileName, Encoding.ASCII, "", 2, new NullProgress());
-			if (!String.IsNullOrEmpty(whereResult.StandardError))
+			if (!string.IsNullOrEmpty(whereResult.StandardError))
 			{
 				_webSocketProgress.MessageWithoutLocalizing(whereResult.StandardError, ProgressKind.Error);
 			}
-			if (!whereResult.StandardOutput.Contains(npmFileName))
+			if (string.IsNullOrEmpty(whereResult.StandardOutput) || !whereResult.StandardOutput.Contains(npmFileName))
 			{
 				ReportErrorAndFailTheRequest(request, whereResult, "Could not find npm.");
 				return null;
 			}
-
-			var fullNpmPath = whereResult.StandardOutput.Split('\n')[0].Trim();
+			// BL-12712: Adding Volta created a situation where there can be more than one location for 'npm.cmd'.
+			// If you run any npm command in the Volta directory, it will cause Volta to spawn
+			// 1000s of spurious npm processes! So we set the working directory to empty string below.
+			var outputArray = whereResult.StandardOutput.Split(new []{'\n'}, StringSplitOptions.RemoveEmptyEntries);
+			var fullNpmPath = outputArray[0].Trim(); // If the (dev) machine has Volta installed, this will be the Volta npm.
 			// note: things like nvm will mess with where the global node_modules lives. The best way seems to be
 			// to ask npm:
-			var result = CommandLineRunnerExtra.RunWithInvariantCulture(npmFileName, "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
+			var result = CommandLineRunnerExtra.RunWithInvariantCulture(fullNpmPath, "root -g", Encoding.ASCII, "", 10,
 				new NullProgress());
 
 			const string kCoreError = "Could not get \"npm -g root\" to work. Is Node & npm installed and working?";
@@ -359,7 +362,7 @@ namespace Bloom.web.controllers
 				return null;
 			}
 
-			var nodeModulesDirectory = result.StandardOutput.Trim();
+			var nodeModulesDirectory = result.StandardOutput.Trim(); // Standard Output result has an ending carriage return for some reason.
 
 			if (!Directory.Exists((nodeModulesDirectory)))
 			{

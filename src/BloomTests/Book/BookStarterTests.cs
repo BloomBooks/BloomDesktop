@@ -33,7 +33,6 @@ namespace BloomTests.Book
 			// These settings are used in the default BookStarter object under test.
 			_defaultCollectionSettings = new CollectionSettings
 			{
-				IsSourceCollection = false,
 				Language1Tag = "xyz",
 				Language2Tag = "fr",
 				Language3Tag = "es",
@@ -443,28 +442,6 @@ namespace BloomTests.Book
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(makeTemplate: false), _projectFolder.Path));
 			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//div[contains(text(), '_extra_')]");
 		}
-
-
-		//		[Test]
-		//		public void CreateBookOnDiskFromTemplate_InShellMakingMode_editabilityMetaIsTranslationOnly()
-		//		{
-		//			//var library = new Moq.Mock<CollectionSettings>();
-		//			_librarySettings.SetupGet(x => x.IsSourceCollection).Returns(true);
-		//			//_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
-		//			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
-		//			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='translationOnly']");
-		//		}
-		//
-		//		[Test]
-		//		public void CreateBookOnDiskFromTemplate_NotInShellMakingMode_editabilityMetaOpen()
-		//		{
-		//			var library = new Moq.Mock<CollectionSettings>();
-		//			library.SetupGet(x => x.IsSourceCollection).Returns(false);
-		//			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
-		//			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
-		//			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='open']");
-		//		}
-
 
 
 		[Test]
@@ -1145,23 +1122,13 @@ namespace BloomTests.Book
 
 		// It's rather arbitrary what happens in this case, since we don't think it's possible for the original
 		// to have a null license AND no copyright (short of hand-editing the HTML).
-		[TestCase(true)]
-		[TestCase(false)]
-		public void SetOriginalCopyrightAndLicense_HasNoCopyrightOrLicense_GetsNoOriginalNotice(bool sourceCollection)
+		public void SetOriginalCopyrightAndLicense_HasNoCopyrightOrLicense_GetsNoOriginalNotice()
 		{
-			try
-			{
-				_alternateCollectionSettings.IsSourceCollection = sourceCollection;
-				var dom = SetOriginalCopyrightAndLicense(@" <div id='bloomDataDiv'>
-					  <div data-book='bookTitle' lang='en'>A really really empty book</div>
-					</div>");
-				Assert.IsNull(GetEnglishOriginalCopyrightAndLicense(dom));
-				AssertOriginalCopyrightAndLicense(dom, "", "", "");
-			}
-			finally
-			{
-				_alternateCollectionSettings.IsSourceCollection = false;
-			}
+			var dom = SetOriginalCopyrightAndLicense(@" <div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='en'>A really really empty book</div>
+				</div>");
+			Assert.IsNull(GetEnglishOriginalCopyrightAndLicense(dom));
+			AssertOriginalCopyrightAndLicense(dom, "", "", "");
 		}
 
 		[Test]
@@ -1232,7 +1199,7 @@ namespace BloomTests.Book
 			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
 			var dom = new HtmlDom(
 				@"<html>
-				  <head><meta name='lockedDownAsShell' content='true'></meta></head>
+				  <head></head>
 				  <body>
 				    <div id='bloomDataDiv'>
 				      <div data-book='copyright' lang='*'>
@@ -1292,7 +1259,7 @@ namespace BloomTests.Book
 		{
 			// All of the tests using this method require that the book is locked down (that is, a derivative that
 			// is expected to have original copyright and license information).
-			var html = "<html><head><meta name='lockedDownAsShell' content='true'></meta></head><body>" + dataDivString + "</body></html>";
+			var html = "<html><head></head><body>" + dataDivString + "</body></html>";
 			var dom = new HtmlDom(html);
 			using (var folder = new TemporaryFolder("TransformCreditPageData"))
 			{
@@ -1308,7 +1275,7 @@ namespace BloomTests.Book
 		{
 			// All of the tests using this method require that the book is locked down (that is, a derivative that
 			// is expected to have original copyright and license information).
-			var html = "<html><head><meta name='lockedDownAsShell' content='true'></meta></head><body>" + dataDivString + "</body></html>";
+			var html = "<html><head></head><body>" + dataDivString + "</body></html>";
 			var dom = new HtmlDom(html);
 			var bookData = new BookData(dom, _alternateCollectionSettings, null);
 			BookStarter.SetOriginalCopyrightAndLicense(dom, bookData, _defaultCollectionSettings);

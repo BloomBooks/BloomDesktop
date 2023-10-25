@@ -82,8 +82,6 @@ namespace Bloom.CollectionCreating
 
 		public void NowVisible()
 		{
-			_exampleText.Visible = _collectionInfo.IsSourceCollection;//our examples would just confuse someone if they're doing a vernacular collection
-
 			if(!string.IsNullOrEmpty(_collectionInfo.PathToSettingsFile))
 			{
 				_collectionNameControl.Text = Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile);

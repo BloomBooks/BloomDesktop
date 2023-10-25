@@ -7,7 +7,6 @@ using SIL.IO;
 using SIL.Windows.Forms.ClearShare;
 using TidyManaged;
 using Bloom.ImageProcessing;
-using System;
 
 namespace Bloom
 {
@@ -20,15 +19,8 @@ namespace Bloom
 	/// There is a similar class in SIL.IO, but that handles more generic calls
 	/// which would not require additional dependencies.
 	/// </summary>
-	public class RobustIO
+	public class RobustFileIO
 	{
-#if !__MonoCS__
-		public static WaveFileReader CreateWaveFileReader(string wavFile)
-		{
-			return RetryUtility.Retry(() => new WaveFileReader(wavFile));
-		}
-#endif
-
 		public static Document DocumentFromFile(string filePath)
 		{
 			return RetryUtility.Retry(() => Document.FromFile(filePath));
@@ -65,6 +57,11 @@ namespace Bloom
 		private static Metadata MetadataFromFileInternal(string path)
 		{
 			return RetryUtility.Retry(() => Metadata.FromFile(path));
+		}
+
+		public static TagLib.File CreateTaglibFile(string path)
+		{
+			return RetryUtility.Retry(() => TagLib.File.Create(path));
 		}
 	}
 }

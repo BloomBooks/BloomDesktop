@@ -33,8 +33,6 @@ namespace Bloom.WebLibraryIntegration
 					Path.GetFileName(downloadFolder));
 				var settings = new NewCollectionSettings()
 				{
-			
-					IsSourceCollection = true,
 					PathToSettingsFile = pathToSettingsFile
 					// All other defaults are fine
 				};

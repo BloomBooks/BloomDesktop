@@ -195,7 +195,7 @@ namespace Bloom.Publish.BloomPub.wifi
 				null, (publishedFileName, bloomDPath) =>
 				{
 					var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
-					_wifiSender.UploadDataAsync(new Uri(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(publishedFileName)), File.ReadAllBytes(bloomDPath));
+					_wifiSender.UploadDataAsync(new Uri(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(publishedFileName)), RobustFile.ReadAllBytes(bloomDPath));
 					Debug.WriteLine($"upload started to http://{androidIpAddress}:5914 ({androidName}) for {publishedFileName}");
 				},
 				_progress,

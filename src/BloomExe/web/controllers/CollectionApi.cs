@@ -272,7 +272,6 @@ namespace Bloom.web.controllers
 			result.collection = new DynamicJson();
 			result.collection.id = pathToCollectionDirectory;
 			result.collection.name = collectionName;
-			result.collection.isSourceCollection = false; // nothing is a "source collection" any longer.  but everything can be.
 			result.collection.shouldLocalizeName = false;
 			result.collection.isLink = true;
 			result.collection.isRemovableFolder = false;
@@ -289,6 +288,8 @@ namespace Bloom.web.controllers
 			dynamic props = new ExpandoObject();
 			props.isFactoryInstalled = collection.IsFactoryInstalled;
 			props.containsDownloadedBooks = collection.ContainsDownloadedBooks;
+			if (collection.PathToDirectory == _settings.FolderPath)
+				props.languageFont = _settings.Language1.FontName;
 			request.ReplyWithJson(JsonConvert.SerializeObject(props));
 		}
 
@@ -316,7 +317,6 @@ namespace Bloom.web.controllers
 						{
 							id = c.PathToDirectory,
 							name = c.Name,
-							isSourceCollection = _collectionModel.IsSourceCollection,
 							shouldLocalizeName = c.PathToDirectory.StartsWith(BloomFileLocator.FactoryCollectionsDirectory) || c.ContainsDownloadedBooks,
 							isLink = c.Type != BookCollection.CollectionType.TheOneEditableCollection && IsFromLinkFile(c.PathToDirectory),
 							isRemovableFolder = c.Type != BookCollection.CollectionType.TheOneEditableCollection && !IsFromLinkFile(c.PathToDirectory) &&

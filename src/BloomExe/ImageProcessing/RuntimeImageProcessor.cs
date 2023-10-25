@@ -296,9 +296,9 @@ namespace Bloom.ImageProcessing
 						var infoJpg = new FileInfo(jpgPath);
 						//Debug.WriteLine(String.Format("thumbnail.png size={0}; thumbnail.jpg size={1} (using smaller)", infoPng.Length, infoJpg.Length));
 						if (infoJpg.Length < infoPng.Length)
-							File.Delete(pathToProcessedImage);
+							RobustFile.Delete(pathToProcessedImage);
 						else
-							File.Delete(jpgPath);
+							RobustFile.Delete(jpgPath);
 					}
 				}
 			}

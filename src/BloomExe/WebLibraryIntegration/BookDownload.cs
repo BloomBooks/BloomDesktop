@@ -255,10 +255,6 @@ namespace Bloom.WebLibraryIntegration
 		/// Probably some API gets a list of BloomInfo objects from the parse.com data, and we pass one of
 		/// them as the argument for the public method.
 		/// </summary>
-		/// <param name="bucket"></param>
-		/// <param name="s3BookId"></param>
-		/// <param name="dest"></param>
-		/// <returns></returns>
 		internal string DownloadBook(string bucket, string s3BookId, string dest)
 		{
 			var destinationPath = _s3Client.DownloadBook(bucket, s3BookId, dest, _progressDialog);
@@ -267,14 +263,9 @@ namespace Bloom.WebLibraryIntegration
 				var bookInfo = new BookInfo(destinationPath, false); // A downloaded book is a template, so never editable.
 				BookDownLoaded(this, new BookDownloadedEventArgs() {BookDetails = bookInfo});
 			}
-			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
-			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
-			// Such books should not be locked down.
-			// So, we try to lock it. What we want to do is Book.RecordedAsLockedDown = true; Book.Save().
-			// But all kinds of things have to be set up before we can create a Book. So we duplicate a few bits of code.
 			var htmlFile = BookStorage.FindBookHtmlInFolder(destinationPath);
 			if (htmlFile == "")
-				return destinationPath; //argh! we can't lock it.
+				return destinationPath; //argh! it didn't really download the book!
 			var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
 			var dom = new HtmlDom(xmlDomFromHtmlFile);
 			bool needToSave = false;

@@ -57,7 +57,7 @@ namespace Bloom.web.controllers
 		{
 			if (Path.GetExtension(path).ToLowerInvariant() != ".mp3")
 				return false;		// doesn't claim to be an mp3 file.
-			using (var stream = File.OpenRead(path))
+			using (var stream = ToPalaso.RobustIO.OpenRead(path))
 			{
 				var data = new byte[4];
 				var count = stream.Read(data, 0, 4);

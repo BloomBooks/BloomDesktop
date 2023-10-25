@@ -18,11 +18,6 @@
         <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
         <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
-        <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
-        <note>Shown if you open TalkingBookTool and then attempt to toggle the "Record by Sentences" input on an XMatter page</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
         <source xml:lang="en">Import Recording...</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>

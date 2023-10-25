@@ -18,7 +18,7 @@ using SIL.Reporting;
 using SIL.Text;
 using SIL.WritingSystems;
 using SIL.Xml;
-using File = System.IO.File;
+using SIL.IO;
 
 namespace Bloom.Book
 {
@@ -455,11 +455,11 @@ namespace Bloom.Book
 				if (int.TryParse(stageString, out stage) && CollectionSettings != null)
 				{
 					var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(CollectionSettings);
-					if (File.Exists(settingsPath))
+					if (RobustFile.Exists(settingsPath))
 					{
 						try
 						{
-							var settingsJson = File.ReadAllText(settingsPath, Encoding.UTF8);
+							var settingsJson = RobustFile.ReadAllText(settingsPath, Encoding.UTF8);
 							var settings = DynamicJson.Parse(settingsJson);
 							var stages = settings.stages;
 							var allLetters = "";

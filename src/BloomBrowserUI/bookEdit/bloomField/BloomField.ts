@@ -100,6 +100,13 @@ export default class BloomField {
         spanToInsert.className = "bloom-linebreak";
         range.deleteContents(); // If the user has selected a range, we replace it with the line break.
         range.insertNode(spanToInsert);
+        if (!spanToInsert.nextSibling?.textContent) {
+            // Without inserting something, the cursor will be before the span,
+            // which is not what we want.  A visible character like _ works just
+            // as well as a zero-width space, but which is easier for users to
+            // deal with is a good question.
+            spanToInsert.insertAdjacentText("afterend", "\u200C"); //&zwnj;
+        }
         sel.collapseToEnd(); // moves the cursor to after the line break
     }
 
@@ -450,27 +457,11 @@ export default class BloomField {
         $(field).keypress(e => {
             //NB: This will not fire in the (now normal case) that ckeditor is in charge of this field.
             if (e.key === "Enter") {
-                //enter key
                 if (e.shiftKey) {
                     BloomField.InsertLineBreak();
-                } else {
-                    // If the enter didn't come with a shift key, just insert a paragraph.
-                    // Now, why are we doing this if firefox would do it anyway? Because if we previously pressed shift - enter
-                    // and got that <span class='bloom-linebreak'></span>, firefox will actually insert that span again, in the
-                    // new paragraphs (which would be reasonable if we had turned on a normal text-formating style, like a text color.
-                    // So we do the paragraph creation ourselves, so that we don't get any unwanted <span>s in it.
-                    // Note that this is going to remove that "make new spans automatically" feature entirely.
-                    // If we need it someday, we'll have to make this smarter and only override the normal behavior if we can detect
-                    // that the span it would create would be one of those bloom-linbreak ones.
-
-                    //The other thing going on is that Firefox doesn't like to see multiple empty <p></p>'s. It won't let us insert
-                    //two or more of these in a row. So we stick in a zero-width-non-joiner element to pacify it.
-                    //This has the downside that it takes two presses of "DEL" to remove the line; a future enhancement could fix
-                    //that.
-                    document.execCommand("insertHTML", false, "<p>&zwnj;</p>");
+                    e.stopPropagation();
+                    e.preventDefault();
                 }
-                e.stopPropagation();
-                e.preventDefault();
             }
         });
     }

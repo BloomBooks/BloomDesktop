@@ -1192,7 +1192,7 @@ namespace Bloom.Book
 			coverImageFileName = coverImageFileName.Trim();
 			// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
 			var coverImagePath = UrlPathString.GetFullyDecodedPath(StoragePageFolder, ref coverImageFileName);
-			while (coverImagePath.Contains("&amp;") && !File.Exists(coverImagePath))
+			while (coverImagePath.Contains("&amp;") && !RobustFile.Exists(coverImagePath))
 				coverImagePath = HttpUtility.HtmlDecode(coverImagePath);
 			var filename = Path.GetFileName(coverImagePath);
 			if (filename != coverImageFileName)
@@ -2102,12 +2102,12 @@ namespace Bloom.Book
 		//hack. Eventually we might be able to lock books so that you can't edit them.
 		public bool IsShellOrTemplate => !IsEditable;
 
-		public bool HasOriginalCopyrightInfoInSourceCollection
+		public bool HasOriginalCopyrightInfo
 		{
 			get
 			{
 				var x = OurHtmlDom.SafeSelectNodes("//div[contains(@id, 'bloomDataDiv')]/div[contains(@data-book, 'originalCopyright') and string-length(translate(normalize-space(text()), ' ', '')) > 0]");
-				return x.Count > 0 && CollectionSettings.IsSourceCollection;
+				return x.Count > 0;
 			}
 		}
 
@@ -2115,13 +2115,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				if (CollectionSettings.IsSourceCollection)
-				{
-					// This won't happen any more except for legacy source collections
-					// since we are no longer creating them.
-					return "ShellEditing";
-				}
-				else if (IsSuitableForMakingShells)
+				if (IsSuitableForMakingShells)
 				{
 					// We might also be making something intended to be a new shell, but we can't tell the difference
 					// between that and a custom vernacular book any more.
@@ -2167,8 +2161,7 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells.
-		/// Note: the setter on this property just sets the flag to the appropriate state. To actually change
-		/// a book to or from a template, use SwitchSuitableForMakingShells()
+		/// Note: the setter on this property just sets the flag to the appropriate state for testing.
 		/// </summary>
 		public bool IsSuitableForMakingShells
 		{
@@ -4015,7 +4008,7 @@ namespace Bloom.Book
 						if (path == filePath)
 							continue; // we already included a simplified version of the main HTML file
 						//AppendDebugInfo(debugBldr, path);
-						using (var input = new FileStream(path, FileMode.Open, FileAccess.Read))
+						using (var input = ToPalaso.RobustIO.GetFileStream(path, FileMode.Open, FileAccess.Read))
 						{
 							byte[] buffer = new byte[4096];
 							int count;
@@ -4037,13 +4030,13 @@ namespace Bloom.Book
 					}
 					//var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
 					//debugPath = Path.Combine(folder, "DebugHashing-" + timestamp + ".bak");	// .bak gets ignored
-					//File.WriteAllText(Path.Combine(folder, "SimplifiedHtml-" + timestamp + ".bak"), simplified);
+					//RobustFile.WriteAllText(Path.Combine(folder, "SimplifiedHtml-" + timestamp + ".bak"), simplified);
 				}
 				sha.TransformFinalBlock(new byte[0], 0, 0);
 				//if (debugPath != null)
 				//{
 				//	debugBldr.AppendLineFormat("final hash = {0}", Convert.ToBase64String(sha.Hash));
-				//	File.WriteAllText(debugPath, debugBldr.ToString());
+				//	RobustFile.WriteAllText(debugPath, debugBldr.ToString());
 				//}
 				return Convert.ToBase64String(sha.Hash);
 			}
@@ -4113,13 +4106,13 @@ namespace Bloom.Book
 				return null;
 			// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
 			var coverImagePath = UrlPathString.GetFullyDecodedPath(StoragePageFolder, ref coverImageFileName);
-			if (!File.Exists(coverImagePath))
+			if (!RobustFile.Exists(coverImagePath))
 			{
 				// And the filename might be multiply-HTML encoded.
 				while (coverImagePath.Contains("&amp;"))
 				{
 					coverImagePath = HttpUtility.HtmlDecode(coverImagePath);
-					if (File.Exists(coverImagePath))
+					if (RobustFile.Exists(coverImagePath))
 						return coverImagePath;
 				}
 				return null;

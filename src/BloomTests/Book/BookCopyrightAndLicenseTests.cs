@@ -335,7 +335,7 @@ namespace BloomTests.Book
 		public void UpdateDomFromDataDiv_CopiesCopyrightAndOriginalCopyrightToMultipleDestinations()
 		{
 			// We could test other fields too, but these are enough to cover the two main methods that do the copying.
-			var html = @"<html><head><meta name='lockedDownAsShell' content='true'></meta></head><body>
+			var html = @"<html><head></head><body>
 							<div id='bloomDataDiv'>
 								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
 								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by-nc/4.0/</div>
@@ -373,7 +373,7 @@ namespace BloomTests.Book
 		public void SetMetadata_CopiesCopyrightAndOriginalCopyrightToMultipleDestinations()
 		{
 			// We could test other fields too, but these are enough to cover the two main methods that do the copying.
-			var html = @"<html><head><meta name='lockedDownAsShell' content='true'></meta></head><body>
+			var html = @"<html><head></head><body>
 							<div id='bloomDataDiv'>
 								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
 								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by-nc/4.0/</div>

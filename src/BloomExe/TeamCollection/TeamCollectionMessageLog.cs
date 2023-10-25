@@ -167,9 +167,7 @@ namespace Bloom.TeamCollection
 			// Linux and Windows. But that's OK, because .NET line reading accepts either line
 			// break on either platform.
 			var toPersist = message.ToPersistedForm + Environment.NewLine;
-			// There ought to be a RobustFile.AppendAllText, but there isn't.
-			// However, as this promises to close the file each call, it should be pretty reliable.
-			RetryUtility.Retry(() => File.AppendAllText(_logFilePath, toPersist));
+			ToPalaso.RobustIO.AppendAllText(_logFilePath, toPersist);
 		}
 
 		private bool MatchParams(string p1, string p2)
@@ -230,7 +228,7 @@ namespace Bloom.TeamCollection
 		//	// a byte at a time and do our own processing into lines. We can switch to that if it
 		//	// becomes necessary.
 		//	var bytes = new byte[_oldMessageLength];
-		//	using (var stream = new FileStream(_logFilePath, FileMode.Open, FileAccess.Read))
+		//	using (var stream = ToPalaso.RobustIO.GetFileStream(_logFilePath, FileMode.Open, FileAccess.Read))
 		//	{
 		//		// We better not be getting over 2G of log!
 		//		stream.Read(bytes, 0, (int)_oldMessageLength);
