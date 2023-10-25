@@ -1,0 +1,28 @@
+{
+    "presets": [
+        {
+            "data-book": "credits-page-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Juarez-UNIDOS.png'/><div class='Credits-Page-style' lang='es'><p>Este material ha sido elaborado gracias a la asistencia financiera del Programa USDA (FFE) Programa de Alimentos para la Educación del Departamento de Agricultura de los Estados Unidos a través del Programa UNIDOS liderado por Global Communities, en asocio con Save the Children y Juárez &amp; Associates, Inc. bajo los términos del Convenio de Cooperación No.&nbsp;FFE-520-2021/003-00. Las opiniones aquí expresadas son responsabilidad exclusiva del autor y las mismas no necesariamente reflejan las opiniones de USDA o el Gobierno de los Estados Unidos de América.</p></div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "content": "Copyright 2023 Juárez &amp; Associates, Inc.",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by-nc-sa/4.0/",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='full-bloom-logo-grey.svg'/>",
+            "condition": "always"
+        }
+    ]
+}

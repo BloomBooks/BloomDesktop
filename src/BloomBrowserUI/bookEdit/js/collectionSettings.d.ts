@@ -4,7 +4,6 @@
 declare function GetSettings(): ICollectionSettings;
 
 interface ICollectionSettings {
-    isSourceCollection: boolean;
     languageForNewTextBoxes: string;
     defaultSourceLanguage: string;
     currentCollectionLanguage2: string;

@@ -1946,7 +1946,6 @@ namespace BloomTests.Book
 				<IsLanguage1Rtl>false</IsLanguage1Rtl>
 				<IsLanguage2Rtl>false</IsLanguage2Rtl>
 				<IsLanguage3Rtl>true</IsLanguage3Rtl>
-				<IsSourceCollection>False</IsSourceCollection>
 				<XMatterPack>Factory</XMatterPack>
 				<Country></Country>
 				<Province></Province>
@@ -1967,7 +1966,6 @@ namespace BloomTests.Book
 				<IsLanguage1Rtl>false</IsLanguage1Rtl>
 				<IsLanguage2Rtl>false</IsLanguage2Rtl>
 				<IsLanguage3Rtl>true</IsLanguage3Rtl>
-				<IsSourceCollection>False</IsSourceCollection>
 				<XMatterPack>Factory</XMatterPack>
 				<Country></Country>
 				<Province></Province>
@@ -1988,7 +1986,6 @@ namespace BloomTests.Book
 				<IsLanguage1Rtl>false</IsLanguage1Rtl>
 				<IsLanguage2Rtl>false</IsLanguage2Rtl>
 				<IsLanguage3Rtl>true</IsLanguage3Rtl>
-				<IsSourceCollection>False</IsSourceCollection>
 				<XMatterPack>Factory</XMatterPack>
 				<Country></Country>
 				<Province></Province>

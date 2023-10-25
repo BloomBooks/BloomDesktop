@@ -167,7 +167,7 @@ namespace Bloom.Publish.Video
 					string format = request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format;
 					RecordVideoWindow.GetDataForFormat(format,
 						ShouldRecordAsLandscape(request.CurrentBook, format), request.CurrentBook.GetLayout(),
-						out _, out _, out _, out _, out bool useOriginalPageSize);
+						out _, out _, out _, out _, out bool useOriginalPageSize, out _);
 					request.ReplyWithBoolean(useOriginalPageSize);
 				},
 				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
@@ -179,7 +179,7 @@ namespace Bloom.Publish.Video
 					string format = request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format;
 					request.ReplyWithText(RecordVideoWindow.GetDataForFormat(format,
 						ShouldRecordAsLandscape(request.CurrentBook, format), request.CurrentBook.GetLayout(),
-						out _, out _, out _, out _, out _));
+						out _, out _, out _, out _, out _, out _));
 				},
 				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
 				false);
@@ -195,7 +195,7 @@ namespace Bloom.Publish.Video
 					{
 						RecordVideoWindow.GetDataForFormat(formatName,
 							ShouldRecordAsLandscape(request.CurrentBook, formatName), request.CurrentBook.GetLayout(),
-							out Resolution desiredResolution, out Resolution actualResolution, out _, out _, out _);
+							out Resolution desiredResolution, out Resolution actualResolution, out _, out _, out _, out _);
 
 						return new FormatDimensionsResponseEntry(formatName, desiredResolution, actualResolution);
 					}).ToArray();

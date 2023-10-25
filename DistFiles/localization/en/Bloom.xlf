@@ -514,16 +514,19 @@
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+        <!-- obsolete after 5.4 -->
         <source xml:lang="en">Language 1</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
         <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+        <!-- obsolete after 5.4 -->
         <source xml:lang="en">Language 2</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
         <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+        <!-- obsolete after 5.4 -->
         <source xml:lang="en">Language 3</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
         <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
@@ -817,6 +820,7 @@
         <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
       </trans-unit>
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
+        <!-- obsolete after 5.4 -->
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
       </trans-unit>
@@ -1283,6 +1287,7 @@
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
         <note>ID: EditTab.BookContextMenu.openHtmlInBrowser</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="EditTab.CannotChangeCopyright">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
@@ -2860,6 +2865,7 @@
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
         <note>ID: Errors.CannotConnectToBloomServer</note>
         <note xml:lang="en">OLD TEXT (before 3.9, shorter wording): Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</note>
+        <note>Obsolete as of Bloom 5.5. (Replaced with Errors.CannotConnectToBloomServer.2 in BloomLowPriority)</note>
       </trans-unit>
       <trans-unit id="Errors.CouldNotSavePage">
         <source xml:lang="en">Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
@@ -3328,6 +3334,7 @@
         <note>ID: NewCollectionWizard.CollectionName</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
+        <!-- obsolete after 5.4 -->
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.ExampleText</note>
       </trans-unit>
@@ -3648,17 +3655,17 @@
         <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
+        <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
         <note>{0} is a font name, {1} is a file extension (for example: .ttc)</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
+        <source xml:lang="en">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</source>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
         <note>{0} is a font name</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
+        <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
       </trans-unit>
@@ -3673,7 +3680,7 @@
         <note>{0} is a file path</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
+        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} is a font name</note>
       </trans-unit>
@@ -4277,11 +4284,6 @@
       <trans-unit id="PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed">
         <source xml:lang="en">This is disabled because this book is not set up to be full bleed.</source>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.FullBleed">
-        <source xml:lang="en">Full Bleed</source>
-        <note>ID: PublishTab.PdfMaker.FullBleed</note>
-        <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
@@ -5712,6 +5714,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Bloom will create a new collection on your computer based on this Team Collection.</source>
         <note>ID: TeamCollection.Creating</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.NeedDropboxRunning" sil:dynamic="true">
+        <source xml:lang="en">Dropbox does not appear to be running. Please see [Troubleshooting Dropbox](https://docs.bloomlibrary.org/dropbox-trouble).</source>
+        <note>ID: TeamCollection.NeedDropboxRunning</note>
+        <note>The text inside the [square brackets] will become a link to the URL in parentheses.</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.Intro" sil:dynamic="true">
         <source xml:lang="en">Bloom's Team Collection system helps your team collaborate as you create, translate, and edit books. Read about how it works [here]({0}), or view this [video]({1}).</source>
         <note>ID: TeamCollection.Intro</note>
@@ -5787,7 +5794,7 @@ Do you want to go ahead?</note>
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutError">
-        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>

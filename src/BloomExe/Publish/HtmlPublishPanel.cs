@@ -45,7 +45,7 @@ namespace Bloom.Publish
 		private void Deactivate()
 		{
 			// This is important so the react stuff can do its cleanup
-			_browser.Navigate("about:blank",false);
+			_browser?.Navigate("about:blank",false);
 		}
 
 	}

@@ -1,7 +1,11 @@
 @import "../../bloom-xmatter-common.less";
 
 @fontSize: 10pt;
+@creditsPageFontSize: 8pt;
+@trimmerLineHeight: 1.1;
+@creditsLineHeight: 1.2;
 @MarginBetweenMajorItems: 3em;
+@MarginBetweenMinorItems: 1.5em;
 @contentMinimumHeight: 1em;
 
 // trying to snug things up a bit around the license
@@ -35,7 +39,7 @@
 .titlePage {
     // default values for the Languages of Book section; yeah, I know, huh? Credits-Page-style on the Title page!
     .Credits-Page-style .languagesOfBook {
-        line-height: 1.1;
+        line-height: @trimmerLineHeight;
     }
     // default values for the Original Contributions section
     .OriginalContributions-style.bloom-contentNational1 {
@@ -63,8 +67,8 @@
     }
     // default values for the National Language section
     .NationalLanguage-style.bloom-contentNational1 {
-        font-size: @fontSize;
-        line-height: 1.2;
+        font-size: @creditsPageFontSize;
+        line-height: @creditsLineHeight;
         display: block;
         margin-bottom: @MarginBetweenMajorItems;
         // default paragraph spacing
@@ -74,34 +78,36 @@
     }
     // default values for the Localized Acknowledgments section
     .LocalizedAcknowledgments-style.bloom-contentNational1 {
-        font-size: @fontSize;
-        line-height: 1.2;
+        font-size: @creditsPageFontSize;
+        line-height: @creditsLineHeight;
         display: block;
         margin-bottom: @MarginBetweenMajorItems;
-        // default paragraph spacing
-        > p {
-            margin-bottom: 1em;
-        }
+    }
+    #originalAcknowledgments {
+        // The spec says to "add a line space" between the copyright/license block and
+        // the original acknowledgments, but they also shrank the text at the same time, so "a line space"
+        // needed a bit more.
+        margin-top: @MarginBetweenMinorItems;
     }
     // default values for the Original Acknowledgments section
     .OriginalAcknowledgments-style.bloom-contentNational1 {
-        font-size: @fontSize;
-        line-height: 1.2;
+        font-size: @creditsPageFontSize;
+        line-height: @creditsLineHeight;
         display: block;
         margin-top: 0;
     }
     // default values for license/copyright block and ISBN container
     .Credits-Page-style {
-        font-size: @fontSize;
-        line-height: 1.2;
+        font-size: @creditsPageFontSize;
+        line-height: @creditsLineHeight;
     }
     .ISBNContainer {
         margin-bottom: 0.5em;
     }
     // default values for the Printing History section
     .PrintingHistory-style.bloom-contentNational1 {
-        font-size: @fontSize;
-        line-height: 1.2;
+        font-size: @creditsPageFontSize;
+        line-height: @creditsLineHeight;
         display: block;
         text-align: center;
         margin-bottom: 0; // snug up to bottom of marginBox
@@ -130,14 +136,20 @@
 }
 
 .HalfLetterPortrait.outsideFrontCover {
-    .creditsRow .Cover-Default-style {
-        font-size: 14pt;
-        text-align: center;
+    .creditsRow {
+        .smallCoverCredits {
+            line-height: @trimmerLineHeight !important;
+        }
+        .Cover-Default-style {
+            font-size: 14pt;
+            text-align: center;
+        }
     }
 }
 
 #titlePageTitleBlock .bloom-content1 {
-    font-size: 24pt;
+    font-size: 20pt;
+    line-height: @trimmerLineHeight !important;
     font-weight: bold;
 }
 

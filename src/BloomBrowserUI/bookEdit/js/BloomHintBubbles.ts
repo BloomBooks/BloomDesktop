@@ -507,19 +507,6 @@ export default class BloomHintBubbles {
     }
 
     private static canChangeBookLicense(): boolean {
-        // First, need to look in .bloomCollection file for <IsSourceCollection> value
-        // if 'true', return true.
-        if (GetSettings().isSourceCollection) return true;
-
-        // meta[@name='lockedDownAsShell' and @content='true'], if exists, return false
-        const lockedAsShell = $(document).find(
-            'meta[name="lockedDownAsShell"]'
-        );
-        if (
-            lockedAsShell.length > 0 &&
-            lockedAsShell.attr("content").toLowerCase() == "true"
-        )
-            return false;
         // meta[@name='canChangeLicense'] and @content='false'], if exists, return false
         const canChange = $(document).find('meta[name="canChangeLicense"]');
         if (

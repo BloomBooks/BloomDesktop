@@ -4159,18 +4159,18 @@
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
-        <target xml:lang="lo" state="needs-translation">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</target>
+        <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
+        <target xml:lang="lo" state="needs-translation">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</target>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
-        <target xml:lang="lo" state="needs-translation">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</target>
+        <source xml:lang="en">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</source>
+        <target xml:lang="lo" state="needs-translation">This book has text in a font named "{0}". The license for "{0}" does not permit Bloom to embed the font in the book.</target>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
-        <target xml:lang="lo" state="needs-translation">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</target>
+        <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
+        <target xml:lang="lo" state="needs-translation">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true">
@@ -4184,8 +4184,8 @@
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
-        <target xml:lang="lo" state="needs-translation">Bloom will substitute \"{0}\" instead."</target>
+        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
+        <target xml:lang="lo" state="needs-translation">Bloom will substitute "{0}" instead."</target>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CoverColor" sil:dynamic="true">
@@ -4425,7 +4425,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
-        <target xml:lang="lo" state="final">ເຮັດປຶ້ມຄູ່ມືຈາກຫນ້າທີ່ພາຍໃນຂອງຫນັງສືໄດ້. ຫນ້າຈະໄດ້ຮັບການວາງອອກແລະ ປ່ຽນແປງຄໍາສັ່ງຂອງດັ່ງນັ້ນໃນເວລາທີ່ທ່ານເທົ່າມັນ, ທ່ານຈະມີປຶ້ມຄູ່ມືໄດ້. \ n</target>
+        <target xml:lang="lo" state="final">ເຮັດປຶ້ມຄູ່ມືຈາກຫນ້າທີ່ພາຍໃນຂອງຫນັງສືໄດ້. ຫນ້າຈະໄດ້ຮັບການວາງອອກແລະ ປ່ຽນແປງຄໍາສັ່ງຂອງດັ່ງນັ້ນໃນເວລາທີ່ທ່ານເທົ່າມັນ, ທ່ານຈະມີປຶ້ມຄູ່ມືໄດ້. \n</target>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.BookMetadata">
@@ -6073,7 +6073,7 @@
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
-        <target xml:lang="lo" state="final">ນອກຈາກນີ້, BloomPack ນີ້ຈະປະຕິບັດການຕັ້ງຄ່າຫຼ້າສຸດ decodable ແລະ leveled reader ຂອງທ່ານສໍາລັບ  \"{0}\" ພາສາ. ຜູ້ທີ່ໄດ້ເປີດ BloomPack ນີ້, ມັນຈະເປີດຂຶ້ນ \ "{0} \" ການເກັບກໍາ, ການຕັ້ງຄ່າໃນປະຈຸບັນອ່ານບົດທີ່ decodable ແລະ leveled reader ແທນທີ່ດ້ວຍການຕັ້ງຄ່າໃນ BloomPack ໄດ້. ພວກເຂົາເຈົ້າແມ່ນໄດ້ຮັບຍັງໄດ້ກໍານົດໄວ້ໃນປະຈຸບັນຂອງຄໍາສັບຕ່າງໆທີ່ນໍາໃຊ້ decodable readers.</target>
+        <target xml:lang="lo" state="final">ນອກຈາກນີ້, BloomPack ນີ້ຈະປະຕິບັດການຕັ້ງຄ່າຫຼ້າສຸດ decodable ແລະ leveled reader ຂອງທ່ານສໍາລັບ  "{0}" ພາສາ. ຜູ້ທີ່ໄດ້ເປີດ BloomPack ນີ້, ມັນຈະເປີດຂຶ້ນ "{0}" ການເກັບກໍາ, ການຕັ້ງຄ່າໃນປະຈຸບັນອ່ານບົດທີ່ decodable ແລະ leveled reader ແທນທີ່ດ້ວຍການຕັ້ງຄ່າໃນ BloomPack ໄດ້. ພວກເຂົາເຈົ້າແມ່ນໄດ້ຮັບຍັງໄດ້ກໍານົດໄວ້ໃນປະຈຸບັນຂອງຄໍາສັບຕ່າງໆທີ່ນໍາໃຊ້ decodable readers.</target>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel" approved="yes">
@@ -6515,7 +6515,7 @@
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckoutError">
-        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>

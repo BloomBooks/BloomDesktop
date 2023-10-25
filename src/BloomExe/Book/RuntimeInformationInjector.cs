@@ -340,7 +340,6 @@ namespace Bloom.Book
 			}
 
 			d.Add("languageForNewTextBoxes", bookData.Language1.Tag);
-			d.Add("isSourceCollection", bookData.CollectionSettings.IsSourceCollection.ToString());
 
 			// BL-2357 To aid in smart ordering of source languages in source bubble
 			if (!String.IsNullOrEmpty(bookData.Language2Tag))
@@ -353,7 +352,6 @@ namespace Bloom.Book
 			}
 
 			d.Add("browserRoot", FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot).ToLocalhost());
-
 
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 

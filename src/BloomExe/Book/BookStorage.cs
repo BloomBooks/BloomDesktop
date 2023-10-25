@@ -483,7 +483,11 @@ namespace Bloom.Book
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!String.IsNullOrEmpty(tempPath))
-					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath());
+				{
+					// Enhance: write SIL.IO.RobustFile.Replace() and fix SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded to use it.
+					SIL.Code.RetryUtility.Retry(() => FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath()),
+						memo: $"Replace {PathToExistingHtml} (with backup)");
+				}
 			}
 		}
 
@@ -2090,7 +2094,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// we update these so that the file continues to look the same when you just open it in firefox
+		/// we update these so that the file continues to look the same when you just open it in the browser
 		/// </summary>
 		public void UpdateSupportFiles()
 		{
@@ -2967,7 +2971,7 @@ namespace Bloom.Book
 			if (desiredPath == null)
 				desiredPath = oldBookFolder;
 			var newPathForExtraBook = BookStorage.GetUniqueFolderPath(desiredPath);
-			Directory.Move(oldBookFolder, newPathForExtraBook);
+			SIL.IO.RobustIO.MoveDirectory(oldBookFolder, newPathForExtraBook);
 			var extraBookPath = Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(oldBookFolder), "htm"));
 			// This will usually succeed, since it is standard to name the book the same as the folder.
 			// But if it doesn't, we can't move it, so it seems worth a check.

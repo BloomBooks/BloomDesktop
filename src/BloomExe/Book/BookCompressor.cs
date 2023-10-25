@@ -268,6 +268,7 @@ namespace Bloom.Book
 			var text = RobustFile.ReadAllText(bookPath, Encoding.UTF8);
 			// Note that we're getting rid of preceding newline but not following one. Hopefully we cleanly remove a whole line.
 			// I'm not sure the </meta> ever occurs in html files, but just in case we'll match if present.
+			// Remove the lockedDownAsShell HTML metadata setting if present.
 			var regex = new Regex("\\s*<meta\\s+name=(['\\\"])lockedDownAsShell\\1 content=(['\\\"])true\\2>(</meta>)? *");
 			var match = regex.Match(text);
 			if (match.Success)
@@ -413,7 +414,7 @@ namespace Bloom.Book
 							// suitable overloads).
 							RobustImageIO.SaveImage(newImage, tempFile.Path, image.RawFormat);
 							// Copy the metadata from the original file to the new file.
-							var metadata = SIL.Windows.Forms.ClearShare.Metadata.FromFile(filePath);
+							var metadata = RobustFileIO.MetadataFromFile(filePath);
 							if (!metadata.IsEmpty)
 								metadata.Write(tempFile.Path);
 							var newBytes = RobustFile.ReadAllBytes(tempFile.Path);

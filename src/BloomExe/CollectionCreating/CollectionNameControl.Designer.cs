@@ -30,7 +30,6 @@
 		{
             this.components = new System.ComponentModel.Container();
             this._collectionNameControl = new System.Windows.Forms.TextBox();
-            this._exampleText = new SIL.Windows.Forms.Widgets.BetterLabel();
             this._collectionInfoLabel = new SIL.Windows.Forms.Widgets.BetterLabel();
             this._nameCollectionLabel = new System.Windows.Forms.Label();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -51,27 +50,6 @@
             this._collectionNameControl.Size = new System.Drawing.Size(229, 29);
             this._collectionNameControl.TabIndex = 10;
             this._collectionNameControl.TextChanged += new System.EventHandler(this._textCollectionName_TextChanged);
-            // 
-            // _exampleText
-            // 
-            this._exampleText.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._exampleText.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this._exampleText.Enabled = false;
-            this._exampleText.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this._exampleText.ForeColor = System.Drawing.Color.DimGray;
-            this._exampleText.IsTextSelectable = false;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._exampleText, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._exampleText, null);
-            this._L10NSharpExtender.SetLocalizingId(this._exampleText, "NewCollectionWizard.CollectionNamePage.ExampleText");
-            this._exampleText.Location = new System.Drawing.Point(3, 64);
-            this._exampleText.Multiline = true;
-            this._exampleText.Name = "_exampleText";
-            this._exampleText.ReadOnly = true;
-            this._exampleText.Size = new System.Drawing.Size(311, 15);
-            this._exampleText.TabIndex = 13;
-            this._exampleText.TabStop = false;
-            this._exampleText.Text = "Examples: \"Health Books\", \"PNG Animal Stories\"";
             // 
             // _collectionInfoLabel
             // 
@@ -121,7 +99,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this._nameCollectionLabel);
             this.Controls.Add(this._collectionInfoLabel);
-            this.Controls.Add(this._exampleText);
             this.Controls.Add(this._collectionNameControl);
             this._L10NSharpExtender.SetLocalizableToolTip(this, null);
             this._L10NSharpExtender.SetLocalizationComment(this, null);
@@ -138,7 +115,6 @@
 		#endregion
 
 		protected System.Windows.Forms.TextBox _collectionNameControl;
-		private SIL.Windows.Forms.Widgets.BetterLabel _exampleText;
 		private SIL.Windows.Forms.Widgets.BetterLabel _collectionInfoLabel;
 		private System.Windows.Forms.Label _nameCollectionLabel;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;

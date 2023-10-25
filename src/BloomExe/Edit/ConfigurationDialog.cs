@@ -53,7 +53,7 @@ namespace Bloom.Edit
 
 		private async void  _okButton_ClickAsync(object sender, EventArgs e)
 		{
-			FormData = await _browser.RunJavaScriptAsync("gatherSettings()");
+			FormData = await _browser.GetStringFromJavascriptAsync("gatherSettings()");
 			DialogResult = DialogResult.OK;
 			Close();
 

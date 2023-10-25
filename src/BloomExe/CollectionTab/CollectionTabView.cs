@@ -288,7 +288,7 @@ namespace Bloom.CollectionTab
 
 		public string CollectionTabLabel
 		{
-			get { return LocalizationManager.GetString("CollectionTab.CollectionTabLabel", "Collections"); }//_model.IsSourceCollection ? "Shell Collection" : "Collection"; }
+			get { return LocalizationManager.GetString("CollectionTab.CollectionTabLabel", "Collections"); }
 
 		}
 
