@@ -13,6 +13,7 @@ using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.Registration;
 using Bloom.Utils;
+using Bloom.web;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -64,6 +65,11 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
+			apiHandler.RegisterEndpointHandler(
+				"teamCollection/checkInAllBooks",
+				HandleCheckInAllBooks,
+				true
+			);
 			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/getCollectionName", HandleGetCollectionName, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
@@ -182,7 +188,7 @@ namespace Bloom.TeamCollection
 		{
 			/* keeping this around as a comment to make it easier to work on the display
 
-			
+
 			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "", "blah blah blah blah");
 			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "", "Another message. I just simplified this English, but the surrounding code would lead me to think. I just simplified this English, but the surrounding code would lead me to think.");
 			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.Error, "", "An error of some sort. I just simplified this English, but the surrounding code would lead me to think. I just simplified this English, but the surrounding code would lead me to think.");
@@ -480,6 +486,8 @@ namespace Bloom.TeamCollection
 							{"BookId", _bookSelection?.CurrentSelection?.ID},
 							{"BookName", _bookSelection?.CurrentSelection?.Title}
 						});
+
+					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckOut);
 				}
 
 				request.ReplyWithBoolean(success);
@@ -610,79 +618,152 @@ namespace Bloom.TeamCollection
 				// but since we're doing the checkin on the UI thread, it doesn't get painted without this.
 				Application.DoEvents();
 			};
+			// Right before calling this API, the status panel makes a change that
+			// should make the progress bar visible. But this method is running on
+			// the UI thread so without this call it won't appear until later, when
+			// we have Application.DoEvents() as part of reporting progress. We do
+			// quite a bit on large books before the first file is written to the
+			// zip, so one more DoEvents() here lets the bar appear at once.
+			Application.DoEvents();
+			_bookSelection.CurrentSelection.Save();
+
+			if (!_tcManager.CheckConnection())
+			{
+				request.Failed();
+				return;
+			}
+			CheckInOneBook(
+				_bookSelection.CurrentSelection.BookInfo,
+				request,
+				reportCheckinProgress
+			);
+			request.PostSucceeded();
+			// Force a full reload of the book from disk and update the UI to match.
+			_bookSelection.SelectBook(_bookSelection.CurrentSelection);
+		}
+
+		public void HandleCheckInAllBooks(ApiRequest request)
+		{
+			// this could take a long time, so...
+			request.PostSucceeded();
+
+			var progress = new WebSocketProgress(_socketServer, "teamCollection-status");
+			progress.LogAllMessages = true;
+
+			Action<float> reportProgressFraction = (fraction) => {
+				//progress.MessageWithoutLocalizing(fraction.ToString() + " ");
+			};
+			// might not be even saveable. Do we need this for anything? _bookSelection.CurrentSelection?.Save();
+			var books = _collectionModel.GetBookCollections()[0].GetBookInfos();
+			// limit to books which are checked out
+
+			books = books.Where(b =>
+			{
+				var status = _tcManager.CurrentCollection.GetStatus(b.FolderName);
+				return _tcManager.CurrentCollection.IsCheckedOutHereBy(status);
+			});
+			foreach (var book in books)
+			{
+				progress.MessageWithoutLocalizing($"Starting check-in of '{book.Title}'...");
+				CheckInOneBook(book, request, reportProgressFraction, progress);
+			}
+			progress.MessageWithoutLocalizing($"Done checking in books.");
+		}
+
+		private void CheckInOneBook(
+			BookInfo bookInfo,
+			ApiRequest request,
+			Action<float> reportProgressFraction,
+			IWebSocketProgress progress = null
+		)
+		{
 			try
 			{
-				// Right before calling this API, the status panel makes a change that
-				// should make the progress bar visible. But this method is running on
-				// the UI thread so without this call it won't appear until later, when
-				// we have Application.DoEvents() as part of reporting progress. We do
-				// quite a bit on large books before the first file is written to the
-				// zip, so one more DoEvents() here lets the bar appear at once.
-				Application.DoEvents();
-				_bookSelection.CurrentSelection.Save();
-				if (!_tcManager.CheckConnection())
-				{
-					request.Failed();
-					return;
-				}
-
-				var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
+				var bookName = Path.GetFileName(bookInfo.FolderPath);
 				if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
 				{
 					// review: not super happy about this being here in the api. Was stymied by
 					// PutBook not knowing about the actual book object, but maybe that could be passed in.
 					// It's important that this is done BEFORE the checkin: we want other users to see the
 					// comment, and NOT see the pending comment as if it was their own if they check out.
-					var message = BookHistory.GetPendingCheckinMessage(_bookSelection.CurrentSelection);
-					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckIn, message);
-					BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
-					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true, false, reportCheckinProgress);
-					reportCheckinProgress(0); // hides the progress bar (important if a different book has been selected that is still checked out)
 
-					Analytics.Track("TeamCollectionCheckinBook",
-						new Dictionary<string, string>(){
-							{"CollectionId", _settings?.CollectionId},
-							{"CollectionName", _settings?.CollectionName},
-							{"Backend", _tcManager?.CurrentCollection?.GetBackendType()},
-							{"User", CurrentUser},
-							{"BookId", _bookSelection?.CurrentSelection.ID },
-							{"BookName", _bookSelection?.CurrentSelection.Title }
-						});
+					var book = _collectionModel.GetBookFromBookInfo(bookInfo);
+					var message = BookHistory.GetPendingCheckinMessage(book);
+					BookHistory.AddEvent(book, BookHistoryEventType.CheckIn, message);
+					BookHistory.SetPendingCheckinMessage(book, "");
+					_tcManager.CurrentCollection.PutBook(
+						bookInfo.FolderPath,
+						true,
+						false,
+						reportProgressFraction
+					);
+					progress?.MessageWithoutLocalizing($"Completed check-in of '{bookInfo.Title}'");
+
+					reportProgressFraction(0); // hides the progress bar (important if a different book has been selected that is still checked out)
+
+					Analytics.Track(
+						"TeamCollectionCheckinBook",
+						new Dictionary<string, string>()
+						{
+							{ "CollectionId", _settings?.CollectionId },
+							{ "CollectionName", _settings?.CollectionName },
+							{ "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
+							{ "User", CurrentUser },
+							{ "BookId", bookInfo.Id },
+							{ "BookName", bookInfo.Title }
+						}
+					);
 				}
 				else
 				{
 					// We can't check in! The system has broken down...perhaps conflicting checkouts while offline.
 					// Save our version in Lost-and-Found
-					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false, true, reportCheckinProgress);
-					reportCheckinProgress(0); // cleans up panel for next time
+					_tcManager.CurrentCollection.PutBook(
+						bookInfo.FolderPath,
+						false,
+						true,
+						reportProgressFraction
+					);
+					reportProgressFraction(0); // cleans up panel for next time
 					// overwrite it with the current repo version.
-					_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName, dialogOnError:true);
-					// Force a full reload of the book from disk and update the UI to match.
-					_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
-					var msgFmt = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
-						"Someone else has edited the book {0} or checked it out even though it was being editing here! Local changes have been saved to Lost and Found");
-					var msg = string.Format(msgFmt,
-						Path.GetFileNameWithoutExtension(_bookSelection.CurrentSelection.FolderPath));
-					Analytics.Track("TeamCollectionConflictingEditOrCheckout",
-						new Dictionary<string, string>() {
-							{"CollectionId", _settings?.CollectionId},
-							{"CollectionName", _settings?.CollectionName},
-							{"Backend", _tcManager?.CurrentCollection?.GetBackendType()},
-							{"User", CurrentUser},
-							{"BookId", _bookSelection?.CurrentSelection?.ID},
-							{"BookName", _bookSelection?.CurrentSelection?.Title}
-						});
-					BookHistory.AddEvent(_bookSelection?.CurrentSelection, BookHistoryEventType.SyncProblem, msg);
+					_tcManager.CurrentCollection.CopyBookFromRepoToLocal(
+						bookName,
+						dialogOnError: true
+					);
+					var msgFmt = LocalizationManager.GetString(
+						"TeamCollection.ConflictingEditOrCheckout",
+						"Someone else has edited the book {0} or checked it out even though it was being editing here! Local changes have been saved to Lost and Found"
+					);
+					var msg = string.Format(
+						msgFmt,
+						Path.GetFileNameWithoutExtension(bookInfo.FolderPath)
+					);
+
+					progress.MessageWithoutLocalizing($"{msgFmt}", ProgressKind.Error);
+
+					Analytics.Track(
+						"TeamCollectionConflictingEditOrCheckout",
+						new Dictionary<string, string>()
+						{
+							{ "CollectionId", _settings?.CollectionId },
+							{ "CollectionName", _settings?.CollectionName },
+							{ "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
+							{ "User", CurrentUser },
+							{ "BookId", bookInfo.Id },
+							{ "BookName", bookInfo.Title }
+						}
+					);
+					BookHistory.AddEvent(bookInfo, BookHistoryEventType.SyncProblem, msg);
 					BloomMessageBox.ShowInfo(msg);
 				}
+
 				UpdateUiForBook();
-				request.PostSucceeded();
 
 				Application.Idle += OnIdleConnectionCheck;
 			}
 			catch (Exception e)
 			{
-				reportCheckinProgress(0); // cleans up panel progress indicator
+				reportProgressFraction(0); // cleans up panel progress indicator
 				var msgId = "TeamCollection.ErrorCheckingBookIn";
 				var msgEnglish = "Error checking in {0}: {1}";
 				var log = _tcManager?.CurrentCollection?.MessageLog;

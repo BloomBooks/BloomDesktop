@@ -13,6 +13,10 @@ using Bloom.Publish.BloomLibrary;
 using BloomTemp;
 using Newtonsoft.Json;
 using SIL.IO;
+using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
+using SIL.Reporting;
+using Bloom.ToPalaso;
 
 namespace Bloom.web.controllers
 {
@@ -22,6 +26,9 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class PublishApi
 	{
+		
+		private BookUpload _bookTransferrer;
+		private PublishModel _publishModel;
 		public static BloomLibraryPublishModel Model { get; set; }
 		private IBloomWebSocketServer _webSocketServer;
 		private readonly BookServer _bookServer;
@@ -48,6 +55,7 @@ namespace Bloom.web.controllers
 		private readonly WebSocketProgress _progress;
 
 		public static string PreviewUrl { get; set; }
+		private WorkspaceTabSelection _tabSelection;
 
 		/// <summary>
 		/// Conceptually, this is where we are currently building a book for preview.
@@ -57,15 +65,26 @@ namespace Bloom.web.controllers
 		/// </summary>
 		public static string CurrentPublicationFolder { get; private set; }
 
-		public PublishApi(BloomWebSocketServer webSocketServer, BookServer bookServer)
+		public PublishApi(BloomWebSocketServer webSocketServer, BookServer bookServer, BookUpload bookTransferrer, 
+			PublishModel model, WorkspaceTabSelection tabSelection)
 		{
 			_webSocketServer = webSocketServer;
 			_bookServer = bookServer;
 			_progress = new WebSocketProgress(_webSocketServer, PublishApi.kWebSocketContext);
+			_bookTransferrer = bookTransferrer;
+			_publishModel = model;
+			_tabSelection = tabSelection;
+
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
+			apiHandler.RegisterEndpointHandler("publish/getInitialPublishTabInfo", getInitialPublishTabInfo, false);
+			apiHandler.RegisterEndpointHandler("publish/switchingPublishMode", (request) => {
+				// Abort any work we're doing to prepare a preview (at least stop it interfering with other navigation)
+				PublishHelper.Cancel();
+				request.PostSucceeded();
+			}, false);
 			apiHandler.RegisterBooleanEndpointHandler("publish/signLanguage",
 				request => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage(),
 				(request, val) =>
@@ -111,7 +130,7 @@ namespace Bloom.web.controllers
 						   Model.L1SupportsVisuallyImpaired,
 				(request, val) =>
 				{
-					Model.L1SupportsVisuallyImpaired = val;
+					Model.L1SupportsVisuallyImpaired = val; // Saves the BookInfo with the new value
 				}, true);
 
 			apiHandler.RegisterBooleanEndpointHandler("publish/canHaveMotionMode",
@@ -269,7 +288,29 @@ namespace Bloom.web.controllers
 				(writeRequest, value) =>
 				{
 					writeRequest.CurrentBook.BookInfo.MetaData.Draft = value;
+					writeRequest.CurrentBook.BookInfo.Save(); // We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
 				}, false);
+		}
+
+		public void getInitialPublishTabInfo(ApiRequest request)
+		{
+				_publishModel.UpdateModelUponActivation();
+				// There should be a current selection by now but just in case:
+				if (_publishModel.BookSelection.CurrentSelection == null) 
+				{
+					request.ReplyWithJson(new {});
+					return;
+				}
+				LibraryPublishApi.Model = Model = new BloomLibraryPublishModel(_bookTransferrer, _publishModel.BookSelection.CurrentSelection, _publishModel);
+				Logger.WriteEvent("Entered Publish Tab");
+				_publishModel.BookSelection.CurrentSelection.ReportIfBrokenAudioSentenceElements();
+				request.ReplyWithJson(JsonConvert.SerializeObject(new { 
+					canUpload = _publishModel.BookSelection.CurrentSelection.BookInfo.AllowUploading,
+					canPublish = _publishModel.CanPublish,
+					canDownloadPDF = _publishModel.PdfGenerationSucceeded, // To be used for the context menu
+					titleForDisplay = _publishModel.BookSelection.CurrentSelection.TitleBestForUserDisplay,
+					numberOfFirstPageWithOverlay = _publishModel.BookSelection.CurrentSelection.GetNumberOfFirstPageWithOverlay(),
+				}));
 		}
 
 		private void HandleChooseSignLanguage(ApiRequest request)
@@ -402,7 +443,7 @@ namespace Bloom.web.controllers
 				// I've made it a websocket broadcast when it is ready.
 				// If we've already left the publish tab...we can get a few of these requests queued up when
 				// a tester rapidly toggles between views...abandon the attempt
-				if (!PublishHelper.InPublishTab)
+				if (_tabSelection.ActiveTab != WorkspaceTab.publish)
 				{
 					request.Failed("aborted, no longer in publish tab");
 					return;
@@ -422,6 +463,27 @@ namespace Bloom.web.controllers
 		}
 
 		/// <summary>
+		/// Check whether we are allowed to publish this book in this language (using LicenseChecker)
+		/// </summary>
+		internal bool IsBookLicenseOK(Book.Book book, BloomPubPublishSettings settings, WebSocketProgress progress)
+		{
+			if (settings?.LanguagesToInclude != null)
+			{
+				var message = new LicenseChecker().CheckBook(book, settings.LanguagesToInclude.ToArray());
+				if (message != null)
+				{
+					if (progress != null)
+						progress.MessageWithoutLocalizing(message, ProgressKind.Error);
+					LicenseOK = false;
+					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "false");
+					return false;
+				}
+			}
+			LicenseOK = true;
+			return true;
+		}
+
+		/// <summary>
 		/// Generates an unzipped, staged BloomPUB from the book
 		/// </summary>
 		/// <returns>A valid, well-formed URL on localhost that points to the staged book's htm file,
@@ -429,18 +491,8 @@ namespace Bloom.web.controllers
 		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");  // message shared with Epub publishing
-			if (settings?.LanguagesToInclude != null)
-			{
-				var message = new LicenseChecker().CheckBook(book, settings.LanguagesToInclude.ToArray());
-				if (message != null)
-				{
-					progress.MessageWithoutLocalizing(message, ProgressKind.Error);
-					LicenseOK = false;
-					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "false");
-					return null;
-				}
-			}
-			LicenseOK = true;
+			if (!IsBookLicenseOK(book, settings, progress))
+				return null;
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
 
 			_stagingFolder?.Dispose();

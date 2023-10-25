@@ -284,23 +284,26 @@ export default class OverflowChecker {
         }
         if (overflowY > 0 || overflowX > 0) {
             $box.addClass("overflow");
-            theOneLocalizationManager
-                .asyncGetText(
-                    "EditTab.Overflow",
-                    "This box has more text than will fit",
-                    ""
-                )
-                .done(overflowText => {
-                    $box.qtip({
-                        content:
-                            '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/images/Attention.svg">' +
-                            overflowText,
-                        show: { event: "mouseenter" },
-                        hide: { event: "mouseleave" },
-                        position: { my: "top right", at: "right bottom" },
-                        container: bloomQtipUtils.qtipZoomContainer()
+            if ($box.parents("[class*=Device]").length === 0) {
+                // don't show an overflow warning if we have scrolling available
+                theOneLocalizationManager
+                    .asyncGetText(
+                        "EditTab.Overflow",
+                        "This box has more text than will fit",
+                        ""
+                    )
+                    .done(overflowText => {
+                        $box.qtip({
+                            content:
+                                '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/images/Attention.svg">' +
+                                overflowText,
+                            show: { event: "mouseenter" },
+                            hide: { event: "mouseleave" },
+                            position: { my: "top right", at: "right bottom" },
+                            container: bloomQtipUtils.qtipZoomContainer()
+                        });
                     });
-                });
+            }
         }
 
         const container = $box.closest(".marginBox");

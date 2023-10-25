@@ -326,9 +326,9 @@ namespace Bloom.Workspace
 				}
 				else if (RobustFile.Exists(book.AboutBookMdPath))
 				{
-					var md = new MarkdownDeep.Markdown();
 					var mdContent = RobustFile.ReadAllText(book.AboutBookMdPath);
-					var htmlContent = string.Format("<html><head><meta charset=\"utf-8\"/></head><body>{0}</body></html>", md.Transform(mdContent));
+					var htmlContent = string.Format("<html><head><meta charset=\"utf-8\"/></head><body>{0}</body></html>",
+						Markdig.Markdown.ToHtml(mdContent));
 					if (_tempBookInfoHtmlPath != null && RobustFile.Exists(_tempBookInfoHtmlPath))
 						RobustFile.Delete(_tempBookInfoHtmlPath);
 					_tempBookInfoHtmlPath = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(book.AboutBookMdPath) + ".html");
@@ -788,18 +788,18 @@ namespace Bloom.Workspace
 			});
 		}
 
-		internal void OnSettingsButton_Click(object sender, EventArgs e)
+		internal void OnLegacySettingsButton_Click(object sender, EventArgs e)
 		{
-			OpenSettingsDialog();
+			OpenLegacySettingsDialog();
 		}
 
 		private CollectionSettingsDialog _currentlyOpenSettingsDialog;
 
-		public void OpenSettingsDialog(string tab=null)
+		public void OpenLegacySettingsDialog(string tab=null)
 		{
 			if (InvokeRequired)
 			{
-				SafeInvoke.Invoke("OpenSettingsDialog", this, true, false, (() => OpenSettingsDialog(tab)));
+				SafeInvoke.Invoke("OpenSettingsDialog", this, true, false, (() => OpenLegacySettingsDialog(tab)));
 			}
 			else
 			{
@@ -846,7 +846,7 @@ namespace Bloom.Workspace
 		private void BringUpEnterpriseSettings()
 		{
 			CollectionSettingsApi.PrepareForFixEnterpriseBranding(_collectionSettings.InvalidBranding, _collectionSettings.SubscriptionCode);
-			OnSettingsButton_Click(this, new EventArgs());
+			OnLegacySettingsButton_Click(this, new EventArgs());
 			CollectionSettingsApi.EndFixEnterpriseBranding();
 		}
 
@@ -1057,6 +1057,7 @@ namespace Bloom.Workspace
 			_originalToolStripPanelWidth = 0;
 			_viewInitialized = true;
 			ShowAutoUpdateDialogIfNeeded();
+			ShowForumInvitationDialogIfNeeded();
 			// Whether we showed the dialog or not we'll check for a new version in 1 minute.
 			_applicationUpdateCheckTimer.Enabled = true;
 		}
@@ -1073,7 +1074,7 @@ namespace Bloom.Workspace
 			{
 				// It's tempting to make the whole process of calling this function a startup action,
 				// but until we actually decide whether to show it, we don't know whether we need to
-				// hide the progress dialog. This is as much as we can postpone.
+				// hide the splash screen. This is as much as we can postpone.
 				StartupScreenManager.AddStartupAction( () =>
 					{
 						using (var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle", "Auto Update"))
@@ -1085,6 +1086,52 @@ namespace Bloom.Workspace
 					}, shouldHideSplashScreen:true, lowPriority:false);
 			}
 
+		}
+
+		private void ShowForumInvitationDialogIfNeeded()
+		{
+			if (Settings.Default.ForumInvitationAcknowledged)
+				return;
+			var lastShown = Settings.Default.ForumInvitationLastShown;
+			var today = DateTime.Now;
+			if (lastShown == DateTime.MinValue)
+			{
+				// If Bloom is newly installed or we only had old versions before,
+				// wait 2 weeks before showing this nagging dialog.
+				Settings.Default.ForumInvitationLastShown = today;
+				Settings.Default.Save();
+				return;
+			}
+			// Show once every two weeks until the user gives up and acknowledges it.
+			if (today.Subtract(lastShown).TotalDays > 13)
+			{
+				// It's tempting to make the whole process of calling this function a startup action,
+				// but until we actually decide whether to show it, we don't know whether we need to
+				// hide the splash screen. This is as much as we can postpone.
+				AppApi.OpenDialogs.AddOrUpdate("ForumInvitationDialog", 0, (key, val) => val);
+				StartupScreenManager.AddStartupAction(() =>
+				{
+					AppApi.OpenDialogs.AddOrUpdate("ForumInvitationDialog", 1, (key, val) => val + 1);
+					if (AppApi.OpenDialogs.TryGetValue("ForumInvitationDialog", out var count) && count > 1)
+						return;
+					Settings.Default.ForumInvitationLastShown = today;
+					Settings.Default.Save();
+					_webSocketServer.LaunchDialog("ForumInvitationDialog", new DynamicJson());
+				}, shouldHideSplashScreen: true, lowPriority: true, needsToRun: () =>
+				{
+					// The startup task is called repeatedly until this function returns false.
+					var shouldShow = AppApi.OpenDialogs.TryGetValue("ForumInvitationDialog", out var count);
+					return shouldShow && count < 2;
+				},
+				// We need to wait for the "collectionButtonsDrawn" milestone to ensure that the collection
+				// tab has rendered sufficiently to hook up the socket event handler for the dialog.
+				// See September 18-19 comments in https://issues.bloomlibrary.org/youtrack/issue/BL-12410.
+				// But we need to allow a number of ticks for the milestone to show up.  A delay of 100
+				// ticks seems to work well.  A debug build on an older development machine recorded 4654
+				// ticks in about a minute.
+				waitForMilestone: "collectionButtonsDrawn",
+				maxTickWaitForMilestone: 100);
+			}
 		}
 
 		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)

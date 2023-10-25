@@ -49,7 +49,17 @@ namespace Bloom.web
 		{
 			return BloomLibraryUrlPrefix + (myBooksBreadCrumb ? "/my-books" : "") + "/book/" + bookId;
 		}
+
+		public static string BloomLibraryBooksWithMatchingIdListingUrl(string bookInstanceId)
+		{
+				// Yep, this is ugly. We need to send "%3a" (an encoded colon) to the site because that's what it expects to make the search work.
+                // But when we process this url in ExternalLinkController.HandleLink(), it will decode the url.
+                // So we have to double encode it here.
+                var doubleEncodedColon = "%253A";
+			return $"{BloomLibraryUrlPrefix}/:search:bookInstanceId{doubleEncodedColon}{bookInstanceId}";
+		}
 	}
+	
 	public static class UrlLookup
 	{
 		//For source code (and fallback) purposes, current-services-urls.json lives in BloomExe/Resources.

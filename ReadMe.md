@@ -16,9 +16,7 @@ Each time code is checked in, an automatic build begins on our [TeamCity build s
 
 ## Building Browser Source Code
 
-[Install yarn.](https://yarnpkg.com/lang/en/docs/install/#windows-stable)
-
-You'll need nodejs, but we manage nodejs by [installing volta](https://docs.volta.sh/guide/getting-started) and informing volta which version to use with a setting in package.json:
+You'll need nodejs and yarn, but we manage both by [installing volta](https://docs.volta.sh/guide/getting-started) and informing volta which versions to use with a setting in package.json:
 
     "volta": {
         "node": "16.14.0",

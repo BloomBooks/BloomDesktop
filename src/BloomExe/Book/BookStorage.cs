@@ -305,7 +305,7 @@ namespace Bloom.Book
 			string path = Path.Combine(FolderPath, fileName);
 			if (RobustFile.Exists(path))
 			{
-				image = ToPalaso.RobustImageIO.GetImageFromFile(path);
+				image = RobustImageIO.GetImageFromFile(path);
 				return true;
 			}
 			image = null;
@@ -483,11 +483,7 @@ namespace Bloom.Book
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!String.IsNullOrEmpty(tempPath))
-				{
-					// Enhance: write SIL.IO.RobustFile.Replace() and fix SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded to use it.
-					SIL.Code.RetryUtility.Retry(() => FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath()),
-						memo: $"Replace {PathToExistingHtml} (with backup)");
-				}
+					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath());
 			}
 		}
 
@@ -507,9 +503,9 @@ namespace Bloom.Book
 			// Read the old file and copy it to the new one, except for replacing the one page.
 			string tempPath = GetNameForATempFileInStorageFolder();
 			RetryUtility.Retry(() => {
-				using (var reader = new StreamReader(ToPalaso.RobustIO.GetFileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
+				using (var reader = new StreamReader(RobustIO.GetFileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
 				{
-					using (var writer = new StreamWriter(ToPalaso.RobustIO.GetFileStream(tempPath, FileMode.Create), Encoding.UTF8))
+					using (var writer = new StreamWriter(RobustIO.GetFileStream(tempPath, FileMode.Create), Encoding.UTF8))
 					{
 						ReplacePage(pageId, reader, writer, pageHtml);
 					}
@@ -929,7 +925,7 @@ namespace Bloom.Book
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });
 			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "license", "video-placeholder", "coverImage200", "widget-placeholder" });
-			foreach (var path in Bloom.ToPalaso.RobustIO.EnumerateFilesInDirectory(FolderPath).Where(
+			foreach (var path in RobustIO.EnumerateFilesInDirectory(FolderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{
 				var filename = Path.GetFileName(path);
@@ -1245,7 +1241,7 @@ namespace Bloom.Book
 		internal static List<string> GetVideoPathsRelativeToBook(XmlElement element)
 		{
 			return (from XmlElement videoContainerElements in HtmlDom.SelectChildVideoElements(element)
-				select HtmlDom.GetVideoElementUrl(new ElementProxy(videoContainerElements as XmlElement)).PathOnly.NotEncoded)
+				select HtmlDom.GetVideoElementUrl(videoContainerElements).PathOnly.NotEncoded)
 				.Where(path => !String.IsNullOrEmpty(path)).Distinct().ToList();
 		}
 
@@ -1737,7 +1733,7 @@ namespace Bloom.Book
 			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(FolderPath);
-			ToPalaso.RobustIO.RequireThatDirectoryExists(FolderPath);
+			RobustIO.RequireThatDirectoryExists(FolderPath);
 			string pathToExistingHtml;
 			try
 			{
@@ -2725,6 +2721,7 @@ namespace Bloom.Book
 			Directory.CreateDirectory(newBookDir);
 
 			// copy files
+			// Note, .bloombookorder files are no longer created; they are obsolete.
 			CopyDirectory(FolderPath, newBookDir, new[]{".bak", ".bloombookorder", ".pdf", ".map"});
 			var metaPath = Path.Combine(newBookDir, "meta.json");
 
@@ -2831,7 +2828,8 @@ namespace Bloom.Book
 				// this.
 
 				// Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
-				// order to avoid out of memory errors that can happen with really large images.  Some older
+				// order to avoid out of memory errors that can happen with really large images.
+				// Bloom 5.6 changed this to 3840x2800 to accomodate Ultra HD (aka "4K"). Some older
 				// books have images larger than this that can cause these out of memory problems.  This
 				// method is used to fix these overlarge images before the user starts to edit or publish
 				// the book.  The method also ensures that the images are all opaque since some old versions

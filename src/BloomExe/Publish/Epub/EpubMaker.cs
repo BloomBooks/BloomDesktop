@@ -1645,7 +1645,7 @@ namespace Bloom.Publish.Epub
 					var isCoverImage = img.SafeSelectNodes("parent::div[contains(@class, 'bloom-imageContainer')]/ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]").Cast<XmlElement>().Count() != 0;
 					var dstPath = CopyFileToEpub(srcPath, limitImageDimensions: true, needTransparentBackground: isCoverImage, subfolder: kImagesFolder);
 					var newSrc = dstPath.Substring(_contentFolder.Length+1).Replace('\\','/');
-					HtmlDom.SetImageElementUrl(new ElementProxy(img), UrlPathString.CreateFromUnencodedString(newSrc, true), false);
+					HtmlDom.SetImageElementUrl(img, UrlPathString.CreateFromUnencodedString(newSrc, true), false);
 				}
 			}
 		}
@@ -1659,7 +1659,7 @@ namespace Bloom.Publish.Epub
 					continue;
 				var dstPath = CopyFileToEpub(trimmedFilePath, subfolder:kVideoFolder);
 				var newSrc = dstPath.Substring(_contentFolder.Length+1).Replace('\\','/');
-				HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainerElement), UrlPathString.CreateFromUnencodedString(newSrc, true), false);
+				HtmlDom.SetVideoElementUrl(videoContainerElement, UrlPathString.CreateFromUnencodedString(newSrc, true), false);
 			}
 		}
 

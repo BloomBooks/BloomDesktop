@@ -78,6 +78,8 @@ namespace Bloom.CollectionTab
 			createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
 		}
 
+		public BookCollection CurrentEditableCollection => _currentEditableCollectionSelection.CurrentSelection;
+
 		/// <summary>
 		/// The constructor of BookCommandsApi calls this to work around an Autofac circularity problem.
 		/// </summary>
@@ -381,7 +383,7 @@ namespace Bloom.CollectionTab
 		public void DoubleClickedBook()
 		{
 			// If we need the book to be checked out for editing, make sure it is. Do not allow double click
-			// to check it out. 
+			// to check it out.
 			if (_bookSelection.CurrentSelection?.IsSaveable ?? false)
 			{
 				_editBookCommand.Raise(_bookSelection.CurrentSelection);
@@ -414,45 +416,6 @@ namespace Bloom.CollectionTab
 			}
 
 			_bookSelection.SelectBook(b);
-		}
-
-		private bool bookHasClass(string className)
-		{
-			return _bookSelection.CurrentSelection?.OurHtmlDom.Body.GetAttribute("class").Contains(className) ?? false;
-		}
-
-		public bool IsBookLeveled => bookHasClass("leveled-reader");
-		public bool IsBookDecodable => bookHasClass("decodable-reader");
-
-		public void SetIsBookLeveled(bool leveled)
-		{
-			if (leveled && IsBookDecodable)
-				SetIsBookDecodable(false);
-			SetBookHasClass(leveled, "leveled-reader");
-		}
-		public void SetIsBookDecodable(bool decodable)
-		{
-			if (decodable && IsBookLeveled)
-				SetIsBookLeveled(false);
-			SetBookHasClass(decodable, "decodable-reader");
-		}
-
-		private void SetBookHasClass(bool shouldHaveClass, string className)
-		{
-			var body = _bookSelection.CurrentSelection?.OurHtmlDom.Body;
-			if (body == null)
-				return;
-			var classVal = body.GetAttribute("class");
-			if (shouldHaveClass && !classVal.Contains(className))
-			{
-				body.SetAttribute("class", (classVal + " " + className).Trim());
-				_bookSelection.CurrentSelection.Save();
-			}
-			else if (!shouldHaveClass && classVal.Contains(className))
-			{
-				body.SetAttribute("class", classVal.Replace(className, "").Trim());
-				_bookSelection.CurrentSelection.Save();
-			}
 		}
 
 		/// <summary>
@@ -870,6 +833,7 @@ namespace Bloom.CollectionTab
 			exception = null;
 			try
 			{
+				// Note, .bloombookorder files are no longer created; they are obsolete.
 				var excludedExtensions = new[] { ".pdf", ".bloombookorder", ".map", ".bloompack", ".db" };
 
 				Logger.WriteEvent("Zipping up {0} ...", destFileName);

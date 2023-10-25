@@ -1,0 +1,33 @@
+{
+    "name": "bloom-visual-regression-tests",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "test": "vitest",
+        "testPatient": "vitest --test-timeout=5000000",
+        "upload": "npm exec argos upload ./screenshots"
+    },
+    "devDependencies": {
+        "typescript": "^5.0.2",
+        "vite": "^4.4.5",
+        "vitest": "^0.34.5"
+    },
+    "packageManager": "yarn@1.22.19",
+    "volta": {
+        "node": "18.18.0",
+        "yarn": "1.22.19"
+    },
+    "dependencies": {
+        "@argos-ci/playwright": "^0.0.7",
+        "@playwright/test": "^1.38.1",
+        "@types/chalk": "^2.2.0",
+        "@types/pixelmatch": "^5.2.4",
+        "@types/pngjs": "^6.0.2",
+        "chalk": "^5.3.0",
+        "child_process": "^1.0.2",
+        "node-fetch": "^3.3.2",
+        "pixelmatch": "^5.3.0",
+        "pngjs": "^7.0.0"
+    }
+}

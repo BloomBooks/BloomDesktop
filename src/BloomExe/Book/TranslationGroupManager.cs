@@ -227,7 +227,7 @@ namespace Bloom.Book
 				HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
 				HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
 				HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-trilingual");
-				HtmlDom.AddClassIfMissing(pageDiv, multilingualClass);
+				HtmlDom.AddClass(pageDiv, multilingualClass);
 			}
 
 

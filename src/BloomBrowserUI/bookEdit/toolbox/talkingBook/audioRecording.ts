@@ -478,7 +478,7 @@ export default class AudioRecording {
         // then the user changes the layout to add a text box, and then...
         // you'll want your listeners to have been set up already.
         this.addAudioLevelListener();
-        this.addAudioRecordStartListener();
+        this.addMicErrorListener();
     }
 
     // Called when the Talking Book Tool is chosen.
@@ -486,6 +486,23 @@ export default class AudioRecording {
         WebSocketManager.addListener(kWebsocketContext, e => {
             if (e.id == "peakAudioLevel")
                 this.setStaticPeakLevel(e.message ? e.message : "");
+        });
+    }
+
+    public addMicErrorListener(): void {
+        WebSocketManager.addListener(kWebsocketContext, e => {
+            if (
+                e.id === "recordingStartError" ||
+                e.id === "monitoringStartError"
+            ) {
+                toastr.error(e.message ? e.message : "");
+            }
+            // Don't disable recording for a monitoring error, as right now when switching mics we may
+            // kick off monitoring for the wrong mic
+            if (e.id === "recordingStartError") {
+                this.recording = false;
+                this.setStatus("record", Status.Disabled);
+            }
         });
     }
 
@@ -1108,22 +1125,6 @@ export default class AudioRecording {
                 "&nocache=" +
                 new Date().getTime()
         );
-    }
-
-    // Gets a definitive indication from C#-land that the recording did or did not actually start.
-    // "failure" message comes from an instance of BL-7568 and isn't (as far as we've been able
-    // to determine) Bloom's fault.
-    private addAudioRecordStartListener(): void {
-        WebSocketManager.addListener(kWebsocketContext, e => {
-            if (e.id === "recordStartStatus") {
-                // handle e.message "failure" ("success is a no-op")
-                if (e.message === "failure") {
-                    this.setStatus("record", Status.Disabled);
-                    this.recording = false;
-                    $("#mic-problem-message").removeClass("initiallyHidden");
-                }
-            }
-        });
     }
 
     public async startRecordCurrentAsync(): Promise<void> {

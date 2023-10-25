@@ -7,7 +7,6 @@ import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     theOneLanguageDataInstance,
-    LanguageData,
     theOneLibSynphony,
     ResetLanguageDataInstance
 } from "./libSynphony/synphony_lib";
@@ -19,6 +18,9 @@ import "../../../lib/jquery.onSafe";
 import axios from "axios";
 import { get } from "../../../utils/bloomApi";
 import * as _ from "underscore";
+import ReactDOM = require("react-dom");
+import React = require("react");
+import { ReaderToolSwitch } from "./ReaderToolSwitch";
 
 interface textMarkup extends JQueryStatic {
     cssSentenceTooLong(): JQuery;
@@ -219,7 +221,7 @@ export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
     });
 }
 
-function beginLoadSynphonySettings(): JQueryPromise<void> {
+export function beginLoadSynphonySettings(): JQueryPromise<void> {
     // make sure synphony is initialized
     const result = $.Deferred<void>();
     if (readerToolsInitialized) {
@@ -483,6 +485,17 @@ export function resizeWordList(startTimeout: boolean = true): void {
                 ht -= div.find("#make-letter-word-list-div").height();
             }
 
+            // This entire function is what I would consider a horrible hack.
+            // The whole tool structure needs to be reworked with flexbox.
+            // But instead, the tool will probably be rewritten in React at some point.
+            // So I'm not going to go to any heroic lengths to solve these issues.
+            // For now, just include the height of the toggle so that it doesn't overlap the
+            // absolutely-positioned link at the bottom of the tool.
+            ht -=
+                div
+                    .find("#decodable-reader-tool-toggle-react-container")
+                    .height() || 0;
+
             // for a reason I haven't discovered, the height calculation is always off by 6 pixels
             ht += 6;
 
@@ -496,4 +509,22 @@ export function resizeWordList(startTimeout: boolean = true): void {
         setTimeout(() => {
             resizeWordList();
         }, 500);
+}
+
+export function createToggle(isForLeveled: boolean) {
+    ReactDOM.render(
+        React.createElement(ReaderToolSwitch, { isForLeveled }),
+        document.getElementById(
+            `${
+                isForLeveled ? "leveled" : "decodable"
+            }-reader-tool-toggle-react-container`
+        )
+    );
+}
+
+export function isToggleOff(isForLeveled: boolean): boolean {
+    const prefix = isForLeveled ? "leveled" : "decodable";
+    const classes = document.getElementById(prefix + "-reader-tool-content")
+        ?.classList;
+    return classes?.contains("turned-off") ?? false;
 }

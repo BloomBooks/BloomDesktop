@@ -35,6 +35,8 @@ import {
 import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
 import { postJson, useApiStringState } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
+import { useL10n } from "../../react_components/l10nHooks";
+import { Div } from "../../react_components/l10nComponents";
 
 let isOpenAlready = false;
 
@@ -72,6 +74,16 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         }
     }, [settingsString]);
 
+    const bookSettingsTitle = useL10n("Book Settings", "BookSettings.Title");
+    const resolutionDescription = useL10n(
+        "When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size.",
+        "BookSettings.BloomPub.Resolution.Description"
+    );
+    const resolutionLabel = useL10n(
+        "Resolution",
+        "BookSettings.BloomPub.Resolution"
+    );
+
     return (
         <BloomDialog
             css={css`
@@ -86,19 +98,18 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
             draggable={false}
             maxWidth={false}
         >
-            <DialogTitle title="Book Settings" />
+            <DialogTitle title={bookSettingsTitle} />
             <DialogMiddle
                 css={css`
                     &:first-child {
                         margin-top: 0; // override the default that sees a lack of a title and adds a margin
                     }
-                    // normally we want this: overflow-y: scroll;
-                    overflow-y: hidden; // but I need help on the css, so we're going with this for now
+                    overflow-y: auto; // This displays a scrollbar only when needed.  'scroll' always shows one.
                 `}
             >
                 {settings && (
                     <ConfigrPane
-                        label="Book Settings"
+                        label={bookSettingsTitle}
                         initialValues={settings}
                         showAllGroups={true}
                         //themeOverrides={lightTheme}
@@ -125,15 +136,13 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             </ConfigrGroup> */}
                         <ConfigrGroup label="BloomPUB" level={1}>
                             <ConfigrSubgroup
-                                label="Resolution"
+                                label={resolutionLabel}
                                 path={`publish.bloomPUB.imageSettings`}
-                                description={
-                                    "When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size."
-                                }
+                                description={resolutionDescription}
                             >
                                 <BloomResolutionSlider
                                     path={`publish.bloomPUB.imageSettings`}
-                                    label="Resolution"
+                                    label={resolutionLabel}
                                 />
                             </ConfigrSubgroup>
                         </ConfigrGroup>
@@ -168,10 +177,22 @@ const BloomResolutionSlider: React.FunctionComponent<React.PropsWithChildren<{
     label: string;
 }>> = props => {
     return (
-        <ConfigrCustomObjectInput<Resolution>
-            control={BloomResolutionSliderInner}
-            {...props}
-        ></ConfigrCustomObjectInput>
+        <div>
+            <ConfigrCustomObjectInput<Resolution>
+                control={BloomResolutionSliderInner}
+                {...props}
+            ></ConfigrCustomObjectInput>
+            <Div
+                l10nKey="BookSettings.BloomPub.Resolution.Directions"
+                css={css`
+                    padding: 0 10px;
+                    font-size: 9pt;
+                `}
+            >
+                Set the maximum image resolution when making BloomPUBs
+                (including display on BloomLibrary)
+            </Div>
+        </div>
     );
 };
 
@@ -183,13 +204,17 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
         { l: "Small", w: 600, h: 600 },
         { l: "HD", w: 1280, h: 720 },
         { l: "Full HD", w: 1920, h: 1080 },
-        { l: "4k", w: 3840, h: 2160 }
+        { l: "4K", w: 3840, h: 2160 }
     ];
     let currentIndex = sizes.findIndex(x => x.w === props.value.maxWidth);
     if (currentIndex === -1) {
         currentIndex = 0;
     }
     const current = sizes[currentIndex];
+    const currentLabel = useL10n(
+        current.l,
+        `BookSettings.BloomPub.Resolution.${current.l}`
+    );
 
     return (
         <div
@@ -197,6 +222,7 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
                 display: flex;
                 flex-direction: column;
                 width: 200px; // todo: what should this be?
+                padding: 0 10px; // allow space for tooltips
             `}
         >
             <Typography
@@ -205,7 +231,7 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
                     font-size: 12px;
                 `}
                 variant="h4"
-            >{`${current.l}`}</Typography>
+            >{`${currentLabel}`}</Typography>
             <Slider
                 track={false}
                 max={sizes.length - 1}

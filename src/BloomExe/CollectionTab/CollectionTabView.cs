@@ -44,6 +44,7 @@ namespace Bloom.CollectionTab
 
 			InitializeComponent();
 			_reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
+			_settingsButton.Visible = false;	// Hide for now. We'll bring it back in 5.7.
 			BackColor = _reactControl.BackColor = Palette.GeneralBackground;
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 			_toolStripLeft.Renderer = new NoBorderToolStripRenderer();
@@ -258,7 +259,8 @@ namespace Bloom.CollectionTab
 		internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
 		{
 			//we have a couple of buttons which don't make sense for the remote (therefore vulnerable) low-end user
-			settingsLauncherHelper.ManageComponent(_settingsButton);
+			settingsLauncherHelper.ManageComponent(_legacySettingsButton);
+			//comment out until 5.7 settingsLauncherHelper.ManageComponent(_settingsButton);
 
 			//NB: this isn't really a setting, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
 			settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
@@ -303,10 +305,9 @@ namespace Bloom.CollectionTab
 		}
 
 		/// <summary>
-		/// TopBarControl.Width is not right here, because (a) the Send/Receive button currently never shows, and
-		/// (b) the Make Bloompack button only shows in source collections.
+		/// TopBarControl.Width is not right here, because the Team Collection status button only shows in team collections.
 		/// </summary>
-		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width +
+		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width + _legacySettingsButton.Width +
 			(_tcStatusButton.Visible ? _tcStatusButton.Width : 0);
 
 		public void PlaceTopBarControl()
@@ -324,9 +325,14 @@ namespace Bloom.CollectionTab
 			return ancestor as WorkspaceView;
 		}
 
+		private void _legacySettingsButton_Click(object sender, EventArgs e)
+		{
+			GetWorkspaceView().OnLegacySettingsButton_Click(sender, e);
+		}
+
 		private void _settingsButton_Click(object sender, EventArgs e)
 		{
-			GetWorkspaceView().OnSettingsButton_Click(sender, e);
+			_webSocketServer.LaunchDialog("CollectionSettingsDialog", new DynamicJson());
 		}
 
 		private void _openCreateCollectionButton_Click(object sender, EventArgs e)

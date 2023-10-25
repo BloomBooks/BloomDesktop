@@ -1,0 +1,690 @@
+/* This is for common styling on pages. It is not for UI */
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable {
+  font-weight: bold;
+  line-height: 1.1;
+  min-height: auto;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
+  font-size: 120%;
+  margin-bottom: 5px;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
+  font-size: 250%;
+  margin-bottom: 5px;
+}
+.Title-On-Cover-style {
+  text-align: center;
+}
+.credits .licenseAndCopyrightBlock .copyright {
+  margin-bottom: 2em;
+}
+.credits .licenseAndCopyrightBlock .licenseBlock {
+  margin-bottom: 2em;
+}
+.credits .licenseAndCopyrightBlock img {
+  width: 94px;
+}
+.bloom-frontMatter .pageLabel:before,
+.bloom-backMatter .pageLabel:before {
+  content: "Uzbekistan2023";
+  display: none;
+}
+.bloom-frontMatter .pageLabel:after,
+.bloom-backMatter .pageLabel:after {
+  content: ": " attr(data-after-content);
+}
+.A3Landscape.outsideFrontCover .marginBox,
+.A3Landscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 272mm;
+  left: 15mm;
+  width: 390mm;
+}
+.A3Portrait.outsideFrontCover .marginBox,
+.A3Portrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 395mm;
+  left: 15mm;
+  width: 267mm;
+}
+.A4Portrait.outsideFrontCover .marginBox,
+.A4Portrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 272mm;
+  left: 15mm;
+  width: 180mm;
+}
+.A4Landscape.outsideFrontCover .marginBox,
+.A4Landscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 185mm;
+  left: 15mm;
+  width: 267mm;
+}
+.A5Portrait.outsideFrontCover .marginBox,
+.A5Portrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 185mm;
+  left: 15mm;
+  width: 118mm;
+}
+.A5Landscape.outsideFrontCover .marginBox,
+.A5Landscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 123mm;
+  left: 15mm;
+  width: 180mm;
+}
+.A6Portrait.outsideFrontCover .marginBox,
+.A6Portrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 123mm;
+  left: 15mm;
+  width: 75mm;
+}
+.A6Landscape.outsideFrontCover .marginBox,
+.A6Landscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 80mm;
+  left: 15mm;
+  width: 118mm;
+}
+.B5Portrait.outsideFrontCover .marginBox,
+.B5Portrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 225mm;
+  left: 15mm;
+  width: 146mm;
+}
+.LegalPortrait.outsideFrontCover .marginBox,
+.LegalPortrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 13.01574803in;
+  left: 15mm;
+  width: 7.31889764in;
+}
+.LegalLandscape.outsideFrontCover .marginBox,
+.LegalLandscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 7.51574803in;
+  left: 15mm;
+  width: 12.81889764in;
+}
+.LetterPortrait.outsideFrontCover .marginBox,
+.LetterPortrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 10.01574803in;
+  left: 15mm;
+  width: 7.31889764in;
+}
+.LetterLandscape.outsideFrontCover .marginBox,
+.LetterLandscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 7.51574803in;
+  left: 15mm;
+  width: 9.81889764in;
+}
+.HalfLetterPortrait.outsideFrontCover .marginBox,
+.HalfLetterPortrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 7.51574803in;
+  left: 15mm;
+  width: 4.31889764in;
+}
+.HalfLetterLandscape.outsideFrontCover .marginBox,
+.HalfLetterLandscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 4.51574803in;
+  left: 15mm;
+  width: 7.31889764in;
+}
+.QuarterLetterPortrait.outsideFrontCover .marginBox,
+.QuarterLetterPortrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 4.51574803in;
+  left: 15mm;
+  width: 3.06889764in;
+}
+.QuarterLetterLandscape.outsideFrontCover .marginBox,
+.QuarterLetterLandscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 3.26574803in;
+  left: 15mm;
+  width: 4.31889764in;
+}
+.Cm13Landscape.outsideFrontCover .marginBox,
+.Cm13Landscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 105mm;
+  left: 15mm;
+  width: 100mm;
+}
+.USComicPortrait.outsideFrontCover .marginBox,
+.USComicPortrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 9.26574803in;
+  left: 15mm;
+  width: 5.44389764in;
+}
+.Size6x9Portrait.outsideFrontCover .marginBox,
+.Size6x9Portrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 8.01574803in;
+  left: 15mm;
+  width: 4.81889764in;
+}
+.Size6x9Landscape.outsideFrontCover .marginBox,
+.Size6x9Landscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
+  height: 5.01574803in;
+  left: 15mm;
+  width: 7.81889764in;
+}
+.insideFrontCover .bloom-translationGroup {
+  height: 100%;
+}
+.iso693Code * {
+  display: inline;
+}
+.frontCover .marginBox {
+  display: flex;
+  flex-direction: column;
+}
+.frontCover .Cover-Default-style {
+  font-size: 12pt;
+}
+.frontCover .bloom-translationGroup.bookTitle {
+  flex: 0 0 auto;
+  order: 0;
+  display: flex;
+  flex-direction: column;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable {
+  order: 0;
+  height: auto;
+  justify-content: center;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
+  order: 1;
+}
+.frontCover .placeholder,
+.frontCover .bloom-imageContainer {
+  order: kFrontCoverImageOrder;
+  flex: 1 1 auto;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+.frontCover .asideContainer {
+  order: kFrontCoverImageOrder;
+}
+.frontCover .asideContainer p:first-child {
+  margin-top: 0;
+}
+.frontCover .bottomBlock {
+  flex: 0 0 auto;
+  order: 2;
+  display: flex;
+  flex-direction: row;
+}
+.frontCover .bottomBlock .branding {
+  order: 0;
+  margin: 0;
+  margin-right: 10px;
+}
+.frontCover .bottomBlock .bottomTextContent {
+  flex: 1 0 100%;
+  order: 1;
+  display: flex;
+  flex-direction: column;
+}
+.frontCover .bottomBlock .bottomTextContent .creditsRow .bloom-editable.smallCoverCredits {
+  text-align: center;
+  line-height: 1.7em;
+  min-height: 1.7em;
+  height: auto;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow[data-have-topic="false"] .coverBottomLangName {
+  margin-left: auto;
+  margin-right: auto;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow .coverBottomLangName {
+  line-height: 1.6em !important;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow .coverBottomBookTopic {
+  height: 20px;
+  min-width: 1px;
+  text-align: right;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow .coverBottomBookTopic .bloom-editable {
+  display: inline !important;
+  bottom: -4px;
+  padding-right: 1px;
+  text-align: right;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow .coverBottomBookTopic .bloom-editable {
+  margin-top: 0;
+}
+.frontCover .topBlock,
+.titlePage .topBlock {
+  flex: 0 0 auto;
+  order: 0;
+  display: flex;
+  flex-direction: row;
+  direction: ltr;
+}
+.frontCover .topBlock .branding,
+.titlePage .topBlock .branding {
+  order: 0;
+  margin: 0;
+  margin-right: 10px;
+}
+.frontCover .topBlock .topContent,
+.titlePage .topBlock .topContent {
+  flex: 1 1 100%;
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 0;
+  margin-right: 0;
+  width: auto;
+}
+.credits .Credits-Page-style {
+  font-size: 10pt;
+  line-height: 1.4em;
+}
+.credits .originalAcknowledgments .bloom-editable {
+  margin-bottom: 2em;
+}
+.credits .versionAcknowledgments .bloom-editable {
+  height: auto;
+  margin-bottom: 1em;
+}
+.credits .licenseUrl {
+  display: none;
+}
+.credits.Cm13Landscape .licenseImage,
+.credits.A6Landscape .licenseImage,
+.credits.A6Portrait .licenseImage,
+.credits.QuarterLetterLandscape .licenseImage,
+.credits.QuarterLetterPortrait .licenseImage {
+  width: 65px;
+}
+.credits.Cm13Landscape .copyright,
+.credits.A6Landscape .copyright,
+.credits.A6Portrait .copyright,
+.credits.QuarterLetterLandscape .copyright,
+.credits.QuarterLetterPortrait .copyright,
+.credits.Cm13Landscape .ISBNContainer,
+.credits.A6Landscape .ISBNContainer,
+.credits.A6Portrait .ISBNContainer,
+.credits.QuarterLetterLandscape .ISBNContainer,
+.credits.QuarterLetterPortrait .ISBNContainer,
+.credits.Cm13Landscape .licenseBlock,
+.credits.A6Landscape .licenseBlock,
+.credits.A6Portrait .licenseBlock,
+.credits.QuarterLetterLandscape .licenseBlock,
+.credits.QuarterLetterPortrait .licenseBlock,
+.credits.Cm13Landscape .originalAcknowledgments .bloom-editable,
+.credits.A6Landscape .originalAcknowledgments .bloom-editable,
+.credits.A6Portrait .originalAcknowledgments .bloom-editable,
+.credits.QuarterLetterLandscape .originalAcknowledgments .bloom-editable,
+.credits.QuarterLetterPortrait .originalAcknowledgments .bloom-editable {
+  margin-bottom: 0.5em;
+}
+.credits [data-book="credits-page-branding-bottom-html"] {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.titlePage #originalContributions .bloom-editable {
+  min-height: 3em;
+}
+.titlePage #funding .bloom-editable {
+  min-height: 3em;
+}
+.titlePage {
+  text-align: center;
+}
+.titlePage .Title-On-Title-Page-style {
+  font-size: 14pt;
+}
+.titlePage .Title-On-Title-Page-style[data-order="1"] {
+  font-size: 20pt;
+}
+.titlePage #titlePageTitleBlock .bloom-editable {
+  line-height: 1.4em;
+}
+.titlePage #languageInformation {
+  width: 100%;
+}
+.titlePage .marginBox {
+  display: flex;
+  flex-direction: column;
+}
+.titlePage [data-book="title-page-branding-bottom-html"] {
+  width: 100%;
+  flex: 0 2 1in;
+  min-height: 0.25in;
+}
+.titlePage [data-book="title-page-branding-bottom-html"] img {
+  height: 100%;
+  object-fit: contain;
+}
+.titlePage .smallFlexGap {
+  flex: 0 1 0.5em;
+}
+.titlePage .largeFlexGap {
+  flex: 0 4 3em;
+}
+.titlePage .fillPageFlexGap {
+  flex: 1 4 3em;
+}
+.insideBackCover .bloom-translationGroup {
+  height: 100%;
+}
+.outsideBackCover .marginBox {
+  display: flex;
+  flex-direction: column;
+}
+.outsideBackCover .marginBox .bloom-translationGroup {
+  min-height: 30%;
+  flex: 1;
+}
+.outsideBackCover .marginBox .bloom-translationGroup .bloom-editable {
+  text-align: center;
+}
+.outsideBackCover .marginBox [data-book="outside-back-cover-branding-bottom-html"] {
+  margin-top: 1em;
+}
+.ISBNContainer {
+  margin-bottom: 2em;
+}
+.ISBNContainer .bloom-translationGroup {
+  display: inline-block;
+}
+.ISBNContainer .bloom-editable {
+  text-align: left !important;
+  width: 4.3cm !important;
+  max-height: 1.8em;
+  min-height: 1.8em;
+}
+.ISBNContainer .bloom-editable[lang="*"] {
+  display: inline-block;
+}
+.ISBNContainer .ISBNContainer span {
+  vertical-align: top;
+}
+:root {
+  --bleed-tolerance: 3mm;
+}
+div.bloom-page.outsideFrontCover.coverColor,
+div.bloom-page.outsideBackCover.coverColor {
+  color: white;
+  background-color: gray !important;
+}
+/* show inside cover colors as white since this is full bleed, an so unlikely that someone is going to print the inside of the covers in a solid full-bleed color*/
+div.bloom-page.insideFrontCover,
+div.bloom-page.insideBackCover {
+  background-color: white !important;
+}
+*[data-bookshelfurlkey*="Grade1"] div.bloom-page.outsideFrontCover.coverColor,
+*[data-bookshelfurlkey*="Grade1"] div.bloom-page.outsideBackCover.coverColor {
+  background-color: #ed7d31 !important;
+}
+*[data-bookshelfurlkey*="Grade2"] div.bloom-page.outsideFrontCover.coverColor,
+*[data-bookshelfurlkey*="Grade2"] div.bloom-page.outsideBackCover.coverColor {
+  background-color: #8faadc !important;
+}
+*[data-bookshelfurlkey*="Grade3"] div.bloom-page.outsideFrontCover.coverColor,
+*[data-bookshelfurlkey*="Grade3"] div.bloom-page.outsideBackCover.coverColor {
+  background-color: #a9d18e !important;
+}
+*[data-bookshelfurlkey*="Grade4"] div.bloom-page.outsideFrontCover.coverColor,
+*[data-bookshelfurlkey*="Grade4"] div.bloom-page.outsideBackCover.coverColor {
+  background-color: #ffd966 !important;
+}
+.outsideFrontCover .marginBox,
+.outsideBackCover .marginBox {
+  top: 0;
+  left: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+.frontCover .placeholder,
+.frontCover .bloom-imageContainer {
+  margin: 0;
+  margin-bottom: 15px;
+  flex-shrink: 10;
+}
+.frontCover .placeholder img[data-book="coverImage"],
+.frontCover .bloom-imageContainer img[data-book="coverImage"] {
+  object-fit: contain;
+  max-height: 100%;
+  max-width: 100%;
+  margin-bottom: auto;
+  width: 100%;
+  height: auto;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1:not(.bloom-content1) {
+  display: none;
+}
+.frontCover .gradeBadgeRow {
+  display: flex;
+  justify-content: center;
+  height: 70px;
+  margin-bottom: 13px;
+}
+.creditsRow {
+  border-top: solid rgba(255, 255, 255, 0.3);
+  border-width: 2px;
+  padding-top: 10px;
+  padding-bottom: 5px;
+  height: 16mm;
+}
+.frontCover .bloom-translationGroup {
+  margin-left: calc(2 * var(--bleed-tolerance));
+  margin-right: calc(2 * var(--bleed-tolerance));
+}
+.frontCover.A5Portrait .bloom-translationGroup.bookTitle {
+  padding-top: 4.25675676mm;
+}
+.frontCover.USComicPortrait .bloom-translationGroup.bookTitle {
+  padding-top: 4.64150943mm;
+}
+.outsideBackCover .Outside-Back-Cover-style {
+  margin-top: 8mm;
+  font-size: var(--OutsideBackCoverCreditsFontSize);
+}
+.Device16x9Portrait.frontCover .bloom-translationGroup.bookTitle,
+.Device16x9Landscape.frontCover .bloom-translationGroup.bookTitle {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.bloom-page {
+  --OutsideBackCoverLogoHeight: 15mm;
+  --OutsideBackCoverCreditsFontSize: 9pt;
+}
+.bloom-page.A3Portrait {
+  --OutsideBackCoverLogoHeight: 30mm;
+  --DividerDiamondsFontSize: 20pt;
+  --OutsideBackCoverCreditsFontSize: 14pt;
+}
+.bloom-page.A5Landscape {
+  --OutsideBackCoverLogoHeight: 14mm;
+}
+.bloom-page.Device16x9Portrait {
+  --OutsideBackCoverLogoHeight: 10mm;
+}
+.bloom-page.Device16x9Landscape {
+  --OutsideBackCoverLogoHeight: 10mm;
+}
+.A5Landscape [data-book="outside-back-cover-branding-top-right-html"] img,
+.A4Landscape [data-book="outside-back-cover-branding-top-right-html"] img,
+.A3Landscape [data-book="outside-back-cover-branding-top-right-html"] img {
+  margin-left: 75px;
+}
+.A5Landscape.outsideBackCover .bottomHalfGrid,
+.A4Landscape.outsideBackCover .bottomHalfGrid,
+.A3Landscape.outsideBackCover .bottomHalfGrid {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 310px auto;
+  grid-template-rows: auto 3em;
+  margin-top: 1cm;
+}
+.A5Landscape.outsideBackCover .bottomHalfGrid .bloom-translationGroup,
+.A4Landscape.outsideBackCover .bottomHalfGrid .bloom-translationGroup,
+.A3Landscape.outsideBackCover .bottomHalfGrid .bloom-translationGroup {
+  margin-top: unset;
+  grid-row: 1;
+  grid-column: 1 / span 1;
+}
+.A5Landscape.outsideBackCover .bottomHalfGrid [data-book="level-image-html"],
+.A4Landscape.outsideBackCover .bottomHalfGrid [data-book="level-image-html"],
+.A3Landscape.outsideBackCover .bottomHalfGrid [data-book="level-image-html"] {
+  grid-row: 1;
+  grid-column: 2 / span 1;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.A5Portrait .bottomHalfGrid,
+.A4Portrait .bottomHalfGrid,
+.A3Portrait .bottomHalfGrid {
+  height: 600px;
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: 290px 30px auto;
+}
+.A5Portrait .bottomHalfGrid .bloom-translationGroup,
+.A4Portrait .bottomHalfGrid .bloom-translationGroup,
+.A3Portrait .bottomHalfGrid .bloom-translationGroup {
+  grid-row: 1;
+}
+.A3Portrait .bottomHalfGrid {
+  grid-template-rows: 435px 30px auto;
+}
+.A5Portrait .outside-back-cover-branding-top-block,
+.A5Landscape .outside-back-cover-branding-top-block,
+.A4Portrait .outside-back-cover-branding-top-block,
+.A4Landscape .outside-back-cover-branding-top-block,
+.A3Portrait .outside-back-cover-branding-top-block,
+.A3Landscape .outside-back-cover-branding-top-block,
+.Device16x9Portrait .outside-back-cover-branding-top-block,
+.Device16x9Landscape .outside-back-cover-branding-top-block {
+  justify-content: space-between;
+}
+/*
+.outside-back-cover-branding-top-block {
+    img {
+        height: var(--OutsideBackCoverLogoHeight);
+    }
+}
+
+.A5Landscape {
+    .Outside-Back-Cover-style {
+        margin-top: unset; // In portrait, there is a margin mode, we remove this
+    }
+}
+
+// NOTE. The existence of this selector tells XMatterHelper that we can handle device layout, so don't revert to a specialized one.
+.Device16x9Portrait,
+.Device16x9Landscape {
+    &.outsideBackCover {
+        .marginBox {
+            left: 19px !important;
+            height: calc(100% - 8mm) !important;
+
+            .outside-back-cover-branding-top-block {
+                height: var(--HeaderHeight);
+                padding-top: unset;
+            }
+
+            [data-book="outside-back-cover-branding-top-right-html"] img {
+                margin-left: 75px;
+            }
+        }
+
+        .bottomHalfGrid {
+            display: grid;
+            grid-template-columns: auto;
+
+            [data-book="level-image-html"] {
+                padding-top: 20px;
+                margin: 0;
+                height: 200px !important;
+            }
+        }
+
+        .divider {
+            bottom: 0px !important;
+        }
+    }
+}
+
+.Device16x9Portrait {
+    &.outsideBackCover {
+        .marginBox {
+            width: 89mm;
+        }
+
+        .bottomHalfGrid {
+            height: 600px;
+            grid-template-rows: 250px 30px auto;
+
+            .bloom-translationGroup {
+                grid-row: 1;
+            }
+
+            [data-book="level-image-html"] {
+                grid-row: 2;
+            }
+        }
+    }
+}
+
+.Device16x9Landscape {
+    &.outsideBackCover {
+        .marginBox {
+            width: calc(100% - 11mm);
+        }
+
+        .bottomHalfGrid {
+            grid-template-columns: 310px auto;
+
+            .bloom-translationGroup {
+                grid-column: 1;
+            }
+
+            [data-book="level-image-html"] {
+                grid-column: 2;
+            }
+        }
+    }
+}
+
+*/
+.position-bottom > .split-pane-component-inner,
+.position-bottom > :not(.split-pane-component-inner) > .split-pane-component-inner,
+.position-bottom > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > .split-pane-component-inner,
+.position-bottom > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > .split-pane-component-inner,
+.position-bottom > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > .split-pane-component-inner,
+.position-bottom > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > .split-pane-component-inner {
+  padding-top: 5mm;
+}
+.position-right > .split-pane-component-inner,
+.position-right > :not(.split-pane-component-inner) > .split-pane-component-inner,
+.position-right > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > .split-pane-component-inner,
+.position-right > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > .split-pane-component-inner,
+.position-right > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > .split-pane-component-inner,
+.position-right > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > :not(.split-pane-component-inner) > .split-pane-component-inner {
+  padding-left: 5mm;
+}
+/*# sourceMappingURL=Uzbekistan2023-XMatter.css.map */

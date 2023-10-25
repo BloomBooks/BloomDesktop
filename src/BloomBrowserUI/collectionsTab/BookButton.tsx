@@ -21,6 +21,7 @@ import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useL10n } from "../react_components/l10nHooks";
 import { showBookSettingsDialog } from "../bookEdit/bookSettings/BookSettingsDialog";
+import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -108,7 +109,7 @@ export const BookButton: React.FunctionComponent<{
     // Don't use useApiStringState to get this function because it does an unnecessary server query
     // to get the value, which we are not using, and this hurts performance.
     const setSelectedBookIdWithApi = value =>
-        postString(`collections/selected-book-id?${collectionQuery}`, value);
+        postString(`collections/selected-book?${collectionQuery}`, value);
 
     const renameDiv = useRef<HTMLElement | null>();
 
@@ -135,21 +136,6 @@ export const BookButton: React.FunctionComponent<{
     };
 
     const bookSubMenuItemsSpecs: MenuItemSpec[] = [
-        {
-            label: "Leveled Reader",
-            l10nId: "TemplateBooks.BookName.Leveled Reader", // not the most appropriate ID, but we have it already
-            command: "bookCommand/leveled",
-            requiresSavePermission: true,
-            checkbox: true
-        },
-        {
-            label: "Decodable Reader",
-            l10nId: "TemplateBooks.BookName.Decodable Reader", // not the most appropriate ID, but we have it already
-            command: "bookCommand/decodable",
-            requiresSavePermission: true,
-            checkbox: true
-        },
-        { label: "-" },
         {
             label: "Export to Word or LibreOffice...",
             l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
@@ -470,6 +456,9 @@ export const BookButton: React.FunctionComponent<{
                         <img
                             src={`/bloom/api/collections/book/thumbnail?book-id=${props.book.id}&${collectionQuery}&reload=${reload}`}
                         />
+                        {props.collection.isEditableCollection && (
+                            <BookOnBlorgBadge book={props.book} />
+                        )}
                     </div>
                 }
             >

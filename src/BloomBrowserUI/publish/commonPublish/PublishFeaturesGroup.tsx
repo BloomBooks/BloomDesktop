@@ -96,7 +96,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "This is disabled because no “Talking Book Languages” are selected.",
         "PublishTab.Feature.TalkingBook.NoLanguagesSelected"
     );
-    const talkingBookTooltip = isTalkingBook
+    const talkingBookDisabledTooltip = isTalkingBook
         ? ""
         : couldBeTalkingBook
         ? NoLanguagesSelected
@@ -222,13 +222,17 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
             label={useL10n("Features", "PublishTab.Android.Features")}
         >
             <FormGroup>
-                <BloomTooltip key={"tb-tooltip"} tip={talkingBookTooltip}>
+                <BloomTooltip
+                    key={"tb-tooltip"}
+                    tip={""}
+                    showDisabled={!isTalkingBook}
+                    tipWhenDisabled={talkingBookDisabledTooltip}
+                >
                     <BloomCheckbox
                         label="Talking Book"
                         l10nKey="PublishTab.TalkingBook"
                         icon={<TalkingBookIcon />}
                         iconScale={0.9}
-                        disabled={!isTalkingBook}
                         checked={isTalkingBook}
                         onCheckChanged={() => {}}
                         hideBox={true}

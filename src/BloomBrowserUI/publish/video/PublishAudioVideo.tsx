@@ -18,8 +18,7 @@ import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import {
     darkTheme,
     kBloomBlue,
-    kBloomBlue50Transparent,
-    lightTheme
+    kBloomBlue50Transparent
 } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useSubscribeToWebSocketForStringMessage } from "../../utils/WebSocketManager";
@@ -213,7 +212,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
             setBookUrl(url);
         }
     );
-    const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
 
     const sendMessageToPlayer = (msg: any) => {
         const preview = document.getElementById(
@@ -259,6 +257,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         window.addEventListener("message", listener);
         return () => {
             window.removeEventListener("message", listener);
+            post("publish/av/abortMakingVideo"); // in case we're in the middle of making a video, abort on unmount
         };
     }, []);
     // The param is added because, if anything has changed that forces us to re-render
@@ -333,8 +332,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     }
                                     landscapeWidth={landscapeWidth}
                                     url={
-                                        pathToOutputBrowser +
-                                        "bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
+                                        "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
                                         debouncedPageTurnDelay +
                                         "&url=" +
                                         encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
@@ -648,19 +646,3 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         </Typography>
     );
 };
-
-// a bit goofy... currently the html loads everything in publishUIBundlejs. So all the publish screens
-// get any not-in-a-class code called, including ours. But it only makes sense to get wired up
-// if that html has the root page we need.
-// WE could now switch to doing this with ReactControl. But it's easier if all the publish HTML
-// panels work the same way.
-if (document.getElementById("PublishAudioVideo")) {
-    ReactDOM.render(
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                <PublishAudioVideo />
-            </ThemeProvider>
-        </StyledEngineProvider>,
-        document.getElementById("PublishAudioVideo")
-    );
-}

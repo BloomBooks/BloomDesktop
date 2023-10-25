@@ -627,6 +627,13 @@ div.bloom-templateMode {
 .bloom-page[class*="Device"] {
     .bloom-editable.overflow {
         overflow-y: scroll;
+        display: block;
+
+        // the language label at the bottom gets messed up once scrolling is on, so anchor it to the top
+        &:after {
+            top: 0 !important;
+            bottom: unset !important;
+        }
     }
 }
 
@@ -1108,4 +1115,9 @@ body {
 body.hideAllCKEditors .cke_chrome {
     // "display" is manipulated on the `style` element by ckeditor, so we can't use that
     visibility: hidden;
+}
+
+.invisibles {
+    font-family: "SymChar";
+    color: @bloom-purple;
 }

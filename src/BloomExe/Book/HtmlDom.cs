@@ -428,9 +428,14 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// Adds a string to the class attribute, if there isn't already an exact match.
+		/// </summary>
 		public static void AddClass(XmlElement e, string className)
 		{
-			e.SetAttribute("class", (e.GetAttribute("class").Replace(className, "").Trim() + " " + className).Trim());
+			if (HasClass(e, className))
+				return;
+			e.SetAttribute("class", (e.GetAttribute("class").Trim() + " " + className).Trim());
 		}
 
 		public static void AddRtlDir(XmlElement e)
@@ -462,15 +467,6 @@ namespace Bloom.Book
 			xmlElement.SetAttribute("class", classes.Trim());
 
 			//	Debug.WriteLine("RemoveClassesBeginingWith    " + xmlElement.InnerText+"     |    "+original + " ---> " + classes);
-		}
-
-
-		public static void AddClassIfMissing(XmlElement element, string className)
-		{
-			string classes = element.GetAttribute("class");
-			if(classes.Contains(className))
-				return;
-			element.SetAttribute("class", (classes + " " + className).Trim());
 		}
 
 		public static bool HasClass(XmlElement element, string className)
@@ -1850,7 +1846,7 @@ namespace Bloom.Book
 			foreach(var c in GetClasses(sourcePage))
 			{
 				if(!classesToDrop.Contains(c))
-					AddClassIfMissing(targetPage, c);
+					AddClass(targetPage, c);
 			}
 		}
 
@@ -2028,16 +2024,7 @@ namespace Bloom.Book
 		/// Gets the url for the image, either from an img element or any other element that has
 		/// an inline style with background-image set.
 		/// </summary>
-		public static UrlPathString GetImageElementUrl(XmlElement imageElement)
-		{
-			return GetImageElementUrl(new ElementProxy(imageElement));
-		}
-
-		/// <summary>
-		/// Gets the url for the image, either from an img element or any other element that has
-		/// an inline style with background-image set.
-		/// </summary>
-		public static UrlPathString GetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage)
+		public static UrlPathString GetImageElementUrl(XmlElement imgOrDivWithBackgroundImage)
 		{
 			if(imgOrDivWithBackgroundImage.Name.ToLower() == "img")
 			{
@@ -2066,14 +2053,6 @@ namespace Bloom.Book
 		/// </summary>
 		public static UrlPathString GetVideoElementUrl(XmlElement videoContainer)
 		{
-			return GetVideoElementUrl(new ElementProxy(videoContainer));
-		}
-
-		/// <summary>
-		/// Gets the url for a video, starting from a parent div which may or may not contain a video element.
-		/// </summary>
-		public static UrlPathString GetVideoElementUrl(ElementProxy videoContainer)
-		{
 			var videoElt = videoContainer.GetChildWithName("video");
 			// we choose to return an empty path for failure instead of null to reduce errors created by things like
 			// HtmlDom.GetImageElementUrl(element).UrlEncoded.
@@ -2093,16 +2072,7 @@ namespace Bloom.Book
 		/// Gets the url for the audio, either from an audio-sentence class or any other element that has
 		/// an inline style with data-backgroundaudio set.
 		/// </summary>
-		public static UrlPathString GetAudioElementUrl(XmlElement audioElement)
-		{
-			return GetAudioElementUrl(new ElementProxy(audioElement));
-		}
-
-		/// <summary>
-		/// Gets the url for the audio, either from an audio-sentence class or any other element that has
-		/// an inline style with data-backgroundaudio set.
-		/// </summary>
-		public static UrlPathString GetAudioElementUrl(ElementProxy audioOrDivWithBackgroundMusic)
+		public static UrlPathString GetAudioElementUrl(XmlElement audioOrDivWithBackgroundMusic)
 		{
 			var classStr = audioOrDivWithBackgroundMusic.GetAttribute("class");
 			if (classStr.Contains("audio-sentence"))
@@ -2145,7 +2115,7 @@ namespace Bloom.Book
 		/// Note: in both places, the code assumes that background-image is the ONLY
 		/// thing that needs to be set in the element's explicit style attribute.
 		/// </summary>
-		public static void SetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage, UrlPathString url, bool urlEncode = true)
+		public static void SetImageElementUrl(XmlElement imgOrDivWithBackgroundImage, UrlPathString url, bool urlEncode = true)
 		{
 			string urlFormToUse = urlEncode ? url.UrlEncoded : url.NotEncoded;
 			
@@ -2159,12 +2129,12 @@ namespace Bloom.Book
 				// From the XML perspective, neither of these strings have been XML-Encoded yet, so we should call XmlString.FromUnencoded.
 				// (Also, from a legacy perspective, the old SetAttribute function would pass these into subfunctions that expect unencoded values, so that's a 2nd reason)
 				XmlString urlAttributeValue = XmlString.FromUnencoded(urlFormToUse);
-				imgOrDivWithBackgroundImage.SetAttribute("src", urlAttributeValue);
+				imgOrDivWithBackgroundImage.SetAttribute("src", urlAttributeValue.Unencoded);
 			}
 			else
 			{
 				// The string formatting must match BookCompressor.kBackgroundImage
-				imgOrDivWithBackgroundImage.SetAttribute("style", XmlString.FromUnencoded(String.Format("background-image:url('{0}')", urlFormToUse)));
+				imgOrDivWithBackgroundImage.SetAttribute("style", XmlString.FromUnencoded(String.Format("background-image:url('{0}')", urlFormToUse)).Unencoded);
 			}
 		}
 
@@ -2173,7 +2143,7 @@ namespace Bloom.Book
 		/// Includes creating the video and source elements if they don't already exist.
 		/// Does not yet handle setting to an empty url and restoring the bloom-noVideoSelected state.
 		/// </summary>
-		public static void SetVideoElementUrl(ElementProxy videoContainer, UrlPathString url, bool urlEncode = true)
+		public static void SetVideoElementUrl(XmlElement videoContainer, UrlPathString url, bool urlEncode = true)
 		{
 			var videoElt = videoContainer.GetChildWithName("video");
 			if (videoElt == null)
@@ -2185,7 +2155,7 @@ namespace Bloom.Book
 			if (srcElement == null)
 			{
 				srcElement = videoElt.AppendChild("source");
-				srcElement.SetAttribute("type", XmlString.FromUnencoded("video/mp4"));
+				srcElement.SetAttribute("type", XmlString.FromUnencoded("video/mp4").Unencoded);
 			}
 			SetSrcOfVideoElement(url, srcElement, urlEncode);
 			// Hides the placeholder.
@@ -2193,7 +2163,7 @@ namespace Bloom.Book
 			videoContainer.SetAttribute("class",
 				XmlString.FromUnencoded(
 					RemoveClass("bloom-noVideoSelected",
-						videoContainer.GetAttribute("class"))));
+						videoContainer.GetAttribute("class"))).Unencoded);
 		}
 
 		/// <summary>
@@ -2201,7 +2171,7 @@ namespace Bloom.Book
 		/// adding the supplied params. If urlEncodePath is true, we will take the encoded path version
 		/// of the url argument. Caller is responsible to encode the paramString if necessary.
 		/// </summary>
-		public static void SetSrcOfVideoElement(UrlPathString url, ElementProxy srcElement, bool urlEncodePath, string encodedParamString = "")
+		public static void SetSrcOfVideoElement(UrlPathString url, XmlElement srcElement, bool urlEncodePath, string encodedParamString = "")
 		{
 			if (encodedParamString == null)
 				encodedParamString = "";
@@ -2209,7 +2179,7 @@ namespace Bloom.Book
 				encodedParamString = "?" + encodedParamString;
 			string srcUrl = (urlEncodePath ? url.PathOnly.UrlEncodedForHttpPath : url.PathOnly.NotEncoded) + encodedParamString;
 			srcElement.SetAttribute("src",
-				XmlString.FromUnencoded(srcUrl));
+				XmlString.FromUnencoded(srcUrl).Unencoded);
 		}
 
 		public static string RemoveClass(string className, string input)
@@ -2702,7 +2672,7 @@ namespace Bloom.Book
 		{
 			RemoveClassesBeginingWith(pageDiv, "side-");
 			var rightSideRemainder = languageIsRightToLeft ? 1 : 0;
-			AddClassIfMissing(pageDiv, indexOfPageZeroBased % 2 == rightSideRemainder ? "side-right" : "side-left");
+			AddClass(pageDiv, indexOfPageZeroBased % 2 == rightSideRemainder ? "side-right" : "side-left");
 		}
 
 		/// <summary>
@@ -3002,7 +2972,7 @@ namespace Bloom.Book
 
 		public static void InsertFullBleedMarkup(XmlElement body)
 		{
-			AddClassIfMissing(body, "bloom-fullBleed");
+			AddClass(body, "bloom-fullBleed");
 			foreach (XmlElement page in body.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
 			{
 				var mediaBoxDiv = page.OwnerDocument.CreateElement("div");
@@ -3139,6 +3109,26 @@ namespace Bloom.Book
 				// Update the DOM to reflect the changes.
 				var rawCSS = GetCompleteFilteredUserStylesInnerText(userStyleKeyDict);
 				userStylesNode.InnerXml = WrapUserStyleInCdata(rawCSS);
+			}
+		}
+
+		public bool HasClassOnBody(string className)
+		{
+			return HasClass(Body, className);
+		}
+
+		public void SetClassOnBody(bool shouldHaveClass, string className)
+		{
+			if (Body == null)
+				return;
+
+			if (shouldHaveClass && !HasClassOnBody(className))
+			{
+				AddClass(Body, className);
+			}
+			else if (!shouldHaveClass && HasClassOnBody(className))
+			{
+				RemoveClass(Body, className);
 			}
 		}
 	}

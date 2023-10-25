@@ -375,7 +375,7 @@ namespace Bloom.web.controllers
 			List<Tuple<string, string>> timingStartEndRangeList = null;
 			try
 			{
-				ToPalaso.RobustIO.WriteAllLines(textFragmentsFilename, fragmentList);
+				RobustFile.WriteAllLines(textFragmentsFilename, fragmentList);
 
 				if (!string.IsNullOrEmpty(requestParameters.manualTimingsPath))
 				{

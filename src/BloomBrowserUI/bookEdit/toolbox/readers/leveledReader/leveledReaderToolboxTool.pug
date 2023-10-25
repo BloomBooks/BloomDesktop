@@ -1,129 +1,129 @@
 html
 	head
-
 	body
-		// markuptype refers to which kind of synphony markup is displayed in the tool. See ReaderToolsModel.setMarkupType and the MarkupType enumeration.
 		h3(data-toolId='leveledReaderTool', data-order='20', data-i18n='EditTab.Toolbox.LeveledReaderTool') Leveled Reader Tool
 		div(data-toolId='leveledReaderTool')
-			#setupStages
-				img#leveled-edit(src='/bloom/bookEdit/toolbox/readers/edit-white.png')
-				span.setup.noSelect
-					a(href="javascript:window.toolboxBundle.showSetupDialog('levels');", data-i18n='EditTab.Toolbox.LeveledReaderTool.SetUpLevels') Set up Levels
-			.stageLine.clear.noSelect
-				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decLevel
-				span.stageLabel.stageLine.noSelect
-					// Corresponds to "EditTab.Toolbox.LeveledReaderTool.LevelNofM"
-					// Just a placeholder that will get updated later.
-					// The reason we localize manually instead of using data-i18n attribute is because this text contains format strings.
-					// If using data-i18n attr, it is localized to the raw format string ("Level {0} of {1}" etc) and briefly rendered before we can replace the placeholders.
-					// Doing it manually allows the raw format string not to be visible to the user.
-					span#levelNofM="Level 0 of 0"
-				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incLevel
-			table.statistics.clear(style='margin-left: 6px')
-				tr
-					td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.WordCounts') Word Counts
-				tr
-					td.tableTitle.thisPageSection(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPage') This Page
-				tr
-					td.statistics-label
-					td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
-					td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerPage') per page
-					td.statistics-max#maxWordsPerPage
-					td.statistics-actual#actualWordsPerPage -
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerSentence') longest sentence
-					td.statistics-max#maxWordsPerSentence
-					td.statistics-actual#actualWordsPerSentence -
-			table.statistics.clear(style='margin-left: 6px')
-				tr
-					td.tableTitle(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisBook') This Book
-				tr
-					td.statistics-label
-					td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
-					td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.Total') total
-					td.statistics-max#maxWordsPerBook
-					td.statistics-actual#actualWordCount -
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerPage') per page
-					td.statistics-max#maxWordsPerPageBook
-					td.statistics-actual#actualWordsPerPageBook -
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.Unique') unique
-					td.statistics-max#maxUniqueWordsPerBook
-					td.statistics-actual#actualUniqueWords -
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength') longest sentence
-					td.statistics-max#maxWordsPerSentenceInBook
-					td.statistics-actual#actualMaxWordsPerSentence -
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.Average') avg per sentence
-					td.statistics-max#maxAverageWordsPerSentence
-					td.statistics-actual#actualAverageWordsPerSentence -
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AveragePerPage') avg per page
-					td.statistics-max#maxAverageWordsPerPage
-					td.statistics-actual#actualAverageWordsPerPage -
-			table.statistics.clear(style='margin-left: 6px')
-				tr
-					td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.WordLengths') Word Lengths
-				tr
-					td.statistics-label
-					td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
-					td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPageLC') this page
-					td.statistics-max#maxLettersPerWord
-					td.statistics-actual#actualLettersPerWord -
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.MaxInBook') max in book
-					td.statistics-max#maxGlyphsPerWordInBook
-					td.statistics-actual#actualMaxGlyphsPerWord -
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AverageInBook') avg in book
-					td.statistics-max#maxAverageGlyphsPerWord
-					td.statistics-actual#actualAverageGlyphsPerWord -
-			table.statistics.clear(style='margin-left: 6px')
-				tr
-					td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.SentenceCounts') Sentence Counts
-				tr
-					td.statistics-label
-					td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
-					td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPageLC') this page
-					td.statistics-max#maxSentencesPerPage
-					td.statistics-actual#actualSentencesPerPage -
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.TotalInBook') total in book
-					td.statistics-max#maxSentencesPerBook
-					td.statistics-actual#actualSentenceCount -
-				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AverageInBook') avg in book
-					td.statistics-max#maxAverageSentencesPerPage
-					td.statistics-actual#actualAverageSentencesPerPage -
-			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
-			.section(style='clear: both; margin-left: 8px;')
-				span(data-i18n='EditTab.Toolbox.LeveledReaderTool.FoThisLevel') For this Level
-				ul#thingsToRemember
-			.section(style='margin-left: 8px;')#keepInMindLinks
-				span(data-i18n='EditTab.Toolbox.LeveledReaderTool.KeepInMind') Keep in mind
-				ul
-					li
-						a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Vocabulary', data-i18n='EditTab.Toolbox.LeveledReaderTool.Vocabulary') Vocabulary
-					li
-						a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Formatting', data-i18n='EditTab.Toolbox.LeveledReaderTool.Formatting') Formatting
-					li
-						a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Predictability', data-i18n='EditTab.Toolbox.LeveledReaderTool.Predictability') Predictability
-					li
-						a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=IllustrationSupport', data-i18n='EditTab.Toolbox.LeveledReaderTool.IllustrationSupport') Illustration Support
-					li
-						a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=ChoiceOfTopic', data-i18n='EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic') Choice of Topic
+			#leveled-reader-tool-content.turned-off
+				#setupStages
+					img#leveled-edit(src='/bloom/bookEdit/toolbox/readers/edit-white.png')
+					span.setup.noSelect
+						a(href="javascript:window.toolboxBundle.showSetupDialog('levels');", data-i18n='EditTab.Toolbox.LeveledReaderTool.SetUpLevels') Set up Levels
+				.stageLine.clear.noSelect
+					span.scroll-button.ui-icon.ui-icon-triangle-1-w#decLevel
+					span.stageLabel.stageLine.noSelect
+						// Corresponds to "EditTab.Toolbox.LeveledReaderTool.LevelNofM"
+						// Just a placeholder that will get updated later.
+						// The reason we localize manually instead of using data-i18n attribute is because this text contains format strings.
+						// If using data-i18n attr, it is localized to the raw format string ("Level {0} of {1}" etc) and briefly rendered before we can replace the placeholders.
+						// Doing it manually allows the raw format string not to be visible to the user.
+						span#levelNofM="Level 0 of 0"
+					span.scroll-button.ui-icon.ui-icon-triangle-1-e#incLevel
+				table.statistics.clear(style='margin-left: 6px')
+					tr
+						td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.WordCounts') Word Counts
+					tr
+						td.tableTitle.thisPageSection(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPage') This Page
+					tr
+						td.statistics-label
+						td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
+						td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerPage') per page
+						td.statistics-max#maxWordsPerPage
+						td.statistics-actual#actualWordsPerPage -
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerSentence') longest sentence
+						td.statistics-max#maxWordsPerSentence
+						td.statistics-actual#actualWordsPerSentence -
+				table.statistics.clear(style='margin-left: 6px')
+					tr
+						td.tableTitle(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisBook') This Book
+					tr
+						td.statistics-label
+						td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
+						td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.Total') total
+						td.statistics-max#maxWordsPerBook
+						td.statistics-actual#actualWordCount -
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerPage') per page
+						td.statistics-max#maxWordsPerPageBook
+						td.statistics-actual#actualWordsPerPageBook -
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.Unique') unique
+						td.statistics-max#maxUniqueWordsPerBook
+						td.statistics-actual#actualUniqueWords -
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength') longest sentence
+						td.statistics-max#maxWordsPerSentenceInBook
+						td.statistics-actual#actualMaxWordsPerSentence -
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.Average') avg per sentence
+						td.statistics-max#maxAverageWordsPerSentence
+						td.statistics-actual#actualAverageWordsPerSentence -
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AveragePerPage') avg per page
+						td.statistics-max#maxAverageWordsPerPage
+						td.statistics-actual#actualAverageWordsPerPage -
+				table.statistics.clear(style='margin-left: 6px')
+					tr
+						td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.WordLengths') Word Lengths
+					tr
+						td.statistics-label
+						td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
+						td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPageLC') this page
+						td.statistics-max#maxLettersPerWord
+						td.statistics-actual#actualLettersPerWord -
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.MaxInBook') max in book
+						td.statistics-max#maxGlyphsPerWordInBook
+						td.statistics-actual#actualMaxGlyphsPerWord -
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AverageInBook') avg in book
+						td.statistics-max#maxAverageGlyphsPerWord
+						td.statistics-actual#actualAverageGlyphsPerWord -
+				table.statistics.clear(style='margin-left: 6px')
+					tr
+						td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.SentenceCounts') Sentence Counts
+					tr
+						td.statistics-label
+						td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
+						td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPageLC') this page
+						td.statistics-max#maxSentencesPerPage
+						td.statistics-actual#actualSentencesPerPage -
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.TotalInBook') total in book
+						td.statistics-max#maxSentencesPerBook
+						td.statistics-actual#actualSentenceCount -
+					tr
+						td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AverageInBook') avg in book
+						td.statistics-max#maxAverageSentencesPerPage
+						td.statistics-actual#actualAverageSentencesPerPage -
+				div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
+				.section(style='clear: both; margin-left: 8px;')
+					span(data-i18n='EditTab.Toolbox.LeveledReaderTool.FoThisLevel') For this Level
+					ul#thingsToRemember
+				.section(style='margin-left: 8px;')#keepInMindLinks
+					span(data-i18n='EditTab.Toolbox.LeveledReaderTool.KeepInMind') Keep in mind
+					ul
+						li
+							a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Vocabulary', data-i18n='EditTab.Toolbox.LeveledReaderTool.Vocabulary') Vocabulary
+						li
+							a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Formatting', data-i18n='EditTab.Toolbox.LeveledReaderTool.Formatting') Formatting
+						li
+							a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Predictability', data-i18n='EditTab.Toolbox.LeveledReaderTool.Predictability') Predictability
+						li
+							a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=IllustrationSupport', data-i18n='EditTab.Toolbox.LeveledReaderTool.IllustrationSupport') Illustration Support
+						li
+							a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=ChoiceOfTopic', data-i18n='EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic') Choice of Topic
 
-			div.copyBookStats(onclick='toolboxBundle.copyLeveledReaderStatsToClipboard();')
-				p
-					include ../../../../images/copy.svg
-					span(data-i18n='EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics') Copy Book Stats
+				div.copyBookStats(onclick='toolboxBundle.copyLeveledReaderStatsToClipboard();')
+					p
+						include ../../../../images/copy.svg
+						span(data-i18n='EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics') Copy Book Stats
+			#leveled-reader-tool-toggle-react-container

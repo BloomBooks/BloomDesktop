@@ -54,6 +54,7 @@ const TextCell: React.FunctionComponent<{
 };
 
 const kEventTypes = [
+    "Check Out",
     "Check In",
     "Created",
     "Renamed",

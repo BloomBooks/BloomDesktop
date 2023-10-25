@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using Bloom.Book;
 using Bloom.Publish.Epub;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using SIL.Xml;
 using Assert = NUnit.Framework.Assert;
@@ -222,9 +221,9 @@ namespace BloomTests.Publish
 
 		private void HandleImageDescriptions(HtmlDom htmlDom, BookInfo.HowToPublishImageDescriptions howTo = BookInfo.HowToPublishImageDescriptions.None)
 		{
-			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
-			obj.SetFieldOrProperty("PublishImageDescriptions", howTo);
-			obj.Invoke("HandleImageDescriptions", htmlDom);
+			var obj = new Bloom.Publish.Epub.EpubMaker(null, null);
+			SIL.Reflection.ReflectionHelper.SetProperty(obj, "PublishImageDescriptions", howTo);
+			SIL.Reflection.ReflectionHelper.CallMethod(obj, "HandleImageDescriptions", htmlDom);
 		}
 
 		[TestCase("A5Portrait", 559.37, 793.7)] // gets most common case right
