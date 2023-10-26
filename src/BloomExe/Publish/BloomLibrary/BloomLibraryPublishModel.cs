@@ -31,6 +31,9 @@ namespace Bloom.Publish.BloomLibrary
 		private readonly BookUpload _uploader;
 		private readonly PublishModel _publishModel;
 
+		public static bool BookUploaded;
+		public static string BookUploadedId;
+
 		public BloomLibraryPublishModel(BookUpload uploader, BookInstance book, PublishModel model)
 		{
 			Book = book;
@@ -160,6 +163,8 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 			{
+				BookUploaded = true;				// flag that an upload has occurred
+				BookUploadedId = book.BookInfo.Id;	// single book uploaded: only one needs to be updated
 				BookUpload.PrepareBookForUpload(ref book, _publishModel.BookServer, tempFolder.FolderPath, progress);
 				var bookParams = new BookUploadParameters
 				{
@@ -452,6 +457,9 @@ namespace Bloom.Publish.BloomLibrary
 				if (!String.IsNullOrEmpty("xulRunner"))
 					Environment.SetEnvironmentVariable("LD_PRELOAD", $"{xulRunner}/libgeckofix.so");
 			}
+
+			BookUploaded = true;	// Flag that an upload has occurred
+			BookUploadedId = null;	// Multiple books have been uploaded, so a single id doesn't exist: all may need to be updated
 
 			ProcessExtra.StartInFront(startInfo);
 			progress.WriteMessage("Starting bulk upload in a terminal window...");

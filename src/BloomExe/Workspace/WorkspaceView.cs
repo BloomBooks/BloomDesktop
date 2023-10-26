@@ -964,6 +964,16 @@ namespace Bloom.Workspace
 			Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
 			SelectPage((Control) e.SelectedTab.Tag);
 			AdjustTabStripDisplayForScreenSize();
+			if (_tabSelection.ActiveTab == WorkspaceTab.collection && _collectionTabView != null)
+			{
+				if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
+				{
+					// update bloom library status for the either the selected book or the entire collection.
+					_collectionTabView.UpdateBloomLibraryStatus(Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId);
+					Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded = false;
+					Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId = null;
+				}
+			}
 		}
 
 		public void ChangeTab(WorkspaceTab newTab)

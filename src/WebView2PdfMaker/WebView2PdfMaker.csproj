@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{F697DD7A-2D74-4850-8381-7E4ADB1E4431}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -50,7 +50,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="SIL.Core" Version="13.0.0-beta0071" />
+    <PackageReference Include="SIL.Core" Version="13.0.0-beta0074" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
