@@ -350,9 +350,9 @@ namespace Bloom.Book
 
 		public ImagePublishSettings()
 		{
-			// See discussion in BL-5385
-			MaxWidth = 600;
-			MaxHeight = 600;
+			// See discussion in BL-5385 / BL-12803
+			MaxWidth = 1280;
+			MaxHeight = 720;
 		}
 	}
 
