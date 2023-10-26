@@ -208,7 +208,7 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
     ];
     let currentIndex = sizes.findIndex(x => x.w === props.value.maxWidth);
     if (currentIndex === -1) {
-        currentIndex = 0;
+        currentIndex = 1; // See BL-12803.
     }
     const current = sizes[currentIndex];
     const currentLabel = useL10n(
