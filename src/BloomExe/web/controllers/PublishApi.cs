@@ -488,7 +488,7 @@ namespace Bloom.web.controllers
 		/// </summary>
 		/// <returns>A valid, well-formed URL on localhost that points to the staged book's htm file,
 		/// or null if we aren't allowed to publish this book in this language (LicenseChecker).</returns>
-		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, BloomPubPublishSettings settings = null)
+		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, BloomPubPublishSettings settings)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");  // message shared with Epub publishing
 			if (!IsBookLicenseOK(book, settings, progress))
@@ -510,6 +510,8 @@ namespace Bloom.web.controllers
 			// I believe we only ever have one book being made there, so it works.
 			CurrentPublicationFolder = _stagingFolder.FolderPath;
 			var modifiedBook = BloomPubMaker.PrepareBookForBloomReader(settings, bookFolderPath: book.FolderPath, bookServer: bookServer, temp: _stagingFolder, progress, isTemplateBook: book.IsTemplateBook);
+			// Compress images for preview as well as actual publish step.  See comments in BL-12130.
+			BloomPubMaker.CompressImages(modifiedBook.FolderPath, settings.ImagePublishSettings, modifiedBook.RawDom);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
 			if (settings?.WantPageLabels ?? false)
 			{

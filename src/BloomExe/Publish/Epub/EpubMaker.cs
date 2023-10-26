@@ -2524,8 +2524,7 @@ namespace Bloom.Publish.Epub
 		{
 			if (limitImageDimensions && BookCompressor.CompressableImageFileExtensions.Contains(Path.GetExtension(srcPath).ToLowerInvariant()))
 			{
-				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground, imagePublishSettings);
-				RobustFile.WriteAllBytes(dstPath, imageBytes);
+				BookCompressor.CopyResizedImageFile(srcPath, dstPath, imagePublishSettings, needTransparentBackground);
 				return;
 			}
 			if (dstPath.Contains(kCssFolder) && dstPath.EndsWith(".css"))
