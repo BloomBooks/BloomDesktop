@@ -43,7 +43,7 @@ namespace Bloom.Publish
 
 			_reactControl = new ReactControl();
 			_reactControl.JavascriptBundleName = "publishTabPaneBundle";
-			_reactControl.BackColor = System.Drawing.Color.White;
+			_reactControl.BackColor = Palette.GeneralBackground;
 			_reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
             components = new System.ComponentModel.Container();
 			_reactControl.Location = new System.Drawing.Point(0, 0);
