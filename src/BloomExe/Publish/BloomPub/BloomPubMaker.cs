@@ -112,7 +112,7 @@ BookServer bookServer,
 			return filter;
 		}
 
-		private static void CompressImages(string modifiedBookFolderPath, ImagePublishSettings imagePublishSettings, XmlDocument dom)
+		public static void CompressImages(string modifiedBookFolderPath, ImagePublishSettings imagePublishSettings, XmlDocument dom)
 		{
 			List<string> imagesToPreserveResolution;
 			List<string> imagesToGiveTransparentBackgrounds;
@@ -141,17 +141,25 @@ BookServer bookServer,
 						continue; // don't compress these
 								  // Cover images should be transparent if possible.  Others don't need to be.
 					var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(fileName);
-					var modifiedContent = BookCompressor.GetImageBytesForElectronicPub(filePath,
-						makeBackgroundTransparent,
-						imagePublishSettings);
-					// In a previous version, we did this during the compression, and therefore didn't have to
-					// write out a modified version. There's a small savings in this, but the price is
-					// a nasty leak of knowledge about making BloomPubs into a class responsible for
-					// compressing to zip files. If we really need this savings, we could refactor to
-					// use the overrides parameter of CompressDirectory.
-					RobustFile.WriteAllBytes(filePath, modifiedContent);
+					GetNewImageIfNeeded(filePath, imagePublishSettings, makeBackgroundTransparent);
 				}
 			}
+		}
+
+		private static void GetNewImageIfNeeded(string filePath, ImagePublishSettings imagePublishSettings, bool makeBackgroundTransparent)
+		{
+			using (var tagFile = RobustFileIO.CreateTaglibFile(filePath))
+			{
+				var currentWidth = tagFile.Properties.PhotoWidth;
+				var currentHeight = tagFile.Properties.PhotoHeight;
+				if (imagePublishSettings.MaxWidth >= currentWidth && imagePublishSettings.MaxHeight >= currentHeight ||
+					imagePublishSettings.MaxWidth >= currentHeight && imagePublishSettings.MaxHeight >= currentWidth)
+				{
+					if (!makeBackgroundTransparent)
+						return;		// current file is okay as is: small enough and no need to make transparent.
+				}
+			}
+			BookCompressor.CopyResizedImageFile(filePath, filePath, imagePublishSettings, makeBackgroundTransparent);
 		}
 
 		private const string kBackgroundImage = "background-image:url('";   // must match format string in HtmlDom.SetImageElementUrl()
