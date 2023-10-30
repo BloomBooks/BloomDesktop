@@ -17,11 +17,12 @@
         <target xml:lang="fr" state="final">Impression d'un Grand livre</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
+      <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="fr" state="final">Pour faciliter la tâche, ce modèle est au format A4 paysage, en gros caractères.
+        <target xml:lang="fr" state="translated">Pour faciliter la tâche, ce modèle est au format A4 paysage, en gros caractères.
 Vous pourrez facilement faire des livres au format A3 (deux fois plus grand).
 Il vous suffit de demander à l'imprimerie d'agrandir votre PDF en format A4 au format A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>

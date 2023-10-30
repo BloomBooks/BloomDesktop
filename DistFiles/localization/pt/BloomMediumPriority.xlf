@@ -5,145 +5,150 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book is Decodable</source>
-        <target xml:lang="pt-PT" state="needs-translation">Book is Decodable</target>
+        <target xml:lang="pt-PT" state="final">O livro é descodificável</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsDecodable</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book is not Decodable</source>
-        <target xml:lang="pt-PT" state="needs-translation">Book is not Decodable</target>
+        <target xml:lang="pt-PT" state="final">O livro não é descodificável</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsLeveled" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsLeveled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book is Leveled</source>
-        <target xml:lang="pt-PT" state="needs-translation">Book is Leveled</target>
+        <target xml:lang="pt-PT" state="final">Livro é nivelado</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsLeveled</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book is not Leveled</source>
-        <target xml:lang="pt-PT" state="needs-translation">Book is not Leveled</target>
+        <target xml:lang="pt-PT" state="final">Livro não é nivelado</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled</note>
       </trans-unit>
       <!-- Talking Book Advanced -->
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
         <source xml:lang="en">eSpeak failed.</source>
-        <target xml:lang="pt-PT" state="needs-translation">eSpeak failed.</target>
+        <target xml:lang="pt-PT" state="final">eSpeak falhou.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Please split or clear the existing recording in this text box before changing modes.</target>
+        <target xml:lang="pt-PT" state="final">Por favor, divida ou limpe a gravação existente nesta caixa de texto antes de alterar os modos.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Import Recording...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Import Recording...</target>
+        <target xml:lang="pt-PT" state="final">Importar gravação...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Replace with new audio?</source>
-        <target xml:lang="pt-PT" state="needs-translation">Replace with new audio?</target>
+        <target xml:lang="pt-PT" state="final">Substituir com o novo áudio?</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
-        <target xml:lang="pt-PT" state="needs-translation">If you import this recording, it will replace all the audio for this text box.</target>
+        <target xml:lang="pt-PT" state="final">Se importar esta gravação, ela irá substituir todo o áudio desta caixa de texto.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Insert Segment Marker</source>
-        <target xml:lang="pt-PT" state="needs-translation">Insert Segment Marker</target>
+        <target xml:lang="pt-PT" state="final">Inserir o marcador do segmento</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Apply Timings File...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Apply Timings File...</target>
+        <target xml:lang="pt-PT" state="final">Aplicar Arquivo de Tempo...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit Timings File...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Edit Timings File...</target>
+        <target xml:lang="pt-PT" state="final">Editar arquivo de tempos...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</target>
+        <target xml:lang="pt-PT" state="final">Clique aqui para inserir um caractere "|" no texto na posição atual do cursor. Este personagem diz ao Bloom para introduzir um novo segmento para o destaque do texto durante a reprodução de áudio. Também pode apenas digitar o caractere "|" usando o seu teclado.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Bloom will hide these when you publish.</source>
+        <target xml:lang="pt-PT" state="final">Bloom irá ocultá-los quando você publicar.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">First, put the cursor in a box which has something to record.</source>
-        <target xml:lang="pt-PT" state="needs-translation">First, put the cursor in a box which has something to record.</target>
+        <target xml:lang="pt-PT" state="final">Primeiro, coloque o cursor numa caixa que tem algo a gravar.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you want to change this mode, first use the "Clear" button to remove your recording.</source>
-        <target xml:lang="pt-PT" state="needs-translation">If you want to change this mode, first use the "Clear" button to remove your recording.</target>
+        <target xml:lang="pt-PT" state="final">Se você quiser alterar este modo, primeiro use o botão "Limpar" para remover sua gravação.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Record one sentence at a time. You can break up sentences using the `|` character.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Record one sentence at a time. You can break up sentences using the `|` character.</target>
+        <target xml:lang="pt-PT" state="final">Grave uma frase de cada vez. Você pode separar sentenças usando o caractere `|`.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Record the whole text box in one take, or load in a recording.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Record the whole text box in one take, or load in a recording.</target>
+        <target xml:lang="pt-PT" state="final">Grave toda a caixa de texto em uma única coleta, ou carregue em uma gravação.</target>
         <note>EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecordingTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecordingTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Import an mp3 recording of the whole text box.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Import an mp3 recording of the whole text box.</target>
+        <target xml:lang="pt-PT" state="final">Importe uma gravação mp3 da caixa de texto inteira.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecordingTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This is disabled because this box is not in `Record by Text Box` mode.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This is disabled because this box is not in `Record by Text Box` mode.</target>
+        <target xml:lang="pt-PT" state="final">Isto está desativado porque esta caixa não está no modo de Gravação por Caixa de Texto.</target>
         <note>EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Open the timing file in a text editor. After you save your changes, click the "Apply Timings File" button.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Open the timing file in a text editor. After you save your changes, click the "Apply Timings File" button.</target>
+        <target xml:lang="pt-PT" state="final">Abra o arquivo de tempo no editor de texto. Após salvar as alterações, clique no botão "Aplicar arquivo de tempo".</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This is only enabled after doing a "Split" of a recording of the whole text box.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This is only enabled after doing a "Split" of a recording of the whole text box.</target>
+        <target xml:lang="pt-PT" state="final">Isso só é ativado após fazer "Dividir" de uma gravação de toda a caixa de texto.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitRecordingTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitRecordingTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This lets you choose a file containing timings for aligning the audio with the text. The format of the file is tab-separated values, with the first column being the start time in seconds, and the second column being the end time in seconds. The third column is often a label, but it will be ignored.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This lets you choose a file containing timings for aligning the audio with the text. The format of the file is tab-separated values, with the first column being the start time in seconds, and the second column being the end time in seconds. The third column is often a label, but it will be ignored.</target>
+        <target xml:lang="pt-PT" state="final">Isso permite que você escolha um arquivo com os tempos para alinhar o áudio com o texto. O formato do arquivo é valores separados por tabulação, sendo a primeira coluna o tempo de início em segundos, e a segunda coluna sendo o tempo final em segundos. A terceira coluna é muitas vezes um rótulo, mas será ignorado.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitRecordingTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Control the order in which various boxes on the page are played back.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Control the order in which various boxes on the page are played back.</target>
+        <target xml:lang="pt-PT" state="final">Controle a ordem na qual são reproduzidas várias caixas na página.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingMode" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingMode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Recording Mode</source>
-        <target xml:lang="pt-PT" state="needs-translation">Recording Mode</target>
+        <target xml:lang="pt-PT" state="final">Modo de gravação</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingMode</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSentence" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">By Sentence</source>
-        <target xml:lang="pt-PT" state="needs-translation">By Sentence</target>
+        <target xml:lang="pt-PT" state="final">Por frase</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSentence</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">By Whole Text Box</source>
-        <target xml:lang="pt-PT" state="needs-translation">By Whole Text Box</target>
+        <target xml:lang="pt-PT" state="final">Por toda caixa de texto</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show playback order buttons</source>
-        <target xml:lang="pt-PT" state="needs-translation">Show playback order buttons</target>
+        <target xml:lang="pt-PT" state="final">Mostrar botões de ordem de reprodução</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show image descriptions</source>
-        <target xml:lang="pt-PT" state="needs-translation">Show image descriptions</target>
+        <target xml:lang="pt-PT" state="final">Mostrar descrição da imagem</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
       </trans-unit>
       <!-- Overlay -->
@@ -257,14 +262,14 @@
         <target xml:lang="pt-PT" state="final">Selecione esta opção se deseja listar este livro como acessível aos deficientes visuais no idioma primário. Isso só afeta como o livro é categorizado, não afeta o conteúdo do livro.</target>
         <note>ID: PublishTab.Feature.Vision.Possible</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Draft">
+      <trans-unit id="PublishTab.Upload.Draft" approved="yes">
         <source xml:lang="en">Do not show this book to the public yet. I will share its URL with reviewers for feedback.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Do not show this book to the public yet. I will share its URL with reviewers for feedback.</target>
+        <target xml:lang="pt-PT" state="final">Não mostre este livro para o público ainda. Eu compartilharei seu URL com os revisores para obter feedback.</target>
         <note>ID: PublishTab.Upload.Draft</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Visibility">
+      <trans-unit id="PublishTab.Upload.Visibility" approved="yes">
         <source xml:lang="en">Visibility</source>
-        <target xml:lang="pt-PT" state="needs-translation">Visibility</target>
+        <target xml:lang="pt-PT" state="final">Visibilidade</target>
         <note>ID: PublishTab.Upload.Visibility</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.ConsiderBloomPUB" sil:dynamic="true" approved="yes">
@@ -302,85 +307,238 @@
         <target xml:lang="pt-PT" state="final">Este recurso está disponível somente na versão Windows do Bloom. Pedimos desculpas pela inconveniência.</target>
         <note>ID: PublishTab.RecordVideo.ApologiesForNoLinux</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.WhyShareOnBlorg" sil:dynamic="true">
+      <trans-unit id="PublishTab.Upload.WhyShareOnBlorg" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Why you should publish on the Web</source>
-        <target xml:lang="pt-PT" state="needs-translation">Why you should publish on the Web</target>
+        <target xml:lang="pt-PT" state="final">Porque deve publicar na Web</target>
         <note>ID: PublishTab.Upload.WhyShareOnBlorg</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Help" sil:dynamic="true">
+      <trans-unit id="PublishTab.Upload.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Documentation about this screen</source>
-        <target xml:lang="pt-PT" state="needs-translation">Documentation about this screen</target>
+        <target xml:lang="pt-PT" state="final">Documentação sobre este ecrã</target>
         <note>ID: PublishTab.Upload.Help</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.AboutBlorg" sil:dynamic="true">
+      <trans-unit id="PublishTab.Upload.AboutBlorg" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About BloomLibrary.org</source>
-        <target xml:lang="pt-PT" state="needs-translation">About BloomLibrary.org</target>
+        <target xml:lang="pt-PT" state="final">Sobre a BloomLibrary.org</target>
         <note>ID: PublishTab.Upload.AboutBlorg</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true">
+      <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true" approved="yes">
         <source xml:lang="en">View on BloomLibrary.org</source>
-        <target xml:lang="pt-PT" state="needs-translation">View on BloomLibrary.org</target>
-        <note>CollectionTab.OnBlorgBadge.ViewBookOnBlorg</note>
+        <target xml:lang="pt-PT" state="final">Visualizar no BloomLibrary.org</target>
+        <note>CollectionTab.OnBlorgBadge.ViewOnBlorg</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.Published" sil:dynamic="true">
+      <trans-unit id="CollectionTab.OnBlorgBadge.Published" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Published</source>
-        <target xml:lang="pt-PT" state="needs-translation">Published</target>
+        <target xml:lang="pt-PT" state="final">Publicado</target>
         <note>CollectionTab.OnBlorgBadge.Published</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.MarkedAsDraft" sil:dynamic="true">
+      <trans-unit id="CollectionTab.OnBlorgBadge.MarkedAsDraft" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Marked as Draft</source>
-        <target xml:lang="pt-PT" state="needs-translation">Marked as Draft</target>
+        <target xml:lang="pt-PT" state="final">Guardado como rascunho</target>
         <note>CollectionTab.OnBlorgBadge.MarkedAsDraft</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.Processing" sil:dynamic="true">
-        <source xml:lang="en">BloomLibrary.org is processing this book</source>
-        <target xml:lang="pt-PT" state="needs-translation">BloomLibrary.org is processing this book</target>
-        <note>CollectionTab.OnBlorgBadge.Processing</note>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Harvesting" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">In Progress</source>
+        <target xml:lang="pt-PT" state="final">Em processo</target>
+        <note>CollectionTab.OnBlorgBadge.Harvesting</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true">
+      <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Problem</source>
-        <target xml:lang="pt-PT" state="needs-translation">Problem</target>
+        <target xml:lang="pt-PT" state="final">Problema</target>
         <note>CollectionTab.OnBlorgBadge.Problem</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Title" sil:dynamic="true">
+      <trans-unit id="BookSettings.LockedByBranding" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Locked by {0} Branding</source>
+        <target xml:lang="pt-PT" state="final">Bloqueado por marca {0}</target>
+        <note>BookSettings.LockedByBranding</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LockedByLegacy" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Locked by Legacy-5-6 theme</source>
+        <target xml:lang="pt-PT" state="final">Bloqueado pelo tema Legacy-5-6</target>
+        <note>BookSettings.LockedByLegacy</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LockedByXMatter" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Locked by {0} Front/Back matter</source>
+        <target xml:lang="pt-PT" state="final">Bloqueado por {0} material da capa/verso</target>
+        <note>BookSettings.LockedByXMatter</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book Settings</source>
-        <target xml:lang="pt-PT" state="needs-translation">Book Settings</target>
+        <target xml:lang="pt-PT" state="final">Configurações do livro</target>
         <note>BookSettings.Title</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max Image Size</source>
-        <target xml:lang="pt-PT" state="needs-translation">Max Image Size</target>
+        <target xml:lang="pt-PT" state="final">Tamanho máximo de imagem</target>
         <note>BookSettings.eBook.Image.MaxResolution</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Small</source>
-        <target xml:lang="pt-PT" state="needs-translation">Small</target>
+        <target xml:lang="pt-PT" state="final">Pequeno</target>
         <note>BookSettings.eBook.Image.MaxResolution.Small</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HD</source>
-        <target xml:lang="pt-PT" state="needs-translation">HD</target>
+        <target xml:lang="pt-PT" state="final">Alta definição</target>
         <note>BookSettings.eBook.Image.MaxResolution.HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Full HD</source>
-        <target xml:lang="pt-PT" state="needs-translation">Full HD</target>
+        <target xml:lang="pt-PT" state="final">Alta definição total</target>
         <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4K</source>
-        <target xml:lang="pt-PT" state="needs-translation">4K</target>
+        <target xml:lang="pt-PT" state="final">4K</target>
         <note>BookSettings.eBook.Image.MaxResolution.4K</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Description" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
-        <note>BookSettings.eBook.Image.MaxResolution.Description</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
-        <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
+        <target xml:lang="pt-PT" state="final">O Bloom reduz o tamanho máximo das imagens para facilitar a visualização dos livros em ligações de Internet fracas e ocupar menos espaço nos telemóveis.</target>
         <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CoverGroupLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Cover</source>
+        <target xml:lang="pt-PT" state="final">Capa</target>
+        <note>BookSettings.CoverGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Content Pages</source>
+        <target xml:lang="pt-PT" state="final">Páginas de conteúdo</target>
+        <note>BookSettings.ContentPagesGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Languages to show in normal text boxes</source>
+        <target xml:lang="pt-PT" state="final">Línguas a serem exibidos em caixas de texto normais</target>
+        <note>BookSettings.NormalTextBoxLangsLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageThemeLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Page Theme</source>
+        <target xml:lang="pt-PT" state="final">Tema da página</target>
+        <note>BookSettings.PageThemeLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Theme.Description" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog](https://docs.bloomlibrary.org/page-themes-catalog).</source>
+        <target xml:lang="pt-PT" state="final">Os temas de página são um conjunto de margens, bordas e outras configurações de página. Para obter informações sobre cada tema, consulte [Catálogo de temas de página] (https://docs.bloomlibrary.org/page-themes-catalog).</target>
+        <note>BookSettings.Theme.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CoverBackground" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Cover Background</source>
+        <target xml:lang="pt-PT" state="final">Fundo da capa</target>
+        <note>BookSettings.CoverBackground</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Front Cover</source>
+        <target xml:lang="pt-PT" state="final">Capa</target>
+        <note>BookSettings.WhatToShowOnCover</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowContentLanguage" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show {0}</source>
+        <target xml:lang="pt-PT" state="final">Mostrar {0}</target>
+        <note>BookSettings.ShowContentLanguage</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowWrittenLanguageTitle" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show Title in {0}</source>
+        <target xml:lang="pt-PT" state="final">Mostrar título em {0}</target>
+        <note>BookSettings.ShowWrittenLanguageTitle</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowLanguageName" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show Language Name</source>
+        <target xml:lang="pt-PT" state="final">Mostrar Nome da língua</target>
+        <note>BookSettings.ShowLanguageName</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowTopic" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show Topic</source>
+        <target xml:lang="pt-PT" state="final">Mostrar Tópico</target>
+        <note>BookSettings.ShowTopic</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Page Numbers</source>
+        <target xml:lang="pt-PT" state="final">Número de Página</target>
+        <note>BookSettings.PageNumbers</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowPageNumbers" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show Page Numbers</source>
+        <target xml:lang="pt-PT" state="final">Mostrar números de página</target>
+        <note>BookSettings.ShowPageNumbers</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Front &amp; Back Matter</source>
+        <target xml:lang="pt-PT" state="final">Material de capa e &amp; elementos pós-textuais</target>
+        <note>BookSettings.FrontAndBackMatter</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FrontAndBackMatter.Description" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Normally, books use the front &amp; back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.</source>
+        <target xml:lang="pt-PT" state="final">Normalmente, os livros usam o pacote frontal &amp; para as costas que é escolhido para toda a coleção. Usando esta configuração, você pode fazer com que este livro individual use um diferente.</target>
+        <note>BookSettings.FrontAndBackMatter.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Resolution" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Resolution</source>
+        <target xml:lang="pt-PT" state="final">Resolução</target>
+        <note>BookSettings.Resolution</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.DeleteCustomBookStyles" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Delete {0}</source>
+        <target xml:lang="pt-PT" state="final">Eliminar {0}</target>
+        <note>BookSettings.DeleteCustomBookStyles</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CustomMigrateCanDelete" sil:dynamic="true">
+        <source xml:lang="en"/>
+        <note>BookSettings.CustomMigrateCanDelete</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.UsingLegacyThemeWithIncompatibleCss" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click [here] for more information.</source>
+        <target xml:lang="pt-PT" state="final">A folha de estilos {0} deste livro é incompatível com temas modernos. Bloom está usando-o porque o livro está usando o tema Legacy-5-6. Clique em [here] para mais informações.</target>
+        <note>BookSettings.UsingLegacyThemeWithIncompatibleCss</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Bloom found a known version of {0} in this book and replaced it with a modern theme. You can delete it unless you still need to publish the book from an earlier version of Bloom.</source>
+        <target xml:lang="pt-PT" state="final">Bloom encontrou uma versão conhecida de {0} neste livro e o substituiu por um tema moderno. Você pode excluí-lo a menos que você ainda precise publicar o livro de uma versão anterior do Bloom.</target>
+        <note>BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.IgnoringIncompatibleCssCanDelete" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is currently ignoring it. If you don't need those customizations any more, you can delete your {0}. Click [here] for more information.</source>
+        <target xml:lang="pt-PT" state="final">A folha de estilos {0} deste livro é incompatível com temas modernos. Bloom está atualmente ignorando-a. Se você não precisar mais dessas personalizações, você pode excluir o seu {0}. Clique [here] para mais informações.</target>
+        <note>BookSettings.IgnoringIncompatibleCssCanDelete</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.IgnoringIncompatibleCss" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is currently ignoring it. Click [here] for more information.</source>
+        <target xml:lang="pt-PT" state="final">A folha de estilos {0} deste livro é incompatível com temas modernos. Bloom está usando-o porque o livro está usando o tema Legacy--. Clique em [here] para mais informações.</target>
+        <note>BookSettings.IgnoringIncompatibleCss</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ThemeDisablesOptionsNotice" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">The selected page theme does not support the following settings.</source>
+        <target xml:lang="pt-PT" state="final">O tema de página selecionado não suporta as seguintes configurações.</target>
+        <note>BookSettings.ThemeDisablesOptionsNotice</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.default" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="pt-PT" state="final">Padrão</target>
+        <note>AppearanceTheme.default</note>
+      </trans-unit>
+      <!-- <trans-unit id="AppearanceTheme.rounded-border-bottom-number-ebook" sil:dynamic="true">
+        <source xml:lang="en">Experimental Rounded Border</source>
+        <note>AppearanceTheme.ebook-rounded-border-bottom-number</note>
+      </trans-unit> -->
+      <trans-unit id="AppearanceTheme.zero-margin-ebook" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Zero Margin Ebook</source>
+        <target xml:lang="pt-PT" state="final">Livro Electrónico de Margem zero</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Narrow Margin Ebook</source>
+        <target xml:lang="pt-PT" state="final">Livro Electrónico de margem estreita</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.rounded-border-ebook" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Rounded Border Ebook</source>
+        <target xml:lang="pt-PT" state="final">Livro electrónico com borda arredondada</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.legacy-5-6" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Legacy (Bloom 5.6)</source>
+        <target xml:lang="pt-PT" state="final">Legacy (Bloom 5.6)</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
     </body>
   </file>
