@@ -291,12 +291,12 @@
         <note>ID: BookMetadata.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
       </trans-unit>
-      <trans-unit id="BooksOnBlorg.Progress.Goal" sil:dynamic="true" translate="no">
+      <trans-unit id="BooksOnBlorg.Progress.Goal" sil:dynamic="true">
         <source xml:lang="en">Goal:</source>
         <note>ID: BooksOnBlorg.Progress.Goal</note>
         <note>Goal label under progress bar on Collection tab.</note>
       </trans-unit>
-      <trans-unit id="BooksOnBlorg.Progress.CountOfBooksLabel" sil:dynamic="true" translate="no">
+      <trans-unit id="BooksOnBlorg.Progress.CountOfBooksLabel" sil:dynamic="true">
         <source xml:lang="en">{0} {1} books on BloomLibrary.org</source>
         <note>ID: BooksOnBlorg.Progress.CountOfBooksLabel</note>
         <note>Books on website label under progress bar on Collection tab.</note>
@@ -900,7 +900,7 @@
         <note>ID: ColorPicker.New</note>
         <note>A background color selection that enables a color picker.</note>
       </trans-unit>
-      <trans-unit id="Common.BookSettings" translate="no">
+      <trans-unit id="Common.BookSettings">
         <source xml:lang="en">Book Settings</source>
         <note>ID: Common.BookSettings</note>
       </trans-unit>
@@ -3016,31 +3016,31 @@
         <note>ID: FontInformationPane.Version</note>
         <note>This shows in the popup before the font's version number.</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.BloomCommunityForum" translate="no">
+      <trans-unit id="ForumInvitationDialog.BloomCommunityForum">
         <source xml:lang="en">Bloom Community Forum</source>
         <note>ID: ForumInvitationDialog.BloomCommunityForum</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.DoYouKnow" translate="no">
+      <trans-unit id="ForumInvitationDialog.DoYouKnow">
         <source xml:lang="en">Do you know about our Bloom forum? Join us to:</source>
         <note>ID: ForumInvitationDialog.DoYouKnow</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.LearnAboutNewFeatures" translate="no">
+      <trans-unit id="ForumInvitationDialog.LearnAboutNewFeatures">
         <source xml:lang="en">learn about new features</source>
         <note>ID: ForumInvitationDialog.LearnAboutNewFeatures</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.RequestAndVote" translate="no">
+      <trans-unit id="ForumInvitationDialog.RequestAndVote">
         <source xml:lang="en">request and vote on new features</source>
         <note>ID: ForumInvitationDialog.RequestAndVote</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.AskForAdvice" translate="no">
+      <trans-unit id="ForumInvitationDialog.AskForAdvice">
         <source xml:lang="en">ask for advice or technical help</source>
         <note>ID: ForumInvitationDialog.AskForAdvice</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.ShowOff" translate="no">
+      <trans-unit id="ForumInvitationDialog.ShowOff">
         <source xml:lang="en">show off what you're doing with Bloom!</source>
         <note>ID: ForumInvitationDialog.ShowOff</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.HowToJoin" translate="no">
+      <trans-unit id="ForumInvitationDialog.HowToJoin">
         <source xml:lang="en">How to Join</source>
         <note>ID: ForumInvitationDialog.HowToJoin</note>
       </trans-unit>
@@ -3986,7 +3986,7 @@
         <source xml:lang="en">Upload your book to BloomLibrary.org so that other people can read it, download it to their devices, and share it with other people.</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.CannotUpload" sil:dynamic="true" translate="no">
+      <trans-unit id="PublishTab.CannotUpload" sil:dynamic="true">
         <source xml:lang="en">The creator of this book does not allow derivatives to be uploaded. Please contact the creator for more information.</source>
         <note>ID: PublishTab.CannotUpload</note>
       </trans-unit>
@@ -4407,7 +4407,7 @@
         <note>ID: PublishTab.PdfPrint.Button</note>
         <note>Text under button to select Print and PDF preview</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrintButton-tooltip" sil:dynamic="true" translate="no">
+      <trans-unit id="PublishTab.PdfPrintButton-tooltip" sil:dynamic="true">
         <source xml:lang="en">Generate a PDF document and/or print your book.</source>
         <note>ID: PublishTab.PdfPrintButton-tooltip</note>
       </trans-unit>
