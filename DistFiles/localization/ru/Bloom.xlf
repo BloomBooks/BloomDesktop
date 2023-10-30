@@ -5657,7 +5657,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
-        <target xml:lang="ru" state="translated">Bloom уже знает, какие символы в языках мира всегда обозначают конец предложения. Чтобы добавить другие, введите здесь экранирующий символ Unicode. Например, для языков тайского алфавита введите \U0020, чтобы сообщить Bloom, что для разрывов предложений используются обычные пробелы.</target>
+        <target xml:lang="ru" state="translated">Bloom уже знает, какие символы в языках мира всегда обозначают конец предложения. Чтобы добавить другие, введите здесь экранирующий символ Unicode. Например, для языков тайского алфавита введите \ U0020, чтобы сообщить Bloom, что для разрывов предложений используются обычные пробелы.</target>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
