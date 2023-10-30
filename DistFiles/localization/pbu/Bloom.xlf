@@ -5748,7 +5748,7 @@
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
-        <target xml:lang="pbu" state="final">اضاف پر دې، دا د بلوم کڅوړه به ستاسو وروستي د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه د "{0}" ژبې لپاره په یاد ولري. هر څوک چې دا د بلوم کڅوړه خلاصوي، او بیا د "{0}" ټولګه خلاصوي، اوسني د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه به یې د بلوم کڅوړې په تنظیمونوبدل شي. هغوی به د اوسني کلیمو سیټ هم د زده کوونکو له سویې سره برابر کتاب لپاره واخلي.</target>
+        <target xml:lang="pbu" state="final">اضاف پر دې، دا د بلوم کڅوړه به ستاسو وروستي د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه د \"{0}"\ ژبې لپاره په یاد ولري. هر څوک چې دا د بلوم کڅوړه خلاصوي، او بیا د \"{0}"\ ټولګه خلاصوي، اوسني د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه به یې د بلوم کڅوړې په تنظیمونوبدل شي. هغوی به د اوسني کلیمو سیټ هم د زده کوونکو له سویې سره برابر کتاب لپاره واخلي.</target>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel" approved="yes">
