@@ -264,7 +264,7 @@
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
-        <target xml:lang="te" state="final">చిత్రం తెలియదు: \n\n ఎవరు దానిని ఉపయోగించవచ్చు?</target>
+        <target xml:lang="te" state="final">చిత్రం తెలియదు: \ n \ n ఎవరు దానిని ఉపయోగించవచ్చు?</target>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner" approved="yes">
