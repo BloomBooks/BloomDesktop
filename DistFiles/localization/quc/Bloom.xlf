@@ -3223,7 +3223,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionSingular" approved="yes">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the feature "{1}".</source>
-        <target xml:lang="quc" state="final">We no'jwuj ri' kutoq'ij Bloom {0} te'qne' le k'ate naqaj xwokitajik rumal kukoj le jule' taq chak chik "{1}".</target>
+        <target xml:lang="quc" state="final">We no'jwuj ri' kutoq'ij Bloom {0} te'qne' le k'ate naqaj xwokitajik rumal kukoj le jule' taq chak chik \"{1}\".</target>
         <note>ID: Errors.FeatureRequiresNewerVersionSingular</note>
       </trans-unit>
       <trans-unit id="Errors.MultipleHtmlFiles" approved="yes">
@@ -4070,7 +4070,8 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
-        <target xml:lang="quc" state="final">We no'jwuj ri' k'o woktzij chi upam ruk ' jun kemuxe' ub'i' "{0}" xa are k'ut Bloom man xurij ta le kemuxe' pa we kematz'ib' ri'.</target>
+        <target xml:lang="quc" state="final">We no'jwuj ri' k'o woktzij chi upam ruk ' jun kemuxe' ub'i' "{0}" xa are k'ut Bloom man xurij ta 
+ le kemuxe' pa we kematz'ib' ri'.</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true" approved="yes">
