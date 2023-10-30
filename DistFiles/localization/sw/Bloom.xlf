@@ -5647,7 +5647,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
-        <target xml:lang="sw" state="final">Bloom tayari inajua ni herufi gani katika lugha za ulimwengu kila wakati zinaashiria mwisho wa sentensi. Ili kuongeza zingine, ingiza herufi ya Unicode hapa. Kwa mfano kwa lugha za maandishi ya Thai, ingiza \U0020 kuambia Bloom kwamba nafasi za kawaida hutumiwa kuvunja sentensi.</target>
+        <target xml:lang="sw" state="final">Bloom tayari inajua ni herufi gani katika lugha za ulimwengu kila wakati zinaashiria mwisho wa sentensi. Ili kuongeza zingine, ingiza herufi ya Unicode hapa. Kwa mfano kwa lugha za maandishi ya Thai, ingiza \ U0020 kuambia Bloom kwamba nafasi za kawaida hutumiwa kuvunja sentensi.</target>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
