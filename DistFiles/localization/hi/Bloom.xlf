@@ -3222,7 +3222,7 @@
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionSingular">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the feature "{1}".</source>
-        <target xml:lang="hi" state="translated">इस पुस्तक के लिए ब्लूम {0} या इससे अधिक की आवश्यकता है क्योंकि यह "{1}" फीचर का उपयोग करता है।</target>
+        <target xml:lang="hi" state="translated">इस पुस्तक के लिए ब्लूम {0} या इससे अधिक की आवश्यकता है क्योंकि यह \"{1}\" फीचर का उपयोग करता है।</target>
         <note>ID: Errors.FeatureRequiresNewerVersionSingular</note>
       </trans-unit>
       <trans-unit id="Errors.MultipleHtmlFiles">
