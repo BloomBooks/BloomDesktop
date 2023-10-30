@@ -4318,11 +4318,6 @@
         <target xml:lang="th" state="needs-translation">Publish as BloomPUB</target>
         <note>ID: PublishTab.BloomPUB.BannerTitle</note>
       </trans-unit>
-      <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
-        <target xml:lang="th" state="final">ทำหนังสือเล่มเล็กจากหน้าภายในของหนังสือเล่มนี้ หน้าจะได้รับการวางและจัดลำดับใหม่เพื่อที่ว่าเมื่อคุณพับมันคุณจะมีหนังสือเล่มเล็ก. \n</target>
-        <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
-      </trans-unit>
       <trans-unit id="PublishTab.BookMetadata">
         <source xml:lang="en">Book Metadata</source>
         <target xml:lang="th" state="needs-translation">Book Metadata</target>
