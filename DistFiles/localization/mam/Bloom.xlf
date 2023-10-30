@@ -3761,7 +3761,7 @@
       </trans-unit>
       <trans-unit id="NewCollectionWizard.FinishPageContent" approved="yes">
         <source xml:lang="en">OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</source>
-        <target xml:lang="mam" state="final">Atzan kyaqil lu' kajb'ela tu'n t-xi' qe' ak'aj k'loj te ila' wiq '{0}'.\nQ'onxa clic tib'aj techtz'ib' B'ajsal'.</target>
+        <target xml:lang="mam" state="final">Atzan kyaqil lu' kajb'ela tu'n t-xi' qe' ak'aj k'loj te ila' wiq '{0}'.\Q'onxa clic tib'aj techtz'ib' B'ajsal'.</target>
         <note>ID: NewCollectionWizard.FinishPageContent</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.FontAndScriptPage" approved="yes">
