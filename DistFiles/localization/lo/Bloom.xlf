@@ -4318,11 +4318,6 @@
         <target xml:lang="lo" state="needs-translation">Publish as BloomPUB</target>
         <note>ID: PublishTab.BloomPUB.BannerTitle</note>
       </trans-unit>
-      <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
-        <target xml:lang="lo" state="final">ເຮັດປຶ້ມຄູ່ມືຈາກຫນ້າທີ່ພາຍໃນຂອງຫນັງສືໄດ້. ຫນ້າຈະໄດ້ຮັບການວາງອອກແລະ ປ່ຽນແປງຄໍາສັ່ງຂອງດັ່ງນັ້ນໃນເວລາທີ່ທ່ານເທົ່າມັນ, ທ່ານຈະມີປຶ້ມຄູ່ມືໄດ້. \n</target>
-        <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
-      </trans-unit>
       <trans-unit id="PublishTab.BookMetadata">
         <source xml:lang="en">Book Metadata</source>
         <target xml:lang="lo" state="needs-translation">Book Metadata</target>
