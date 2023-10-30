@@ -133,6 +133,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                     css={css`
                         height: 100%;
                         width: 100%;
+                        background-color: ${kBloomUnselectedTabBackground};
                     `}
                 >
                     {!publishTabReady ? (

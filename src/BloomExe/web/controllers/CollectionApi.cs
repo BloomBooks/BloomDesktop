@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -121,10 +122,17 @@ namespace Bloom.web.controllers
 						{
 							if (newBookInfo?.FolderPath != null)
 							{
-								var ex = new Exception("Error selecting book: " + newBookInfo.FolderPath, e);
+								var folderPath = newBookInfo.FolderPath;
+								if (MiscUtils.ContainsSurrogatePairs(folderPath))
+									folderPath = MiscUtils.QuoteUnicodeCodePointsInPath(folderPath);
+								var msg = "Error selecting book: " + folderPath;
+								var ex = new Exception(msg, e);
 								// For some reason, BookInfo can't be serialized, so we'll add the pieces to the exception.
-								ex.Data.Add("ErrorBookFolder", newBookInfo.FolderPath);
-								ex.Data.Add("ErrorBookName", newBookInfo.QuickTitleUserDisplay);
+								ex.Data.Add("ErrorBookFolder", folderPath);
+								if (MiscUtils.ContainsSurrogatePairs(newBookInfo.QuickTitleUserDisplay))
+									ex.Data.Add("ErrorBookName", MiscUtils.QuoteUnicodeCodePointsInPath(newBookInfo.QuickTitleUserDisplay));
+								else
+									ex.Data.Add("ErrorBookName", newBookInfo.QuickTitleUserDisplay);
 								throw ex;
 							}
 							throw e;
@@ -371,6 +379,7 @@ namespace Bloom.web.controllers
 			return RobustFile.Exists(linkFile);
 		}
 
+		private string _currentCollectionPath;
 		public void HandleBooksRequest(ApiRequest request)
 		{
 			var collection = GetCollectionOfRequest(request);
@@ -382,6 +391,16 @@ namespace Bloom.web.controllers
 			// Note: the winforms version used ImproveAndRefreshBookButtons(), which may load the whole book.
 
 			var bookInfos = collection.GetBookInfos();
+			// Load the initial values for the bloom library status of each book.
+			if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+			{
+				var reload = request.Parameters["reload"] == "true";
+				if (reload || collection.PathToDirectory != _currentCollectionPath)
+				{
+					_currentCollectionPath = collection.PathToDirectory;
+					collection.UpdateBloomLibraryStatusOfBooks(bookInfos.ToList(), skipBadgeUpdate: true);
+				}
+			}
 			var jsonInfos = bookInfos
 				.Where(info => collection.Type == BookCollection.CollectionType.TheOneEditableCollection || info.ShowThisBookAsSource())
 				.Select(info =>
@@ -485,35 +504,39 @@ namespace Bloom.web.controllers
 		private void GetBookOnBloomBadgeInfo(ApiRequest apiRequest)
 		{
 			var bookId = apiRequest.RequiredParam("book-id");
-			BloomParseClient parseClient = new BloomParseClient();
 
-			var json = parseClient.GetBookRecords(bookId, includeLanguageInfo: false, includeBooksFromOtherUploaders: true);
-			if (json == null || json.Count < 1)
+			var infos = _collectionModel.TheOneEditableCollection.GetBookInfos().Where(info => info.Id == bookId && info.BloomLibraryStatus != null).ToList();
+			if (infos.Count == 0)
 			{
 				apiRequest.ReplyWithJson(new
 				{
 					bookUrl = "",
 				});
 			}
-			else if (json.Count == 1)
+			else if (infos.Count == 1)
 			{
-				var book = json[0];
+				var info = infos[0];
 				apiRequest.ReplyWithJson(new
 				{
-					bookUrl = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(book.objectId.ToString()),
-					draft = book.draft,
-					inCirculation = book.inCirculation,
+					bookUrl = info.BloomLibraryStatus.BloomLibraryBookUrl,
+					draft = info.BloomLibraryStatus.Draft,
+					inCirculation = !info.BloomLibraryStatus.NotInCirculation,
+					harvestState = info.BloomLibraryStatus.HarvesterState.ToString().ToLowerInvariant()
 				});
 			}
 			else
 			{
+				// This may duplicate the action in BloomParseCLient.GetLibraryStatusForBooks, but it doesn't
+				// hurt to generate the url and harvest status twice.  The operation in BloomParseClient can
+				// handle duplicate book ids in different collections while this one looks only at the current
+				// collection.
 				apiRequest.ReplyWithJson(new
 				{
 					bookUrl = BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(bookId),
 					draft = false,
 					inCirculation = true,
+					harvestState = HarvesterState.Multiple.ToString().ToLowerInvariant()
 				});
-
 			}
 		}
 
