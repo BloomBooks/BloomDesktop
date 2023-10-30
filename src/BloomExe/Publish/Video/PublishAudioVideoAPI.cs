@@ -386,8 +386,8 @@ namespace Bloom.Publish.Video
 		{
 			if (_recordVideoWindow != null)
 			{
-				_recordVideoWindow.Close();
-				_recordVideoWindow.Cleanup();
+				_recordVideoWindow?.Close();
+				_recordVideoWindow?.Cleanup();
 				_recordVideoWindow = null;
 			}
 		}
