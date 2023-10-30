@@ -4058,9 +4058,9 @@
         <target xml:lang="fr" state="final">Ajouter la police {0} qui exige {1} Mb</target>
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true" approved="yes">
+      <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
         <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
-        <target xml:lang="fr" state="translated">Ce livre contient du texte dans une police nommée "{0}". Bloom ne peut pas utiliser une police avec ce format de fichier de police.</target>
+        <target xml:lang="fr" state="translated">Ce livre contient du texte dans une police nommée \"{0}\". Bloom ne peut pas utiliser une police avec ce format de fichier de police.</target>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true" approved="yes">
