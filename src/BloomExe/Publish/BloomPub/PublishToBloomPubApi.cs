@@ -304,7 +304,7 @@ namespace Bloom.Publish.BloomPub
 //					"Note", "A heading shown above some messages.");
 //				progress.MessageWithoutLocalizing(msgFormat, ProgressKind.Note);
 				 var msgFormat = L10NSharp.LocalizationManager.GetString("PublishTab.Android.WrongLayout.Message",
-					"The layout of this book is currently \"{0}\". Bloom Reader will display it using \"{1}\", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to \"{1}\".",
+					"The layout of this book is currently \"{0}\". Bloom Reader will display it using \"{1}\", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to \"{1}\".",
 					"{0} and {1} are book layout tags.");
 				var desiredLayout = desiredLayoutSize + layout.SizeAndOrientation.OrientationName;
 				var msg = String.Format(msgFormat, layout.SizeAndOrientation.ToString(), desiredLayout, Environment.NewLine);

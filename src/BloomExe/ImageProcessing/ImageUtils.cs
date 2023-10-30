@@ -900,8 +900,8 @@ namespace Bloom.ImageProcessing
 					// Ignore any errors deleting temp files.  If we leak, we leak...
 					try
 					{
-						// don't need this any longer
-						if (sourcePath != imageInfo.GetCurrentFilePath())
+						// don't need this any longer if it's a temp file and not used for the current image
+						if (sourcePath.StartsWith(Path.GetTempPath()) && sourcePath != imageInfo.GetCurrentFilePath())
 							RobustFile.Delete(sourcePath);
 					}
 					catch (Exception e)

@@ -3733,7 +3733,7 @@
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
         <note>{0} and {1} are book layout tags.</note>
       </trans-unit>
