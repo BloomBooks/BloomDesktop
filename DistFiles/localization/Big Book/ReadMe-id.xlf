@@ -17,11 +17,12 @@
         <target xml:lang="id" state="final">Mencetak Buku Besar</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
+      <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="id" state="final">Untuk membuat hal-hal lebih mudah dikelola, template ini ditetapkan pada landskap A4, dengan huruf besar.
+        <target xml:lang="id" state="translated">Untuk membuat hal-hal lebih mudah dikelola, template ini ditetapkan pada landskap A4, dengan huruf besar.
 Anda dengan mudah dapat membuat buku-buku yang berukuran A3 (dua kali lebih besar).
 Cukup dengan membawa ukuran A4 PDF Anda ke printer dan memintanya untuk memperbesar ke A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>

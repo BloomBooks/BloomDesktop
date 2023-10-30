@@ -5,9 +5,9 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book is Decodable</source>
-        <target xml:lang="fr" state="translated">Le livre est Déchiffrable</target>
+        <target xml:lang="fr" state="final">Le livre est Déchiffrable</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsDecodable</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable" sil:dynamic="true" approved="yes">
@@ -66,9 +66,14 @@
         <target xml:lang="fr" state="final">Modifier le Fichier des Timings...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
-        <target xml:lang="fr" state="translated">Appuyez sur ceci pour insérer un caractère "|" dans le texte à la position actuelle du curseur. Ce caractère dit à Bloom d'introduire un nouveau segment afin de mettre le texte en surbrillance lors de la lecture audio. On peut aussi saisir le caractère "|" directement à partir du clavier.</target>
+        <target xml:lang="fr" state="final">Appuyez sur ceci pour insérer un caractère "|" dans le texte à la position actuelle du curseur. Ce caractère dit à Bloom d'introduire un nouveau segment afin de mettre le texte en surbrillance lors de la lecture audio. On peut aussi saisir le caractère "|" directement à partir du clavier.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Bloom will hide these when you publish.</source>
+        <target xml:lang="fr" state="final">Bloom va cacher ces éléments lors de la publication.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true" approved="yes">
@@ -141,9 +146,9 @@
         <target xml:lang="fr" state="final">Afficher les boutons pour l'ordre de lecture</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show image descriptions</source>
-        <target xml:lang="fr" state="translated">Afficher la description de l'image</target>
+        <target xml:lang="fr" state="final">Afficher la description des images</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
       </trans-unit>
       <!-- Overlay -->
@@ -187,9 +192,9 @@
         <target xml:lang="fr" state="final">Désactivé, car ce livre n'a pas d'audio dans cette langue.</target>
         <note>ID: PublishTab.AudioLanguage.Disabled</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Activities.None">
+      <trans-unit id="PublishTab.Feature.Activities.None" approved="yes">
         <source xml:lang="en">This book does not have any interactive activities.</source>
-        <target xml:lang="fr" state="translated">Ce livre n'a aucune activité interactive.</target>
+        <target xml:lang="fr" state="final">Ce livre n'a aucune activité interactive.</target>
         <note>ID: PublishTab.Feature.Activities.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.Present" approved="yes">
@@ -207,9 +212,9 @@
         <target xml:lang="fr" state="final">Cette fonction est désactivée parce que ce livre ne comporte aucun élément de superposition tel que ceux dans une BD, par exemple, des bulles de texte.</target>
         <note>ID: PublishTab.Feature.Comic.None</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Comic.Possible">
+      <trans-unit id="PublishTab.Feature.Comic.Possible" approved="yes">
         <source xml:lang="en">Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.</source>
-        <target xml:lang="fr" state="translated">Sélectionnez cette option si vous souhaitez répertorier ce livre en tant que bande dessinée. Cela n’affecte que la façon dont le livre est catégorisé, cela n’affecte pas le contenu du livre.</target>
+        <target xml:lang="fr" state="final">Sélectionnez cette option si vous souhaitez répertorier ce livre en tant que Bande Dessinée. Cela n'a d'incidence que sur la catégorie du livre et ne change en rien son contenu.</target>
         <note>ID: PublishTab.Feature.Comic.Possible</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Motion.None" approved="yes">
@@ -217,9 +222,9 @@
         <target xml:lang="fr" state="final">Désactivé, car ce livre ne contient aucune page où l'option mouvement est activé.</target>
         <note>ID: PublishTab.Feature.Motion.None</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Motion.Possible">
+      <trans-unit id="PublishTab.Feature.Motion.Possible" approved="yes">
         <source xml:lang="en">Select this if you want to show motion when the book is read in landscape mode.</source>
-        <target xml:lang="fr" state="translated">Sélectionnez cette option si vous voulez afficher le mouvement lorsque le livre est lu en mode paysage.</target>
+        <target xml:lang="fr" state="final">Sélectionnez cette option si vous voulez afficher le mouvement lorsqu'on le lit en mode paysage.</target>
         <note>ID: PublishTab.Feature.Motion.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos" approved="yes">
@@ -227,9 +232,9 @@
         <target xml:lang="fr" state="final">Désactivé car ce livre n'a pas de vidéo.</target>
         <note>ID: PublishTab.Feature.SignLanguage.NoVideos</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.SignLanguage.Present">
+      <trans-unit id="PublishTab.Feature.SignLanguage.Present" approved="yes">
         <source xml:lang="en">The videos in this book contain {N}</source>
-        <target xml:lang="fr" state="translated">Les vidéos de ce livre contiennent {N}</target>
+        <target xml:lang="fr" state="final">Les vidéos de ce livre contiennent {N}</target>
         <note>ID: PublishTab.Feature.SignLanguage.Present</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.Unknown" approved="yes">
@@ -262,9 +267,9 @@
         <target xml:lang="fr" state="final">Ne pas encore montrer ce livre au public. Je vais partager son URL avec des évaluateurs pour qu'ils fassent des commentaires.</target>
         <note>ID: PublishTab.Upload.Draft</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Visibility">
+      <trans-unit id="PublishTab.Upload.Visibility" approved="yes">
         <source xml:lang="en">Visibility</source>
-        <target xml:lang="fr" state="translated">Visibilité</target>
+        <target xml:lang="fr" state="final">Visibilité</target>
         <note>ID: PublishTab.Upload.Visibility</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.ConsiderBloomPUB" sil:dynamic="true" approved="yes">
@@ -317,70 +322,223 @@
         <target xml:lang="fr" state="final">Au sujet de BloomLibrary.org</target>
         <note>ID: PublishTab.Upload.AboutBlorg</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true">
+      <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true" approved="yes">
         <source xml:lang="en">View on BloomLibrary.org</source>
-        <target xml:lang="fr" state="translated">Voir sur la Bibliothèque Bloom</target>
-        <note>CollectionTab.OnBlorgBadge.ViewBookOnBlorg</note>
+        <target xml:lang="fr" state="final">Visionner en Bibliothèque Bloom</target>
+        <note>CollectionTab.OnBlorgBadge.ViewOnBlorg</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.Published" sil:dynamic="true">
+      <trans-unit id="CollectionTab.OnBlorgBadge.Published" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Published</source>
-        <target xml:lang="fr" state="translated">Publié</target>
+        <target xml:lang="fr" state="final">Publié</target>
         <note>CollectionTab.OnBlorgBadge.Published</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.MarkedAsDraft" sil:dynamic="true">
+      <trans-unit id="CollectionTab.OnBlorgBadge.MarkedAsDraft" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Marked as Draft</source>
-        <target xml:lang="fr" state="translated">Marqué comme brouillon</target>
+        <target xml:lang="fr" state="final">Indiqué comme Brouillon</target>
         <note>CollectionTab.OnBlorgBadge.MarkedAsDraft</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.Processing" sil:dynamic="true">
-        <source xml:lang="en">BloomLibrary.org is processing this book</source>
-        <target xml:lang="fr" state="translated">BloomLibrary.org traite ce livre</target>
-        <note>CollectionTab.OnBlorgBadge.Processing</note>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Harvesting" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">In Progress</source>
+        <target xml:lang="fr" state="final">En Cours</target>
+        <note>CollectionTab.OnBlorgBadge.Harvesting</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true">
+      <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Problem</source>
-        <target xml:lang="fr" state="translated">Problème</target>
+        <target xml:lang="fr" state="final">Problème</target>
         <note>CollectionTab.OnBlorgBadge.Problem</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Title" sil:dynamic="true">
+      <trans-unit id="BookSettings.LockedByBranding" sil:dynamic="true">
+        <source xml:lang="en">Locked by {0} Branding</source>
+        <target xml:lang="fr" state="needs-translation">Locked by {0} Branding</target>
+        <note>BookSettings.LockedByBranding</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LockedByLegacy" sil:dynamic="true">
+        <source xml:lang="en">Locked by Legacy-5-6 theme</source>
+        <target xml:lang="fr" state="needs-translation">Locked by Legacy-5-6 theme</target>
+        <note>BookSettings.LockedByLegacy</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LockedByXMatter" sil:dynamic="true">
+        <source xml:lang="en">Locked by {0} Front/Back matter</source>
+        <target xml:lang="fr" state="needs-translation">Locked by {0} Front/Back matter</target>
+        <note>BookSettings.LockedByXMatter</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book Settings</source>
-        <target xml:lang="fr" state="translated">Paramètres du livre</target>
+        <target xml:lang="fr" state="final">Paramètres du Livre</target>
         <note>BookSettings.Title</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max Image Size</source>
-        <target xml:lang="fr" state="translated">Résolution</target>
+        <target xml:lang="fr" state="final">Taille Maximale de l'Image</target>
         <note>BookSettings.eBook.Image.MaxResolution</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Small</source>
-        <target xml:lang="fr" state="translated">Petit</target>
+        <target xml:lang="fr" state="final">Petite</target>
         <note>BookSettings.eBook.Image.MaxResolution.Small</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HD</source>
-        <target xml:lang="fr" state="translated">720p (HD)</target>
+        <target xml:lang="fr" state="final">720p (HD)</target>
         <note>BookSettings.eBook.Image.MaxResolution.HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Full HD</source>
-        <target xml:lang="fr" state="translated">(1080p) Haute Définition</target>
+        <target xml:lang="fr" state="final">(1080p) Haute Définition</target>
         <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4K</source>
-        <target xml:lang="fr" state="translated">4K</target>
+        <target xml:lang="fr" state="final">4K</target>
         <note>BookSettings.eBook.Image.MaxResolution.4K</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Description" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
-        <target xml:lang="fr" state="translated">Quand les images dans les livres sont vraiment haute résolution, cela rend les livres plus difficiles à voir sur les mauvaises connexions Internet. Pour cette raison, Bloom réduit les images à une taille maximale.</target>
-        <note>BookSettings.eBook.Image.MaxResolution.Description</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
-        <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
-        <target xml:lang="fr" state="translated">Définir la résolution maximale des images lors de la création de BloomPUB (y compris l'affichage sur BloomLibrary)</target>
+        <target xml:lang="fr" state="final">Bloom réduit les images à une taille maximale pour faciliter la visualisation des livres sur les mauvaises connexions Internet et pour prendre moins de place sur les portables.</target>
         <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CoverGroupLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Cover</source>
+        <target xml:lang="fr" state="final">Couverture</target>
+        <note>BookSettings.CoverGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Content Pages</source>
+        <target xml:lang="fr" state="final">Pages de Contenu</target>
+        <note>BookSettings.ContentPagesGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Languages to show in normal text boxes</source>
+        <target xml:lang="fr" state="final">Langues à afficher dans les zones de texte normales</target>
+        <note>BookSettings.NormalTextBoxLangsLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageThemeLabel" sil:dynamic="true">
+        <source xml:lang="en">Page Theme</source>
+        <target xml:lang="fr" state="needs-translation">Page Theme</target>
+        <note>BookSettings.PageThemeLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Theme.Description" sil:dynamic="true">
+        <source xml:lang="en">Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog](https://docs.bloomlibrary.org/page-themes-catalog).</source>
+        <target xml:lang="fr" state="needs-translation">Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog](https://docs.bloomlibrary.org/page-themes-catalog).</target>
+        <note>BookSettings.Theme.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CoverBackground" sil:dynamic="true">
+        <source xml:lang="en">Cover Background</source>
+        <target xml:lang="fr" state="needs-translation">Cover Background</target>
+        <note>BookSettings.CoverBackground</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true">
+        <source xml:lang="en">Front Cover</source>
+        <target xml:lang="fr" state="needs-translation">Front Cover</target>
+        <note>BookSettings.WhatToShowOnCover</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowContentLanguage" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show {0}</source>
+        <target xml:lang="fr" state="final">Afficher {0}</target>
+        <note>BookSettings.ShowContentLanguage</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowWrittenLanguageTitle" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show Title in {0}</source>
+        <target xml:lang="fr" state="final">Afficher le Titre en {0}</target>
+        <note>BookSettings.ShowWrittenLanguageTitle</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowLanguageName" sil:dynamic="true">
+        <source xml:lang="en">Show Language Name</source>
+        <target xml:lang="fr" state="needs-translation">Show Language Name</target>
+        <note>BookSettings.ShowLanguageName</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowTopic" sil:dynamic="true">
+        <source xml:lang="en">Show Topic</source>
+        <target xml:lang="fr" state="needs-translation">Show Topic</target>
+        <note>BookSettings.ShowTopic</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers" sil:dynamic="true">
+        <source xml:lang="en">Page Numbers</source>
+        <target xml:lang="fr" state="needs-translation">Page Numbers</target>
+        <note>BookSettings.PageNumbers</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowPageNumbers" sil:dynamic="true">
+        <source xml:lang="en">Show Page Numbers</source>
+        <target xml:lang="fr" state="needs-translation">Show Page Numbers</target>
+        <note>BookSettings.ShowPageNumbers</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true">
+        <source xml:lang="en">Front &amp; Back Matter</source>
+        <target xml:lang="fr" state="needs-translation">Front &amp; Back Matter</target>
+        <note>BookSettings.FrontAndBackMatter</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FrontAndBackMatter.Description" sil:dynamic="true">
+        <source xml:lang="en">Normally, books use the front &amp; back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.</source>
+        <target xml:lang="fr" state="needs-translation">Normally, books use the front &amp; back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.</target>
+        <note>BookSettings.FrontAndBackMatter.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Resolution" sil:dynamic="true">
+        <source xml:lang="en">Resolution</source>
+        <target xml:lang="fr" state="needs-translation">Resolution</target>
+        <note>BookSettings.Resolution</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.DeleteCustomBookStyles" sil:dynamic="true">
+        <source xml:lang="en">Delete {0}</source>
+        <target xml:lang="fr" state="needs-translation">Delete {0}</target>
+        <note>BookSettings.DeleteCustomBookStyles</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CustomMigrateCanDelete" sil:dynamic="true">
+        <source xml:lang="en"/>
+        <note>BookSettings.CustomMigrateCanDelete</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.UsingLegacyThemeWithIncompatibleCss" sil:dynamic="true">
+        <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click [here] for more information.</source>
+        <target xml:lang="fr" state="needs-translation">The {0} stylesheet of this book is incompatible with modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click [here] for more information.</target>
+        <note>BookSettings.UsingLegacyThemeWithIncompatibleCss</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss" sil:dynamic="true">
+        <source xml:lang="en">Bloom found a known version of {0} in this book and replaced it with a modern theme. You can delete it unless you still need to publish the book from an earlier version of Bloom.</source>
+        <target xml:lang="fr" state="needs-translation">Bloom found a known version of {0} in this book and replaced it with a modern theme. You can delete it unless you still need to publish the book from an earlier version of Bloom.</target>
+        <note>BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.IgnoringIncompatibleCssCanDelete" sil:dynamic="true">
+        <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is currently ignoring it. If you don't need those customizations any more, you can delete your {0}. Click [here] for more information.</source>
+        <target xml:lang="fr" state="needs-translation">The {0} stylesheet of this book is incompatible with modern themes. Bloom is currently ignoring it. If you don't need those customizations any more, you can delete your {0}. Click [here] for more information.</target>
+        <note>BookSettings.IgnoringIncompatibleCssCanDelete</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.IgnoringIncompatibleCss" sil:dynamic="true">
+        <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is currently ignoring it. Click [here] for more information.</source>
+        <target xml:lang="fr" state="needs-translation">The {0} stylesheet of this book is incompatible with modern themes. Bloom is currently ignoring it. Click [here] for more information.</target>
+        <note>BookSettings.IgnoringIncompatibleCss</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ThemeDisablesOptionsNotice" sil:dynamic="true">
+        <source xml:lang="en">The selected page theme does not support the following settings.</source>
+        <target xml:lang="fr" state="needs-translation">The selected page theme does not support the following settings.</target>
+        <note>BookSettings.ThemeDisablesOptionsNotice</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.default" sil:dynamic="true">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="fr" state="needs-translation">Default</target>
+        <note>AppearanceTheme.default</note>
+      </trans-unit>
+      <!-- <trans-unit id="AppearanceTheme.rounded-border-bottom-number-ebook" sil:dynamic="true">
+        <source xml:lang="en">Experimental Rounded Border</source>
+        <note>AppearanceTheme.ebook-rounded-border-bottom-number</note>
+      </trans-unit> -->
+      <trans-unit id="AppearanceTheme.zero-margin-ebook" sil:dynamic="true">
+        <source xml:lang="en">Zero Margin Ebook</source>
+        <target xml:lang="fr" state="needs-translation">Zero Margin Ebook</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true">
+        <source xml:lang="en">Narrow Margin Ebook</source>
+        <target xml:lang="fr" state="needs-translation">Narrow Margin Ebook</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.rounded-border-ebook" sil:dynamic="true">
+        <source xml:lang="en">Rounded Border Ebook</source>
+        <target xml:lang="fr" state="needs-translation">Rounded Border Ebook</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.legacy-5-6" sil:dynamic="true">
+        <source xml:lang="en">Legacy (Bloom 5.6)</source>
+        <target xml:lang="fr" state="needs-translation">Legacy (Bloom 5.6)</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
     </body>
   </file>
