@@ -865,11 +865,6 @@
         <target xml:lang="ha" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="ha" state="final">Saboda wannan asalin tari ne, Bloom ba ya bayar da kowace irin kumba a matsayin tushen sabuwar kumba.Idan kana son ƙara wani harshe ga wata kumba, kana buƙatar yin gyare-gyaren tarin bayanan da ke ƙunshe a kumba, ba yin kwafin sa ba.  Haka kuma, ba za a iya amfani da Kalandar Bango ba  a halin yanzu don yin wata sabuwar kumba.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="ha" state="needs-translation">Show translations which have not been approved yet</target>
@@ -3768,36 +3763,6 @@
         <source xml:lang="en">Font and Script</source>
         <target xml:lang="ha" state="final">Girman Harafi da rubutu</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="ha" state="final">Zaɓi irin tarin bayanai</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="ha" state="final">Idan kana da wani tarin bayanan da kake son ka buɗe, dangwala malatsin 'Soke'.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="ha" state="final">Asalin Tari</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="ha" state="final">Tarin bayanan kumba ko littafan muhalli a cikin harshe ɗaya ko fiye na gamammiyar sadarwa. Za ka iya ɗora wadannan kumbunan ɗakin karatun Bloom na yanar gizo zuwa BloomLibrary.org.Kuma kana iya yin Ƙunshin Bloom ka ba wasu don su rubuta littafai a cikin wasu harsuna da kumbunan littafanka.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="ha" state="final">Wani Harshe/Tarin Bayanan Harshen Gida</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="ha" state="final">Tarin Littafa a cikin harshen gida.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
