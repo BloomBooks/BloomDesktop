@@ -3978,11 +3978,6 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="needs-translation">Save BloomPUB File</target>
         <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <target xml:lang="quc" state="final">Ucha'xik le q'e'lik ub'antajik rech kk'asux ri ub'antajik No'jwuj rech silob'em</target>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Send over USB Cable</source>
         <target xml:lang="quc" state="final">Utaqik chi upam le uk'amalil USB</target>
@@ -3992,11 +3987,6 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="quc" state="final">Ujachik pa uk'atil WiFi</target>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Send or Save</source>
-        <target xml:lang="quc" state="final">Utaqik wene uk'olik</target>
-        <note>ID: PublishTab.Android.Control</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copy to Clipboard</source>
@@ -4063,16 +4053,6 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">Get Bloom Reader App</source>
         <target xml:lang="quc" state="final">Chak'ama' le ukojik Bloom Reader</target>
         <note>ID: PublishTab.Android.GetBloomReader</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <target xml:lang="quc" state="final">Chataqa' le no'jwuj ruk' le kemchakub'al Android de Bloom Reader</target>
-        <note>ID: PublishTab.Android.Intro</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Choose how to send to device</source>
-        <target xml:lang="quc" state="final">Ucha'ik jas utaqik pa le wiqkemchakub'al</target>
-        <note>ID: PublishTab.Android.Method</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion Book</source>
