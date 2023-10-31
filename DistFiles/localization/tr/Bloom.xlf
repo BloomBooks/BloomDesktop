@@ -865,11 +865,6 @@
         <target xml:lang="tr" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="tr" state="translated">Çünkü bu bir kaynak kolleksiyonu, Bloom mevcut kabukları yeni bir kabuk kaynağı olarak sunmuyor. Eğer kabuğa bir dil eklemek istersen, aynı zaman kabuğu içeren kolleksiyonlarıda düzenlemen gerekir, bir kopyasını yapmak yerine. Aynı zamanda, Wall calender şuanlık yeni bir Kabul oluşturmak için kullanılamaz.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="tr" state="needs-translation">Show translations which have not been approved yet</target>
@@ -3768,36 +3763,6 @@
         <source xml:lang="en">Font and Script</source>
         <target xml:lang="tr" state="translated">Yazı tipi ve komut dosyası</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="tr" state="translated">Koleksiyon Türü'nü seçin</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="tr" state="translated">Halihazırda açmak istediğiniz bir koleksiyonunuz varsa, 'iptal' düğmesine tıklayın.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="tr" state="translated">Kaynak Koleksiyonu</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="tr" state="translated">Bir veya daha fazla dilde daha geniş bir iletişim için kabuk ya da şablonlardan oluşan kitap koleksiyonu. Bu kabukları BloomLibrary.org'a yükleyebileceksiniz. Ayrıca bunları Bloom paketi yaparak diğerlerine verebilirsiniz, böylece sizin kabuklarınızdan yerel dillerinde kitaplar yapabilirler.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="tr" state="translated">Yerel Dil Koleksiyonu</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="tr" state="final">Yerel dilde bir kitap koleksiyonu.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage">
         <source xml:lang="en">Give Language Location</source>
