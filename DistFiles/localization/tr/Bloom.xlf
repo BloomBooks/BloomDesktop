@@ -4274,7 +4274,7 @@
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
         <target xml:lang="tr" state="translated">Bu kitabın yerleşimi şu anda "{0}". Bloom Okuyucusu bunu "{1}" kullanarak gösterecektir, bu yüzden metin uygun olmayabilir. Herhangi bir şeyin düzenlemeye ihtiyacı olup olmadığına bakmak için Düzenleme Sekmesine geri gidin ve yerleşimi "{1}" olarak değiştirin.</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
