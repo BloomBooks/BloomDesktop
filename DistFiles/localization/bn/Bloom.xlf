@@ -4273,9 +4273,9 @@
         <target xml:lang="bn" state="final">বণ্টন করা আরম্ভ করুন</target>
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="bn" state="final">বইটির বিন্যাস বর্তমানে "{0}"। ব্লুম পুস্তক "{1}" ব্যবহার করে এটিকে প্রদর্শন করাবে, তাই লেখা উপযুক্ত নাও হতে পারে। কোন সামঞ্জস্য প্রয়োজন আছে কিনা তা যাচাই করতে সম্পাদনা ট্যাবে ফিরে যান এবং "{1}" বিন্যাস পরিবর্তন করুন।</target>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="bn" state="translated">বইটির বিন্যাস বর্তমানে "{0}"। ব্লুম পুস্তক "{1}" ব্যবহার করে এটিকে প্রদর্শন করাবে, তাই লেখা উপযুক্ত নাও হতে পারে। কোন সামঞ্জস্য প্রয়োজন আছে কিনা তা যাচাই করতে সম্পাদনা ট্যাবে ফিরে যান এবং "{1}" বিন্যাস পরিবর্তন করুন।</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
