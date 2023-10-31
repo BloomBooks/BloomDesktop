@@ -5835,11 +5835,6 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Inaendelea kutokea</target>
         <note>ID: ReportProblemDialog.ItKeepsHappening</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name" approved="yes">
-        <source xml:lang="en">Name</source>
-        <target xml:lang="sw" state="final">Jina</target>
-        <note>ID: ReportProblemDialog.Name</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.NonFatalTitle" approved="yes">
         <source xml:lang="en">Bloom had a problem</source>
         <target xml:lang="sw" state="final">Bloom ilikuwa na shida</target>
@@ -5895,30 +5890,10 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Ripoti Tatizo</target>
         <note>ID: ReportProblemDialog.UserTitle</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WhatsTheProblem" approved="yes">
-        <source xml:lang="en">What seems to be the problem?</source>
-        <target xml:lang="sw" state="final">Je, ni nini inaonekana kuwa tatizo?</target>
-        <note>ID: ReportProblemDialog.WhatsTheProblem</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatDoing" approved="yes">
         <source xml:lang="en">What were you doing?</source>
         <target xml:lang="sw" state="final">Ulikuwa unafanya nini?</target>
         <note>ID: ReportProblemDialog.WhatDoing</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.WindowTitle" approved="yes">
-        <source xml:lang="en">Report A Problem</source>
-        <target xml:lang="sw" state="final">Ripoti Tatizo</target>
-        <note>ID: ReportProblemDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.Zipping" approved="yes">
-        <source xml:lang="en">Uploading book...</source>
-        <target xml:lang="sw" state="final">Kufunga kitabu...</target>
-        <note>ID: ReportProblemDialog.Zipping</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.linkLabel1" approved="yes">
-        <source xml:lang="en">Will not be private</source>
-        <target xml:lang="sw" state="final">Haitakuwa siri</target>
-        <note>ID: ReportProblemDialog.linkLabel1</note>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
         <source xml:lang="en">I get it. Do not show this again.</source>
