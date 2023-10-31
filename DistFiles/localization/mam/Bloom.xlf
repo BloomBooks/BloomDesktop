@@ -4271,9 +4271,9 @@
         <target xml:lang="mam" state="final">Sipil.</target>
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="mam" state="final">A "{0}" tb'inchil ke'yb'il u'jb'il lu'. Ok tzajil tiyek'an Bloom Reader tu'n "{1}" b'ala nlayx t-xi' b'aj kyaqil ttxol yol. Qa ilx ti'j tu'n ka'yet tajtz ti'ja toj txi'witz Editar ex tx'ixpunsa tb'inchb'il te "{1}".</target>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="mam" state="translated">A "{0}" tb'inchil ke'yb'il u'jb'il lu'. Ok tzajil tiyek'an Bloom Reader tu'n "{1}" b'ala nlayx t-xi' b'aj kyaqil ttxol yol. Qa ilx ti'j tu'n ka'yet tajtz ti'ja toj txi'witz Editar ex tx'ixpunsa tb'inchb'il te "{1}".</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
