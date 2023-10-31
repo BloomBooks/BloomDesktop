@@ -7,7 +7,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
-using Bloom.Edit;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -44,6 +43,12 @@ namespace Bloom.web.controllers
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
 			_webSocketServer = webSocketServer;
+			_bookSelection.SelectionChanged += OnSelectionChanged;
+		}
+
+		private void OnSelectionChanged(object sender, BookSelectionChangedEventArgs e)
+		{
+			_templateInsertionCommand.ResetMostRecentPage();
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
