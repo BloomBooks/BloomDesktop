@@ -4272,9 +4272,9 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Shiriki</target>
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="sw" state="final">Mpangilio wa kitabu hiki kwa sasa ni "{0}". Bloom Reader itauonyesha kwa kutumia "{1}", kwa hivyo maandishi yanaweza kosa kutoshea. Ili kuona ikiwa kuna kitu kinachohitaji kurekebishwa, rudi kwenye Kichupo cha Hariri na ubadilishe mpangilio kuwa "{1}".</target>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="sw" state="translated">Mpangilio wa kitabu hiki kwa sasa ni "{0}". Bloom Reader itaionesha kwa kutumia "{1}", kwa hivyo maandishi hayawezi kutoshea. Ili kuona ikiwa kuna kitu kinachohitaji kurekebisha, rudi kwenye Kichupo cha Hariri na ubadilishe mpangilio kuwa "{1}".</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
