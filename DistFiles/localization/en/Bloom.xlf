@@ -5110,10 +5110,6 @@ Do you want to go ahead?</note>
         <note>ID: ReportProblemDialog.ItKeepsHappening</note>
         <note>The end point label for the frequency slider.</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name">
-        <source xml:lang="en">Name</source>
-        <note>ID: ReportProblemDialog.Name</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.NonFatalTitle">
         <source xml:lang="en">Bloom had a problem</source>
         <note>ID: ReportProblemDialog.NonFatalTitle</note>
@@ -5164,28 +5160,10 @@ Do you want to go ahead?</note>
         <note>ID: ReportProblemDialog.UserTitle</note>
         <note>The title of the dialog when a user chooses to Report a Problem.</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WhatsTheProblem">
-        <source xml:lang="en">What seems to be the problem?</source>
-        <note>ID: ReportProblemDialog.WhatsTheProblem</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatDoing">
         <source xml:lang="en">What were you doing?</source>
         <note>ID: ReportProblemDialog.WhatDoing</note>
         <note>This is the label for the text field where the user enters what they were doing at the time of the problem.</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.WindowTitle">
-        <source xml:lang="en">Report A Problem</source>
-        <note>ID: ReportProblemDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.Zipping">
-        <source xml:lang="en">Uploading book...</source>
-        <note>ID: ReportProblemDialog.Zipping</note>
-        <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
-        <note xml:lang="en">OLD TEXT (before 3.9): Zipping up book...</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.linkLabel1">
-        <source xml:lang="en">Will not be private</source>
-        <note>ID: ReportProblemDialog.linkLabel1</note>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt">
         <source xml:lang="en">I get it. Do not show this again.</source>
