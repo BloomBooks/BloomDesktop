@@ -866,11 +866,6 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <target xml:lang="quc" state="translated">¡Chab'ana pitz' rech uk'amik jun utzalaj Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="quc" state="final">Rumal chi are we jun wokcha'tal kemuxe' no’jwuj, Bloom man katajin ta kutzuj No'jwuj wokotal chik ri e k'o pacha kemuxe' rech k'ak' taq No'jwuj wokotal chik. We kawaj kawiq jun tzijob'al chik chech jun No'jwuj wokotal chik, rajawaxik kab'an k'ak' utz'ib'axik le wokcha'talik no'jwuj ri k'o wi ri no'jwuj wokotal chik, chi uk'axwach jun uwachib'al. Le cholb'al q'ij ma kokisax ta chech uwokik jun k'ak' no'jwuj wokotal chik.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="quc" state="translated">Uk'utik q'axem tzij ri man ya'om ta uq'ij</target>
@@ -3770,36 +3765,6 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">Font and Script</source>
         <target xml:lang="quc" state="final">Kemuxe' xuquje' tz'ib'anem</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="quc" state="final">Chacha' le ub'antajik le Wokcha'talik.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="quc" state="final">We k'o chik jun wokcha'talik ab'anom chik, chi karayij utorik, chab'ana pitz' pa ri pitz'b'al "Uq'atexik".</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="quc" state="final">Wokcha'talik rech Kemuxe' No'jwuj</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="quc" state="final">Jun wokcha'tal no'jwuj wokotal chik te'qne' rech raqanib'al pa jun wene pa k'i nima'q taq tzijob'al kokisax chech ri tzijonem. Katkowinik kapaqab'a' we no'jwuj wokotal chik pa BloomLibrary.org. Xuquje' katkowinik kawok jun Woktanaj rech Bloom rech ula'nik kuk' jule' chik rech kakiwok no'jwuj pa ri ajwaral kitzijob'al ruk' taq le no'jwuj wokotal chik chi kawok na.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="quc" state="final">Wokcha'talik pa ajwaral tzijob'al</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="quc" state="final">Jun wokcha'talik rech No'jwuj pa ajwaral tzijob'al.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
