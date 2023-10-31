@@ -1442,8 +1442,11 @@ namespace Bloom.Publish.Video
 
 			if (format != "mp3" && IsVideoTooSmall(actualResolution, desiredResolution))
 			{
-				if (s_screenResolution.Width >= desiredResolution.Width &&
-					s_screenResolution.Height >= desiredResolution.Height)
+				// Check for either landscape or portait orientation.
+				if ((s_screenResolution.Width >= desiredResolution.Width &&
+					s_screenResolution.Height >= desiredResolution.Height) ||
+					(s_screenResolution.Width >= desiredResolution.Height &&
+					s_screenResolution.Height >= desiredResolution.Width))
 				{
 					// If the screen actually allows the desired resolution, we can make the window full screen.
 					// (Full screen means borderless window that covers the whole screen in at least one dimension.)
