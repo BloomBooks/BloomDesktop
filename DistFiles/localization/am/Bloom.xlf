@@ -5836,11 +5836,6 @@
         <target xml:lang="am" state="needs-translation">It keeps happening</target>
         <note>ID: ReportProblemDialog.ItKeepsHappening</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name">
-        <source xml:lang="en">Name</source>
-        <target xml:lang="am" state="needs-translation">Name</target>
-        <note>ID: ReportProblemDialog.Name</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.NonFatalTitle">
         <source xml:lang="en">Bloom had a problem</source>
         <target xml:lang="am" state="needs-translation">Bloom had a problem</target>
@@ -5896,30 +5891,10 @@
         <target xml:lang="am" state="needs-translation">Report a Problem</target>
         <note>ID: ReportProblemDialog.UserTitle</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WhatsTheProblem">
-        <source xml:lang="en">What seems to be the problem?</source>
-        <target xml:lang="am" state="needs-translation">What seems to be the problem?</target>
-        <note>ID: ReportProblemDialog.WhatsTheProblem</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatDoing">
         <source xml:lang="en">What were you doing?</source>
         <target xml:lang="am" state="needs-translation">What were you doing?</target>
         <note>ID: ReportProblemDialog.WhatDoing</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.WindowTitle">
-        <source xml:lang="en">Report A Problem</source>
-        <target xml:lang="am" state="needs-translation">Report A Problem</target>
-        <note>ID: ReportProblemDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.Zipping">
-        <source xml:lang="en">Uploading book...</source>
-        <target xml:lang="am" state="needs-translation">Uploading book...</target>
-        <note>ID: ReportProblemDialog.Zipping</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.linkLabel1">
-        <source xml:lang="en">Will not be private</source>
-        <target xml:lang="am" state="needs-translation">Will not be private</target>
-        <note>ID: ReportProblemDialog.linkLabel1</note>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt">
         <source xml:lang="en">I get it. Do not show this again.</source>
