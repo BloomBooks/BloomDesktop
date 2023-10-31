@@ -4273,9 +4273,9 @@
         <target xml:lang="zh-CN" state="translated">开始推送</target>
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="zh-CN" state="final">这本书现在用的布局是“{0}”。在Bloom阅读器上显示时将使用布局“{1}”，可能导致文字内容不再合适。要检查是否需要调整，可以返回“编辑”将排版改为“{1}”。</target>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="zh-CN" state="translated">这本书现在用的布局是“{0}”。在Bloom阅读器上显示时将使用布局“{1}”，可能导致文字内容不再合适。要检查是否需要调整，可以返回“编辑”将排版改为“{1}”。</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
