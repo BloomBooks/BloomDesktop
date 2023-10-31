@@ -735,10 +735,6 @@
         <note>ID: CollectionTab.GetABetterBloom</note>
         <note>Clicking this message loads a web page which describes how to upgrade Bloom.</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
@@ -3281,30 +3277,6 @@
       <trans-unit id="NewCollectionWizard.FontAndScriptPage">
         <source xml:lang="en">Font and Script</source>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
-        <source xml:lang="en">Choose the collection type.</source>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
-        <source xml:lang="en">Source Collection</source>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
-        <source xml:lang="en">Local Language Collection</source>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage">
         <source xml:lang="en">Give Language Location</source>
