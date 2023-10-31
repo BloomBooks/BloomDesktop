@@ -865,11 +865,6 @@
         <target xml:lang="bn" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="bn" state="final">কারণ এটি উৎসের সংগ্রহ, ব্লুম নতুন শেলের জন্য কোন বিদ্যমান শেল অফার করছে না।যদি আপনি শেলে একটি ভাষা যুক্ত করতে চান, শেলটির সংগ্রহ সম্পাদন করার চেয়ে একটি কপি তৈরি করুন।এছাড়াও, বর্তমানে দেওয়াল ক্যালেন্ডার নতুন শেল তৈরি করতে পারছে না।</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations" approved="yes">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="bn" state="final">অনুবাদগুলি দেখান যা এখনও অনুমোদিত হয়নি</target>
@@ -3770,36 +3765,6 @@
         <source xml:lang="en">Font and Script</source>
         <target xml:lang="bn" state="final">ফন্ট এবং স্ক্রিপ্ট</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="bn" state="final">সংগ্রহের ধরন পছন্দ করুন</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="bn" state="final">যদি আপনার ইতোমধ্যেই থাকা সংগ্রহ খুলতে চান, 'বাতিল' বোতামে ক্লিক করুন।</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="bn" state="final">উৎস সংগ্রহ</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="bn" state="final">বিস্তৃত যোগাযোগের জন্য এক বা ততোধিক ভাষায় একটি সংগ্রহের শেল অথবা টেমপ্লেট বইসমূহ।আপনি BloomLibrary.org - এ এই শেলগুলি আপলোড করতে পারবেন।আপনি অন্যদেরকে দেওয়ার জন্য একটি ব্লুম প্যাকও বানাতে পারেন তাহলে তারা আপনার শেলগুলো দিয়ে স্বদেশীয় বই বানাতে পারবেন।</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="bn" state="final">স্থানীয় ভাষা সংগ্রহ</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="bn" state="final">একটি স্থানীয় ভাষার সংগ্রহের বইসমূহ।</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
