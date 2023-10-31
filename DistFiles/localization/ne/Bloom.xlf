@@ -865,11 +865,6 @@
         <target xml:lang="ne-NP" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="ne-NP" state="final">यो एउटा स्रोत सङ्ग्रह भएकाले Bloom ले कुनै विद्यमान आवरणहरूलाई नयाँ आवरणको स्रोतको रूपमा प्रदान गरिरहेको छैन। तपाईं कुनै खाकामा भाषा थप्न चाहनुहुन्छ भने, तपाईंले सो खाकाको प्रतिलिपि बनाउनुभन्दा सो खाका समावेश सङ्ग्रहलाई सम्पादन गर्नु उचित हुन्छ।साथै, हाल भित्ते पात्रोलाई नयाँ खाका बनाउन प्रयोग गर्न सकिँदैन।</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="ne-NP" state="needs-translation">Show translations which have not been approved yet</target>
@@ -3768,36 +3763,6 @@
         <source xml:lang="en">Font and Script</source>
         <target xml:lang="ne-NP" state="final">फन्ट र लिपि</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="ne-NP" state="final">सङ्ग्रहको प्रकार चयन गर्नुहोस्</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="ne-NP" state="final">आफूले खोल्न चाहेको सङ्ग्रह तपाईंसँग पहिले नै छ भने, 'रद्द बटनळथि‍च्‍नुहोस्</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="ne-NP" state="final">स्रोतको सङ्ग्रह</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="ne-NP" state="final">एक वा बढी साझा भाषाहरूमा लेखिएका खाका वा टेम्प्लेट पुस्तकहरूको सङ्ग्रह।तपाईंले यी खाकाहरूलाई BloomLibrary.org मा अपलोड गर्न सक्नुहुन्छ।अरूले तपाईंका खाकाहरू प्रयोग गरेर आफ्नो मातृभाषामा पुस्तकहरू लेख्न सकून् भनेर तपाईंले Bloom प्याक बनाएर अरूलाई उपलब्ध गराउन पनि सक्नुहुन्छ।</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="ne-NP" state="final">मातृभाषा/स्थानीय भाषाको सङ्ग्रह</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="ne-NP" state="final">स्थानीय भाषामा लेखिएका पुस्तकहरूको सङ्ग्रह।</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
