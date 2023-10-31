@@ -4273,9 +4273,9 @@
         <target xml:lang="pbu" state="final">شریکول</target>
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="pbu" state="final">د دې کتاب بڼه اوس مهال "{0}" دی. بلوم کتاب به دا د "{1}" په کارولو سره وښیي، نو متن به ممکن وي برابر نشی. د دې لپاره چې وګورئ کوم څه چې سمون ته اړتیا لري، بیرته د سمون ټیب ته لاړ شئ او بڼه "{1}" ته بدله کړئ.</target>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="pbu" state="translated">د دې کتاب بڼه اوس مهال "{0}" دی. بلوم کتاب به دا د "{1}" په کارولو سره وښیي، نو متن به ممکن وي برابر نشی. د دې لپاره چې وګورئ کوم څه چې سمون ته اړتیا لري، بیرته د سمون ټیب ته لاړ شئ او بڼه "{1}" ته بدله کړئ.</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
