@@ -3324,9 +3324,9 @@
         <target xml:lang="fr" state="final">Forum de la Communauté Bloom</target>
         <note>ID: ForumInvitationDialog.BloomCommunityForum</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.DoYouKnow">
+      <trans-unit id="ForumInvitationDialog.DoYouKnow" approved="yes">
         <source xml:lang="en">Do you know about our Bloom forum? Join us to:</source>
-        <target xml:lang="fr" state="translated">Connaissez-vous notre forum Bloom ? Rejoignez-nous à :</target>
+        <target xml:lang="fr" state="final">Connaissez-vous notre forum Bloom ? Rejoignez-nous pour :</target>
         <note>ID: ForumInvitationDialog.DoYouKnow</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.LearnAboutNewFeatures" approved="yes">
@@ -4058,9 +4058,9 @@
         <target xml:lang="fr" state="final">Ajouter la police {0} qui exige {1} Mb</target>
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book has text in a font named "{0}". Bloom cannot publish this font's format ({1}).</source>
-        <target xml:lang="fr" state="translated">Ce livre contient du texte dans une police nommée \"{0}\". Bloom ne peut pas utiliser une police avec ce format de fichier de police.</target>
+        <target xml:lang="fr" state="final">Ce livre contient du texte dans une police nommée \"{0}\". Bloom ne peut pas utiliser une police avec ce format de fichier de police.</target>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true" approved="yes">
@@ -4273,9 +4273,9 @@
         <target xml:lang="fr" state="final">Partager</target>
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+      <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
         <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="fr" state="translated">La mise en page actuelle de ce livre est "‎{0}". Comme il s'affichera sur Bloom Reader en utilisant "‎{1}", le texte pourrait ne pas entrer. Pour voir les adaptations à faire, revenez à l'onglet Edition et choisissez "‎{1}" pour la mise en page.</target>
+        <target xml:lang="fr" state="final">La mise en page actuelle de ce livre est "‎{0}". Comme il s'affichera sur Bloom Reader en utilisant "‎{1}", on aura peut-être besoin de faire défiler le texte pour tout voir. Pour voir des adaptations éventuelles, revenez à l'onglet Édition et modifiez la mise en page pour "‎{1}" .</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
@@ -4293,9 +4293,9 @@
         <target xml:lang="fr" state="final">Intérieur du livret</target>
         <note>ID: PublishTab.BodyOnlyRadio</note>
       </trans-unit>
-      <trans-unit id="PublishTab.BodyOnly-description">
+      <trans-unit id="PublishTab.BodyOnly-description" approved="yes">
         <source xml:lang="en">The inside pages, re-arranged so that when folded, you get a booklet ready to staple.</source>
-        <target xml:lang="fr" state="translated">Les pages intérieures, réarrangées de manière que, une fois pliées, vous obteniez un livret prêt à être agrippé.</target>
+        <target xml:lang="fr" state="final">Les pages intérieures, réarrangées de manière que, une fois pliées, vous obtenez un livret prêt à être agrafé.</target>
         <note>ID: PublishTab.BodyOnly-description</note>
       </trans-unit>
       <trans-unit id="PublishTab.bloomPUBButton" approved="yes">
@@ -4358,9 +4358,9 @@
         <target xml:lang="fr" state="final">Télécharger sur BloomLibrary.org, d'où d'autres utilisateurs pourront le télécharger et le localiser dans leur propre langue.</target>
         <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.CannotUpload" sil:dynamic="true">
+      <trans-unit id="PublishTab.CannotUpload" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The creator of this book does not allow derivatives to be uploaded. Please contact the creator for more information.</source>
-        <target xml:lang="fr" state="translated">Le créateur de ce livre ne permet pas le téléchargement des dérivés. Veuillez contacter le créateur pour plus d'informations.</target>
+        <target xml:lang="fr" state="final">Le créateur de ce livre ne permet pas le téléchargement des dérivés. Veuillez contacter le créateur pour plus d'informations.</target>
         <note>ID: PublishTab.CannotUpload</note>
       </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio" approved="yes">
@@ -4368,9 +4368,9 @@
         <target xml:lang="fr" state="final">Couverture du livret</target>
         <note>ID: PublishTab.CoverOnlyRadio</note>
       </trans-unit>
-      <trans-unit id="PublishTab.CoverOnly-description" sil:dynamic="true">
+      <trans-unit id="PublishTab.CoverOnly-description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The cover, ready to print on colored paper.</source>
-        <target xml:lang="fr" state="translated">La couverture, prête à imprimer sur du papier coloré.</target>
+        <target xml:lang="fr" state="final">La couverture, prête à imprimer sur du papier coloré.</target>
         <note>ID: PublishTab.CoverOnly-description</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage.Disabled" approved="yes">
@@ -4528,9 +4528,9 @@
         <target xml:lang="fr" state="final">Simple</target>
         <note>ID: PublishTab.OnePagePerPaperRadio</note>
       </trans-unit>
-      <trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true">
+      <trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A simple PDF instead of a booklet.</source>
-        <target xml:lang="fr" state="translated">Un simple PDF au lieu d'un livret.</target>
+        <target xml:lang="fr" state="final">Un PDF simple au lieu d'un livret.</target>
         <note>ID: PublishTab.OnePagePerPaper-description</note>
       </trans-unit>
       <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer" approved="yes">
@@ -4548,54 +4548,54 @@
         <target xml:lang="fr" state="final">Sélectionner la taille et l'orientation de la page</target>
         <note>ID: PublishTab.Options_ToolTip_</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.HelpHeader">
+      <trans-unit id="PublishTab.PDF.Booklet.HelpHeader" approved="yes">
         <source xml:lang="en">Here are the settings you need for printing this booklet:</source>
-        <target xml:lang="fr" state="translated">Voici les paramètres nécessaires pour imprimer ce livret :</target>
+        <target xml:lang="fr" state="final">Voici les paramètres nécessaires pour imprimer ce livret :</target>
         <note>ID: PublishTab.PDF.Booklet.HelpHeader</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Portrait">
+      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Portrait" approved="yes">
         <source xml:lang="en">1. Layout: Portrait</source>
-        <target xml:lang="fr" state="translated">1. Disposition : Portrait</target>
+        <target xml:lang="fr" state="final">1. Mise en page : Portrait</target>
         <note>ID: PublishTab.PDF.Booklet.PageLayout.Portrait</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Landscape">
+      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Landscape" approved="yes">
         <source xml:lang="en">1. Layout: Landscape</source>
-        <target xml:lang="fr" state="translated">1. Disposition : Paysage</target>
+        <target xml:lang="fr" state="final">1. Mise en page : Paysage</target>
         <note>ID: PublishTab.PDF.Booklet.PageLayout.Landscape</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge">
+      <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge" approved="yes">
         <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
-        <target xml:lang="fr" state="translated">2. Imprimer sur les deux côtés : "Retourner sur le bord court"</target>
+        <target xml:lang="fr" state="final">2. Imprimer sur les deux côtés : "Retourner sur le bord court"</target>
         <note>ID: PublishTab.PDF.Booklet.Flip.ShortEdge</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.Flip.LongEdge">
+      <trans-unit id="PublishTab.PDF.Booklet.Flip.LongEdge" approved="yes">
         <source xml:lang="en">2. Print on both sides: "Flip on long edge"</source>
-        <target xml:lang="fr" state="translated">2. Imprimer sur les deux côtés : "Retourner sur le bord long"</target>
+        <target xml:lang="fr" state="final">2. Imprimer sur les deux côtés : "Retourner sur le bord long"</target>
         <note>ID: PublishTab.PDF.Booklet.Flip.LongEdge</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.A4">
+      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.A4" approved="yes">
         <source xml:lang="en">3. More settings &gt; Paper size: "A4"</source>
-        <target xml:lang="fr" state="translated">3. Plus de paramètres &gt; Format Papier : "A4"</target>
+        <target xml:lang="fr" state="final">3. Plus de paramètres &gt; Format Papier : "A4"</target>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.A4</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.Letter">
+      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.Letter" approved="yes">
         <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
-        <target xml:lang="fr" state="translated">3. Plus de paramètres &gt; Format Papier: "Lettre"</target>
+        <target xml:lang="fr" state="final">3. Plus de paramètres &gt; Format Papier : "Lettre"</target>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize">
+      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" approved="yes">
         <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
-        <target xml:lang="fr" state="translated">4. Plus de paramètres &gt; Échelle : "Taille réelle"</target>
+        <target xml:lang="fr" state="final">4. Plus de paramètres &gt; Échelle : "Taille réelle"</target>
         <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack">
+      <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack" approved="yes">
         <source xml:lang="en">This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.</source>
-        <target xml:lang="fr" state="translated">Cela mettra deux pages sur chaque feuille de papier. Coupez horizontalement et empilez pour faire un livret.</target>
+        <target xml:lang="fr" state="final">Cela mettra deux pages sur chaque feuille de papier. Coupez horizontalement et empilez pour en faire un livret.</target>
         <note>ID: PublishTab.PDF.Booklet.TwoPages.CutAndStack</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.FourPages.CutAndFold">
         <source xml:lang="en">This will put four pages on each sheet of paper. Cut the stack, then fold to get two booklets.</source>
-        <target xml:lang="fr" state="translated">Cela mettra quatre pages sur chaque feuille de papier, coupez la pile, puis pliez pour obtenir deux livrets.</target>
+        <target xml:lang="fr" state="translated">Cela mettra quatre pages sur chaque feuille de papier. Coupez la pile, puis pliez pour obtenir deux livrets.</target>
         <note>ID: PublishTab.PDF.Booklet.FourPages.CutAndFold</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.Failed" approved="yes">
@@ -4630,12 +4630,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ClickToStart">
         <source xml:lang="en">Bloom can format your PDF in several ways.</source>
-        <target xml:lang="fr" state="translated">Bloom peut formater votre PDF de plusieurs façons.</target>
+        <target xml:lang="fr" state="translated">Bloom peut faire la mise en forme de votre PDF de plusieurs façons.</target>
         <note>ID: PublishTab.PdfMaker.ClickToStart</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ClickToStart2">
         <source xml:lang="en">Choose one here:</source>
-        <target xml:lang="fr" state="translated">Choisissez-en un ici :</target>
+        <target xml:lang="fr" state="translated">Choisissez ici :</target>
         <note>ID: PublishTab.PdfMaker.ClickToStart2</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Compress" approved="yes">
@@ -5036,9 +5036,9 @@
         <target xml:lang="fr" state="translated">Laissez les locuteurs trouver vos livres dans [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) et sur [BloomLibrary.org](https://bloomlibrary.org/).</target>
         <note>ID: PublishTab.Upload.BannerDescription</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BannerTitle">
+      <trans-unit id="PublishTab.Upload.BannerTitle" approved="yes">
         <source xml:lang="en">Publish to Web</source>
-        <target xml:lang="fr" state="translated">Publier sur le Web</target>
+        <target xml:lang="fr" state="final">Publier sur le Web</target>
         <note>ID: PublishTab.Upload.BannerTitle</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Cancelled" approved="yes">
