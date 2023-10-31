@@ -4273,9 +4273,9 @@
         <target xml:lang="prs" state="final">آغاز به تلاش</target>
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="prs" state="final">طرح این کتاب در حال حاضر "{0}" است. کتاب بلوم آن را با استفاده از "{1}" نمایش می دهد، بنابراین متن ممکن است مناسب نباشد. برای دیدن اینکه آیا هر چیزی نیاز به تنظیم دارد، به بخش تصحیح بروید و طرح را به "{1}" تغییر دهید.</target>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="prs" state="translated">طرح این کتاب در حال حاضر "{0}" است. کتاب بلوم آن را با استفاده از "{1}" نمایش می دهد، بنابراین متن ممکن است مناسب نباشد. برای دیدن اینکه آیا هر چیزی نیاز به تنظیم دارد، به بخش تصحیح بروید و طرح را به "{1}" تغییر دهید.</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
