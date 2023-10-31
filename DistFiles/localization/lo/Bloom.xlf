@@ -865,11 +865,6 @@
         <target xml:lang="lo" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="lo" state="final">ເນື່ອງຈາກວ່ານີ້ແມ່ນແຫຼ່ງຂໍ້ມູນທີ່ collection, Bloom ບໍ່ໄດ້ສະເຫນີໄຍທີ່ມີຢູ່ເປັນແຫລ່ງສໍາລັບ Shell ໃຫມ່ເປັນຢ່າງໃດ. ຖ້າຫາກທ່ານຕ້ອງການທີ່ຈະເພີ່ມພາສາເພື່ອ shell, collection ແທນທີ່ຈະທ່ານຈໍາເປັນຕ້ອງໄດ້ແກ້ໄຂຫອຍໄດ້, ແທນທີ່ຈະກ່ວາການເຮັດສໍາເນົາຂອງມັນ. ນອກຈາກນີ້ຍັງ Wall calendar ແມ່ນບໍ່ໄດ້ປະຈຸບັນຈະຖືກນໍາໃຊ້ເພື່ອເຮັດShell ໃຫມ່.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="lo" state="needs-translation">Show translations which have not been approved yet</target>
@@ -3768,36 +3763,6 @@
         <source xml:lang="en">Font and Script</source>
         <target xml:lang="lo" state="needs-translation">Font and Script</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="lo" state="final">ເລືອກປະເພດCollection</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="lo" state="needs-translation">If you already have a collection you want to open, click  the 'Cancel' button.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="lo" state="final">ແຫຼ່ງCollection</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="lo" state="final">Collection ຂອງຫນັງສືໃນຫນຶ່ງຫອຍຫຼືແມ່ຫຼືພາສາຂອງການສື່ສານກວ້າງໄດ້. ທ່ານຈະສາມາດທີ່ຈະອັບໂຫລດໄຍເຫຼົ່ານີ້. BloomLibrary.org ດອກໄມ້ແລະເລືອກທີ່ຈະເຮັດ Bloom ໃຫ້ປະຊາຊົນອື່ນໆເພື່ອໃຫ້ເຂົາເຈົ້າສາມາດເຮັດໃຫ້ແກະສໍາລັບພາສາກໍາເນີດຂອງທ່ານໄດ້.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="lo" state="final">ທ້ອງຖິ່ນ / ພາສາທ້ອງຖິ່ນ Collection</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="lo" state="final">Collection ເກັບກໍາຂໍ້ມູນຂອງຫນັງສືໃນພາສາທ້ອງຖິ່ນ</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
