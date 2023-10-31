@@ -3978,11 +3978,6 @@
         <target xml:lang="fr" state="final">Enregistrer le Fichier BloomPUB</target>
         <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <target xml:lang="fr" state="final">Choisissez la mise en page paysage pour activer le mode Livre avec Motion</target>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Send over USB Cable</source>
         <target xml:lang="fr" state="final">Envoyer via un câble USB</target>
@@ -3992,11 +3987,6 @@
         <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="fr" state="final">Partager sur le réseau WiFi</target>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Send or Save</source>
-        <target xml:lang="fr" state="final">Envoyer ou Sauvegarder</target>
-        <note>ID: PublishTab.Android.Control</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copy to Clipboard</source>
@@ -4062,16 +4052,6 @@
         <source xml:lang="en">Get Bloom Reader App</source>
         <target xml:lang="fr" state="final">Obtenir l’application Bloom Reader</target>
         <note>ID: PublishTab.Android.GetBloomReader</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <target xml:lang="fr" state="final">Envoyez votre livre à l'application Bloom Reader Android</target>
-        <note>ID: PublishTab.Android.Intro</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Choose how to send to device</source>
-        <target xml:lang="fr" state="final">Choisissez comment envoyer à l'appareil</target>
-        <note>ID: PublishTab.Android.Method</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion Book</source>
