@@ -159,6 +159,11 @@ namespace Bloom
 			MostRecentInsertedTemplatePage = page;
 			InsertPage.Invoke(page, new PageInsertEventArgs(true, numberToAdd));
 		}
+
+		public void ResetMostRecentPage()
+		{
+			MostRecentInsertedTemplatePage = null;
+		}
 	}
 
 	public class PageInsertEventArgs : EventArgs
