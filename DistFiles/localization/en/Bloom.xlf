@@ -3462,11 +3462,6 @@
         <source xml:lang="en">Save BloomPUB File</source>
         <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-        <note>Appears in portrait mode when Motion checkbox is checked</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true">
         <source xml:lang="en">Send over USB Cable</source>
         <note>ID: PublishTab.Android.ChooseUSB</note>
@@ -3474,11 +3469,6 @@
       <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true">
         <source xml:lang="en">Share over Wi-Fi</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
-        <source xml:lang="en">Send or Save</source>
-        <note>ID: PublishTab.Android.Control</note>
-        <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true">
         <source xml:lang="en">Copy to Clipboard</source>
@@ -3543,16 +3533,6 @@
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <note>ID: PublishTab.Android.Intro</note>
-        <note>This is displayed at the top of the Android screen.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
-        <source xml:lang="en">Choose how to send to device</source>
-        <note>ID: PublishTab.Android.Method</note>
-        <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
         <source xml:lang="en">Motion Book</source>
