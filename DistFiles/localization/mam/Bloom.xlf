@@ -865,11 +865,6 @@
         <target xml:lang="mam" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="mam" state="final">Tu'ntlaj nokx jun k'loj tlok'b'il u'j lu', te' Bloom nti' ntzaj tq'o'n u'jb'il b'ananmaj ex atqe, ikytzan tlok'b'il ak'aj u'jb'il b'ananmaj. Qa tajb'ila tu'n tok jun yolb'il ti'j jun u'jb'il b'ananmaj, ilx ti'j tu'n t-xi' b'inchet k'loj te ila' wiq at u'jb'il b'ananmaj tuj ttxel tilb'ilal. Nlayx tajb'en Txolq'ij tu'n tkub' b'inchet jun ak'aj u'jb'il b'ananmaj.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations" approved="yes">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="mam" state="final">Yek'il yol miltz'u'nqe' na'mx kytziyit</target>
@@ -3768,36 +3763,6 @@
         <source xml:lang="en">Font and Script</source>
         <target xml:lang="mam" state="final">Tloq'b'il ex Tz'ib'il</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="mam" state="final">Sak'onktza wiq k'loj te ila' wiq.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="mam" state="final">Qa o' sak'et-xi' k'loj te ila' wiq tu'n tjaqet, q'onxa clic tib'aj tech tz'ib' "Min lajet".</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="mam" state="final">K'loj te ila' wiq Tloq'b'il U'jb'il</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="mam" state="final">Jun k'loj te ila' wiq u'jb'il b'ananmaj qe mo ttenb'il b'inchil u'jb'il b'ananmaj tuj jun mo txqantl yol nim xjal nchi yolin ti'j. B'a'n tu'n tok iqit qe u'jb'il b'ananmaj te BloomLibrary.org. Ex b'a'n tu'n kub' b'inchet jun tnej te Bloom tu'n t-xi' samet kye juntl tu'n tkub' kyb'inchin u'jb'il tuj kyex kyol kyu'n qe u'jb'il b'ananmaj kxe'l tb'inchana.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="mam" state="final">K'loj te ila' wiq te yolb'il te tzalu'</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="mam" state="final">Jun k'loj te ila' wiq u'jb'il tuj jun yolb'il te tzalu'.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
