@@ -5836,11 +5836,6 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Sigue sucediendo</target>
         <note>ID: ReportProblemDialog.ItKeepsHappening</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name" approved="yes">
-        <source xml:lang="en">Name</source>
-        <target xml:lang="es-ES" state="final">Nombre</target>
-        <note>ID: ReportProblemDialog.Name</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.NonFatalTitle" approved="yes">
         <source xml:lang="en">Bloom had a problem</source>
         <target xml:lang="es-ES" state="final">Bloom tuvo un problema</target>
@@ -5896,30 +5891,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Informar de un problema</target>
         <note>ID: ReportProblemDialog.UserTitle</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WhatsTheProblem" approved="yes">
-        <source xml:lang="en">What seems to be the problem?</source>
-        <target xml:lang="es-ES" state="final">¿Cuál parece ser el problema?</target>
-        <note>ID: ReportProblemDialog.WhatsTheProblem</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatDoing" approved="yes">
         <source xml:lang="en">What were you doing?</source>
         <target xml:lang="es-ES" state="final">¿Qué estaba haciendo?</target>
         <note>ID: ReportProblemDialog.WhatDoing</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.WindowTitle" approved="yes">
-        <source xml:lang="en">Report A Problem</source>
-        <target xml:lang="es-ES" state="final">Reportar un problema</target>
-        <note>ID: ReportProblemDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.Zipping" approved="yes">
-        <source xml:lang="en">Uploading book...</source>
-        <target xml:lang="es-ES" state="final">Cargando el libro...</target>
-        <note>ID: ReportProblemDialog.Zipping</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.linkLabel1" approved="yes">
-        <source xml:lang="en">Will not be private</source>
-        <target xml:lang="es-ES" state="final">No será privado</target>
-        <note>ID: ReportProblemDialog.linkLabel1</note>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
         <source xml:lang="en">I get it. Do not show this again.</source>
