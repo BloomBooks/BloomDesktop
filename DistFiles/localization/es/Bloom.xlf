@@ -866,11 +866,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">¡Haga click para recibir una Bloom mejor!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="es-ES" state="final">Debido a que esta es una colección de libros fuente, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations" approved="yes">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="es-ES" state="final">Mostrar traducciones todavía no aprobadas</target>
@@ -3770,36 +3765,6 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">Font and Script</source>
         <target xml:lang="es-ES" state="final">Fuente y Escritura</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="es-ES" state="final">Elija el tipo de Colección</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="es-ES" state="final">Si usted ya tiene una colección que desea abrir, haga clic en el botón "Cancelar".</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="es-ES" state="final">Colección de Libros Fuente</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="es-ES" state="final">Una colección de libros prediseñados o de plantilla en uno o más idiomas de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede crear un Paquete de Bloom para compartir con otros para que puedan crear libros en su idioma local con los libros prediseñados que usted creará.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="es-ES" state="final">Colección de idioma local</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="es-ES" state="final">Una colección de libros en un idioma local.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
