@@ -865,11 +865,6 @@
         <target xml:lang="ta" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="ta" state="final">மூல தொகுப்பை இது, Bloom இல்லை காலகட்டத்தில் எந்த தற்போதுள்ள உதிரிபாகங்கள் இவ்வாறு புதிய உதிரிபாகங்கள் வட்டாரங்கள். ஒரு மொழி ஒரு கூடு சேர்க்க வேண்டுமானால், அதற்கு பதிலாக வேண்டும் கூடு கொண்ட அல்லாமல் அதன் நகல் ஈட்டும் தொகுப்பு திருத்து. மேலும், சுவர் காலண்டரை தற்போது பயன்படுத்த முடியாது ஒரு புதிய கூடு ஏற்படுத்த.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="ta" state="needs-translation">Show translations which have not been approved yet</target>
@@ -3768,36 +3763,6 @@
         <source xml:lang="en">Font and Script</source>
         <target xml:lang="ta" state="needs-translation">Font and Script</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="ta" state="final">தொகுப்பு வகை தேர்ந்தெடுக்கவும்</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="ta" state="needs-translation">If you already have a collection you want to open, click  the 'Cancel' button.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="ta" state="final">மூல தொகுப்பை</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="ta" state="final">ஒன்று அல்லது மேற்பட்ட மொழிகளில் விரிந்த இண்டர்நெட் கூடு அல்லது வார்ப்புரு தொகுப்பை புத்தகங்களில். நீங்கள் செய்ய BloomLibrary.org இந்த உதிரிபாகங்கள் பதிவேற்றும் மற்றும் optionally எனவே அவர்கள் உடன் உங்கள் உதிரிபாகங்கள் vernacular புத்தகங்கள் எளிதாக மற்றவர்களுக்கு அளிக்க ஒரு BloomPack ஏற்படுத்து முடியும் இருக்கும்.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="ta" state="final">நாட்டு(அ)மாவட்ட/உள்ளூர் மொழி தொகுப்பு</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="ta" state="final">உள்ளூர் மொழி ஒரு வசூல்.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
