@@ -4558,9 +4558,9 @@
         <target xml:lang="fr" state="final">Cela mettra deux pages sur chaque feuille de papier. Coupez horizontalement et empilez pour en faire un livret.</target>
         <note>ID: PublishTab.PDF.Booklet.TwoPages.CutAndStack</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.FourPages.CutAndFold">
+      <trans-unit id="PublishTab.PDF.Booklet.FourPages.CutAndFold" approved="yes">
         <source xml:lang="en">This will put four pages on each sheet of paper. Cut the stack, then fold to get two booklets.</source>
-        <target xml:lang="fr" state="translated">Cela mettra quatre pages sur chaque feuille de papier. Coupez la pile, puis pliez pour obtenir deux livrets.</target>
+        <target xml:lang="fr" state="final">Cela mettra quatre pages sur chaque feuille de papier. Coupez la pile, puis pliez pour obtenir deux livrets.</target>
         <note>ID: PublishTab.PDF.Booklet.FourPages.CutAndFold</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.Failed" approved="yes">
@@ -4593,14 +4593,14 @@
         <target xml:lang="fr" state="final">Bloom a rencontré un problème en voulant créer une version PDF de ce livre.</target>
         <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ClickToStart">
+      <trans-unit id="PublishTab.PdfMaker.ClickToStart" approved="yes">
         <source xml:lang="en">Bloom can format your PDF in several ways.</source>
-        <target xml:lang="fr" state="translated">Bloom peut faire la mise en forme de votre PDF de plusieurs façons.</target>
+        <target xml:lang="fr" state="final">Bloom peut faire la mise en forme de votre PDF de plusieurs façons.</target>
         <note>ID: PublishTab.PdfMaker.ClickToStart</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ClickToStart2">
+      <trans-unit id="PublishTab.PdfMaker.ClickToStart2" approved="yes">
         <source xml:lang="en">Choose one here:</source>
-        <target xml:lang="fr" state="translated">Choisissez ici :</target>
+        <target xml:lang="fr" state="final">Choisissez ici :</target>
         <note>ID: PublishTab.PdfMaker.ClickToStart2</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Compress" approved="yes">
@@ -4695,7 +4695,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfPrint.Button">
         <source xml:lang="en">PDF &amp; Print</source>
-        <target xml:lang="fr" state="translated">PDF &amp; Print</target>
+        <target xml:lang="fr" state="translated">PDF &amp; Imprimer</target>
         <note>ID: PublishTab.PdfPrint.Button</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfPrintButton-tooltip" sil:dynamic="true">
