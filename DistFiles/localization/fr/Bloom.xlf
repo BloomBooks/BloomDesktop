@@ -685,9 +685,9 @@
         <target xml:lang="fr" state="final">Créer un pack Bloom de ces modèles de livre...</target>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.AddSourceCollection">
+      <trans-unit id="CollectionTab.AddSourceCollection" approved="yes">
         <source xml:lang="en">Show another collection...</source>
-        <target xml:lang="fr" state="translated">Afficher une autre collection...</target>
+        <target xml:lang="fr" state="final">Afficher une autre collection...</target>
         <note>Shown at the very bottom of the list of books and collections.  The user can click on this text and then choose an existing collection to use as an additional source of books to translate or otherwise adapt.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.AdminManagesUpdates" approved="yes">
@@ -790,9 +790,9 @@
         <target xml:lang="fr" state="final">Livres sur BloomLibrary.org</target>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ChooseCollection">
+      <trans-unit id="CollectionTab.ChooseCollection" approved="yes">
         <source xml:lang="en">Choose Collection</source>
-        <target xml:lang="fr" state="translated">Choisir la collection</target>
+        <target xml:lang="fr" state="final">Choisir la Collection</target>
         <note>This is the title of the file-open dialog that you use to choose a Bloom collection</note>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks" approved="yes">
@@ -850,9 +850,9 @@
         <target xml:lang="fr" state="final">Dépannage</target>
         <note>ID: CollectionTab.ContextMenu.Troubleshooting</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.DoNotShowCollection">
+      <trans-unit id="CollectionTab.DoNotShowCollection" approved="yes">
         <source xml:lang="en">Do not show this collection here.</source>
-        <target xml:lang="fr" state="translated">Ne pas afficher cette collection ici.</target>
+        <target xml:lang="fr" state="final">Ne pas afficher cette collection ici.</target>
         <note>This is a tooltip for the X icon that allows the user to remove a collection from displaying as a source of books.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.EditBookButton" approved="yes">
@@ -910,9 +910,9 @@
         <target xml:lang="fr" state="final">({0}% complet)</target>
         <note>ID: CollectionTab.Progress</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.RemoveThisGroup">
+      <trans-unit id="CollectionTab.RemoveThisGroup" approved="yes">
         <source xml:lang="en">To remove this group, you will need to delete the folder. Click here to view the folder on your drive.</source>
-        <target xml:lang="fr" state="translated">Pour supprimer ce groupe, vous devrez supprimer le dossier. Cliquez ici pour voir le dossier sur votre lecteur.</target>
+        <target xml:lang="fr" state="final">Pour supprimer ce groupe, vous devrez supprimer le dossier. Cliquez ici pour voir le dossier sur votre lecteur.</target>
         <note>This is a tooltip for the folder icon that allows the user to remove a folder that is serving as a source of books.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate" approved="yes">
@@ -1010,9 +1010,9 @@
         <target xml:lang="fr" state="final">Nouveau...</target>
         <note>ID: ColorPicker.New</note>
       </trans-unit>
-      <trans-unit id="Common.BookSettings">
+      <trans-unit id="Common.BookSettings" approved="yes">
         <source xml:lang="en">Book Settings</source>
-        <target xml:lang="fr" state="translated">Paramètres du livre</target>
+        <target xml:lang="fr" state="final">Paramètres du livre</target>
         <note>ID: Common.BookSettings</note>
       </trans-unit>
       <trans-unit id="Common.Advanced" approved="yes">
@@ -1154,9 +1154,9 @@
         <target xml:lang="fr" state="final">En cours de chargement...</target>
         <note>ID: Common.Loading</note>
       </trans-unit>
-      <trans-unit id="Common.LongRunningOperation" sil:dynamic="true">
+      <trans-unit id="Common.LongRunningOperation" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This may take a while...</source>
-        <target xml:lang="fr" state="translated">Cela peut prendre un certain temps...</target>
+        <target xml:lang="fr" state="final">Cela peut prendre du temps...</target>
         <note>ID: Common.LongRunningOperation</note>
       </trans-unit>
       <trans-unit id="Common.Next" approved="yes">
@@ -1254,9 +1254,9 @@
         <target xml:lang="fr" state="final">Paramètres</target>
         <note>ID: Common.Settings</note>
       </trans-unit>
-      <trans-unit id="Common.Starting">
+      <trans-unit id="Common.Starting" approved="yes">
         <source xml:lang="en">Starting...</source>
-        <target xml:lang="fr" state="translated">Démarrage...</target>
+        <target xml:lang="fr" state="final">Démarrage en cours...</target>
         <note>ID: Common.Starting</note>
       </trans-unit>
       <trans-unit id="Common.Stop" approved="yes">
@@ -1674,9 +1674,9 @@
         <target xml:lang="fr" state="final">Ce style existe déjà. Merci de choisir un autre nom.</target>
         <note>ID: EditTab.FormatDialog.AlreadyExists</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.BackgroundColor" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.BackgroundColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Background color</source>
-        <target xml:lang="fr" state="translated">Couleur de fond</target>
+        <target xml:lang="fr" state="final">Couleur de fond</target>
         <note>ID: EditTab.FormatDialog.BackgroundColor</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true" approved="yes">
@@ -1809,14 +1809,14 @@
         <target xml:lang="fr" state="final">Formater</target>
         <note>ID: EditTab.FormatDialog.Format</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Highlighting" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Highlighting" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Highlighting</source>
-        <target xml:lang="fr" state="translated">Surlignement</target>
+        <target xml:lang="fr" state="final">Surlignement</target>
         <note>ID: EditTab.FormatDialog.Highlighting</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.HowToHighlightAudio" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.HowToHighlightAudio" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose how to highlight text of style "%0" while its audio is playing:</source>
-        <target xml:lang="fr" state="translated">Choisissez comment mettre en surlignage le texte du style «%0» pendant que son audio est en cours de lecture :</target>
+        <target xml:lang="fr" state="final">Choisissez comment mettre en surlignage le texte du style «%0» pendant que son audio est en cours de lecture :</target>
         <note>ID: EditTab.FormatDialog.HowToHighlightAudio</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true" approved="yes">
@@ -3319,9 +3319,9 @@
         <target xml:lang="fr" state="final">Version</target>
         <note>ID: FontInformationPane.Version</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.BloomCommunityForum">
+      <trans-unit id="ForumInvitationDialog.BloomCommunityForum" approved="yes">
         <source xml:lang="en">Bloom Community Forum</source>
-        <target xml:lang="fr" state="translated">Forum de la communauté Bloom</target>
+        <target xml:lang="fr" state="final">Forum de la Communauté Bloom</target>
         <note>ID: ForumInvitationDialog.BloomCommunityForum</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.DoYouKnow">
@@ -3329,29 +3329,29 @@
         <target xml:lang="fr" state="translated">Connaissez-vous notre forum Bloom ? Rejoignez-nous à :</target>
         <note>ID: ForumInvitationDialog.DoYouKnow</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.LearnAboutNewFeatures">
+      <trans-unit id="ForumInvitationDialog.LearnAboutNewFeatures" approved="yes">
         <source xml:lang="en">learn about new features</source>
-        <target xml:lang="fr" state="translated">en savoir plus sur les nouvelles fonctionnalités</target>
+        <target xml:lang="fr" state="final">en savoir plus sur les nouvelles fonctionnalités</target>
         <note>ID: ForumInvitationDialog.LearnAboutNewFeatures</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.RequestAndVote">
+      <trans-unit id="ForumInvitationDialog.RequestAndVote" approved="yes">
         <source xml:lang="en">request and vote on new features</source>
-        <target xml:lang="fr" state="translated">demander et voter sur les nouvelles fonctionnalités</target>
+        <target xml:lang="fr" state="final">demander et voter sur les nouvelles fonctionnalités</target>
         <note>ID: ForumInvitationDialog.RequestAndVote</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.AskForAdvice">
+      <trans-unit id="ForumInvitationDialog.AskForAdvice" approved="yes">
         <source xml:lang="en">ask for advice or technical help</source>
-        <target xml:lang="fr" state="translated">demander des conseils ou de l'aide technique</target>
+        <target xml:lang="fr" state="final">demander des conseils ou de l'aide technique</target>
         <note>ID: ForumInvitationDialog.AskForAdvice</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.ShowOff">
+      <trans-unit id="ForumInvitationDialog.ShowOff" approved="yes">
         <source xml:lang="en">show off what you're doing with Bloom!</source>
-        <target xml:lang="fr" state="translated">montrez ce que vous faites avec Bloom!</target>
+        <target xml:lang="fr" state="final">faites valoir ce que vous faites en Bloom !</target>
         <note>ID: ForumInvitationDialog.ShowOff</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.HowToJoin">
+      <trans-unit id="ForumInvitationDialog.HowToJoin" approved="yes">
         <source xml:lang="en">How to Join</source>
-        <target xml:lang="fr" state="translated">Comment rejoindre</target>
+        <target xml:lang="fr" state="final">Comment Rejoindre</target>
         <note>ID: ForumInvitationDialog.HowToJoin</note>
       </trans-unit>
       <trans-unit id="HelpMenu.AskAQuestionMenuItem" approved="yes">
@@ -3459,14 +3459,14 @@
         <target xml:lang="fr" state="final"> En cours de conversion en mp3</target>
         <note>ID: LameEncoder.Progress</note>
       </trans-unit>
-      <trans-unit id="LanguageFontDetails.RightToLeftCheck">
+      <trans-unit id="LanguageFontDetails.RightToLeftCheck" approved="yes">
         <source xml:lang="en">This script is written right to left like Arabic, Hebrew, and Urdu</source>
-        <target xml:lang="fr" state="translated">Écriture de droite à gauche</target>
+        <target xml:lang="fr" state="final">Ce script s'écrit de droite à gauche comme l'arabe, l'hébreu et l'ourdou</target>
         <note>ID: LanguageFontDetails.RightToLeftCheck</note>
       </trans-unit>
-      <trans-unit id="LanguageFontDetails.TallerLinesCheck">
+      <trans-unit id="LanguageFontDetails.TallerLinesCheck" approved="yes">
         <source xml:lang="en">Use special line spacing</source>
-        <target xml:lang="fr" state="translated">Cette écriture a besoin d’un espace interligne plus large</target>
+        <target xml:lang="fr" state="final">Il faut un espace interligne spécial</target>
         <note>ID: LanguageFontDetails.TallerLinesCheck</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true" approved="yes">
@@ -3949,19 +3949,19 @@
         <target xml:lang="fr" state="final">Accessible aux Malvoyants en %0</target>
         <note>ID: PublishTab.AccessibleVisually</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink">
+      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink" approved="yes">
         <source xml:lang="en">Making BloomPUB Apps with Reading App Builder</source>
-        <target xml:lang="fr" state="translated">Créer des applications BloomPUB avec Reading App Builder</target>
+        <target xml:lang="fr" state="final">Créer des applications BloomPUB avec Reading App Builder</target>
         <note>ID: PublishTab.Android.BloomPUB.MakeRABAppHelpLink</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink">
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink" approved="yes">
         <source xml:lang="en">Viewing BloomPUBs on Bloom Reader (Android)</source>
-        <target xml:lang="fr" state="translated">Affichage de BloomPUBs sur Bloom Reader (Android)</target>
+        <target xml:lang="fr" state="final">Affichage de BloomPUBs sur Bloom Reader (Android)</target>
         <note>ID: PublishTab.Android.BloomPUB.ViewingWithBRHelpLink</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink">
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink" approved="yes">
         <source xml:lang="en">Viewing BloomPUBs on Windows</source>
-        <target xml:lang="fr" state="translated">Affichage de BloomPUBs sur Windows</target>
+        <target xml:lang="fr" state="final">Affichage de BloomPUBs sur Windows</target>
         <note>ID: PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true" approved="yes">
