@@ -4274,9 +4274,9 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">Ula'nik</target>
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="quc" state="final">Le k'ak' wokob'al rech we no'jwuj are "{0}". Pacha' Bloom Reader kuk'utuna are taq katajin kokisaxik "{1}" te'qne' ri woktzij man kuq'ii chi upam. Rech rilik we jun such rajawaxik usuk'umaxik, chatzelij pa ri k'utjeqab'al rech kolomaxik xuquje' k'exa' ri wokob'al pa "{1}".</target>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="quc" state="translated">Le k'ak' wokob'al rech we no'jwuj are "{0}". Pacha' Bloom Reader kuk'utuna are taq katajin kokisaxik "{1}" te'qne' ri woktzij man kuq'ii chi upam. Rech rilik we jun such rajawaxik usuk'umaxik, chatzelij pa ri k'utjeqab'al rech kolomaxik xuquje' k'exa' ri wokob'al pa "{1}".</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
