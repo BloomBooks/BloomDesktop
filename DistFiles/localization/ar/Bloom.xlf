@@ -865,11 +865,6 @@
         <target xml:lang="ar" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="ar" state="final">نظراً لأن هذه مجموعة مرجعية، لن يقدم Bloom أي هياكل أولية حالية كموارد لهياكل أولية جديدة. إذا كنت تريد إضافة لغة إلى هيكل أولي، فستحتاج إلى تحرير المجموعة التي تحتوي على الهيكل الأولي، بدلاً من إعداد نسخة منها. كذلك، لا يمكن استخدام تقويم الحائط لإعداد هيكل أولي جديد في الوقت الحالي.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="ar" state="needs-translation">Show translations which have not been approved yet</target>
@@ -3768,36 +3763,6 @@
         <source xml:lang="en">Font and Script</source>
         <target xml:lang="ar" state="final">الخط والنص</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="ar" state="final">اختر نوع المجموعة</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="ar" state="final">إذا كان أساسا لديك مجموعة تريد فتحها، فانقر على الزر "إلغاء".</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="ar" state="final">المجموعة المرجعية</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="ar" state="final">مجموعة من كتب الهيكل أو نماذج الكتب بلغة واحدة أو أكثر في اتصال أوسع.سيكون بإمكانك تحميل هذه الهياكل إلى BloomLibrary.org.يمكنك أيضًا إعداد حزمة Bloom و تقديمها للآخرين حتى يكون بإمكانهم استخدام هذا الهيكل لإعداد كتب باللهجات العامية.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="ar" state="final">مجموعة باللغة العامية/المحلية</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="ar" state="final">مجموعة من الكتب بلغة محلية.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
