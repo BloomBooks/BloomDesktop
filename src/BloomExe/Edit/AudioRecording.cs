@@ -19,6 +19,7 @@ using SIL.Media.Naudio;
 using SIL.Reporting;
 using Timer = System.Windows.Forms.Timer;
 using System.Collections.Generic;
+using SIL.Code;
 
 // Note: it is for the benefit of this component that Bloom references NAudio. We don't use it directly,
 // but Palaso.Media does, and we need to make sure it gets copied to our output.
@@ -372,6 +373,12 @@ namespace Bloom.Edit
 			SetRecordingDevice(currentMic);
 		}
 
+		static HashSet<Type> retryMp3Exceptions = new HashSet<Type>
+		{
+			Type.GetType("System.IO.IOException"),
+			Type.GetType("System.ApplicationException")
+		};
+
 		private void Recorder_Stopped(IAudioRecorder arg1, ErrorEventArgs arg2)
 		{
 			Recorder.Stopped -= Recorder_Stopped;
@@ -391,7 +398,9 @@ namespace Bloom.Edit
 			//We could put this off entirely until we make the ePUB.
 			//I'm just gating this for now because maybe the thought was that it's better to do it a little at a time?
 			//That's fine so long as it doesn't make the UI unresponsive on slow machines.
-			var mp3Path = _mp3Encoder.Encode(PathToRecordableAudioForCurrentSegment);
+			string mp3Path = "";
+			RetryUtility.Retry(() => { mp3Path = _mp3Encoder.Encode(PathToRecordableAudioForCurrentSegment); },
+				10, 200, retryMp3Exceptions, memo: "Encode mp3");
 			// Got a good new recording, can safely clean up all backups related to old one.
 			foreach (var path in Directory.EnumerateFiles(
 				Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment),
