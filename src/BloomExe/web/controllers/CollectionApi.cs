@@ -443,7 +443,7 @@ namespace Bloom.web.controllers
 				collection = _collectionModel.CurrentEditableCollection;
 			}
 			else{
-				collection = _collectionModel.GetBookCollections().FirstOrDefault(c => c.PathToDirectory == id);
+				collection = _collectionModel.GetBookCollections().ToList().FirstOrDefault(c => c.PathToDirectory == id);
 			}
 			if (collection == null)
 			{
