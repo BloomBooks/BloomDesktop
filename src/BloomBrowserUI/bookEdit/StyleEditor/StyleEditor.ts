@@ -973,7 +973,7 @@ export default class StyleEditor {
     fmtButtonHeight = this.fmtButtonWidth;
 
     public AdjustFormatButton(element: Element): void {
-        var scale = EditableDivUtils.getPageScale();
+        const scale = EditableDivUtils.getPageScale();
         const eltBounds = element.getBoundingClientRect();
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const parentBounds = element.parentElement!.getBoundingClientRect();
@@ -1006,7 +1006,7 @@ export default class StyleEditor {
                 const editable = editables.find(
                     x => (x as HTMLElement).offsetHeight > 0 // need to find a visible one for a meaningful offsetLeft
                 );
-                leftPx = (editable as HTMLElement).offsetLeft;
+                if (editable) leftPx = (editable as HTMLElement).offsetLeft;
             } else {
                 // probably arithmetic template page, which has a numberRow instead of a TG.
                 //I think this is a better algorithm anyway, but play safe and avoid dangerous change near end of 5.5
