@@ -144,6 +144,8 @@ namespace Bloom.WebLibraryIntegration
 
 		public int GetBookCount(string query = null)
 		{
+			if (!UrlLookup.CheckGeneralInternetAvailability(false))
+				return -1;
 			var request = MakeGetRequest("classes/books");
 			request.AddParameter("count", "1");
 			request.AddParameter("limit", "0");
@@ -207,6 +209,8 @@ namespace Bloom.WebLibraryIntegration
 
 		public dynamic GetBookRecords(string id, bool includeLanguageInfo, bool includeBooksFromOtherUploaders = false)
 		{
+			if (!UrlLookup.CheckGeneralInternetAvailability(false))
+				return null;
 			var query = "{\"bookInstanceId\":\"" + id + "\"";
 			if (!includeBooksFromOtherUploaders)
 			{
@@ -464,6 +468,8 @@ namespace Bloom.WebLibraryIntegration
 		{
 			System.Diagnostics.Debug.WriteLine($"DEBUG BloomParseClient.GetLibraryStatusForBooks(): {bookInfos.Count} books");
 			var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
+			if (!UrlLookup.CheckGeneralInternetAvailability(false))
+				return bloomLibraryStatusesById;
 			var queryBldr = new StringBuilder();
 			queryBldr.Append("{\"bookInstanceId\":{\"$in\":[\"");
 			var bookIds = new List<string>();
