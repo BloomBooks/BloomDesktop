@@ -1692,7 +1692,7 @@ namespace Bloom.Book
 			try
 			{
 				var newContent = cssBuilder.ToString();
-				if (newContent.Trim() != existingContent.Trim())
+				if (newContent.Trim() != existingContent?.Trim())
 					RobustFile.WriteAllText(path, newContent);
 			}
 			catch (UnauthorizedAccessException e)
