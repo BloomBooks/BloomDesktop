@@ -988,6 +988,11 @@ namespace Bloom.TeamCollection
 				return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.NoNetwork",
 					"No network is available on this computer.");
 			}
+			if (!UrlLookup.CheckGeneralInternetAvailability(true))
+			{
+				return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.NoInternet",
+					"Bloom cannot reach the Internet. Please check your Internet connection.");
+			}
 
 			var isOnLocalNetwork = IsFolderOnLocalNetwork(_repoFolderPath);
 			if (DropboxUtils.IsPathInDropboxFolder(_repoFolderPath))
