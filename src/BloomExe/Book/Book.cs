@@ -1645,6 +1645,7 @@ namespace Bloom.Book
 
 			var collectionStylesCss = CollectionSettings.GetCollectionStylesCss(false);
 			var cssBuilder = new StringBuilder(collectionStylesCss);
+			string existingContent = null;
 			if (doesAlreadyExist)
 			{
 				// We want to use the current CSS from our collection, which we already added to the
@@ -1661,6 +1662,7 @@ namespace Bloom.Book
 					languagesWeAlreadyHave.Add(CollectionSettings.Language3Tag);
 
 				var cssLines = RobustFile.ReadAllLines(path);
+				existingContent = string.Join(Environment.NewLine, cssLines);
 				const string kLangTag = "[lang='";
 				var copyCurrentRule = false;
 				for (var index = 0 ; index < cssLines.Length; ++index)
@@ -1689,7 +1691,9 @@ namespace Bloom.Book
 			}
 			try
 			{
-				RobustFile.WriteAllText(path, cssBuilder.ToString());
+				var newContent = cssBuilder.ToString();
+				if (newContent.Trim() != existingContent?.Trim())
+					RobustFile.WriteAllText(path, newContent);
 			}
 			catch (UnauthorizedAccessException e)
 			{
