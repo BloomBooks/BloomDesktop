@@ -242,7 +242,7 @@ namespace Bloom.Api
 			{
 				pathToInMemoryHtmlFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
 			}
-			if (RobustFile.Exists(pathToInMemoryHtmlFile))
+			if (RobustFileExistsWithCaseCheck(pathToInMemoryHtmlFile))
 			{
 				// Just in case someone perversely calls a book "currentPage" we will use another name.
 				// (We want one that does NOT conflict with anything really in the folder.)
@@ -411,7 +411,7 @@ namespace Bloom.Api
 					// read in current defaultLangStyles.css content, add @font-face info to it if necessary.
 					var cssLangStyles = "";
 					var cssFilePath = Path.Combine(CurrentBook.FolderPath, "defaultLangStyles.css");
-					if (RobustFile.Exists(cssFilePath))
+					if (RobustFileExistsWithCaseCheck(cssFilePath))
 						cssLangStyles = RobustFile.ReadAllText(cssFilePath);
 					var serve = FontServe.GetInstance();
 					var fontFaceDeclarations = serve.GetAllFontFaceDeclarations();
@@ -560,7 +560,7 @@ namespace Bloom.Api
 				processImage = false;
 				imageFile = imageFile.Substring((OriginalImageMarker + "/").Length);
 
-				if (!RobustFile.Exists(imageFile))
+				if (!RobustFileExistsWithCaseCheck(imageFile))
 				{
 					// We didn't find the file here, and don't want to use the following else if or we could errantly
 					// find it in the browser root. For example, this outer if (imageFile.StartsWith...) was added because
@@ -568,7 +568,7 @@ namespace Bloom.Api
 					return false;
 				}
 			}
-			else if (!RobustFile.Exists(imageFile))
+			else if (!RobustFileExistsWithCaseCheck(imageFile))
 			{
 				// Generally, the path we started with will only work when the HTML file is the root file of a book,
 				// or another file (other than preview) that is simulated to be in the book folder,
@@ -590,7 +590,7 @@ namespace Bloom.Api
 
 				imageFile = Path.Combine(sourceDir, imageFile);
 
-				if (!RobustFile.Exists(imageFile))
+				if (!RobustFileExistsWithCaseCheck(imageFile))
 				{
 					// There are a few special cases where it's not desirable to change the source of the image
 					// in our source code.
@@ -614,7 +614,7 @@ namespace Bloom.Api
 						imageFile = Path.Combine(bloomRoot, "images/widget-placeholder.svg");
 					}
 
-					if (!RobustFile.Exists(imageFile))
+					if (!RobustFileExistsWithCaseCheck(imageFile))
 					{
 						if (sourceDir != CurrentBook?.FolderPath)
 						{
@@ -753,7 +753,7 @@ namespace Bloom.Api
 			string OriginalImageMarkerWithSuffix = OriginalImageMarker + "/";
 			if (localPath.StartsWith(OriginalImageMarkerWithSuffix))
 				possibleFullImagePath = localPath.Substring(OriginalImageMarkerWithSuffix.Length);
-			if (RobustFile.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
+			if (RobustFileExistsWithCaseCheck(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 			{
 				return possibleFullImagePath;
 			}
@@ -772,7 +772,7 @@ namespace Bloom.Api
 			string path = null;
 			var urlPath = UrlPathString.CreateFromUrlEncodedString(modPath);
 			var tempPath = urlPath.PathOnly.NotEncoded;
-			if (RobustFile.Exists(tempPath))
+			if (RobustFileExistsWithCaseCheck(tempPath))
 				modPath = tempPath;
 			try
 			{
@@ -797,7 +797,7 @@ namespace Bloom.Api
 			// but at the moment FF, looking for source maps to go with css, is
 			// looking for those maps where we said the css was, which is in the actual
 			// book folders. So instead redirect to our browser file folder.
-			if (String.IsNullOrEmpty(path) || !RobustFile.Exists(path))
+			if (String.IsNullOrEmpty(path) || !RobustFileExistsWithCaseCheck(path))
 			{
 				var startOfBookLayout = localPath.IndexOf("bookLayout");
 				if (startOfBookLayout > 0)
@@ -807,7 +807,7 @@ namespace Bloom.Api
 					path = BloomFileLocator.GetBrowserFile(false, localPath.Substring(startOfBookEdit));
 			}
 
-			if (!RobustFile.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
+			if (!RobustFileExistsWithCaseCheck(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
 			{
 				// if we're in the page chooser dialog and looking for a thumbnail representing an image in a
 				// template page, look for that thumbnail in the book that is the template source,
@@ -817,7 +817,7 @@ namespace Bloom.Api
 				{
 					var pathMinusPrefix = localPath.Substring("pageChooser/".Length);
 					var templatePath = Path.Combine(templateBook.FolderPath, pathMinusPrefix);
-					if (RobustFile.Exists(templatePath))
+					if (RobustFileExistsWithCaseCheck(templatePath))
 					{
 						info.ReplyWithImage(templatePath);
 						return true;
@@ -855,30 +855,30 @@ namespace Bloom.Api
 				path = HttpUtility.UrlDecode(localPath);
 			}
 			*/
-			if (!RobustFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath) && _bookSelection?.CurrentSelection != null)
+			if (!RobustFileExistsWithCaseCheck(path) && IsImageTypeThatCanBeReturned(localPath) && _bookSelection?.CurrentSelection != null)
 			{
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
 				// the old path. For example, I can't figure out what hangs on to the old path when an image is changed after
 				// altering the main book title.
 				var currentFolderPath = Path.Combine(_bookSelection.CurrentSelection.FolderPath, Path.GetFileName(localPath));
-				if (RobustFile.Exists(currentFolderPath))
+				if (RobustFileExistsWithCaseCheck(currentFolderPath))
 				{
 					info.ReplyWithImage(currentFolderPath);
 					return true;
 				}
 			}
 
-			if (!RobustFile.Exists(path) && IsAudioFileWhichCanHaveCompressedCounterpart(path))
+			if (!RobustFileExistsWithCaseCheck(path) && IsAudioFileWhichCanHaveCompressedCounterpart(path))
 			{
 				var possiblePublishableAudioPath = Path.ChangeExtension(path, AudioRecording.kPublishableExtension);
-				if (RobustFile.Exists(possiblePublishableAudioPath))
+				if (RobustFileExistsWithCaseCheck(possiblePublishableAudioPath))
 				{
 					path = possiblePublishableAudioPath;
 					modPath = Path.ChangeExtension(modPath, AudioRecording.kPublishableExtension);
 				}
 			}
 			const string kBloomPrefix = "/bloom/";
-			if (!RobustFile.Exists(path) && path.Length > kBloomPrefix.Length && path.StartsWith(kBloomPrefix))
+			if (!RobustFileExistsWithCaseCheck(path) && path.Length > kBloomPrefix.Length && path.StartsWith(kBloomPrefix))
 			{
 				// On developer machines, we can lose part of path earlier.  Try one more thing, the
 				// local path starts with this prefix.
@@ -886,11 +886,11 @@ namespace Bloom.Api
 			}
 			// We no longer copy this file to the book folder.  For Bloom Desktop, we get it from browser/templates/...
 			// For Bloom Reader, bloom-player has its own copy.
-			if (!RobustFile.Exists(path) && Path.GetFileName(path) == PublishHelper.kSimpleComprehensionQuizJs)
+			if (!RobustFileExistsWithCaseCheck(path) && Path.GetFileName(path) == PublishHelper.kSimpleComprehensionQuizJs)
 			{
 				path = Path.Combine(BloomFileLocator.FactoryTemplateBookDirectory, "Activity", PublishHelper.kSimpleComprehensionQuizJs);
 			}
-			if (!RobustFile.Exists(path))
+			if (!RobustFileExistsWithCaseCheck(path))
 			{
 				if (ShouldReportFailedRequest(info, CurrentBook?.FolderPath))
 				{
@@ -970,7 +970,7 @@ namespace Bloom.Api
 			// but it has nothing to do with css files and defeats the following 'if'
 			var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");
 			// is this request the full path to a real file?
-			if (RobustFile.Exists(localPath) && Path.IsPathRooted(localPath))
+			if (RobustFileExistsWithCaseCheck(localPath) && Path.IsPathRooted(localPath))
 			{
 				// Typically this will be files in the book directory, since the browser
 				// is supplying the path.
@@ -1002,7 +1002,7 @@ namespace Bloom.Api
 			// book folder; searching our usual path might find an undesirable one in some other collection.
 			string path = "";
 			var localWins = new string[] { "custombookstyles", "branding.css" };
-			if (RobustFile.Exists(localPath) &&
+			if (RobustFileExistsWithCaseCheck(localPath) &&
 				localWins.Any(s => fileName.ToLowerInvariant().Contains(s)))
 			{
 				path = localPath;
@@ -1012,7 +1012,7 @@ namespace Bloom.Api
 				path = _fileLocator.LocateFile(fileName);
 			}
 			// if still not found, and localPath is an actual file path, use it
-			if (String.IsNullOrEmpty(path) && RobustFile.Exists(localPath))
+			if (String.IsNullOrEmpty(path) && RobustFileExistsWithCaseCheck(localPath))
 			{
 				path = localPath;
 			}
@@ -1021,12 +1021,12 @@ namespace Bloom.Api
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
 				var p = FileLocationUtilities.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
-				if(RobustFile.Exists(p)) path = p;
+				if(RobustFileExistsWithCaseCheck(p)) path = p;
 			}
 			if (String.IsNullOrEmpty(path))
 			{
 				var p = FileLocationUtilities.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, incomingPath);
-				if (RobustFile.Exists(p))
+				if (RobustFileExistsWithCaseCheck(p))
 					path = p;
 			}
 
@@ -1539,7 +1539,7 @@ namespace Bloom.Api
 			{
 				localPath = localPath.Substring(1);
 			}
-			if (localPath.Contains("?") && !RobustFile.Exists(localPath))
+			if (localPath.Contains("?") && !RobustFileExistsWithCaseCheck(localPath))
 			{
 				var idx = localPath.LastIndexOf("?", StringComparison.Ordinal);
 				return localPath.Substring(0, idx);
@@ -1590,7 +1590,6 @@ namespace Bloom.Api
 
 			return localPath.Substring(firstDirSeparatorIndex + 1);
 		}
-
 
 		public static string GetContentType(string extension)
 		{
@@ -1656,7 +1655,6 @@ namespace Bloom.Api
 
 		private bool IsWorkerThread(Thread thread) => thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
 
-
 		private string GetHtmlForRootOfBloomUI()
 		{
 			return $@"<!DOCTYPE html>
@@ -1677,6 +1675,48 @@ namespace Bloom.Api
 				</body>
 				</html>";
 		}
+
+		/// <summary>
+		/// Does both a RobustFile.Exists() test and compares the actual filepath on disk with 'localPath'.
+		/// If the case check fails, a message is logged.
+		/// </summary>
+		/// <remarks>Internal for testing.</remarks>
+		internal static bool RobustFileExistsWithCaseCheck(string localPath)
+		{
+			var result = RobustFile.Exists(localPath);
+			if (!result)
+				return false;
+
+			// AppData is for Windows and /tmp/ is for Linux (when we use it again)
+			if (localPath.EndsWith(".htm") && (localPath.Contains("AppData") || localPath.Contains("/tmp/")))
+				return true; // probably the Temp folder and most likely a random temporary filename).
+
+			// Check the case of the actual filename of the file on disk.
+			// Modified from https://stackoverflow.com/questions/16183788/case-sensitive-directory-exists-file-exists
+			var fullPath = Path.GetFullPath(localPath);
+
+			string directoryPath = Path.GetDirectoryName(fullPath);
+			if (!Array.Exists(Directory.GetFiles(directoryPath), s => CompareCaseOfTwoPaths(s, localPath)))
+			{
+				Logger.WriteEvent($"*** Case error occurred. {localPath} exists, but the casing is different. ***");
+			}
+
+			return true;
+		}
+
+		private static string RemoveAllDirectorySeparators(string path)
+		{
+			return path.Replace(Path.DirectorySeparatorChar.ToString(), string.Empty)
+				.Replace(Path.AltDirectorySeparatorChar.ToString(), string.Empty);
+		}
+
+		private static bool CompareCaseOfTwoPaths(string path1, string path2)
+		{
+			var stripped1 = RemoveAllDirectorySeparators(path1);
+			var stripped2 = RemoveAllDirectorySeparators(path2);
+			return String.Equals(stripped1, stripped2, StringComparison.InvariantCulture);
+		}
+
 		#region Disposable stuff
 
 		private bool IsDisposed { get; set; }

@@ -783,5 +783,28 @@ namespace BloomTests.web
 
 			Assert.That(result, Is.EqualTo("activities/Title/resources/image.png"));
 		}
+
+		[Test]
+		[TestCase("customcollectionstyles.css", true, true)]
+		[TestCase("customCollectionStyles.css", true, false)]
+		[TestCase("xxyyzz.css", false, false)]
+		public void RobustFileExistsWithCaseCheck_Works(string requestedFile, bool fileExists, bool caseErrorLogged)
+		{
+			SetupCssTests();
+			var requestedFilePath = Path.Combine(_collectionPath, requestedFile);
+
+			// SUT
+			var result = BloomServer.RobustFileExistsWithCaseCheck(requestedFilePath);
+
+			// Verification
+			var latestLog = Logger.LogText;
+
+			Assert.That(result, Is.EqualTo(fileExists),
+				fileExists ? "RobustFile.Exists() call failed." :
+				"RobustFile.Exists() incorrectly passes");
+			Assert.That(latestLog.Contains($"*** Case error occurred. {requestedFilePath} exists, but the casing is different. ***"),
+				Is.EqualTo(caseErrorLogged),
+				caseErrorLogged ? "No case error logged." : "Case error logged in error!");
+		}
 	}
 }
