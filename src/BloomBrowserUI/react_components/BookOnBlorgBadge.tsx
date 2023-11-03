@@ -100,8 +100,7 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                                         </LocalizedString>
                                     ) : badge === BadgeType.Harvesting ? (
                                         <LocalizedString l10nKey="CollectionTab.OnBlorgBadge.Harvesting">
-                                            BloomLibrary.org is processing this
-                                            book
+                                            In Progress
                                         </LocalizedString>
                                     ) : (
                                         <LocalizedString l10nKey="CollectionTab.OnBlorgBadge.Problem">
