@@ -320,7 +320,7 @@
       <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true" approved="yes">
         <source xml:lang="en">View on BloomLibrary.org</source>
         <target xml:lang="es-ES" state="final">Ver en Bloom Library</target>
-        <note>CollectionTab.OnBlorgBadge.ViewBookOnBlorg</note>
+        <note>CollectionTab.OnBlorgBadge.ViewOnBlorg</note>
       </trans-unit>
       <trans-unit id="CollectionTab.OnBlorgBadge.Published" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Published</source>
@@ -332,10 +332,10 @@
         <target xml:lang="es-ES" state="final">Marcado como borrador</target>
         <note>CollectionTab.OnBlorgBadge.MarkedAsDraft</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.Processing" sil:dynamic="true">
-        <source xml:lang="en">BloomLibrary.org is processing this book</source>
-        <target xml:lang="es-ES" state="needs-translation">BloomLibrary.org is processing this book</target>
-        <note>CollectionTab.OnBlorgBadge.Processing</note>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Harvesting" sil:dynamic="true">
+        <source xml:lang="en">In Progress</source>
+        <target xml:lang="es-ES" state="needs-translation">In Progress</target>
+        <note>CollectionTab.OnBlorgBadge.Harvesting</note>
       </trans-unit>
       <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Problem</source>
