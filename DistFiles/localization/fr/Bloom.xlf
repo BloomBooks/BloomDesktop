@@ -4633,9 +4633,9 @@
         <target xml:lang="fr" state="final">Fichier PDF</target>
         <note>ID: PublishTab.PdfMaker.PdfFile</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
+      <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2" approved="yes">
         <source xml:lang="en">U.S. Web Coated (SWOP) v2</source>
-        <target xml:lang="fr" state="translated">PDF avec les couleurs CMJN (U.S. Web Coated (SWOP) v2)</target>
+        <target xml:lang="fr" state="final">PDF avec les couleurs CMJN (U.S. Web Coated (SWOP) v2)</target>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Cmyk" approved="yes">
