@@ -368,38 +368,58 @@ namespace Bloom.ImageProcessing
 
 		/// <summary>
 		/// Return the largest image size that either matches the original width and height or
-		/// is bounded by the length of A4 paper and the width of Letter paper, both at 300dpi.
+		/// is bounded by our predetermined maximums based on Ultra HD and paper sizes at 300dpi.
 		/// </summary>
 		internal static Size GetDesiredImageSize(int width, int height)
 		{
-			var aspect = (double) height / (double) width;
+			return GetDesiredImageSize(width, height, MaxBreadth, MaxLength);
+		}
+
+		/// <summary>
+		/// Determine the largest image size that either matches the original width and height or
+		/// fits within the given maximums.  The aspect ratio of the original image is preserved.
+		/// </summary>
+		/// <param name="width">original width (unknown orientation)</param>
+		/// <param name="height">original height (unknown orientation)</param>
+		/// <param name="maxShortSide">smaller maximum dimension (portrait orientation width)</param>
+		/// <param name="maxLongSide">larger maximum dimension (portrait orientation height)</param>
+		/// <returns>maximum size of image that fits within given maximums while keeping the aspect ratio</returns>
+		internal static Size GetDesiredImageSize(int width, int height, int maxShortSide, int maxLongSide)
+		{
+			var aspect = (double)height / (double)width;
 			if (height > width)
 			{
-				// portrait orientation
-				if (height > MaxLength || width > MaxBreadth)
+				// We're going to determine the size based on fitting it on a portrait-oriented page
+				var portraitAspect = (double)maxLongSide / (double)maxShortSide;
+				if (height > maxLongSide || width > maxShortSide)
 				{
-					if (aspect <= MaxImageAspectPortrait)
-						return new Size(MaxBreadth, (int)(aspect * (double)MaxBreadth));
+					if (aspect <= portraitAspect)
+						// closer to square than a standard page, the size is limited by the smaller dimension, the width of a portrait page
+						return new Size(maxShortSide, (int)(aspect * (double)maxShortSide));
 					else
-						return new Size((int)((double)MaxLength / aspect), MaxLength);
+						// Tall, skinny picture's size is limited by the larger dimension, the height of a portrait page
+						return new Size((int)((double)maxLongSide / aspect), maxLongSide);
 				}
 			}
 			else if (width > height)
 			{
-				// landscape orientation
-				if (height > MaxBreadth || width > MaxLength)
+				// We're going to determine the size based on fitting it on a landscape-oriented page
+				var landscapeAspect = (double)maxShortSide / (double)maxLongSide;
+				if (height > maxShortSide || width > maxLongSide)
 				{
-					if (aspect > MaxImageAspectLandscape)
-						return new Size((int)((double)MaxBreadth / aspect), MaxBreadth);
+					if (aspect > landscapeAspect)
+						// Closer to square than the page, the size is limited by the smaller dimension of the page, which is the height in landscape
+						return new Size((int)((double)maxShortSide / aspect), maxShortSide);
 					else
-						return new Size(MaxLength, (int)(aspect * (double)MaxLength));
+						// Low, wide picture, the size is limited by the larger page dimension, which is the width in landscape.
+						return new Size(maxLongSide, (int)(aspect * (double)maxLongSide));
 				}
 			}
 			else
 			{
 				// square picture
-				if (width > MaxBreadth)
-					return new Size(MaxBreadth, MaxBreadth);
+				if (width > maxShortSide)
+					return new Size(maxShortSide, maxShortSide);
 			}
 			return new Size(width, height);
 		}
@@ -645,7 +665,7 @@ namespace Bloom.ImageProcessing
 					if (size.Width != tagFile.Properties.PhotoWidth || size.Height != tagFile.Properties.PhotoHeight)
 					{
 						var makeOpaque = namesOfFilesToFixTransparency.Contains(Path.GetFileName(path));
-						if (ReplaceImageFileWithSmallerOpaqueCopy(path, size, makeOpaque, tagFile, progress))
+						if (ResizeImageFileWithOptionalTransparency(path, size, makeOpaque, false, tagFile, progress))
 						{
 							++completed;
 							continue;
@@ -687,7 +707,7 @@ namespace Bloom.ImageProcessing
 					var size = GetDesiredImageSize(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight);
 					if (size.Width != tagFile.Properties.PhotoWidth || size.Height != tagFile.Properties.PhotoHeight)
 					{
-						ReplaceImageFileWithSmallerOpaqueCopy(path, size, false, tagFile, progress);
+						ResizeImageFileWithOptionalTransparency(path, size, false, false, tagFile, progress);
 					}
 				}
 				++completed;
@@ -696,21 +716,25 @@ namespace Bloom.ImageProcessing
 
 		/// <summary>
 		/// Use GraphicsMagick to replace a PNG (or JPEG) file with one of the given size optionally
-		/// having an opaque background.
+		/// having an opaque or transparent background.
 		/// </summary>
 		/// <returns>true if successful, false if GraphicsMagick doesn't exist or didn't work</returns>
-		private static bool ReplaceImageFileWithSmallerOpaqueCopy(string path, Size size, bool makeOpaque, TagLib.File oldMetaData, IProgress progress)
+		internal static bool ResizeImageFileWithOptionalTransparency(string path, Size size, bool makeOpaque, bool makeTransparent,
+			TagLib.File oldMetaData, IProgress progress = null)
 		{
-			var msgFmt = L10NSharp.LocalizationManager.GetString("ImageUtils.PreparingImage", "Preparing image: {0}", "{0} is a placeholder for the image file name");
-			var msg = string.Format(msgFmt, Path.GetFileName(path));
-			progress.WriteStatus(msg);
+			if (progress != null)
+			{
+				var msgFmt = L10NSharp.LocalizationManager.GetString("ImageUtils.PreparingImage", "Preparing image: {0}", "{0} is a placeholder for the image file name");
+				var msg = string.Format(msgFmt, Path.GetFileName(path));
+				progress.WriteStatus(msg);
+			}
 			var exeGraphicsMagick = GetGraphicsMagickPath();
 			if (!RobustFile.Exists(exeGraphicsMagick))
 				return false;
 			var tempCopy = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(path));
 			try
 			{
-				var result = RunGraphicsMagick(exeGraphicsMagick, path, tempCopy, size, makeOpaque);
+				var result = RunGraphicsMagick(exeGraphicsMagick, path, tempCopy, size, makeOpaque, makeTransparent);
 				if (result.ExitCode == 0)
 				{
 					RobustFile.Copy(tempCopy, path, true);
@@ -718,7 +742,8 @@ namespace Bloom.ImageProcessing
 					var newMeta = RobustFileIO.CreateTaglibFile(path);
 					CopyTags(oldMetaData, newMeta);
 					newMeta.Save();
-					Application.DoEvents();	// allow progress report to work
+					if (progress != null)
+						Application.DoEvents();	// allow progress report to work
 					return true;
 				}
 				else
@@ -875,7 +900,7 @@ namespace Bloom.ImageProcessing
 				var destPath = TempFileUtils.GetTempFilepathWithExtension(isJpegImage ? ".jpg" : ".png");
 				try
 				{
-					var result = RunGraphicsMagick(graphicsMagickPath, sourcePath, destPath, size, makeOpaque);
+					var result = RunGraphicsMagick(graphicsMagickPath, sourcePath, destPath, size, makeOpaque, false);
 					if (result.ExitCode == 0)
 					{
 						if(new FileInfo(destPath).Length > new FileInfo(sourcePath).Length){
@@ -969,8 +994,9 @@ namespace Bloom.ImageProcessing
 		}
 
 		private static ExecutionResult RunGraphicsMagick(string graphicsMagickPath, string sourcePath, string destPath, Size size,
-			bool makeOpaque)
+			bool makeOpaque, bool makeTransparent)
 		{
+			Debug.Assert(!(makeOpaque && makeTransparent), "makeOpaque and makeTransparent cannot both be true.");
 			// We have no idea what the input (and output) file names are, and whether they can be safely represented
 			// in the user's codepage.  We also have no idea what the user's codepage is.  This has a major impact
 			// on whether the spawned GraphicsMagick process will succeed in reading/writing the files.  We can
@@ -990,6 +1016,8 @@ namespace Bloom.ImageProcessing
 				argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
 				if (makeOpaque)
 					argsBldr.Append(" -background white -extent 0x0 +matte");
+				else if (makeTransparent)
+					argsBldr.Append(" -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\"");
 				// GraphicsMagick quality numbers: http://www.graphicsmagick.org/GraphicsMagick.html#details-quality
 				// For PNG files, "quality" really means "compression".  75 is the default value used in GraphicsMagick
 				// for .png files, and tests out as having a good balance between speed and resulting file size.
@@ -997,8 +1025,9 @@ namespace Bloom.ImageProcessing
 				if (destPath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
 					argsBldr.Append(" -quality 75");	// no lossage in output, use adaptive filter in changing image dimensions
 				else if (destPath.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase))
-					argsBldr.Append(" -quality 99");	// still lossy, but not near as bad as the default (bigger file, however)
-				argsBldr.AppendFormat(" -scale {0}x{1} \"{2}\"", size.Width, size.Height, safeDestPath);
+					argsBldr.Append($" -define jpeg:preserve-settings");	// preserve input quality and sampling factor
+				// -resize would do a better job than -scale, but it can be much (~10x) slower on large images.
+				argsBldr.AppendFormat(" -density 96 -scale {0}x{1} \"{2}\"", size.Width, size.Height, safeDestPath);
 				var arguments = argsBldr.ToString();
 
 				var result = CommandLineRunnerExtra.RunWithInvariantCulture(graphicsMagickPath, arguments, "", 600, new NullProgress());
@@ -1084,7 +1113,7 @@ namespace Bloom.ImageProcessing
 					var path = image.GetCurrentFilePath();
 					if (path == null || !RobustFile.Exists(path))
 						path = CreateSourceFileForImage(image, false);	// already know it's not jpeg
-					var result = RunGraphicsMagick(graphicsMagickPath, path, jpegFilePath, new Size(image.Image.Width, image.Image.Height), false);
+					var result = RunGraphicsMagick(graphicsMagickPath, path, jpegFilePath, new Size(image.Image.Width, image.Image.Height), false, false);
 					if (result.ExitCode == 0)
 					{
 						var pngInfo = new FileInfo(path);

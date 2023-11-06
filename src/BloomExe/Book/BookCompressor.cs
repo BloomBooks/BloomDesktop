@@ -302,6 +302,27 @@ namespace Bloom.Book
 			return text;
 		}
 
+		internal static void CopyResizedImageFile(string srcPath, string dstPath, ImagePublishSettings imagePublishSettings, bool needTransparentBackground)
+		{
+			using (var tagFile = RobustFileIO.CreateTaglibFile(srcPath))
+			{
+				// ImagePublishSettings.MaxWidth and MaxHeight are in landscape orientation (width > height), but
+				// ImageUtils.GetDesiredImageSize() expects portrait orientation (height > width) for the maximums.
+				var newSize = ImageUtils.GetDesiredImageSize(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight,
+					(int)imagePublishSettings.MaxHeight, (int)imagePublishSettings.MaxWidth);
+				if (srcPath != dstPath)
+					RobustFile.Copy(srcPath, dstPath);
+				if (ImageUtils.ResizeImageFileWithOptionalTransparency(dstPath, newSize, false, needTransparentBackground, tagFile))
+					return;
+			}
+			// Use the standard C# image handling to shrink the image and possibly make it transparent.
+			// This produces files with fixed quality of 75, which is not ideal, but it's better than nothing.
+			var modifiedContent = BookCompressor.GetImageBytesForElectronicPub(srcPath,
+				needTransparentBackground,
+				imagePublishSettings);
+			RobustFile.WriteAllBytes(dstPath, modifiedContent);
+		}
+
 		/// <summary>
 		/// For electronic books, we want to limit the dimensions of images since they'll be displayed
 		/// on small screens.  More importantly, we want to limit the size of the image file since it
