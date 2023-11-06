@@ -3,6 +3,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using BloomTemp;
 using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
@@ -585,12 +586,6 @@ namespace Bloom.web.controllers
 			// but really rely-ing on the TTS override to specify the real lang, so this value doesn't really matter.
 			string aeneasLang = "eo";
 
-			// Note: The version of FFMPEG in output/Debug or output/Release is probably not compatible with the version required by Aeneas.
-			// Therefore change the working path to the book's audio folder.  This has the benefit of allowing us to sidestep python's
-			// inability to cope with non-ascii characters in file pathnames passed in on the command line by using bare filenames in the
-			// command.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6927.
-			string workingDirectory = Path.GetDirectoryName(inputAudioFilename);
-
 			// I think this sets the boundary to the midpoint between the end of the previous sentence and the start of the next one.
 			// This is good because by default, it would align it such that the subsequent audio started as close as possible to the beginning of it. Since there is a subtle pause when switching between two audio files, this left very little margin for error.
 			string boundaryAdjustmentParams = "|task_adjust_boundary_algorithm=percent|task_adjust_boundary_percent_value=50";
@@ -599,54 +594,69 @@ namespace Bloom.web.controllers
 			// This would prevent it from being included in the first sentence's audio. (FYI, the hidden format will suppress it from the output timings file).
 			// Specify 0 to turn this off.
 			string audioHeadParams = $"|os_task_file_head_tail_format=hidden|is_audio_file_detect_head_min=0.00|is_audio_file_detect_head_max={maxAudioHeadDurationSec.ToString(CultureInfo.InvariantCulture)}";
-			var audioFile = Path.GetFileName(inputAudioFilename);
-			var fragmentsFile = Path.GetFileName(inputTextFragmentsFilename);
-			var outputFile = Path.GetFileName(outputTimingsPath);
-
-			// Have Aeneas output in its "txt" format, which is [f0001 start stop "label contents"] per line.
-			// Later we will strip off the first field so that we have an Audacity-compatible label file ([start stop "label contents"]) that a user can edit
 			var kTimingsOutputFormat = "txt";
-			string commandString = $"python -m aeneas.tools.execute_task \"{audioFile}\" \"{fragmentsFile}\" \"task_language={aeneasLang}|is_text_type=plain|os_task_file_format={kTimingsOutputFormat}{audioHeadParams}{boundaryAdjustmentParams}\" \"{outputFile}\" --runtime-configuration=\"tts_voice_code={ttsEngineLang}\"";
-			string command;
-			string arguments;
-			if (Platform.IsLinux)
+			using (var tempFolder = new TemporaryFolder("Bloom-aeneas"))
 			{
-				command = _pythonFound;
-				arguments = commandString.Substring(7);
-			}
-			else
-			{
-				command = "CMD.EXE";
-				arguments = $"/C {commandString}";
-			}
+				// Note: The version of FFMPEG in output/Debug or output/Release is probably not compatible with the version required by Aeneas.
+				// Therefore change the working path to a temporary folder in %TEMP%.  This has the benefit of allowing us to sidestep python's
+				// inability to cope with non-ascii characters in file pathnames passed in on the command line by using bare filenames in the
+				// command.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6927.  Working in the %TEMP% folder also has the benefit of
+				// avoiding virus checker interference.  See https://issues.bloomlibrary.org/youtrack/issue/BL-12801.
+				var workingDirectory = tempFolder.FolderPath;
+				var audioFile = Path.GetFileName(inputAudioFilename);
+				RobustFile.Copy(inputAudioFilename, Path.Combine(workingDirectory, audioFile), true);
+				var fragmentsFile = Path.GetFileName(inputTextFragmentsFilename);
+				RobustFile.Copy(inputTextFragmentsFilename, Path.Combine(workingDirectory, fragmentsFile), true);
+				var outputFile = Path.GetFileName(outputTimingsPath);
 
-			var setPythonEncoding = SetPythonEncodingIfNeeded();
-			Logger.WriteMinorEvent("AudioSegmentationApi.GetSplitStartEndTimings(): Command started, preparing to wait...");
-			var result = CommandLineRunnerExtra.RunWithInvariantCulture(command, arguments, workingDirectory, 3600, new NullProgress());
-			if (setPythonEncoding)
-				Environment.SetEnvironmentVariable(PythonIoEncodingKey, null);
+				// Have Aeneas output in its "txt" format, which is [f0001 start stop "label contents"] per line.
+				// Later we will strip off the first field so that we have an Audacity-compatible label file ([start stop "label contents"]) that a user can edit
+				string commandString = $"python -m aeneas.tools.execute_task \"{audioFile}\" \"{fragmentsFile}\" \"task_language={aeneasLang}|is_text_type=plain|os_task_file_format={kTimingsOutputFormat}{audioHeadParams}{boundaryAdjustmentParams}\" \"{outputFile}\" --runtime-configuration=\"tts_voice_code={ttsEngineLang}\"";
+				string command;
+				string arguments;
+				if (Platform.IsLinux)
+				{
+					command = _pythonFound;
+					arguments = commandString.Substring(7);
+				}
+				else
+				{
+					command = "CMD.EXE";
+					arguments = $"/C {commandString}";
+				}
 
-			// Note: we could also request Aeneas write the standard output/error, or a log (or verbose log... or very verbose log) if desired
-			if (result.ExitCode != 0)
-			{
-				var stdout = result.StandardOutput;
-				var stderr = result.StandardError;
-				var sb = new StringBuilder();
-				sb.AppendLine($"ERROR: python aeneas process to segment the audio file finished with exit code = {result.ExitCode}.");
-				sb.AppendLine($"working directory = {workingDirectory}");
-				sb.AppendLine($"failed command = {commandString}");
-				sb.AppendLine($"process.stdout = {stdout.Trim()}");
-				sb.AppendLine($"process.stderr = {stderr.Trim()}");
-				// Add information found during check for dependencies: it might be the wrong python or ffmpeg...
-				sb.AppendLine("--------");
-				sb.AppendLine($"python found = {_pythonFound}");
-				sb.AppendLine($"espeak found = {_espeakFound}");
-				sb.AppendLine($"ffmpeg found = {_ffmpegFound}");
-				sb.AppendLine($"aeneas information = {_aeneasInfo}");
-				sb.AppendLine("======== end of aeneas error report ========");
-				var msg = sb.ToString();
-				Console.Write(msg);
-				Logger.WriteEvent(msg);
+				var setPythonEncoding = SetPythonEncodingIfNeeded();
+				Logger.WriteMinorEvent("AudioSegmentationApi.GetSplitStartEndTimings(): Command started, preparing to wait...");
+				var result = CommandLineRunnerExtra.RunWithInvariantCulture(command, arguments, workingDirectory, 3600, new NullProgress());
+				if (setPythonEncoding)
+					Environment.SetEnvironmentVariable(PythonIoEncodingKey, null);
+
+				// Note: we could also request Aeneas write the standard output/error, or a log (or verbose log... or very verbose log) if desired
+				if (result.ExitCode != 0)
+				{
+					var stdout = result.StandardOutput;
+					var stderr = result.StandardError;
+					var sb = new StringBuilder();
+					sb.AppendLine($"ERROR: python aeneas process to segment the audio file finished with exit code = {result.ExitCode}.");
+					sb.AppendLine($"working directory = {workingDirectory}");
+					sb.AppendLine($"failed command = {commandString}");
+					sb.AppendLine($"process.stdout = {stdout.Trim()}");
+					sb.AppendLine($"process.stderr = {stderr.Trim()}");
+					// Add information found during check for dependencies: it might be the wrong python or ffmpeg...
+					sb.AppendLine("--------");
+					sb.AppendLine($"python found = {_pythonFound}");
+					sb.AppendLine($"espeak found = {_espeakFound}");
+					sb.AppendLine($"ffmpeg found = {_ffmpegFound}");
+					sb.AppendLine($"aeneas information = {_aeneasInfo}");
+					sb.AppendLine("======== end of aeneas error report ========");
+					var msg = sb.ToString();
+					Console.Write(msg);
+					Logger.WriteEvent(msg);
+				}
+				else
+				{
+					RobustFile.Copy(Path.Combine(workingDirectory, outputFile), outputTimingsPath, true);
+				}
 			}
 
 
