@@ -33,8 +33,8 @@ import { RenderRoot } from "./AudioHilitePage";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
-// Note: CSS text-align also has values "justify", "initial", and "inherit", which we do not support currently.
-type Alignment = "start" | "center" | "end";
+// Note: CSS text-align also has values "initial", and "inherit", which we do not support currently.
+type Alignment = "start" | "center" | "justify" | "end";
 
 interface IFormattingValues {
     ptSize: string;
@@ -960,6 +960,8 @@ export default class StyleEditor {
                 return "center";
             case "end":
                 return "end";
+            case "justify":
+                return "justify";
             case "start":
             case "initial":
             default:
@@ -1472,6 +1474,7 @@ export default class StyleEditor {
             "position-left",
             "position-center",
             "position-right",
+            "position-justify",
             "indent-none",
             "indent-indented",
             "indent-hanging"
@@ -1495,6 +1498,7 @@ export default class StyleEditor {
             (current.alignment === "end" && !isRightToLeft) ||
                 (current.alignment === "start" && isRightToLeft)
         );
+        this.selectButton("position-justify", current.alignment === "justify");
         this.selectButton("indent-" + current.paraIndent, true);
     }
 
@@ -2065,7 +2069,7 @@ export default class StyleEditor {
     }
 
     /**
-     * Sets the alignment, using "start", "center", or "end"
+     * Sets the alignment, using "start", "center", "justify", or "end"
      * Clicking the align left button will cause the text to go to the left,
      * meaning "start" for left-to-right boxes and "end" for right-to-left boxes
      */
@@ -2079,6 +2083,8 @@ export default class StyleEditor {
         let position = "start";
         if (whichButtonClicked === "center") {
             position = "center";
+        } else if (whichButtonClicked === "justify") {
+            position = "justify";
         } else {
             const textBoxDirection = this.boxBeingEdited.getAttribute("dir");
             const isRightToLeft = textBoxDirection === "rtl";
@@ -2094,20 +2100,34 @@ export default class StyleEditor {
         }
 
         const rule = this.getStyleRule(true, undefined);
-        if (rule != null) {
+        if (rule !== null) {
             rule.style.setProperty("text-align", position, "important");
 
             this.cleanupAfterStyleChange();
         }
     }
 
-    private getWhichAlignmentButtonClicked(): "left" | "center" | "right" {
+    private getWhichAlignmentButtonClicked():
+        | "left"
+        | "center"
+        | "right"
+        | "justify" {
         const positionCenterButton = document.getElementById("position-center");
         if (
             positionCenterButton &&
             positionCenterButton.classList.contains("selectedIcon")
         ) {
             return "center";
+        }
+
+        const positionJustifyButton = document.getElementById(
+            "position-justify"
+        );
+        if (
+            positionJustifyButton &&
+            positionJustifyButton.classList.contains("selectedIcon")
+        ) {
+            return "justify";
         }
 
         const positionRightButton = document.getElementById("position-right");
