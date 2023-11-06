@@ -254,7 +254,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                                                 "PublishTab.bloomPUBButton-tooltip"
                                         }}
                                     >
-                                        <img src="/bloom/publish/PublishTab/bloomPUB.png" />
+                                        <img src="/bloom/publish/PublishTab/BloomPUB.png" />
                                         <Span
                                             l10nKey="PublishTab.bloomPUBButton"
                                             className="sidebar-tab-label"

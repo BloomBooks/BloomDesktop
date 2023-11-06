@@ -783,5 +783,35 @@ namespace BloomTests.web
 
 			Assert.That(result, Is.EqualTo("activities/Title/resources/image.png"));
 		}
+
+		[Test]
+		[TestCase("customcollectionstyles.css", true, true)] // exists, but case error
+		[TestCase("customCollectionStyles.css", true, false)] // exact match
+		[TestCase("xxyyzz.css", false, false)] // doesn't exist
+		[TestCase("TestBook/customcollectionstyles.css", true, true)] // forward slash; case error
+		[TestCase("TestBook\\customcollectionstyles.css", true, true)] // backward slash; case error
+		[TestCase("Testbook/customCollectionStyles.css", true, true)] // directory case error
+		[TestCase("TestBook/../customcollectionstyles.css", true, true)] // subdir parent case; case error
+		[TestCase("TestBook/../customCollectionStyles.css", true, false)] // subdir parent case; exact match
+		public void RobustFileExistsWithCaseCheck_Works(string requestedFile, bool fileExists, bool caseErrorLogged)
+		{
+			SetupCssTests(); // Creates all the above files and more, except for the 'xxyyzz.css'.
+
+			var requestedFilePath = Path.Combine(_collectionPath, requestedFile);
+
+			// SUT
+			var result = BloomServer.RobustFileExistsWithCaseCheck(requestedFilePath);
+
+			// Verification
+			var latestLog = Logger.LogText;
+			var fullRequestedPath = Path.GetFullPath(requestedFilePath); // The case check will apply GetFullPath().
+
+			Assert.That(result, Is.EqualTo(fileExists),
+				fileExists ? "RobustFile.Exists() call failed." :
+				"RobustFile.Exists() incorrectly passes");
+			Assert.That(latestLog.Contains($"*** Case error occurred. {fullRequestedPath} does not match"),
+				Is.EqualTo(caseErrorLogged),
+				caseErrorLogged ? "No case error logged." : "Case error logged in error!");
+		}
 	}
 }
