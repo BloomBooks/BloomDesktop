@@ -402,6 +402,7 @@ body.publishingWithoutFullBleed {
 // see https://github.com/puppeteer/puppeteer/issues/2278.
 .pdfPublishMode {
     .bloom-page {
+        break-after: page; // avoid page creep with newish css property! (BL-12834)
         &.A3Portrait {
             min-width: (floor((@A3Portrait-Width / 25.4) * 96) / 96) * 25.4;
             max-width: (floor((@A3Portrait-Width / 25.4) * 96) / 96) * 25.4;
