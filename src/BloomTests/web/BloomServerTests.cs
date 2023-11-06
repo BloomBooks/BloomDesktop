@@ -785,6 +785,8 @@ namespace BloomTests.web
 		}
 
 		[Test]
+		[Platform(Exclude = "Linux", Reason = "Linux will just report a missing file.")]
+		[Category("SkipOnTeamCity")] // Possible problem with Logger on TeamCity?
 		[TestCase("customcollectionstyles.css", true, true)] // exists, but case error
 		[TestCase("customCollectionStyles.css", true, false)] // exact match
 		[TestCase("xxyyzz.css", false, false)] // doesn't exist
