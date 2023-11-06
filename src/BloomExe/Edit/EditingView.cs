@@ -1249,6 +1249,7 @@ namespace Bloom.Edit
 					item.Enabled = !l.Selected || nSelected > 1;
 					item.Checked = l.Selected;
 					item.CheckOnClick = true;
+					item.ImageScaling = ToolStripItemImageScaling.None;
 					item.CheckedChanged += new EventHandler(OnContentLanguageDropdownItem_CheckedChanged);
 				}
 
