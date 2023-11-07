@@ -441,8 +441,8 @@ namespace Bloom.Collection
 			// This queries Parse for the status of each book in bookInfos, adds (or clears)
 			// the status to each BookInfo, and signals the UI to update the thumbnail badge
 			// (unless told not to).
-			var parseClient = new BloomParseClient();
-			var bloomLibraryStatusesById = parseClient.GetLibraryStatusForBooks(bookInfos);
+			var bloomLibraryApiClient = new BloomLibraryBookApiClient();
+			var bloomLibraryStatusesById = bloomLibraryApiClient.GetLibraryStatusForBooks(bookInfos);
 			// Now to store the data into the BookInfos and signal the UI to update.
 			foreach (var bookInfo in bookInfos)
 			{
