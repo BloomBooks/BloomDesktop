@@ -326,18 +326,24 @@ export const BookButton: React.FunctionComponent<{
     };
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        if (props.book.id !== props.manager.getSelectedBookInfo()?.id) {
-            // Not only is it useless to select the book that is already selected,
-            // it might have side effects. This might have been a contributing factor
-            // to the rename box getting blurred when clicked in.
-            setSelectedBookIdWithApi(props.book.id);
-        }
+        if (event.detail === 1) {
+            setTimeout(() => {
+                if (props.book.id !== props.manager.getSelectedBookInfo()?.id) {
+                    // Not only is it useless to select the book that is already selected,
+                    // it might have side effects. This might have been a contributing factor
+                    // to the rename box getting blurred when clicked in.
+                    setSelectedBookIdWithApi(props.book.id);
+                }
 
-        // There's a default right-click menu implemented by C# code which we don't want here.
-        // Also BooksOfCollection implements a different context menu when a click isn't
-        // intercepted here, and we don't want to get it as well.
-        event.preventDefault();
-        event.stopPropagation();
+                // There's a default right-click menu implemented by C# code which we don't want here.
+                // Also BooksOfCollection implements a different context menu when a click isn't
+                // intercepted here, and we don't want to get it as well.
+                event.preventDefault();
+                event.stopPropagation();
+            }, 200);
+        } else if (event.detail === 2) {
+            handleDoubleClick(event);
+        }
     };
 
     const handleDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -448,7 +454,6 @@ export const BookButton: React.FunctionComponent<{
                 variant="outlined"
                 size="large"
                 title={props.book.folderPath}
-                onDoubleClick={handleDoubleClick}
                 onClick={e => handleClick(e)}
                 onContextMenu={e => handleContextClick(e)}
                 startIcon={
