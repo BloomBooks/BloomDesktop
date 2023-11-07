@@ -1038,8 +1038,9 @@ div[data-book*="branding"] {
 
 // Very long words should just allow themselves to be broken at the end of a line if they're
 // longer than a line.  See BL-12330.
+// Review: Should this rule be moved to basePage-sharedRules.less so it applies to ePUBs too?
 .bloom-page .bloom-editable.bloom-visibility-code-on {
-    word-wrap: break-word;
+    overflow-wrap: break-word; // 'overflow-wrap' is now the standard name for 'word-wrap'
 }
 //... to be continued. We sandwich most other sheets between this one and the langVisibility.css, which comes last-ish
 

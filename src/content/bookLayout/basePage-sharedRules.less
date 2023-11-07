@@ -151,3 +151,16 @@ span.bloom-linebreak {
     display: block;
     text-indent: 0;
 }
+
+// Text wrapping algorithms.
+.bloom-page {
+    .bloom-visibility-code-on {
+        &.bloom-editable {
+            text-wrap: pretty; // I have WV2 version 119 and pretty is not yet supported
+            &.Title-On-Cover-style,
+            &.Cover-Default-style {
+                text-wrap: balance;
+            }
+        }
+    }
+}
