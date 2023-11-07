@@ -221,6 +221,8 @@ namespace Bloom.WebLibraryIntegration
 					if (progress.CancelRequested)
 						return "";
 
+					// The server will create a new folder for our upload or sync. If the book already exists, the new folder gets prepopulated with the existing files.
+					// (after we are done, the server handles making the new folder the current one)
 					(var transactionId, _storageKeyOfBookFolderParentOnS3, var s3Credentials) = BloomLibraryBookApiClient.InitiateBookUpload(existingBookObjectIdOrNull);
 
 #if DEBUG
@@ -243,6 +245,7 @@ namespace Bloom.WebLibraryIntegration
 					if (progress.CancelRequested)
 						return "";
 
+					// Inform the server we have completed the upload. It will update baseUrl to point to the new files and delete the old ones.
 					BloomLibraryBookApiClient.FinishBookUpload(transactionId, metadata.WebDataJson);
 					bookObjectId = transactionId;
 

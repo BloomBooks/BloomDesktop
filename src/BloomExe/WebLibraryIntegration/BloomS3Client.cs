@@ -337,8 +337,15 @@ namespace Bloom.WebLibraryIntegration
 		private string _previousAccessKey;
 		protected string _bucketName;
 
-		//TODO: This is currently synchronous. Research how we can make use of the async SDK methods to enable parallel uploads
+		// At this point, the API has created an S3 folder for us to work with. If the book aready exists, it
+		// has a copy of the existing book files.
+		// We work with that copy, deleting, adding, and updating files as needed.
+		// If we never finish for some reason, we never tell the API we finished, the book record is never updated to point
+		// to the new files, and a cleanup function will eventually reset the book record and delete the copy of the book files.
+		//Enhance: This is currently synchronous. Research how we can make use of the async SDK methods to enable parallel uploads
 		// or whatever other performance enhancements we can gain.
+		// When/if we do this, the logic would be something like: queue up all the deletes, run them in parallel. Then queue up
+		// all the puts (ensuring we don't put the same file twice) and run those in parallel.
 		public void SyncBookFiles(string storageKeyOfBookFolderParent, string stagingDirectory, IProgress progress)
 		{
 			Guard.Against(BookUpload.IsDryRun, "We shouldn't try to sync files on S3 in a dry run");
@@ -350,6 +357,8 @@ namespace Bloom.WebLibraryIntegration
 			var listObjectRequest = new ListObjectsV2Request { BucketName = _bucketName, Prefix = storageKeyOfBookFolderParent };
 			foreach (S3Object s3Object in _amazonS3.ListAllObjects(listObjectRequest))
 			{
+				// If the user cancels at this point, we don't tell the API, but there is a cleanup function which runs each day.
+				// It will find the parse record which never finished uploading, reset it, and delete the copy of the book files on S3.
 				if (progress.CancelRequested)
 					return;
 
@@ -381,6 +390,7 @@ namespace Bloom.WebLibraryIntegration
 			// Now upload any files which are not on S3.
 			foreach (var localFilePath in Directory.GetFiles(stagingDirectory, "*.*", SearchOption.AllDirectories))
 			{
+				// See cancel comment above.
 				if (progress.CancelRequested)
 					return;
 

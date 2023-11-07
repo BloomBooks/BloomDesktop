@@ -232,15 +232,6 @@ namespace Bloom.Book
 			set { MetaData.AllTitles = value; }
 		}
 
-		// Todo: this is currently not used. It is intended to be filled in when we upload the json.
-		// Not sure what it needs to be. Locally the thumbnail is always called just thumbnail.png.
-		// What we upload needs to be a functional URL (probably relative to our site root).
-		public string Thumbnail
-		{
-			get { return MetaData.BaseUrl; }
-			set { MetaData.BaseUrl = value; }
-		}
-
 		public string Isbn
 		{
 			get { return MetaData.Isbn; }
@@ -1144,9 +1135,8 @@ namespace Bloom.Book
 		[JsonProperty("originalTitle")]
 		public string OriginalTitle { get; set; }
 
-		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
+		// This is filled in when we upload the book. It is not used locally, but becomes a field on parse server
 		// containing the actual url where we can grab the thumbnails, pdfs, etc.
-		[JsonProperty("baseUrl")]
 		public string BaseUrl { get; set; }
 
 		[JsonProperty("isbn")]
