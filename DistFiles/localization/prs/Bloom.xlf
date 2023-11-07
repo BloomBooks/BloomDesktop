@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="prs">
     <body>
@@ -864,11 +864,6 @@
         <source xml:lang="en">Click to get a better Bloom!</source>
         <target xml:lang="prs" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="prs" state="final">بخاطریکه این مجموعه منبع است، بلوم کدام ‏shell‏ (کتاب) مجود را محیث منابع برای ‏‏shell‏ (کتاب)‏ های جدید پیشنهاد نمیکند. اگر شما میخواهید که یک لسان را برای کدام ‏‏shell‏ (کتابر)‏ علاوه نمائید، به جای آن باید مجموعه که در آن shell‏ (کتاب) است آنرا جدید نمائید، تا که آنرا کاپی کنید. وهمچنان تقویم دیواری برای ساختن ‏shell‏ (کتاب) جدید استعمال شده نمیتواند.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
       </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations" approved="yes">
         <source xml:lang="en">Show translations which have not been approved yet</source>
@@ -2001,7 +1996,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence" approved="yes">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
-        <target xml:lang="prs" state="final">گرفته شده از اصلی، ‎{0}‏.</target>
+        <target xml:lang="prs" state="final">گرفته شده از اصلی، {‎0}‏.</target>
         <note>ID: EditTab.FrontMatter.OriginalCopyrightSentence</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalHadNoCopyrightSentence" approved="yes">
@@ -3769,36 +3764,6 @@
         <target xml:lang="prs" state="final">خط و دستخط</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="prs" state="final">نوع مجموعه را نتخاب نمائید</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="prs" state="final">اگر شما کدام مجموعه دارید که میخواهید باز کنید، کلید ‎'لغو‎'‏ را کلیک کنید.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="prs" state="final">مجموعه منابع</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="prs" state="final">مجموعه کتاب (shell‏) یا کتاب های نمونه در یک یا چندین لسان برای ارتباط وسیع تر. شما قادر خواهید بود که این کتاب (‏shell) ها را به ‏BloomLibrary.org‏ اپلود نمائید. شما شاید یک بسته بلوم بسازید که به دیگران بدهید که آنان با استفاده ‏کتاب (‏shell)‏ های شما کتاب ها با لسانهای محلی خود بسازد.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="prs" state="final">مجموعه لسان محلی</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="prs" state="final">یک مجموعه کتابها به یک لسان محلی.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
         <target xml:lang="prs" state="final">موقعیت لسان را بدهید</target>
@@ -4013,11 +3978,6 @@
         <target xml:lang="prs" state="needs-translation">Save BloomPUB File</target>
         <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <target xml:lang="prs" state="final">برای فعال کردن حالت حرکی کتاب عمودی را انتخاب کنید</target>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Send over USB Cable</source>
         <target xml:lang="prs" state="final">ارسال بواسطه کیبل USB</target>
@@ -4027,11 +3987,6 @@
         <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="prs" state="final">بکار رفتن در شبکه WiFi</target>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Send or Save</source>
-        <target xml:lang="prs" state="final">کنترول</target>
-        <note>ID: PublishTab.Android.Control</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copy to Clipboard</source>
@@ -4097,16 +4052,6 @@
         <source xml:lang="en">Get Bloom Reader App</source>
         <target xml:lang="prs" state="final">دریافت کاربر کتاب بلوم</target>
         <note>ID: PublishTab.Android.GetBloomReader</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <target xml:lang="prs" state="final">کتاب خود را به برنامه Android Bloom Reader ارسال کنید</target>
-        <note>ID: PublishTab.Android.Intro</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Choose how to send to device</source>
-        <target xml:lang="prs" state="final">انتخاب های میتود</target>
-        <note>ID: PublishTab.Android.Method</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion Book</source>
@@ -4273,9 +4218,9 @@
         <target xml:lang="prs" state="final">آغاز به تلاش</target>
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="prs" state="final">طرح این کتاب در حال حاضر "{0}" است. کتاب بلوم آن را با استفاده از "{1}" نمایش می دهد، بنابراین متن ممکن است مناسب نباشد. برای دیدن اینکه آیا هر چیزی نیاز به تنظیم دارد، به بخش تصحیح بروید و طرح را به "{1}" تغییر دهید.</target>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="prs" state="translated">طرح این کتاب در حال حاضر "{0}" است. کتاب بلوم آن را با استفاده از "{1}" نمایش می دهد، بنابراین متن ممکن است مناسب نباشد. برای دیدن اینکه آیا هر چیزی نیاز به تنظیم دارد، به بخش تصحیح بروید و طرح را به "{1}" تغییر دهید.</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
@@ -5648,7 +5593,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
-        <target xml:lang="prs" state="final">بلوم قبلا می داند که کرکترهای زبان های جهان همیشه انتهای جمله ها را علامت می دهند. برای افزودن دیگران، کرکترهای یونیکد(Unicode) را وارد کنید. به عنوان مثال برای زبان اسکریپت تایلندی، \U0020 وارد کنید، به بلوم بگویید که فاصله های طبیعی برای شکستن جملات استفاده می شود.</target>
+        <target xml:lang="prs" state="final">بلوم قبلا می داند که کرکترهای زبان های جهان همیشه انتهای جمله ها را علامت می دهند. برای افزودن دیگران، کرکترهای یونیکد(Unicode) را وارد کنید. به عنوان مثال برای زبان اسکریپت تایلندی، U0020\ وارد کنید، به بلوم بگویید که فاصله های طبیعی برای شکستن جملات استفاده می شود.</target>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
@@ -5871,11 +5816,6 @@
         <target xml:lang="prs" state="final">این اتفاق می افتد</target>
         <note>ID: ReportProblemDialog.ItKeepsHappening</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name" approved="yes">
-        <source xml:lang="en">Name</source>
-        <target xml:lang="prs" state="final">اسم</target>
-        <note>ID: ReportProblemDialog.Name</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.NonFatalTitle" approved="yes">
         <source xml:lang="en">Bloom had a problem</source>
         <target xml:lang="prs" state="final">بلوم یک مشکل داشت</target>
@@ -5931,30 +5871,10 @@
         <target xml:lang="prs" state="final">گزارش یک مشکل را بدهید</target>
         <note>ID: ReportProblemDialog.UserTitle</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WhatsTheProblem" approved="yes">
-        <source xml:lang="en">What seems to be the problem?</source>
-        <target xml:lang="prs" state="final">چه به نظر تان میرسد که چی مشکل است؟</target>
-        <note>ID: ReportProblemDialog.WhatsTheProblem</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatDoing" approved="yes">
         <source xml:lang="en">What were you doing?</source>
         <target xml:lang="prs" state="final">شما چی کار کردید?</target>
         <note>ID: ReportProblemDialog.WhatDoing</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.WindowTitle" approved="yes">
-        <source xml:lang="en">Report A Problem</source>
-        <target xml:lang="prs" state="final">گزارش ‎یک مشکل</target>
-        <note>ID: ReportProblemDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.Zipping" approved="yes">
-        <source xml:lang="en">Uploading book...</source>
-        <target xml:lang="prs" state="final">زیپ کردن یک کتاب...</target>
-        <note>ID: ReportProblemDialog.Zipping</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.linkLabel1" approved="yes">
-        <source xml:lang="en">Will not be private</source>
-        <target xml:lang="prs" state="final">شخصی نخواهد بود</target>
-        <note>ID: ReportProblemDialog.linkLabel1</note>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
         <source xml:lang="en">I get it. Do not show this again.</source>

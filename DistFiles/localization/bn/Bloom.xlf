@@ -865,11 +865,6 @@
         <target xml:lang="bn" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="bn" state="final">কারণ এটি উৎসের সংগ্রহ, ব্লুম নতুন শেলের জন্য কোন বিদ্যমান শেল অফার করছে না।যদি আপনি শেলে একটি ভাষা যুক্ত করতে চান, শেলটির সংগ্রহ সম্পাদন করার চেয়ে একটি কপি তৈরি করুন।এছাড়াও, বর্তমানে দেওয়াল ক্যালেন্ডার নতুন শেল তৈরি করতে পারছে না।</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations" approved="yes">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="bn" state="final">অনুবাদগুলি দেখান যা এখনও অনুমোদিত হয়নি</target>
@@ -3771,36 +3766,6 @@
         <target xml:lang="bn" state="final">ফন্ট এবং স্ক্রিপ্ট</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="bn" state="final">সংগ্রহের ধরন পছন্দ করুন</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="bn" state="final">যদি আপনার ইতোমধ্যেই থাকা সংগ্রহ খুলতে চান, 'বাতিল' বোতামে ক্লিক করুন।</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="bn" state="final">উৎস সংগ্রহ</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="bn" state="final">বিস্তৃত যোগাযোগের জন্য এক বা ততোধিক ভাষায় একটি সংগ্রহের শেল অথবা টেমপ্লেট বইসমূহ।আপনি BloomLibrary.org - এ এই শেলগুলি আপলোড করতে পারবেন।আপনি অন্যদেরকে দেওয়ার জন্য একটি ব্লুম প্যাকও বানাতে পারেন তাহলে তারা আপনার শেলগুলো দিয়ে স্বদেশীয় বই বানাতে পারবেন।</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="bn" state="final">স্থানীয় ভাষা সংগ্রহ</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="bn" state="final">একটি স্থানীয় ভাষার সংগ্রহের বইসমূহ।</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
         <target xml:lang="bn" state="final">ভাষার অবস্থান জানান</target>
@@ -4013,11 +3978,6 @@
         <target xml:lang="bn" state="needs-translation">Save BloomPUB File</target>
         <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <target xml:lang="bn" state="final">গতি বই মোড সক্রিয় করার জন্য অনুভূমিক চয়ন করুন</target>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Send over USB Cable</source>
         <target xml:lang="bn" state="final">USB তার দিয়ে প্রেরণ করুন</target>
@@ -4027,11 +3987,6 @@
         <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="bn" state="final">Wi-Fi নেটওয়ার্ক দ্বারা প্রেরন করুন</target>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Send or Save</source>
-        <target xml:lang="bn" state="final">প্রেরণ করুন বা সংরক্ষণ করুন</target>
-        <note>ID: PublishTab.Android.Control</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copy to Clipboard</source>
@@ -4097,16 +4052,6 @@
         <source xml:lang="en">Get Bloom Reader App</source>
         <target xml:lang="bn" state="final">ব্লুম পুস্তক অ্যাপটি নিন</target>
         <note>ID: PublishTab.Android.GetBloomReader</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <target xml:lang="bn" state="final">আপনার বই ব্লুম পুস্তক অ্যান্ড্রয়েড অ্যাপে পাঠিয়ে দিন</target>
-        <note>ID: PublishTab.Android.Intro</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Choose how to send to device</source>
-        <target xml:lang="bn" state="final">ডিভাইসে প্রেরণ করার পদ্ধতি পছন্দ করুন</target>
-        <note>ID: PublishTab.Android.Method</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion Book</source>
@@ -4273,9 +4218,9 @@
         <target xml:lang="bn" state="final">বণ্টন করা আরম্ভ করুন</target>
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="bn" state="final">বইটির বিন্যাস বর্তমানে "{0}"। ব্লুম পুস্তক "{1}" ব্যবহার করে এটিকে প্রদর্শন করাবে, তাই লেখা উপযুক্ত নাও হতে পারে। কোন সামঞ্জস্য প্রয়োজন আছে কিনা তা যাচাই করতে সম্পাদনা ট্যাবে ফিরে যান এবং "{1}" বিন্যাস পরিবর্তন করুন।</target>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="bn" state="translated">বইটির বিন্যাস বর্তমানে "{0}"। ব্লুম পুস্তক "{1}" ব্যবহার করে এটিকে প্রদর্শন করাবে, তাই লেখা উপযুক্ত নাও হতে পারে। কোন সামঞ্জস্য প্রয়োজন আছে কিনা তা যাচাই করতে সম্পাদনা ট্যাবে ফিরে যান এবং "{1}" বিন্যাস পরিবর্তন করুন।</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
@@ -5871,11 +5816,6 @@
         <target xml:lang="bn" state="needs-translation">It keeps happening</target>
         <note>ID: ReportProblemDialog.ItKeepsHappening</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name" approved="yes">
-        <source xml:lang="en">Name</source>
-        <target xml:lang="bn" state="final">নাম</target>
-        <note>ID: ReportProblemDialog.Name</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.NonFatalTitle">
         <source xml:lang="en">Bloom had a problem</source>
         <target xml:lang="bn" state="needs-translation">Bloom had a problem</target>
@@ -5931,30 +5871,10 @@
         <target xml:lang="bn" state="final">সমস্যা রিপোর্ট করুন</target>
         <note>ID: ReportProblemDialog.UserTitle</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WhatsTheProblem" approved="yes">
-        <source xml:lang="en">What seems to be the problem?</source>
-        <target xml:lang="bn" state="final">কি সমস্যা হবে বলে মনে হয়?</target>
-        <note>ID: ReportProblemDialog.WhatsTheProblem</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatDoing">
         <source xml:lang="en">What were you doing?</source>
         <target xml:lang="bn" state="needs-translation">What were you doing?</target>
         <note>ID: ReportProblemDialog.WhatDoing</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.WindowTitle" approved="yes">
-        <source xml:lang="en">Report A Problem</source>
-        <target xml:lang="bn" state="final">সমস্যা রিপোর্ট করুন</target>
-        <note>ID: ReportProblemDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.Zipping" approved="yes">
-        <source xml:lang="en">Uploading book...</source>
-        <target xml:lang="bn" state="final">বইটি আপলোড করা হচ্ছে ...</target>
-        <note>ID: ReportProblemDialog.Zipping</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.linkLabel1" approved="yes">
-        <source xml:lang="en">Will not be private</source>
-        <target xml:lang="bn" state="final">ব্যক্তিগত হবে না</target>
-        <note>ID: ReportProblemDialog.linkLabel1</note>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
         <source xml:lang="en">I get it. Do not show this again.</source>

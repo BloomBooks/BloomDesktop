@@ -865,11 +865,6 @@
         <target xml:lang="ne-NP" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="ne-NP" state="final">यो एउटा स्रोत सङ्ग्रह भएकाले Bloom ले कुनै विद्यमान आवरणहरूलाई नयाँ आवरणको स्रोतको रूपमा प्रदान गरिरहेको छैन। तपाईं कुनै खाकामा भाषा थप्न चाहनुहुन्छ भने, तपाईंले सो खाकाको प्रतिलिपि बनाउनुभन्दा सो खाका समावेश सङ्ग्रहलाई सम्पादन गर्नु उचित हुन्छ।साथै, हाल भित्ते पात्रोलाई नयाँ खाका बनाउन प्रयोग गर्न सकिँदैन।</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="ne-NP" state="needs-translation">Show translations which have not been approved yet</target>
@@ -3769,36 +3764,6 @@
         <target xml:lang="ne-NP" state="final">फन्ट र लिपि</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="ne-NP" state="final">सङ्ग्रहको प्रकार चयन गर्नुहोस्</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="ne-NP" state="final">आफूले खोल्न चाहेको सङ्ग्रह तपाईंसँग पहिले नै छ भने, 'रद्द बटनळथि‍च्‍नुहोस्</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="ne-NP" state="final">स्रोतको सङ्ग्रह</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="ne-NP" state="final">एक वा बढी साझा भाषाहरूमा लेखिएका खाका वा टेम्प्लेट पुस्तकहरूको सङ्ग्रह।तपाईंले यी खाकाहरूलाई BloomLibrary.org मा अपलोड गर्न सक्नुहुन्छ।अरूले तपाईंका खाकाहरू प्रयोग गरेर आफ्नो मातृभाषामा पुस्तकहरू लेख्न सकून् भनेर तपाईंले Bloom प्याक बनाएर अरूलाई उपलब्ध गराउन पनि सक्नुहुन्छ।</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="ne-NP" state="final">मातृभाषा/स्थानीय भाषाको सङ्ग्रह</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="ne-NP" state="final">स्थानीय भाषामा लेखिएका पुस्तकहरूको सङ्ग्रह।</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
         <target xml:lang="ne-NP" state="final">भाषाको स्थान निर्दिष्ट गर्नुहोस्</target>
@@ -4013,11 +3978,6 @@
         <target xml:lang="ne-NP" state="needs-translation">Save BloomPUB File</target>
         <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <target xml:lang="ne-NP" state="needs-translation">Choose landscape to activate Motion Book mode</target>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true">
         <source xml:lang="en">Send over USB Cable</source>
         <target xml:lang="ne-NP" state="needs-translation">Send over USB Cable</target>
@@ -4027,11 +3987,6 @@
         <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="ne-NP" state="needs-translation">Share over Wi-Fi</target>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
-        <source xml:lang="en">Send or Save</source>
-        <target xml:lang="ne-NP" state="needs-translation">Send or Save</target>
-        <note>ID: PublishTab.Android.Control</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true">
         <source xml:lang="en">Copy to Clipboard</source>
@@ -4097,16 +4052,6 @@
         <source xml:lang="en">Get Bloom Reader App</source>
         <target xml:lang="ne-NP" state="needs-translation">Get Bloom Reader App</target>
         <note>ID: PublishTab.Android.GetBloomReader</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <target xml:lang="ne-NP" state="needs-translation">Send Your Book to the Bloom Reader Android App</target>
-        <note>ID: PublishTab.Android.Intro</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
-        <source xml:lang="en">Choose how to send to device</source>
-        <target xml:lang="ne-NP" state="needs-translation">Choose how to send to device</target>
-        <note>ID: PublishTab.Android.Method</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
         <source xml:lang="en">Motion Book</source>
@@ -4274,8 +4219,8 @@
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="ne-NP" state="needs-translation">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</target>
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="ne-NP" state="needs-translation">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
@@ -5871,11 +5816,6 @@
         <target xml:lang="ne-NP" state="needs-translation">It keeps happening</target>
         <note>ID: ReportProblemDialog.ItKeepsHappening</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name" approved="yes">
-        <source xml:lang="en">Name</source>
-        <target xml:lang="ne-NP" state="final">नाम</target>
-        <note>ID: ReportProblemDialog.Name</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.NonFatalTitle">
         <source xml:lang="en">Bloom had a problem</source>
         <target xml:lang="ne-NP" state="needs-translation">Bloom had a problem</target>
@@ -5931,30 +5871,10 @@
         <target xml:lang="ne-NP" state="needs-translation">Report a Problem</target>
         <note>ID: ReportProblemDialog.UserTitle</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WhatsTheProblem" approved="yes">
-        <source xml:lang="en">What seems to be the problem?</source>
-        <target xml:lang="ne-NP" state="final">समस्या के हो त?</target>
-        <note>ID: ReportProblemDialog.WhatsTheProblem</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatDoing">
         <source xml:lang="en">What were you doing?</source>
         <target xml:lang="ne-NP" state="needs-translation">What were you doing?</target>
         <note>ID: ReportProblemDialog.WhatDoing</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.WindowTitle" approved="yes">
-        <source xml:lang="en">Report A Problem</source>
-        <target xml:lang="ne-NP" state="final">समस्या रिपोर्ट गर्नुहोस्</target>
-        <note>ID: ReportProblemDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.Zipping" approved="yes">
-        <source xml:lang="en">Uploading book...</source>
-        <target xml:lang="ne-NP" state="final">पुस्तक जिप गर्दै...</target>
-        <note>ID: ReportProblemDialog.Zipping</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.linkLabel1" approved="yes">
-        <source xml:lang="en">Will not be private</source>
-        <target xml:lang="ne-NP" state="final">गोप्य हुनेछैन</target>
-        <note>ID: ReportProblemDialog.linkLabel1</note>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
         <source xml:lang="en">I get it. Do not show this again.</source>

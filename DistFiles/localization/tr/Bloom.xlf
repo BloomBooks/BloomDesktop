@@ -865,11 +865,6 @@
         <target xml:lang="tr" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="tr" state="translated">Çünkü bu bir kaynak kolleksiyonu, Bloom mevcut kabukları yeni bir kabuk kaynağı olarak sunmuyor. Eğer kabuğa bir dil eklemek istersen, aynı zaman kabuğu içeren kolleksiyonlarıda düzenlemen gerekir, bir kopyasını yapmak yerine. Aynı zamanda, Wall calender şuanlık yeni bir Kabul oluşturmak için kullanılamaz.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="tr" state="needs-translation">Show translations which have not been approved yet</target>
@@ -3769,36 +3764,6 @@
         <target xml:lang="tr" state="translated">Yazı tipi ve komut dosyası</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="tr" state="translated">Koleksiyon Türü'nü seçin</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="tr" state="translated">Halihazırda açmak istediğiniz bir koleksiyonunuz varsa, 'iptal' düğmesine tıklayın.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="tr" state="translated">Kaynak Koleksiyonu</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="tr" state="translated">Bir veya daha fazla dilde daha geniş bir iletişim için kabuk ya da şablonlardan oluşan kitap koleksiyonu. Bu kabukları BloomLibrary.org'a yükleyebileceksiniz. Ayrıca bunları Bloom paketi yaparak diğerlerine verebilirsiniz, böylece sizin kabuklarınızdan yerel dillerinde kitaplar yapabilirler.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="tr" state="translated">Yerel Dil Koleksiyonu</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="tr" state="final">Yerel dilde bir kitap koleksiyonu.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage">
         <source xml:lang="en">Give Language Location</source>
         <target xml:lang="tr" state="translated">Dil yeri ver</target>
@@ -4013,11 +3978,6 @@
         <target xml:lang="tr" state="needs-translation">Save BloomPUB File</target>
         <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <target xml:lang="tr" state="needs-translation">Choose landscape to activate Motion Book mode</target>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true">
         <source xml:lang="en">Send over USB Cable</source>
         <target xml:lang="tr" state="translated">USB Kablosu üzerinden gönder</target>
@@ -4027,11 +3987,6 @@
         <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="tr" state="translated">Wifi ağında hizmet vermek</target>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
-        <source xml:lang="en">Send or Save</source>
-        <target xml:lang="tr" state="translated">Kontrol</target>
-        <note>ID: PublishTab.Android.Control</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true">
         <source xml:lang="en">Copy to Clipboard</source>
@@ -4097,16 +4052,6 @@
         <source xml:lang="en">Get Bloom Reader App</source>
         <target xml:lang="tr" state="translated">Bloom okuyucu uygulamasını satın alın</target>
         <note>ID: PublishTab.Android.GetBloomReader</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <target xml:lang="tr" state="needs-translation">Send Your Book to the Bloom Reader Android App</target>
-        <note>ID: PublishTab.Android.Intro</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
-        <source xml:lang="en">Choose how to send to device</source>
-        <target xml:lang="tr" state="translated">Metot Seçimi</target>
-        <note>ID: PublishTab.Android.Method</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
         <source xml:lang="en">Motion Book</source>
@@ -4274,7 +4219,7 @@
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
         <target xml:lang="tr" state="translated">Bu kitabın yerleşimi şu anda "{0}". Bloom Okuyucusu bunu "{1}" kullanarak gösterecektir, bu yüzden metin uygun olmayabilir. Herhangi bir şeyin düzenlemeye ihtiyacı olup olmadığına bakmak için Düzenleme Sekmesine geri gidin ve yerleşimi "{1}" olarak değiştirin.</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
@@ -5871,11 +5816,6 @@
         <target xml:lang="tr" state="needs-translation">It keeps happening</target>
         <note>ID: ReportProblemDialog.ItKeepsHappening</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name">
-        <source xml:lang="en">Name</source>
-        <target xml:lang="tr" state="translated">İsim</target>
-        <note>ID: ReportProblemDialog.Name</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.NonFatalTitle">
         <source xml:lang="en">Bloom had a problem</source>
         <target xml:lang="tr" state="needs-translation">Bloom had a problem</target>
@@ -5931,30 +5871,10 @@
         <target xml:lang="tr" state="final">Bir Sorun Bildir</target>
         <note>ID: ReportProblemDialog.UserTitle</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WhatsTheProblem">
-        <source xml:lang="en">What seems to be the problem?</source>
-        <target xml:lang="tr" state="translated">Ne gibi bir sorun görünüyor?</target>
-        <note>ID: ReportProblemDialog.WhatsTheProblem</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatDoing">
         <source xml:lang="en">What were you doing?</source>
         <target xml:lang="tr" state="needs-translation">What were you doing?</target>
         <note>ID: ReportProblemDialog.WhatDoing</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.WindowTitle">
-        <source xml:lang="en">Report A Problem</source>
-        <target xml:lang="tr" state="translated">Sorun Bildir</target>
-        <note>ID: ReportProblemDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.Zipping">
-        <source xml:lang="en">Uploading book...</source>
-        <target xml:lang="tr" state="translated">Kitap yükleniyor...</target>
-        <note>ID: ReportProblemDialog.Zipping</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.linkLabel1">
-        <source xml:lang="en">Will not be private</source>
-        <target xml:lang="tr" state="translated">Gizli olmayacak</target>
-        <note>ID: ReportProblemDialog.linkLabel1</note>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt">
         <source xml:lang="en">I get it. Do not show this again.</source>
