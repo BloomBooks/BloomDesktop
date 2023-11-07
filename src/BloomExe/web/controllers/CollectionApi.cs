@@ -34,6 +34,7 @@ namespace Bloom.web.controllers
 		private BookThumbNailer _thumbNailer;
 		private BloomWebSocketServer _webSocketServer;
 		private readonly EditBookCommand _editBookCommand;
+		private Timer _clickTimer = new Timer();
 
 		private int _thumbnailEventsToWaitFor = -1;
 
@@ -50,6 +51,14 @@ namespace Bloom.web.controllers
 			_editBookCommand = editBookCommand;
 			_thumbNailer = thumbNailer;
 			_webSocketServer = webSocketServer;
+			_clickTimer.Interval = SystemInformation.DoubleClickTime;
+			_clickTimer.Tick += _clickTimer_Tick;
+		}
+
+		private void _clickTimer_Tick(object sender, EventArgs e)
+		{
+			_clickTimer.Stop();
+			_webSocketServer.SendEvent("collections", "clickTimerElapsed");
 		}
 
 
@@ -76,6 +85,15 @@ namespace Bloom.web.controllers
 						request.ReplyWithText("" + _collectionModel.GetSelectedBookOrNull()?.ID);
 						break;
 					case HttpMethods.Post:
+						// Various things done during this post block the UI thread in a way that can cause Javascript
+						// not to notice a double-click. But a second click that occurs before this timer fires will
+						// get processed before the timer-fired event. So Javascript is programmed to look for a click
+						// that happens after an initial click but before it is notified that this timer fired.
+						// Such clicks are treated as doubles.
+						// Note: we'll send this notification even if the API call was not made in response to a click.
+						// That is harmless; the only listener for this message does nothing but clear a 'waiting for
+						// double click' flag.
+						_clickTimer.Start();
 						// We're selecting the book, make sure everything is up to date.
 						// This first method does minimal processing to come up with the right collection and BookInfo object
 						// without actually loading all the files. We need the title for the Performance Measurement and later
