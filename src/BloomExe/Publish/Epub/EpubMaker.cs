@@ -359,6 +359,8 @@ namespace Bloom.Publish.Epub
 			var nsManager = new XmlNamespaceManager(Book.RawDom.NameTable);
 			nsManager.AddNamespace("svg", "http://www.w3.org/2000/svg");
 
+			var imageSettings = Book.BookInfo.PublishSettings.BloomPub.ImageSettings;
+
 			var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
@@ -375,7 +377,7 @@ namespace Bloom.Publish.Epub
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;
-				if (MakePageFile(pageElement, warningMessages))
+				if (MakePageFile(pageElement, warningMessages, imageSettings))
 				{
 					pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
 				};
@@ -436,7 +438,7 @@ namespace Bloom.Publish.Epub
 				RobustFile.Move(coverPageImagePath, epubThumbnailImagePath);
 			}
 
-			CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder);
+			CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder, imageSettings);
 
 			var warnings = EmbedFonts(progress); // must call after copying stylesheets
 			if (warnings.Any())
@@ -1202,7 +1204,7 @@ namespace Bloom.Publish.Epub
 		/// <remarks>
 		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4288 for discussion of blank pages.
 		/// </remarks>
-		private bool MakePageFile(XmlElement pageElement, ISet<string> warningMessages)
+		private bool MakePageFile(XmlElement pageElement, ISet<string> warningMessages, ImagePublishSettings imageSettings)
 		{
 			// nonprinting pages (e.g., old-style comprehension questions) are omitted for now
 			// interactive pages (e.g., new-style quiz pages) are also omitted. We're drastically
@@ -1285,7 +1287,7 @@ namespace Bloom.Publish.Epub
 			if (_desiredNameMap.TryGetValue(pageElement, out preferedPageName))
 				pageDocName = preferedPageName;
 
-			CopyImages(pageDom);
+			CopyImages(pageDom, imageSettings);
 			CopyVideos(pageDom);
 
 			AddEpubNamespace(pageDom);
@@ -1627,7 +1629,7 @@ namespace Bloom.Publish.Epub
 			return true;
 		}
 
-		private void CopyImages(HtmlDom pageDom)
+		private void CopyImages(HtmlDom pageDom, ImagePublishSettings imageSettings)
 		{
 			// Manifest has to include all referenced files
 			foreach(XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
@@ -1643,7 +1645,8 @@ namespace Bloom.Publish.Epub
 				else
 				{
 					var isCoverImage = img.SafeSelectNodes("parent::div[contains(@class, 'bloom-imageContainer')]/ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]").Cast<XmlElement>().Count() != 0;
-					var dstPath = CopyFileToEpub(srcPath, limitImageDimensions: true, needTransparentBackground: isCoverImage, subfolder: kImagesFolder);
+					var dstPath = CopyFileToEpub(srcPath, limitImageDimensions: true, needTransparentBackground: isCoverImage, subfolder: kImagesFolder,
+						imageSettings: imageSettings);
 					var newSrc = dstPath.Substring(_contentFolder.Length+1).Replace('\\','/');
 					HtmlDom.SetImageElementUrl(img, UrlPathString.CreateFromUnencodedString(newSrc, true), false);
 				}
@@ -2424,7 +2427,8 @@ namespace Bloom.Publish.Epub
 		// that it is a necessary manifest item. Return the path of the copied file
 		// (which may be different in various ways from the original; we suppress various dubious
 		// characters and return something that doesn't depend on url decoding.
-		private string CopyFileToEpub (string srcPath, bool limitImageDimensions=false, bool needTransparentBackground=false, string subfolder = "")
+		private string CopyFileToEpub (string srcPath, bool limitImageDimensions=false, bool needTransparentBackground=false, string subfolder = "",
+			ImagePublishSettings imageSettings = null)
 		{
 			string existingFile;
 			if (_mapSrcPathToDestFileName.TryGetValue (srcPath, out existingFile))
@@ -2448,8 +2452,9 @@ namespace Bloom.Publish.Epub
 				dstPath = SubfolderAdjustedContentPath(subfolder, fileName);
 			}
 			Directory.CreateDirectory (Path.GetDirectoryName (dstPath));
-			// enhance: I'm preserving the old behavior here by making an new one with defaults, but why doesn't epubmaker have access to our settings?
-			CopyFile(srcPath, dstPath, new ImagePublishSettings(), limitImageDimensions, needTransparentBackground );
+			if (imageSettings == null)
+				imageSettings = new ImagePublishSettings();
+			CopyFile(srcPath, dstPath, imageSettings, limitImageDimensions, needTransparentBackground );
 			_manifestItems.Add(SubfolderAdjustedName(subfolder, fileName));
 			_mapSrcPathToDestFileName [srcPath] = dstPath;
 			return dstPath;
