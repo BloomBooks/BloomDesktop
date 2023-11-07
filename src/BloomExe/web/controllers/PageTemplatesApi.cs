@@ -304,13 +304,6 @@ namespace Bloom.web.controllers
 		{
 			var testLocalPath = localPath.Replace ("/", "\\");
 			var testFolderPath = _bookSelection.CurrentSelection.FolderPath.Replace ("/", "\\");
-			if (Platform.IsWindows)
-			{
-				// Not a formality, since localPath comes from GetBookTemplatePaths and has been
-				// forced to LC on Windows, while the book's FolderPath has not.
-				testLocalPath = testLocalPath.ToLowerInvariant();
-				testFolderPath = testFolderPath.ToLowerInvariant();
-			}
 			return testLocalPath.Contains(testFolderPath);
 		}
 
@@ -350,8 +343,7 @@ namespace Bloom.web.controllers
 
 			// 1) we start the list with the template that was used to start this book (or the book itself if it IS a template)
 			if (pathToCurrentTemplateHtml != null)
-				bookTemplatePaths.Add(Platform.IsWindows ? pathToCurrentTemplateHtml.ToLowerInvariant() : pathToCurrentTemplateHtml);
-
+				bookTemplatePaths.Add(pathToCurrentTemplateHtml);
 			// 2) Look in their current collection...this is the first one used to make sourceBookPaths
 
 			// 3) Next look through the books that came with bloom and other that this user has installed (e.g. via download or bloompack)
@@ -384,8 +376,7 @@ namespace Bloom.web.controllers
 						Logger.WriteError($" While adding '{path}' to bookTemplatePaths.", e);
 						throw e;
 					}
-				})
-				.Select(path => Platform.IsWindows ? path.ToLowerInvariant() : path));
+				}));
 
 			var indexOfBasicBook = bookTemplatePaths.FindIndex(p => p.ToLowerInvariant().Contains("basic book"));
 			if (indexOfBasicBook > 1)
