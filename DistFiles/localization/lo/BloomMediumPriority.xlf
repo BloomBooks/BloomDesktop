@@ -347,40 +347,40 @@
         <target xml:lang="lo" state="needs-translation">Book Settings</target>
         <note>BookSettings.Title</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution" sil:dynamic="true">
-        <source xml:lang="en">Resolution</source>
-        <target xml:lang="lo" state="needs-translation">Resolution</target>
-        <note>BookSettings.BloomPub.Resolution</note>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
+        <source xml:lang="en">Max Image Size</source>
+        <target xml:lang="lo" state="needs-translation">Max Image Size</target>
+        <note>BookSettings.eBook.Image.MaxResolution</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.Small" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
         <source xml:lang="en">Small</source>
         <target xml:lang="lo" state="needs-translation">Small</target>
-        <note>BookSettings.BloomPub.Resolution.Small</note>
+        <note>BookSettings.eBook.Image.MaxResolution.Small</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
         <source xml:lang="en">HD</source>
         <target xml:lang="lo" state="needs-translation">HD</target>
-        <note>BookSettings.BloomPub.Resolution.HD</note>
+        <note>BookSettings.eBook.Image.MaxResolution.HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.Full HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
         <source xml:lang="en">Full HD</source>
         <target xml:lang="lo" state="needs-translation">Full HD</target>
-        <note>BookSettings.BloomPub.Resolution.Full HD</note>
+        <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.4K" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
         <source xml:lang="en">4K</source>
         <target xml:lang="lo" state="needs-translation">4K</target>
-        <note>BookSettings.BloomPub.Resolution.4K</note>
+        <note>BookSettings.eBook.Image.MaxResolution.4K</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.Description" sil:dynamic="true">
-        <source xml:lang="en">When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size.</source>
-        <target xml:lang="lo" state="needs-translation">When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size.</target>
-        <note>BookSettings.BloomPub.Resolution.Description</note>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Description" sil:dynamic="true">
+        <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
+        <target xml:lang="lo" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
+        <note>BookSettings.eBook.Image.MaxResolution.Description</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.Directions" sil:dynamic="true">
-        <source xml:lang="en">Set the maximum image resolution when making BloomPUBs (including display on BloomLibrary)</source>
-        <target xml:lang="lo" state="needs-translation">Set the maximum image resolution when making BloomPUBs (including display on BloomLibrary)</target>
-        <note>BookSettings.BloomPub.Resolution.Directions</note>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
+        <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
+        <target xml:lang="lo" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
+        <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
       </trans-unit>
     </body>
   </file>
