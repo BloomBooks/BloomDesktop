@@ -359,22 +359,22 @@
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HD</source>
-        <target xml:lang="pt-PT" state="final">HD</target>
+        <target xml:lang="pt-PT" state="final">Alta definição</target>
         <note>BookSettings.eBook.Image.MaxResolution.HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Full HD</source>
-        <target xml:lang="pt-PT" state="needs-translation">Full HD</target>
+        <target xml:lang="pt-PT" state="final">Alta definição total</target>
         <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4K</source>
-        <target xml:lang="pt-PT" state="needs-translation">4K</target>
+        <target xml:lang="pt-PT" state="final">4K</target>
         <note>BookSettings.eBook.Image.MaxResolution.4K</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
+        <target xml:lang="pt-PT" state="final">O Bloom reduz o tamanho máximo das imagens para facilitar a visualização dos livros em ligações de Internet fracas e ocupar menos espaço nos telemóveis.</target>
         <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
       </trans-unit>
     </body>
