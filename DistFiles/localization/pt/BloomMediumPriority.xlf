@@ -347,19 +347,19 @@
         <target xml:lang="pt-PT" state="needs-translation">Book Settings</target>
         <note>BookSettings.Title</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max Image Size</source>
-        <target xml:lang="pt-PT" state="needs-translation">Max Image Size</target>
+        <target xml:lang="pt-PT" state="final">Tamanho máximo de imagem</target>
         <note>BookSettings.eBook.Image.MaxResolution</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Small</source>
-        <target xml:lang="pt-PT" state="needs-translation">Small</target>
+        <target xml:lang="pt-PT" state="final">Pequeno</target>
         <note>BookSettings.eBook.Image.MaxResolution.Small</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HD</source>
-        <target xml:lang="pt-PT" state="needs-translation">HD</target>
+        <target xml:lang="pt-PT" state="final">HD</target>
         <note>BookSettings.eBook.Image.MaxResolution.HD</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
