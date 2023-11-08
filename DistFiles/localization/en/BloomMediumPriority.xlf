@@ -324,38 +324,34 @@
         <note>BookSettings.Title</note>
         <note>the heading of the dialog</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution" sil:dynamic="true">
-        <source xml:lang="en">Resolution</source>
-        <note>BookSettings.BloomPub.Resolution</note>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
+        <source xml:lang="en">Max Image Size</source>
+        <note>BookSettings.eBook.Image.MaxResolution</note>
         <note>keyword used to describe the size in pixels of a display screen or of an image</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.Small" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
         <source xml:lang="en">Small</source>
-        <note>BookSettings.BloomPub.Resolution.Small</note>
+        <note>BookSettings.eBook.Image.MaxResolution.Small</note>
         <note>label for our small resolution (600 x 600)</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
         <source xml:lang="en">HD</source>
-        <note>BookSettings.BloomPub.Resolution.HD</note>
+        <note>BookSettings.eBook.Image.MaxResolution.HD</note>
         <note>abbreviation for High Definition (1280 x 720)</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.Full HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
         <source xml:lang="en">Full HD</source>
-        <note>BookSettings.BloomPub.Resolution.Full HD</note>
+        <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
         <note>abbreviation for Full High Definition (1920 x 1080)</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.4K" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
         <source xml:lang="en">4K</source>
-        <note>BookSettings.BloomPub.Resolution.4K</note>
+        <note>BookSettings.eBook.Image.MaxResolution.4K</note>
         <note>abbreviation for Ultra High Definition, also known as "4K" (3480 x 2160)</note>
       </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.Description" sil:dynamic="true">
-        <source xml:lang="en">When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size.</source>
-        <note>BookSettings.BloomPub.Resolution.Description</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.BloomPub.Resolution.Directions" sil:dynamic="true">
-        <source xml:lang="en">Set the maximum image resolution when making BloomPUBs (including display on BloomLibrary)</source>
-        <note>BookSettings.BloomPub.Resolution.Directions</note>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
+        <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
+        <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
         <note>displayed below the slider that is used to set the image resolution</note>
       </trans-unit>
     </body>

@@ -75,13 +75,9 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     }, [settingsString]);
 
     const bookSettingsTitle = useL10n("Book Settings", "BookSettings.Title");
-    const resolutionDescription = useL10n(
-        "When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size.",
-        "BookSettings.BloomPub.Resolution.Description"
-    );
     const resolutionLabel = useL10n(
         "Resolution",
-        "BookSettings.BloomPub.Resolution"
+        "BookSettings.eBook.Image.MaxResolution"
     );
 
     return (
@@ -134,11 +130,12 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                     control={ColorPickerForConfigr}
                                 />
                             </ConfigrGroup> */}
-                        <ConfigrGroup label="BloomPUB" level={1}>
+                        <ConfigrGroup label="eBooks" level={1}>
+                            {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}
                             <ConfigrSubgroup
-                                label={resolutionLabel}
+                                label={""}
                                 path={`publish.bloomPUB.imageSettings`}
-                                description={resolutionDescription}
+                                // description={resolutionDescription}
                             >
                                 <BloomResolutionSlider
                                     path={`publish.bloomPUB.imageSettings`}
@@ -183,14 +180,15 @@ const BloomResolutionSlider: React.FunctionComponent<React.PropsWithChildren<{
                 {...props}
             ></ConfigrCustomObjectInput>
             <Div
-                l10nKey="BookSettings.BloomPub.Resolution.Directions"
+                l10nKey="BookSettings.eBook.Image.MaxResolution.Directions"
                 css={css`
                     padding: 0 10px;
                     font-size: 9pt;
                 `}
             >
-                Set the maximum image resolution when making BloomPUBs
-                (including display on BloomLibrary)
+                Bloom reduces images to a maximum size to make books easier to
+                view over poor internet connections and take up less space on
+                phones.
             </Div>
         </div>
     );
@@ -213,7 +211,7 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
     const current = sizes[currentIndex];
     const currentLabel = useL10n(
         current.l,
-        `BookSettings.BloomPub.Resolution.${current.l}`
+        `BookSettings.eBook.Image.MaxResolution.${current.l}`
     );
 
     return (
