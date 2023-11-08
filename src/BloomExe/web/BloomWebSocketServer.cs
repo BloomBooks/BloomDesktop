@@ -24,7 +24,7 @@ namespace Bloom.Api
 	///
 	/// Note that there is a subclass of events for Progress boxes and dialogs, defined in IBloomWebSocketProgressEvent,
 	/// which adds "progressKind".
-	/// 
+	///
 	/// The IBloomWebSocketServer interface allows tests to use a spy to see what messages have been sent.
 	/// </summary>
 	public class BloomWebSocketServer : IBloomWebSocketServer, IDisposable
@@ -76,7 +76,7 @@ namespace Bloom.Api
 			Logger.WriteMinorEvent("Attempting to open a WebSocketServer on " + websocketaddr);
 			_server = new WebSocketServer(websocketaddr);
 			// If we want, we can specify the subprotocols we are expecting:
-			//_server.SupportedSubProtocols = new[] { "performance","pageThumbnailList", "pageThumbnailList-pageControls", "bookStatus" etc etc};
+			//_server.SupportedSubProtocols = new[] { "performance","pageThumbnailList", "pageThumbnailList-pageControls", "bookTeamCollectionStatus" etc etc};
 			// This tells Fleck to be picky.
 			// It would allow Chrome to work without any special Chrome code on the client side.
 			// But it seems like a pain. Firefox is able to negotiate with Fleck just fine, and

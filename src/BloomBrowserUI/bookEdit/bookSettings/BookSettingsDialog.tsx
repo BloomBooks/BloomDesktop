@@ -1,5 +1,5 @@
 import { css } from "@emotion/react";
-import { Slider, Typography } from "@mui/material";
+import { ListItem, Slider, Typography } from "@mui/material";
 import {
     ConfigrPane,
     ConfigrGroup,
@@ -8,7 +8,9 @@ import {
     ConfigrCustomNumberInput,
     ConfigrColorPicker,
     ConfigrInput,
-    ConfigrCustomObjectInput
+    ConfigrCustomObjectInput,
+    ConfigrBoolean,
+    ConfigrSelect
 } from "@sillsdev/config-r";
 import React = require("react");
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -33,10 +35,22 @@ import {
     DialogResult
 } from "../../react_components/color-picking/colorPickerDialog";
 import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
-import { postJson, useApiStringState } from "../../utils/bloomApi";
+import {
+    postJson,
+    useApiObject,
+    useApiStringState
+} from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
+import { NoteBox, WarningBox } from "../../react_components/boxes";
 
 let isOpenAlready = false;
+
+type IPageStyle = { label: string; value: string };
+type IPageStyles = Array<IPageStyle>;
+type IAppearanceUIOptions = {
+    firstPossiblyLegacyCss?: string;
+    themeNames: IPageStyles;
+};
 
 export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const {
@@ -48,11 +62,18 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         dialogFrameProvidedExternally: false
     });
 
+    const appearanceUIOptions: IAppearanceUIOptions = useApiObject<
+        IAppearanceUIOptions
+    >("book/settings/appearanceUIOptions", {
+        themeNames: []
+    });
+
     const [settingsString, setSettingsString] = useApiStringState(
         "book/settings",
         "{}",
         () => propsForBloomDialog.open
     );
+
     const [settings, setSettings] = React.useState<object | undefined>(
         undefined
     );
@@ -60,6 +81,8 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState(
         ""
     );
+
+    const [appearanceDisabled, setAppearanceDisabled] = React.useState(false);
 
     React.useEffect(() => {
         if (settingsString === "{}") {
@@ -72,11 +95,28 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         }
     }, [settingsString]);
 
+    React.useEffect(() => {
+        if (settings && (settings as any).appearance) {
+            const liveSettings = settingsToReturnLater || settings;
+            setAppearanceDisabled(
+                !!appearanceUIOptions?.firstPossiblyLegacyCss ||
+                    (liveSettings as any)?.appearance?.cssThemeName ===
+                        "legacy-5-5"
+            );
+        }
+    }, [settings, settingsToReturnLater]);
+
     return (
         <BloomDialog
             css={css`
-                background-color: #fbf8ff;
+                // TODO: we would like a background color, but setting it here makes the dialog's backdrop turn that color!
+                // conceivably we could wrap the current children in a div that just provides the background color.
+                //background-color: #fbf8ff;
             `}
+            // cssForDialogContents={css`
+            //     background-color: #e4f1f3;
+            //     height: 500px;
+            // `}
             {...propsForBloomDialog}
             onClose={closeDialog}
             onCancel={() => {
@@ -94,6 +134,16 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                     }
                     // normally we want this: overflow-y: scroll;
                     overflow-y: hidden; // but I need help on the css, so we're going with this for now
+
+                    // HACK: TODO get the divs to all just maximize height until the available space is used or we don't need anymore height
+                    form {
+                        overflow-y: scroll;
+                        height: 600px;
+                        width: 600px;
+                        #groups {
+                            margin-right: 10px; // make room for the scrollbar
+                        }
+                    }
                 `}
             >
                 {settings && (
@@ -115,27 +165,100 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             //setSettings(s);
                         }}
                     >
-                        {/* we'll bring this back later
-                            <ConfigrGroup label="Appearance" level={1}>
+                        <ConfigrGroup label="Appearance" level={1}>
+                            {appearanceUIOptions?.firstPossiblyLegacyCss && (
+                                <WarningBox>
+                                    {`"${appearanceUIOptions?.firstPossiblyLegacyCss}" might not be compatible with  modern Appearance settings, so this book is in "legacy" mode. See (TODO) for more information.`}
+                                </WarningBox>
+                            )}
+                            <ConfigrSubgroup
+                                label="Page Theme"
+                                path={`appearance`}
+                            >
+                                <ConfigrSelect
+                                    label="Theme"
+                                    disabled={
+                                        !!appearanceUIOptions?.firstPossiblyLegacyCss
+                                    }
+                                    path={`appearance.cssThemeName`}
+                                    options={appearanceUIOptions.themeNames.map(
+                                        x => {
+                                            return {
+                                                label: x.label,
+                                                value: x.value
+                                            };
+                                        }
+                                    )}
+                                    description="Choose a theme to easily change margins, borders, an other page settings."
+                                />
+                            </ConfigrSubgroup>
+                            {!appearanceUIOptions?.firstPossiblyLegacyCss &&
+                                (settingsToReturnLater as any)?.appearance
+                                    ?.cssThemeName === "legacy-5-5" && (
+                                    <NoteBox>
+                                        {`The "Legacy" theme does not support Appearance settings.`}
+                                    </NoteBox>
+                                )}
+                            <ConfigrSubgroup
+                                label="Cover Background  (Not implemented yet)"
+                                path={`appearance`}
+                            >
                                 <ConfigrCustomStringInput
                                     path={`appearance.coverColor`}
+                                    disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
+                                    //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
                                     label="Cover Color"
                                     control={ColorPickerForConfigr}
                                 />
-                            </ConfigrGroup> */}
-                        <ConfigrGroup label="BloomPUB" level={1}>
+                            </ConfigrSubgroup>
                             <ConfigrSubgroup
-                                label="Resolution"
-                                path={`publish.bloomPUB.imageSettings`}
-                                description={
-                                    "When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size."
-                                }
+                                label="What to Show on Cover"
+                                path={`appearance`}
                             >
-                                <BloomResolutionSlider
-                                    path={`publish.bloomPUB.imageSettings`}
-                                    label="Resolution"
+                                <ConfigrBoolean
+                                    disabled={appearanceDisabled}
+                                    path={`appearance.coverShowTitleL2`}
+                                    label="Show Written Language 2 Title"
+                                />
+                                <ConfigrBoolean
+                                    disabled={appearanceDisabled}
+                                    path={`appearance.coverShowTitleL3`}
+                                    label="Show Written Language 3 Title"
+                                />
+                                <ConfigrBoolean
+                                    disabled={appearanceDisabled}
+                                    path={`appearance.coverShowLanguageName`}
+                                    label="Show Language Name"
+                                />
+                                <ConfigrBoolean
+                                    disabled={appearanceDisabled}
+                                    path={`appearance.coverShowTopic`}
+                                    label="Show Topic"
                                 />
                             </ConfigrSubgroup>
+
+                            <ConfigrSubgroup
+                                label="Front & Back Matter (Not implemented yet)"
+                                path={`appearance`}
+                            >
+                                <ConfigrSelect
+                                    disabled={true}
+                                    label="Font & Back Matter"
+                                    path={`appearance.TODO`}
+                                    options={[
+                                        { label: "Page Saver", value: "TODO" }
+                                    ]}
+                                    description={
+                                        "Normally, books use the front & back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one."
+                                    }
+                                />
+                            </ConfigrSubgroup>
+                        </ConfigrGroup>
+                        <ConfigrGroup label="BloomPUB" level={1}>
+                            <BloomResolutionSlider
+                                label="Resolution"
+                                path={`publish.bloomPUB.imageSettings`}
+                            />
                         </ConfigrGroup>
                     </ConfigrPane>
                 )}
@@ -239,10 +362,12 @@ export function showBookSettingsDialog() {
 
 const ColorPickerForConfigr: React.FunctionComponent<{
     value: string;
+    disabled: boolean;
     onChange: (value: string) => void;
 }> = props => {
     return (
         <ColorDisplayButton
+            disabled={props.disabled}
             initialColor={props.value}
             localizedTitle={"foo"}
             transparency={false}
@@ -252,5 +377,19 @@ const ColorPickerForConfigr: React.FunctionComponent<{
                 if (dialogResult === DialogResult.OK) props.onChange(newColor);
             }}
         />
+    );
+};
+
+// TODO: move this to config-r
+const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<{}>> = props => {
+    return (
+        <ListItem
+            css={css`
+                flex-direction: column;
+                align-items: flex-start;
+            `}
+        >
+            {props.children}
+        </ListItem>
     );
 };

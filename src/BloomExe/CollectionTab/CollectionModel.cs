@@ -121,7 +121,7 @@ namespace Bloom.CollectionTab
 				{
 					_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
 
-					//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
+					//we want the templates to be second (after the editable collection) regardless of alphabetical sorting
 					var templates = _bookCollections.First(c => c.Name == "Templates");
 					_bookCollections.Remove(templates);
 					_bookCollections.Insert(1, templates);
@@ -386,23 +386,10 @@ namespace Bloom.CollectionTab
 		public void DoubleClickedBook()
 		{
 			// If we need the book to be checked out for editing, make sure it is. Do not allow double click
-			// to check it out. 
+			// to check it out.
 			if (_bookSelection.CurrentSelection?.IsSaveable ?? false)
 			{
 				_editBookCommand.Raise(_bookSelection.CurrentSelection);
-			}
-		}
-
-		public void OpenFolderOnDisk()
-		{
-			try
-			{
-				ProcessExtra.ShowFileInExplorerInFront(_bookSelection.CurrentSelection.FolderPath);
-			}
-			catch (System.Runtime.InteropServices.COMException e)
-			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					"Bloom had a problem asking your operating system to show that folder. Sorry!");
 			}
 		}
 

@@ -1,0 +1,26 @@
+/* based onhttps://bloomlibrary.org/player/vPftT2H1eE */
+/* {
+    substitutionChecksums: "6d540d3c796842b382db5dbd10826655"
+} */
+.bloom-page {
+    --marginBox-border-radius: 25px;
+    /*--marginBox-border-color: rgb(77, 68, 68);*/
+    --marginBox-border-style: none;
+    --marginBox-border-width: 1.5mm;
+    --pageNumber-bottom: unset;
+    --pageNumber-top: 15px;
+    --page-margin-top: 7mm;
+    --page-margin-bottom: 7mm;
+    --page-margin-right: 17mm;
+    --page-margin-left: 7mm;
+
+
+    --page-background-color: purple; /* just for testing */
+    --marginBox-background-color: white; /* just for testing */
+}
+.Device16x9Portrait {
+    --page-margin-top: 73mm;
+    --page-margin-bottom: 7mm;
+    --page-margin-right: 7mm;
+    --page-margin-left: 7mm;
+}

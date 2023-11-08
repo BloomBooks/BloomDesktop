@@ -1,3 +1,14 @@
+using Bloom.Api;
+using Bloom.Edit;
+using Bloom.Utils;
+using L10NSharp;
+using Newtonsoft.Json;
+using SIL.Code;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.Text;
+using SIL.Windows.Forms.ClearShare;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -5,21 +16,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
-using Bloom.Api;
-using Bloom.Edit;
-using L10NSharp;
-using Newtonsoft.Json;
-using SIL.Extensions;
-using SIL.IO;
-using SIL.Reporting;
-using SIL.Windows.Forms.ClearShare;
-using SIL.Text;
-using Bloom.Utils;
-using SIL.Code;
 
 namespace Bloom.Book
 {
@@ -45,6 +44,7 @@ namespace Bloom.Book
 		protected BookInfo()
 		{
 			PublishSettings = new PublishSettings();
+			AppearanceSettings = new AppearanceSettings();
 		}
 
 		internal BookInfo(string folderPath, bool isEditable)
@@ -60,7 +60,7 @@ namespace Bloom.Book
 		public BookInfo(string folderPath, bool isEditable, ISaveContext saveContext) : this()
 		{
 			Guard.AgainstNull(saveContext, "Please supply an actual saveContext");
-			
+
 			_saveContext = saveContext ?? (isEditable ? new AlwaysEditSaveContext() : new NoEditSaveContext() as ISaveContext);
 
 			FolderPath = folderPath;
@@ -89,6 +89,7 @@ namespace Bloom.Book
 			}
 
 			PublishSettings = PublishSettings.FromFolder(FolderPath);
+			AppearanceSettings = AppearanceSettings.FromFolderOrNew(FolderPath);
 		}
 
 		public enum HowToPublishImageDescriptions
@@ -344,6 +345,10 @@ namespace Bloom.Book
 		{
 			PublishSettings.WriteToFolder(FolderPath);
 		}
+		public void SaveAppearanceSettings()
+		{
+			AppearanceSettings.WriteToFolder(FolderPath);
+		}
 
 		public void Save()
 		{
@@ -356,6 +361,7 @@ namespace Bloom.Book
 				{
 					MetaData.WriteToFolder(FolderPath);
 					SavePublishSettings();
+					SaveAppearanceSettings();
 					return;
 				}
 				catch (IOException e)
@@ -381,6 +387,7 @@ namespace Bloom.Book
 		/// Settings for the publish tab (and Harvester).
 		/// </summary>
 		public PublishSettings PublishSettings { get; private set; }
+		public AppearanceSettings AppearanceSettings { get; private set; }
 
 		public string CountryName
 		{
@@ -786,7 +793,7 @@ namespace Bloom.Book
 			IDictionary<string, SortedList<DateTime, string>> idToSortedFilepathsMap)
 		{
 			SortedList<DateTime, string> sortedFilepaths;
-			
+
 			if (!idToSortedFilepathsMap.TryGetValue(bookId, out sortedFilepaths))
 			{
 				var list = new SortedList<DateTime, string> { { lastWriteTime, bookFolder } };
@@ -806,6 +813,11 @@ namespace Bloom.Book
 				}
 				sortedFilepaths.Add(lastWriteTime, bookFolder);
 			}
+		}
+
+		internal void SettingsUpdated()
+		{
+			Save();
 		}
 	}
 
@@ -1374,7 +1386,7 @@ namespace Bloom.Book
 		//http://www.idpf.org/epub/a11y/accessibility.html#sec-conf-reporting
 		[JsonProperty("a11yCertifier")]
 		public string A11yCertifier { get; set; }
-		
+
 		// Global Digital Library: Indicates reading level
 		// NB: this is just "level" in the Global Digital Library
 		// e.g. "Pratham Level 1"
@@ -1519,10 +1531,10 @@ namespace Bloom.Book
 
 		[JsonIgnore]
 		public bool Feature_Widget { get; set; }
-		
+
 		[JsonIgnore]
 		public bool Feature_SimpleDomChoice { get; set; }
-		
+
 
 
 		[JsonProperty("page-number-style")]

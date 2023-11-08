@@ -101,6 +101,7 @@ namespace Bloom.Book
 					var fileNameLower = fileName.ToLowerInvariant();
 					if (fileNameLower.Contains("branding") || // these don't contain page size info, anyhow.
 						fileNameLower.Contains("readerstyles") || // these don't contain page size info, anyhow.
+						fileNameLower.Contains("appearance") ||
 						fileNameLower.Contains("custombookstyles")) // Even if these did contain size info (hopefully not...), the derivative won't have the file.
 						continue;
 					NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, $"Could not find {fileName} while looking for size choices");

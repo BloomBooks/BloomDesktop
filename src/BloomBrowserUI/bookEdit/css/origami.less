@@ -17,7 +17,7 @@
 
 .split-pane.vertical-percent > .split-pane-component.position-left {
     right: 50%;
-    margin-right: 3px;
+    margin-right: var(--side-by-side-gap);
 }
 
 .split-pane.vertical-percent > .split-pane-component.position-right {
@@ -26,7 +26,7 @@
 
 .split-pane.horizontal-percent > .split-pane-component.position-top {
     bottom: 50%;
-    margin-bottom: 3px;
+    margin-bottom: var(--top-bottom-gap);
 }
 
 .split-pane.horizontal-percent > .split-pane-component.position-bottom {
@@ -53,6 +53,7 @@
 @firstButtonOffset: 10px;
 @secondButtonOffset: 10px;
 @distanceOfButtonToEdge: 10px;
+
 .origami-controls {
     position: absolute;
     top: 0;
@@ -60,9 +61,11 @@
     z-index: 20000;
     height: 99%;
     width: 99%;
+
     .close {
         font-weight: bold;
     }
+
     .button,
     .origami-controls .button:visited {
         display: inline-block;
@@ -76,6 +79,7 @@
         line-height: 1em;
         font-size: 18px;
     }
+
     .close-button-wrapper {
         float: left;
         padding: 5px;
@@ -83,21 +87,26 @@
         right: 0;
         top: 0;
     }
+
     .vertical-adders {
         left: 0;
         position: absolute;
         top: 10%;
+
         .button {
             //padding: 10px;
             position: absolute;
             left: @distanceOfButtonToEdge;
         }
+
         .button.add-top {
             top: @firstButtonOffset;
         }
+
         .button.add-bottom {
             bottom: @secondButtonOffset;
         }
+
         .separator {
             border-bottom: 3px @inactiveColor dashed;
             width: 100%;
@@ -105,20 +114,25 @@
             top: 50%;
         }
     }
+
     .horizontal-adders {
         bottom: 0;
         right: 10%;
         position: absolute;
+
         .button {
             position: absolute;
             bottom: @distanceOfButtonToEdge;
         }
+
         .button.add-left {
             left: @firstButtonOffset;
         }
+
         .button.add-right {
             right: @secondButtonOffset;
         }
+
         .separator {
             border-right: 3px @inactiveColor dashed;
             height: 100%;
@@ -126,6 +140,7 @@
             left: 50%;
         }
     }
+
     .horizontal-adders > div {
         float: left;
     }
@@ -167,6 +182,7 @@
 .container-selector-links {
     display: none;
 }
+
 .container-textBox-id {
     display: none;
 }
@@ -174,6 +190,7 @@
 .selector-links {
     top: 45%;
     text-align: center;
+
     // Setting the z-index on the inner a elements allows the adder buttons to
     // remain visible and active except when the cursor is over an actual link.
     a {
@@ -190,6 +207,7 @@
     .vertical-adders {
         display: none;
     }
+
     .horizontal-adders {
         display: none;
     }
@@ -223,6 +241,7 @@
     .vertical-adders {
         height: @largeClusterThickness;
     }
+
     .horizontal-adders {
         height: @largeSplitterLength;
     }
@@ -233,6 +252,7 @@
     .vertical-adders {
         width: @largeSplitterLength;
     }
+
     .horizontal-adders {
         width: @largeClusterThickness;
     }
@@ -276,10 +296,13 @@
         width: 100%;
         position: absolute;
         top: 45%;
+
         .formatButton {
             z-index: 60000;
             padding-left: 10px;
             display: inline-flex;
         }
     }
-} // end .origami-layout-mode
+}
+
+// end .origami-layout-mode

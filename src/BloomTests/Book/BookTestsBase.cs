@@ -38,7 +38,7 @@ namespace BloomTests.Book
 		{
 			var storage = new Moq.Mock<IBookStorage>();
 			storage.Setup(x => x.GetLooksOk()).Returns(true);
-			
+
 			storage.SetupGet(x => x.Dom).Returns(domGetter);
 			storage.SetupGet(x => x.Key).Returns("testkey");
 			storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns(() => storage.Object.Dom.Clone());// review: the real thing does more than just clone
@@ -78,13 +78,10 @@ namespace BloomTests.Book
 			_fileLocator = new Moq.Mock<IFileLocator>();
 			string root = FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			string xMatter = BloomFileLocator.GetFactoryXMatterDirectory();
-			_fileLocator.Setup(x => x.LocateFileWithThrow("langVisibility.css")).Returns("../notareallocation/langVisibility.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("origami.css")).Returns("../notareallocation/origami.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("origamiEditing.css")).Returns("../notareallocation/origamiEditing.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editPaneGlobal.css")).Returns("../notareallocation/editPaneGlobal.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("basePage.css")).Returns("../notareallocation/basePage.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");

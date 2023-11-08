@@ -60,7 +60,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 href=""
                 onClick={e => {
                     e.preventDefault();
-                    postJson("common/showInFolder", {
+                    postJson("fileIO/showInFolder", {
                         folderPath: repoFolderPath
                     });
                 }}

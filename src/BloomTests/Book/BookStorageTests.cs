@@ -125,11 +125,13 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//p", 5);
 		}
 		[Test]
-		public void Save_BookHadEditStyleSheet_NowHasPreviewAndBase()
+		public void Save_BookHadEditStyleSheet_NowHasPreviewAndBaseAndAppearance()
 		{
-			GetInitialStorageWithCustomHtml("<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
-			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
+			GetInitialStorageWithCustomHtml("<html><head><link rel='stylesheet' href='editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'editMode.css']", 0);
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'basePage.css']", 1);
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'previewMode.css']", 1);
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'appearance.css']", 1);
 		}
 		[Test]
 		public void Save_BookHadNarrationAudioRecordedByWholeTextBox_AddsFeatureRequirementMetadata()
