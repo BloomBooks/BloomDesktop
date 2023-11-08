@@ -151,3 +151,15 @@ span.bloom-linebreak {
     display: block;
     text-indent: 0;
 }
+
+// Text wrapping algorithms.
+.bloom-page .bloom-editable.bloom-visibility-code-on {
+    // Very long words should just allow themselves to be broken at the end of a line if they're
+    // longer than a line.  See BL-12330.
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+    &.Title-On-Cover-style,
+    &.Cover-Default-style {
+        text-wrap: balance;
+    }
+}
