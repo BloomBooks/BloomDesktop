@@ -266,7 +266,7 @@ namespace BloomTests.Publish
 		/// Make an ePUB out of the specified book. Sets up several instance variables with commonly useful parts of the results.
 		/// </summary>
 		/// <returns></returns>
-		protected new ZipFile MakeEpub(string mainFileName, string folderName, BloomBook book,
+		protected ZipFile MakeEpub(string mainFileName, string folderName, BloomBook book,
 			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None,
 			string branding = "Default", Action<EpubMaker> extraInit = null)
 		{

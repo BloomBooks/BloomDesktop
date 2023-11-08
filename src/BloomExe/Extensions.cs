@@ -45,9 +45,19 @@ namespace Bloom
 		{
 			// Our original implementation manually escaped the following characters: '%', ':', '#', '?', and '(', ')' (In BL-117, parenthesis in the URL was not working correctly)
 			// Now we rely on a System.Uri function, which is more thorough about escaping characters.
-			var escapedPathComponents = fileName.Split(kDirectorySeparators).Select(Uri.EscapeDataString);
-			string escapedFileName = String.Join("/", escapedPathComponents);
-			return escapedFileName;
+			try
+			{
+				var escapedPathComponents = fileName.Split(kDirectorySeparators).Select(Uri.EscapeDataString);
+				string escapedFileName = String.Join("/", escapedPathComponents);
+				return escapedFileName;
+			}
+			catch (Exception e)
+			{
+				var path = fileName;
+				if (MiscUtils.ContainsSurrogatePairs(fileName))
+					path = MiscUtils.QuoteUnicodeCodePointsInPath(fileName);
+				throw new ApplicationException("Error escaping filename for http: " + path, e);
+			}
 		}
 
 		/// <summary>

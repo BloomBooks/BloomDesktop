@@ -31,7 +31,10 @@ namespace Bloom.Book
 	{
 		private const string kTopicPrefix = "topic:";
 		private const string kBookshelfPrefix = "bookshelf:";
+
+		// The BloomBookOrder files are no longer used. But we still use this in a couple places to delete them.
 		public const string BookOrderExtension = ".BloomBookOrder";
+
 		private ISaveContext _saveContext;
 
 		private BookMetaData _metadata;
@@ -110,6 +113,8 @@ namespace Bloom.Book
 			set { MetaData.AllowUploadingToBloomLibrary = value; }
 		}
 
+		// The BloomBookOrder files are no longer used. But this method is
+		// still used in a couple places to delete them.
 		public static string BookOrderPath(string bookFolder)
 		{
 			return Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
@@ -324,7 +329,7 @@ namespace Bloom.Book
 			{
 				try
 				{
-					image = ToPalaso.RobustImageIO.GetImageFromFile(path);
+					image = RobustImageIO.GetImageFromFile(path);
 					return true;
 				}
 				catch (Exception e) // If that file became corrupted, we would not want to lock user out of their book.
@@ -636,7 +641,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Replace all occurrences of bookInstanceId with a fresh Guid, since this book is a manual duplicate.
 		/// - Update meta.json
-		/// - Delete bookName.bloombookorder (if present)
+		/// - Delete bookName.bloombookorder (if present) - note, these are obsolete and no longer created
 		/// - Delete meta.bak (if present)
 		/// </summary>
 		public static string InstallFreshInstanceGuid(string bookFolder)
@@ -807,6 +812,13 @@ namespace Bloom.Book
 				sortedFilepaths.Add(lastWriteTime, bookFolder);
 			}
 		}
+
+		/// <summary>
+		/// Store the book's status in the Bloom Library.  This is not saved in either the meta.json file
+		/// or in the publish-settings.json file.  It is always retrieved from the Bloom Library when the
+		/// collection is loaded or when books are uploaded.
+		/// </summary>
+		public BloomLibraryStatus BloomLibraryStatus;
 	}
 
 	public class ErrorBookInfo : BookInfo
@@ -1035,10 +1047,8 @@ namespace Bloom.Book
 						allTitles = AllTitles, // created for BL to search, though it doesn't yet.
 						originalTitle=OriginalTitle,
 						baseUrl = BaseUrl, // how web site finds image and download
-						bookOrder = BookOrder, // maybe obsolete? Keep uploading until sure.
 						isbn = Isbn,
 						bookLineage = BookLineage,
-						//downloadSource = DownloadSource, // seems to be obsolete
 						license = License,
 						formatVersion = FormatVersion,
 						licenseNotes = LicenseNotes,
@@ -1139,22 +1149,11 @@ namespace Bloom.Book
 		[JsonProperty("baseUrl")]
 		public string BaseUrl { get; set; }
 
-		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
-		// containing the actual url where we can grab the book order file which when opened by Bloom causes it
-		// to download the book.
-		[JsonProperty("bookOrder")]
-		public string BookOrder { get; set; }
-
 		[JsonProperty("isbn")]
 		public string Isbn { get; set; }
 
 		[JsonProperty("bookLineage")]
 		public string BookLineage { get; set; }
-
-		// This tells Bloom where the data files can be found.
-		// Strictly it is the first argument that needs to be passed to BookUpload.DownloadBook in order to get the entire book data.
-		[JsonProperty("downloadSource")]
-		public string DownloadSource { get; set; }
 
 		// This indicates the kind of license in use. For Creative Commons licenses, it is the Abbreviation of the CreativeCommonsLicense
 		// object, the second-last (before version number) element of the licenseUrl. Other known values are 'ask' (no license granted,

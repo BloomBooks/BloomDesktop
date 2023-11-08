@@ -59,5 +59,17 @@ namespace Bloom.ToPalaso
 
 			parent.RemoveChild(unwrapMe);
 		}
+
+		public static XmlElement GetChildWithName(this XmlElement xmlElement, string name)
+		{
+			return xmlElement.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n.Name.ToLowerInvariant() == name) as XmlElement;
+		}
+
+		public static XmlElement AppendChild(this XmlElement xmlElement, string name)
+		{
+			var result = xmlElement.OwnerDocument.CreateElement(name);
+			xmlElement.AppendChild(result);
+			return result;
+		}
 	}
 }

@@ -100,13 +100,12 @@ namespace Bloom.Publish.BloomPub
 #if !__MonoCS__
 
 				SetState("UsbStarted");
-				// In 5.6, we should consider removing this UpdatePreviewIfNeeded line as it does not
-				// currently appear to be accomplishing anything. Also in "wifi/start" and 
-				// "file/save" endpoints below.
-				if (_publishApi.UpdatePreviewIfNeeded(request))
-				{ 
-					_usbPublisher.Connect(request.CurrentBook, _publishApi._thumbnailBackgroundColor, _publishApi.GetSettings());
-				} else
+				var publishSettings = _publishApi.GetSettings();
+				if (_publishApi.IsBookLicenseOK(request.CurrentBook, publishSettings, _progress))
+				{
+					_usbPublisher.Connect(request.CurrentBook, _publishApi._thumbnailBackgroundColor, publishSettings);
+				}
+				else
 				{
 					SetState("stopped");
 				}
@@ -125,9 +124,10 @@ namespace Bloom.Publish.BloomPub
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
 				SetState("ServingOnWifi");
-				if (_publishApi.UpdatePreviewIfNeeded(request))
+				var publishSettings = _publishApi.GetSettings();
+				if (_publishApi.IsBookLicenseOK(request.CurrentBook, publishSettings, _progress))
 				{
-					_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _publishApi._thumbnailBackgroundColor, _publishApi.GetSettings());
+					_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _publishApi._thumbnailBackgroundColor, publishSettings);
 				} else
 				{
 					SetState("stopped");
@@ -146,9 +146,10 @@ namespace Bloom.Publish.BloomPub
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
 			{
 				SetState("SavingFile");
-				if (_publishApi.UpdatePreviewIfNeeded(request))
+				var publishSettings = _publishApi.GetSettings();
+				if (_publishApi.IsBookLicenseOK(request.CurrentBook, publishSettings, _progress))
 				{
-					FilePublisher.Save(request.CurrentBook, _bookServer, _publishApi._thumbnailBackgroundColor, _progress, _publishApi.GetSettings());
+					FilePublisher.Save(request.CurrentBook, _bookServer, _publishApi._thumbnailBackgroundColor, _progress, publishSettings);
 				}
 				SetState("stopped");
 				request.PostSucceeded();
@@ -303,7 +304,7 @@ namespace Bloom.Publish.BloomPub
 //					"Note", "A heading shown above some messages.");
 //				progress.MessageWithoutLocalizing(msgFormat, ProgressKind.Note);
 				 var msgFormat = L10NSharp.LocalizationManager.GetString("PublishTab.Android.WrongLayout.Message",
-					"The layout of this book is currently \"{0}\". Bloom Reader will display it using \"{1}\", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to \"{1}\".",
+					"The layout of this book is currently \"{0}\". Bloom Reader will display it using \"{1}\", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to \"{1}\".",
 					"{0} and {1} are book layout tags.");
 				var desiredLayout = desiredLayoutSize + layout.SizeAndOrientation.OrientationName;
 				var msg = String.Format(msgFormat, layout.SizeAndOrientation.ToString(), desiredLayout, Environment.NewLine);

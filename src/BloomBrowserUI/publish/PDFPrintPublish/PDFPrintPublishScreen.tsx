@@ -12,7 +12,7 @@ import { PDFPrintFeaturesGroup } from "./PDFPrintFeaturesGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import ReactDOM = require("react-dom");
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
+import { darkTheme } from "../../bloomMaterialUITheme";
 import { useL10n } from "../../react_components/l10nHooks";
 import Button from "@mui/material/Button";
 import { get, post, useApiBoolean } from "../../utils/bloomApi";
@@ -193,7 +193,7 @@ export const PDFPrintPublishScreen = () => {
                 onClick={handlePrint}
                 enabled={!!path}
                 l10nId="PublishTab.PrintButton"
-                imgSrc="./Print.png"
+                imgSrc="/bloom/publish/PDFPrintPublish/Print.png"
                 label="Print..."
             />
             <PrintSaveButton
@@ -202,7 +202,7 @@ export const PDFPrintPublishScreen = () => {
                 }}
                 enabled={!!path}
                 l10nId="PublishTab.SaveButton"
-                imgSrc="./Usb.png"
+                imgSrc="/bloom/publish/PDFPrintPublish/Usb.png"
                 label="Save PDF..."
             />
         </React.Fragment>
@@ -294,17 +294,3 @@ export const PDFPrintPublishScreen = () => {
         </React.Fragment>
     );
 };
-
-// a bit goofy... currently the html loads everything in publishUIBundlejs. So all the publish screens
-// get any not-in-a-class code called, including ours. But it only makes sense to get wired up
-// if that html has the root page we need.
-if (document.getElementById("PdfPrintPublishScreen")) {
-    ReactDOM.render(
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                <PDFPrintPublishScreen />
-            </ThemeProvider>
-        </StyledEngineProvider>,
-        document.getElementById("PdfPrintPublishScreen")
-    );
-}

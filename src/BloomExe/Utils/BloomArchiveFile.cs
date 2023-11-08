@@ -155,8 +155,8 @@ namespace Bloom.Utils
 			}
 			catch (ZipException ze)
 			{
-				var msg = $"ZipException, there was an error writing {currentFilename} to a TC .bloomd file.";
-				if (ze.Message.Contains("crc"))
+				var msg = $"ZipException, there was an error writing {currentFilename} to a TC .bloom file.";
+				if (ze.Message.ToLowerInvariant().Contains("crc"))
 					msg += ": CRC check failed";
 				Logger.WriteError(msg, ze);
 				throw ze;

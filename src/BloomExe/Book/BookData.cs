@@ -1097,7 +1097,7 @@ namespace Bloom.Book
 					var isVariableUrlEncoded = false;
 					if (HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 					{
-						value = HtmlDom.GetImageElementUrl(new ElementProxy(node)).UrlEncoded;
+						value = HtmlDom.GetImageElementUrl(node).UrlEncoded;
 						isVariableUrlEncoded = true;
 					}
 					else
@@ -1535,8 +1535,7 @@ namespace Bloom.Book
 				? UrlPathString.CreateFromUrlEncodedString(getFirstAlt)
 				: UrlPathString.CreateFromHtmlXmlEncodedString(getFirstAlt);
 			var oldImageUrl = HtmlDom.GetImageElementUrl(node);
-			// This ElementProxy thing is here for unit testing
-			var imgOrDivWithBackgroundImage = new ElementProxy(node);
+			var imgOrDivWithBackgroundImage = node;
 			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage, newImageUrl);
 
 			if (_updateImgNode!=null && !newImageUrl.Equals(oldImageUrl))
@@ -1564,7 +1563,7 @@ namespace Bloom.Book
 				if (a.Item1 == "style" && node.ParentNode.GetOptionalStringAttribute("class", "")
 					    .Contains("bloom-scale-with-code"))
 				{
-					imgOrDivWithBackgroundImage.SetAttribute(a.Item1, a.Item2);
+					imgOrDivWithBackgroundImage.SetAttribute(a.Item1, a.Item2.Unencoded);
 				}
 			});
 			return true;

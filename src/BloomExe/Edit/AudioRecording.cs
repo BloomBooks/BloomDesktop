@@ -19,6 +19,7 @@ using SIL.Media.Naudio;
 using SIL.Reporting;
 using Timer = System.Windows.Forms.Timer;
 using System.Collections.Generic;
+using SIL.Code;
 
 // Note: it is for the benefit of this component that Bloom references NAudio. We don't use it directly,
 // but Palaso.Media does, and we need to make sure it gets copied to our output.
@@ -236,8 +237,18 @@ namespace Bloom.Edit
 			}
 			if (RecordingDevice != null)
 			{
-				Recorder.BeginMonitoring();
-				_monitoringAudio = true;
+				try
+				{
+					Recorder.BeginMonitoring(catchAndReportExceptions: false);
+					_monitoringAudio = true;
+				}
+				catch (Exception e)
+				{
+					Logger.WriteError("Could not begin monitoring microphone", e);
+					var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem",
+						"Bloom was not able to access a microphone.");
+					_webSocketServer.SendString(kWebsocketContext, "monitoringStartError", msg);
+				}
 			}
 		}
 
@@ -362,6 +373,12 @@ namespace Bloom.Edit
 			SetRecordingDevice(currentMic);
 		}
 
+		static HashSet<Type> retryMp3Exceptions = new HashSet<Type>
+		{
+			Type.GetType("System.IO.IOException"),
+			Type.GetType("System.ApplicationException")
+		};
+
 		private void Recorder_Stopped(IAudioRecorder arg1, ErrorEventArgs arg2)
 		{
 			Recorder.Stopped -= Recorder_Stopped;
@@ -381,7 +398,9 @@ namespace Bloom.Edit
 			//We could put this off entirely until we make the ePUB.
 			//I'm just gating this for now because maybe the thought was that it's better to do it a little at a time?
 			//That's fine so long as it doesn't make the UI unresponsive on slow machines.
-			var mp3Path = _mp3Encoder.Encode(PathToRecordableAudioForCurrentSegment);
+			string mp3Path = "";
+			RetryUtility.Retry(() => { mp3Path = _mp3Encoder.Encode(PathToRecordableAudioForCurrentSegment); },
+				10, 200, retryMp3Exceptions, memo: "Encode mp3");
 			// Got a good new recording, can safely clean up all backups related to old one.
 			foreach (var path in Directory.EnumerateFiles(
 				Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment),
@@ -547,13 +566,15 @@ namespace Bloom.Edit
 			try
 			{
 				Recorder.BeginRecording(PathToTemporaryWav);
-				_webSocketServer.SendString(kWebsocketContext, "recordStartStatus", "success");
 			}
-			catch (InvalidOperationException)
+			catch (InvalidOperationException ex)
 			{
 				// Likely a case of BL-7568, which as far as we can figure isn't Bloom's fault.
 				// Show a friendly message in the TalkingBook toolbox.
-				_webSocketServer.SendString(kWebsocketContext, "recordStartStatus", "failure");
+				Logger.WriteError("Could not begin recording", ex);
+				var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.MicrophoneProblem",
+					"Bloom is having problems connecting to your microphone. Please restart your computer and try again.");
+				_webSocketServer.SendString(kWebsocketContext, "recordingStartError", msg);
 			}
 		}
 

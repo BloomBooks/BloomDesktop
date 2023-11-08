@@ -603,7 +603,7 @@ namespace Bloom.Book
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.SortStyleSheetLinks();
 			AddPreviewJavascript(pageDom);
-			HtmlDom.AddClassIfMissing(pageDom.Body, "bloom-templateThumbnail");
+			HtmlDom.AddClass(pageDom.Body, "bloom-templateThumbnail");
 			return pageDom;
 		}
 
@@ -892,6 +892,8 @@ namespace Bloom.Book
 			AddPreviewJavascript(previewDom);
 			previewDom.AddPublishClassToBody("preview");
 
+			SandboxActivityIframesToPreventFocus(previewDom);
+
 			// Not needed for preview mode, so just remove them to reduce memory usage.
 			PreventVideoAutoLoad(previewDom);
 			RemoveImageResolutionMessageAndAddMissingImageMessage(previewDom);
@@ -900,14 +902,47 @@ namespace Bloom.Book
 			return previewDom;
 		}
 
+		/// <summary>
+		/// Activity pages need to run scripts even in preview to show their start page, but we don't
+		/// want them to be able to set the focus.  Active Presenter is one example of an activity
+		/// builder that has code on a timer loop that continually sets the focus to one of its elements.
+		/// This effectively prevents users from being able to rename the book via the Book Rename menu
+		/// item.
+		/// Other activity builders may have the same problem, but we haven't encountered them yet.
+		/// But some activity builders use WebSQL which requires the sandbox to opened up enough to
+		/// allow the focus calls to leak through.  Otherwise, the preview displays a disconcerting
+		/// popup message about the data storage not being available.  So for now, we sandbox only
+		/// Active Presenter generated activity iframes to prevent focus.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-12598.
+		/// A proposed feature policy would apparently do exactly what we want here, but it's still
+		/// waiting four years after being proposed: https://chromestatus.com/feature/5179186249465856.
+		/// </remarks>
+		private void SandboxActivityIframesToPreventFocus(HtmlDom previewDom)
+		{
+			foreach (var iframe in previewDom.SafeSelectNodes("//div[@data-activity='iframe']//iframe[starts-with(@src,'activities/')]").Cast<XmlElement>())
+			{
+				var src = iframe.GetAttribute("src");
+				// The fileName might be URL encoded.
+				var path = UrlPathString.GetFullyDecodedPath(FolderPath, ref src);
+				if (RobustFile.Exists(path))
+				{
+					var html = RobustFile.ReadAllText(path);
+					if (html.Contains("ActivePresenter"))
+						iframe.SetAttribute("sandbox", "allow-scripts");
+				}
+			}
+		}
+
 		// Generally BringBookUpToDate only needs doing once, so keep track of whether we have.
 		// Since we don't currently have any way to know whether a book on disk needs updating,
 		// this is true (as far as we know) until BringBookUpToDate is first called for this session.
 		private bool _needsUpdate = true;
 
-		public void EnsureUpToDate()
+		public void EnsureUpToDate(bool forceUpdate=false)
 		{
-			if (_needsUpdate)
+			if (_needsUpdate || forceUpdate)
 				BringBookUpToDate(new NullProgress());
 		}
 
@@ -955,11 +990,6 @@ namespace Bloom.Book
 				if (!forCopyOfUpToDateBook)
 					Storage.PerformNecessaryMaintenanceOnBook();
 				Save();
-			}
-
-			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
-			{
-				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _bookData.Language1.Tag);
 			}
 
 			OurHtmlDom.FixDivOrdering();
@@ -1418,13 +1448,13 @@ namespace Bloom.Book
 			// from those templates, then add the required classes if they are missing.
 			const string kDecodableParentGuid = "f0434a0b-791f-408e-b6e6-ee92f0f02f2d";
 			const string kLeveledParentGuid = "ea43ce61-a752-429d-ad1a-ec282db33328";
-			if(BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kDecodableParentGuid))
+			if(!bookDom.HasClassOnBody("decodable-reader-off") && BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kDecodableParentGuid))
 			{
-				HtmlDom.AddClassIfMissing(bookDom.Body,"decodable-reader");
+				HtmlDom.AddClass(bookDom.Body,"decodable-reader");
 			}
-			else if(BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kLeveledParentGuid))
+			else if(!bookDom.HasClassOnBody("leveled-reader-off") && BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kLeveledParentGuid))
 			{
-				HtmlDom.AddClassIfMissing(bookDom.Body,"leveled-reader");
+				HtmlDom.AddClass(bookDom.Body,"leveled-reader");
 			}
 
 			// (Semi-Implemented)
@@ -1615,6 +1645,7 @@ namespace Bloom.Book
 
 			var collectionStylesCss = CollectionSettings.GetCollectionStylesCss(false);
 			var cssBuilder = new StringBuilder(collectionStylesCss);
+			string existingContent = null;
 			if (doesAlreadyExist)
 			{
 				// We want to use the current CSS from our collection, which we already added to the
@@ -1631,6 +1662,7 @@ namespace Bloom.Book
 					languagesWeAlreadyHave.Add(CollectionSettings.Language3Tag);
 
 				var cssLines = RobustFile.ReadAllLines(path);
+				existingContent = string.Join(Environment.NewLine, cssLines);
 				const string kLangTag = "[lang='";
 				var copyCurrentRule = false;
 				for (var index = 0 ; index < cssLines.Length; ++index)
@@ -1659,7 +1691,9 @@ namespace Bloom.Book
 			}
 			try
 			{
-				RobustFile.WriteAllText(path, cssBuilder.ToString());
+				var newContent = cssBuilder.ToString();
+				if (newContent.Trim() != existingContent?.Trim())
+					RobustFile.WriteAllText(path, newContent);
 			}
 			catch (UnauthorizedAccessException e)
 			{
@@ -1701,7 +1735,7 @@ namespace Bloom.Book
 			foreach (XmlElement nonPrintingPageElement in nonPrintingPages)
 			{
 				nonPrintingPageElement.Attributes["class"].InnerText = HtmlDom.RemoveClass("nonprinting", nonPrintingPageElement.Attributes["class"].InnerText);
-				HtmlDom.AddClassIfMissing(nonPrintingPageElement, "bloom-nonprinting");
+				HtmlDom.AddClass(nonPrintingPageElement, "bloom-nonprinting");
 			}
 		}
 
@@ -1725,8 +1759,8 @@ namespace Bloom.Book
 			{
 				if (!HtmlDom.HasClass(quizContentsElement, "bloom-noAudio")) // Needs migration
 				{
-					HtmlDom.AddClassIfMissing(quizContentsElement, classNoStyleMods);
-					HtmlDom.AddClassIfMissing(quizContentsElement, classNoAudio);
+					HtmlDom.AddClass(quizContentsElement, classNoStyleMods);
+					HtmlDom.AddClass(quizContentsElement, classNoAudio);
 					HtmlDom.StripUnwantedTagsPreservingText(bookDOM.RawDom, quizContentsElement, new []{ "div", "p", "br" });
 				}
 			}
@@ -2584,7 +2618,7 @@ namespace Bloom.Book
 			if (vidNode == null)
 				return false;
 			// HtmlDom.GetVideoElementUrl() takes the .bloom-videoContainer node as a parameter.
-			var videoUrl = HtmlDom.GetVideoElementUrl(new ElementProxy(vidNode.ParentNode as XmlElement));
+			var videoUrl = HtmlDom.GetVideoElementUrl(vidNode.ParentNode as XmlElement);
 			var file = videoUrl.PathOnly.NotEncoded;
 			return !string.IsNullOrEmpty(file) && RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
 		}
@@ -3586,7 +3620,7 @@ namespace Bloom.Book
 						//NB: URLEncode would replace spaces with '+', which is ok in the parameter section, but not the URL
 						//So we are using UrlPathEncode
 
-						HtmlDom.SetImageElementUrl(new ElementProxy(img), UrlPathString.CreateFromUnencodedString(pathRelativeToFolioFolder));
+						HtmlDom.SetImageElementUrl(img, UrlPathString.CreateFromUnencodedString(pathRelativeToFolioFolder));
 
 					}
 				}
@@ -3997,9 +4031,13 @@ namespace Bloom.Book
 						WantVideo = true,
 						WantMusic = true
 					};
-					filter.AlwaysReject("meta.json");		// ignore since this stores currentTool and toolboxIsOpen, which are irrelevant
-					filter.AlwaysReject("video-placeholder.svg");	// ignore since placeholder file is provided as needed
-					filter.AlwaysReject("thumbnail.png");	// ignore since it seems to vary gratuitously (still check other thumbnail images)
+					// Ignore 'meta.json' since this stores currentTool and toolboxIsOpen, which are irrelevant to whether
+					// the book has changed. OTOH, we need to do something about Draft status and Features which are not irrelevant.
+					filter.AlwaysReject("meta.json");
+					// Ignore video placeholder since this file is provided as needed.
+					filter.AlwaysReject("video-placeholder.svg");
+					// Ignore 'thumbnail.png' since it seems to vary gratuitously (still check other thumbnail images).
+					filter.AlwaysReject("thumbnail.png");
 					// Order must be predictable but does not otherwise matter.
 					foreach (var path in Directory.GetFiles(folder, "*", SearchOption.AllDirectories).OrderBy(x => x))
 					{
@@ -4008,7 +4046,7 @@ namespace Bloom.Book
 						if (path == filePath)
 							continue; // we already included a simplified version of the main HTML file
 						//AppendDebugInfo(debugBldr, path);
-						using (var input = ToPalaso.RobustIO.GetFileStream(path, FileMode.Open, FileAccess.Read))
+						using (var input = RobustIO.GetFileStream(path, FileMode.Open, FileAccess.Read))
 						{
 							byte[] buffer = new byte[4096];
 							int count;
@@ -4530,7 +4568,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Used by PublishView to tell the user they can't publish a book with Overlay elements w/o Enterprise.
+		/// Used by the publish tab to tell the user they can't publish a book with Overlay elements w/o Enterprise.
 		/// </summary>
 		/// <returns></returns>
 		public string GetNumberOfFirstPageWithOverlay()
@@ -4681,6 +4719,17 @@ namespace Bloom.Book
 		public IEnumerable<string> GetTextLanguagesToAdvertiseOnBloomLibrary(IEnumerable<string> languagesSuperset)
 		{
 			return languagesSuperset.Intersect(AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: false).Keys);
+		}
+
+		public void SetIsDecodable(bool isDecodable)
+		{
+			OurHtmlDom.SetClassOnBody(isDecodable, "decodable-reader");
+			OurHtmlDom.SetClassOnBody(!isDecodable, "decodable-reader-off");
+		}
+		public void SetIsLeveled(bool isLeveled)
+		{
+			OurHtmlDom.SetClassOnBody(isLeveled, "leveled-reader");
+			OurHtmlDom.SetClassOnBody(!isLeveled, "leveled-reader-off");
 		}
 	}
 }

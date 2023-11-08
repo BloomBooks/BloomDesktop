@@ -5,6 +5,26 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true">
+        <source xml:lang="en">Book is Decodable</source>
+        <target xml:lang="tr" state="needs-translation">Book is Decodable</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsDecodable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable" sil:dynamic="true">
+        <source xml:lang="en">Book is not Decodable</source>
+        <target xml:lang="tr" state="needs-translation">Book is not Decodable</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsLeveled" sil:dynamic="true">
+        <source xml:lang="en">Book is Leveled</source>
+        <target xml:lang="tr" state="needs-translation">Book is Leveled</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsLeveled</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled" sil:dynamic="true">
+        <source xml:lang="en">Book is not Leveled</source>
+        <target xml:lang="tr" state="needs-translation">Book is not Leveled</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled</note>
+      </trans-unit>
       <!-- Talking Book Advanced -->
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
         <source xml:lang="en">eSpeak failed.</source>
@@ -15,11 +35,6 @@
         <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
         <target xml:lang="tr" state="needs-translation">Please split or clear the existing recording in this text box before changing modes.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
-        <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
-        <target xml:lang="tr" state="needs-translation">Sorry, front and back-matter pages must be recorded by sentences.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
         <source xml:lang="en">Import Recording...</source>
@@ -105,6 +120,11 @@
         <source xml:lang="en">Control the order in which various boxes on the page are played back.</source>
         <target xml:lang="tr" state="needs-translation">Control the order in which various boxes on the page are played back.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingMode" sil:dynamic="true">
+        <source xml:lang="en">Recording Mode</source>
+        <target xml:lang="tr" state="needs-translation">Recording Mode</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingMode</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSentence" sil:dynamic="true">
         <source xml:lang="en">By Sentence</source>
@@ -296,6 +316,71 @@
         <source xml:lang="en">About BloomLibrary.org</source>
         <target xml:lang="tr" state="needs-translation">About BloomLibrary.org</target>
         <note>ID: PublishTab.Upload.AboutBlorg</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true">
+        <source xml:lang="en">View on BloomLibrary.org</source>
+        <target xml:lang="tr" state="needs-translation">View on BloomLibrary.org</target>
+        <note>CollectionTab.OnBlorgBadge.ViewBookOnBlorg</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Published" sil:dynamic="true">
+        <source xml:lang="en">Published</source>
+        <target xml:lang="tr" state="needs-translation">Published</target>
+        <note>CollectionTab.OnBlorgBadge.Published</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.MarkedAsDraft" sil:dynamic="true">
+        <source xml:lang="en">Marked as Draft</source>
+        <target xml:lang="tr" state="needs-translation">Marked as Draft</target>
+        <note>CollectionTab.OnBlorgBadge.MarkedAsDraft</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Processing" sil:dynamic="true">
+        <source xml:lang="en">BloomLibrary.org is processing this book</source>
+        <target xml:lang="tr" state="needs-translation">BloomLibrary.org is processing this book</target>
+        <note>CollectionTab.OnBlorgBadge.Processing</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true">
+        <source xml:lang="en">Problem</source>
+        <target xml:lang="tr" state="needs-translation">Problem</target>
+        <note>CollectionTab.OnBlorgBadge.Problem</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Title" sil:dynamic="true">
+        <source xml:lang="en">Book Settings</source>
+        <target xml:lang="tr" state="needs-translation">Book Settings</target>
+        <note>BookSettings.Title</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
+        <source xml:lang="en">Max Image Size</source>
+        <target xml:lang="tr" state="needs-translation">Max Image Size</target>
+        <note>BookSettings.eBook.Image.MaxResolution</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
+        <source xml:lang="en">Small</source>
+        <target xml:lang="tr" state="needs-translation">Small</target>
+        <note>BookSettings.eBook.Image.MaxResolution.Small</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
+        <source xml:lang="en">HD</source>
+        <target xml:lang="tr" state="needs-translation">HD</target>
+        <note>BookSettings.eBook.Image.MaxResolution.HD</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
+        <source xml:lang="en">Full HD</source>
+        <target xml:lang="tr" state="needs-translation">Full HD</target>
+        <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
+        <source xml:lang="en">4K</source>
+        <target xml:lang="tr" state="needs-translation">4K</target>
+        <note>BookSettings.eBook.Image.MaxResolution.4K</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Description" sil:dynamic="true">
+        <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
+        <target xml:lang="tr" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
+        <note>BookSettings.eBook.Image.MaxResolution.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
+        <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
+        <target xml:lang="tr" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
+        <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
       </trans-unit>
     </body>
   </file>

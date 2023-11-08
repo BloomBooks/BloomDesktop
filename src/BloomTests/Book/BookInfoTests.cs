@@ -371,7 +371,6 @@ namespace BloomTests.Book
 				AllTitles = "abc,\"def",
 				BaseUrl = "http://some/unlikely/url",
 				Isbn = "123-456-78-9",
-				DownloadSource = "http://some/amazon/url",
 				License = "ccby",
 				FormatVersion = "1.0",
 				Credits = "JohnT",
@@ -415,7 +414,6 @@ namespace BloomTests.Book
 			// These properties (and various others) should not be in the serialization data.
 			// Since AllowUploadingToBloomLibrary defaults true, that should be its value if not set by json
 			Assert.That(meta2.AllowUploadingToBloomLibrary, Is.True, "AllowUploadingtoBloomLibrary was unexpectedly serialized");
-			Assert.That(meta2.DownloadSource, Is.Null);
 			Assert.That(meta2.CurrentTool, Is.Null);
 			Assert.That(meta2.ToolStates, Is.Null);
 			Assert.That(meta2.CountryName, Is.EqualTo("InTheBush"));
@@ -489,7 +487,7 @@ namespace BloomTests.Book
 
 			Assert.AreEqual(expectedTopicsList, bi.TopicsList);
 
-			BookMetaData metadata = (BookMetaData) ReflectionHelper.GetField(bi, "_metadata");
+			BookMetaData metadata = (BookMetaData)SIL.Reflection.ReflectionHelper.GetField(bi, "_metadata");
 			Assert.AreEqual(expectedTags, metadata.Tags);
 		}
 

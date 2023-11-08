@@ -792,7 +792,7 @@ namespace Bloom.TeamCollection
 				{
 					if (RobustFile.Exists(path)) // won't usually be passed ones that don't, but useful for unit testing at least.
 					{
-						using (var input = ToPalaso.RobustIO.GetFileStream(path, FileMode.Open))
+						using (var input = RobustIO.GetFileStream(path, FileMode.Open))
 						{
 							byte[] buffer = new byte[4096];
 							int count;

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using Bloom.Book;
 using Bloom.Properties;
 using Bloom.ToPalaso;
@@ -21,6 +23,9 @@ namespace Bloom.Api
 		private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
 		public WorkspaceView WorkspaceView;
 
+		// This is used by the app/closeDialog api call to keep track of which dialogs are open
+		// and to implicitly notify other parts of program when the dialog has been closed.
+		static internal ConcurrentDictionary<string, int> OpenDialogs = new ConcurrentDictionary<string, int>();
 
 		public AppApi(BookSelection bookSelection, EditBookCommand editBookCommand, CreateFromSourceBookCommand createFromSourceBookCommand)
 
@@ -44,7 +49,7 @@ namespace Bloom.Api
 					request.PostSucceeded();
 				}
 			}, false);
-			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "autoUpdateSoftwareChoice", HandleAutoUpdate, false);
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "userSetting", HandleUserSetting, false);
 			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "showDownloadsPage", (request) =>
 			{
 				// Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
@@ -72,6 +77,19 @@ namespace Bloom.Api
 					// Requests the same information that is sent to the websocket
 					// when the selection changes.
 					request.ReplyWithJson(WorkspaceView.GetCurrentSelectedBookInfo());
+				}, true);
+			// The dialogName is used to keep track of which dialog is open (and how many idle cycles
+			// it has been open).  The web side of things is responsible for displaying and closing the
+			// dialog.  This api call is used to notify the C# side that the dialog has been closed.
+			// See WorkspaceView.ShowForumInvitationDialogIfNeeded() for an example of code that uses this.
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "closeDialog", request => {
+				var dialogName = request.GetPostStringOrNull();
+				if (!String.IsNullOrEmpty(dialogName))
+				{
+					OpenDialogs.TryRemove(dialogName, out int dummy);
+					Debug.WriteLine($"DEBUG closing dialog {dialogName}: idle cycle count = {dummy}");
+				}
+				request.PostSucceeded();
 				}, true);
 		}
 
@@ -111,22 +129,26 @@ namespace Bloom.Api
 			request.PostSucceeded();
 		}
 
-		public void HandleAutoUpdate(ApiRequest request)
+		// Get requests should have queryparam settingName
+		// Post requests should have a json object with settingName and settingValue
+		public void HandleUserSetting(ApiRequest request)
 		{
 			if (request.HttpMethod == HttpMethods.Get)
 			{
-				var json = JsonConvert.SerializeObject(new
+				var settingName = request.Parameters["settingName"];
+				request.ReplyWithJson(new
 				{
-					autoUpdate = Settings.Default.AutoUpdate,
-					dialogShown = Settings.Default.AutoUpdateDialogShown
+					settingValue = Settings.Default[settingName]
 				});
-				request.ReplyWithJson(json);
 			}
 			else // post
 			{
 				var requestData = DynamicJson.Parse(request.RequiredPostJson());
-				Settings.Default.AutoUpdateDialogShown = (int)requestData.dialogShown;
-				Settings.Default.AutoUpdate = (bool)requestData.autoUpdate;
+				Type settingType = typeof(Settings).GetProperty(requestData.settingName).PropertyType;
+				var settingValue = Convert.ChangeType(requestData.settingValue, settingType);
+
+				Settings.Default[requestData.settingName] = settingValue;
+				Settings.Default.Save();
 				request.PostSucceeded();
 			}
 		}

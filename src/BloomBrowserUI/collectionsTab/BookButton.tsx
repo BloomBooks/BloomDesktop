@@ -14,13 +14,17 @@ import {
     kDefaultLanguageFontStack
 } from "../bloomMaterialUITheme";
 import { useRef, useState, useEffect } from "react";
-import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import WebSocketManager, {
+    IBloomWebSocketEvent,
+    useSubscribeToWebSocketForEvent
+} from "../utils/WebSocketManager";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
 import { IBookInfo, ICollection } from "./BooksOfCollection";
 import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useL10n } from "../react_components/l10nHooks";
 import { showBookSettingsDialog } from "../bookEdit/bookSettings/BookSettingsDialog";
+import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -108,7 +112,7 @@ export const BookButton: React.FunctionComponent<{
     // Don't use useApiStringState to get this function because it does an unnecessary server query
     // to get the value, which we are not using, and this hurts performance.
     const setSelectedBookIdWithApi = value =>
-        postString(`collections/selected-book-id?${collectionQuery}`, value);
+        postString(`collections/selected-book?${collectionQuery}`, value);
 
     const renameDiv = useRef<HTMLElement | null>();
 
@@ -135,21 +139,6 @@ export const BookButton: React.FunctionComponent<{
     };
 
     const bookSubMenuItemsSpecs: MenuItemSpec[] = [
-        {
-            label: "Leveled Reader",
-            l10nId: "TemplateBooks.BookName.Leveled Reader", // not the most appropriate ID, but we have it already
-            command: "bookCommand/leveled",
-            requiresSavePermission: true,
-            checkbox: true
-        },
-        {
-            label: "Decodable Reader",
-            l10nId: "TemplateBooks.BookName.Decodable Reader", // not the most appropriate ID, but we have it already
-            command: "bookCommand/decodable",
-            requiresSavePermission: true,
-            checkbox: true
-        },
-        { label: "-" },
         {
             label: "Export to Word or LibreOffice...",
             l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
@@ -339,12 +328,35 @@ export const BookButton: React.FunctionComponent<{
         });
     };
 
+    const awaitingDoubleClick = useRef(false);
+
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         if (props.book.id !== props.manager.getSelectedBookInfo()?.id) {
             // Not only is it useless to select the book that is already selected,
             // it might have side effects. This might have been a contributing factor
             // to the rename box getting blurred when clicked in.
             setSelectedBookIdWithApi(props.book.id);
+            // The above API call can block the UI thread so that we don't get a normal
+            // double-click event. But it is programmed to send us a clickTimerElapsed
+            // message after the normal double-click interval. The timer that
+            // does that is also blocked if the UI thread is blocked, so if the click
+            // is delayed, the message telling us to stop treating it as a double will
+            // be delayed even more.
+            // This means that we might treat a click as a double with a slightly longer
+            // interval than normal. But even if the user normally has a fast double-click,
+            // it's likely that a second click on the same book before we've finished
+            // updating the UI is intended to be a double.
+            // Note that this special double-click handling does not happen when we click the
+            // same book. Instead, we are pretty confident that the normal double-click
+            // event will happen, since the things that block the UI thread for too long
+            // only happen when we call the above API.
+            awaitingDoubleClick.current = true;
+        } else {
+            // Click on the same book. If we recently clicked it and haven't yet been told
+            // that the double-click timer elapsed, treat it as a double-click.
+            if (awaitingDoubleClick.current) {
+                handleDoubleClick();
+            }
         }
 
         // There's a default right-click menu implemented by C# code which we don't want here.
@@ -354,7 +366,12 @@ export const BookButton: React.FunctionComponent<{
         event.stopPropagation();
     };
 
-    const handleDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
+    // Called in two ways: when the browser detects a double-click event on a book
+    // (often when it was already selected, because when it is first selected delays on
+    // the UI thread may prevent normal detection), but alternatively when a book is clicked
+    // that is not selected and we get another click that we think should be treated as a double.)
+    const handleDoubleClick = () => {
+        awaitingDoubleClick.current = false; // the next click is definitely a first-click
         postString(
             `collections/selectAndEditBook?${collectionQuery}`,
             props.book.id
@@ -366,6 +383,16 @@ export const BookButton: React.FunctionComponent<{
 
         handleClick(event);
     };
+    useEffect(() => {
+        const l = (e: IBloomWebSocketEvent) => {
+            if (e.id === "clickTimerElapsed") {
+                awaitingDoubleClick.current = false;
+            }
+        };
+        WebSocketManager.addListener("collections", l);
+        // Clean up when we are unmounted
+        return () => WebSocketManager.removeListener("collections", l);
+    }, []);
 
     const finishRename = (name: string | undefined) => {
         setRenaming(false);
@@ -470,6 +497,9 @@ export const BookButton: React.FunctionComponent<{
                         <img
                             src={`/bloom/api/collections/book/thumbnail?book-id=${props.book.id}&${collectionQuery}&reload=${reload}`}
                         />
+                        {props.collection.isEditableCollection && (
+                            <BookOnBlorgBadge book={props.book} />
+                        )}
                     </div>
                 }
             >

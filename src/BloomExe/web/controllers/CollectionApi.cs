@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -15,6 +16,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -33,6 +35,7 @@ namespace Bloom.web.controllers
 		private BookThumbNailer _thumbNailer;
 		private BloomWebSocketServer _webSocketServer;
 		private readonly EditBookCommand _editBookCommand;
+		private Timer _clickTimer = new Timer();
 
 		private int _thumbnailEventsToWaitFor = -1;
 
@@ -49,6 +52,14 @@ namespace Bloom.web.controllers
 			_editBookCommand = editBookCommand;
 			_thumbNailer = thumbNailer;
 			_webSocketServer = webSocketServer;
+			_clickTimer.Interval = SystemInformation.DoubleClickTime;
+			_clickTimer.Tick += _clickTimer_Tick;
+		}
+
+		private void _clickTimer_Tick(object sender, EventArgs e)
+		{
+			_clickTimer.Stop();
+			_webSocketServer.SendEvent("collections", "clickTimerElapsed");
 		}
 
 
@@ -65,9 +76,29 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "books", HandleBooksRequest, false, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "book/thumbnail", HandleThumbnailRequest, false, false);
 
+			// used by visual regression tests to name screenshots
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "selected-book-info", request =>{
+
+				var book = _collectionModel.GetSelectedBookOrNull();
+				if (book == null)
+				{
+					request.Failed();
+					return;
+				}
+				var bookInfo = book.BookInfo;
+				var json = new
+				{
+					id = bookInfo.Id,
+					title = bookInfo.QuickTitleUserDisplay,
+					folderPath = bookInfo.FolderPath,
+					folderName = book.Storage.FolderName,
+				};
+				request.ReplyWithJson(json);
+			}, true);
+
 			// Note: the get part of this doesn't need to run on the UI thread, or even requiresSync. If it gets called a lot, consider
 			// using different patterns for get and set so we can not use the uI thread for get.
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "selected-book-id", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "selected-book", request =>
 			{
 				switch (request.HttpMethod)
 				{
@@ -75,6 +106,15 @@ namespace Bloom.web.controllers
 						request.ReplyWithText("" + _collectionModel.GetSelectedBookOrNull()?.ID);
 						break;
 					case HttpMethods.Post:
+						// Various things done during this post block the UI thread in a way that can cause Javascript
+						// not to notice a double-click. But a second click that occurs before this timer fires will
+						// get processed before the timer-fired event. So Javascript is programmed to look for a click
+						// that happens after an initial click but before it is notified that this timer fired.
+						// Such clicks are treated as doubles.
+						// Note: we'll send this notification even if the API call was not made in response to a click.
+						// That is harmless; the only listener for this message does nothing but clear a 'waiting for
+						// double click' flag.
+						_clickTimer.Start();
 						// We're selecting the book, make sure everything is up to date.
 						// This first method does minimal processing to come up with the right collection and BookInfo object
 						// without actually loading all the files. We need the title for the Performance Measurement and later
@@ -100,10 +140,17 @@ namespace Bloom.web.controllers
 						{
 							if (newBookInfo?.FolderPath != null)
 							{
-								var ex = new Exception("Error selecting book: " + newBookInfo.FolderPath, e);
+								var folderPath = newBookInfo.FolderPath;
+								if (MiscUtils.ContainsSurrogatePairs(folderPath))
+									folderPath = MiscUtils.QuoteUnicodeCodePointsInPath(folderPath);
+								var msg = "Error selecting book: " + folderPath;
+								var ex = new Exception(msg, e);
 								// For some reason, BookInfo can't be serialized, so we'll add the pieces to the exception.
-								ex.Data.Add("ErrorBookFolder", newBookInfo.FolderPath);
-								ex.Data.Add("ErrorBookName", newBookInfo.QuickTitleUserDisplay);
+								ex.Data.Add("ErrorBookFolder", folderPath);
+								if (MiscUtils.ContainsSurrogatePairs(newBookInfo.QuickTitleUserDisplay))
+									ex.Data.Add("ErrorBookName", MiscUtils.QuoteUnicodeCodePointsInPath(newBookInfo.QuickTitleUserDisplay));
+								else
+									ex.Data.Add("ErrorBookName", newBookInfo.QuickTitleUserDisplay);
 								throw ex;
 							}
 							throw e;
@@ -182,6 +229,8 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceCollection", HandleRemoveSourceCollection, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addSourceCollection", HandleAddSourceCollection, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceFolder", HandleRemoveSourceFolder, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getBookOnBloomBadgeInfo", GetBookOnBloomBadgeInfo, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getBookCountByLanguage", HandleGetBookCountByLanguage, true);
 		}
 
 		private void HandleRemoveSourceCollection(ApiRequest request)
@@ -217,6 +266,18 @@ namespace Bloom.web.controllers
 				request.Failed();
 				return;
 			}
+		}
+
+		// Currently only used by Books on Blorg Progress Bar; if a Sign Language is defined, we use that.
+		private void HandleGetBookCountByLanguage(ApiRequest request)
+		{
+			if (request.HttpMethod == HttpMethods.Post)
+				return; // should be Get
+
+			var client = new BloomParseClient();
+			var langTag = string.IsNullOrEmpty(_settings.SignLanguageTag) ? _settings.Language1Tag : _settings.SignLanguageTag;
+			var count = client.GetBookCountByLanguage(langTag);
+			request.ReplyWithText(count.ToString());
 		}
 
 		internal void CheckForCollectionUpdates()
@@ -336,6 +397,7 @@ namespace Bloom.web.controllers
 			return RobustFile.Exists(linkFile);
 		}
 
+		private string _currentCollectionPath;
 		public void HandleBooksRequest(ApiRequest request)
 		{
 			var collection = GetCollectionOfRequest(request);
@@ -347,6 +409,16 @@ namespace Bloom.web.controllers
 			// Note: the winforms version used ImproveAndRefreshBookButtons(), which may load the whole book.
 
 			var bookInfos = collection.GetBookInfos();
+			// Load the initial values for the bloom library status of each book.
+			if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+			{
+				var reload = request.Parameters["reload"] == "true";
+				if (reload || collection.PathToDirectory != _currentCollectionPath)
+				{
+					_currentCollectionPath = collection.PathToDirectory;
+					collection.UpdateBloomLibraryStatusOfBooks(bookInfos.ToList(), skipBadgeUpdate: true);
+				}
+			}
 			var jsonInfos = bookInfos
 				.Where(info => collection.Type == BookCollection.CollectionType.TheOneEditableCollection || info.ShowThisBookAsSource())
 				.Select(info =>
@@ -368,7 +440,7 @@ namespace Bloom.web.controllers
 			// getting at least two requests. Fortunately, waiting for those seems to be enough to make it look
 			// as if we're prioritizing the whole primary collection.
 			// We need the count to be at least one, even if the main collection is empty, so that the milestone
-			// will always be reported. 
+			// will always be reported.
 			lock (_thumbnailEventsLock)
 			{
 				if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
@@ -382,11 +454,18 @@ namespace Bloom.web.controllers
 		// This needs to be thread-safe.
 		private BookCollection GetCollectionOfRequest(ApiRequest request)
 		{
-			var id = request.RequiredParam("collection-id").Trim();
-			var collection = _collectionModel.GetBookCollections().FirstOrDefault(c => c.PathToDirectory == id);
+			// Collection can be specified by id, which is the equal to the directory path on disk. If this is not specified, we default to the editable collection.
+			var id = request.GetParamOrNull("collection-id")?.Trim();
+			BookCollection collection;
+			if(string.IsNullOrWhiteSpace(id)){
+				collection = _collectionModel.CurrentEditableCollection;
+			}
+			else{
+				collection = _collectionModel.GetBookCollections().ToList().FirstOrDefault(c => c.PathToDirectory == id);
+			}
 			if (collection == null)
 			{
-				request.Failed($"Collection named '{id}' was not found.");
+				request.Failed($"Collection with path '{id}' was not found.");
 			}
 
 			return collection;
@@ -394,7 +473,6 @@ namespace Bloom.web.controllers
 
 		public void HandleThumbnailRequest(ApiRequest request)
 		{
-			var bookInfo = GetBookInfoFromRequestParam(request);
 			lock (_thumbnailEventsLock)
 			{
 				if (_thumbnailEventsToWaitFor > 0)
@@ -404,6 +482,8 @@ namespace Bloom.web.controllers
 						StartupScreenManager.StartupMilestoneReached("collectionButtonsDrawn");
 				}
 			}
+
+			var bookInfo = GetBookInfoFromRequestParam(request);
 
 			// Not sure what causes bookInfo to be null, but apparently it's possible: See BL-12354
 			// Let's gracefully fail in this scenario
@@ -439,6 +519,45 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		private void GetBookOnBloomBadgeInfo(ApiRequest apiRequest)
+		{
+			var bookId = apiRequest.RequiredParam("book-id");
+
+			var infos = _collectionModel.TheOneEditableCollection.GetBookInfos().Where(info => info.Id == bookId && info.BloomLibraryStatus != null).ToList();
+			if (infos.Count == 0)
+			{
+				apiRequest.ReplyWithJson(new
+				{
+					bookUrl = "",
+				});
+			}
+			else if (infos.Count == 1)
+			{
+				var info = infos[0];
+				apiRequest.ReplyWithJson(new
+				{
+					bookUrl = info.BloomLibraryStatus.BloomLibraryBookUrl,
+					draft = info.BloomLibraryStatus.Draft,
+					inCirculation = !info.BloomLibraryStatus.NotInCirculation,
+					harvestState = info.BloomLibraryStatus.HarvesterState.ToString().ToLowerInvariant()
+				});
+			}
+			else
+			{
+				// This may duplicate the action in BloomParseCLient.GetLibraryStatusForBooks, but it doesn't
+				// hurt to generate the url and harvest status twice.  The operation in BloomParseClient can
+				// handle duplicate book ids in different collections while this one looks only at the current
+				// collection.
+				apiRequest.ReplyWithJson(new
+				{
+					bookUrl = BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(bookId),
+					draft = false,
+					inCirculation = true,
+					harvestState = HarvesterState.Multiple.ToString().ToLowerInvariant()
+				});
+			}
+		}
+
 		/// <summary>
 		/// Convert an image bitmap into a MemoryStream
 		/// </summary>
@@ -460,8 +579,22 @@ namespace Bloom.web.controllers
 		// Needs to be thread-safe
 		private BookInfo GetBookInfoFromPost(ApiRequest request)
 		{
-			var bookId = request.RequiredPostString();
-			return GetCollectionOfRequest(request).GetBookInfos().FirstOrDefault(info => info.Id == bookId);
+			// We can specify the book by id or by path explicitly, or by just sending the id as the body of the post.
+			Func<BookInfo, bool> predicate;
+			if (request.GetParamOrNull("path") != null)
+			{
+				predicate = info => info.FolderPath == request.GetParamOrNull("path");
+			}
+			else if (request.GetParamOrNull("id") != null)
+			{
+				predicate = info => info.Id == request.GetParamOrNull("id");
+			}
+			else {
+				// the original version of this just handled id as the body of the post
+			 	predicate = info => info.Id == request.RequiredPostString();
+			}
+			var collection = GetCollectionOfRequest(request);
+			return collection.GetBookInfos().FirstOrDefault(predicate);
 		}
 
 		private Book.Book GetBookObjectFromPost(ApiRequest request, bool fullyUpdateBookFiles = false)

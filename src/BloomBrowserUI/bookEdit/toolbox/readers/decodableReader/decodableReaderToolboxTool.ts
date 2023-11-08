@@ -6,7 +6,11 @@ import {
     getTheOneReaderToolsModel,
     MarkupType
 } from "../readerToolsModel";
-import { beginInitializeDecodableReaderTool } from "../readerTools";
+import {
+    beginInitializeDecodableReaderTool,
+    createToggle,
+    isToggleOff
+} from "../readerTools";
 import { ITool } from "../../toolbox";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { get } from "../../../../utils/bloomApi";
@@ -161,12 +165,19 @@ export class DecodableReaderToolboxTool implements ITool {
     public showTool() {
         // change markup based on visible options
         getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
+
+        const isForLeveled = false;
+        createToggle(isForLeveled);
     }
 
     public newPageReady() {
         // Most cases don't require setMarkupType(), but when switching pages
         // it will have been set to 0 by detachFromPage() on the old page.
-        getTheOneReaderToolsModel().setMarkupType(1);
+        // So we do want to set the appropriate markup, but if the toggle is off, we want the markup off.
+        const isForLeveled = false;
+        getTheOneReaderToolsModel().setMarkupType(
+            isToggleOff(isForLeveled) ? 0 : 1
+        );
         // usually updateMarkup will do this, unless we are coming from showTool
         getTheOneReaderToolsModel().doMarkup();
     }

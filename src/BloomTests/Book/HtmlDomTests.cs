@@ -124,27 +124,28 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void AddClassIfMissing_AlreadyThere_LeavesAlone()
+		public void AddClass_AlreadyThere_LeavesAlone()
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<div class='one two three'/>");
-			HtmlDom.AddClassIfMissing((XmlElement) dom.FirstChild, "two");
+			HtmlDom.AddClass((XmlElement) dom.FirstChild, "two");
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[@class='one two three']",1);
 		}
 		[Test]
-		public void AddClassIfMissing_Missing_Adds()
+		public void AddClass_SubstringClass_Adds()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml(@"<div class='one three'/>");
-			HtmlDom.AddClassIfMissing((XmlElement)dom.FirstChild, "two");
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[@class='one three two']", 1);
+			dom.LoadXml(@"<div class='decodable-reader-off'/>");
+			HtmlDom.AddClass((XmlElement)dom.FirstChild, "decodable-reader");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[contains(@class,'decodable-reader')]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[contains(@class,'decodable-reader-off')]", 1);
 		}
 		[Test]
-		public void AddClassIfMissing_NoClasses_Adds()
+		public void AddClass_NoClasses_Adds()
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<div class=''/>");
-			HtmlDom.AddClassIfMissing((XmlElement)dom.FirstChild, "two");
+			HtmlDom.AddClass((XmlElement)dom.FirstChild, "two");
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[@class='two']", 1);
 		}
 
@@ -286,11 +287,11 @@ namespace BloomTests.Book
 			Assert.AreEqual("", HtmlDom.GetImageElementUrl(element).UrlEncoded);
 		}
 
-		private ElementProxy MakeElement(string xml)
+		private XmlElement MakeElement(string xml)
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(xml);
-			return new ElementProxy(dom.DocumentElement);
+			return dom.DocumentElement;
 		}
 
 		private void AssertHasClasses(string expectedString, string actualString)

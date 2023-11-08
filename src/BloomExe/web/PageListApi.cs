@@ -231,7 +231,7 @@ namespace Bloom.web
 						}
 						// It's not strictly true that url here is unencoded. In fact it contains a file path that IS
 						// encoded. But also a query that isn't. So we need to treat it as unencoded.
-						HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUnencodedString(url));
+						HtmlDom.SetImageElementUrl(imgNode, UrlPathString.CreateFromUnencodedString(url));
 					}
 				}
 			}

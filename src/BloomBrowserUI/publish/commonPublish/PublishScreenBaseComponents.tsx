@@ -5,6 +5,8 @@ import Typography from "@mui/material/Typography";
 import "./PublishScreenBaseComponents.less";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { kOptionPanelBackgroundColor } from "../../bloomMaterialUITheme";
+import { DisabledContext } from "../../react_components/BloomToolTip";
+import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 
 // This file contains a collection of components which works together with the PublishScreenTemplate
 // to create the basic layout of a publishing screen in Bloom.
@@ -52,10 +54,14 @@ export const SettingsPanel: React.FunctionComponent = props => {
 export const SettingsGroup: React.FunctionComponent<{
     label: string;
 }> = props => {
+    const disabledContext = React.useContext(DisabledContext);
     return (
         <section
             css={css`
                 margin-top: 20px;
+                opacity: ${disabledContext.valueOf()
+                    ? kBloomDisabledOpacity
+                    : 1};
             `}
         >
             <Typography variant="h6">{props.label}</Typography>

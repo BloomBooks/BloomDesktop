@@ -16,6 +16,7 @@ using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
+using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
@@ -943,7 +944,7 @@ namespace Bloom.Publish.Video
 				if (_ffmpegExited)
 					return 0;
 
-				var progressFileContents = ToPalaso.RobustIO.ReadAllTextFromFileWhichMightGetWrittenTo(_ffmpegProgressFile.Path);
+				var progressFileContents = RobustIO.ReadAllTextFromFileWhichMightGetWrittenTo(_ffmpegProgressFile.Path);
 
 				if (string.IsNullOrWhiteSpace(progressFileContents))
 					return 0;
@@ -1301,7 +1302,13 @@ namespace Bloom.Publish.Video
 			{
 				OutputFilenames.RememberOutputFilePath(_book, extension, destFileName, langTag);
 				RobustFile.Copy(_finalVideo.Path, destFileName, true);
-			}
+			}			
+
+			Analytics.Track("Publish Audio/Video", new Dictionary<string, string>() {
+				{ "format", _book.BookInfo.PublishSettings.AudioVideo.Format },
+				{ "BookId", _book.ID },
+				{ "Country", _book.CollectionSettings.Country },
+				{ "Language", _book.BookData.Language1.Tag } });
 		}
 
 		// Some logic I found...combined with increasing the MaximumSize of the window, it allows
@@ -1442,8 +1449,11 @@ namespace Bloom.Publish.Video
 
 			if (format != "mp3" && IsVideoTooSmall(actualResolution, desiredResolution))
 			{
-				if (s_screenResolution.Width >= desiredResolution.Width &&
-					s_screenResolution.Height >= desiredResolution.Height)
+				// Check for either landscape or portait orientation.
+				if ((s_screenResolution.Width >= desiredResolution.Width &&
+					s_screenResolution.Height >= desiredResolution.Height) ||
+					(s_screenResolution.Width >= desiredResolution.Height &&
+					s_screenResolution.Height >= desiredResolution.Width))
 				{
 					// If the screen actually allows the desired resolution, we can make the window full screen.
 					// (Full screen means borderless window that covers the whole screen in at least one dimension.)

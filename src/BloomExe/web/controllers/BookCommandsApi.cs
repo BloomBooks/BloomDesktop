@@ -64,14 +64,6 @@ namespace Bloom.web.controllers
 				RequestButtonLabelUpdate(collection, id);
 				request.PostSucceeded();
 			}, false, false);
-			apiHandler.RegisterBooleanEndpointHandler("bookCommand/decodable",
-				request => { return _collectionModel.IsBookDecodable;},
-				(request, b) => { _collectionModel.SetIsBookDecodable(b);},
-				true);
-			apiHandler.RegisterBooleanEndpointHandler("bookCommand/leveled",
-				request => { return _collectionModel.IsBookLeveled; },
-				(request, b) => { _collectionModel.SetIsBookLeveled(b); },
-				true);
 			apiHandler.RegisterEndpointLegacy("bookCommand/", HandleBookCommand, true);
 		}
 
@@ -329,6 +321,10 @@ namespace Bloom.web.controllers
 
 		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
+			// Update the badge as well as part of the thumbnail.  We need to use the exact BookInfo object stored
+			// in the BookCollection because that is the one the API server uses to provide data to the web client.
+			_collectionModel.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(
+				_collectionModel.TheOneEditableCollection.GetBookInfos().Where(info => info.Id == book.ID).ToList());
 			_collectionModel.UpdateThumbnailAsync(book);
 		}
 

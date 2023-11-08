@@ -15,6 +15,7 @@ using Bloom.ToPalaso;
 using Bloom.web;
 using SIL.Windows.Forms.SettingProtection;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Bloom.CollectionTab
 {
@@ -44,6 +45,7 @@ namespace Bloom.CollectionTab
 
 			InitializeComponent();
 			_reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
+			_settingsButton.Visible = false;	// Hide for now. We'll bring it back in 5.7.
 			BackColor = _reactControl.BackColor = Palette.GeneralBackground;
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 			_toolStripLeft.Renderer = new NoBorderToolStripRenderer();
@@ -258,7 +260,8 @@ namespace Bloom.CollectionTab
 		internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
 		{
 			//we have a couple of buttons which don't make sense for the remote (therefore vulnerable) low-end user
-			settingsLauncherHelper.ManageComponent(_settingsButton);
+			settingsLauncherHelper.ManageComponent(_legacySettingsButton);
+			//comment out until 5.7 settingsLauncherHelper.ManageComponent(_settingsButton);
 
 			//NB: this isn't really a setting, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
 			settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
@@ -303,10 +306,9 @@ namespace Bloom.CollectionTab
 		}
 
 		/// <summary>
-		/// TopBarControl.Width is not right here, because (a) the Send/Receive button currently never shows, and
-		/// (b) the Make Bloompack button only shows in source collections.
+		/// TopBarControl.Width is not right here, because the Team Collection status button only shows in team collections.
 		/// </summary>
-		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width +
+		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width + _legacySettingsButton.Width +
 			(_tcStatusButton.Visible ? _tcStatusButton.Width : 0);
 
 		public void PlaceTopBarControl()
@@ -324,9 +326,14 @@ namespace Bloom.CollectionTab
 			return ancestor as WorkspaceView;
 		}
 
+		private void _legacySettingsButton_Click(object sender, EventArgs e)
+		{
+			GetWorkspaceView().OnLegacySettingsButton_Click(sender, e);
+		}
+
 		private void _settingsButton_Click(object sender, EventArgs e)
 		{
-			GetWorkspaceView().OnSettingsButton_Click(sender, e);
+			_webSocketServer.LaunchDialog("CollectionSettingsDialog", new DynamicJson());
 		}
 
 		private void _openCreateCollectionButton_Click(object sender, EventArgs e)
@@ -351,6 +358,23 @@ namespace Bloom.CollectionTab
 		private void _tcStatusButton_Click(object sender, EventArgs e)
 		{
 			// probably will do GetWorkspaceView().OpenTCStatus();
+		}
+
+		/// <summary>
+		/// Update the Bloom Library status of all the books in the editable collection.
+		/// </summary>
+		/// <remarks>
+		/// I'd much rather not have this method, but code keeping track of which tab is active
+		/// only has access to the View classes, not the Model classes. So we have to put it here,
+		/// at least for now.
+		/// </remarks>
+		internal void UpdateBloomLibraryStatus(string bookId)
+		{
+			if (String.IsNullOrEmpty(bookId))
+				_model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(_model.TheOneEditableCollection.GetBookInfos().ToList());
+			else
+				_model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(_model.TheOneEditableCollection.GetBookInfos()
+					.Where(info => info.Id == bookId).ToList());
 		}
 	}
 }

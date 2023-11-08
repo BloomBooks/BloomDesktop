@@ -230,6 +230,11 @@ namespace Bloom.Publish.Video
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "isScalingActive",
 				request => IsScalingActive(),
 			null, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "abortMakingVideo", request =>
+			{
+				AbortMakingVideo();
+				request.PostSucceeded();
+			}, true); // The RecordVideoWindow can only be accessed and stopped from the thread it was created on which is the UI thread
 		}
 
 		private void UpdatePreview(ApiRequest request)
@@ -386,8 +391,8 @@ namespace Bloom.Publish.Video
 		{
 			if (_recordVideoWindow != null)
 			{
-				_recordVideoWindow.Close();
-				_recordVideoWindow.Cleanup();
+				_recordVideoWindow?.Close();
+				_recordVideoWindow?.Cleanup();
 				_recordVideoWindow = null;
 			}
 		}

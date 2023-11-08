@@ -8,7 +8,6 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Publish.Epub;
 using BloomTemp;
-using Gtk;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.IO;

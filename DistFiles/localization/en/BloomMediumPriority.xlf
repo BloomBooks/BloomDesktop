@@ -5,6 +5,22 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true">
+        <source xml:lang="en">Book is Decodable</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsDecodable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable" sil:dynamic="true">
+        <source xml:lang="en">Book is not Decodable</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsLeveled" sil:dynamic="true">
+        <source xml:lang="en">Book is Leveled</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsLeveled</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled" sil:dynamic="true">
+        <source xml:lang="en">Book is not Leveled</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled</note>
+      </trans-unit>
       <!-- Talking Book Advanced -->
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
         <source xml:lang="en">eSpeak failed.</source>
@@ -282,6 +298,65 @@
         <source xml:lang="en">About BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.AboutBlorg</note>
         <note>This phrase has a link to the "About Bloom" page on that website.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">View on BloomLibrary.org</source>
+        <note>CollectionTab.OnBlorgBadge.ViewOnBlorg</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Published" sil:dynamic="true">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">Published</source>
+        <note>CollectionTab.OnBlorgBadge.Published</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.MarkedAsDraft" sil:dynamic="true">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">Marked as Draft</source>
+        <note>CollectionTab.OnBlorgBadge.MarkedAsDraft</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Harvesting" sil:dynamic="true">
+        <source xml:lang="en">In Progress</source>
+        <note>CollectionTab.OnBlorgBadge.Harvesting</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">Problem</source>
+        <note>CollectionTab.OnBlorgBadge.Problem</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Title" sil:dynamic="true">
+        <source xml:lang="en">Book Settings</source>
+        <note>BookSettings.Title</note>
+        <note>the heading of the dialog</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
+        <source xml:lang="en">Max Image Size</source>
+        <note>BookSettings.eBook.Image.MaxResolution</note>
+        <note>keyword used to describe the size in pixels of a display screen or of an image</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
+        <source xml:lang="en">Small</source>
+        <note>BookSettings.eBook.Image.MaxResolution.Small</note>
+        <note>label for our small resolution (600 x 600)</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
+        <source xml:lang="en">HD</source>
+        <note>BookSettings.eBook.Image.MaxResolution.HD</note>
+        <note>abbreviation for High Definition (1280 x 720)</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
+        <source xml:lang="en">Full HD</source>
+        <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
+        <note>abbreviation for Full High Definition (1920 x 1080)</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
+        <source xml:lang="en">4K</source>
+        <note>BookSettings.eBook.Image.MaxResolution.4K</note>
+        <note>abbreviation for Ultra High Definition, also known as "4K" (3480 x 2160)</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
+        <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
+        <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
+        <note>displayed below the slider that is used to set the image resolution</note>
       </trans-unit>
     </body>
   </file>

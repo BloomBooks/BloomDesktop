@@ -50,6 +50,7 @@ module.exports = {
         "no-case-declarations": "warn",
         "prefer-rest-params": "warn",
         "prefer-spread": "warn",
+        eqeqeq: ["warn", "always"],
         // Disabled
         "@typescript-eslint/ban-types": "off", // Record<string, never> is not intuitive for us compared to {}
         "@typescript-eslint/no-inferrable-types": "off", // not worth worrying about (not even convinced it's a problem at all)

@@ -1,4 +1,5 @@
 ///<reference path="./jquery.hasAttr.d.ts" />
+/// <reference path="../../typings/jquery.qtip.d.ts" />
 import * as $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
@@ -27,6 +28,7 @@ import "../../lib/long-press/jquery.longpress.js";
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { getEditTabBundleExports } from "./bloomFrames";
+import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
@@ -158,15 +160,6 @@ function SetupDeletable(containerDiv) {
     return $(containerDiv);
 }
 
-function getUnicodePoint(char) {
-    const codePoint = char.charCodeAt(0);
-    let unicodePoint = codePoint.toString(16);
-    while (unicodePoint.length < 4) {
-        unicodePoint = "0" + unicodePoint;
-    }
-    return "\\u" + unicodePoint;
-}
-
 // Add various editing key handlers
 function AddEditKeyHandlers(container) {
     //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
@@ -223,51 +216,16 @@ function AddEditKeyHandlers(container) {
             document.execCommand("formatBlock", false, "H2");
         });
 
-    const invisibles = [
-        //{ re: "a|b|[0-9]", symbol: "🍎" },
-        { re: "&nbsp;|\u00A0", symbol: "🚀" }, // space (rocket == space)
-        { re: "\u202f", symbol: "🥐" }, // narrow space (croissant == french)
-        { re: "&ZeroWidthSpace;|\u200B", symbol: "0️⃣" },
-        { re: "&zwj;|\u200D", symbol: "🔗" }, // zero width joiner
-        {
-            re:
-                "[\u0009-\u000D]|\u0085|\u1680|\u180E|[\u2000-\u200A]|\u2028|\u2029|\u205F|\u3000|\uFEFF", //review: some list from some random dude
-            symbol: "🐻‍❄️" // random other whitespace
-        }
-    ];
-
     // for testing only: show invisibles
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "CTRL+ALT+SPACE", e => {
-            e.preventDefault();
-            // get the parent that has the class bloom-editable
-            const editable = $(e.target).closest(".bloom-editable");
-            editable.html((i, html) => {
-                // for each replacement, replace all instances of the char with the symbol
-                invisibles.forEach(function(pair) {
-                    const re = new RegExp(pair.re, "g");
-                    html = html.replace(re, match => {
-                        const code = getUnicodePoint(match); // get something like \u00A0
-                        return `<span data-original="${code}">${pair.symbol}</span>`;
-                    });
-                    return html;
-                });
-                return html;
-            });
+        .on("keydown", null, "CTRL+SHIFT+SPACE", e => {
+            showInvisibles(e);
         })
-        .on("keyup", null, "CTRL+ALT+SPACE", e => {
-            // restore all the original characters
-            e.preventDefault();
-            const editable = $(e.target).closest(".bloom-editable");
-            editable.html((i, html) => {
-                return html.replace(
-                    /<span data-original="\\u(....)">..?.?<\/span>/g,
-                    function(match, p1) {
-                        return String.fromCharCode(parseInt(p1, 16));
-                    }
-                );
-            });
+        // when user releases any key or clicks away from the editable
+        // (if we only listen for keyup of the CTL+SHIFT+SPACE, it doesn't trigger if user lifts keys in wrong order)
+        .on("keyup blur", null, e => {
+            hideInvisibles(e);
         });
 
     $(document).keydown(e => {
@@ -1273,9 +1231,15 @@ export function localizeCkeditorTooltips(bar: JQuery) {
 // This is invoked from C# when we are about to change pages. The C# code will save the changes
 // to the page after we return from this (hopefully; certainly in debugging this is the case).
 export const pageSelectionChanging = () => {
-    const marginBox = $(".marginBox");
-    marginBox.removeClass("origami-layout-mode");
-    marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
+    // We are mirroring the origami layoutToggleClickHandler() here, in case the user changes
+    // pages while the origami toggle in on.
+    // The DOM here is for just one page, so there's only ever one marginBox.
+    const marginBox = document.getElementsByClassName("marginBox")[0];
+    marginBox.classList.remove("origami-layout-mode");
+    const textLabels = marginBox.getElementsByClassName("textBox-identifier");
+    for (let i = 0; i < textLabels.length; i++) {
+        textLabels[i].remove();
+    }
 };
 
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via

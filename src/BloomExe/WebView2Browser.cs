@@ -446,7 +446,7 @@ namespace Bloom
 			while (!task.IsCompleted)
 			{
 				Application.DoEvents();
-				System.Threading.Thread.Sleep(10);
+				Thread.Sleep(10);
 			}
 
 			return task.Result;
@@ -499,7 +499,7 @@ namespace Bloom
 			{
 				// Note: this is only used for the Undo button in the toolbar;
 				// ctrl-z is handled in JavaScript directly.
-				RunJavascriptWithStringResult_Sync_Dangerous("editTabBundle.handleUndo()"); // I'm leaving this async for this late update to 5.5, but can it be async?
+				RunJavascriptAsync("editTabBundle.handleUndo()");	// works fine async in testing
 			};
 		}
 

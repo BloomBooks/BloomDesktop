@@ -14,11 +14,12 @@
 /*jslint browser: true, onevar: true, undef: true, nomen: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: true */
 /*global window: false, jQuery: false, console: false, define: false */
 
-
 /* hatton removed use of $browser for jquery 1.9... qtip has this fix in the pipeline but it's not out yet*/
 /* JohnT (Bloom) added code marked Adjust for zoom by transform: scale
+/* Noel (Bloom) added NaN checks (for 0-width or 0-length elements) to the code marked Adjust for zoom by transform: scale
 
 /* Cache window, document, undefined */
+// prettier-ignore
 (function( window, document, undefined ) {
 
 // Uses AMD or browser globals to create a jQuery plugin.
@@ -1232,6 +1233,23 @@ function QTip(target, options, id, attr)
                     var bounds = targetElem.getBoundingClientRect();
                     var scaleY = bounds.height / targetElem.offsetHeight;
                     var scaleX = bounds.width / targetElem.offsetWidth;
+
+                    // If target element has height but no width or vice versa, use the same scale in both directions, 
+                    // which should generally be appropriate
+                    if (isNaN(scaleX) && !isNaN(scaleY)) {
+                        scaleX = scaleY;
+                    }
+                    if (isNaN(scaleY) && !isNaN(scaleX)) {
+                        scaleY = scaleX;
+                    }
+
+                    // I don't know of any current situation where we are putting a qtip on an item with no 
+                    // width and no height. But just in case, make the scale 1 so the qtips at least show up
+                    if (isNaN(scaleY) && isNaN(scaleX)) {
+                        scaleY = 1;
+                        scaleX = 1;
+                    }
+
                     position.left = position.left / scaleX;
                     position.top = position.top / scaleY;
                 }

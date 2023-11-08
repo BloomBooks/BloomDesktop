@@ -29,6 +29,10 @@
         {
             "id": "localizingSystem",
             "url": "https://crowdin.com/project/sil-bloom"
+        },
+        {
+            "id": "lastVersionForPreWindows10",
+            "url": "https://bloomlibrary.org/downloads"
         }
     ]
 }

@@ -1,0 +1,90 @@
+/*****
+Note the following division of labor:
+Rules that place branding on an xmatter page belong in bloom-xmatter-commons.less or the stylesheet of a particular xmatter.
+Rules that format the branding go in branding-base.less, or in the branding.less of a particular branding.
+****/
+[data-book*="branding"] {
+  display: flex;
+  flex-direction: column;
+}
+[data-book*="branding"] img {
+  margin-left: auto;
+  margin-right: auto;
+  width: auto;
+  max-width: 100%;
+  align-self: center;
+  object-fit: contain;
+}
+[data-book="outside-back-cover-branding-bottom-html"] {
+  width: 100%;
+}
+/*  these rules allow different branding insertions depending on orientation */
+.portraitOnly,
+.landscapeOnly {
+  display: none;
+}
+.Size6x9Portrait .portraitOnly,
+.USComicPortrait .portraitOnly,
+.Device16x9Portrait .portraitOnly,
+.QuarterLetterPortrait .portraitOnly,
+.HalfLetterPortrait .portraitOnly,
+.LetterPortrait .portraitOnly,
+.LegalPortrait .portraitOnly,
+.A3Portrait .portraitOnly,
+.A4Portrait .portraitOnly,
+.A5Portrait .portraitOnly,
+.B5Portrait .portraitOnly,
+.A6Portrait .portraitOnly {
+  display: unset;
+}
+.Size6x9Landscape .landscapeOnly,
+.Cm13Landscape .landscapeOnly,
+.Device16x9Landscape .landscapeOnly,
+.LetterLandscape .landscapeOnly,
+.LegalLandscape .landscapeOnly,
+.A3Landscape .landscapeOnly,
+.A4Landscape .landscapeOnly,
+.A5Landscape .landscapeOnly,
+.A6Landscape .landscapeOnly {
+  display: unset;
+}
+img.bloomBadge {
+  position: absolute;
+  right: 6mm;
+  top: 6mm;
+  height: 30px;
+  opacity: 0.7;
+}
+.back-cover-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  padding-top: 10px;
+  padding-bottom: calc(6mm + 10px);
+  padding-left: 6mm;
+  padding-right: 6mm;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-content: flex-start;
+}
+.back-cover-bottom [data-book="outside-back-cover-USAID"] img {
+  height: 50px;
+}
+.back-cover-bottom [data-book="outside-back-cover-USAID"] .USAID {
+  font-size: 9pt;
+  color: black;
+  font-family: Arial;
+}
+.back-cover-bottom [data-book="outside-back-cover-ministry"] img {
+  height: 50px;
+  margin: 0 10px 0 20px;
+}
+.A4Landscape .USAID {
+  max-width: 400px;
+  display: inline-block;
+  margin-left: 20px;
+}
+/*# sourceMappingURL=branding.css.map */
