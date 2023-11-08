@@ -1,9 +1,10 @@
 using System.IO;
+using Bloom.web.controllers;
 using BloomTemp;
 using NUnit.Framework;
 using SIL.PlatformUtilities;
 
-namespace Bloom.web.controllers
+namespace BloomTests.web.controllers
 {
 	[TestFixture]
 	public class PageTemplatesApiTests
@@ -114,8 +115,12 @@ namespace Bloom.web.controllers
 
 		/// <summary>
 		/// This is what was actually happening: the drive letter was upper case in one instance, and lower in the other
+		/// But the test didn't actually test that and we have no memory of how to recreate the situation.
+		/// Since the test was created, source collections are not a thing, and the lower "Sources" part of the collection tab
+		/// has been reworked so the user has better control over what shows there. Ignoring this test.
 		/// </summary>
 		[Test]
+		[Ignore("No longer relevant")]
 		public void GetBookTemplatePaths_TwoTemplatesWithSameNameButDifferentCase_ReturnsItOnlyOnce()
 		{
 			using (var temp = new TemporaryFolder("TemplateInThisCollectionAndSourceBooks_ReturnsItOnlyOnce"))
