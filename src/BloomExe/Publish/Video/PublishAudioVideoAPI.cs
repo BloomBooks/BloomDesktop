@@ -354,7 +354,7 @@ namespace Bloom.Publish.Video
 				};
 				if (BloomMessageBox.Show(null,
 						LocalizationManager.GetString("PublishTab.RecordVideo.NoAudioInVideo",
-						"Currently, Bloom does not support including audio from Sign Language videos in video output."),
+						"Currently, Bloom does not support including audio from embedded videos in video output."),
 						messageBoxButtons) == "cancel")
 				{
 					_recordVideoWindow.Close();
