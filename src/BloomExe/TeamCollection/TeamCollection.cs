@@ -2213,10 +2213,11 @@ namespace Bloom.TeamCollection
 			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer,
 				() => new ReactDialog("progressDialogBundle",
 					// props to send to the react component
+					// N.B. BloomExe\TeamCollection has a difference "casing" than BloomBrowserUI\teamCollection !
 					new
 					{
 						title,
-						titleIcon = "/bloom/TeamCollection/Team Collection.svg",
+						titleIcon = "/bloom/teamCollection/Team Collection.svg",
 						titleColor = "white",
 						titleBackgroundColor = Palette.kBloomBlueHex,
 						showReportButton = "if-error"
