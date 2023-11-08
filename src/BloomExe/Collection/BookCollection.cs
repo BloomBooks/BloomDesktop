@@ -122,7 +122,7 @@ namespace Bloom.Collection
 								_webSocketServer.SendEvent("editableCollectionList", "reload:" + PathToDirectory);
 								if (FolderContentChanged != null)
 								{
-									FolderContentChanged(this, new ProjectChangedEventArgs() { Path = fullPath });								
+									FolderContentChanged(this, new ProjectChangedEventArgs() { Path = fullPath });
 								}
 							}
 							finally
@@ -406,7 +406,7 @@ namespace Bloom.Collection
 			// Watch everything for now.
 			// _watcher.Filter = "*.txt";
 			_watcher.Created += WatcherOnChange;
-			_watcher.Changed += WatcherOnChange;	// TODO: Actually, this raises events if the book folder or one of its file is deleted! Unfortunately, can't find easy way to filter these events out. See BL-12433			
+			_watcher.Changed += WatcherOnChange;	// TODO: Actually, this raises events if the book folder or one of its file is deleted! Unfortunately, can't find easy way to filter these events out. See BL-12433
 			// Begin watching.
 			_watcher.EnableRaisingEvents = true;
 		}
@@ -465,6 +465,11 @@ namespace Bloom.Collection
 					_webSocketServer.SendString("bookCollection", "updateBookBadge", bookInfo.Id);
 				}
 			}
+		}
+
+		public BookInfo GetBookInfoById(string id)
+		{
+			return GetBookInfos().FirstOrDefault(b => b.Id == id);
 		}
 	}
 

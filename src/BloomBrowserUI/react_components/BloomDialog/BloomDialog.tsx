@@ -48,6 +48,8 @@ export interface IBloomDialogProps extends DialogProps {
     // this because enabling it causes a react render loop. Our theory is that there is
     // a focus war going on.
     disableDragging?: boolean;
+
+    //cssForDialogContents?: SerializedStyles;
 }
 
 export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(

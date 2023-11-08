@@ -1,7 +1,7 @@
 @import (reference) "../../bloom-xmatter-common.less";
 @import (reference) "../../../../bookLayout/basePage.less";
 
-:root {
+.bloom-page {
     --bleed-tolerance: 3mm;
 }
 
@@ -59,10 +59,10 @@ div.bloom-page {
 .outsideFrontCover,
 .outsideBackCover {
     .marginBox {
-        top: 0;
-        left: 0 !important;
-        height: 100% !important;
-        width: 100% !important;
+        --page-margin-top: 0;
+        --page-margin-bottom: 0;
+        --page-margin-right: 0;
+        --page-margin-left: 0;
     }
 }
 

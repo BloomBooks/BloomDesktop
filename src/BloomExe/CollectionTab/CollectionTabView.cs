@@ -33,13 +33,19 @@ namespace Bloom.CollectionTab
 		public CollectionTabView(CollectionModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			TeamCollectionManager tcManager, BookSelection bookSelection,
-			WorkspaceTabSelection tabSelection, BloomWebSocketServer webSocketServer, LocalizationChangedEvent localizationChangedEvent)
+			WorkspaceTabSelection tabSelection, BloomWebSocketServer webSocketServer, LocalizationChangedEvent localizationChangedEvent,
+			BookRefreshEvent bookRefreshEvent)
 		{
 			_model = model;
 			_tabSelection = tabSelection;
 			_bookSelection = bookSelection;
 			_webSocketServer = webSocketServer;
 			_tcManager = tcManager;
+			bookRefreshEvent.Subscribe(book => {
+				// this prevents us responding to book changes too early in the startup process
+				if(bookSelection.CurrentSelection!=null)
+					UpdateForBookChanges(book);
+			});
 
 			BookCollection.CollectionCreated += OnBookCollectionCreated;
 
@@ -352,7 +358,7 @@ namespace Bloom.CollectionTab
 			// This will cause the CollectionsTabBookPane to reload the status of the book
 			// (and the collection itself), which will trickle down to the status panel.
 			if (tcManager.CollectionStatus == TeamCollectionStatus.Disconnected)
-				_webSocketServer.SendEvent("bookStatus", "reload");
+				_webSocketServer.SendEvent("bookTeamCollectionStatus", "reload");
 		}
 
 		private void _tcStatusButton_Click(object sender, EventArgs e)

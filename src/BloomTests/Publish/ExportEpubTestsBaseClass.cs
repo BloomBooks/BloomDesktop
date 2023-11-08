@@ -355,7 +355,6 @@ namespace BloomTests.Publish
 			string head = @"<meta charset='UTF-8'/>
 				<link rel='stylesheet' href='defaultLangStyles.css'/>
 				<link rel='stylesheet' href='basePage.css' type='text/css'/>
-				<link rel='stylesheet' href='langVisibility.css' type='text/css'/>
 				<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'/>
 				<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
 				<link rel='stylesheet' href='Device-XMatter.css' type='text/css'></link>
@@ -554,7 +553,7 @@ namespace BloomTests.Publish
 			var foundUnlocked = false;
 			var foundReadingOrder = false;
 			var foundTableOfContents = false;
-			
+
 			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityFeature']", _ns))
 			{
 				switch (node.InnerXml)

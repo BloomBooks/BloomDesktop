@@ -218,6 +218,18 @@ export function useCanModifyCurrentBook(): boolean {
     return canModifyCurrentBook;
 }
 
+export function useApiObject<T>(urlSuffix: string, defaultValue: T): T {
+    const [value, setValue] = useState<T>(defaultValue);
+    useEffect(() => {
+        get(urlSuffix, c => {
+            if (typeof c.data === "string") {
+                setValue(JSON.parse(c.data as string));
+            } else setValue(c.data);
+        });
+    }, [urlSuffix]);
+    return value;
+}
+
 export function useApiData<T>(urlSuffix: string, defaultValue: T): T {
     return useApiDataInternal(urlSuffix, defaultValue);
 }

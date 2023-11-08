@@ -7,10 +7,12 @@ using Newtonsoft.Json;
 using SIL.IO;
 using System;
 using System.Diagnostics;
-using System.IO;
+using SIL.PlatformUtilities;
 using System.Linq;
 using System.Net;
 using System.Windows.Forms;
+using System.IO;
+using System.Threading;
 
 namespace Bloom.web.controllers
 {
@@ -28,14 +30,16 @@ namespace Bloom.web.controllers
 	public class FileIOApi
 	{
 		private readonly BookSelection _bookSelection;
+		private readonly BloomWebSocketServer _webSocketServer;
 
 		// The current book we are editing
 		private Book.Book CurrentBook => _bookSelection.CurrentSelection;
 
 		// Called by Autofac, which creates the one instance and registers it with the server.
-		public FileIOApi(BookSelection bookSelection)
+		public FileIOApi(BookSelection bookSelection, BloomWebSocketServer webSocketServer)
 		{
 			_bookSelection = bookSelection;
+			_webSocketServer = webSocketServer;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -44,6 +48,8 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointLegacy("fileIO/chooseFile", ChooseFile, true);
 			apiHandler.RegisterEndpointLegacy("fileIO/getSpecialLocation", GetSpecialLocation, true);
 			apiHandler.RegisterEndpointLegacy("fileIO/copyFile", CopyFile, true);
+						apiHandler.RegisterEndpointLegacy("fileIO/chooseFolder", HandleChooseFolder, true);
+			apiHandler.RegisterEndpointLegacy("fileIO/showInFolder", HandleShowInFolderRequest, true); // Common
 		}
 		private void ChooseFile(ApiRequest request)
 		{
@@ -149,6 +155,100 @@ namespace Bloom.web.controllers
 
 			request.PostSucceeded();
 		}
+
+		public void HandleChooseFolder(ApiRequest request)
+		{
+			var initialPath = request.GetParamOrNull("path");
+			var description = request.GetParamOrNull("description");
+			var forOutput = request.GetParamOrNull("forOutput");
+			var isForOutput = !String.IsNullOrEmpty(forOutput) && forOutput.ToLowerInvariant() == "true";
+
+			var resultPath = Utils.MiscUtils.GetOutputFolderOutsideCollectionFolder(initialPath, description, isForOutput);
+
+			dynamic result = new DynamicJson();
+			result.success = !String.IsNullOrEmpty(resultPath);
+			result.path = resultPath;
+
+				// We send the result through a websocket rather than simply returning it because
+				// if the user is very slow (one site said FF times out after 90s) the browser may
+				// abandon the request before it completes. The POST result is ignored and the
+				// browser simply listens to the socket.
+				// We'd prefer this request to return immediately and set a callback to run
+				// when the dialog closes and handle the results, but FolderBrowserDialog
+				// does not offer such an API. Instead, we just ignore any timeout
+				// in our Javascript code.
+
+
+				_webSocketServer.SendBundle("fileIO", "chooseFolder-results", result);
+				request.PostSucceeded();
+		}
+
+
+		// Request from javascript to open the folder containing the specified file,
+		// and select it.
+		// Currently we are assuming the path is relative to the book directory,
+		// since typically paths JS has access to only go that far up.
+		private void HandleShowInFolderRequest(ApiRequest request)
+		{
+			lock (request)
+			{
+				var requestData = DynamicJson.Parse(request.RequiredPostJson());
+				string partialFolderPath = requestData.folderPath;
+				string folderPath = partialFolderPath;
+				if (!Path.IsPathRooted(partialFolderPath))
+					folderPath = Path.Combine(_bookSelection.CurrentSelection.FolderPath, partialFolderPath);
+				SelectFileInExplorer(folderPath);
+				// It may or may not have succeeded but nothing in JS wants to know it didn't, and hiding
+				// the failure there is a nuisance.
+
+				request.PostSucceeded();
+			}
+		}
+
+				/// <summary>
+		/// Open the folder containing the specified file and select it.
+		/// </summary>
+		/// <param name="filePath"></param>
+		private static void SelectFileInExplorer(string filePath)
+		{
+			try
+			{
+				ToPalaso.ProcessExtra.ShowFileInExplorerInFront(filePath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+			}
+			catch (System.Runtime.InteropServices.COMException e)
+			{
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					$"Bloom had a problem asking your operating system to show {filePath}. Sorry!");
+			}
+			var folderName = Path.GetFileName(Path.GetDirectoryName(filePath));
+			BringFolderToFrontInLinux(folderName);
+		}
+
+				/// <summary>
+		/// Make sure the specified folder (typically one we just opened an explorer on)
+		/// is brought to the front in Linux (BL-673). This is automatic in Windows.
+		/// </summary>
+		/// <param name="folderName"></param>
+		public static void BringFolderToFrontInLinux(string folderName)
+		{
+			if (Platform.IsLinux)
+			{
+				// allow the external process to execute
+				Thread.Sleep(100);
+
+				// if the system has wmctrl installed, use it to bring the folder to the front
+				// This process is not affected by the current culture, so we don't need to adjust it.
+				// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
+				Process.Start(new ProcessStartInfo()
+				{
+					FileName = "wmctrl",
+					Arguments = "-a \"" + folderName + "\"",
+					UseShellExecute = false,
+					ErrorDialog = false // do not show a message if not successful
+				});
+			}
+		}
+
 	}
 
 	enum SpecialLocation

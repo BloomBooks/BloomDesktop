@@ -246,10 +246,10 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         // or the user canceling. This is because the "result" comes back
         // via a websocket that sets the new result (just below). This approach is needed because otherwise
         // the browser would time out while waiting for the user to finish using the system folder-choosing dialog.
-        post("common/chooseFolder");
+        post("fileIO/chooseFolder");
     }
     useSubscribeToWebSocketForObject<{ success: boolean; path: string }>(
-        "common",
+        "fileIO",
         "chooseFolder-results",
         results => {
             if (results.success) {

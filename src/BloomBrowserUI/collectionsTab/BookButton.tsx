@@ -23,6 +23,7 @@ import { IBookInfo, ICollection } from "./BooksOfCollection";
 import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useL10n } from "../react_components/l10nHooks";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { showBookSettingsDialog } from "../bookEdit/bookSettings/BookSettingsDialog";
 import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
 
@@ -198,23 +199,6 @@ export const BookButton: React.FunctionComponent<{
                 l10nId: "CollectionTab.BookMenu.DuplicateBook",
                 command: "collections/duplicateBook"
             },
-            {
-                label: "Show in File Explorer",
-                l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
-                command: "bookCommand/openFolderOnDisk",
-                shouldShow: () => !props.collection.isFactoryInstalled // show for all collections (except factory)
-            },
-            // {
-            //     label: "Book Settings",
-            //     l10nId: "Common.BookSettings",
-            //     icon: <SettingsIcon></SettingsIcon>,
-            //     addEllipsis: true,
-            //     requiresSavePermission: true,
-            //     onClick: () => {
-            //         handleClose(); // not clear why this is needed on this one, we assume it's because we're doing an onClick
-            //         showBookSettingsDialog();
-            //     }
-            // },
             {
                 label: "Delete Book",
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
@@ -488,7 +472,6 @@ export const BookButton: React.FunctionComponent<{
                 `}
                 variant="outlined"
                 size="large"
-                title={props.book.folderPath}
                 onDoubleClick={handleDoubleClick}
                 onClick={e => handleClick(e)}
                 onContextMenu={e => handleContextClick(e)}

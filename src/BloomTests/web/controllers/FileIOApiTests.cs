@@ -22,7 +22,7 @@ namespace BloomTests.web.controllers
 			bookSelection.SelectBook(new Bloom.Book.Book());
 			_server = new BloomServer(bookSelection);
 
-			var controller = new FileIOApi(bookSelection);
+			var controller = new FileIOApi(bookSelection, new BloomWebSocketServer());
 			controller.RegisterWithApiHandler(_server.ApiHandler);
 		}
 

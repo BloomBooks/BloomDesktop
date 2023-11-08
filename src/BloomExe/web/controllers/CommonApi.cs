@@ -26,7 +26,7 @@ namespace Bloom.web.controllers
 	public class CommonApi
 	{
 		private readonly BookSelection _bookSelection;
-		private readonly BloomWebSocketServer _webSocketServer;
+
 		public EditingModel Model { get; set; }
 
 		// Needed so we can implement CheckForUpdates. Set by the WorkspaceView in its constructor, since
@@ -37,7 +37,6 @@ namespace Bloom.web.controllers
 		public CommonApi(BookSelection bookSelection, BloomWebSocketServer webSocketServer)
 		{
 			_bookSelection = bookSelection;
-			_webSocketServer = webSocketServer;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -48,8 +47,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointLegacy("common/error", HandleJavascriptError, false); // Common
 			apiHandler.RegisterEndpointLegacy("common/preliminaryError", HandlePreliminaryJavascriptError, false); // Common
 			apiHandler.RegisterEndpointLegacy("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
-			apiHandler.RegisterEndpointLegacy("common/chooseFolder", HandleChooseFolder, true);
-			apiHandler.RegisterEndpointLegacy("common/showInFolder", HandleShowInFolderRequest, true); // Common
+
 			apiHandler.RegisterEndpointHandler("common/canModifyCurrentBook", HandleCanModifyCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("common/hasPreserveCoverColor", HandleHasPreserveCoverColor,true);
 			apiHandler.RegisterEndpointLegacy("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
@@ -197,27 +195,6 @@ namespace Bloom.web.controllers
 		{
 			Application.Idle -= ReloadOnIdle;
 			ReloadProjectAction?.Invoke();
-		}
-
-		// Request from javascript to open the folder containing the specified file,
-		// and select it.
-		// Currently we are assuming the path is relative to the book directory,
-		// since typically paths JS has access to only go that far up.
-		private void HandleShowInFolderRequest(ApiRequest request)
-		{
-			lock (request)
-			{
-				var requestData = DynamicJson.Parse(request.RequiredPostJson());
-				string partialFolderPath = requestData.folderPath;
-				string folderPath = partialFolderPath;
-				if (!Path.IsPathRooted(partialFolderPath))
-					folderPath = Path.Combine(_bookSelection.CurrentSelection.FolderPath, partialFolderPath);
-				SelectFileInExplorer(folderPath);
-				// It may or may not have succeeded but nothing in JS wants to know it didn't, and hiding
-				// the failure there is a nuisance.
-
-				request.PostSucceeded();
-			}
 		}
 
 		/// <summary>
@@ -461,31 +438,6 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		public void HandleChooseFolder(ApiRequest request)
-		{
-			var initialPath = request.GetParamOrNull("path");
-			var description = request.GetParamOrNull("description");
-			var forOutput = request.GetParamOrNull("forOutput");
-			var isForOutput = !String.IsNullOrEmpty(forOutput) && forOutput.ToLowerInvariant() == "true";
 
-			var resultPath = Utils.MiscUtils.GetOutputFolderOutsideCollectionFolder(initialPath, description, isForOutput);
-
-			dynamic result = new DynamicJson();
-			result.success = !String.IsNullOrEmpty(resultPath);
-			result.path = resultPath;
-
-				// We send the result through a websocket rather than simply returning it because
-				// if the user is very slow (one site said FF times out after 90s) the browser may
-				// abandon the request before it completes. The POST result is ignored and the
-				// browser simply listens to the socket.
-				// We'd prefer this request to return immediately and set a callback to run
-				// when the dialog closes and handle the results, but FolderBrowserDialog
-				// does not offer such an API. Instead, we just ignore any timeout
-				// in our Javascript code.
-			
-
-				_webSocketServer.SendBundle("common", "chooseFolder-results", result);
-				request.PostSucceeded();
-		}
 	}
 }
