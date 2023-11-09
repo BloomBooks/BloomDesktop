@@ -347,34 +347,34 @@
         <target xml:lang="fr" state="final">Paramètres du Livre</target>
         <note>BookSettings.Title</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max Image Size</source>
-        <target xml:lang="fr" state="needs-translation">Max Image Size</target>
+        <target xml:lang="fr" state="final">Taille Maximale de l'Image</target>
         <note>BookSettings.eBook.Image.MaxResolution</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Small</source>
-        <target xml:lang="fr" state="needs-translation">Small</target>
+        <target xml:lang="fr" state="final">Petite</target>
         <note>BookSettings.eBook.Image.MaxResolution.Small</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HD</source>
-        <target xml:lang="fr" state="needs-translation">HD</target>
+        <target xml:lang="fr" state="final">720p (HD)</target>
         <note>BookSettings.eBook.Image.MaxResolution.HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Full HD</source>
-        <target xml:lang="fr" state="needs-translation">Full HD</target>
+        <target xml:lang="fr" state="final">(1080p) Haute Définition</target>
         <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4K</source>
-        <target xml:lang="fr" state="needs-translation">4K</target>
+        <target xml:lang="fr" state="final">4K</target>
         <note>BookSettings.eBook.Image.MaxResolution.4K</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
-        <target xml:lang="fr" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
+        <target xml:lang="fr" state="final">Bloom réduit les images à une taille maximale pour faciliter la visualisation des livres sur les mauvaises connexions Internet et pour prendre moins de place sur les portables.</target>
         <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
       </trans-unit>
     </body>
