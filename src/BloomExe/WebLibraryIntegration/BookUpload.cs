@@ -136,14 +136,6 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		/// <summary>
-		/// The parse-server object ID of the person who is uploading the book.
-		/// </summary>
-		public string UserId
-		{
-			get { return BloomLibraryBookApiClient.UserId; }
-		}
-
-		/// <summary>
 		/// Only for use in tests
 		/// </summary>
 		internal string UploadBook_ForUnitTest(string bookFolder)
@@ -179,7 +171,6 @@ namespace Bloom.WebLibraryIntegration
 			{
 				metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
 			}
-			metadata.SetUploader(UserId);
 			// If the collection has a default bookshelf, make sure the book has that tag.
 			// Also make sure it doesn't have any other bookshelf tags (which would typically be
 			// from a previous default bookshelf upload), including a duplicate of the one
@@ -466,8 +457,7 @@ namespace Bloom.WebLibraryIntegration
 				// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 				// These bits of data can't easily be set while saving the book because we save one page at a time
 				// and they apply to the book as a whole.
-				book.BookInfo.LanguageTableReferences =
-					BloomLibraryBookApiClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(languagesToAdvertiseOnBlorg));
+				book.BookInfo.LanguageDescriptors = book.BookData.MakeLanguageUploadData(languagesToAdvertiseOnBlorg);
 				book.BookInfo.PageCount = book.GetPages().Count();
 				book.BookInfo.Save();
 				// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.

@@ -378,8 +378,7 @@ namespace BloomTests.Book
 				Tags= new []{"Animals"},
 				CurrentTool = "mytool",
 				BookletMakingIsAppropriate = false, PageCount=7,
-				LanguageTableReferences = new [] {new ParseServerObjectPointer { ClassName = "Language", ObjectId = "23456" }},
-				Uploader = new ParseServerObjectPointer { ClassName="User", ObjectId = "12345"},
+				LanguageDescriptors = new [] {new LanguageDescriptor { LangTag = "23456", Name = "Abcde", EthnologueCode = "abc"}},
 				ToolStates = new List<ToolboxToolState>(new [] {ToolboxToolState.CreateFromToolId("decodableReader")}),
 				AllowUploadingToBloomLibrary = false,
 				CountryName = "InTheBush",
@@ -406,10 +405,8 @@ namespace BloomTests.Book
 			Assert.That(meta2.Tags, Has.Length.EqualTo(1));
 			Assert.That(meta2.Summary, Is.EqualTo("A very nice book\\ in a very nice nook"));
 			Assert.That(meta2.PageCount, Is.EqualTo(7));
-			Assert.That(meta2.LanguageTableReferences, Has.Length.EqualTo(1));
-			Assert.That(meta2.LanguageTableReferences[0].ObjectId, Is.EqualTo("23456"));
-			Assert.That(meta2.Uploader, Is.Not.Null);
-			Assert.That(meta2.Uploader.ObjectId, Is.EqualTo("12345"));
+			Assert.That(meta2.LanguageDescriptors, Has.Length.EqualTo(1));
+			Assert.That(meta2.LanguageDescriptors[0].LangTag, Is.EqualTo("23456"));
 
 			// These properties (and various others) should not be in the serialization data.
 			// Since AllowUploadingToBloomLibrary defaults true, that should be its value if not set by json
