@@ -926,7 +926,7 @@ namespace Bloom.Edit
 			// Deep in the ImageToolboxDialog, when the user asks to see images from the ArtOfReading,
 			// We need to use the Gecko version of the thumbnail viewer, since the original ListView
 			// one has a sticky scroll bar in applications that are using Gecko.
-			ThumbnailViewer.UseWebViewer = true;
+			ThumbnailViewer.UseWebViewer = false;	// no longer using Gecko at all.
 			// The Gecko version of the text box keeps causing trouble on Linux, first with Wasta 14
 			// (Trusty/Ubuntu 14.04 + Mint + Cinnamon), now with Bionic/Ubuntu 18.04 + Gnome.
 			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-1147 and
@@ -1098,7 +1098,33 @@ namespace Bloom.Edit
 				// beyond me, and we know (and have control over) PalasoImage's internals.
 				BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 				var metaInfo = palasoImage.Metadata.GetType().GetField("_originalTaglibMetadata", bindFlags);
-				var taglibMetadata = metaInfo.GetValue(palasoImage.Metadata);
+				var taglibMetadata = metaInfo.GetValue(palasoImage.Metadata) as TagLib.Image.File;
+				if (taglibMetadata == null)
+				{
+					// TagLib doesn't understand IPTC profiles very well, which can cause
+					// exceptions leading to a null _originalTaglibMetadata value.  We can
+					// remove the IPTC profile using graphicsmagick, but that starts getting
+					// involved:
+					// 1) check palasoImage.Metadata.ExceptionCaughtWhileLoading.StackTrace for
+					//    "ReadAPP13Segment" to verify that it has a problem with the IPTC profile.
+					// 2) if so, we can run GraphicsMagick from here to remove the IPTC profile,
+					//    creating a temporary file, and then try reading that image's metadata
+					//    again to get the original dimensions.  (This doesn't need to preserve
+					//    quality but does need to preserve the size.)  The command would be
+					//
+					//    gm convert {palasoImage.OriginalFilePath} +profile iptc {tempFile.Path}
+					//
+					// 3) if that works, we need to flag somehow that the image needs to remove
+					//    the IPTC profile when it gets saved and optionally resized.  Removing
+					//    the profile has to be done even if the image does not need to be resized.
+					//
+					// This seems like a lot of work for a rare problem, so we'll just return false
+					// here and wait for a rainy day with nothing else to do to think about whether
+					// to implement all of this.
+					// Meanwhile, a pull request has been posted to TagLib# to fix the problem, but
+					// I don't know if it will ever be merged.
+					return false;
+				}
 				var widthInfo = taglibMetadata.GetType().GetField("width", bindFlags);
 				var heightInfo = taglibMetadata.GetType().GetField("height", bindFlags);
 				var widthObj = widthInfo.GetValue(taglibMetadata);
