@@ -335,46 +335,6 @@ namespace Bloom.WebLibraryIntegration
 				BloomLibraryAuthentication.Logout();
 		}
 
-		public dynamic CreateLanguage(LanguageDescriptor lang)
-		{
-			if (!LoggedIn)
-				throw new ApplicationException();
-			if (BookUpload.IsDryRun)
-			{
-				Console.WriteLine("Simulating CreateLanguage during dry run for {0} ({1})", lang.Name, lang.EthnologueCode);
-				return JObject.Parse($"{{\"objectId\":\"xyzzy{lang.EthnologueCode}\"}}");
-			}
-			var request = MakeParsePostRequest(ClassesLanguagePath);
-			var langjson = lang.Json;
-			request.AddParameter("application/json", langjson, ParameterType.RequestBody);
-			var response = ParseRestClient.Execute(request);
-			if (response.StatusCode != HttpStatusCode.Created)
-			{
-				var message = new StringBuilder();
-
-				message.AppendLine("Request.Json: " + langjson);
-				message.AppendLine("Response.Code: " + response.StatusCode);
-				message.AppendLine("Response.Uri: " + response.ResponseUri);
-				message.AppendLine("Response.Description: " + response.StatusDescription);
-				message.AppendLine("Response.Content: " + response.Content);
-				throw new ApplicationException(message.ToString());
-			}
-			return JObject.Parse(response.Content);
-		}
-
-		internal string LanguageId(LanguageDescriptor lang)
-		{
-			var getLang = MakeParseGetRequest(ClassesLanguagePath);
-			getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
-			var response = ParseRestClient.Execute(getLang);
-			if (response.StatusCode != HttpStatusCode.OK)
-				return null;
-			dynamic json = JObject.Parse(response.Content);
-			if (json == null || json.results.Count < 1)
-				return null;
-			return json.results[0].objectId;
-		}
-
 		internal bool IsThisVersionAllowedToUpload()
 		{
 			var request = MakeParseGetRequest("classes/version");
@@ -405,13 +365,17 @@ namespace Bloom.WebLibraryIntegration
 			for (int i = 0; i < languages.Length; i++)
 			{
 				var lang = languages[i];
-				var id = LanguageId(lang);
-				if (id == null)
+				var request = MakePostRequest("get-language-object-id");
+				request.AddJsonBody(lang.Json);
+				var response = AzureRestClient.Execute(request);
+				if (response.StatusCode != HttpStatusCode.OK)
 				{
-					var language = CreateLanguage(lang);
-					id = language["objectId"].Value;
+					SIL.Reporting.Logger.WriteEvent("get-language-object-id failed: " + response.Content);
+					throw new ApplicationException("Unable to get language id for language " + lang.Name);
 				}
-				result[i] = new ParseServerObjectPointer() {ClassName = "language", ObjectId = id};
+				var languageObjectId = response.Content;
+
+				result[i] = new ParseServerObjectPointer() {ClassName = "language", ObjectId = languageObjectId };
 			}
 			return result;
 		}
