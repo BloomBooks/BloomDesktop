@@ -112,31 +112,5 @@ namespace BloomTests.web.controllers
 				Assert.AreEqual(3, result.Count, "Should list each unique path, not name.");
 			}
 		}
-
-		/// <summary>
-		/// This is what was actually happening: the drive letter was upper case in one instance, and lower in the other
-		/// But the test didn't actually test that and we have no memory of how to recreate the situation.
-		/// Since the test was created, source collections are not a thing, and the lower "Sources" part of the collection tab
-		/// has been reworked so the user has better control over what shows there. Ignoring this test.
-		/// </summary>
-		[Test]
-		[Ignore("No longer relevant")]
-		public void GetBookTemplatePaths_TwoTemplatesWithSameNameButDifferentCase_ReturnsItOnlyOnce()
-		{
-			using (var temp = new TemporaryFolder("TemplateInThisCollectionAndSourceBooks_ReturnsItOnlyOnce"))
-			{
-				var current = new TemplateBookTestFolder(temp.FolderPath, "basic book");
-				var pathToCurrentTemplateHtml = current.HtmlPath;
-				var template = new TemplateBookTestFolder(temp.FolderPath, "my template");
-				var ucTemplate = new TemplateBookTestFolder(temp.FolderPath, "My template");
-				var sourceBookPaths = new[]
-					{template.HtmlPath, ucTemplate.HtmlPath};
-				var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
-				if (Platform.IsWindows)
-					Assert.AreEqual(2, result.Count, "Should only list my template once on Windows.");
-				else
-					Assert.AreEqual(3, result.Count, "Should list my template twice on Linux, since case is different.");
-			}
-		}
 	}
 }
