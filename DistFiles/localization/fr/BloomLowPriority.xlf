@@ -52,9 +52,9 @@
         <target xml:lang="fr" state="final">Couleur de l'Étagère</target>
         <note>ID: PublishTab.Android.BulkBookshelfColor</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo" approved="yes">
-        <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
-        <target xml:lang="fr" state="final">Pour le moment, Bloom ne prend pas en charge l'inclusion de l'audio des vidéos en Langue des Signes dans la sortie vidéo.</target>
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+        <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
+        <target xml:lang="fr" state="translated">Pour le moment, Bloom ne prend pas en charge l'inclusion de l'audio des vidéos en Langue des Signes dans la sortie vidéo.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
