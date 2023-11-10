@@ -52,9 +52,9 @@
         <target xml:lang="es-ES" state="final">Color de estantería</target>
         <note>ID: PublishTab.Android.BulkBookshelfColor</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo" approved="yes">
-        <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
-        <target xml:lang="es-ES" state="final">Actualmente, Bloom no permite que el video de salida incluya el audio de los vídeos de lengua de signos.</target>
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+        <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
+        <target xml:lang="es-ES" state="translated">Actualmente, Bloom no permite que el video de salida incluya el audio de los vídeos de lengua de signos.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
