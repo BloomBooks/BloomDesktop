@@ -53,8 +53,8 @@
         <note>ID: PublishTab.Android.BulkBookshelfColor</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
-        <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
-        <target xml:lang="quc" state="needs-translation">Currently, Bloom does not support including audio from Sign Language videos in video output.</target>
+        <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
+        <target xml:lang="quc" state="needs-translation">Currently, Bloom does not support including audio from embedded videos in video output.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed">
