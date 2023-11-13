@@ -55,6 +55,7 @@ interface IReadonlyBookInfo {
     licenseToken: string;
     licenseRights: string;
     isTemplate: boolean;
+    isTitleOKToPublish: boolean; // This will be false if there is no L1 title, unless we don't need languages.
 }
 
 const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";
@@ -166,7 +167,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     }, [summary]); // purposefully not including bookInfo, so we don't post on initial load
 
     function isReadyForAgreements(): boolean {
-        return !!bookInfo?.title && !!bookInfo?.copyright;
+        return !!bookInfo?.copyright && !!bookInfo?.isTitleOKToPublish;
     }
     const [agreedPreviously, setAgreedPreviously] = useState<boolean>(false);
     const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
@@ -398,6 +399,30 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         ></BloomSplitButton>
     );
 
+    const getTitleBlock = () => {
+        if (isLoading || !bookInfo) {
+            return <React.Fragment />;
+        }
+        if (!bookInfo.isTitleOKToPublish) {
+            return (
+                <MissingInfo
+                    text="Missing Title"
+                    l10nKey={"PublishTab.Upload.Missing.Title"}
+                    onClick={() => post("libraryPublish/goToEditBookCover")}
+                />
+            );
+        }
+        return (
+            <div
+                css={css`
+                    font-weight: bold;
+                `}
+            >
+                {bookInfo?.title}
+            </div>
+        );
+    };
+
     return (
         <React.Fragment>
             <BloomStepper orientation="vertical">
@@ -419,27 +444,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                     font-size: larger;
                                 `}
                             >
-                                {bookInfo?.title ? (
-                                    <div
-                                        css={css`
-                                            font-weight: bold;
-                                        `}
-                                    >
-                                        {bookInfo?.title}
-                                    </div>
-                                ) : (
-                                    <MissingInfo
-                                        text="Missing Title"
-                                        l10nKey={
-                                            "PublishTab.Upload.Missing.Title"
-                                        }
-                                        onClick={() =>
-                                            post(
-                                                "libraryPublish/goToEditBookCover"
-                                            )
-                                        }
-                                    />
-                                )}
+                                {getTitleBlock()}
                                 {bookInfo?.isTemplate ||
                                     (bookInfo?.copyright ? (
                                         <div>{bookInfo?.copyright}</div>
