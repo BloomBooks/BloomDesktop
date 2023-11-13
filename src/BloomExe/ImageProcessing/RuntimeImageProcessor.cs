@@ -420,18 +420,18 @@ namespace Bloom.ImageProcessing
 				return true;
 
 			}
-			//we want to gracefully degrade if this fails (as it did once, see comment in bl-2871)
+			// We want to gracefully degrade if this fails (as it did once, see comment in BL-2871)
+			// We can't help users who respond to a toast and send in an error report.
+			// Logging it will allow us to possibly correlate an error here with another problem that does get reported.
 			catch (TagLib.CorruptFileException e)
 			{
-				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Problem with image metadata", originalPath, e);
+				// Don't bother reporting this to the user, but log it in case it might be relevant for a real bug.
+				Logger.WriteError($"Problem with image metadata: MakePngBackgroundTransparentIfDesirable({originalPath}) caught an exception.", e);
 				return false;
 			}
 			catch (Exception e)
 			{
-				//while beta might make sense, this is actually
-				//a common failure at the moment, with the license.png
-				//so I'm setting to alpha.
-				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All,"Problem making image transparent.", originalPath,e);
+				Logger.WriteError($"Problem making image transparent: MakePngBackgroundTransparentIfDesirable({originalPath}) caught an exception.", e);
 				return false;
 			}
 		}
