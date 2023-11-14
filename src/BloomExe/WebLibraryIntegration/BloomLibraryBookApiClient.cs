@@ -103,6 +103,24 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		/// <summary>
+		/// Get the number of books on bloomlibrary.org that are in the given language.
+		/// </summary>
+		/// <remarks>Query should get all books where the isoCode matches the given languageCode
+		/// and 'rebrand' is not true and 'inCirculation' is not false and 'draft' is not true.</remarks>
+		public string getBookCountByLanguage(string languageTag)
+		{
+			var request = MakeGetRequest("get-book-count-by-language");
+			request.AddQueryParameter("language-tag", languageTag);
+			var response = AzureRestClient.Execute(request);
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				SIL.Reporting.Logger.WriteEvent("get-book-count-by-language failed: " + response.Content);
+				throw new ApplicationException("Unable to get book count for language " + languageTag);
+			}
+			return response.Content;
+		}
+
 		protected RestClient AzureRestClient
 		{
 			get
@@ -239,37 +257,6 @@ namespace Bloom.WebLibraryIntegration
 		protected RestRequest MakeParsePostRequest(string path)
 		{
 			return MakeParseRequest(path, Method.POST);
-		}
-
-		public int GetBookCount(string query = null)
-		{
-			if (!UrlLookup.CheckGeneralInternetAvailability(false))
-				return -1;
-			var request = MakeParseGetRequest("classes/books");
-			request.AddParameter("count", "1");
-			request.AddParameter("limit", "0");
-			if (!string.IsNullOrEmpty(query))
-				request.AddParameter("where", query, ParameterType.QueryString);
-			var response = ParseRestClient.Execute(request);
-			// If not successful return -1; this can happen if we aren't online.
-			if (!response.IsSuccessful)
-				return -1;
-			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
-			return dy.count;
-		}
-
-		/// <summary>
-		/// Get the number of books on bloomlibrary.org that are in the given language.
-		/// </summary>
-		/// <remarks>Query should get all books where the isoCode matches the given languageCode
-		/// and 'rebrand' is not true and 'inCirculation' is not false and 'draft' is not true.</remarks>
-		public int GetBookCountByLanguage(string languageCode)
-		{
-			string query = @"{
-				""langPointers"":{""$inQuery"":{""where"":{""isoCode"":""" + languageCode + @"""},""className"":""language""}},
-				""rebrand"":{""$ne"":true},""inCirculation"":{""$ne"":false},""draft"":{""$ne"":true}
-			}";
-			return GetBookCount(query);
 		}
 
 		// Setting param 'includeLanguageInfo' to true adds a param to the query that causes it to fold in
