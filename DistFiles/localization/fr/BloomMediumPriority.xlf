@@ -262,6 +262,11 @@
         <target xml:lang="fr" state="final">Ne pas encore montrer ce livre au public. Je vais partager son URL avec des évaluateurs pour qu'ils fassent des commentaires.</target>
         <note>ID: PublishTab.Upload.Draft</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.FileIsUnchanged" translate="no">
+        <source xml:lang="en">{0} is unchanged</source>
+        <target xml:lang="fr" state="needs-translation">{0} is unchanged</target>
+        <note>ID: PublishTab.Upload.NotUploadingStatus</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.Visibility" approved="yes">
         <source xml:lang="en">Visibility</source>
         <target xml:lang="fr" state="final">Visibilité</target>
