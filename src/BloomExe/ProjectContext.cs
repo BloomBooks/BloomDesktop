@@ -261,7 +261,7 @@ namespace Bloom
 						return c.Resolve<SourceCollectionsList>();
 					}).InstancePerLifetimeScope();
 
-					builder.RegisterType<BloomParseClient>().AsSelf().SingleInstance();
+					builder.RegisterType<BloomLibraryBookApiClient>().AsSelf().SingleInstance();
 
 					// Enhance: may need some way to test a release build in the sandbox.
 					builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();

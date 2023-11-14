@@ -27,6 +27,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.AreEqual(0, Directory.GetFiles(workFolderPath).Count(), "Some stuff was left over from a previous test");
 
 			_client = new BloomS3Client(BloomS3Client.UnitTestBucketName);
+			_client.SetLegacyCredentialsForUnitTest();
 		}
 
 		[TearDown]
@@ -42,10 +43,10 @@ namespace BloomTests.WebLibraryIntegration
 		[Test]
 		public void UploadBook_EmptyFolder_DoesntThrow()
 		{
-			var storageKeyOfBookFolder = Guid.NewGuid().ToString();
+			var storageKeyOfBookFolderParent = Guid.NewGuid().ToString();
 			using (var f = new TemporaryFolder(_workFolder, "emptyFolder"))
 			{
-				_client.UploadBook(storageKeyOfBookFolder, f.FolderPath, new NullProgress(), null, true, true, null, null, null, null);
+				_client.UploadBook(storageKeyOfBookFolderParent, f.FolderPath, new NullProgress(), null, true, true, null, null, null, null);
 			}
 			// This doesn't actually create an entry, since the folder is empty,
 			// so no need to delete it after our test

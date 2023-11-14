@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
@@ -13,18 +13,135 @@ using SIL.Progress;
 
 namespace Bloom.WebLibraryIntegration
 {
-	public class BloomParseClient
+	// This class began its life as BloomParseClient, and it encapsulated all the interactions with parse server.
+	// But we are trying to move away from any direct interaction with parse server to favor our own bloomlibrary.org/api calls.
+	// This will help facilitate moving away from parse server altogether in the future.
+	// Why not just a new class which we start using now and gradually move things over to? Because this class already contains
+	// things we need like logged-in status and the session token.
+	// So we'll start with this and replace the parse-server-specific bits as we go.
+	public class BloomLibraryBookApiClient
 	{
-		protected RestClient _client;
-		protected string _sessionToken = String.Empty;
+		const string kHost = "https://api.bloomlibrary.org";
+		//const string kHost = "http://localhost:7071"; // For local testing
+		const string kVersion = "v1";
+		const string kBookApiUrlPrefix = $"{kHost}/{kVersion}/book/";
+
+		protected RestClient _azureRestClient;
+		protected string _authenticationToken = String.Empty;
 		protected string _userId;
 
-		public BloomParseClient()
+		public BloomLibraryBookApiClient()
 		{
 			var keys = AccessKeys.GetAccessKeys(BookUpload.UploadBucketNameForCurrentEnvironment);
+			_parseApplicationId = keys.ParseApplicationKey;
+		}
 
-			RestApiKey = keys.ParseApiKey;
-			ApplicationId = keys.ParseApplicationKey;
+		// This calls an azure function which does the following:
+		// New book:
+		//  - Creates an empty `books` record in parse-server with an uploadPendingTimestamp
+		// Existing book:
+		//  - Verifies the user has permission to update the book (using parse-server session)
+		//  - Sets uploadPendingTimestamp on the `books` record in parse-server
+		//  - Copies book files from existing S3 location to a new S3 location based on bookObjectId/timestamp
+		// New and existing books:
+		//  - Generates temporary credentials for the client to upload the book files to the new S3 location
+		public (string transactionId, string storageKeyOfBookFolderParentOnS3, AmazonS3Credentials uploadCredentials) InitiateBookUpload(string existingBookObjectId = null)
+		{
+			if (!LoggedIn)
+				throw new ApplicationException("Must be logged in to upload a book");
+
+			var request = MakePostRequest("upload-start");
+
+			if (!string.IsNullOrEmpty(existingBookObjectId))
+				request.AddQueryParameter("existing-book-object-id", existingBookObjectId);
+
+			var response = AzureRestClient.Execute(request);
+
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				SIL.Reporting.Logger.WriteEvent("upload-start failed: " + response.Content);
+				throw new ApplicationException("Unable to initiate book upload on the server.");
+			}
+
+			dynamic result = JObject.Parse(response.Content);
+			return (
+				result["transaction-id"],
+				BloomS3Client.GetStorageKeyOfBookFolderParentFromUrl((string)result.url),
+				new AmazonS3Credentials
+				{
+					AccessKey = result.credentials.AccessKeyId,
+					SecretAccessKey = result.credentials.SecretAccessKey,
+					SessionToken = result.credentials.SessionToken
+				}
+				);
+		}
+
+		// This calls an azure function which does the following:
+		//  - Verifies the user has permission to update the book (using parse-server session)
+		//  - Verifies the baseUrl includes the expected S3 location
+		//  - Sets up read permission on the files in the new S3 location
+		//  - Updates the `books` record in parse-server with all fields from the client,
+		//     including the new baseUrl which points to the new S3 location. Sets uploadPendingTimestamp to null.
+		//  - Deletes the book files from the old S3 location
+		public void FinishBookUpload(string transactionId, string metadataJson)
+		{
+			if (!LoggedIn)
+				throw new ApplicationException("Must be logged in to upload a book");
+
+			var request = MakePostRequest("upload-finish");
+
+			request.AddQueryParameter("transaction-id", transactionId);
+
+			request.AddJsonBody(metadataJson);
+
+			var response = AzureRestClient.Execute(request);
+
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				SIL.Reporting.Logger.WriteEvent("upload-finish failed: " + response.Content);
+				throw new ApplicationException("Unable to finalize book upload on the server.");
+			}
+		}
+
+		protected RestClient AzureRestClient
+		{
+			get
+			{
+				if (_azureRestClient == null)
+				{
+					_azureRestClient = new RestClient();
+				}
+				return _azureRestClient;
+			}
+		}
+
+		private RestRequest MakeGetRequest(string action)
+		{
+			return MakeRequest(action, Method.GET);
+		}
+
+		private RestRequest MakePostRequest(string action)
+		{
+			return MakeRequest(action, Method.POST);
+		}
+
+		private RestRequest MakeRequest(string action, Method requestType)
+		{
+			string path = kBookApiUrlPrefix + action;
+			var request = new RestRequest(path, requestType);
+			SetCommonHeadersAndParameters(request);
+			return request;
+		}
+
+		private void SetCommonHeadersAndParameters(RestRequest request)
+		{
+			if (!string.IsNullOrEmpty(_authenticationToken))
+				request.AddHeader("Authentication-Token", _authenticationToken);
+
+			if (Program.RunningUnitTests)
+				request.AddQueryParameter("env", "unit-test");
+			else if (BookUpload.UseSandbox)
+				request.AddQueryParameter("env", "dev");
 		}
 
 		public void SetLoginData(string account, string parseUserObjectId, string sessionToken, string destination)
@@ -36,7 +153,7 @@ namespace Bloom.WebLibraryIntegration
 			Settings.Default.LastLoginParseObjectId = parseUserObjectId;
 			Settings.Default.Save();
 			_userId = parseUserObjectId;
-			_sessionToken = sessionToken;
+			_authenticationToken = sessionToken;
 		}
 
 		public bool AttemptSignInAgainForCommandLine(string userEmail, string destination, IProgress progress)
@@ -70,21 +187,18 @@ namespace Bloom.WebLibraryIntegration
 			return true;
 		}
 
-		protected RestClient Client
+		protected RestClient _parseRestClient;
+		protected RestClient ParseRestClient
 		{
 			get
 			{
-				if (_client == null)
+				if (_parseRestClient == null)
 				{
-					_client = new RestClient(GetRealUrl());
+					_parseRestClient = new RestClient(GetRealUrl());
 				}
-				return _client;
+				return _parseRestClient;
 			}
 		}
-
-		// REST key. Unit tests update these.
-		public string RestApiKey { get; private set; }
-		public string ApplicationId { get; protected set; }
 
 		// Don't even THINK of making this mutable so each unit test uses a different class.
 		// Those classes hang around, can only be deleted manually, and eventually use up a fixed quota of classes.
@@ -94,64 +208,49 @@ namespace Bloom.WebLibraryIntegration
 
 		public string Account { get; protected set; }
 
-		public bool LoggedIn
-		{
-			get
-			{
-				return !string.IsNullOrEmpty(_sessionToken);
-			}
-		}
+		public bool LoggedIn => !string.IsNullOrEmpty(_authenticationToken);
 
 		public string GetRealUrl()
 		{
 			return UrlLookup.LookupUrl(UrlType.Parse, null, BookUpload.UseSandbox);
 		}
 
-		private RestRequest MakeRequest(string path, Method requestType)
+		protected RestRequest MakeParseRequest(string path, Method requestType)
 		{
 			// client.Authenticator = new HttpBasicAuthenticator(username, password);
 			var request = new RestRequest(path, requestType);
-			SetCommonHeaders(request);
-			if (!string.IsNullOrEmpty(_sessionToken))
-				request.AddHeader("X-Parse-Session-Token", _sessionToken);
+			SetParseCommonHeaders(request);
+			if (!string.IsNullOrEmpty(_authenticationToken))
+				request.AddHeader("X-Parse-Session-Token", _authenticationToken);
 			return request;
 		}
 
-		protected RestRequest MakeGetRequest(string path)
+		protected RestRequest MakeParseGetRequest(string path)
 		{
-			return MakeRequest(path, Method.GET);
+			return MakeParseRequest(path, Method.GET);
 		}
 
-		private void SetCommonHeaders(RestRequest request)
+		private string _parseApplicationId;
+		private void SetParseCommonHeaders(RestRequest request)
 		{
-			request.AddHeader("X-Parse-Application-Id", ApplicationId);
-			request.AddHeader("X-Parse-REST-API-Key", RestApiKey); // REVIEW: Is this actually needed/used by our own parse-server? parse-server index.js suggests it is optional.
+			request.AddHeader("X-Parse-Application-Id", _parseApplicationId);
 		}
 
-		private RestRequest MakePostRequest(string path)
+		protected RestRequest MakeParsePostRequest(string path)
 		{
-			return MakeRequest(path, Method.POST);
-		}
-
-		private RestRequest MakePutRequest(string path)
-		{
-			return MakeRequest(path, Method.PUT);
-		}
-		private RestRequest MakeDeleteRequest(string path)
-		{
-			return MakeRequest(path, Method.DELETE);
+			return MakeParseRequest(path, Method.POST);
 		}
 
 		public int GetBookCount(string query = null)
 		{
 			if (!UrlLookup.CheckGeneralInternetAvailability(false))
 				return -1;
-			var request = MakeGetRequest("classes/books");
+			var request = MakeParseGetRequest("classes/books");
 			request.AddParameter("count", "1");
 			request.AddParameter("limit", "0");
 			if (!string.IsNullOrEmpty(query))
 				request.AddParameter("where", query, ParameterType.QueryString);
-			var response = Client.Execute(request);
+			var response = ParseRestClient.Execute(request);
 			// If not successful return -1; this can happen if we aren't online.
 			if (!response.IsSuccessful)
 				return -1;
@@ -177,13 +276,13 @@ namespace Bloom.WebLibraryIntegration
 		// useful language information instead of only having the arcane langPointers object.
 		public IRestResponse GetBookRecordsByQuery(string query, bool includeLanguageInfo)
 		{
-			var request = MakeGetRequest("classes/books");
+			var request = MakeParseGetRequest("classes/books");
 			request.AddParameter("where", query, ParameterType.QueryString);
 			if (includeLanguageInfo)
 			{
 				request.AddParameter("include", "langPointers", ParameterType.QueryString);
 			}
-			return Client.Execute(request);
+			return ParseRestClient.Execute(request);
 		}
 
 		public dynamic GetSingleBookRecord(string id, bool includeLanguageInfo = false)
@@ -207,11 +306,11 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		public dynamic GetBookRecords(string id, bool includeLanguageInfo, bool includeBooksFromOtherUploaders = false)
+		public dynamic GetBookRecords(string bookInstanceId, bool includeLanguageInfo, bool includeBooksFromOtherUploaders = false)
 		{
 			if (!UrlLookup.CheckGeneralInternetAvailability(false))
 				return null;
-			var query = "{\"bookInstanceId\":\"" + id + "\"";
+			var query = "{\"bookInstanceId\":\"" + bookInstanceId + "\"";
 			if (!includeBooksFromOtherUploaders)
 			{
 				query += "," + UploaderJsonString;
@@ -229,97 +328,11 @@ namespace Bloom.WebLibraryIntegration
 		public void Logout(bool includeFirebaseLogout = true)
 		{
 			Settings.Default.WebUserId = ""; // Should not be able to log in again just by restarting
-			_sessionToken = null;
+			_authenticationToken = null;
 			Account = "";
 			_userId = "";
 			if (includeFirebaseLogout)
 				BloomLibraryAuthentication.Logout();
-		}
-
-		public IRestResponse CreateBookRecord(string metadataJson)
-		{
-			if (!LoggedIn)
-				throw new ApplicationException();
-			if (BookUpload.IsDryRun)
-				throw new ApplicationException("Should not call CreateBookRecord during dry run!");
-			var request = MakePostRequest("classes/books");
-			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
-			var response = Client.Execute(request);
-			if (response.StatusCode != HttpStatusCode.Created)
-			{
-				var message = new StringBuilder();
-
-				message.AppendLine("Request.Json: " + metadataJson);
-				message.AppendLine("Response.Code: " + response.StatusCode);
-				message.AppendLine("Response.Uri: " + response.ResponseUri);
-				message.AppendLine("Response.Description: " + response.StatusDescription);
-				message.AppendLine("Response.Content: " + response.Content);
-				throw new ApplicationException(message.ToString());
-			}
-			return response;
-		}
-
-		public IRestResponse SetBookRecord(string metadataJson)
-		{
-			if (!LoggedIn)
-				throw new ApplicationException("BloomParseClient got SetBookRecord, but the user is not logged in.");
-			if (BookUpload.IsDryRun)
-				throw new ApplicationException("Should not call SetBookRecord during dry run!");
-			var metadata = BookMetaData.FromString(metadataJson);
-			var book = GetSingleBookRecord(metadata.Id);
-			metadataJson = ChangeJsonBeforeCreatingOrModifyingBook(metadataJson);
-			if (book == null)
-				return CreateBookRecord(metadataJson);
-
-			var request = MakePutRequest("classes/books/" + book.objectId);
-			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
-			var response = Client.Execute(request);
-			if (response.StatusCode != HttpStatusCode.OK)
-				throw new ApplicationException("BloomParseClient.SetBookRecord: "+response.StatusDescription + " " + response.Content);
-			return response;
-		}
-
-		// Currently (April 2020), this is only used by unit tests
-		public virtual string ChangeJsonBeforeCreatingOrModifyingBook(string json)
-		{
-			// No-op for base class
-			return json;
-		}
-
-		/// <summary>
-		/// Delete a book record in the parse server database
-		/// Currently (April 2020), this is only used by unit tests
-		/// </summary>
-		public void DeleteBookRecord(string bookObjectId)
-		{
-			if (!LoggedIn)
-				throw new ApplicationException("Must be logged in to delete book");
-			if (BookUpload.IsDryRun)
-				throw new ApplicationException("Should not call DeleteBookRecord during dry run!");
-			var request = MakeDeleteRequest("classes/books/" + bookObjectId);
-			var response = Client.Execute(request);
-			if (response.StatusCode != HttpStatusCode.OK)
-				throw new ApplicationException(response.StatusDescription + " " + response.Content);
-		}
-
-		public void DeleteLanguages()
-		{
-			if (!LoggedIn)
-				throw new ApplicationException();
-			if (BookUpload.IsDryRun)
-				throw new ApplicationException("Should not call DeleteLanguages during dry run!");
-			var getLangs = MakeGetRequest(ClassesLanguagePath);
-			var response1 = Client.Execute(getLangs);
-			dynamic json = JObject.Parse(response1.Content);
-			if (json == null || response1.StatusCode != HttpStatusCode.OK)
-				return;
-			foreach (var obj in json.results)
-			{
-				var request = MakeDeleteRequest(ClassesLanguagePath + "/" + obj.objectId);
-				var response = Client.Execute(request);
-				if (response.StatusCode != HttpStatusCode.OK)
-					throw new ApplicationException(response.StatusDescription + " " + response.Content);
-			}
 		}
 
 		public dynamic CreateLanguage(LanguageDescriptor lang)
@@ -331,10 +344,10 @@ namespace Bloom.WebLibraryIntegration
 				Console.WriteLine("Simulating CreateLanguage during dry run for {0} ({1})", lang.Name, lang.EthnologueCode);
 				return JObject.Parse($"{{\"objectId\":\"xyzzy{lang.EthnologueCode}\"}}");
 			}
-			var request = MakePostRequest(ClassesLanguagePath);
+			var request = MakeParsePostRequest(ClassesLanguagePath);
 			var langjson = lang.Json;
 			request.AddParameter("application/json", langjson, ParameterType.RequestBody);
-			var response = Client.Execute(request);
+			var response = ParseRestClient.Execute(request);
 			if (response.StatusCode != HttpStatusCode.Created)
 			{
 				var message = new StringBuilder();
@@ -349,30 +362,11 @@ namespace Bloom.WebLibraryIntegration
 			return JObject.Parse(response.Content);
 		}
 
-		public bool LanguageExists(LanguageDescriptor lang)
-		{
-			return LanguageCount(lang) > 0;
-		}
-
-		internal int LanguageCount(LanguageDescriptor lang)
-		{
-			var getLang = MakeGetRequest(ClassesLanguagePath);
-			getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
-			var response = Client.Execute(getLang);
-			if (response.StatusCode != HttpStatusCode.OK)
-				return 0;
-			dynamic json = JObject.Parse(response.Content);
-			if (json == null)
-				return 0;
-			var results = json.results;
-			return results.Count;
-		}
-
 		internal string LanguageId(LanguageDescriptor lang)
 		{
-			var getLang = MakeGetRequest(ClassesLanguagePath);
+			var getLang = MakeParseGetRequest(ClassesLanguagePath);
 			getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
-			var response = Client.Execute(getLang);
+			var response = ParseRestClient.Execute(getLang);
 			if (response.StatusCode != HttpStatusCode.OK)
 				return null;
 			dynamic json = JObject.Parse(response.Content);
@@ -381,39 +375,10 @@ namespace Bloom.WebLibraryIntegration
 			return json.results[0].objectId;
 		}
 
-		internal dynamic GetLanguage(string objectId)
-		{
-			var getLang = MakeGetRequest(ClassesLanguagePath + "/" + objectId);
-			var response = Client.Execute(getLang);
-			if (response.StatusCode != HttpStatusCode.OK)
-				return null;
-			return JObject.Parse(response.Content);
-		}
-
-		internal void SendResetPassword(string account)
-		{
-			if (BookUpload.IsDryRun)
-				throw new ApplicationException("Should not call SendResetPassword during dry run!");
-			var request = MakePostRequest("requestPasswordReset");
-			request.AddParameter("application/json; charset=utf-8", "{\"email\":\""+account+ "\"}", ParameterType.RequestBody);
-			request.RequestFormat = DataFormat.Json;
-			Client.Execute(request);
-		}
-
-		internal bool UserExists(string account)
-		{
-			var request = MakeGetRequest("users");
-			request.AddParameter("where", "{\"username\":\"" + account.ToLowerInvariant() + "\"}");
-			var response = Client.Execute(request);
-			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
-			// Todo
-			return dy.results.Count > 0;
-		}
-
 		internal bool IsThisVersionAllowedToUpload()
 		{
-			var request = MakeGetRequest("classes/version");
-			var response = Client.Execute(request);
+			var request = MakeParseGetRequest("classes/version");
+			var response = ParseRestClient.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			var row = dy.results[0];
 			string versionString = row.minDesktopVersion;

@@ -42,7 +42,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="orderUrl">bloom://localhost/order?orderFile=BloomLibraryBooks-UnitTests/unittest%40example.com%2fa211f07b-2c9f-4b97-b0b1-71eb24fd%2f</param>
 		public string DownloadFromOrderUrl(string orderUrl, string destPath, string bookTitleForAnalytics = "unknown")
 		{
-			string storageKeyOfBookFolderOnS3 = "unknown";
+			string storageKeyOfBookFolderParentOnS3 = "unknown";
 			try
 			{
 				var uri = new Uri(orderUrl);
@@ -57,7 +57,7 @@ namespace Bloom.WebLibraryIntegration
 				// But this code is ready for some day when we may stop enforcing two slashes.
 				var index = order.IndexOf('/');
 				var bucket = order.Substring(0, index);
-				storageKeyOfBookFolderOnS3 = order.Substring(index + 1);
+				storageKeyOfBookFolderParentOnS3 = order.Substring(index + 1);
 
 				// getting the url is considered step 1. (Note, this used to take longer because we actually downloaded a file.)
 				_progressDialog?.Invoke(() => { _progressDialog.Progress = 1; });
@@ -65,11 +65,11 @@ namespace Bloom.WebLibraryIntegration
 				// uncomment line below to simulate bad internet connection
 				// throw new WebException();
 
-				var destinationPath = DownloadBook(bucket, storageKeyOfBookFolderOnS3, destPath);
+				var destinationPath = DownloadBook(bucket, storageKeyOfBookFolderParentOnS3, destPath);
 				LastBookDownloadedPath = destinationPath;
 
 				Analytics.Track("DownloadedBook-Success",
-					new Dictionary<string, string>() {{"url", storageKeyOfBookFolderOnS3}, {"title", bookTitleForAnalytics}});
+					new Dictionary<string, string>() {{"url", storageKeyOfBookFolderParentOnS3}, {"title", bookTitleForAnalytics}});
 				return destinationPath;
 			}
 			catch (Exception e)
@@ -79,7 +79,7 @@ namespace Bloom.WebLibraryIntegration
 					// We want to try this before we give a report that may terminate the program. But if something
 					// more goes wrong, ignore it.
 					Analytics.Track("DownloadedBook-Failure",
-						new Dictionary<string, string>() { { "url", storageKeyOfBookFolderOnS3 }, { "title", bookTitleForAnalytics } });
+						new Dictionary<string, string>() { { "url", storageKeyOfBookFolderParentOnS3 }, { "title", bookTitleForAnalytics } });
 					Analytics.ReportException(e);
 				}
 				catch (Exception)
@@ -221,9 +221,9 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		// Internal for testing
-		internal string DownloadBook(string bucket, string storageKeyOfBookFolderOnS3, string dest)
+		internal string DownloadBook(string bucket, string storageKeyOfBookFolderParentOnS3, string dest)
 		{
-			var destinationPath = _s3Client.DownloadBook(bucket, storageKeyOfBookFolderOnS3, dest, _progressDialog);
+			var destinationPath = _s3Client.DownloadBook(bucket, storageKeyOfBookFolderParentOnS3, dest, _progressDialog);
 			if (BookDownLoaded != null)
 			{
 				var bookInfo = new BookInfo(destinationPath, false); // A downloaded book is a template, so never editable.

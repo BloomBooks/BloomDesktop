@@ -1,18 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Web;
+using System.Threading;
 using Bloom;
 using Bloom.Book;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
-using L10NSharp;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.Extensions;
-using SIL.Progress;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -23,7 +21,7 @@ namespace BloomTests.WebLibraryIntegration
 		private string _workFolderPath;
 		private BookUpload _uploader;
 		private BookDownload _downloader;
-		private BloomParseClientTestDouble _parseClient;
+		private BloomLibraryBookApiClientTestDouble _bloomLibraryBookApiClient;
 		List<BookInfo> _downloadedBooks = new List<BookInfo>();
 		private HtmlThumbNailer _htmlThumbNailer;
 		private string _thisTestId;
@@ -39,9 +37,9 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.AreEqual(0, Directory.GetFiles(_workFolderPath).Count(),"Some stuff was left over from a previous test");
 			// Todo: Make sure the S3 unit test bucket is empty.
 			// Todo: Make sure the parse.com unit test book table is empty
-			_parseClient = new BloomParseClientTestDouble(_thisTestId);
+			_bloomLibraryBookApiClient = new BloomLibraryBookApiClientTestDouble();
 			_htmlThumbNailer = new HtmlThumbNailer();
-			_uploader = new BookUpload(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer));
+			_uploader = new BookUpload(_bloomLibraryBookApiClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer));
 			BookUpload.IsDryRun = false;
 			_downloader = new BookDownload(new BloomS3Client(BloomS3Client.UnitTestBucketName));
 			_downloader.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
@@ -69,21 +67,16 @@ namespace BloomTests.WebLibraryIntegration
 
 		private void Login()
 		{
-			Assert.That(_parseClient.TestOnly_LegacyLogIn("unittest@example.com", "unittest"), Is.True,
+			Assert.That(_bloomLibraryBookApiClient.TestOnly_LegacyLogIn("unittest@example.com", "unittest"), Is.True,
 				"Could not log in using the unittest@example.com account");
 		}
 
 		/// <summary>
-		/// Review: this is fragile and expensive. We're doing real internet traffic and creating real objects on S3 and parse.com
+		/// Review: this is fragile and expensive. We're doing real internet traffic and creating real objects on S3 and parse-server
 		/// which (to a very small extent) costs us real money. This will be slow. Also, under S3 eventual consistency rules,
 		/// there is no guarantee that the data we just created will actually be retrievable immediately.
 		/// </summary>
-		/// <param name="bookName"></param>
-		/// <param name="id"></param>
-		/// <param name="uploader"></param>
-		/// <param name="data"></param>
-		/// <returns></returns>
-		public Tuple<string, string> UploadAndDownLoadNewBook(string bookName, string id, string uploader, string data, bool isTemplate = false)
+		public (string bookObjectId, string newBookFolder) UploadAndDownLoadNewBook(string bookName, string id, string uploader, string data, bool isTemplate = false)
 		{
 			//  Create a book folder with meta.json that includes an uploader and id and some other files.
 			var originalBookFolder = MakeBook(bookName, id, uploader, data, true);
@@ -101,25 +94,23 @@ namespace BloomTests.WebLibraryIntegration
 			//HashSet<string> notifications = new HashSet<string>();
 
 			var progress = new SIL.Progress.StringBuilderProgress();
-			var s3Id = _uploader.UploadBook(originalBookFolder,progress);
+			var bookObjectId = _uploader.UploadBook_ForUnitTest(originalBookFolder, out var storageKeyOfBookFolderParentOnS3, progress);
+			Assert.That(string.IsNullOrEmpty(storageKeyOfBookFolderParentOnS3), Is.False);
 
 			var uploadMessages = progress.Text.Split(new string[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
 
-			var expectedFileCount = fileCount + 1; // should get one per file, plus one for metadata
+			var expectedFileCount = fileCount;
 #if DEBUG
-			++expectedFileCount;	// and if in debug mode, then plus one for S3 ID
+			++expectedFileCount;	// and if in debug mode, then plus one for S3 key message
 #endif
 			Assert.That(uploadMessages.Length, Is.EqualTo(expectedFileCount), "Uploaded file counts do not match");
-			Assert.That(progress.Text, Does.Contain(
-				LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata",
-				"In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database.")));
 			Assert.That(progress.Text, Does.Contain(Path.GetFileName(filesToUpload.First())));
 
-			_uploader.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, originalBookFolder);
+			WaitUntilS3DataIsOnServer(storageKeyOfBookFolderParentOnS3, originalBookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
 			_downloadedBooks.Clear();
-			var url = BookUpload.BloomS3UrlPrefix + BloomS3Client.UnitTestBucketName + "/" + s3Id;
+			var url = BookUpload.BloomS3UrlPrefix + BloomS3Client.UnitTestBucketName + "/" + storageKeyOfBookFolderParentOnS3;
 			var newBookFolder = _downloader.HandleDownloadWithoutProgress(url, dest);
 
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount));
@@ -127,20 +118,22 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(_downloadedBooks.Count, Is.EqualTo(1));
 			Assert.That(_downloadedBooks[0].FolderPath,Is.EqualTo(newBookFolder));
 			// Todo: verify that metadata was transferred to parse-server
-			return new Tuple<string, string>(originalBookFolder, newBookFolder);
+			return (bookObjectId, newBookFolder);
 		}
 
 		[Test]
-		public void BookExists_ExistingBook_ReturnsTrue()
+		public void IsBookOnServer_ExistingBook_ReturnsTrue()
 		{
 			var someBookPath = MakeBook("local", Guid.NewGuid().ToString(), "someone", "test");
 			Login();
-			_uploader.UploadBook(someBookPath, new NullProgress());
+			var bookObjectId = _uploader.UploadBook_ForUnitTest(someBookPath);
 			Assert.That(_uploader.IsBookOnServer(someBookPath), Is.True);
+
+			_bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookObjectId);
 		}
 
 		[Test]
-		public void BookExists_NonExistentBook_ReturnsFalse()
+		public void IsBookOnServer_NonExistentBook_ReturnsFalse()
 		{
 			var localBook = MakeBook("local", "someId", "someone", "test");
 			Assert.That(_uploader.IsBookOnServer(localBook), Is.False);
@@ -170,15 +163,19 @@ namespace BloomTests.WebLibraryIntegration
 
 			// Data uploaded with the same id but a different uploader should form a distinct book; the Jill data
 			// should not overwrite the Jack data. Likewise, data uploaded with a distinct Id by the same uploader should be separate.
-			var jacksFirstData = File.ReadAllText(firstPair.Item2.CombineForPath("one.htm"));
+			var jacksFirstData = File.ReadAllText(firstPair.newBookFolder.CombineForPath("one.htm"));
 			// We use stringContaining here because upload does make some changes.
 			Assert.That(jacksFirstData, Does.Contain("Jack's data"));
-			var jillsData = File.ReadAllText(secondPair.Item2.CombineForPath("one.htm"));
+			var jillsData = File.ReadAllText(secondPair.newBookFolder.CombineForPath("one.htm"));
 			Assert.That(jillsData, Does.Contain("Jill's data"));
-			var jacksSecondData = File.ReadAllText(thirdPair.Item2.CombineForPath("one.htm"));
+			var jacksSecondData = File.ReadAllText(thirdPair.newBookFolder.CombineForPath("one.htm"));
 			Assert.That(jacksSecondData, Does.Contain("Jack's other data"));
 
 			// Todo: verify that we got three distinct book records in parse.com
+
+			_bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(firstPair.bookObjectId);
+			_bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(secondPair.bookObjectId);
+			_bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(thirdPair.bookObjectId);
 		}
 
 		[Test]
@@ -191,7 +188,8 @@ namespace BloomTests.WebLibraryIntegration
 			var newJson = jsonStart + ",\"bookLineage\":\"original\"}";
 			File.WriteAllText(jsonPath, newJson);
 			Login();
-			string s3Id = _uploader.UploadBook(bookFolder, new NullProgress());
+			var bookObjectId = _uploader.UploadBook_ForUnitTest(bookFolder);
+			Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
 			File.Delete(bookFolder.CombineForPath("one.css"));
 			File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "something new");
 			File.WriteAllText(Path.Combine(bookFolder, "two.css"), @"test");
@@ -199,11 +197,11 @@ namespace BloomTests.WebLibraryIntegration
 			newJson = jsonStart + ",\"bookLineage\":\"other\"}";
 			File.WriteAllText(jsonPath, newJson);
 
-			_uploader.UploadBook(bookFolder, new NullProgress());
+			_uploader.UploadBook_ForUnitTest(bookFolder, out var storageKeyOfBookFolderParentOnS3, existingBookObjectId: bookObjectId);
 
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
-			var newBookFolder = _downloader.DownloadBook(BloomS3Client.UnitTestBucketName, s3Id, dest);
+			var newBookFolder = _downloader.DownloadBook(BloomS3Client.UnitTestBucketName, storageKeyOfBookFolderParentOnS3, dest);
 
 			var firstData = File.ReadAllText(newBookFolder.CombineForPath("one.htm"));
 			Assert.That(firstData, Does.Contain("something new"), "We should have overwritten the changed file");
@@ -211,10 +209,12 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(File.Exists(newBookFolder.CombineForPath("one.css")), Is.False, "We should have deleted the obsolete file");
 
 			// Verify that metadata was overwritten, new record not created.
-			var records = _parseClient.GetBookRecords("myId" + _thisTestId, false);
+			var records = _bloomLibraryBookApiClient.GetBookRecords("myId" + _thisTestId, false);
 			Assert.That(records.Count, Is.EqualTo(1), "Should have overwritten parse server record, not added or deleted");
 			var bookRecord = records[0];
 			Assert.That(bookRecord.bookLineage.Value, Is.EqualTo("other"));
+
+			_bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookRecord.objectId.Value);
 		}
 
 		[Test]
@@ -222,9 +222,9 @@ namespace BloomTests.WebLibraryIntegration
 		{
 			Login();
 			var bookFolder = MakeBook(MethodBase.GetCurrentMethod().Name, "myId", "me", "something");
-			_uploader.UploadBook(bookFolder, new NullProgress());
+			_uploader.UploadBook_ForUnitTest(bookFolder);
 			var bookInstanceId = "myId" + _thisTestId;
-			var bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+			var bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
 
 			// Verify new upload
 			Assert.That(bookRecord.harvestState.Value, Is.EqualTo("New"));
@@ -235,9 +235,13 @@ namespace BloomTests.WebLibraryIntegration
 			var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
 			Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromSeconds(0)), "lastUploaded should be a valid date representing now-ish");
 			Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
+			var bookObjectId = bookRecord.objectId.Value;
+			Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False, "book objectId should be set");
+			Assert.That(string.IsNullOrEmpty(bookRecord.uploadPendingTimestamp.Value), Is.True, "uploadPendingTimestamp should not be set for a successful upload");
+			Assert.That(bookRecord.inCirculation.Value, Is.True, "new books should default to being in circulation");
 
 			// Set up for re-upload
-			_parseClient.SetBookRecord(JsonConvert.SerializeObject(
+			_bloomLibraryBookApiClient.TestOnly_UpdateBookRecord(JsonConvert.SerializeObject(
 				new
 				{
 					bookInstanceId,
@@ -245,15 +249,15 @@ namespace BloomTests.WebLibraryIntegration
 					tags = new string[0],
 					lastUploaded = (ParseServerDate)null,
 					harvestState = "Done"
-				}));
-			bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+				}), bookObjectId);
+			bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
 			Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Done"));
 			Assert.That(bookRecord.tags, Is.Empty);
 			Assert.That(bookRecord.updateSource.Value, Is.EqualTo("not Bloom"));
 			Assert.That(bookRecord.lastUploaded.Value, Is.Null);
 
-			_uploader.UploadBook(bookFolder, new NullProgress());
-			bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+			_uploader.UploadBook_ForUnitTest(bookFolder, out string _, existingBookObjectId: bookObjectId);
+			bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
 
 			// Verify re-upload
 			Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Updated"));
@@ -265,73 +269,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromSeconds(0)), "lastUploaded should be a valid date representing now-ish");
 			Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
 
-			_parseClient.DeleteBookRecord(bookRecord.objectId.Value);
-		}
-
-		// This is really testing parse server cloud code.
-		// We are simulating uploading from an old Bloom where the updateSource and lastUploaded were not
-		// sent from Bloom, but the cloud code sets them by recognizing we are coming from Bloom based
-		// on the headers.user-agent being RestSharp.
-		[Test]
-		public void UploadBook_SimulateOldBloom_SetsInterestingParseFieldsCorrectly()
-		{
-			try
-			{
-				_parseClient.SimulateOldBloomUpload = true;
-
-				Login();
-				var bookFolder = MakeBook(MethodBase.GetCurrentMethod().Name, "myId", "me", "something");
-				_uploader.UploadBook(bookFolder, new NullProgress());
-				var bookInstanceId = "myId" + _thisTestId;
-				var bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
-
-				// Verify new upload
-				Assert.That(bookRecord.harvestState.Value, Is.EqualTo("New"));
-				Assert.That(bookRecord.tags[0].Value, Is.EqualTo("system:Incoming"), "New books should always get the system:Incoming tag.");
-				Assert.That(bookRecord.updateSource.Value, Is.EqualTo("BloomDesktop old"), "updateSource should start with BloomDesktop when uploaded");
-				DateTime lastUploadedDateTime = bookRecord.lastUploaded.iso.Value;
-				var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
-				// Since we are actually comparing two different system clocks (parse server vs. machine running tests), we allow for 5 minutes either way.
-				Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromMinutes(-5)), "lastUploaded should be a valid date representing now-ish");
-				Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromMinutes(5)), "lastUploaded should be a valid date representing now-ish");
-
-				// Set up for re-upload
-				_parseClient.SimulateOldBloomUpload = false;
-				_parseClient.SetBookRecord(JsonConvert.SerializeObject(
-					new
-					{
-						bookInstanceId,
-						updateSource = "not Bloom",
-						tags = new string[0],
-						lastUploaded = (ParseServerDate) null,
-						harvestState = "Done"
-					}));
-				bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
-				Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Done"));
-				Assert.That(bookRecord.tags, Is.Empty);
-				Assert.That(bookRecord.updateSource.Value, Is.EqualTo("not Bloom"));
-				Assert.That(bookRecord.lastUploaded.Value, Is.Null);
-				_parseClient.SimulateOldBloomUpload = true;
-
-				_uploader.UploadBook(bookFolder, new NullProgress());
-				bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
-
-				// Verify re-upload
-				Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Updated"));
-				Assert.That(bookRecord.tags[0].Value, Is.EqualTo("system:Incoming"), "Re-uploaded books should always get the system:Incoming tag.");
-				Assert.That(bookRecord.updateSource.Value, Is.EqualTo("BloomDesktop old"), "updateSource should start with BloomDesktop when re-uploaded");
-				lastUploadedDateTime = bookRecord.lastUploaded.iso.Value;
-				differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
-				// Since we are actually comparing two different system clocks (parse server vs. machine running tests), we allow for 5 minutes either way.
-				Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromMinutes(-5)), "lastUploaded should be a valid date representing now-ish");
-				Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromMinutes(5)), "lastUploaded should be a valid date representing now-ish");
-
-				_parseClient.DeleteBookRecord(bookRecord.objectId.Value);
-			}
-			finally
-			{
-				_parseClient.SimulateOldBloomUpload = false;
-			}
+			_bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookRecord.objectId.Value);
 		}
 
 		[Test]
@@ -341,20 +279,25 @@ namespace BloomTests.WebLibraryIntegration
 			File.WriteAllText(Path.Combine(bookFolder, "thumbnail.png"), @"this should be a binary picture");
 
 			Login();
-			string storageKeyOfBookFolderOnS3 = _uploader.UploadBook(bookFolder, new NullProgress());
-			_uploader.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, bookFolder);
+			var bookObjectId = _uploader.UploadBook_ForUnitTest(bookFolder, out var storageKeyOfBookFolderParentOnS3);
+			Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
+			Assert.That(bookObjectId == "quiet", Is.False);
+			Assert.That(string.IsNullOrEmpty(storageKeyOfBookFolderParentOnS3), Is.False);
+			WaitUntilS3DataIsOnServer(storageKeyOfBookFolderParentOnS3, bookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
-			var newBookFolder = _downloader.DownloadBook(BloomS3Client.UnitTestBucketName, storageKeyOfBookFolderOnS3, dest);
+			var newBookFolder = _downloader.DownloadBook(BloomS3Client.UnitTestBucketName, storageKeyOfBookFolderParentOnS3, dest);
 			var metadata = BookMetaData.FromString(File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName)));
 			Assert.That(string.IsNullOrEmpty(metadata.Id), Is.False, "should have filled in missing ID");
-			Assert.That(metadata.Uploader.ObjectId, Is.EqualTo(_parseClient.UserId), "should have set uploader to id of logged-in user");
+			Assert.That(metadata.Uploader.ObjectId, Is.EqualTo(_bloomLibraryBookApiClient.UserId), "should have set uploader to id of logged-in user");
 
-			var record = _parseClient.GetSingleBookRecord(metadata.Id);
+			var record = _bloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id);
 			string baseUrl = record.baseUrl;
 			Assert.That(baseUrl.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "baseUrl should start with s3 prefix");
 
 			Assert.IsFalse(File.Exists(Path.Combine(newBookFolder, "My incomplete book.BloomBookOrder")), "Should not have created, uploaded or downloaded a book order file; these are obsolete");
+
+			_bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookObjectId);
 		}
 
 		[Test]
@@ -364,13 +307,18 @@ namespace BloomTests.WebLibraryIntegration
 			var bookFolder = MakeBook("My Url Book", id, "someone", "My content");
 			int fileCount = Directory.GetFiles(bookFolder).Length;
 			Login();
-			string s3Id = _uploader.UploadBook(bookFolder, new NullProgress());
-			_uploader.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, bookFolder);
+			var bookObjectId = _uploader.UploadBook_ForUnitTest(bookFolder, out var storageKeyOfBookFolderParentOnS3);
+			Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
+			Assert.That(bookObjectId == "quiet", Is.False);
+			Assert.That(string.IsNullOrEmpty(storageKeyOfBookFolderParentOnS3), Is.False);
+			WaitUntilS3DataIsOnServer(storageKeyOfBookFolderParentOnS3, bookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
 
-			var newBookFolder = _downloader.DownloadFromOrderUrl(BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "=" + "BloomLibraryBooks-UnitTests/" + s3Id, dest, "nonsense");
+			var newBookFolder = _downloader.DownloadFromOrderUrl(BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "=" + "BloomLibraryBooks-UnitTests/" + storageKeyOfBookFolderParentOnS3, dest, "nonsense");
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount));
+
+			_bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookObjectId);
 		}
 
 		[Test]
@@ -385,43 +333,22 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(Directory.GetFiles(destBookFolder).Length, Is.GreaterThan(3));
 		}
 
-		/// <summary>
-		/// This test has a possible race condition which we attempted to fix by setting ClassesLanguagePath to something unique
-		/// in the BloomParseClientDouble constructor. This had a disastrous side effect documented there. Disable until we find
-		/// a better way.
-		/// </summary>
-		[Test, Ignore("This test in its current form can fail when multiple clients are running tests")]
-		public void GetLanguagePointers_CreatesLanguagesButDoesNotDuplicate()
+		// Wait (up to three seconds) for data uploaded to become available.		
+		// I have no idea whether 3s is an adequate time to wait for 'eventual consistency'. So far it seems to work.
+		internal void WaitUntilS3DataIsOnServer(string storageKeyOfBookFolderParent, string bookPath)
 		{
-			Login();
-			try
+			// There's a few files we don't upload, but meta.bak is the only one that regularly messes up the count.
+			// Some tests also deliberately include a _broken_ file to check they aren't uploaded,
+			// so we'd better not wait for that to be there, either.
+			var count = Directory.GetFiles(bookPath).Count(p => !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles));
+			for (int i = 0; i < 30; i++)
 			{
-				_parseClient.CreateLanguage(new LanguageDescriptor() {LangTag = "en", Name="English", EthnologueCode = "eng"});
-				_parseClient.CreateLanguage(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" });
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" }));
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyj", Name = "MyLang", EthnologueCode = "xyk" }), Is.False);
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }), Is.False);
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyj" }), Is.False);
-
-				var pointers = _parseClient.GetLanguagePointers(new[]
-				{
-					new LanguageDescriptor() {LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk"},
-					new LanguageDescriptor() {LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk"}
-				});
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }));
-				Assert.That(_parseClient.LanguageCount(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" }), Is.EqualTo(1));
-
-				Assert.That(pointers[0], Is.Not.Null);
-				Assert.That(pointers[0].ClassName, Is.EqualTo("language"));
-				var first = _parseClient.GetLanguage(pointers[0].ObjectId);
-				Assert.That(first.name.Value, Is.EqualTo("MyLang"));
-				var second = _parseClient.GetLanguage(pointers[1].ObjectId);
-				Assert.That(second.name.Value, Is.EqualTo("MyOtherLang"));
+				var uploaded = new BloomS3Client(BloomS3Client.UnitTestBucketName).GetBookFileCountForUnitTest(storageKeyOfBookFolderParent);
+				if (uploaded >= count)
+					return;
+				Thread.Sleep(100);
 			}
-			finally
-			{
-				_parseClient.DeleteLanguages();
-			}
+			throw new ApplicationException("S3 is very slow today");
 		}
 	}
 }

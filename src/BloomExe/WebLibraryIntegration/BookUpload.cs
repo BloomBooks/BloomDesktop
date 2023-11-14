@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Windows.Forms;
 using Amazon.Runtime;
 using Amazon.S3;
@@ -30,18 +29,19 @@ namespace Bloom.WebLibraryIntegration
 	/// </summary>
 	public class BookUpload
 	{
-		public BloomParseClient ParseClient;
+		public BloomLibraryBookApiClient BloomLibraryBookApiClient;
 		private BloomS3Client _s3Client;
 		internal readonly BookThumbNailer _thumbnailer;
+		private string _storageKeyOfBookFolderParentOnS3 = "";
 		public IProgress Progress;
 
 		public const string UploadHashesFilename = ".lastUploadInfo";	// this filename must begin with a period
 
 		static string _destination;
 
-		public BookUpload(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, BookThumbNailer htmlThumbnailer)
+		public BookUpload(BloomLibraryBookApiClient bloomLibraryBookApiClient, BloomS3Client bloomS3Client, BookThumbNailer htmlThumbnailer)
 		{
-			this.ParseClient = bloomParseClient;
+			this.BloomLibraryBookApiClient = bloomLibraryBookApiClient;
 			this._s3Client = bloomS3Client;
 			_thumbnailer = htmlThumbnailer;
 		}
@@ -70,7 +70,7 @@ namespace Bloom.WebLibraryIntegration
 		/// whereas we can *download* from anywhere regardless of production, debug, or unit test,
 		/// or the environment variable "BloomSandbox", we currently only allow *uploading*
 		/// to only one bucket depending on these things. This also does double duty for selecting
-		/// the parse.com keys that are appropriate
+		/// the parse-server keys that are appropriate
 		/// </summary>
 		public static string UploadBucketNameForCurrentEnvironment
 		{
@@ -103,10 +103,10 @@ namespace Bloom.WebLibraryIntegration
 
 		public void Logout()
 		{
-			ParseClient.Logout();
+			BloomLibraryBookApiClient.Logout();
 		}
 
-		public bool LoggedIn => ParseClient.LoggedIn;
+		public bool LoggedIn => BloomLibraryBookApiClient.LoggedIn;
 
 		internal const string BloomS3UrlPrefix = "https://s3.amazonaws.com/";
 
@@ -122,15 +122,15 @@ namespace Bloom.WebLibraryIntegration
 		{
 			get
 			{
-				if (_accountWhenUploadedByLastSet == ParseClient.Account)
+				if (_accountWhenUploadedByLastSet == BloomLibraryBookApiClient.Account)
 					return _uploadedBy;
 				// If a different login has since occurred, default to uploaded by that account.
-				UploadedBy = ParseClient.Account;
+				UploadedBy = BloomLibraryBookApiClient.Account;
 				return _uploadedBy;
 			}
 			set
 			{
-				_accountWhenUploadedByLastSet = ParseClient.Account;
+				_accountWhenUploadedByLastSet = BloomLibraryBookApiClient.Account;
 				_uploadedBy = value;
 			}
 		}
@@ -140,18 +140,27 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		public string UserId
 		{
-			get { return ParseClient.UserId; }
+			get { return BloomLibraryBookApiClient.UserId; }
 		}
 
 		/// <summary>
 		/// Only for use in tests
 		/// </summary>
-		internal string UploadBook(string bookFolder, IProgress progress)
+		internal string UploadBook_ForUnitTest(string bookFolder)
 		{
-			return UploadBook(bookFolder, progress, out _, null, true, true, null, null, null, null, null);
+			return UploadBook(bookFolder, new NullProgress(), null, null, true, true, null, null, null, null, null);
+		}
+		internal string UploadBook_ForUnitTest(string bookFolder, out string storageKeyOfBookFolderParentOnS3, IProgress progress = null, string existingBookObjectId = null)
+		{
+			if (progress == null)
+				progress = new NullProgress();
+			var result = UploadBook(bookFolder, progress, existingBookObjectId, null, true, true, null, null, null, null, null);
+
+			storageKeyOfBookFolderParentOnS3 = _storageKeyOfBookFolderParentOnS3;
+			return result;
 		}
 
-		private string UploadBook(string bookFolder, IProgress progress, out string parseId,
+		private string UploadBook(string bookFolder, IProgress progress, string existingBookObjectIdOrNull,
 			string pdfToInclude, bool includeNarrationAudio, bool includeMusic, string[] textLanguages, string[] audioLanguages,
 			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code, bool isForBulkUpload = false)
 		{
@@ -160,7 +169,6 @@ namespace Bloom.WebLibraryIntegration
 			// appropriate here...don't want to upload a badly messed-up book.
 			var metadata = BookMetaData.FromFile(Path.Combine(bookFolder, BookInfo.MetaDataFileName));
 			
-			string storageKeyOfBookFolderOnS3;
 			// In case we somehow have a book with no ID, we must have one to upload it.
 			if (String.IsNullOrEmpty(metadata.Id))
 			{
@@ -172,14 +180,6 @@ namespace Bloom.WebLibraryIntegration
 				metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
 			}
 			metadata.SetUploader(UserId);
-			storageKeyOfBookFolderOnS3 = S3BookId(metadata);
-#if DEBUG
-			// S3 URL can be reasonably deduced, as long as we have the S3 ID, so print that out in Debug mode.
-			// Format: $"https://s3.amazonaws.com/BloomLibraryBooks{isSandbox}/{s3BookId}/{title}"
-			// Example: https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/jeffrey_su@sil.org/8d0d9043-a1bb-422d-aa5b-29726cdcd96a/AutoSplit+Timings
-			var msgBookId = "s3BookId: " + storageKeyOfBookFolderOnS3;
-			progress.WriteMessage(msgBookId);
-#endif
 			// If the collection has a default bookshelf, make sure the book has that tag.
 			// Also make sure it doesn't have any other bookshelf tags (which would typically be
 			// from a previous default bookshelf upload), including a duplicate of the one
@@ -210,32 +210,45 @@ namespace Bloom.WebLibraryIntegration
 			foreach (var file in Directory.GetFiles(bookFolder, $"*{BookInfo.BookOrderExtension}"))
 				RobustFile.Delete(file);
 
-			parseId = "";
+			string bookObjectId = "";
 			try
 			{
-				_s3Client.UploadBook(storageKeyOfBookFolderOnS3, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
-					textLanguages, audioLanguages, metadataLang1Code, metadataLang2Code, collectionSettings?.SettingsFilePath, isForBulkUpload);
-				metadata.BaseUrl = _s3Client.BaseUrl;
-				var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
-				if (IsDryRun)
-					metaMsg = "(Dry run) Would upload book metadata";	// TODO: localize?
-				progress.WriteStatus(metaMsg);
-				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
-				if (!IsDryRun && !progress.CancelRequested)
+				if (!IsDryRun)
 				{
 					// Do NOT save this change in the book folder!
-					metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles,
-						textLanguages);
-					var response = ParseClient.SetBookRecord(metadata.WebDataJson);
-					parseId = response.ResponseUri.LocalPath;
-					int index = parseId.LastIndexOf('/');
-					parseId = parseId.Substring(index + 1);
-					if (parseId == "books")
-					{
-						// For NEW books the response URL is useless...need to do a new query to get the ID.
-						var json = ParseClient.GetSingleBookRecord(metadata.Id);
-						parseId = json.objectId.Value;
-					}
+					metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles, textLanguages);
+
+					if (progress.CancelRequested)
+						return "";
+
+					// The server will create a new folder for our upload or sync. If the book already exists, the new folder gets prepopulated with the existing files.
+					// (after we are done, the server handles making the new folder the current one)
+					(var transactionId, _storageKeyOfBookFolderParentOnS3, var s3Credentials) = BloomLibraryBookApiClient.InitiateBookUpload(existingBookObjectIdOrNull);
+
+#if DEBUG
+					// S3 URL can be reasonably deduced, as long as we have the S3 ID, so print that out in Debug mode.
+					// Format: $"https://s3.amazonaws.com/BloomLibraryBooks{isSandbox}/{storageKeyOfBookFolderParentOnS3}/{title}"
+					// Example: https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/8xhqkxGvg1/1697233000925/AutoSplit+Timings
+					// Example (old format): https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/jeffrey_su@sil.org/8d0d9043-a1bb-422d-aa5b-29726cdcd96a/AutoSplit+Timings
+					var msgBookId = "storageKeyOfBookFolderParentOnS3: " + _storageKeyOfBookFolderParentOnS3;
+					progress.WriteMessage(msgBookId);
+#endif
+
+					if (progress.CancelRequested)
+						return "";
+
+					_s3Client.SetCredentials(s3Credentials);
+					_s3Client.UploadBook(_storageKeyOfBookFolderParentOnS3, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
+						textLanguages, audioLanguages, metadataLang1Code, metadataLang2Code, collectionSettings?.SettingsFilePath, isForBulkUpload);
+					metadata.BaseUrl = _s3Client.GetBaseUrl($"{_storageKeyOfBookFolderParentOnS3}{Path.GetFileName(bookFolder)}/");
+
+					if (progress.CancelRequested)
+						return "";
+
+					// Inform the server we have completed the upload. It will update baseUrl to point to the new files and delete the old ones.
+					BloomLibraryBookApiClient.FinishBookUpload(transactionId, metadata.WebDataJson);
+					bookObjectId = transactionId;
+
 					//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
 					{
 						Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title } });
@@ -289,14 +302,14 @@ namespace Bloom.WebLibraryIntegration
 				return "";
 			}
 
-			return storageKeyOfBookFolderOnS3;
+			return bookObjectId;
 		}
 
 		/// <summary>
 		/// The upload destination possibly set from the command line.  This must be set even before calling
 		/// the constructor of this class because it is used in UploadBucketNameForCurrentEnvironment
-		/// which is called by the BloomParseClient constructor.  And the constructor for this class has a
-		/// BloomParseClient argument.
+		/// which is called by the BloomLibraryBookApiClient constructor.  And the constructor for this class has a
+		/// BloomLibraryBookApiClient argument.
 		/// </summary>
 		/// <remarks>
 		/// If not set explicitly before accessing, the destination is set according to <see cref="UseSandboxByDefault"/>.
@@ -346,60 +359,24 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private string S3BookId(BookMetaData metadata)
-		{
-			var s3BookId = ParseClient.Account + BloomS3Client.kDirectoryDelimeterForS3 + metadata.Id;
-			return s3BookId;
-		}
-
 		public bool IsBookOnServer(string bookPath)
 		{
 			var metadata = BookMetaData.FromFile(bookPath.CombineForPath(BookInfo.MetaDataFileName));
-			return ParseClient.GetSingleBookRecord(metadata.Id) != null;
+			return BloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id) != null;
 		}
 
-		/// <summary>
-		/// This method assumes we just did IsBookOnServer() and got a positive response.
-		/// </summary>
-		public dynamic GetBookOnServer(string bookPath)
+		/// <returns>book record or null</returns>
+		public dynamic GetBookOnServer(string bookInstanceId, bool includeLanguageInfo = false)
 		{
-			var metadata = BookMetaData.FromFile(bookPath.CombineForPath(BookInfo.MetaDataFileName));
-			// 'true' parameter tells the query to include language information so we can get the names.
-			return ParseClient.GetSingleBookRecord(metadata.Id, true);
+			return BloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId, includeLanguageInfo: includeLanguageInfo);
 		}
 
-		// Wait (up to three seconds) for data uploaded to become available.
-		// Currently only used in unit testing.
-		// I have no idea whether 3s is an adequate time to wait for 'eventual consistency'. So far it seems to work.
-		internal void WaitUntilS3DataIsOnServer(string bucket, string bookPath)
-		{
-			var s3Id = S3BookId(BookMetaData.FromFolder(bookPath));
-			// There's a few files we don't upload, but meta.bak is the only one that regularly messes up the count.
-			// Some tests also deliberately include a _broken_ file to check they aren't uploaded,
-			// so we'd better not wait for that to be there, either.
-			var count = Directory.GetFiles(bookPath).Count(p=>!p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles));
-			for (int i = 0; i < 30; i++)
-			{
-				var uploaded = _s3Client.GetBookFileCount(bucket, s3Id);
-				if (uploaded >= count)
-					return;
-				Thread.Sleep(100);
-			}
-			throw new ApplicationException("S3 is very slow today");
-		}
-
-
-		internal bool CheckAgainstHashFileOnS3(string currentHashes, string bookFolder, IProgress progress)
+		internal bool CheckAgainstHashFileOnS3(string currentHashes, string bookFolder, string storageKeyOfBookFolder, IProgress progress)
 		{
 			string hashInfoOnS3 = null;
 			try
 			{
-				if (!IsBookOnServer(bookFolder))
-					return false;
-				// This instance of BookInfo is temporary, always Saveable is fine.
-				var bkInfo = new BookInfo(bookFolder, true, new AlwaysEditSaveContext());
-				var s3id = S3BookId(bkInfo.MetaData);
-				var key = s3id + BloomS3Client.kDirectoryDelimeterForS3 + Path.GetFileName(bookFolder) + BloomS3Client.kDirectoryDelimeterForS3 + UploadHashesFilename;
+				var key = storageKeyOfBookFolder + UploadHashesFilename;
 				hashInfoOnS3 = _s3Client.DownloadFile(UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName, key);
 			}
 			catch
@@ -410,9 +387,9 @@ namespace Bloom.WebLibraryIntegration
 #if DEBUG
 			if (currentHashes != hashInfoOnS3)
 			{
-				progress.WriteMessage("local hash");
+				progress.WriteMessage("local hashes:");
 				progress.WriteMessage(currentHashes);
-				progress.WriteMessage("s3 hash");
+				progress.WriteMessage("s3 hashes:");
 				progress.WriteMessage(hashInfoOnS3);
 			}
 #endif
@@ -464,7 +441,8 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Common routine used in normal upload and bulk upload.
 		/// </summary>
-		internal string FullUpload(Book.Book book, IProgress progress, PublishModel publishModel, BookUploadParameters bookParams, out string parseId)
+		/// <returns>On success, returns the book objectId; on failure, returns empty string</returns>
+		internal string FullUpload(Book.Book book, IProgress progress, PublishModel publishModel, BookUploadParameters bookParams, string existingBookObjectIdOrNull)
 		{
 			// this (isForPublish:true) is dangerous and the product of much discussion.
 			// See "finally" block later to see that we put branding files back
@@ -472,7 +450,6 @@ namespace Bloom.WebLibraryIntegration
 			try
 			{
 				var bookFolder = book.FolderPath;
-				parseId = ""; // in case of early return
 
 				var languagesToUpload = book.BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages().ToArray();
 				var languagesToAdvertiseOnBlorg = book.GetTextLanguagesToAdvertiseOnBloomLibrary(languagesToUpload).ToArray();
@@ -490,7 +467,7 @@ namespace Bloom.WebLibraryIntegration
 				// These bits of data can't easily be set while saving the book because we save one page at a time
 				// and they apply to the book as a whole.
 				book.BookInfo.LanguageTableReferences =
-					ParseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(languagesToAdvertiseOnBlorg));
+					BloomLibraryBookApiClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(languagesToAdvertiseOnBlorg));
 				book.BookInfo.PageCount = book.GetPages().Count();
 				book.BookInfo.Save();
 				// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.
@@ -565,9 +542,9 @@ namespace Bloom.WebLibraryIntegration
 				if (progress.CancelRequested)
 					return "";
 
-				var result= UploadBook(bookFolder,
+				var bookObjectId = UploadBook(bookFolder,
 					progress,
-					out parseId,
+					existingBookObjectIdOrNull,
 					hasVideo ? null : Path.GetFileName(uploadPdfPath),
 					book.BookInfo.PublishSettings.BloomLibrary.IncludeAudio, !bookParams.ExcludeMusic,
 					languagesToUpload,
@@ -576,11 +553,15 @@ namespace Bloom.WebLibraryIntegration
 					book.BookData.MetadataLanguage1Tag,
 					book.BookData.MetadataLanguage2Tag, bookParams.IsForBulkUpload);
 
-				var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(parseId); 
+				Debug.Assert(existingBookObjectIdOrNull == null ||
+					string.IsNullOrEmpty(bookObjectId) ||
+					bookObjectId == "quiet" ||
+					existingBookObjectIdOrNull == bookObjectId, "If existingBookObjectIdOrNull is provided, it better equal bookObjectId");
+
+				var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(bookObjectId); 
 				book.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishWeb,url);
 
-				return result;
-				
+				return bookObjectId;				
 			}
 			finally
 			{
@@ -627,7 +608,7 @@ namespace Bloom.WebLibraryIntegration
 
 		internal bool IsThisVersionAllowedToUpload()
 		{
-			return ParseClient.IsThisVersionAllowedToUpload();
+			return BloomLibraryBookApiClient.IsThisVersionAllowedToUpload();
 		}
 
 		/// <summary>

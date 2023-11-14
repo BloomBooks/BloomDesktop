@@ -29,7 +29,7 @@ namespace Bloom.WebLibraryIntegration
 		private int _booksWithErrors;
 
 		public const string HashInfoFromLastUpload = ".lastUploadInfo";   // this filename must begin with a period
-		public bool LoggedIn => _singleBookUploader.ParseClient.LoggedIn;
+		public bool LoggedIn => _singleBookUploader.BloomLibraryBookApiClient.LoggedIn;
 		
 
 		public BulkUploader(BookUpload singleBookUploader)
@@ -71,7 +71,7 @@ namespace Bloom.WebLibraryIntegration
 
 				Debug.Assert(!String.IsNullOrWhiteSpace(options.UploadUser));
 
-				if (!_singleBookUploader.ParseClient.AttemptSignInAgainForCommandLine(options.UploadUser, options.Dest, progress))
+				if (!_singleBookUploader.BloomLibraryBookApiClient.AttemptSignInAgainForCommandLine(options.UploadUser, options.Dest, progress))
 				{
 					progress.WriteError("Problem logging in. See messages above.");
 					System.Environment.Exit(1); 
@@ -264,8 +264,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private void UploadBookInternal(IProgress progress, ApplicationContainer container, BookUploadParameters uploadParams,
-	ref ProjectContext context)
+		private void UploadBookInternal(IProgress progress, ApplicationContainer container, BookUploadParameters uploadParams, ref ProjectContext context)
 		{
 			progress.WriteMessageWithColor("Cyan", "Starting to upload " + uploadParams.Folder);
 			// Make sure the files we want to upload are up to date.
@@ -296,8 +295,10 @@ namespace Bloom.WebLibraryIntegration
 			var bookInfo = new BookInfo(uploadParams.Folder, true, context.TeamCollectionManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
 			var book = server.GetBookFromBookInfo(bookInfo, fullyUpdateBookFiles: true);
 			book.BringBookUpToDate(new NullProgress());
-			uploadParams.Folder = book.FolderPath;	// BringBookUpToDate can change the title and folder (see BL-10330)
+			uploadParams.Folder = book.FolderPath;  // BringBookUpToDate can change the title and folder (see BL-10330)
 			book.Storage.CleanupUnusedSupportFiles(isForPublish: false); // we are publishing, but this is the real folder not a copy, so play safe.
+
+			var existingBook = _singleBookUploader.GetBookOnServer(book.BookInfo.Id);
 
 			// Compute the book hash file and compare it to the existing one for bulk upload.
 			var currentHashes = BookUpload.HashBookFolder(uploadParams.Folder);
@@ -310,9 +311,10 @@ namespace Bloom.WebLibraryIntegration
 				{
 					canSkip = _singleBookUploader.CheckAgainstLocalHashfile(currentHashes, pathToLocalHashInfoFromLastUpload);
 				}
-				else
+				else if (existingBook != null)
 				{
-					canSkip = _singleBookUploader.CheckAgainstHashFileOnS3(currentHashes, uploadParams.Folder, progress);
+					var storageKeyOfBookFolderParent = BloomS3Client.GetStorageKeyOfBookFolder(existingBook.baseUrl.Value);
+					canSkip = _singleBookUploader.CheckAgainstHashFileOnS3(currentHashes, uploadParams.Folder, storageKeyOfBookFolderParent, progress);
 					RobustFile.WriteAllText(pathToLocalHashInfoFromLastUpload, currentHashes); // ensure local copy is saved
 				}
 				if (canSkip)
@@ -355,23 +357,34 @@ namespace Bloom.WebLibraryIntegration
 
 			if (blPublishModel.MetadataIsReadyToPublish && (hasAtLeastOneLanguageToUpload || blPublishModel.OkToUploadWithNoLanguages))
 			{
-				bool updatingBook = blPublishModel.BookIsAlreadyOnServer;   // this is a live value, so make local copy.
+				bool updatingBook = existingBook != null;   // this is a live value, so make local copy.
 				if (updatingBook)
 				{
 					var msg = $"Overwriting the copy of {uploadParams.Folder} on the server...";
 					progress.WriteWarning(msg);
 				}
+				var uploadResult = "";
 				using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 				{
 					BookUpload.PrepareBookForUpload(ref book, server, tempFolder.FolderPath, progress);
-					_singleBookUploader.FullUpload(book, progress, publishModel, uploadParams, out var _);
+
+					// On success, returns the book objectId; on failure, returns empty string
+					uploadResult = _singleBookUploader.FullUpload(book, progress, publishModel, uploadParams, existingBook?.objectId.Value);
 				}
 
-				progress.WriteMessageWithColor("Green", "{0} has been uploaded", uploadParams.Folder);
-				if (updatingBook)
-					++_booksUpdated;
+				if (string.IsNullOrEmpty(uploadResult) || uploadResult == "quiet")
+				{
+					progress.WriteError("{0} was not uploaded.", uploadParams.Folder);
+					++_booksWithErrors;
+				}
 				else
-					++_newBooksUploaded;
+				{
+					progress.WriteMessageWithColor("Green", "{0} has been uploaded", uploadParams.Folder);
+					if (updatingBook)
+						++_booksUpdated;
+					else
+						++_newBooksUploaded;
+				}
 			}
 			else
 			{

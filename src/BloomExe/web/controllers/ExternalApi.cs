@@ -11,12 +11,12 @@ namespace Bloom.web.controllers
 	{
 		public static event EventHandler LoginSuccessful;
 
-		private BloomParseClient _parseClient;
+		private BloomLibraryBookApiClient _bloomLibraryBookApiClient;
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public ExternalApi(BloomParseClient parseClient)
+		public ExternalApi(BloomLibraryBookApiClient bloomLibraryBookApiClient)
 		{
-			_parseClient = parseClient;
+			_bloomLibraryBookApiClient = bloomLibraryBookApiClient;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -32,7 +32,7 @@ namespace Bloom.web.controllers
 						string email = requestData.email;
 						string userId = requestData.userId;
 						//Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
-						_parseClient.SetLoginData(email, userId, token, BookUpload.Destination);
+						_bloomLibraryBookApiClient.SetLoginData(email, userId, token, BookUpload.Destination);
 						LoginSuccessful?.Invoke(this, null);
 
 						request.PostSucceeded();
