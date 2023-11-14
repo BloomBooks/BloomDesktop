@@ -5558,7 +5558,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PerPageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per Page (Average)</source>
-        <target xml:lang="es-ES" state="final">Por libro (promedio)</target>
+        <target xml:lang="es-ES" state="final">Por página (promedio)</target>
         <note>ID: ReaderSetup.PerPageHeader</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.PerSentenceHeader" sil:dynamic="true" approved="yes">
