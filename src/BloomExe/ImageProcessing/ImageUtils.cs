@@ -302,6 +302,7 @@ namespace Bloom.ImageProcessing
 						imageInfo.Image = img;
 					}
 				}
+				var needToStripMetadata = imageInfo.Metadata.ExceptionCaughtWhileLoading != null;
 
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
 				bool isEncodedAsPng = !isEncodedAsJpeg && AppearsToBePng(imageInfo);
@@ -319,9 +320,21 @@ namespace Bloom.ImageProcessing
 				var sourcePath = imageInfo.GetCurrentFilePath();
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
 				if (isEncodedAsJpeg || isEncodedAsPng)
-					RobustFile.Copy(sourcePath, destinationPath);
+				{
+					if (needToStripMetadata)
+					{
+						if (!TryStripMetadataWithGraphicsMagick(imageInfo, sourcePath, destinationPath))
+							imageInfo.Image.Save(destinationPath, isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
+					}
+					else
+					{
+						RobustFile.Copy(sourcePath, destinationPath);
+					}
+				}
 				else
+				{
 					imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
+				}
 				if (_createdTempImageFile != null)
 				{
 					if (RobustFile.Exists(_createdTempImageFile))
@@ -364,6 +377,31 @@ namespace Bloom.ImageProcessing
 					"Bloom was not able to prepare that picture for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?" +
 					Environment.NewLine + imageInfo.FileName, error);
 			}
+		}
+
+		/// <summary>
+		/// Try to strip the metadata from the image using GraphicsMagick.
+		/// </summary>
+		/// <returns>true if successful, false if an error occurs or GraphicsMagick can't be found</returns>
+		private static bool TryStripMetadataWithGraphicsMagick(PalasoImage imageInfo, string sourcePath, string destinationPath)
+		{
+			var graphicsMagickPath = GetGraphicsMagickPath();
+			if (RobustFile.Exists(graphicsMagickPath))
+			{
+				var strip = "!icm,*"; // strip all metadata except color profile
+				if (imageInfo.Metadata?.ExceptionCaughtWhileLoading?.StackTrace != null &&
+					imageInfo.Metadata.ExceptionCaughtWhileLoading.StackTrace.Contains("ReadAPP13Segment"))
+				{
+					strip = "iptc";	// We know taglib-sharp doesn't handle IPTC profiles very well.
+				}
+				var jpegArg = "";
+				if (Path.GetExtension(destinationPath).ToLowerInvariant() == ".jpg")
+					jpegArg = " -define jpeg:preserve-settings";
+				var args = $"convert \"{sourcePath}\" +profile \"{strip}\" {jpegArg} -density 96 \"{destinationPath}\"";
+				var result = CommandLineRunnerExtra.RunWithInvariantCulture(graphicsMagickPath, args, "", 600, new NullProgress());
+				return result.ExitCode == 0;
+			}
+			return false;
 		}
 
 		/// <summary>
