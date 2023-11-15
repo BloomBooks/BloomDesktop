@@ -275,17 +275,17 @@ namespace Bloom.web.controllers
 				return; // should be Get
 			var langTag = string.IsNullOrEmpty(_settings.SignLanguageTag) ? _settings.Language1Tag : _settings.SignLanguageTag;
 			var bloomLibraryApiClient = new BloomLibraryBookApiClient();
-			string count;
+			int count;
 			try
 			{
-				count = bloomLibraryApiClient.getBookCountByLanguage(langTag);
+				count = bloomLibraryApiClient.GetBookCountByLanguage(langTag);
 			}
 			catch
 			{
-				count = "-1";
+				count = -1;
 			}
 
-			request.ReplyWithText(count);
+			request.ReplyWithText(count.ToString());
 		}
 
 		internal void CheckForCollectionUpdates()
