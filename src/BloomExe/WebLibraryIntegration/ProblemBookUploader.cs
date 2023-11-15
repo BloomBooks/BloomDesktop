@@ -20,7 +20,9 @@ namespace Bloom.WebLibraryIntegration
 			{
 				using(var s3Client = new BloomS3Client(bucketName))
 				{
-					var url = s3Client.UploadSingleFile(bookZipPath, progress);
+					progress.WriteStatus("Uploading book to Bloom Support...");
+					Console.WriteLine("Uploading book to Bloom Support...");
+					var url = s3Client.UploadSingleFile(bookZipPath);
 					progress.WriteMessage("Upload Success");
 					return url;
 				}
