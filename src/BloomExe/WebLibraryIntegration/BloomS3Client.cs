@@ -39,23 +39,28 @@ namespace Bloom.WebLibraryIntegration
 	{
 		// An S3 client which uses the newest (Oct 2023) way of handling upload credentials.
 		// Namely, it gets temporary permission from our API to upload book files.
-		private IAmazonS3 _amazonS3;
-		// An S3 client which uses the legacy open-write credentials to list and upload book files.
-		// We are moving away from this.
-		private IAmazonS3 _legacyAmazonS3;
-		// An S3 client which does not need any credentials. 
-		private IAmazonS3 _amazonS3WithoutCredentials;
+		private IAmazonS3 _amazonS3ForBookUpload;
+		// An S3 client which uses IAM user AccessKeys. Used for:
+		// 1. Listing book files during download.
+		// 2. Uploading problem books to YouTrack.
+		// 3. Unit tests; for deleting test books.
+		// Also used in a couple places for downloading public read files because it is simpler to
+		// reuse this than create another IAmazonS3 object.
+		// As of Nov 2023, these access keys still provide write/delete, but in a couple versions,
+		// we will remove that. Only the temporary credentials will be allowed to write/delete at that point.
+		private IAmazonS3 _amazonS3WithAccessKey;
+
+		private AmazonS3Config _s3Config;
+		private string _previousBucketName;
+		protected string _bucketName;
+
 		public const string kDirectoryDelimeterForS3 = "/";
+
 		public const string UnitTestBucketName = "BloomLibraryBooks-UnitTests";
 		public const string SandboxBucketName = "BloomLibraryBooks-Sandbox";
 		public const string ProductionBucketName = "BloomLibraryBooks";
 		public const string ProblemBookUploadsBucketName = "bloom-problem-books";
 		public const string BloomDesktopFiles = "bloom-desktop-files";
-
-		// Notice the optional "i".
-		// These file names are guids, and if the guid starts with a number, we prepend "i".
-		// But really we just want to extract the possible guid part to see if it is, in fact, a guid.
-		private static readonly Regex NarrationFileNameRegex = new Regex("^(.*[\\/\\\\])*i?(.+?)\\.[^.]*$", RegexOptions.Compiled);
 
 		public BloomS3Client(string bucketName)
 		{
@@ -71,24 +76,14 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		public void SetCredentials(AmazonS3Credentials credentials)
+		public void SetTemporaryCredentialsForBookUpload(AmazonS3Credentials credentials)
 		{
-			if (credentials.AccessKey != _previousAccessKey)
-			{
-				if (_amazonS3 != null)
-					_amazonS3.Dispose();
-				_amazonS3 = CreateAmazonS3Client(_s3Config, credentials);
-
-				_previousAccessKey = credentials.AccessKey;
-			}
+			if (_amazonS3ForBookUpload != null)
+				_amazonS3ForBookUpload.Dispose();
+			_amazonS3ForBookUpload = CreateAmazonS3Client(_s3Config, credentials);
 		}
 
-		public void SetLegacyCredentialsForUnitTest()
-		{
-			SetCredentials(GetLegacyS3Credentials(UnitTestBucketName));
-		}
-
-		protected IAmazonS3 GetLegacyAmazonS3(string bucketName)
+		protected IAmazonS3 GetAmazonS3WithAccessKey(string bucketName)
 		{
 			//Note, it would probably be fine to just generate this each time,
 			//but this was the more conservative approach when refactoring
@@ -96,24 +91,16 @@ namespace Bloom.WebLibraryIntegration
 			//appropriate change of access keys, thus requiring changing AmazonS3Client objects.
 			if (bucketName != _previousBucketName)
 			{
-				if (_legacyAmazonS3 != null)
-					_legacyAmazonS3.Dispose();
-				_legacyAmazonS3 = CreateAmazonS3Client(_s3Config, GetLegacyS3Credentials(bucketName));
+				if (_amazonS3WithAccessKey != null)
+					_amazonS3WithAccessKey.Dispose();
+				_amazonS3WithAccessKey = CreateAmazonS3Client(_s3Config, GetAccessKeyCredentials(bucketName));
 
 				_previousBucketName = bucketName;
 			}
-			return _legacyAmazonS3; // we keep this so that we can dispose of it later.
+			return _amazonS3WithAccessKey; // we keep this so that we can dispose of it later.
 		}
 
-		protected IAmazonS3 GetAmazonS3WithoutCredentials()
-		{
-			if (_amazonS3WithoutCredentials == null)
-				_amazonS3WithoutCredentials = new AmazonS3Client();
-
-			return _amazonS3WithoutCredentials;
-		}
-
-		protected AmazonS3Credentials GetLegacyS3Credentials(string bucketName)
+		protected AmazonS3Credentials GetAccessKeyCredentials(string bucketName)
 		{
 			var accessKeys = AccessKeys.GetAccessKeys(bucketName);
 			return new AmazonS3Credentials { AccessKey = accessKeys.S3AccessKey, SecretAccessKey = accessKeys.S3SecretAccessKey };
@@ -156,52 +143,11 @@ namespace Bloom.WebLibraryIntegration
 
 		internal List<S3Object> GetMatchingItems(string bucketName, string key)
 		{
-			return GetLegacyAmazonS3(bucketName).ListAllObjects(new ListObjectsV2Request()
+			return GetAmazonS3WithAccessKey(bucketName).ListAllObjects(new ListObjectsV2Request()
 			{
 				BucketName = bucketName,
 				Prefix = key
 			});
-		}
-
-		internal int GetBookFileCountForUnitTest(string key)
-		{
-			var count = GetMatchingItems(UnitTestBucketName, key).Count;
-			return count;
-		}
-
-		public void DeleteFromUnitTestBucket(string prefix)
-		{
-			var bucketName = UnitTestBucketName;
-
-			var listMatchingObjectsRequest = new ListObjectsV2Request()
-			{
-				BucketName = bucketName,
-				Prefix = prefix
-			};
-
-			ListObjectsV2Response matchingFilesResponse;
-			do
-			{
-				// Note: ListObjects can only return 1,000 objects at a time,
-				//       and DeleteObjects can only delete 1,000 objects at a time.
-				//       So a loop is needed if the book contains 1,001+ objects.
-				matchingFilesResponse = _amazonS3.ListObjectsV2(listMatchingObjectsRequest);
-				if (matchingFilesResponse.S3Objects.Count == 0)
-					return;
-
-				var deleteObjectsRequest = new DeleteObjectsRequest()
-				{
-					BucketName = bucketName,
-					Objects = matchingFilesResponse.S3Objects.Select(s3Object => new KeyVersion() { Key = s3Object.Key }).ToList()
-				};
-
-				var response = _amazonS3.DeleteObjects(deleteObjectsRequest);
-				Debug.Assert(response.DeleteErrors.Count == 0);
-
-				// Prep the next request (if needed)
-				listMatchingObjectsRequest.ContinuationToken = matchingFilesResponse.ContinuationToken;
-			}
-			while (matchingFilesResponse.IsTruncated);  // Returns true if haven't reached the end yet
 		}
 
 		/// <summary>
@@ -210,9 +156,9 @@ namespace Bloom.WebLibraryIntegration
 		/// (Current use is to upload problem books to YouTrack reports.)
 		/// </summary>
 		/// <returns>url to the uploaded file</returns>
-		public string UploadSingleFile(string pathToFile, IProgress progress)
+		public string UploadSingleFile(string pathToFile)
 		{
-			using (var transferUtility =  (BookUpload.IsDryRun) ? null : new TransferUtility(GetLegacyAmazonS3(_bucketName)))
+			using (var transferUtility = (BookUpload.IsDryRun) ? null : new TransferUtility(GetAmazonS3WithAccessKey(_bucketName)))
 			{
 				var request = new TransferUtilityUploadRequest
 				{
@@ -224,8 +170,6 @@ namespace Bloom.WebLibraryIntegration
 				// no-cache means "The response may be stored by any cache, even if the response is normally non-cacheable. However,
 				// the stored response MUST always go through validation with the origin server first before using it..."
 				request.Headers.CacheControl = "no-cache";
-				progress.WriteStatus("Uploading book to Bloom Support...");
-				Console.WriteLine("Uploading book to Bloom Support...");
 				if (!BookUpload.IsDryRun)
 					transferUtility.Upload(request);
 				return "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(request.Key);
@@ -332,11 +276,6 @@ namespace Bloom.WebLibraryIntegration
 			metadata.WriteToFolder(destDirName);
 		}
 
-		private AmazonS3Config _s3Config;
-		private string _previousBucketName;
-		private string _previousAccessKey;
-		protected string _bucketName;
-
 		// At this point, the API has created an S3 folder for us to work with. If the book aready exists, it
 		// has a copy of the existing book files.
 		// We work with that copy, deleting, adding, and updating files as needed.
@@ -355,7 +294,7 @@ namespace Bloom.WebLibraryIntegration
 
 			// sync all files which are already on S3
 			var listObjectRequest = new ListObjectsV2Request { BucketName = _bucketName, Prefix = storageKeyOfBookFolderParent };
-			foreach (S3Object s3Object in _amazonS3.ListAllObjects(listObjectRequest))
+			foreach (S3Object s3Object in _amazonS3ForBookUpload.ListAllObjects(listObjectRequest))
 			{
 				// If the user cancels at this point, we don't tell the API, but there is a cleanup function which runs each day.
 				// It will find the parse record which never finished uploading, reset it, and delete the copy of the book files on S3.
@@ -365,7 +304,7 @@ namespace Bloom.WebLibraryIntegration
 				string localFilePath = Path.Combine(stagingDirectory, s3Object.Key.Substring(storageKeyOfBookFolderParent.Length));
 				if (IsExcludedFromUploadByExtension(localFilePath) || !RobustFile.Exists(localFilePath))
 				{
-					_amazonS3.DeleteObject(_bucketName, s3Object.Key);
+					_amazonS3ForBookUpload.DeleteObject(_bucketName, s3Object.Key);
 				}
 				else
 				{
@@ -399,7 +338,7 @@ namespace Bloom.WebLibraryIntegration
 
 				string key = storageKeyOfBookFolderParent + localFilePath.Substring(stagingDirectory.Length).Replace("\\", "/");
 				key = key.Replace("//", "/"); // safety net
-				if (!DoesS3ObjectExist(_amazonS3, _bucketName, key))
+				if (!DoesS3ObjectExist(_amazonS3ForBookUpload, _bucketName, key))
 				{
 					PutFileOnS3(localFilePath, key, progress);
 				}
@@ -435,7 +374,7 @@ namespace Bloom.WebLibraryIntegration
 			var uploadMsgFmt = LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}");
 			progress.WriteStatus(uploadMsgFmt, Path.GetFileName(localFilePath));
 
-			_amazonS3.PutObject(request);
+			_amazonS3ForBookUpload.PutObject(request);
 		}
 
 		private string GetEtag(string filePath)
@@ -562,7 +501,9 @@ namespace Bloom.WebLibraryIntegration
 		public string DownloadFile(string bucketName, string storageKeyOfFile)
 		{
 			var request = new GetObjectRequest() {BucketName = bucketName, Key = storageKeyOfFile};
-			using (var response = GetAmazonS3WithoutCredentials().GetObject(request))
+			// We actually don't need any credentials to download the files we are dealing with because they are public read,
+			// but it simplifies the code a bit to just reuse the existing IAmazonS3 object.
+			using (var response = GetAmazonS3WithAccessKey(bucketName).GetObject(request))
 			using (var stream = response.ResponseStream)
 			using (var reader = new StreamReader(stream, Encoding.UTF8))
 			{
@@ -620,7 +561,7 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		/// <summary>
-		/// Warning, if the book already exists in the location, this is going to delete it an over-write it. So it's up to the caller to check the sanity of that.
+		/// Warning, if the book already exists in the location, this is going to delete it and over-write it. So it's up to the caller to check the sanity of that.
 		/// </summary>
 		public string DownloadBook(string bucketName, string storageKeyOfBookFolderParent, string pathToDestinationParentDirectory,
 			IProgressDialog downloadProgress = null)
@@ -672,7 +613,9 @@ namespace Bloom.WebLibraryIntegration
 						progressStep = (float)(downloadProgress.ProgressRangeMaximum - downloadProgress.Progress) / (float)totalItems;
 						progress = (float)downloadProgress.Progress;
 					}));
-				using(var transferUtility = new TransferUtility(GetLegacyAmazonS3(_bucketName)))
+				// We actually don't need any credentials to download the files we are dealing with because they are public read,
+				// but it simplifies the code a bit to just reuse the existing IAmazonS3 object.
+				using (var transferUtility = new TransferUtility(GetAmazonS3WithAccessKey(bucketName)))
 				{
 					for(int i = 0; i < matching.Count; ++i)
 					{
@@ -814,20 +757,15 @@ namespace Bloom.WebLibraryIntegration
 
 		public void Dispose()
 		{
-			if (_amazonS3 != null)
+			if (_amazonS3ForBookUpload != null)
 			{
-				_amazonS3.Dispose();
-				_amazonS3 = null;
+				_amazonS3ForBookUpload.Dispose();
+				_amazonS3ForBookUpload = null;
 			}
-			if (_legacyAmazonS3 != null)
+			if (_amazonS3WithAccessKey != null)
 			{
-				_legacyAmazonS3.Dispose();
-				_legacyAmazonS3 = null;
-			}
-			if (_amazonS3WithoutCredentials != null)
-			{
-				_amazonS3WithoutCredentials.Dispose();
-				_amazonS3WithoutCredentials = null;
+				_amazonS3WithAccessKey.Dispose();
+				_amazonS3WithAccessKey = null;
 			}
 
 			GC.SuppressFinalize(this);

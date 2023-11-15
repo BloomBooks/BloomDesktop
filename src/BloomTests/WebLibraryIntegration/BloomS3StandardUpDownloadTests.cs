@@ -10,7 +10,8 @@ namespace BloomTests.WebLibraryIntegration
 {
 	class BloomS3StandardUpDownloadTests
 	{
-		private BloomS3Client _client;
+		private BloomS3ClientTestDouble _client;
+		private BloomS3ClientTestDouble _clientWhichMustWorkAroundUploadPermissions;
 		private TemporaryFolder _workFolder;
 		private string _srcCollectionPath;
 		private string _destCollectionPath;
@@ -27,8 +28,8 @@ namespace BloomTests.WebLibraryIntegration
 			var workFolderPath = _workFolder.FolderPath;
 			Assert.AreEqual(0, Directory.GetDirectories(workFolderPath).Count(), "Some stuff was left over from a previous test");
 
-			_client = new BloomS3Client(BloomS3Client.UnitTestBucketName);
-			_client.SetLegacyCredentialsForUnitTest();
+			_client = new BloomS3ClientTestDouble(BloomS3Client.UnitTestBucketName);
+			_clientWhichMustWorkAroundUploadPermissions = new BloomS3ClientTestDouble(BloomS3Client.UnitTestBucketName, shouldWorkAroundUploadPermissions: true);
 
 			// Now do standard upload/download. We save time by making this whole class do one upload/download sequence
 			// on the assumption that things that should be uploaded were if they make it through the download process too.
@@ -62,6 +63,7 @@ namespace BloomTests.WebLibraryIntegration
 			_client.DeleteFromUnitTestBucket(_storageKeyOfBookFolder);
 			_workFolder.Dispose();
 			_client.Dispose();
+			_clientWhichMustWorkAroundUploadPermissions.Dispose();
 		}
 
 		private string MakeBookIncludingThumbs(TemporaryFolder srcFolder)
@@ -80,7 +82,7 @@ namespace BloomTests.WebLibraryIntegration
 
 		private void UploadBook(string bookFolder)
 		{
-			_client.UploadBook(_storageKeyOfBookFolder, bookFolder, new NullProgress(), pdfToInclude:"preview.pdf", true, true, null, null, null, null);
+			_clientWhichMustWorkAroundUploadPermissions.UploadBook(_storageKeyOfBookFolder, bookFolder, new NullProgress(), pdfToInclude:"preview.pdf", true, true, null, null, null, null);
 		}
 
 		private void DownloadBook()
