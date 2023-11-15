@@ -150,6 +150,28 @@ export default class BloomField {
         return input;
     }
 
+    public static removeUselessSpanMarkup(input: string): string {
+        // Paste data from Word can have span elements with no attributes.
+        // These serve no purpose and can cause problems in Bloom audio
+        // highlighting after splitting with aeneas.  We remove them here.
+        // See BL-12861.
+        if (!input.includes("<span>")) return input;
+        const newDiv = document.createElement("div");
+        newDiv.innerHTML = input;
+        const spans = newDiv.getElementsByTagName("span");
+        for (let i = spans.length - 1; i >= 0; i--) {
+            const span = spans[i];
+            if (!span.hasAttributes()) {
+                const spanContent: (string | Node)[] = [];
+                span.childNodes.forEach(child => {
+                    spanContent.push(child);
+                });
+                span.replaceWith(...spanContent);
+            }
+        }
+        return newDiv.innerHTML;
+    }
+
     // This BloomField thing was done before ckeditor; ckeditor kinda expects to the only thing
     // taking responsibility for the field, so that creates problems. Eventually, we could probably
     // re-cast everything in this BloomField class as a plugin or at least callbacks to ckeditor.
@@ -181,6 +203,9 @@ export default class BloomField {
             );
 
             event.data.dataValue = this.fixPasteData(event.data.dataValue);
+            event.data.dataValue = this.removeUselessSpanMarkup(
+                event.data.dataValue
+            );
 
             // We can't just duplicate audio ids without running into trouble later!
             if (
