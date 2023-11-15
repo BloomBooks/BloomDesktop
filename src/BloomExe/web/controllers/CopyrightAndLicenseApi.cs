@@ -152,7 +152,7 @@ namespace Bloom.web.controllers
 			{
 				licenseType = GetLicenseType(metadata.License),
 				creativeCommonsInfo = creativeCommonsInfoJson,
-				rightsStatement = metadata.License.RightsStatement ?? string.Empty
+				rightsStatement = metadata.License?.RightsStatement ?? string.Empty
 			};
 		}
 

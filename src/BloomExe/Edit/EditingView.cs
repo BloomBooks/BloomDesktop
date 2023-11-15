@@ -608,7 +608,24 @@ namespace Bloom.Edit
 			{
 				imageBeingModified.Metadata = metadata;
 				imageBeingModified.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
-				imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+				try
+				{
+					imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+				}
+				catch (Exception e)
+				{
+					if (e.Source == "TagLibSharp")
+					{
+						// The metadata is corrupt in a way that prevents writing it back to the file.
+						// Try to remove the old, corrupt metadata from the file and write the new metadata.
+						ImageUtils.StripMetadataFromImageFile(imageBeingModified);
+						imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+					}
+					else
+					{
+						throw;
+					}
+				}
 			}
 
 			return true;
