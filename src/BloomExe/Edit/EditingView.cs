@@ -604,12 +604,7 @@ namespace Bloom.Edit
 				return false;
 			}
 
-			using (var imageBeingModified = ImageUpdater.GetImageInfoSafelyFromFilePath(_model.CurrentBook.FolderPath, _fileNameOfImageBeingModified))
-			{
-				imageBeingModified.Metadata = metadata;
-				imageBeingModified.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
-				imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
-			}
+			ImageUtils.SaveImageMetadataIfNeeded(metadata, _model.CurrentBook.FolderPath, _fileNameOfImageBeingModified);
 
 			return true;
 		}

@@ -25,6 +25,7 @@ using Logger = SIL.Reporting.Logger;
 using TempFile = SIL.IO.TempFile;
 using Bloom.ToPalaso;
 using SIL.CommandLineProcessing;
+using SIL.Windows.Forms.ClearShare;
 
 namespace Bloom.ImageProcessing
 {
@@ -302,6 +303,7 @@ namespace Bloom.ImageProcessing
 						imageInfo.Image = img;
 					}
 				}
+				var needToStripMetadata = imageInfo.Metadata.ExceptionCaughtWhileLoading != null;
 
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
 				bool isEncodedAsPng = !isEncodedAsJpeg && AppearsToBePng(imageInfo);
@@ -319,9 +321,21 @@ namespace Bloom.ImageProcessing
 				var sourcePath = imageInfo.GetCurrentFilePath();
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
 				if (isEncodedAsJpeg || isEncodedAsPng)
-					RobustFile.Copy(sourcePath, destinationPath);
+				{
+					if (needToStripMetadata)
+					{
+						if (!TryStripMetadataWithGraphicsMagick(imageInfo, sourcePath, destinationPath))
+							imageInfo.Image.Save(destinationPath, isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
+					}
+					else
+					{
+						RobustFile.Copy(sourcePath, destinationPath);
+					}
+				}
 				else
+				{
 					imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
+				}
 				if (_createdTempImageFile != null)
 				{
 					if (RobustFile.Exists(_createdTempImageFile))
@@ -363,6 +377,47 @@ namespace Bloom.ImageProcessing
 				throw new ApplicationException(
 					"Bloom was not able to prepare that picture for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?" +
 					Environment.NewLine + imageInfo.FileName, error);
+			}
+		}
+
+		/// <summary>
+		/// Try to strip the metadata from the image using GraphicsMagick.
+		/// </summary>
+		/// <returns>true if successful, false if an error occurs or GraphicsMagick can't be found</returns>
+		private static bool TryStripMetadataWithGraphicsMagick(PalasoImage imageInfo, string sourcePath, string destinationPath)
+		{
+			var graphicsMagickPath = GetGraphicsMagickPath();
+			if (RobustFile.Exists(graphicsMagickPath))
+			{
+				var profiles = "!icm,*"; // strip all metadata except color profile
+				if (imageInfo.Metadata?.ExceptionCaughtWhileLoading?.StackTrace != null &&
+					imageInfo.Metadata.ExceptionCaughtWhileLoading.StackTrace.Contains("ReadAPP13Segment"))
+				{
+					profiles = "iptc";	// We know taglib-sharp doesn't handle IPTC profiles very well.
+				}
+				var options = new GraphicsMagickOptions
+				{
+					Size = new Size(0,0),
+					MakeOpaque = false,
+					MakeTransparent = false,
+					JpegQuality = 0,
+					ProfilesToStrip = profiles
+				};
+				var result = RunGraphicsMagick(sourcePath, destinationPath, options);
+				return result.ExitCode == 0;
+			}
+			return false;
+		}
+
+		public static void StripMetadataFromImageFile(PalasoImage imageInfo)
+		{
+			using (var tempFile = TempFile.WithExtension(Path.GetExtension(imageInfo.GetCurrentFilePath())))
+			{
+				if (!TryStripMetadataWithGraphicsMagick(imageInfo, imageInfo.GetCurrentFilePath(), tempFile.Path))
+				{
+					imageInfo.Image.Save(tempFile.Path, AppearsToBeJpeg(imageInfo) ? ImageFormat.Jpeg : ImageFormat.Png);
+				}
+				RobustFile.Copy(tempFile.Path, imageInfo.GetCurrentFilePath(), true);
 			}
 		}
 
@@ -734,7 +789,14 @@ namespace Bloom.ImageProcessing
 			var tempCopy = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(path));
 			try
 			{
-				var result = RunGraphicsMagick(exeGraphicsMagick, path, tempCopy, size, makeOpaque, makeTransparent);
+				var options = new GraphicsMagickOptions {
+					Size = size,
+					MakeOpaque = makeOpaque,
+					MakeTransparent = makeTransparent,
+					JpegQuality = 0,
+					ProfilesToStrip = null
+				};
+				var result = RunGraphicsMagick(path, tempCopy, options);
 				if (result.ExitCode == 0)
 				{
 					RobustFile.Copy(tempCopy, path, true);
@@ -900,7 +962,15 @@ namespace Bloom.ImageProcessing
 				var destPath = TempFileUtils.GetTempFilepathWithExtension(isJpegImage ? ".jpg" : ".png");
 				try
 				{
-					var result = RunGraphicsMagick(graphicsMagickPath, sourcePath, destPath, size, makeOpaque, false);
+					var options = new GraphicsMagickOptions
+					{
+						Size = size,
+						MakeOpaque = makeOpaque,
+						MakeTransparent = false,
+						JpegQuality = 0,
+						ProfilesToStrip = null
+					};
+					var result = RunGraphicsMagick(sourcePath, destPath, options);
 					if (result.ExitCode == 0)
 					{
 						if(new FileInfo(destPath).Length > new FileInfo(sourcePath).Length){
@@ -993,10 +1063,18 @@ namespace Bloom.ImageProcessing
 			Console.Write(msgBldr.ToString());
 		}
 
-		private static ExecutionResult RunGraphicsMagick(string graphicsMagickPath, string sourcePath, string destPath, Size size,
-			bool makeOpaque, bool makeTransparent)
+		private struct GraphicsMagickOptions
 		{
-			Debug.Assert(!(makeOpaque && makeTransparent), "makeOpaque and makeTransparent cannot both be true.");
+			internal Size Size;					// if (0,0), don't resize
+			internal bool MakeOpaque;
+			internal bool MakeTransparent;
+			internal int JpegQuality;			// 0 means use input jpeg's quality
+			internal string ProfilesToStrip;	// null means don't strip any profiles
+		}
+
+		private static ExecutionResult RunGraphicsMagick(string sourcePath, string destPath, GraphicsMagickOptions options)
+		{
+			Debug.Assert(!(options.MakeOpaque && options.MakeTransparent), "makeOpaque and makeTransparent cannot both be true.");
 			// We have no idea what the input (and output) file names are, and whether they can be safely represented
 			// in the user's codepage.  We also have no idea what the user's codepage is.  This has a major impact
 			// on whether the spawned GraphicsMagick process will succeed in reading/writing the files.  We can
@@ -1013,26 +1091,38 @@ namespace Bloom.ImageProcessing
 			try
 			{
 				var argsBldr = new StringBuilder();
-				argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
-				if (makeOpaque)
+				argsBldr.AppendFormat("convert \"{0}\"", sourcePath);
+				if (options.MakeOpaque)
 					argsBldr.Append(" -background white -extent 0x0 +matte");
-				else if (makeTransparent)
+				else if (options.MakeTransparent)
 					argsBldr.Append(" -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\"");
+				if (!String.IsNullOrEmpty(options.ProfilesToStrip))
+					argsBldr.AppendFormat(" -strip \"{0}\"", options.ProfilesToStrip);
 				// GraphicsMagick quality numbers: http://www.graphicsmagick.org/GraphicsMagick.html#details-quality
 				// For PNG files, "quality" really means "compression".  75 is the default value used in GraphicsMagick
 				// for .png files, and tests out as having a good balance between speed and resulting file size.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-11441 for an extensive discussion of this.
 				if (destPath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
-					argsBldr.Append(" -quality 75");	// no lossage in output, use adaptive filter in changing image dimensions
+					argsBldr.Append(" -quality 75");    // no lossage in output, use adaptive filter in changing image dimensions
 				else if (destPath.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase))
-					argsBldr.Append($" -define jpeg:preserve-settings");	// preserve input quality and sampling factor
-				// -resize would do a better job than -scale, but it can be much (~10x) slower on large images.
-				argsBldr.AppendFormat(" -density 96 -scale {0}x{1} \"{2}\"", size.Width, size.Height, safeDestPath);
+				{
+					if (options.JpegQuality == 0 && sourcePath.EndsWith(".jpg"))
+						argsBldr.Append(" -define jpeg:preserve-settings");    // preserve input quality and sampling factor
+					else if (options.JpegQuality > 0)
+						argsBldr.AppendFormat(" -quality {0}", options.JpegQuality);
+					else
+						argsBldr.Append(" -quality 90");	// high quality (but not extreme) if we don't know any better
+				}
+				argsBldr.Append(" -density 96");	// GraphicsMagick defaults to 72 dpi, which is rather low
+				if (options.Size.Height > 0 && options.Size.Width > 0)
+					// -resize would do a better job than -scale, but it can be much (~10x) slower on large images.
+					argsBldr.AppendFormat(" -scale {0}x{1}", options.Size.Width, options.Size.Height);
+				argsBldr.AppendFormat(" \"{0}\"", safeDestPath);
 				var arguments = argsBldr.ToString();
 
-				var result = CommandLineRunnerExtra.RunWithInvariantCulture(graphicsMagickPath, arguments, "", 600, new NullProgress());
+				var result = CommandLineRunnerExtra.RunWithInvariantCulture(GetGraphicsMagickPath(), arguments, "", 600, new NullProgress());
 
-				if (destPath != safeDestPath)
+				if (result.ExitCode == 0 && destPath != safeDestPath)
 					RobustFile.Copy(safeDestPath, destPath, true);
 				return result;
 			}
@@ -1112,8 +1202,17 @@ namespace Bloom.ImageProcessing
 				{
 					var path = image.GetCurrentFilePath();
 					if (path == null || !RobustFile.Exists(path))
-						path = CreateSourceFileForImage(image, false);	// already know it's not jpeg
-					var result = RunGraphicsMagick(graphicsMagickPath, path, jpegFilePath, new Size(image.Image.Width, image.Image.Height), false, false);
+						path = CreateSourceFileForImage(image, false);  // already know it's not jpeg
+					var options = new GraphicsMagickOptions
+					{
+						Size = new Size(0,0),    // preserve current size (no scaling)
+						MakeOpaque = false,
+						MakeTransparent = false,
+						JpegQuality = 92,	// High quality (but not extreme)
+						ProfilesToStrip = null
+					};
+
+					var result = RunGraphicsMagick(path, jpegFilePath, options);
 					if (result.ExitCode == 0)
 					{
 						var pngInfo = new FileInfo(path);
@@ -1383,5 +1482,60 @@ namespace Bloom.ImageProcessing
 				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, message, details, exception: error, showSendReport: false, showRequestDetails: true);
 			}
 		}
+
+		public static void SaveImageMetadataIfNeeded(Metadata metadata, string folderPath, string filename)
+		{
+			using (var imageBeingModified = ImageUpdater.GetImageInfoSafelyFromFilePath(folderPath, filename))
+			{
+				imageBeingModified.Metadata = metadata;
+				imageBeingModified.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
+				try
+				{
+					imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+				}
+				catch (Exception e)
+				{
+					if (e.Source == "TagLibSharp")
+					{
+						// The metadata is corrupt in a way that prevents writing it back to the file.
+						// Try to remove the old, corrupt metadata from the file and write the new metadata.
+						ImageUtils.StripMetadataFromImageFile(imageBeingModified);
+						imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+					}
+					else
+					{
+						throw;
+					}
+				}
+			}
+		}
+
+		public static void SaveImageMetadata(PalasoImage imageInfo, string imagePath)
+		{
+			try
+			{
+				// It would seem more natural to use a metadata-saving method on imageInfo,
+				// but the imageInfo has the source file's path locked into it, and the API
+				// gives us no way to change it, so such a save would go to the wrong file.
+				imageInfo.Metadata.Write(imagePath);
+			}
+			catch (Exception ex)
+			{
+				// We must have bad metadata in the original file.
+				if (ex.Source == "TagLibSharp")
+				{
+					// The metadata is corrupt in a way that prevents writing it back to the file.
+					// Try to remove the old, corrupt metadata from the file and write the new metadata.
+					imageInfo.SetCurrentFilePath(imagePath);
+					ImageUtils.StripMetadataFromImageFile(imageInfo);
+					imageInfo.Metadata.Write(imagePath);
+				}
+				else
+				{
+					throw;
+				}
+			}
+		}
+
 	}
 }
