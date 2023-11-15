@@ -278,7 +278,7 @@ namespace Bloom.web.controllers
 			string count;
 			try
 			{
-				count = bloomLibraryApiClient.getBookCountByLanguage(langTag);
+				count = bloomLibraryApiClient.GetBookCountByLanguage(langTag);
 			}
 			catch
 			{
