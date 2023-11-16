@@ -44,12 +44,12 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointLegacy("fileIO/openFileInDefaultEditor", OpenFile, true);
-			apiHandler.RegisterEndpointLegacy("fileIO/chooseFile", ChooseFile, true);
-			apiHandler.RegisterEndpointLegacy("fileIO/getSpecialLocation", GetSpecialLocation, true);
-			apiHandler.RegisterEndpointLegacy("fileIO/copyFile", CopyFile, true);
-						apiHandler.RegisterEndpointLegacy("fileIO/chooseFolder", HandleChooseFolder, true);
-			apiHandler.RegisterEndpointLegacy("fileIO/showInFolder", HandleShowInFolderRequest, true); // Common
+			apiHandler.RegisterEndpointHandler("fileIO/openFileInDefaultEditor", OpenFile, true);
+			apiHandler.RegisterEndpointHandler("fileIO/chooseFile", ChooseFile, true);
+			apiHandler.RegisterEndpointHandler("fileIO/getSpecialLocation", GetSpecialLocation, true);
+			apiHandler.RegisterEndpointHandler("fileIO/copyFile", CopyFile, true);
+			apiHandler.RegisterEndpointHandler("fileIO/chooseFolder", HandleChooseFolder, true);
+			apiHandler.RegisterEndpointHandler("fileIO/showInFolder", HandleShowInFolderRequest, true); // Common
 		}
 		private void ChooseFile(ApiRequest request)
 		{

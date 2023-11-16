@@ -1,3 +1,24 @@
+/* This is the default theme, not only in the sense that it is the one we use by default for new books,
+ * but also in the sense that it is copied to the start of each appearance.css file. Thus, the values
+ * set in this initial .bloom-page block are defaults for EVERY page in EVERY book, and this block is
+ * intended to provide a default for EVERY variable controlled by the appearance system.
+ * Some of these values are overridden for certain page sizes by other rules in this file.
+ * Intentionally, those rules are not more specific than this one, they just come later in the file
+ * and win for that reason.
+ * The rules for any other theme are copied later than the ones from this file in appearance.css,
+ * so anything in those files with the same (or of course greater) specificity can override these.
+ * For example, page-margin-right is set to 12mm in a .bloom-page block early in this file.
+ * For an A4Landscape page, a later rule in this file overrides the .bloom-page rule and makes it 15mm.
+ * If the book uses the large margins theme, a .bloom-page rule in that file overrides it again to 25mm.
+ * The rounded border theme overrides it to 2.5mm for Device page sizes, using a differerent selector again.
+ * These rules all have the same specificity even though they have different selectors, so the last one wins.
+ * I don't much like depending on the order of rules like this, or having rules left in the
+ * generated appearance.css file that we know will never apply to anything. But I don't see a better way
+ * to get the desired results:
+ * - a default for every property here that applies to every page in every book in every theme
+ * - a way to override default property values for certain page sizes
+ * - a way to override for certain themes (either for all page sizes or by page-size)
+*/
 .bloom-page {
     --top-bottom-gap: 1mm;
     --pageNumber-font-size: 14pt;
@@ -9,19 +30,18 @@
     --page-split-vertical-gap: 2mm;
     --page-split-horizontal-gap: 1mm;
     --multilingual-editable-vertical-gap: 10px;
-    --page-gutter: 0mm; /* most Bloom books are two small to need a gutter. NB: THIS MUST HAVE UNITS even when 0, else calc() fails */
+    --page-gutter: 0mm; /* most Bloom books are too small to need a gutter. NB: THIS MUST HAVE UNITS even when 0, else calc() fails */
     --cover-margin-top: 12mm;
     --cover-margin-bottom: 12mm;
-}
+    --marginBox-padding: 0; /* If this gets used in calc, may need to give it some unit. */
 
-/* the margin values here come from recommendations from Little Zebra
+/* the margin values here (and in the page-size-specific rules below) come from recommendations from Little Zebra
 > We just looked at several versions of the books in different Bloom formats and we think that having the same margins,
 > inside and outside on ALL pages is most useful.
 > A4 books are big, so we used 15mm for the top and bottom (short sides)
 > We also want to be sure that all the title pages and credit pages and inside cover pages have the same margins as the rest of the book.
 */
 
-.bloom-page {
     /* these are just defaults in case we miss some */
     --page-margin-top: 12mm;
     --page-margin-bottom: 12mm;
@@ -29,6 +49,9 @@
     --page-margin-left: 12mm;
 }
 
+/* Beware of making these rules more specific. We want them to be able to be overriden by .bloom-page rules
+ * that come from other themes (and hence later in the generated appearance.css file).
+ */
 .A4Landscape {
     --page-margin-top: 12mm;
     --page-margin-bottom: 12mm;

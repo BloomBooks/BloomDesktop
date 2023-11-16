@@ -579,7 +579,7 @@ namespace Bloom.Book
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			foreach (var cssFileName in this.Storage.GetCssFilesToLink())
+			foreach (var cssFileName in this.Storage.GetCssFilesToLinkForPreview())
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}
@@ -863,7 +863,7 @@ namespace Bloom.Book
 			}
 			var previewDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 
-			// If we're going to show modern (post 5.5) basepage.css instead of basePage-legacy-5-5,
+			// If we're going to show modern (post 5.6) basepage.css instead of basePage-legacy-5-6,
 			// make sure there is an appearance.css to compliment it.
 			// review should AppearanceSettings really be under BookInfo?
 			BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
@@ -1354,10 +1354,14 @@ namespace Bloom.Book
 			foreach (XmlAttribute attr in page.Attributes)
 			{
 				if (newPage.HasAttribute(attr.Name))
-					continue; // don't overwrite things specified in template, typically class, id, data-page
-							  // Otherwise copy everything, even things we don't know about at the time of writing this
-							  // code; if we add a new attribute that gets set before this code runs, we'd like to transfer
-							  // it to the new element without having to remember to update this code.
+				{
+					// don't overwrite things specified in template, typically class, id, data-page
+					// Otherwise copy everything, even things we don't know about at the time of writing this
+					// code; if we add a new attribute that gets set before this code runs, we'd like to transfer
+					// it to the new element without having to remember to update this code.
+					continue; 
+				}
+
 				newPage.SetAttribute(attr.Name, attr.Value);
 			}
 			bool dummy;
@@ -1530,6 +1534,7 @@ namespace Bloom.Book
 			MigrateNonstandardClassNames(bookDOM);
 
 			// migrate our cover color to the new system
+			// ToDo: when we implement this setting.
 			// if (string.IsNullOrEmpty(BookInfo.AppearanceSettings.CoverColor))
 			// {
 			// 	BookInfo.AppearanceSettings.CoverColor = GetCoverColor();
@@ -1727,40 +1732,7 @@ namespace Bloom.Book
 			contents = Regex.Replace(contents, "^@font-face.*$\n", "", RegexOptions.Multiline);
 			RobustFile.WriteAllText(path, contents);
 		}
-		//private void CreateOrUpdatePageStylesCss()
-		//{
-		//	if (string.IsNullOrEmpty(this.BookInfo.BookSettings.PageStylesCss))
-		//	{
-		//		// TODO: instead, we should be falling back to the default, right?
-		//		return;
-		//	}
-		//	var targetPath = Path.Combine(FolderPath, "pageStyles.css");
-		//	var sourcePath = Path.Combine(ProjectContext.GetFolderContainingPageStyleFiles(), this.BookInfo.BookSettings.PageStylesCss);
-		//	if (!RobustFile.Exists(sourcePath))
-		//	{
-		//		// TODO: instead, we should be falling back to the default, right?
-		//		RobustFile.Delete(targetPath);
-		//		return;
-		//	}
-			
-		//	bool doesAlreadyExist = RobustFile.Exists(targetPath);
-		//	if (Program.RunningHarvesterMode && doesAlreadyExist)
-		//	{
-		//		// Would overwrite, but overwrite not allowed in Harvester mode.
-		//		// Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
-		//		return;
-		//	}
 
-		//	try
-		//	{
-		//		RobustFile.Copy(sourcePath, targetPath, true);
-		//	}
-		//	catch (UnauthorizedAccessException e)
-		//	{
-		//		// Re-throw with additional debugging info.
-		//		throw new BloomUnauthorizedAccessException(targetPath, e);
-		//	}
-		//}
 		private void UpdateCollectionSettingsInBookMetaData()
 		{
 			Debug.WriteLine($"updating page number style and language display names in {FolderPath}/meta.json");
@@ -4793,13 +4765,6 @@ namespace Bloom.Book
 			if (!titleDict.TryGetValue(Language1Tag, out string l1Title))
 				return false;
 			return !string.IsNullOrEmpty(l1Title);
-		}
-
-		internal void SettingsUpdated()
-		{
-			BookInfo.SettingsUpdated();
-			// temporary while we're in transition between storing cover color in the HTML and in the bookInfo
-			//SetCoverColor(BookInfo.AppearanceSettings.CoverColor);
 		}
 	}
 }

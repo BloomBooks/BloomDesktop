@@ -14,6 +14,11 @@ using System.Text.RegularExpressions;
 
 
 
+/// <summary>
+/// This class manages the appearance settings for a book. This includes generating the appearance.css file that is used at display time.
+/// It also has responsibilities related to detecting and migrating problem legacy custom css files.
+/// TODO: needs major revision descibed in BL-12856. Accordingly, I have not tried to review or improve this old version.
+/// </summary>
 public class AppearanceSettings
 {
 	public AppearanceSettings()
@@ -51,6 +56,8 @@ public class AppearanceSettings
 	private PropertyDef[] propertyDefinitions = new PropertyDef[]
 	{
 		new StringPropertyDef("cssThemeName","default", "cssThemeName"), // this one is special because it doesn't correspond to a CSS variable. Instead, we will copy the contents of named file as rules at the end of the CSS file.
+		// Todo: when we implement this setting, we want to migrate the old record of color color.
+		// See code commented out in BringBookUpToDateUnprotected.
 		//new CssStringVariableDef("coverColor","yellow","colors"),
 		new CssDisplayVariableDef("coverShowTitleL2",true, "coverFields"),
 		new CssDisplayVariableDef("coverShowTitleL3",false,"coverFields"),
@@ -59,24 +66,18 @@ public class AppearanceSettings
 	};
 
 	/// <summary>
-	/// Note, we might not actually use this theme at runtime. If the book has css that is incompatible with the new system, we will use legacy-5-5 instead.
+	/// Note, we might not actually use this theme at runtime. If the book has css that is incompatible with the new system, we will use legacy-5-6 instead.
 	/// </summary>
 	private string CssThemeNameSelectedByUser { get { return _properties.cssThemeName; } set { _properties.cssThemeName = value; } }
 
-	public string BasePageCssName => CssThemeWeWillActuallyUse == "legacy-5-5" ? "basePage-legacy-5-5.css" : "basePage.css";
+	public string BasePageCssName => CssThemeWeWillActuallyUse == "legacy-5-6" ? "basePage-legacy-5-6.css" : "basePage.css";
 
 	public string CssThemeWeWillActuallyUse;
 
-	public string GetThemeToUse_BasedOnPriorComputation()
-	{
-		// there are many themes; currently only one of them triggers the special basePage-legacy-5-5.css
-		return CssThemeWeWillActuallyUse == "legacy-5-5" ? "legacy-5-5" : "default";
-	}
-
 	/// <summary>
-	/// In version 5.6, we greatly simplified and modernize our basePage css. However, existing books that had custom css could rely on the old approach,
+	/// In version 5.7, we greatly simplified and modernize our basePage css. However, existing books that had custom css could rely on the old approach,
 	/// specifically for using margins (and possible other things like page nubmer size/location). Therefore we provide a CSS theme that
-	/// effectively just gives you the basePage.css that came with 5.5, now named "basePage-legacy-5-5.css"
+	/// effectively just gives you the basePage.css that came with 5.6, now named "basePage-legacy-5-6.css"
 	/// </summary>
 	///
 	public void ComputeThemeAndBasePageCssVersionToUse(Tuple<string, string>[] cssFilesToCheck)
@@ -85,7 +86,7 @@ public class AppearanceSettings
 		// a change in Enterprise status or Xmatter could mean that it no longer does, and may need to go back to "legacy".
 		this.CssThemeWeWillActuallyUse = CssThemeNameSelectedByUser;
 
-		// here we're kinda conflating the legacy theme name with the legacy basePage css version, because both are called "legacy-5-5"
+		// here we're kinda conflating the legacy theme name with the legacy basePage css version, because both are called "legacy-5-6"
 		if (CssThemeNameSelectedByUser.StartsWith("legacy"))
 		{
 			Debug.WriteLine($"{CssThemeNameSelectedByUser} theme is explicitly set by user, so we'll use that for basePage");
@@ -119,7 +120,7 @@ public class AppearanceSettings
 				SubstitutedCssFile = null;
 				foundUnsubstitutableCss = true;
 				FirstPossiblyOffendingCssFile = css.Item1;
-				CssThemeWeWillActuallyUse = "legacy-5-5";
+				CssThemeWeWillActuallyUse = "legacy-5-6";
 				SIL.Reporting.Logger.WriteEvent($"** Will use {CssThemeWeWillActuallyUse} BasePage and Theme");
 				return true;
 			}
@@ -145,13 +146,13 @@ public class AppearanceSettings
 			return false;
 
 		// note: "AppearanceVersion" uses the version number of Bloom, but isn't intended to increment with each new release of Bloom.
-		// E.g., we do not expect to break CSS files very often. So initially we will have the a.v. = 5.6, and maybe the next one
-		// will be 6.2.  Note that there is current some discussion of jumping from 5.5 to 6.0 to make it easier to remember which
+		// E.g., we do not expect to break CSS files very often. So initially we will have the a.v. = 5.7, and maybe the next one
+		// will be 6.2.  Note that there is current some discussion of jumping from 5.6 to 6.0 to make it easier to remember which
 		// Bloom version changed to the new css system.
 		var v = Regex.Match(css, @"compatibleWithAppearanceVersion:\s*(\d+(\.\d+)?)")?.Groups[1]?.Value ?? "0";
 
-		if (double.TryParse(v, out var appearanceVersion) && appearanceVersion >= 5.6)
-			return false; // this is a 5.6+ theme, so it's fine
+		if (double.TryParse(v, out var appearanceVersion) && appearanceVersion >= 5.7)
+			return false; // this is a 5.7+ theme, so it's fine
 
 		// See if the css contains rules that nowadays should be using css variables, and would likely interfere with 5.6 and up
 		const string kProbablyWillInterfere = @"\.marginBox\s*{[^}]*?"+
@@ -306,7 +307,7 @@ public class AppearanceSettings
 			// Add in the var declarations of the default, so that the display doesn't collapse just because a theme is missing
 			// some var that basepage.css relies on.
 
-			var defaultThemeSourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearanceThemeFiles(), "appearance-theme-default.css");
+			var defaultThemeSourcePath = Path.Combine(BloomFileLocator.GetFolderContainingAppearanceThemeFiles(), "appearance-theme-default.css");
 			cssBuilder.AppendLine("/* From appearance-theme-default.css */");
 			cssBuilder.AppendLine(RobustFile.ReadAllText(defaultThemeSourcePath, Encoding.UTF8));
 		}
@@ -314,7 +315,7 @@ public class AppearanceSettings
 		// Now add the user's chosen theme if it isn't the default, which we already added above.
 		if (!string.IsNullOrEmpty(theme) && theme != "default")
 		{
-			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearanceThemeFiles(), $"appearance-theme-{theme}.css");
+			var sourcePath = Path.Combine(BloomFileLocator.GetFolderContainingAppearanceThemeFiles(), $"appearance-theme-{theme}.css");
 			if (!RobustFile.Exists(sourcePath))
 			{
 				// TODO: We should toast I suppose?
@@ -373,12 +374,17 @@ public class AppearanceSettings
 		}
 	}
 
+	static IEnumerable<string> GetAppearanceThemeNames()
+	{
+		return from path in BloomFileLocator.GetAppearanceThemeFileNames() select Path.GetFileName(path).Replace("appearance-theme-", "");
+	}
+
 	// things that aren't settings but are used by the BookSettings UI
 	public string AppearanceUIOptions
 	{
 		get
 		{
-			var names = ProjectContext.GetAppearanceThemeNames();
+			var names = GetAppearanceThemeNames();
 			var x = new ExpandoObject() as IDictionary<string, object>;
 
 			x["themeNames"] = from name in names.ToArray<string>() select new { label = name, value = name };

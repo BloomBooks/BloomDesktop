@@ -10,21 +10,21 @@ namespace Bloom.web.controllers
 	/// <summary>
 	/// Provide values needed by the Book Info Indicator
 	/// </summary>
-	public class OtherBookInfoApi
+	public class IndicatorInfoApi
 	{
 		private readonly CollectionModel _collectionModel;
 
-		public OtherBookInfoApi(CollectionModel collectionModel)
+		public IndicatorInfoApi(CollectionModel collectionModel)
 		{
 			this._collectionModel = collectionModel;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("book/otherInfo", HandleBookInfo,false);
+			apiHandler.RegisterEndpointHandler("book/indicatorInfo", HandleIndicatorInfo,false);
 		}
 
-		private void HandleBookInfo(ApiRequest request)
+		private void HandleIndicatorInfo(ApiRequest request)
 		{
 			switch (request.HttpMethod)
 			{

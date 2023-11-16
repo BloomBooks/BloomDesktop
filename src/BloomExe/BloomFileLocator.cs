@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
+using SIL.Code;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -160,9 +161,7 @@ namespace Bloom
 			// groups of files (e.g., *-template.css) would be looked for in these locations. There is significant
 			// danger of finding something irrelevant, and also, of hard-to-reproduce bugs that don't happen because
 			// the developer has different installed collections than the reporter.
-			return !fileName.Contains("defaultLangStyles.css") // maybe could go in DynamicallyUpdatedLocalBookFiles?
-				   && !fileName.Contains("customCollectionStyles.css") // maybe could go in DynamicallyUpdatedLocalBookFiles?
-				   && !BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(fileName);
+			return !BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(fileName);
 		}
 
 		public IFileLocator CloneAndCustomize(IEnumerable<string> addedSearchPaths)
@@ -244,6 +243,30 @@ namespace Bloom
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 				file = file.TrimStart('/');
 			return Path.GetDirectoryName(file);
+		}
+
+		public static string GetFolderContainingAppearanceThemeFiles()
+		{
+			return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "AppearanceThemes"));
+		}
+
+		//Review: not sure if these two methods belong here or some class more specific to appearance, like ApperanceSettings.
+		public static IEnumerable<string> GetPathsToThemeFiles()
+		{
+			return Directory.EnumerateFiles(GetFolderContainingAppearanceThemeFiles(), "*.css");
+		}
+
+		public static IEnumerable<string> GetAppearanceThemeFileNames()
+		{
+			string[] themes = { };
+			RetryUtility.Retry(() =>
+			{
+				var x = from f in Directory.EnumerateFiles(GetFolderContainingAppearanceThemeFiles(),
+						"*.css")
+					select Path.GetFileNameWithoutExtension(f);
+				themes = x.ToArray();
+			});
+			return themes;
 		}
 
 		/// <summary>

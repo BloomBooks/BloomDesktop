@@ -12,13 +12,17 @@ using System.Diagnostics;
 
 namespace Bloom.Book
 {
+	/// <summary>
+	/// This class handles cases where we know how to migrate a 5.6 or before custom CSS file to a 5.7 theme.
+	/// TODO: needs major revision descibed in BL-12856. Accodingly, I have not tried to review or improve this old version.
+	/// </summary>
 	public class AppearanceCustomCssToThemeSubstitutinator
 	{
 		private Dictionary<string, string> _checksumsOfCustomCssToSubstitutionThemeNames = new Dictionary<string, string>();
 
 		public AppearanceCustomCssToThemeSubstitutinator()
 		{
-			foreach(var path in ProjectContext.GetPathsToThemeFiles())
+			foreach(var path in BloomFileLocator.GetPathsToThemeFiles())
 			{ 
 				// read the first 20 lines of the file and extract the json from the comments
 				var s = RobustFile.ReadAllText(path);

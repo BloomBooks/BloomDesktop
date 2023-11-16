@@ -26,6 +26,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Bloom.Book
 {
@@ -243,7 +244,23 @@ namespace Bloom.Book
 		public void AddStyleSheet(string path)
 		{
 			// This version is in libpalaso, and it does weird things that are file:/// oriented, like looking for the file and giving it file path
-			// RawDom.AddStyleSheet(path); 
+			// RawDom.AddStyleSheet(path);
+
+			// We don't need any link to be there twice. If we're already linked to this stylesheet, don't add it again.
+			// Review: the libpalaso code instead removes the old link before adding the new one.
+			// The code here is more efficient, but it means that if the stylesheet is in the wrong order, or even if the old
+			// link looked for it in the wrong folder, we don't fix it.
+			// Generally we sort the links after adding all of them, so order doesn't matter.
+			// I'm fairly sure we're not depending on this code to fix links to moved stylesheets.
+			// Most of our stylesheets live directly in the book folder.
+			foreach (XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
+			{
+				var href = linkNode.GetAttribute("href");
+				if (Path.GetFileName(href) == Path.GetFileName(path))
+				{
+					return;
+				}
+			}
 
 			var head = XmlUtils.GetOrCreateElement(RawDom, "//html", "head");
 			var link = RawDom.CreateElement("link");
@@ -644,7 +661,7 @@ namespace Bloom.Book
 		{
 			var stylesheetsToIgnore = new List<string>();
 			// Remember, Linux filenames are case sensitive!
-			stylesheetsToIgnore.Add("basePage"); // will work for basePage.css, basePage-legacy-5-5.css, etc.
+			stylesheetsToIgnore.Add("basePage"); // will work for basePage.css, basePage-legacy-5-6.css, etc.
 			stylesheetsToIgnore.Add("editMode.css");
 			stylesheetsToIgnore.Add("previewMode.css");
 			stylesheetsToIgnore.Add("XMatter");
@@ -732,22 +749,18 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveNormalStyleSheetsLinks()
 		{
-			//mystery: withtout this lock, some async process sometimes leads the linkNode to have a null parent when we go to remove it
-			lock (RawDom)
+			// ToArray() so we aren't modifying the DOM while we're running the iterator.
+			var links = RawDom.SafeSelectNodes("/html/head/link").Cast<XmlElement>().ToArray();
+			foreach (XmlElement linkNode in links)
 			{
-				var links = RawDom.SafeSelectNodes("/html/head/link");
-				var linksToRemove = new List<XmlElement>();
-				foreach (XmlElement linkNode in links)
+				var href = linkNode.GetAttribute("href");
+				var name = Path.GetFileName(href).ToLowerInvariant();
+				if (
+					name.EndsWith("xmatter.css") || BookStorage.KnownCssFilePrefixesInOrder.Any(
+						prefix => name.StartsWith(prefix.ToLowerInvariant()))
+				)
 				{
-					var href = linkNode.GetAttribute("href");
-					var name = Path.GetFileName(href).ToLowerInvariant();
-					if (
-						name.EndsWith("xmatter.css") || BookStorage.KnownCssFilePrefixesInOrder.Any(
-							prefix => name.StartsWith(prefix.ToLowerInvariant()))
-						)
-					{
-						linkNode.ParentNode.RemoveChild(linkNode);
-					}
+					linkNode.ParentNode.RemoveChild(linkNode);
 				}
 			}
 		}

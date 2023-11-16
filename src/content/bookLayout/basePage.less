@@ -146,8 +146,9 @@ div.bloomPlayer-page {
     }
 
     .pageOverflowsIcon {
-        background-image: url("/bloom/images/Attention.svg");
         /* red triangle with exclamation point */
+        background-image: url("/bloom/images/Attention.svg");
+
         background-position: bottom;
         background-repeat: no-repeat;
         background-size: 70%;
@@ -200,7 +201,10 @@ textarea,
     // filling it all if there is only one).
     height: auto;
     flex-grow: 1;
-    box-sizing: border-box; // review: appearance
+    // We need this if appearance rules may set border or padding and yet we want to
+    // use width: 100% (above). Otherwise, the border or padding will make the box
+    // overflow its parent.
+    box-sizing: border-box;
 }
 
 /* The following has been split out from the above rule because it should probably be removed,
@@ -611,6 +615,10 @@ div[data-book*="branding"] {
 
     background-color: var(--page-background-color) !important;
 
+    // We need this at least for comics, which typically have a black background everywhere,
+    // but we need to go back to white for xmatter pages, where we want to see the black text.
+    // A more specific rule, usually in the .htm file itself, controls the background color of
+    // cover pages.
     &.bloom-frontMatter,
     &.bloom-backMatter {
         background-color: white !important;

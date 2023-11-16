@@ -108,7 +108,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
             setAppearanceDisabled(
                 !!appearanceUIOptions?.firstPossiblyLegacyCss ||
                     (liveSettings as any)?.appearance?.cssThemeName ===
-                        "legacy-5-5"
+                        "legacy-5-6"
             );
         }
     }, [settings, settingsToReturnLater]);
@@ -201,7 +201,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             </ConfigrSubgroup>
                             {!appearanceUIOptions?.firstPossiblyLegacyCss &&
                                 (settingsToReturnLater as any)?.appearance
-                                    ?.cssThemeName === "legacy-5-5" && (
+                                    ?.cssThemeName === "legacy-5-6" && (
                                     <NoteBox>
                                         {`The "Legacy" theme does not support Appearance settings.`}
                                     </NoteBox>

@@ -139,7 +139,7 @@ namespace Bloom
 							typeof(BookSettingsApi),
 							typeof(SpreadsheetApi),
 							typeof(BookMetadataApi),
-							typeof(OtherBookInfoApi),
+							typeof(IndicatorInfoApi),
 							typeof(PublishToBloomPubApi),
 							typeof(PublishPdfApi),
 							typeof(PublishAudioVideoAPI),
@@ -350,7 +350,7 @@ namespace Bloom
 			_scope.Resolve<KeyboardingConfigApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<BookSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<BookMetadataApi>().RegisterWithApiHandler(server.ApiHandler);
-			_scope.Resolve<OtherBookInfoApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<IndicatorInfoApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ImageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ReadersApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<MusicApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -448,32 +448,6 @@ namespace Bloom
 			yield return BloomFileLocator.GetFactoryXMatterDirectory();
 			yield return BloomFileLocator.GetProjectSpecificInstalledXMatterDirectory();
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "publish/ePUBPublish"));
-		}
-
-		public static string GetFolderContainingAppearanceThemeFiles()
-		{
-			return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "AppearanceThemes"));
-		}
-		public static IEnumerable<string> GetPathsToThemeFiles()
-		{
-			return Directory.EnumerateFiles(GetFolderContainingAppearanceThemeFiles(), "*.css");
-		}
-
-		public static IEnumerable<string> GetAppearanceThemeFileNames()
-		{
-			string[] themes = { };
-			RetryUtility.Retry(() =>
-			{
-				var x = from f in Directory.EnumerateFiles(GetFolderContainingAppearanceThemeFiles(),
-					"*.css")
-						select Path.GetFileNameWithoutExtension(f);
-				themes = x.ToArray();
-			});
-			return themes;
-		}
-		public static IEnumerable<string> GetAppearanceThemeNames()
-		{
-			return from path in GetAppearanceThemeFileNames() select Path.GetFileName(path).Replace("appearance-theme-", "");
 		}
 
 		/// <summary>

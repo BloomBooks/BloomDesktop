@@ -93,7 +93,7 @@ namespace Bloom.Book
 
 		void ReloadFromDisk(string renamedTo, Action betweenReloadAndEvents);
 
-		string[] GetCssFilesToLink();
+		string[] GetCssFilesToLinkForPreview();
 
 		Tuple<string, string>[] GetCssFilesToCheckForAppearanceCompatibility();
 	}
@@ -878,12 +878,13 @@ namespace Bloom.Book
 			return reqList.OrderByDescending(x => x.BloomDesktopMinVersion);
 		}
 
-		public const string BackupFilename = "bookhtml.bak"; // need to know this in BookCollection too.
-															 // We try to keep all filenames in the book folder less than this.
-															 // The basic idea is to avoid running into the 260 character max path length.
-															 // We don't know exactly what directory we might want to unzip a book into
-															 // (and even if this computer has been configured to allow longer paths, some other
-															 // computer using the book might not be) so it makes sense to keep them fairly short.
+		// need to know this in BookCollection too.
+		public const string BackupFilename = "bookhtml.bak";
+		// We try to keep all filenames in the book folder less than this.
+		// The basic idea is to avoid running into the 260 character max path length.
+		// We don't know exactly what directory we might want to unzip a book into
+		// (and even if this computer has been configured to allow longer paths, some other
+		// computer using the book might not be) so it makes sense to keep them fairly short.
 		public const int kMaxFilenameLength = 50;
 
 		private string GetBackupFilePath()
@@ -1272,7 +1273,7 @@ namespace Bloom.Book
 			string tempPath = GetNameForATempFileInStorageFolder();
 			MakeCssLinksAppropriateForStoredFile(dom);
 			SetBaseForRelativePaths(dom, String.Empty);// remove any dependency on this computer, and where files are on it.
-													   //CopyXMatterStylesheetsIntoFolder
+			//CopyXMatterStylesheetsIntoFolder
 			return XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, tempPath);
 		}
 
@@ -2196,7 +2197,7 @@ namespace Bloom.Book
 
 				var filesToCopy = Directory
 					.EnumerateFiles(brandingFolder) //<--- .NET 4.5
-													// note this is how the branding.css gets into a book folder
+					// note this is how the branding.css gets into a book folder
 					.Where(path =>
 						".png,.svg,.jpg,.css".Split(',').Contains(Path.GetExtension(path).ToLowerInvariant()));
 
@@ -2520,11 +2521,16 @@ namespace Bloom.Book
 			dom.AddStyleSheetIfMissing(path);
 		}
 
-		// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
-		// such time as it's clear if it matters.
-		public string[] GetCssFilesToLink()
+		// note: order is not significant here. We apply our standard stylesheet sorter later.
+		// Enhance: it would be cleaner if most of these were in a common list, and this method just knew
+		// what extra ones we need for a preview. Note also that (at least) MakeCssLinksAppropriateForStoredFile(),
+		// below, independently knows about previewMode.css; if the idea is that the stored book should look
+		// like the Preview when opened in a browser, it would be better to use the same code to
+		// put the DOM in that state.
+		// (Possibly cleaner still to have way fewer stylesheets, and turn rules on with classes.)
+		public string[] GetCssFilesToLinkForPreview()
 		{
-			return new string[] { this.BookInfo.AppearanceSettings.BasePageCssName, "previewMode.css", "origami.css", "appearance.css", "branding.css" };
+			return new string[] { this.BookInfo.AppearanceSettings.BasePageCssName, "previewMode.css", "origami.css", "branding.css", "appearance.css" };
 		}
 
 		// While in Bloom, we could have an edit style sheet or (someday) other modes. But when stored,
@@ -2532,7 +2538,7 @@ namespace Bloom.Book
 		private void MakeCssLinksAppropriateForStoredFile(HtmlDom dom)
 		{
 			EnsureHasLinksToStylesheets(dom);
-			dom.RemoveModeStyleSheets();
+			dom.RemoveModeStyleSheets(); // nb must be before we add previewMode, which it removes
 			dom.AddStyleSheetIfMissing("previewMode.css");
 			dom.SortStyleSheetLinks();
 			dom.RemoveFileProtocolFromStyleSheetLinks();
@@ -3017,30 +3023,50 @@ namespace Bloom.Book
 		// One might think these could be the default, and we could instead specify other types, but
 		// that isn't how this code base has evolved. So I'm just trying to gather in one place this list
 		// that had become scattered around (and inconsistent).
+		// JohnT: I don't like JohnH's name for this, but we couldn't agree on a better one. My read on the thing they
+		// have in common is that they store something that is specific to the particular book (though customCollectionStyles.css
+		// is shared across the collection, and branding with other books in that branding). So we do NOT want
+		// to update them from the latest version of Bloom (except branding.css is updated to match the currently
+		// selected branding from data that is part of Bloom).
 		public readonly static string[] CssFilesThatAreDynamicallyUpdated =
 		{
 			"branding.css", "defaultLangStyles.css", "customCollectionStyles.css", "appearance.css", "customBookStyles.css"
 		};
 
+		/// <summary>
+		/// These are CSS files that are part of the Bloom installation, and are not expected to change at runtime.
+		/// They should be part of every Bloom book file/DOM.
+		/// Things like editMode.css, previewMode.css that are only in DOMs used for a particular purpose should NOT be here.
+		/// Things in CssFilesThatAreDynamicallyUpdated, where information could be lost if we
+		/// copy the installed version over the current version, should NOT be here.
+		/// </summary>
+		/// <returns></returns>
 		public string[] getMinimalCssFilesFromInstallThatDoNotChangeAtRuntime()
 		{
 			return new string[]
 				{
-					this.BookInfo.AppearanceSettings.BasePageCssName, /*"editMode.css",	"previewMode.css" REVIEW,*/ "origami.css"
+					this.BookInfo.AppearanceSettings.BasePageCssName, "origami.css"
 				};
 		}
 
-
+		/// <summary>
+		/// Files that might contain rules that conflict with the new appearance model (currently, that is if they affect
+		/// the size and position of the marginBox).
+		/// In the resulting list, the first item is the file name, and the second is content.
+		/// </summary>
+		/// <returns></returns>
 		public Tuple<string, string>[] GetCssFilesToCheckForAppearanceCompatibility()
 		{
-
+			// This is right on the edge of deserving a method to make a tuple or a loop over a list of files.
+			// Don't add more duplicates of lines like these. But two of the four are a little bit different.
 			var brandingCssPath = FolderPath.CombineForPath("branding.css");
 			var brandingCss = RobustFile.Exists(brandingCssPath) ? RobustFile.ReadAllText(brandingCssPath) : null;
 
 			var customBookStylesPath = FolderPath.CombineForPath("customBookStyles.css");
 			var customBookCss = RobustFile.Exists(customBookStylesPath) ? RobustFile.ReadAllText(customBookStylesPath) : null;
 
-			// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
+			// this is sometimes copied into the book folder, but that's not reliable except in BloomPubs. Check the version actually used
+			// in the parent folder.
 			var customCollectionStylesPath = FolderPath.CombineForPath("../", "customCollectionStyles.css");
 			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath) ? RobustFile.ReadAllText(customCollectionStylesPath) : null;
 
@@ -3068,7 +3094,7 @@ namespace Bloom.Book
 		public readonly static string[] KnownCssFilePrefixesInOrder = 
 		{
 			// list in the order that you want their <link> to appear
-				"basePage", // we leave off ".css" so that this can match version ones, like "basePage-legacy-5-5.css"
+				"basePage", // we leave off ".css" so that this can match version ones, like "basePage-legacy-5-6.css"
 				"baseEPUB.css",
 				"editMode.css",
 				"previewMode.css",

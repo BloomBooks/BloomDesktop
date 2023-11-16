@@ -328,7 +328,7 @@ namespace Bloom.Api
 				return false;	// ePUB export files should not be cached.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6253.
 			if (BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(path))
 				return false;
-			
+
 
 
 			// The preview iframe uses urls like /book-preview/index.htm, which means urls
@@ -337,8 +337,10 @@ namespace Bloom.Api
 			// If we allow these to be cached, we could use an image
 			// from one book when displaying another book. And pathologically, it might not
 			// actually be the same image! See BL-11239.
-
-			// REVIEW: But by the time we get here, /book-preview/ has been resolved to an actual path.
+			// Now, the path passed to this method is of course resolved to a specific file
+			// in a specific book folder. But if the browser is allowed to cache the result of asking
+			// for /book-preview/Image1.jpg, it will not know that /book-preview/Image1.jpg
+			// could mean something quite different in a different book.
 			if (RawUrl.StartsWith("/book-preview/"))
 				return false;
 

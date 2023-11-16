@@ -13,6 +13,13 @@ namespace Bloom.Book
 	public class StyleSheetLinkSorter : IComparer<XmlElement>
 	{
 		const int kDefaultValueForStyleSheetsThatShouldListInTheMiddle = 100;
+		// This is set up as a dictionary, but it's really just a list of pairs.
+		// The value is the order in which the stylesheets should appear in the list.
+		// The key can be a prefix of a filename directly in the book folder
+		// (e.g., basePage, which matches basePage.css or basePage-legacy-5-6.css)
+		// or a complete filename, which matches hrefs that have a path with exactly
+		// that as the last component (e.g., ../customCollectionStyles.css).
+		// The need to do prefix matching rules out actually using it as a map.
 		private static Dictionary<string, int> _values;
 
 		private static void Init()
@@ -26,7 +33,7 @@ namespace Bloom.Book
 					if (x == "UNKNOWN_STYLESHEETS_HERE")
 						weight = kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1000;
 					else
-						_values.Add(x, weight++);
+						_values.Add(x.ToLowerInvariant(), weight++);
 				});
 			}
 		}
@@ -56,9 +63,9 @@ namespace Bloom.Book
 			foreach (var pair in _values)
 			{
 				var key = pair.Key.ToLowerInvariant();
-				if (s.ToLowerInvariant().StartsWith(key)	//no path in there
-					|| (s.ToLowerInvariant().EndsWith("/" + key))
-					|| (s.ToLowerInvariant().EndsWith("\\" + key)))
+				if (s.StartsWith(key)	//no path in there
+					|| (s.EndsWith("/" + key))
+					|| (s.EndsWith("\\" + key)))
 					return pair.Value;
 			}
 
@@ -66,7 +73,7 @@ namespace Bloom.Book
 			// "SHRP Labels.css" is used by the SIL LEAD SHRP project to inject vernacular labels for sections of the book
 			// we just need it to always come after the other stylesheet(s) of the book, which may supply default
 			// labels
-			if (s.ToLowerInvariant().EndsWith("labels.css"))
+			if (s.EndsWith("labels.css"))
 				return kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1;
 
 			return kDefaultValueForStyleSheetsThatShouldListInTheMiddle;
