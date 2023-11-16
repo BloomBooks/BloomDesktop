@@ -342,7 +342,7 @@ namespace BloomTests.WebLibraryIntegration
 			var count = Directory.GetFiles(bookPath).Count(p => !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles));
 			for (int i = 0; i < 30; i++)
 			{
-				var uploaded = new BloomS3Client(BloomS3Client.UnitTestBucketName).GetBookFileCountForUnitTest(storageKeyOfBookFolderParent);
+				var uploaded = new BloomS3ClientTestDouble(BloomS3Client.UnitTestBucketName).GetBookFileCountForUnitTest(storageKeyOfBookFolderParent);
 				if (uploaded >= count)
 					return;
 				Thread.Sleep(100);

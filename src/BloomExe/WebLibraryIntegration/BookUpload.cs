@@ -228,7 +228,7 @@ namespace Bloom.WebLibraryIntegration
 					if (progress.CancelRequested)
 						return "";
 
-					_s3Client.SetCredentials(s3Credentials);
+					_s3Client.SetTemporaryCredentialsForBookUpload(s3Credentials);
 					_s3Client.UploadBook(_storageKeyOfBookFolderParentOnS3, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
 						textLanguages, audioLanguages, metadataLang1Code, metadataLang2Code, collectionSettings?.SettingsFilePath, isForBulkUpload);
 					metadata.BaseUrl = _s3Client.GetBaseUrl($"{_storageKeyOfBookFolderParentOnS3}{Path.GetFileName(bookFolder)}/");
