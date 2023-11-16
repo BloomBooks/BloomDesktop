@@ -289,7 +289,6 @@ namespace BloomTests.WebLibraryIntegration
 			var newBookFolder = _downloader.DownloadBook(BloomS3Client.UnitTestBucketName, storageKeyOfBookFolderParentOnS3, dest);
 			var metadata = BookMetaData.FromString(File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName)));
 			Assert.That(string.IsNullOrEmpty(metadata.Id), Is.False, "should have filled in missing ID");
-			Assert.That(metadata.Uploader.ObjectId, Is.EqualTo(_bloomLibraryBookApiClient.UserId), "should have set uploader to id of logged-in user");
 
 			var record = _bloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id);
 			string baseUrl = record.baseUrl;

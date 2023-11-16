@@ -48,7 +48,7 @@ namespace Bloom.Publish.BloomLibrary
 			Book.SetMetadata(licenseMetadata);
 			_license = licenseMetadata.License;
 
-			EnsureBookAndUploaderId();
+			EnsureBookId();
 		}
 
 		internal BookInstance Book { get; }
@@ -105,13 +105,12 @@ namespace Bloom.Publish.BloomLibrary
 			get { return _publishModel.PdfGenerationSucceeded; }
 		}
 
-		private void EnsureBookAndUploaderId()
+		private void EnsureBookId()
 		{
 			if (string.IsNullOrEmpty(Book.BookInfo.Id))
 			{
 				Book.BookInfo.Id = Guid.NewGuid().ToString();
 			}
-			Book.BookInfo.Uploader = Uploader;
 		}
 
 		internal bool IsBookPublicDomain => _license?.Url != null && _license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/");
@@ -123,8 +122,6 @@ namespace Bloom.Publish.BloomLibrary
 		}
 
 		internal bool IsTitleOKToPublish => OkToUploadWithNoLanguages || Book.HasL1Title();
-
-		private string Uploader => _uploader.UserId;
 
 		/// <summary>
 		/// The model alone cannot determine whether a book is OK to upload, because the language requirements

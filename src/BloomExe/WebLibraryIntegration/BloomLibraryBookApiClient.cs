@@ -335,46 +335,6 @@ namespace Bloom.WebLibraryIntegration
 				BloomLibraryAuthentication.Logout();
 		}
 
-		public dynamic CreateLanguage(LanguageDescriptor lang)
-		{
-			if (!LoggedIn)
-				throw new ApplicationException();
-			if (BookUpload.IsDryRun)
-			{
-				Console.WriteLine("Simulating CreateLanguage during dry run for {0} ({1})", lang.Name, lang.EthnologueCode);
-				return JObject.Parse($"{{\"objectId\":\"xyzzy{lang.EthnologueCode}\"}}");
-			}
-			var request = MakeParsePostRequest(ClassesLanguagePath);
-			var langjson = lang.Json;
-			request.AddParameter("application/json", langjson, ParameterType.RequestBody);
-			var response = ParseRestClient.Execute(request);
-			if (response.StatusCode != HttpStatusCode.Created)
-			{
-				var message = new StringBuilder();
-
-				message.AppendLine("Request.Json: " + langjson);
-				message.AppendLine("Response.Code: " + response.StatusCode);
-				message.AppendLine("Response.Uri: " + response.ResponseUri);
-				message.AppendLine("Response.Description: " + response.StatusDescription);
-				message.AppendLine("Response.Content: " + response.Content);
-				throw new ApplicationException(message.ToString());
-			}
-			return JObject.Parse(response.Content);
-		}
-
-		internal string LanguageId(LanguageDescriptor lang)
-		{
-			var getLang = MakeParseGetRequest(ClassesLanguagePath);
-			getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
-			var response = ParseRestClient.Execute(getLang);
-			if (response.StatusCode != HttpStatusCode.OK)
-				return null;
-			dynamic json = JObject.Parse(response.Content);
-			if (json == null || json.results.Count < 1)
-				return null;
-			return json.results[0].objectId;
-		}
-
 		internal bool IsThisVersionAllowedToUpload()
 		{
 			var request = MakeParseGetRequest("classes/version");
@@ -391,29 +351,6 @@ namespace Bloom.WebLibraryIntegration
 			if (ourMajorVersion == requiredMajorVersion)
 				return ourMinorVersion >= requiredMinorVersion;
 			return ourMajorVersion >= requiredMajorVersion;
-		}
-
-		/// <summary>
-		/// Get the language pointers we need to refer to a sequence of languages.
-		/// If matching languages don't exist they will be created (requires user to be logged in)
-		/// </summary>
-		/// <param name="languages"></param>
-		/// <returns></returns>
-		internal ParseServerObjectPointer[] GetLanguagePointers(LanguageDescriptor[] languages)
-		{
-			var result = new ParseServerObjectPointer[languages.Length];
-			for (int i = 0; i < languages.Length; i++)
-			{
-				var lang = languages[i];
-				var id = LanguageId(lang);
-				if (id == null)
-				{
-					var language = CreateLanguage(lang);
-					id = language["objectId"].Value;
-				}
-				result[i] = new ParseServerObjectPointer() {ClassName = "language", ObjectId = id};
-			}
-			return result;
 		}
 
 		/// <summary>

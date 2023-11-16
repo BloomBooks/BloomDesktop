@@ -505,28 +505,10 @@ namespace Bloom.Book
 		/// <summary>
 		/// So far, this is just a way of getting at the metadata field. It is only set during book upload.
 		/// </summary>
-		public ParseServerObjectPointer[] LanguageTableReferences
+		public LanguageDescriptor[] LanguageDescriptors
 		{
-			get { return MetaData.LanguageTableReferences; }
-			set { MetaData.LanguageTableReferences = value; }
-		}
-
-		/// <summary>
-		/// The Parse.com object ID of the person who uploaded the book.
-		/// </summary>
-		public string Uploader
-		{
-			get
-			{
-				if (MetaData.Uploader == null)
-					return "";
-				return MetaData.Uploader.ObjectId;
-			}
-
-			set
-			{
-				MetaData.SetUploader(value);
-			}
+			get { return MetaData.LanguageDescriptors; }
+			set { MetaData.LanguageDescriptors = value; }
 		}
 
 		public List<ToolboxToolState> Tools
@@ -1048,8 +1030,7 @@ namespace Bloom.Book
 						tags = Tags,
 						summary = Summary,
 						pageCount = PageCount,
-						langPointers = LanguageTableReferences,
-						uploader = Uploader,
+						languageDescriptors = LanguageDescriptors, // the upload azure function converts this to language object pointers before saving to parse
 						leveledReaderLevel = LeveledReaderLevel,
 						country = CountryName,
 						province = ProvinceName,
@@ -1182,8 +1163,9 @@ namespace Bloom.Book
 		[JsonProperty("languages")]
 		public string[] Languages { get { return new string[0]; } set {}}
 
-		[JsonProperty("langPointers")]
-		public ParseServerObjectPointer[] LanguageTableReferences { get; set; }
+
+		[JsonProperty("languageDescriptors")]
+		public LanguageDescriptor[] LanguageDescriptors { get; set; }
 
 		[JsonProperty("summary")]
 		public string Summary { get; set; }
@@ -1303,22 +1285,6 @@ namespace Bloom.Book
 
 		[JsonProperty("district")]
 		public string DistrictName { get; set; }
-
-		public void SetUploader(string id)
-		{
-			// The uploader is stored in a way that makes the json that parse.com requires for a 'pointer'
-			// to an object in another table: in this case the special table of users.
-			if (Uploader == null)
-				Uploader = new ParseServerObjectPointer() { ClassName = "_User" };
-			Uploader.ObjectId = id;
-		}
-
-		/// <summary>
-		/// The Parse.com ID of the person who uploaded the book.
-		/// This is stored in a special way that parse.com requires for cross-table pointers.
-		/// </summary>
-		[JsonProperty("uploader")]
-		public ParseServerObjectPointer Uploader { get; set; }
 
 		/// <summary>These panels are being displayed in the toolbox for this book</summary>
 		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
@@ -1576,33 +1542,10 @@ namespace Bloom.Book
 	}
 
 	/// <summary>
-	/// This is the required structure for a parse server pointer to an object in another table.
-	/// </summary>
-	public class ParseServerObjectPointer
-	{
-		public ParseServerObjectPointer()
-		{
-			Type = "Pointer"; // Required for all parse server pointers.
-		}
-
-		[JsonProperty("__type")]
-		public string Type { get; set; }
-
-		[JsonProperty("className")]
-		public string ClassName { get; set; }
-
-		[JsonProperty("objectId")]
-		public string ObjectId { get; set; }
-	}
-
-	/// <summary>
 	/// This class represents the parse server Language class (for purposes of generating json)
 	/// </summary>
 	public class LanguageDescriptor
 	{
-		[JsonIgnore]
-		public string Json => JsonConvert.SerializeObject(this);
-
 		[JsonProperty("isoCode")]
 		public string LangTag { get; set; }
 
