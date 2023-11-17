@@ -1135,7 +1135,8 @@ namespace Bloom.ImageProcessing
 			}
 			catch (Exception e)
 			{
-				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All,"Could not convert image to jpeg.", "ref BL-3387", exception: e);
+				// Don't bother reporting this to the user, but log it in case it might be relevant for a real bug.
+				Logger.WriteError($"ImageUtils.TryChangeFormatToJpegIfHelpful({image.GetCurrentFilePath() ?? _createdTempImageFile}) caught an exception.", e);
 				return false;
 			}
 		}
