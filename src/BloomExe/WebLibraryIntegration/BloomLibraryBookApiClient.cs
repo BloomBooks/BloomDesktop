@@ -51,7 +51,7 @@ namespace Bloom.WebLibraryIntegration
 			if (!LoggedIn)
 				throw new ApplicationException("Must be logged in to upload a book");
 
-			var request = MakePostRequest("upload-start");
+			var request = MakePostRequest("upload-start", 10); // 10-minute timeout; this does a lot of work on the server
 
 			if (!string.IsNullOrEmpty(existingBookObjectId))
 				request.AddQueryParameter("existing-book-object-id", existingBookObjectId);
@@ -60,7 +60,7 @@ namespace Bloom.WebLibraryIntegration
 
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				SIL.Reporting.Logger.WriteEvent("upload-start failed: " + response.Content);
+				SIL.Reporting.Logger.WriteEvent($"upload-start failed: {response.StatusCode} - {response.Content}");
 				throw new ApplicationException("Unable to initiate book upload on the server.");
 			}
 
@@ -89,7 +89,7 @@ namespace Bloom.WebLibraryIntegration
 			if (!LoggedIn)
 				throw new ApplicationException("Must be logged in to upload a book");
 
-			var request = MakePostRequest("upload-finish");
+			var request = MakePostRequest("upload-finish", 10); // 10-minute timeout; this does a lot of work on the server
 
 			request.AddQueryParameter("transaction-id", transactionId);
 
@@ -99,7 +99,7 @@ namespace Bloom.WebLibraryIntegration
 
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				SIL.Reporting.Logger.WriteEvent("upload-finish failed: " + response.Content);
+				SIL.Reporting.Logger.WriteEvent($"upload-finish failed: {response.StatusCode} - {response.Content}");
 				throw new ApplicationException("Unable to finalize book upload on the server.");
 			}
 		}
@@ -121,9 +121,14 @@ namespace Bloom.WebLibraryIntegration
 			return MakeRequest(action, Method.GET);
 		}
 
-		private RestRequest MakePostRequest(string action)
+		private RestRequest MakePostRequest(string action, int timeoutInMinutes = 0)
 		{
-			return MakeRequest(action, Method.POST);
+			var request = MakeRequest(action, Method.POST);
+
+			if (timeoutInMinutes > 0)
+				request.Timeout = 1000 * 60 * timeoutInMinutes;
+
+			return request;
 		}
 
 		private RestRequest MakeRequest(string action, Method requestType)
