@@ -250,25 +250,6 @@ namespace Bloom
 			return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "AppearanceThemes"));
 		}
 
-		//Review: not sure if these two methods belong here or some class more specific to appearance, like ApperanceSettings.
-		public static IEnumerable<string> GetPathsToThemeFiles()
-		{
-			return Directory.EnumerateFiles(GetFolderContainingAppearanceThemeFiles(), "*.css");
-		}
-
-		public static IEnumerable<string> GetAppearanceThemeFileNames()
-		{
-			string[] themes = { };
-			RetryUtility.Retry(() =>
-			{
-				var x = from f in Directory.EnumerateFiles(GetFolderContainingAppearanceThemeFiles(),
-						"*.css")
-					select Path.GetFileNameWithoutExtension(f);
-				themes = x.ToArray();
-			});
-			return themes;
-		}
-
 		/// <summary>
 		/// Check whether this file was installed with Bloom (and likely to be read-only on Linux or for allUsers install).
 		/// </summary>

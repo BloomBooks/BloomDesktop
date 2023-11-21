@@ -67,7 +67,7 @@ namespace Bloom.Api
 					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(jsonOfJustPublishSettings);
 					_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.UpdateFromDynamic(newSettings.appearance);
 
-					_bookSelection.CurrentSelection.BookInfo.Save();
+					_bookSelection.CurrentSelection.SettingsUpdated();
 
 					// we want a "full" save, which means that the <links> in the <head> can be regenerated, i.e. in response
 					// to a change in the CssTheme from/to legacy that requires changing between "basePage.css" and "basePage-legacy-5-6.css"

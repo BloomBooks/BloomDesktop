@@ -11,7 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-
+using SIL.Code;
 
 
 /// <summary>
@@ -157,7 +157,7 @@ public class AppearanceSettings
 		// See if the css contains rules that nowadays should be using css variables, and would likely interfere with 5.6 and up
 		const string kProbablyWillInterfere = @"\.marginBox\s*{[^}]*?"+
 			"(?<![-\\w])" + // prevent matching things like --page-margin-left
-			"(padding-|left:|top:|right:|bottom:|margin-|width:|height:)[^}]*}";
+			"(padding[-:]|left:|top:|right:|bottom:|margin[-:]|width:|height:)[^}]*}";
 		var match = Regex.Match(css, kProbablyWillInterfere, RegexOptions.IgnoreCase);
 		if (match.Success)
 		{
@@ -374,9 +374,27 @@ public class AppearanceSettings
 		}
 	}
 
+	public static IEnumerable<string> GetPathsToThemeFiles()
+	{
+		return Directory.EnumerateFiles(BloomFileLocator.GetFolderContainingAppearanceThemeFiles(), "*.css");
+	}
+
+	public static IEnumerable<string> GetAppearanceThemeFileNames()
+	{
+		string[] themes = { };
+		RetryUtility.Retry(() =>
+		{
+			var x = from f in Directory.EnumerateFiles(BloomFileLocator.GetFolderContainingAppearanceThemeFiles(),
+					"*.css")
+				select Path.GetFileNameWithoutExtension(f);
+			themes = x.ToArray();
+		});
+		return themes;
+	}
+
 	static IEnumerable<string> GetAppearanceThemeNames()
 	{
-		return from path in BloomFileLocator.GetAppearanceThemeFileNames() select Path.GetFileName(path).Replace("appearance-theme-", "");
+		return from path in GetAppearanceThemeFileNames() select Path.GetFileName(path).Replace("appearance-theme-", "");
 	}
 
 	// things that aren't settings but are used by the BookSettings UI

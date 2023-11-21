@@ -4766,6 +4766,14 @@ namespace Bloom.Book
 				return false;
 			return !string.IsNullOrEmpty(l1Title);
 		}
+
+		internal void SettingsUpdated()
+		{
+			BookInfo.Save();
+			// temporary while we're in transition between storing cover color in the HTML and in the bookInfo
+			//SetCoverColor(BookInfo.AppearanceSettings.CoverColor);
+		}
+
 	}
 }
 

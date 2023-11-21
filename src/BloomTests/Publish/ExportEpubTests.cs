@@ -182,8 +182,9 @@ namespace BloomTests.Publish
 			MakeImageFiles(book, "image1"); // otherwise the img tag gets stripped out
 			MakeEpub("output", $"ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered_{audioRecordingMode}",
 				book, BookInfo.HowToPublishImageDescriptions.OnPage, branding: "Test");
-			// MakeEpub (when using a physical file as we are) creates Device Xmatter, so page one is cover, page 2 is ours.
-			var assertThatPageOneData = AssertThatXmlIn.String(GetPageNData(2));
+			// MakeEpub (when using a physical file as we are) creates Device Xmatter, so usually page one is cover, page 2 is ours.
+			// But the added front cover is empty so it gets deleted. So page 1 is the one we're testing.
+			var assertThatPageOneData = AssertThatXmlIn.String(GetPageNData(1));
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside", _ns, 3);
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='Non-selected image description']", _ns);
@@ -339,10 +340,12 @@ namespace BloomTests.Publish
 		[Test]
 		public void BookSwitchedToDeviceXMatter()
 		{
+			// Title makes the front cover non-empty so it will not be omitted.
 			var book = SetupBookLong("This is some text", "en", createPhysicalFile: true, optionalDataDiv:
 				@"<div id='bloomDataDiv'>
 					<div data-book='contentLanguage1' lang='*'>xyz</div>
 					<div data-book='contentLanguage2' lang='*'>en</div>
+					<div data-book='bookTitle' lang='en'>title</div>
 				</div>");
 			MakeEpub("output", "BookSwitchedToDeviceXMatter", book);
 			// This is a rather crude way to test that it is switched to device XMatter, but we aren't even sure we

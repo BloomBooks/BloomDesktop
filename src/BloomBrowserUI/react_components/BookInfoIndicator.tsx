@@ -11,7 +11,7 @@ import { postJson, useApiObject } from "../utils/bloomApi";
 export const BookInfoIndicator: React.FunctionComponent<{
     bookId: string;
 }> = props => {
-    type IIndicatorInfo = {
+    type IndicatorInfo = {
         id: string;
         factoryInstalled: boolean;
         path: string;
@@ -21,7 +21,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
         offendingCss: string;
         error: string;
     };
-    const info = useApiObject<IIndicatorInfo | undefined>(
+    const info = useApiObject<IndicatorInfo | undefined>(
         `book/indicatorInfo?id=${props.bookId}`,
         undefined
     );

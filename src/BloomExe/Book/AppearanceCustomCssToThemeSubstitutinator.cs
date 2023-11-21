@@ -22,7 +22,7 @@ namespace Bloom.Book
 
 		public AppearanceCustomCssToThemeSubstitutinator()
 		{
-			foreach(var path in BloomFileLocator.GetPathsToThemeFiles())
+			foreach(var path in AppearanceSettings.GetPathsToThemeFiles())
 			{ 
 				// read the first 20 lines of the file and extract the json from the comments
 				var s = RobustFile.ReadAllText(path);

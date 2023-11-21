@@ -56,9 +56,12 @@ div.bloom-page {
     }
 }
 
+// This affects the size of the marginBox, but it must be applied to the bloom-page, because the marginBox
+// size is now controlled by padding on the page. This is currently untested beccause the enterprise codes
+// for the UEEP brandings which use this are expired.
 .outsideFrontCover,
 .outsideBackCover {
-    .marginBox {
+    &.bloom-page {
         --page-margin-top: 0;
         --page-margin-bottom: 0;
         --page-margin-right: 0;

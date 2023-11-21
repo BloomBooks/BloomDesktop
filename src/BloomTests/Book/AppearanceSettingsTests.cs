@@ -110,6 +110,12 @@ namespace BloomTests.Book
 		{
 			Assert.IsTrue(MayBeIncompatible(".A4Landscape .marginBox{ height: 2mm}"));
 		}
+
+		[Test]
+		public void MayBeIncompatible_MarginBoxMargin_True()
+		{
+			Assert.IsTrue(MayBeIncompatible(".marginBox{ margin: 2mm}"));
+		}
 		[Test]
 		public void MayBeIncompatible_Variables_False()
 		{
@@ -124,7 +130,7 @@ namespace BloomTests.Book
 		public void MayBeIncompatible_compatibleWithAppearanceVersion_False()
 		{
 			Assert.IsFalse(MayBeIncompatible(
-				"/*{label: \"some test\";\r\n compatibleWithAppearanceVersion: 5.6;\r\n}*/ .marginBox{ left: 2mm}"));
+				"/*{label: \"some test\";\r\n compatibleWithAppearanceVersion: 5.7;\r\n}*/ .marginBox{ left: 2mm}"));
 		}
 
 		

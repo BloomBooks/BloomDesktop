@@ -42,7 +42,8 @@
 > We also want to be sure that all the title pages and credit pages and inside cover pages have the same margins as the rest of the book.
 */
 
-    /* these are just defaults in case we miss some */
+    /* these are just defaults in case we miss some. If you override, remember that the bottom margin needs
+    to be big enough for the page number, unless you put it elsewhere. */
     --page-margin-top: 12mm;
     --page-margin-bottom: 12mm;
     --page-margin-right: 12mm;
@@ -81,7 +82,7 @@
 
 .Device16x9Portrait {
     --page-margin-top: 10px;
-    --page-margin-bottom: 45px; /* leave room for page number*/
+    --page-margin-bottom: 45px; /* need room for page number, so not as small as others */
     --page-margin-right: 10px;
     --page-margin-left: 10px;
 }

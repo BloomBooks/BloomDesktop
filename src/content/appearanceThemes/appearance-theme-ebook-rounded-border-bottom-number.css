@@ -1,8 +1,8 @@
 /* based on EFL's https://bloomlibrary.org/player/PbflFNDoRx */
 
-.bloom-imageContainer,
-.bloom-imageContainer .img {
-    border-radius: 9px;
+.bloom-page{
+    /* This appearance is usually used for a Device book, where this rule gets overridden by the Device rules below. */
+    --image-border-radius: 9px;
 }
 [class*="Device"] {
     --page-margin-top: 5.5mm;
@@ -21,13 +21,6 @@
 
     --bloom-editMode-custom-image-border: none;
 
-    .bloom-imageContainer {
-        /* TODO: 4px is this hack that I don't understand
-         Currently I can set this to one value to get a good
-         curve on full-page images, but would need another
-         to get a good curve on half-page images. */
-        width: calc(100% - 4px);
-    }
     .bloom-imageContainer img {
         object-fit: cover; /* let the rounded edges of the parent clip the img */
     }

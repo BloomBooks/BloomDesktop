@@ -200,6 +200,12 @@ export const BookButton: React.FunctionComponent<{
                 command: "collections/duplicateBook"
             },
             {
+                label: "Show in File Explorer",
+                l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
+                command: "bookCommand/openFolderOnDisk",
+                shouldShow: () => !props.collection.isFactoryInstalled // show for all collections (except factory)
+            },
+            {
                 label: "Delete Book",
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
                 command: "collections/deleteBook",

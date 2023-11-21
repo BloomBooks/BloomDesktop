@@ -390,6 +390,19 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		public void OpenFolderOnDisk()
+		{
+			try
+			{
+				ProcessExtra.ShowFileInExplorerInFront(_bookSelection.CurrentSelection.FolderPath);
+			}
+			catch (System.Runtime.InteropServices.COMException e)
+			{
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					"Bloom had a problem asking your operating system to show that folder. Sorry!");
+			}
+		}
+
 		public void BringBookUpToDate()
 		{
 			var b = _bookSelection.CurrentSelection;
