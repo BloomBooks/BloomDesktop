@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Windows.Forms;
@@ -241,23 +242,6 @@ namespace Bloom.WebLibraryIntegration
 			return MakeParseRequest(path, Method.POST);
 		}
 
-		public int GetBookCount(string query = null)
-		{
-			if (!UrlLookup.CheckGeneralInternetAvailability(false))
-				return -1;
-			var request = MakeParseGetRequest("classes/books");
-			request.AddParameter("count", "1");
-			request.AddParameter("limit", "0");
-			if (!string.IsNullOrEmpty(query))
-				request.AddParameter("where", query, ParameterType.QueryString);
-			var response = ParseRestClient.Execute(request);
-			// If not successful return -1; this can happen if we aren't online.
-			if (!response.IsSuccessful)
-				return -1;
-			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
-			return dy.count;
-		}
-
 		/// <summary>
 		/// Get the number of books on bloomlibrary.org that are in the given language.
 		/// </summary>
@@ -265,11 +249,24 @@ namespace Bloom.WebLibraryIntegration
 		/// and 'rebrand' is not true and 'inCirculation' is not false and 'draft' is not true.</remarks>
 		public int GetBookCountByLanguage(string languageCode)
 		{
-			string query = @"{
-				""langPointers"":{""$inQuery"":{""where"":{""isoCode"":""" + languageCode + @"""},""className"":""language""}},
-				""rebrand"":{""$ne"":true},""inCirculation"":{""$ne"":false},""draft"":{""$ne"":true}
-			}";
-			return GetBookCount(query);
+			if (!UrlLookup.CheckGeneralInternetAvailability(false))
+				return -1;
+			var request = MakeGetRequest("get-book-count-by-language");
+			request.AddQueryParameter("language-tag", languageCode);
+			var response = AzureRestClient.Execute(request);
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				SIL.Reporting.Logger.WriteEvent("get-book-count-by-language failed: " + response.Content);
+				return -1;
+			}
+			try {
+				return int.Parse(response.Content);
+			}
+			catch (Exception e)
+			{
+				SIL.Reporting.Logger.WriteEvent("get-book-count-by-language failed: " + e.Message);
+				return -1;
+			}
 		}
 
 		// Setting param 'includeLanguageInfo' to true adds a param to the query that causes it to fold in
@@ -372,42 +369,30 @@ namespace Bloom.WebLibraryIntegration
 			var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
 			if (!UrlLookup.CheckGeneralInternetAvailability(false))
 				return bloomLibraryStatusesById;
-			var queryBldr = new StringBuilder();
-			queryBldr.Append("{\"bookInstanceId\":{\"$in\":[\"");
-			var bookIds = new List<string>();
-			for (int i = 0; i < bookInfos.Count; ++i)
+				
+			List<string> bookInstanceIds = bookInfos.Select(book => book.Id).ToList();
+			var request = MakePostRequest("get-books");
+			var requestBody = new { bookInstanceIds };
+			request.AddJsonBody(requestBody);
+			var response = AzureRestClient.Execute(request);
+			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				// More than 21 bookIds in a query causes a 400 error.
-				// Just to be safe, we'll limit it to 20.
-				bookIds.Add(bookInfos[i].Id);
-				if (bookIds.Count % 20 == 0 || i == bookInfos.Count - 1)
+				SIL.Reporting.Logger.WriteEvent("get-books failed" + response.Content);
+				return bloomLibraryStatusesById;
+			}
+
+			dynamic result = JObject.Parse(response.Content);
+			for (int i = 0; i < result.bookRecords.Count; ++i) {
+				var bookRecord = result.bookRecords[i];
+				string bookInstanceId = bookRecord.bookInstanceId;
+				if (bloomLibraryStatusesById.ContainsKey(bookInstanceId))
 				{
-					queryBldr.Append(string.Join("\",\"", bookIds.ToArray()));
-					queryBldr.Append("\"]}}");
-					var response = GetBookRecordsByQuery(queryBldr.ToString(), false);
-					if (response.StatusCode != HttpStatusCode.OK)
-						continue;
-					dynamic json = JObject.Parse(response.Content);
-					if (json == null)
-						continue;
-					// store data from the dynamic json object into BloomLibraryStatus objects
-					var bookStates = JArray.FromObject(json.results);
-					for (int j = 0; j < bookStates.Count; ++j)
-					{
-						var id = bookStates[j].bookInstanceId.ToString();
-						if (bloomLibraryStatusesById.ContainsKey(id))
-						{
-							bloomLibraryStatusesById[id] = new BloomLibraryStatus(false, false, HarvesterState.Multiple,
-								BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(id));
-						}
-						else
-						{
-							bloomLibraryStatusesById[id] = BloomLibraryStatus.FromDynamicJson(bookStates[j]);
-						}
-					}
-					queryBldr.Clear();
-					queryBldr.Append("{\"bookInstanceId\":{\"$in\":[\"");
-					bookIds.Clear();
+					bloomLibraryStatusesById[bookInstanceId] = new BloomLibraryStatus(false, false, HarvesterState.Multiple,
+						BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(bookInstanceId));
+				}
+				else
+				{
+					bloomLibraryStatusesById[bookInstanceId] = BloomLibraryStatus.FromDynamicJson(bookRecord);
 				}
 			}
 			return bloomLibraryStatusesById;

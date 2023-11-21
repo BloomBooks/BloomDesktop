@@ -273,10 +273,18 @@ namespace Bloom.web.controllers
 		{
 			if (request.HttpMethod == HttpMethods.Post)
 				return; // should be Get
-
-			var client = new BloomLibraryBookApiClient();
 			var langTag = string.IsNullOrEmpty(_settings.SignLanguageTag) ? _settings.Language1Tag : _settings.SignLanguageTag;
-			var count = client.GetBookCountByLanguage(langTag);
+			var bloomLibraryApiClient = new BloomLibraryBookApiClient();
+			int count;
+			try
+			{
+				count = bloomLibraryApiClient.GetBookCountByLanguage(langTag);
+			}
+			catch
+			{
+				count = -1;
+			}
+
 			request.ReplyWithText(count.ToString());
 		}
 
