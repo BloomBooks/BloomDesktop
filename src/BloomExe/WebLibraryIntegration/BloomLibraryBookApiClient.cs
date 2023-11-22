@@ -37,6 +37,17 @@ namespace Bloom.WebLibraryIntegration
 			_parseApplicationId = keys.ParseApplicationKey;
 		}
 
+		private void LogApiError(string apiEndpoint, IRestResponse response)
+		{
+			SIL.Reporting.Logger.WriteEvent($@"BloomLibraryBookApiClient call to {apiEndpoint} failed
+  StatusCode: {response.StatusCode}
+  Content: {response.Content}
+  ResponseStatus: {response.ResponseStatus}
+  StatusDescription: {response.StatusDescription}
+  ErrorMessage: {response.ErrorMessage}
+  ErrorException: {response.ErrorException}");
+		}
+
 		// This calls an azure function which does the following:
 		// New book:
 		//  - Creates an empty `books` record in parse-server with an uploadPendingTimestamp
@@ -51,7 +62,7 @@ namespace Bloom.WebLibraryIntegration
 			if (!LoggedIn)
 				throw new ApplicationException("Must be logged in to upload a book");
 
-			var request = MakePostRequest("upload-start");
+			var request = MakePostRequest("upload-start", 10); // 10-minute timeout; this does a lot of work on the server
 
 			if (!string.IsNullOrEmpty(existingBookObjectId))
 				request.AddQueryParameter("existing-book-object-id", existingBookObjectId);
@@ -60,7 +71,7 @@ namespace Bloom.WebLibraryIntegration
 
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				SIL.Reporting.Logger.WriteEvent("upload-start failed: " + response.Content);
+				LogApiError("upload-start", response);
 				throw new ApplicationException("Unable to initiate book upload on the server.");
 			}
 
@@ -89,7 +100,7 @@ namespace Bloom.WebLibraryIntegration
 			if (!LoggedIn)
 				throw new ApplicationException("Must be logged in to upload a book");
 
-			var request = MakePostRequest("upload-finish");
+			var request = MakePostRequest("upload-finish", 10); // 10-minute timeout; this does a lot of work on the server
 
 			request.AddQueryParameter("transaction-id", transactionId);
 
@@ -99,7 +110,7 @@ namespace Bloom.WebLibraryIntegration
 
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				SIL.Reporting.Logger.WriteEvent("upload-finish failed: " + response.Content);
+				LogApiError("upload-finish", response);
 				throw new ApplicationException("Unable to finalize book upload on the server.");
 			}
 		}
@@ -121,9 +132,14 @@ namespace Bloom.WebLibraryIntegration
 			return MakeRequest(action, Method.GET);
 		}
 
-		private RestRequest MakePostRequest(string action)
+		private RestRequest MakePostRequest(string action, int timeoutInMinutes = 0)
 		{
-			return MakeRequest(action, Method.POST);
+			var request = MakeRequest(action, Method.POST);
+
+			if (timeoutInMinutes > 0)
+				request.Timeout = 1000 * 60 * timeoutInMinutes;
+
+			return request;
 		}
 
 		private RestRequest MakeRequest(string action, Method requestType)
@@ -256,7 +272,7 @@ namespace Bloom.WebLibraryIntegration
 			var response = AzureRestClient.Execute(request);
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				SIL.Reporting.Logger.WriteEvent("get-book-count-by-language failed: " + response.Content);
+				LogApiError("get-book-count-by-language", response);
 				return -1;
 			}
 			try {
@@ -377,7 +393,7 @@ namespace Bloom.WebLibraryIntegration
 			var response = AzureRestClient.Execute(request);
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				SIL.Reporting.Logger.WriteEvent("get-books failed" + response.Content);
+				LogApiError("get-books", response);
 				return bloomLibraryStatusesById;
 			}
 
