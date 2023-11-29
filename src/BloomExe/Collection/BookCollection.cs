@@ -273,6 +273,10 @@ namespace Bloom.Collection
 								continue;
 							AddBookInfo(folder.FullName);
 						}
+						if (Type == CollectionType.TheOneEditableCollection)
+						{
+							UpdateBloomLibraryStatusOfBooks(_bookInfos, true);
+						}
 					}
 					finally
 					{
