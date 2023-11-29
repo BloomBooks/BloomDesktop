@@ -14,7 +14,6 @@ import {
 import { BookSelectionManager } from "./bookSelectionManager";
 import LazyLoad, { forceVisible } from "react-lazyload";
 import { Link } from "../react_components/link";
-import { kBloomBlue } from "../bloomMaterialUITheme";
 
 export interface IBookInfo {
     id: string;
@@ -72,6 +71,15 @@ export const BooksOfCollection: React.FunctionComponent<{
         "editableCollectionList",
         "reload:" + props.collectionId
     );
+
+    useEffect(() => {
+        if (books.length > 0)
+        {
+            // once we have the books variable has been updated with the book-on-blorg statuses,
+            // unset the reloadParameter so we don't keep reloading the book-on-blorg statuses
+            setReloadParameter(""); 
+        }
+    }, [books])
 
     //const selectedBookInfo = useMonitorBookSelection();
     const collection: ICollection = useApiData(
