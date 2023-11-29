@@ -749,18 +749,23 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveNormalStyleSheetsLinks()
 		{
-			// ToArray() so we aren't modifying the DOM while we're running the iterator.
-			var links = RawDom.SafeSelectNodes("/html/head/link").Cast<XmlElement>().ToArray();
-			foreach (XmlElement linkNode in links)
+			//mystery: without this lock, some async process sometimes leads the linkNode to have a null parent when we go to remove it
+			lock (RawDom)
 			{
-				var href = linkNode.GetAttribute("href");
-				var name = Path.GetFileName(href).ToLowerInvariant();
-				if (
-					name.EndsWith("xmatter.css") || BookStorage.KnownCssFilePrefixesInOrder.Any(
-						prefix => name.StartsWith(prefix.ToLowerInvariant()))
-				)
+				// Note: the iterator is just returning a list of nodes, and
+				// we're not modifying that list, but rather just the DOM. (<--- this sentence provided by github copilot and I think it's right!)
+				var links = RawDom.SafeSelectNodes("/html/head/link");
+				foreach (XmlElement linkNode in links)
 				{
-					linkNode.ParentNode.RemoveChild(linkNode);
+					var href = linkNode.GetAttribute("href");
+					var name = Path.GetFileName(href).ToLowerInvariant();
+					if (
+						name.EndsWith("xmatter.css") || BookStorage.KnownCssFilePrefixesInOrder.Any(
+							prefix => name.StartsWith(prefix.ToLowerInvariant()))
+					)
+					{
+						linkNode.ParentNode.RemoveChild(linkNode);
+					}
 				}
 			}
 		}
