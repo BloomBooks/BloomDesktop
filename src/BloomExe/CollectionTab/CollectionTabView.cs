@@ -41,11 +41,13 @@ namespace Bloom.CollectionTab
 			_bookSelection = bookSelection;
 			_webSocketServer = webSocketServer;
 			_tcManager = tcManager;
-			bookRefreshEvent.Subscribe(book => {
-				// this prevents us responding to book changes too early in the startup process
-				if(bookSelection.CurrentSelection!=null)
-					UpdateForBookChanges(book);
-			});
+
+			// Commented out because of BL-12890, while we think about that.
+			//bookRefreshEvent.Subscribe(book => {
+			//	// this prevents us responding to book changes too early in the startup process
+			//	if(bookSelection.CurrentSelection!=null)
+			//		UpdateForBookChanges(book);
+			//});
 
 			BookCollection.CollectionCreated += OnBookCollectionCreated;
 
