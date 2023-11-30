@@ -339,7 +339,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.OnBlorgBadge.Harvesting" sil:dynamic="true">
         <source xml:lang="en">In Progress</source>
-        <target xml:lang="th" state="needs-translation">In Progress</target>
+        <target xml:lang="th" state="translated">กำลังดำเนินอยู่</target>
         <note>CollectionTab.OnBlorgBadge.Harvesting</note>
       </trans-unit>
       <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true">
@@ -354,32 +354,32 @@
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
         <source xml:lang="en">Max Image Size</source>
-        <target xml:lang="th" state="needs-translation">Max Image Size</target>
+        <target xml:lang="th" state="translated">ขนาดภาพสูงสุด</target>
         <note>BookSettings.eBook.Image.MaxResolution</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
         <source xml:lang="en">Small</source>
-        <target xml:lang="th" state="needs-translation">Small</target>
+        <target xml:lang="th" state="translated">เล็ก</target>
         <note>BookSettings.eBook.Image.MaxResolution.Small</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
         <source xml:lang="en">HD</source>
-        <target xml:lang="th" state="needs-translation">HD</target>
+        <target xml:lang="th" state="translated">ความชัดสูง</target>
         <note>BookSettings.eBook.Image.MaxResolution.HD</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
         <source xml:lang="en">Full HD</source>
-        <target xml:lang="th" state="needs-translation">Full HD</target>
+        <target xml:lang="th" state="translated">ความคมชัดสูงเต็มรูปแบบ</target>
         <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
         <source xml:lang="en">4K</source>
-        <target xml:lang="th" state="needs-translation">4K</target>
+        <target xml:lang="th" state="translated">4K</target>
         <note>BookSettings.eBook.Image.MaxResolution.4K</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
         <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
-        <target xml:lang="th" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
+        <target xml:lang="th" state="translated">Bloom ลดขนาดรูปภาพให้ใหญ่ที่สุดเพื่อให้ดูหนังสือได้ง่ายขึ้นผ่านการเชื่อมต่ออินเทอร์เน็ตที่มีสัญญาณไม่ดี และใช้พื้นที่บนโทรศัพท์น้อยลง</target>
         <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
       </trans-unit>
     </body>
