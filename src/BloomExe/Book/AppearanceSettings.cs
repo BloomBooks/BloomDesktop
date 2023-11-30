@@ -1,4 +1,4 @@
-﻿using Bloom;
+using Bloom;
 using Bloom.Book;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -312,20 +312,25 @@ public class AppearanceSettings
 			cssBuilder.AppendLine(RobustFile.ReadAllText(defaultThemeSourcePath, Encoding.UTF8));
 		}
 
-		// Now add the user's chosen theme if it isn't the default, which we already added above.
-		if (!string.IsNullOrEmpty(theme) && theme != "default")
-		{
-			var sourcePath = Path.Combine(BloomFileLocator.GetFolderContainingAppearanceThemeFiles(), $"appearance-theme-{theme}.css");
-			if (!RobustFile.Exists(sourcePath))
-			{
-				// TODO: We should toast I suppose?
-			}
-			else
-			{
-				cssBuilder.AppendLine($"/* From the current appearance theme, '{theme}' */");
-				cssBuilder.AppendLine(RobustFile.ReadAllText(sourcePath, Encoding.UTF8));
-			}
-		}
+        // Now add the user's chosen theme if it isn't the default, which we already added above.
+        if (!string.IsNullOrEmpty(theme) && theme != "default")
+        {
+            var sourcePath = Path.Combine(
+                BloomFileLocator.GetFolderContainingAppearanceThemeFiles(),
+                $"appearance-theme-{theme}.css"
+            );
+            if (!RobustFile.Exists(sourcePath))
+            {
+                // TODO: We should toast I suppose?
+            }
+            else
+            {
+                cssBuilder.AppendLine(
+                    $"/* The following rules are from the current appearance theme, '{theme}' */"
+                );
+                cssBuilder.AppendLine(RobustFile.ReadAllText(sourcePath, Encoding.UTF8));
+            }
+        }
 
 		RobustFile.WriteAllText(targetPath, cssBuilder.ToString());
 		var settings = new JsonSerializerSettings
