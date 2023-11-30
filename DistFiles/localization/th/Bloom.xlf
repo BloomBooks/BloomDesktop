@@ -6247,27 +6247,27 @@
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comic" sil:dynamic="true">
         <source xml:lang="en">A full page image with no margin.</source>
-        <target xml:lang="th" state="needs-translation">A full page image with no margin.</target>
+        <target xml:lang="th" state="translated">รูปภาพเต็มหน้าที่ไม่มีระยะขอบ</target>
         <note>ID: TemplateBooks.PageDescription.Comic</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comic Full Page" sil:dynamic="true">
         <source xml:lang="en">A full page image with no margin.</source>
-        <target xml:lang="th" state="needs-translation">A full page image with no margin.</target>
+        <target xml:lang="th" state="translated">รูปภาพเต็มหน้าที่ไม่มีระยะขอบ</target>
         <note>ID: TemplateBooks.PageDescription.Comic Full Page</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comic Full Page with Footer" sil:dynamic="true">
         <source xml:lang="en">A full page image with no margin, with a text footer over the image.</source>
-        <target xml:lang="th" state="needs-translation">A full page image with no margin, with a text footer over the image.</target>
+        <target xml:lang="th" state="translated">รูปภาพเต็มหน้าที่ไม่มีระยะขอบด้วยส่วนท้ายมีข้อความเหนือรูปภาพ</target>
         <note>ID: TemplateBooks.PageDescription.Comic Full Page with Footer</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Widget Page" sil:dynamic="true">
         <source xml:lang="en">A page where you can import an HTML5 widget which readers can interact with</source>
-        <target xml:lang="th" state="needs-translation">A page where you can import an HTML5 widget which readers can interact with</target>
+        <target xml:lang="th" state="translated">หน้าเว็บที่คุณสามารถนำเข้าวิดเจ็ต HTML5 ซึ่งผู้อ่านสามารถโต้ตอบได้</target>
         <note>ID: TemplateBooks.PageDescription.Widget Page</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Captive Widget Page" sil:dynamic="true">
         <source xml:lang="en">Bloom Reader hides its own navigation buttons when showing this HTML5 widget. The widget itself will need to provide a way to exit. This is useful for things like tests where you don't want the student to leave until they have completed the test.</source>
-        <target xml:lang="th" state="needs-translation">Bloom Reader hides its own navigation buttons when showing this HTML5 widget. The widget itself will need to provide a way to exit. This is useful for things like tests where you don't want the student to leave until they have completed the test.</target>
+        <target xml:lang="th" state="translated">Bloom Reader ซ่อนปุ่มนำทางของตัวเองเมื่อแสดงวิดเจ็ต HTML5 นี้ วิดเจ็ตนั้นจะต้องมีวิธีออก สิ่งนี้มีประโยชน์สำหรับสิ่งต่างๆ เช่น การทดสอบที่คุณไม่ต้องการให้นักเรียนออกไปจนกว่าพวกเขาจะทำแบบทดสอบเสร็จ</target>
         <note>ID: TemplateBooks.PageDescription.Captive Widget Page</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
