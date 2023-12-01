@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
@@ -749,12 +750,14 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveNormalStyleSheetsLinks()
 		{
+			if(Monitor.IsEntered(RawDom)){
+				Debug.Fail("RemoveNormalStyleSheetsLinks: RawDom is locked, which we don't expect. In BL-12919 we added the lock on a hunch but did not have confirmation that it was ever used.");
+			}
+
 			//mystery: without this lock, some async process sometimes leads the linkNode to have a null parent when we go to remove it
 			lock (RawDom)
 			{
-				// Note: the iterator is just returning a list of nodes, and
-				// we're not modifying that list, but rather just the DOM. (<--- this sentence provided by github copilot and I think it's right!)
-				var links = RawDom.SafeSelectNodes("/html/head/link");
+				var links = RawDom.SafeSelectNodes("/html/head/link").Cast<XmlElement>().ToArray();
 				foreach (XmlElement linkNode in links)
 				{
 					var href = linkNode.GetAttribute("href");
