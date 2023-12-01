@@ -36,11 +36,18 @@ To watch code, use `yarn watchCode`
 
 ## Building C# Source Code
 
-To build the .NET/C# part of Bloom you'll need Visual Studio.
+To build the .NET/C# part of Bloom you'll need Visual Studio Community Edition.
+
+### Setting up Visual Studio
+
+In Visual Studio, under Extensions, install "CSharpier".
+In Preferences, under CSharpier, set `Reformat with CSharpier` to `true`.
+
+
+## Get Binary Dependencies
 
 Before you'll be able to build, you'll have to download some binary dependencies (see below).
 
-## Get Binary Dependencies
 
 ### TeamCity artifacts
 
