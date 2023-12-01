@@ -996,11 +996,12 @@ namespace Bloom.Book
 										  // Restore possibly messed up multilingual settings.
 				UpdateMultilingualSettings(OurHtmlDom);
 				// This is only needed for updating from old Bloom versions. No need if we're copying the current
-				// edit book, on which it's already been done, to make an epub or similar.
-				if (!forCopyOfUpToDateBook)
-					Storage.PerformNecessaryMaintenanceOnBook();
-				Save(); // <---- REVIEW why is this called here? It's repeated below
-			}
+                // edit book, on which it's already been done, to make an epub or similar.
+                if (!forCopyOfUpToDateBook)
+                    Storage.PerformNecessaryMaintenanceOnBook();
+                UpdateSupportFiles();
+                Save(); // <---- REVIEW why is this called here? It's repeated below
+            }
 
 			OurHtmlDom.FixDivOrdering();
 
