@@ -1202,3 +1202,22 @@ body {
   body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"] .bloom-page[class*="Portrait"] {
     border-bottom: solid green;
   }
+
+
+/* Rules from langVisibility.css which was retired in 5.7 */
+.bloom-editable.bloom-visibility-code-on {
+    display: block;
+}
+.bloom-editable.bloom-visibility-user-on {
+    display: block;
+}
+.bloom-editable.bloom-visibility-user-off {
+    display: none !important;
+}
+.bloom-vertical-align-center,
+.bloom-vertical-align-bottom {
+    .bloom-editable.bloom-visibility-code-on,
+    .bloom-editable.bloom-visibility-user-on {
+        display: flex;
+    }
+}
