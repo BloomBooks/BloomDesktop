@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Utils;
 using Bloom.MiscUI;
+using Bloom.ErrorReporter;
 
 namespace Bloom.Edit
 {
@@ -1166,8 +1167,10 @@ namespace Bloom.Edit
 				var msgFmt = LocalizationManager.GetString("EditTab.Image.Corrupt",
 					"Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: ");
 				msg = String.Format(msgFmt, path) + "<br/><br/>" + ex.Message;
+				var help = LocalizationManager.GetString("Common.Help", "Help");
+				msg = msg + $"git<br/><br/><a href='https://docs.bloomlibrary.org/troubleshooting-file-access'>{help}</a>";
 			}
-			ErrorReport.NotifyUserOfProblem(ex, msg);
+			ErrorReport.NotifyUserOfProblem(msg, ex, new NotifyUserOfProblemSettings(AllowSendReport.Disallow), new ShowAlwaysPolicy());
 		}
 
 		public void SaveChangedImage(int imgIndex, XmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
