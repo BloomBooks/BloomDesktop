@@ -776,12 +776,15 @@ namespace Bloom.CollectionTab
 				// (We can't fix this by reordering things, because there will also be problems if we attempt
 				// to select an item before it is present in the collection to select.)
 				// We know this is a new book object, so there's no point in using EnsureUpToDate.
-				// When we later select it, that code uses EnsureUpToDate and will not do it again.
-				newBook.BringBookUpToDate(new NullProgress(), false);
+                // When we later select it, that code uses EnsureUpToDate and will not do it again.
+                newBook.BringBookUpToDate(new NullProgress(), false);
 
-				TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
+                // You'd think this was needed, but it's not. The book is already in the collection due to
+                // the BringBookUpToDate side effects. However, I'm too chicken to rely on that, so instead
+                // I made AddBookInfo() avoid adding a duplicate (BL-12890)
+                TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
 
-				if (_bookSelection != null)
+                if (_bookSelection != null)
 				{
 					Book.Book.SourceToReportForNextRename = Path.GetFileName(sourceBook.FolderPath);
 					_bookSelection.SelectBook(newBook, aboutToEdit: true);

@@ -306,12 +306,19 @@ namespace Bloom.Collection
 			_bookInfos.Insert(newIndex, info);
 			NotifyCollectionChanged();
 		}
+        private void AddBookInfoInternalNoSideEffects(BookInfo bookInfo)
+        {
+            // Note BL-12890 it's actually the norm, when we add a book, that the new book will already be there
+            // by the time we officially add it.
+            if (_bookInfos.FindIndex(i => i.Id == bookInfo.Id) < 0)
+                _bookInfos.Add(bookInfo);
+        }
 
-		public void AddBookInfo(BookInfo bookInfo)
-		{
-			_bookInfos.Add(bookInfo);
-			NotifyCollectionChanged();
-		}
+        public void AddBookInfo(BookInfo bookInfo)
+        {
+            AddBookInfoInternalNoSideEffects(bookInfo);
+            NotifyCollectionChanged();
+        }
 
 		/// <summary>
 		/// Insert a book into the appropriate place. If there is already a book with the same FolderPath, replace it.
@@ -331,13 +338,13 @@ namespace Bloom.Collection
 				if (compare > 0)
 				{
 					_bookInfos.Insert(i, bookInfo);
-					return;
-				}
-			}
-			_bookInfos.Add(bookInfo);
-		}
+                    return;
+                }
+            }
+            AddBookInfoInternalNoSideEffects(bookInfo);
+        }
 
-		private bool BackupFileExists(string folderPath)
+        private bool BackupFileExists(string folderPath)
 		{
 			var bakFiles = Directory.GetFiles(folderPath, BookStorage.BackupFilename);
 			return bakFiles.Length == 1 && RobustFile.Exists(bakFiles[0]);
