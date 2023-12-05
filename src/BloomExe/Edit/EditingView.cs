@@ -1168,7 +1168,7 @@ namespace Bloom.Edit
 					"Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: ");
 				msg = String.Format(msgFmt, path) + "<br/><br/>" + ex.Message;
 				var help = LocalizationManager.GetString("Common.Help", "Help");
-				msg = msg + $"<br/><br/><a href='https://docs.bloomlibrary.org/troubleshooting-file-access'>{help}</a>";
+				msg = msg + $"<br/><br/><a href='https://docs.bloomlibrary.org/image-import-failure'>{help}</a>";
 			}
 			ErrorReport.NotifyUserOfProblem(msg, ex, new NotifyUserOfProblemSettings(AllowSendReport.Disallow), new ShowAlwaysPolicy());
 		}
