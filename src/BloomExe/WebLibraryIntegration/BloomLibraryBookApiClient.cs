@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
@@ -45,7 +45,82 @@ namespace Bloom.WebLibraryIntegration
   ResponseStatus: {response.ResponseStatus}
   StatusDescription: {response.StatusDescription}
   ErrorMessage: {response.ErrorMessage}
-  ErrorException: {response.ErrorException}");
+  ErrorException: {response.ErrorException}
+  Headers:{response.Headers}");
+		}
+
+		public dynamic CallLongRunningAction(RestRequest request, Action<IRestResponse> handleError)
+		{
+			// Make the initial call. If all goes well, we get an Accepted (202) response with a URL to poll.
+			var response = AzureRestClient.Execute(request);
+			if (response.StatusCode != HttpStatusCode.Accepted)
+			{
+				handleError?.Invoke(response);
+				return null;
+			}
+
+			var operationLocation = response.Headers.FirstOrDefault(h => h.Name == "Operation-Location");
+			if (operationLocation == null)
+			{
+				handleError?.Invoke(response);
+				return null;
+			}
+
+			// Poll the status URL until we get a terminal status
+			string status = null;
+			dynamic result = null;
+			var statusRequest = new RestRequest(operationLocation.Value.ToString(), Method.GET);
+			while (!IsStatusTerminal(status))
+			{				
+				response = AzureRestClient.Execute(statusRequest);
+				if (response.StatusCode != HttpStatusCode.OK)
+				{
+					handleError?.Invoke(response);
+					break;
+				}
+
+				try
+				{
+					dynamic responseContent = JObject.Parse(response.Content);
+					status = responseContent.status;
+					result = responseContent.result;
+				}
+				catch
+				{
+					handleError?.Invoke(response);
+					break;
+				}
+
+				if (status == "Succeeded")
+					return result;
+
+				else if (status == "Failed" || status == "Cancelled")
+				{
+					handleError?.Invoke(response);
+					break;
+				}
+
+				int retryMilliseconds = 1000;
+				try
+				{
+					var retryAfter = response.Headers.FirstOrDefault(h => h.Name == "Retry-After");
+					if (retryAfter != null)
+						retryMilliseconds = int.Parse(retryAfter.Value.ToString()) * 1000;
+				}
+				catch {
+					// Just use the default.
+				}
+
+				Thread.Sleep(retryMilliseconds);
+			}
+
+			return null;
+		}
+
+		private bool IsStatusTerminal(string status)
+		{
+			// See https://github.com/microsoft/api-guidelines/blob/vNext/azure/ConsiderationsForServiceDesign.md#long-running-operations
+			return new[] { "Succeeded", "Failed", "Canceled" }.Contains(status);
 		}
 
 		// This calls an azure function which does the following:
@@ -62,20 +137,17 @@ namespace Bloom.WebLibraryIntegration
 			if (!LoggedIn)
 				throw new ApplicationException("Must be logged in to upload a book");
 
-			var request = MakePostRequest("upload-start", 10); // 10-minute timeout; this does a lot of work on the server
+			var request = MakePostRequest("upload-start");
 
 			if (!string.IsNullOrEmpty(existingBookObjectId))
 				request.AddQueryParameter("existing-book-object-id", existingBookObjectId);
 
-			var response = AzureRestClient.Execute(request);
-
-			if (response.StatusCode != HttpStatusCode.OK)
+			var result = CallLongRunningAction(request, handleError: (response) =>
 			{
 				LogApiError("upload-start", response);
 				throw new ApplicationException("Unable to initiate book upload on the server.");
-			}
+			});
 
-			dynamic result = JObject.Parse(response.Content);
 			return (
 				result["transaction-id"],
 				BloomS3Client.GetStorageKeyOfBookFolderParentFromUrl((string)result.url),
@@ -100,19 +172,17 @@ namespace Bloom.WebLibraryIntegration
 			if (!LoggedIn)
 				throw new ApplicationException("Must be logged in to upload a book");
 
-			var request = MakePostRequest("upload-finish", 10); // 10-minute timeout; this does a lot of work on the server
+			var request = MakePostRequest("upload-finish");
 
 			request.AddQueryParameter("transaction-id", transactionId);
 
 			request.AddJsonBody(metadataJson);
 
-			var response = AzureRestClient.Execute(request);
-
-			if (response.StatusCode != HttpStatusCode.OK)
+			CallLongRunningAction(request, handleError: (response) =>
 			{
 				LogApiError("upload-finish", response);
 				throw new ApplicationException("Unable to finalize book upload on the server.");
-			}
+			});
 		}
 
 		protected RestClient AzureRestClient
@@ -132,14 +202,9 @@ namespace Bloom.WebLibraryIntegration
 			return MakeRequest(action, Method.GET);
 		}
 
-		private RestRequest MakePostRequest(string action, int timeoutInMinutes = 0)
+		private RestRequest MakePostRequest(string action)
 		{
-			var request = MakeRequest(action, Method.POST);
-
-			if (timeoutInMinutes > 0)
-				request.Timeout = 1000 * 60 * timeoutInMinutes;
-
-			return request;
+			return MakeRequest(action, Method.POST);
 		}
 
 		private RestRequest MakeRequest(string action, Method requestType)
