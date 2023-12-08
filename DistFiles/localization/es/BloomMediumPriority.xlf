@@ -349,7 +349,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.Title" sil:dynamic="true">
         <source xml:lang="en">Book Settings</source>
-        <target xml:lang="es-ES" state="needs-translation">Book Settings</target>
+        <target xml:lang="es-ES" state="translated">Configuración del libro</target>
         <note>BookSettings.Title</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
