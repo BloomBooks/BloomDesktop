@@ -12,27 +12,29 @@ using SIL.IO;
 
 namespace BloomTests.Collection
 {
-	internal class CollectionFileFilterTests
-	{
+    internal class CollectionFileFilterTests
+    {
+        private TemporaryFolder _collectionFolder;
+        private string _someBookFolderPath;
+        private string _someBookPath;
+        private BookFileFilter _someBookFilter;
+        private string _otherBookFolderPath;
+        private string _otherBookPath;
+        private BookFileFilter _otherBookFilter;
+        private CollectionFileFilter _filter;
 
-
-		private TemporaryFolder _collectionFolder;
-		private string _someBookFolderPath;
-		private string _someBookPath;
-		private BookFileFilter _someBookFilter;
-		private string _otherBookFolderPath;
-		private string _otherBookPath;
-		private BookFileFilter _otherBookFilter;
-		private CollectionFileFilter _filter;
-
-		[OneTimeSetUp]
-		public void OneTimeSetUp()
-		{
-			_collectionFolder = new TemporaryFolder("Collection File Filter");
-			_someBookFolderPath = Path.Combine(_collectionFolder.FolderPath, "SomeBook");
-			Directory.CreateDirectory(_someBookFolderPath);
-			_someBookPath = Path.Combine(_someBookFolderPath, Path.GetFileName(_someBookFolderPath) + ".htm");
-			var normalHtmlContent = $@"<html><head></head><body>
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _collectionFolder = new TemporaryFolder("Collection File Filter");
+            _someBookFolderPath = Path.Combine(_collectionFolder.FolderPath, "SomeBook");
+            Directory.CreateDirectory(_someBookFolderPath);
+            _someBookPath = Path.Combine(
+                _someBookFolderPath,
+                Path.GetFileName(_someBookFolderPath) + ".htm"
+            );
+            var normalHtmlContent =
+                $@"<html><head></head><body>
 					<div class='bloom-page numberedPage' id='page1' data-page-number='1' data-backgroundaudio='Abcdefg.mp3'>
 						<div class='marginBox'>
 							<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
@@ -61,56 +63,80 @@ namespace BloomTests.Collection
 						</div>
 					</div>
 				</body></html>";
-			RobustFile.WriteAllText(_someBookPath, normalHtmlContent);
-			_someBookFilter = new BookFileFilter(_someBookFolderPath);
+            RobustFile.WriteAllText(_someBookPath, normalHtmlContent);
+            _someBookFilter = new BookFileFilter(_someBookFolderPath);
 
-			_otherBookFolderPath = Path.Combine(_collectionFolder.FolderPath, "otherBook");
-			Directory.CreateDirectory(_otherBookFolderPath);
-			_otherBookPath = Path.Combine(_otherBookFolderPath, Path.GetFileName(_otherBookFolderPath) + ".htm");
-			RobustFile.WriteAllText(_otherBookPath, normalHtmlContent);
-			_otherBookFilter = new BookFileFilter(_otherBookFolderPath);
+            _otherBookFolderPath = Path.Combine(_collectionFolder.FolderPath, "otherBook");
+            Directory.CreateDirectory(_otherBookFolderPath);
+            _otherBookPath = Path.Combine(
+                _otherBookFolderPath,
+                Path.GetFileName(_otherBookFolderPath) + ".htm"
+            );
+            RobustFile.WriteAllText(_otherBookPath, normalHtmlContent);
+            _otherBookFilter = new BookFileFilter(_otherBookFolderPath);
 
-			_filter = new CollectionFileFilter();
-			_filter.AddBookFilter(_someBookFilter);
-			_filter.AddBookFilter(_otherBookFilter);
-		}
+            _filter = new CollectionFileFilter();
+            _filter.AddBookFilter(_someBookFilter);
+            _filter.AddBookFilter(_otherBookFilter);
+        }
 
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
-		{
-			_collectionFolder.Dispose();
-		}
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _collectionFolder.Dispose();
+        }
 
-		[Test]
-		public void Filter_AcceptsBothHtmlFiles()
-		{
-			Assert.That(_filter.Filter(_someBookPath), Is.True);
-			Assert.That(_filter.Filter(_otherBookPath), Is.True);
-		}
+        [Test]
+        public void Filter_AcceptsBothHtmlFiles()
+        {
+            Assert.That(_filter.Filter(_someBookPath), Is.True);
+            Assert.That(_filter.Filter(_otherBookPath), Is.True);
+        }
 
-		[Test]
-		public void Filter_DoesNotAcceptUnwantedFiles()
-		{
-			Assert.That(_filter.Filter(Path.Combine(_someBookFolderPath, "rubbish.bad")), Is.False);
-		}
+        [Test]
+        public void Filter_DoesNotAcceptUnwantedFiles()
+        {
+            Assert.That(_filter.Filter(Path.Combine(_someBookFolderPath, "rubbish.bad")), Is.False);
+        }
 
-		[Test]
-		public void Filter_AcceptsRootCssFiles()
-		{
-			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "CustomCollectionStyles.css")), Is.True);
-			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "settingsCollectionStyles.css")), Is.True);
-			// Not sure we want this
-			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "SomeRandomStyles.css")), Is.True);
-		}
+        [Test]
+        public void Filter_AcceptsRootCssFiles()
+        {
+            Assert.That(
+                _filter.Filter(
+                    Path.Combine(_collectionFolder.FolderPath, "CustomCollectionStyles.css")
+                ),
+                Is.True
+            );
+            Assert.That(
+                _filter.Filter(
+                    Path.Combine(_collectionFolder.FolderPath, "settingsCollectionStyles.css")
+                ),
+                Is.True
+            );
+            // Not sure we want this
+            Assert.That(
+                _filter.Filter(Path.Combine(_collectionFolder.FolderPath, "SomeRandomStyles.css")),
+                Is.True
+            );
+        }
 
-		[Test]
-		public void Filter_RejectsOtherRootFiles()
-		{
-			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Rubbish.png")), Is.False);
-			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Nonsence.htm")), Is.False);
-			// Not absolutely sure we don't want this
-			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Blah.bloomCollection")), Is.False);
-		}
-	}
-	
+        [Test]
+        public void Filter_RejectsOtherRootFiles()
+        {
+            Assert.That(
+                _filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Rubbish.png")),
+                Is.False
+            );
+            Assert.That(
+                _filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Nonsence.htm")),
+                Is.False
+            );
+            // Not absolutely sure we don't want this
+            Assert.That(
+                _filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Blah.bloomCollection")),
+                Is.False
+            );
+        }
+    }
 }

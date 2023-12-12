@@ -10,14 +10,15 @@ using System.Linq;
 
 namespace BloomTests.Spreadsheet
 {
-	/// <summary>
-	/// This class tests a variety of things that can be checked in the process of
-	/// exporting a single document to our spreadsheet format.
-	/// </summary>
-	public class SpreadsheetTests
-	{
-		//Note the BloomDataDiv here is for testing and doesn't completely match the rest of the book
-		public const string kSimpleTwoPageBook = @"
+    /// <summary>
+    /// This class tests a variety of things that can be checked in the process of
+    /// exporting a single document to our spreadsheet format.
+    /// </summary>
+    public class SpreadsheetTests
+    {
+        //Note the BloomDataDiv here is for testing and doesn't completely match the rest of the book
+        public const string kSimpleTwoPageBook =
+            @"
 <html>
 	<head>
 	</head>
@@ -269,263 +270,336 @@ namespace BloomTests.Spreadsheet
 </html>
 ";
 
-		private SpreadsheetExporter _exporter;
-		// The tests are all written in terms of _sheet and _rows, the output
-		// of an export operation. But we create two sheets, one by export, and
-		// one by writing the first to file and reading it back. We want to apply
-		// the same tests to each. This is currently achieved by using the test
-		// case to select one pair (_sheetFromExport, _rowsFromExport)
-		// or (_sheetFromFile, _rowsFromFile) to set as _sheet and _rows.
-		private InternalSpreadsheet _sheet;
-		private List<ContentRow> _rows;
-		private List<ContentRow> _pageContentRows;
-		private InternalSpreadsheet _sheetFromExport;
-		private List<ContentRow> _rowsFromExport;
-		private InternalSpreadsheet _sheetFromFile;
-		private List<ContentRow> _rowsFromFile;
-		[OneTimeSetUp]
-		public void OneTimeSetUp()
-		{
-			var dom = new HtmlDom(kSimpleTwoPageBook, true);
-			var langCodesToLangNames = new Dictionary<string, string>();
-			langCodesToLangNames.Add("en", "English");
-			langCodesToLangNames.Add("fr", "French");
-			langCodesToLangNames.Add("de", "German");
-			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
-			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
-			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("fr")).Returns("French");
-			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("de")).Returns("German");
-			_exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
-			_sheetFromExport = _exporter.Export(dom, "fakeImagesFolderpath");
-			_rowsFromExport = _sheetFromExport.ContentRows.ToList();
-			using (var tempFile = TempFile.WithExtension("xslx"))
-			{
-				_sheetFromExport.WriteToFile(tempFile.Path);
-				_sheetFromFile = InternalSpreadsheet.ReadFromFile(tempFile.Path);
-				_rowsFromFile = _sheetFromFile.ContentRows.ToList();
-			}
-		}
+        private SpreadsheetExporter _exporter;
 
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
-		{
+        // The tests are all written in terms of _sheet and _rows, the output
+        // of an export operation. But we create two sheets, one by export, and
+        // one by writing the first to file and reading it back. We want to apply
+        // the same tests to each. This is currently achieved by using the test
+        // case to select one pair (_sheetFromExport, _rowsFromExport)
+        // or (_sheetFromFile, _rowsFromFile) to set as _sheet and _rows.
+        private InternalSpreadsheet _sheet;
+        private List<ContentRow> _rows;
+        private List<ContentRow> _pageContentRows;
+        private InternalSpreadsheet _sheetFromExport;
+        private List<ContentRow> _rowsFromExport;
+        private InternalSpreadsheet _sheetFromFile;
+        private List<ContentRow> _rowsFromFile;
 
-		}
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            var dom = new HtmlDom(kSimpleTwoPageBook, true);
+            var langCodesToLangNames = new Dictionary<string, string>();
+            langCodesToLangNames.Add("en", "English");
+            langCodesToLangNames.Add("fr", "French");
+            langCodesToLangNames.Add("de", "German");
+            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("en"))
+                .Returns("English");
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("fr"))
+                .Returns("French");
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("de"))
+                .Returns("German");
+            _exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+            _sheetFromExport = _exporter.Export(dom, "fakeImagesFolderpath");
+            _rowsFromExport = _sheetFromExport.ContentRows.ToList();
+            using (var tempFile = TempFile.WithExtension("xslx"))
+            {
+                _sheetFromExport.WriteToFile(tempFile.Path);
+                _sheetFromFile = InternalSpreadsheet.ReadFromFile(tempFile.Path);
+                _rowsFromFile = _sheetFromFile.ContentRows.ToList();
+            }
+        }
 
-		void SetupFor(string source)
-		{
-			switch (source)
-			{
-				case "fromExport":
-					_sheet = _sheetFromExport;
-					_rows = _rowsFromExport;
-					break;
-				case "fromFile":
-					_sheet = _sheetFromFile;
-					_rows = _rowsFromFile;
-					break;
-				default:
-					// Whatever's going on needs to fail
-					Assert.That(source, Is.Not.EqualTo(source));
-					break;
-			}
+        [OneTimeTearDown]
+        public void OneTimeTearDown() { }
 
-			_pageContentRows = _rows.Where(r => r.MetadataKey == InternalSpreadsheet.PageContentRowLabel).ToList();
-		}
+        void SetupFor(string source)
+        {
+            switch (source)
+            {
+                case "fromExport":
+                    _sheet = _sheetFromExport;
+                    _rows = _rowsFromExport;
+                    break;
+                case "fromFile":
+                    _sheet = _sheetFromFile;
+                    _rows = _rowsFromFile;
+                    break;
+                default:
+                    // Whatever's going on needs to fail
+                    Assert.That(source, Is.Not.EqualTo(source));
+                    break;
+            }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void HeaderHasExpectedNumRows(string source)
-		{
-			SetupFor(source);
-			Assert.That(_sheet.Header.RowCount, Is.EqualTo(2));
-		}
+            _pageContentRows = _rows
+                .Where(r => r.MetadataKey == InternalSpreadsheet.PageContentRowLabel)
+                .ToList();
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void HeaderHasExpectedNumCols(string source)
-		{
-			SetupFor(source);
-			// was originally 8, but our test data has some audio,
-			// which we're not really testing here, but it adds some columns.
-			// We also now add a video and widget column and page labels
-			Assert.That(_sheet.Header.ColumnCount, Is.EqualTo(17));
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void HeaderHasExpectedNumRows(string source)
+        {
+            SetupFor(source);
+            Assert.That(_sheet.Header.RowCount, Is.EqualTo(2));
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void HeaderHiddenRowsStillAtTop(string source)
-		{
-			SetupFor(source);
-			var firstRow = _sheet.AllRows().First();
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void HeaderHasExpectedNumCols(string source)
+        {
+            SetupFor(source);
+            // was originally 8, but our test data has some audio,
+            // which we're not really testing here, but it adds some columns.
+            // We also now add a video and widget column and page labels
+            Assert.That(_sheet.Header.ColumnCount, Is.EqualTo(17));
+        }
 
-			Assert.That(firstRow.Hidden, Is.True);
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void HeaderHiddenRowsStillAtTop(string source)
+        {
+            SetupFor(source);
+            var firstRow = _sheet.AllRows().First();
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void HeaderFirstRowContainsColumnIds(string source)
-		{
-			SetupFor(source);
-			var firstRow = _sheet.AllRows().First();
+            Assert.That(firstRow.Hidden, Is.True);
+        }
 
-			Assert.That(firstRow.GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.RowTypeColumnLabel));
-			Assert.That(firstRow.GetCell(5).Content, Is.EqualTo("[de]"));
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void HeaderFirstRowContainsColumnIds(string source)
+        {
+            SetupFor(source);
+            var firstRow = _sheet.AllRows().First();
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void HeaderSecondRowContainsColumnFriendlyNames(string source)
-		{
-			// Note: This test depends on the Mocked ILanguageDisplayNameResolver
-			SetupFor(source);
-			var secondRow = _sheet.AllRows().ToList()[1];
+            Assert.That(
+                firstRow.GetCell(0).Content,
+                Is.EqualTo(InternalSpreadsheet.RowTypeColumnLabel)
+            );
+            Assert.That(firstRow.GetCell(5).Content, Is.EqualTo("[de]"));
+        }
 
-			Assert.That(secondRow.GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.RowTypeColumnFriendlyName));
-			Assert.That(secondRow.GetCell(5).Content, Is.EqualTo("German"));
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void HeaderSecondRowContainsColumnFriendlyNames(string source)
+        {
+            // Note: This test depends on the Mocked ILanguageDisplayNameResolver
+            SetupFor(source);
+            var secondRow = _sheet.AllRows().ToList()[1];
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void SavesTextFromBlocks(string source)
-		{
-			SetupFor(source);
-			var enCol = _sheet.GetRequiredColumnForLang("en");
-			var frCol = _sheet.GetRequiredColumnForLang("fr");
-			var deCol = _sheet.GetRequiredColumnForLang("de");
-			// The first row has data from the second element in the document, because of tabindex.
-			Assert.That(_pageContentRows[0].GetCell(enCol).Text, Is.EqualTo("This elephant is running amok. Causing much damage."));
-			Assert.That(_pageContentRows[0].GetCell(frCol).Text, Is.EqualTo("This French elephant is running amok. Causing much damage."));
-			Assert.That(_pageContentRows[1].GetCell(enCol).Text, Is.EqualTo("Elephants should be handled with much care."));
+            Assert.That(
+                secondRow.GetCell(0).Content,
+                Is.EqualTo(InternalSpreadsheet.RowTypeColumnFriendlyName)
+            );
+            Assert.That(secondRow.GetCell(5).Content, Is.EqualTo("German"));
+        }
 
-			Assert.That(_pageContentRows[1].GetCell(frCol).Text, Is.EqualTo("French elephants should be handled with special care."));
-			Assert.That(_pageContentRows[1].GetCell(deCol).Text, Is.EqualTo("German elephants are quite orderly."));
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void SavesTextFromBlocks(string source)
+        {
+            SetupFor(source);
+            var enCol = _sheet.GetRequiredColumnForLang("en");
+            var frCol = _sheet.GetRequiredColumnForLang("fr");
+            var deCol = _sheet.GetRequiredColumnForLang("de");
+            // The first row has data from the second element in the document, because of tabindex.
+            Assert.That(
+                _pageContentRows[0].GetCell(enCol).Text,
+                Is.EqualTo("This elephant is running amok. Causing much damage.")
+            );
+            Assert.That(
+                _pageContentRows[0].GetCell(frCol).Text,
+                Is.EqualTo("This French elephant is running amok. Causing much damage.")
+            );
+            Assert.That(
+                _pageContentRows[1].GetCell(enCol).Text,
+                Is.EqualTo("Elephants should be handled with much care.")
+            );
 
-			Assert.That(_pageContentRows[2].GetCell(enCol).Text, Is.EqualTo("Riding on elephants can be risky."));
-			Assert.That(_pageContentRows[2].GetCell(frCol).Text, Is.EqualTo("Riding on French elephants can be more risky."));
-			Assert.That(_pageContentRows[2].GetCell(deCol).Text, Is.EqualTo("Riding on German elephants can be less risky."));
+            Assert.That(
+                _pageContentRows[1].GetCell(frCol).Text,
+                Is.EqualTo("French elephants should be handled with special care.")
+            );
+            Assert.That(
+                _pageContentRows[1].GetCell(deCol).Text,
+                Is.EqualTo("German elephants are quite orderly.")
+            );
 
-		}
+            Assert.That(
+                _pageContentRows[2].GetCell(enCol).Text,
+                Is.EqualTo("Riding on elephants can be risky.")
+            );
+            Assert.That(
+                _pageContentRows[2].GetCell(frCol).Text,
+                Is.EqualTo("Riding on French elephants can be more risky.")
+            );
+            Assert.That(
+                _pageContentRows[2].GetCell(deCol).Text,
+                Is.EqualTo("Riding on German elephants can be less risky.")
+            );
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void SavesLangData(string source)
-		{
-			SetupFor(source);
-			Assert.That(_sheet.LangCount, Is.EqualTo(4)); //en, fr, de, and *
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void SavesLangData(string source)
+        {
+            SetupFor(source);
+            Assert.That(_sheet.LangCount, Is.EqualTo(4)); //en, fr, de, and *
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void AddsRowLabels(string source)
-		{
-			SetupFor(source);
-			var pageNumIndex = _sheet.GetColumnForTag(InternalSpreadsheet.PageNumberColumnLabel);
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void AddsRowLabels(string source)
+        {
+            SetupFor(source);
+            var pageNumIndex = _sheet.GetColumnForTag(InternalSpreadsheet.PageNumberColumnLabel);
 
-			Assert.That(_pageContentRows[0].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
-			Assert.That(_pageContentRows[1].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
-			Assert.That(_pageContentRows[2].GetCell(pageNumIndex).Content, Is.EqualTo("2"));
-			Assert.That(_pageContentRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
-			Assert.That(_pageContentRows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
-			Assert.That(_pageContentRows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
-		}
+            Assert.That(_pageContentRows[0].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
+            Assert.That(_pageContentRows[1].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
+            Assert.That(_pageContentRows[2].GetCell(pageNumIndex).Content, Is.EqualTo("2"));
+            Assert.That(
+                _pageContentRows[0].GetCell(0).Content,
+                Is.EqualTo(InternalSpreadsheet.PageContentRowLabel)
+            );
+            Assert.That(
+                _pageContentRows[1].GetCell(0).Content,
+                Is.EqualTo(InternalSpreadsheet.PageContentRowLabel)
+            );
+            Assert.That(
+                _pageContentRows[2].GetCell(0).Content,
+                Is.EqualTo(InternalSpreadsheet.PageContentRowLabel)
+            );
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void AddsPageTypes(string source)
-		{
-			SetupFor(source);
-			var pageTypeIndex = _sheet.GetColumnForTag(InternalSpreadsheet.PageTypeColumnLabel);
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void AddsPageTypes(string source)
+        {
+            SetupFor(source);
+            var pageTypeIndex = _sheet.GetColumnForTag(InternalSpreadsheet.PageTypeColumnLabel);
 
-			Assert.That(_pageContentRows[0].GetCell(pageTypeIndex).Content, Is.EqualTo("Basic Text & Picture"));
-			Assert.That(_pageContentRows[1].GetCell(pageTypeIndex).Content, Is.EqualTo(""));
-			Assert.That(_pageContentRows[2].GetCell(pageTypeIndex).Content, Is.EqualTo("Basic Text & Picture"));
-			Assert.That(_pageContentRows[3].GetCell(pageTypeIndex).Content, Is.EqualTo("Big Text Diglot"));
-		}
+            Assert.That(
+                _pageContentRows[0].GetCell(pageTypeIndex).Content,
+                Is.EqualTo("Basic Text & Picture")
+            );
+            Assert.That(_pageContentRows[1].GetCell(pageTypeIndex).Content, Is.EqualTo(""));
+            Assert.That(
+                _pageContentRows[2].GetCell(pageTypeIndex).Content,
+                Is.EqualTo("Basic Text & Picture")
+            );
+            Assert.That(
+                _pageContentRows[3].GetCell(pageTypeIndex).Content,
+                Is.EqualTo("Big Text Diglot")
+            );
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void MakesVideoCell(string source)
-		{
-			SetupFor(source);
-			var videoIndex = _sheet.GetColumnForTag(InternalSpreadsheet.VideoSourceColumnLabel);
-			Assert.That(videoIndex, Is.GreaterThan(0));
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void MakesVideoCell(string source)
+        {
+            SetupFor(source);
+            var videoIndex = _sheet.GetColumnForTag(InternalSpreadsheet.VideoSourceColumnLabel);
+            Assert.That(videoIndex, Is.GreaterThan(0));
 
-			Assert.That(_pageContentRows[3].GetCell(videoIndex).Content, Is.EqualTo("video/ac2e237a-140f-45e4-b3e8-257dd12f4793.mp4"));
-		}
+            Assert.That(
+                _pageContentRows[3].GetCell(videoIndex).Content,
+                Is.EqualTo("video/ac2e237a-140f-45e4-b3e8-257dd12f4793.mp4")
+            );
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void MakesWidgetCell(string source)
-		{
-			SetupFor(source);
-			var widgetIndex = _sheet.GetColumnForTag(InternalSpreadsheet.WidgetSourceColumnLabel);
-			Assert.That(widgetIndex, Is.GreaterThan(0));
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void MakesWidgetCell(string source)
+        {
+            SetupFor(source);
+            var widgetIndex = _sheet.GetColumnForTag(InternalSpreadsheet.WidgetSourceColumnLabel);
+            Assert.That(widgetIndex, Is.GreaterThan(0));
 
-			Assert.That(_pageContentRows[3].GetCell(widgetIndex).Content, Is.EqualTo("activities/balldragTouch/index.html"));
-		}
+            Assert.That(
+                _pageContentRows[3].GetCell(widgetIndex).Content,
+                Is.EqualTo("activities/balldragTouch/index.html")
+            );
+        }
 
-		[Test]
-		public void ColumnsNotLanguagesNotCounted()
-		{
-			// Setup
-			var sheet = new InternalSpreadsheet();
-			var offset = sheet.StandardLeadingColumns.Length;
-			sheet.AddColumnForLang("en", "English");
-			sheet.AddColumnForLang("es", "Español");
+        [Test]
+        public void ColumnsNotLanguagesNotCounted()
+        {
+            // Setup
+            var sheet = new InternalSpreadsheet();
+            var offset = sheet.StandardLeadingColumns.Length;
+            sheet.AddColumnForLang("en", "English");
+            sheet.AddColumnForLang("es", "Español");
 
-			// System under test
-			var langs = sheet.Languages;
+            // System under test
+            var langs = sheet.Languages;
 
-			// Verification
-			Assert.That(langs, Has.Count.EqualTo(2));
-			Assert.That(langs, Has.Member("en"));
-			Assert.That(langs, Has.Member("es"));
-		}
+            // Verification
+            Assert.That(langs, Has.Count.EqualTo(2));
+            Assert.That(langs, Has.Member("en"));
+            Assert.That(langs, Has.Member("es"));
+        }
 
-		[Test]
-		public void SpreadsheetIOWriteSpreadsheet_RetainMarkupOptionRetainsMarkup()
-		{
-			using (var tempFile = TempFile.WithExtension("xslx"))
-			{
-				SpreadsheetIO.WriteSpreadsheet(_sheetFromExport, tempFile.Path, retainMarkup:true);
-				var info = new FileInfo(tempFile.Path);
-				using (var package = new ExcelPackage(info))
-				{
-					var worksheet = package.Workbook.Worksheets[0];
-					int c = _sheetFromExport.GetRequiredColumnForLang("en");
-					var rowCount = worksheet.Dimension.Rows;
-					//The first TextGroup row should contain the marked-up string we are looking for
-					for (int r = 0; true; r++)
-					{
-						Assert.That(r, Is.LessThan(rowCount), "did not find expected TextGroup row");
-						ExcelRange rowTypeCell = worksheet.Cells[r + 1, 1];
-						if (rowTypeCell.Value.ToString().Equals(InternalSpreadsheet.PageContentRowLabel))
-						{
-							string markedUp = @"<p><span id=""e4bc05e5-4d65-4016-9bf3-ab44a0df3ea2"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">This elephant is running amok.</span> <span id=""i2ba966b6-4212-4821-9268-04e820e95f50"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">Causing much damage.</span></p>";
-							ExcelRange textCell = worksheet.Cells[r + 1, c + 1];
-							Assert.That(textCell.Value.ToString().Contains(markedUp));
-							break;
-						}
-					}
-				}
-			}
-		}
+        [Test]
+        public void SpreadsheetIOWriteSpreadsheet_RetainMarkupOptionRetainsMarkup()
+        {
+            using (var tempFile = TempFile.WithExtension("xslx"))
+            {
+                SpreadsheetIO.WriteSpreadsheet(_sheetFromExport, tempFile.Path, retainMarkup: true);
+                var info = new FileInfo(tempFile.Path);
+                using (var package = new ExcelPackage(info))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    int c = _sheetFromExport.GetRequiredColumnForLang("en");
+                    var rowCount = worksheet.Dimension.Rows;
+                    //The first TextGroup row should contain the marked-up string we are looking for
+                    for (int r = 0; true; r++)
+                    {
+                        Assert.That(
+                            r,
+                            Is.LessThan(rowCount),
+                            "did not find expected TextGroup row"
+                        );
+                        ExcelRange rowTypeCell = worksheet.Cells[r + 1, 1];
+                        if (
+                            rowTypeCell.Value
+                                .ToString()
+                                .Equals(InternalSpreadsheet.PageContentRowLabel)
+                        )
+                        {
+                            string markedUp =
+                                @"<p><span id=""e4bc05e5-4d65-4016-9bf3-ab44a0df3ea2"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">This elephant is running amok.</span> <span id=""i2ba966b6-4212-4821-9268-04e820e95f50"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">Causing much damage.</span></p>";
+                            ExcelRange textCell = worksheet.Cells[r + 1, c + 1];
+                            Assert.That(textCell.Value.ToString().Contains(markedUp));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
-		[Test]
-		public void SpreadsheetIOWriteSpreadsheet_HeaderFriendlyNameForImageNotOverwritten()
-		{
-			using (var tempFile = TempFile.WithExtension("xslx"))
-			{
-				SpreadsheetIO.WriteSpreadsheet(_sheetFromExport, tempFile.Path, retainMarkup:false);
-				var info = new FileInfo(tempFile.Path);
-				using (var package = new ExcelPackage(info))
-				{
-					var worksheet = package.Workbook.Worksheets[0];
-					var cell = worksheet.Cells[2, 4];	// Note: This uses 1-based index
-					Assert.That(cell.Value.ToString(), Is.EqualTo("Image"));
-				}
-			}
-		}
-	}
+        [Test]
+        public void SpreadsheetIOWriteSpreadsheet_HeaderFriendlyNameForImageNotOverwritten()
+        {
+            using (var tempFile = TempFile.WithExtension("xslx"))
+            {
+                SpreadsheetIO.WriteSpreadsheet(
+                    _sheetFromExport,
+                    tempFile.Path,
+                    retainMarkup: false
+                );
+                var info = new FileInfo(tempFile.Path);
+                using (var package = new ExcelPackage(info))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var cell = worksheet.Cells[2, 4]; // Note: This uses 1-based index
+                    Assert.That(cell.Value.ToString(), Is.EqualTo("Image"));
+                }
+            }
+        }
+    }
 }

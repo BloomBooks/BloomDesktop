@@ -5,13 +5,13 @@ using SIL.Xml;
 
 namespace BloomTests.Book
 {
-	[TestFixture]
-	public sealed class PageTests
-	{
-
-		private XmlDocument GetDom()
-		{
-			var content = @"<?xml version='1.0' encoding='utf-8' ?>
+    [TestFixture]
+    public sealed class PageTests
+    {
+        private XmlDocument GetDom()
+        {
+            var content =
+                @"<?xml version='1.0' encoding='utf-8' ?>
 				<html>
 					<body class='a5Portrait'>
 					<div class='bloom-page' testid='pageWithJustTokPisin'>
@@ -33,10 +33,9 @@ namespace BloomTests.Book
 				</body>
 				</html>
 		";
-			var dom = new XmlDocument();
-			dom.LoadXml(content);
-			return dom;
-		}
-	}
-
+            var dom = new XmlDocument();
+            dom.LoadXml(content);
+            return dom;
+        }
+    }
 }

@@ -5,67 +5,72 @@ using System.Windows.Forms;
 
 namespace Bloom.Edit
 {
-	public partial class ConfirmRemovePageDialog : Form
-	{
-		public string LabelForThingBeingDeleted { get; set; }
+    public partial class ConfirmRemovePageDialog : Form
+    {
+        public string LabelForThingBeingDeleted { get; set; }
 
-		public ConfirmRemovePageDialog()
-		{
-			InitializeComponent();
-			_messageLabel.Font = SystemFonts.MessageBoxFont;
-		}
+        public ConfirmRemovePageDialog()
+        {
+            InitializeComponent();
+            _messageLabel.Font = SystemFonts.MessageBoxFont;
+        }
 
-		public ConfirmRemovePageDialog(string labelForThingBeingDeleted)
-			: this()
-		{
-			LabelForThingBeingDeleted = labelForThingBeingDeleted.Trim();
-			_messageLabel.Text = string.Format(_messageLabel.Text, LabelForThingBeingDeleted);
+        public ConfirmRemovePageDialog(string labelForThingBeingDeleted)
+            : this()
+        {
+            LabelForThingBeingDeleted = labelForThingBeingDeleted.Trim();
+            _messageLabel.Text = string.Format(_messageLabel.Text, LabelForThingBeingDeleted);
 
-			// Sometimes, setting the text in the previous line will force the table layout control
-			// to resize itself accordingly, which will fire its SizeChanged event. However,
-			// sometimes the text is not long enough to force the table layout to be resized,
-			// therefore, we need to call it manually, just to be sure the form gets sized correctly.
-			HandleTableLayoutSizeChanged(null, null);
-		}
+            // Sometimes, setting the text in the previous line will force the table layout control
+            // to resize itself accordingly, which will fire its SizeChanged event. However,
+            // sometimes the text is not long enough to force the table layout to be resized,
+            // therefore, we need to call it manually, just to be sure the form gets sized correctly.
+            HandleTableLayoutSizeChanged(null, null);
+        }
 
-		private void HandleTableLayoutSizeChanged(object sender, EventArgs e)
-		{
-			if (!IsHandleCreated)
-				CreateHandle();
+        private void HandleTableLayoutSizeChanged(object sender, EventArgs e)
+        {
+            if (!IsHandleCreated)
+                CreateHandle();
 
-			var scn = Screen.FromControl(this);
-			int padAbove = tableLayout.Top;
-			int padBetween = 17;        // empirically determined from initial layout in .Designer.cs file
-			int padBelow = Math.Max(15, ClientSize.Height - cancelBtn.Bottom);
-			var desiredHeight = padAbove + tableLayout.Height + padBetween + cancelBtn.Height + padBelow +
-				(Height - ClientSize.Height);        // overhead of dialog window
-			Height = Math.Min(desiredHeight, scn.WorkingArea.Height - 20);
-		}
+            var scn = Screen.FromControl(this);
+            int padAbove = tableLayout.Top;
+            int padBetween = 17; // empirically determined from initial layout in .Designer.cs file
+            int padBelow = Math.Max(15, ClientSize.Height - cancelBtn.Bottom);
+            var desiredHeight =
+                padAbove
+                + tableLayout.Height
+                + padBetween
+                + cancelBtn.Height
+                + padBelow
+                + (Height - ClientSize.Height); // overhead of dialog window
+            Height = Math.Min(desiredHeight, scn.WorkingArea.Height - 20);
+        }
 
-		protected override void OnBackColorChanged(EventArgs e)
-		{
-			base.OnBackColorChanged(e);
-			_messageLabel.BackColor = BackColor;
-		}
+        protected override void OnBackColorChanged(EventArgs e)
+        {
+            base.OnBackColorChanged(e);
+            _messageLabel.BackColor = BackColor;
+        }
 
-		private void deleteBtn_Click(object sender, EventArgs e)
-		{
-			DialogResult = DialogResult.OK;
-			Close();
-		}
+        private void deleteBtn_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.OK;
+            Close();
+        }
 
-		private void cancelBtn_Click(object sender, EventArgs e)
-		{
-			DialogResult = DialogResult.Cancel;
-			Close();
-		}
+        private void cancelBtn_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
 
-		public static bool Confirm()
-		{
-			using (var dlg = new ConfirmRemovePageDialog())
-			{
-				return DialogResult.OK == dlg.ShowDialog();
-			}
-		}
-	}
+        public static bool Confirm()
+        {
+            using (var dlg = new ConfirmRemovePageDialog())
+            {
+                return DialogResult.OK == dlg.ShowDialog();
+            }
+        }
+    }
 }

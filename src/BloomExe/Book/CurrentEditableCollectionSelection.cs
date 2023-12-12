@@ -3,38 +3,35 @@ using Bloom.Collection;
 
 namespace Bloom.Book
 {
-	public class CurrentEditableCollectionSelection
-	{
-		private BookCollection _currentSelection;
-		public event EventHandler SelectionChanged;
+    public class CurrentEditableCollectionSelection
+    {
+        private BookCollection _currentSelection;
+        public event EventHandler SelectionChanged;
 
+        public void SelectCollection(BookCollection collection)
+        {
+            if (_currentSelection == collection)
+                return;
 
-		public void SelectCollection(BookCollection collection)
-		{
-			if (_currentSelection == collection)
-				return;
+            //enhance... send out cancellable pre-change event
 
-			//enhance... send out cancellable pre-change event
+            _currentSelection = collection;
 
-			_currentSelection = collection;
+            InvokeSelectionChanged();
+        }
 
-			InvokeSelectionChanged();
-		}
+        public BookCollection CurrentSelection
+        {
+            get { return _currentSelection; }
+        }
 
-
-
-		public BookCollection CurrentSelection
-		{
-			get { return _currentSelection; }
-		}
-
-		private void InvokeSelectionChanged()
-		{
-			EventHandler handler = SelectionChanged;
-			if (handler != null)
-			{
-				handler(this, null);
-			}
-		}
-	}
+        private void InvokeSelectionChanged()
+        {
+            EventHandler handler = SelectionChanged;
+            if (handler != null)
+            {
+                handler(this, null);
+            }
+        }
+    }
 }

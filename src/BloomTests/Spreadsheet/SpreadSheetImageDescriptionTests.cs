@@ -15,16 +15,17 @@ using SIL.Xml;
 
 namespace BloomTests.Spreadsheet
 {
-	internal class SpreadSheetImageDescriptionTests
-	{
-		static SpreadSheetImageDescriptionTests()
-		{
-			// The package requires us to do this as a way of acknowledging that we
-			// accept the terms of the NonCommercial license.
-			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-		}
+    internal class SpreadSheetImageDescriptionTests
+    {
+        static SpreadSheetImageDescriptionTests()
+        {
+            // The package requires us to do this as a way of acknowledging that we
+            // accept the terms of the NonCommercial license.
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        }
 
-		private const string roundtripTestBook = @"
+        private const string roundtripTestBook =
+            @"
 <!DOCTYPE html>
 
 <html>
@@ -100,91 +101,123 @@ namespace BloomTests.Spreadsheet
 </html>
 ";
 
-		private HtmlDom _destDom;
-		private InternalSpreadsheet _sheetFromExport;
-		private List<XmlElement> _contentPages;
+        private HtmlDom _destDom;
+        private InternalSpreadsheet _sheetFromExport;
+        private List<XmlElement> _contentPages;
 
-		[OneTimeSetUp]
-		public async Task OneTimeSetUp()
-		{
-			var origDom = new HtmlDom(roundtripTestBook, true);
-			// An empty book to import into.
-			var target = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
-				SpreadsheetImageAndTextImportTests.coverPage +
-				SpreadsheetImageAndTextImportTests.PageWithImageAndText(1, 1, 1, imgDescription:
-					@"<div class=""bloom-translationGroup bloom-imageDescription""><div class =""bloom-editable"" lang=""z""></div></div>"));
+        [OneTimeSetUp]
+        public async Task OneTimeSetUp()
+        {
+            var origDom = new HtmlDom(roundtripTestBook, true);
+            // An empty book to import into.
+            var target = string.Format(
+                SpreadsheetImageAndTextImportTests.templateDom,
+                SpreadsheetImageAndTextImportTests.coverPage
+                    + SpreadsheetImageAndTextImportTests.PageWithImageAndText(
+                        1,
+                        1,
+                        1,
+                        imgDescription: @"<div class=""bloom-translationGroup bloom-imageDescription""><div class =""bloom-editable"" lang=""z""></div></div>"
+                    )
+            );
 
-			_destDom = new HtmlDom(target, true);
+            _destDom = new HtmlDom(target, true);
 
+            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("en"))
+                .Returns("English");
+            var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+            exporter.Params = new SpreadsheetExportParams();
+            _sheetFromExport = exporter.Export(origDom, "fakeImagesFolderpath");
+            using (var tempFile = TempFile.WithExtension("xslx"))
+            {
+                _sheetFromExport.WriteToFile(tempFile.Path);
+                var sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
+                var importer = new TestSpreadsheetImporter(null, _destDom);
+                await importer.ImportAsync(sheet);
+            }
+            _contentPages = _destDom
+                .SafeSelectNodes("//div[contains(@class, 'numberedPage')]")
+                .Cast<XmlElement>()
+                .ToList();
+        }
 
-			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
-			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
-			var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
-			exporter.Params = new SpreadsheetExportParams();
-			_sheetFromExport = exporter.Export(origDom, "fakeImagesFolderpath");
-			using (var tempFile = TempFile.WithExtension("xslx"))
-			{
-				_sheetFromExport.WriteToFile(tempFile.Path);
-				var sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
-				var importer = new TestSpreadsheetImporter(null, _destDom);
-				await importer.ImportAsync(sheet);
-			}
-			_contentPages = _destDom.SafeSelectNodes("//div[contains(@class, 'numberedPage')]").Cast<XmlElement>().ToList();
-		}
+        [OneTimeTearDown]
+        public void OneTimeTearDown() { }
 
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
-		{
+        [Test]
+        public void CoverImageDescriptionSurvived()
+        {
+            AssertThatNodeContainsText(
+                _destDom.Body,
+                "//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']",
+                "An airplane on a lake"
+            );
+        }
 
-		}
+        private void AssertThatNodeContainsText(XmlElement source, string xPath, string text)
+        {
+            IEnumerable<XmlNode> nodeList = source.SafeSelectNodes(xPath).Cast<XmlNode>().ToList();
+            Assert.That(
+                nodeList,
+                Has.Count.GreaterThan(0),
+                "Should have found matches for " + xPath
+            );
+            Assert.That(
+                Enumerable.Any(nodeList, x => x.InnerText.Contains(text)),
+                Is.True,
+                "Some matching node should have contained " + text
+            );
+        }
 
-		[Test]
-		public void CoverImageDescriptionSurvived()
-		{
-			AssertThatNodeContainsText(_destDom.Body,"//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']", "An airplane on a lake");
-		}
+        // I would like to do this, but it requires a lot of extra setup to make a real Book object
+        // so the import will run BringBookUpToDate. I think we have adequate testing elsewhere that if
+        // coverImageDescription makes it into the data div it will also make it into the cover itself.
+        //[Test]
+        //public void CoverImageDescription_PutOnCover()
+        //{
+        //	AssertThatNodeContainsText(_coverPage, ".//div[@class='bloom-imageContainer']/div[contains(@class, 'bloom-imageDescription')]", "An airplane on a lake");
+        //}
 
-		private void AssertThatNodeContainsText(XmlElement source, string xPath, string text)
-		{
-			IEnumerable<XmlNode> nodeList = source.SafeSelectNodes(xPath).Cast<XmlNode>().ToList();
-			Assert.That(nodeList, Has.Count.GreaterThan(0), "Should have found matches for " + xPath);
-			Assert.That( Enumerable.Any(nodeList, x => x.InnerText.Contains(text)), Is.True, "Some matching node should have contained " + text);
-		}
+        [Test]
+        public void ImageDescription_PresentOnContentPage()
+        {
+            AssertThatNodeContainsText(
+                _contentPages[0],
+                ".//div[contains(@class, 'bloom-imageContainer')]/div[contains(@class, 'bloom-imageDescription')]",
+                "A fish jumping above a lake"
+            );
+        }
 
-		// I would like to do this, but it requires a lot of extra setup to make a real Book object
-		// so the import will run BringBookUpToDate. I think we have adequate testing elsewhere that if
-		// coverImageDescription makes it into the data div it will also make it into the cover itself.
-		//[Test]
-		//public void CoverImageDescription_PutOnCover()
-		//{
-		//	AssertThatNodeContainsText(_coverPage, ".//div[@class='bloom-imageContainer']/div[contains(@class, 'bloom-imageDescription')]", "An airplane on a lake");
-		//}
+        [Test]
+        public void ShouldNotDuplicateExistingImageDescription()
+        {
+            // The 'existing' page that we import onto already has an image description.
+            // The importer should reuse it, not add another.
+            AssertThatXmlIn
+                .Element(_contentPages[0])
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    ".//div[contains(@class, 'bloom-imageContainer')]/div[contains(@class, 'bloom-imageDescription')]",
+                    1
+                );
+        }
 
-		[Test]
-		public void ImageDescription_PresentOnContentPage()
-		{
-			AssertThatNodeContainsText(_contentPages[0], ".//div[contains(@class, 'bloom-imageContainer')]/div[contains(@class, 'bloom-imageDescription')]", "A fish jumping above a lake");
-		}
+        [Test]
+        public void ImageDescription_PresentOnNewPage()
+        {
+            // Since the second exported page just has an image, and the one page in the original target book
+            // is an image-and-picture, the importer will have to insert a page, and create the image description div.
+            AssertThatNodeContainsText(
+                _contentPages[1],
+                ".//div[contains(@class, 'bloom-imageContainer')]/div[contains(@class, 'bloom-imageDescription')]",
+                "Another image description"
+            );
+        }
 
-		[Test]
-		public void ShouldNotDuplicateExistingImageDescription()
-		{
-			// The 'existing' page that we import onto already has an image description.
-			// The importer should reuse it, not add another.
-			AssertThatXmlIn.Element(_contentPages[0]).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-imageContainer')]/div[contains(@class, 'bloom-imageDescription')]", 1);
-		}
-
-		[Test]
-		public void ImageDescription_PresentOnNewPage()
-		{
-			// Since the second exported page just has an image, and the one page in the original target book
-			// is an image-and-picture, the importer will have to insert a page, and create the image description div.
-			AssertThatNodeContainsText(_contentPages[1], ".//div[contains(@class, 'bloom-imageContainer')]/div[contains(@class, 'bloom-imageDescription')]", "Another image description");
-		}
-
-		// Review: what else is worth checking?
-		// We could possibly make a test case for audio in image descriptions, but the exact same code is used to output the contents
-		// of an image description as any other translation group that might have audio.
-		// We could do more detailed tests of the structure of the TG that is made. But, again, the same code is used and is tested elsewhere.
-	}
+        // Review: what else is worth checking?
+        // We could possibly make a test case for audio in image descriptions, but the exact same code is used to output the contents
+        // of an image description as any other translation group that might have audio.
+        // We could do more detailed tests of the structure of the TG that is made. But, again, the same code is used and is tested elsewhere.
+    }
 }

@@ -12,84 +12,101 @@ using System.Threading.Tasks;
 
 namespace BloomTests.Spreadsheet
 {
-	public class SpreadsheetImporterWithBookTests
-	{
-		private TemporaryFolder _testFolder;
-		private TemporaryFolder _bookFolder;
-		private SpreadsheetImporter _importer;
-		private HtmlDom _dom;
-		private XmlElement _resultElement;
+    public class SpreadsheetImporterWithBookTests
+    {
+        private TemporaryFolder _testFolder;
+        private TemporaryFolder _bookFolder;
+        private SpreadsheetImporter _importer;
+        private HtmlDom _dom;
+        private XmlElement _resultElement;
 
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
-		{
-			_dom = null;
-			_importer = null;
-			_testFolder?.Dispose();
-		}
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _dom = null;
+            _importer = null;
+            _testFolder?.Dispose();
+        }
 
-		[OneTimeSetUp]
-		public async Task OneTimeSetup()
-		{
-			_testFolder = new TemporaryFolder("SpreadsheetImporterWithBookTests");
-			// We need 2 layers of temp folder because BringBookUpToDate will change the name of the book
-			// folder to match an imported title.
-			_bookFolder = new TemporaryFolder(_testFolder, "Book");
-			var settings = new NewCollectionSettings();
-			settings.Language1.Tag = "en";
-			settings.Language1.SetName("English", false);
-			settings.SettingsFilePath = Path.Combine(_bookFolder.FolderPath, "dummy");
+        [OneTimeSetUp]
+        public async Task OneTimeSetup()
+        {
+            _testFolder = new TemporaryFolder("SpreadsheetImporterWithBookTests");
+            // We need 2 layers of temp folder because BringBookUpToDate will change the name of the book
+            // folder to match an imported title.
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
+            var settings = new NewCollectionSettings();
+            settings.Language1.Tag = "en";
+            settings.Language1.SetName("English", false);
+            settings.SettingsFilePath = Path.Combine(_bookFolder.FolderPath, "dummy");
 
-			var fileLocator = new BloomFileLocator(settings, new XMatterPackFinder(new string[] { }), ProjectContext.GetFactoryFileLocations(),
-				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
-			var bookFilePath = Path.Combine(_bookFolder.FolderPath, "testBook.htm");
-			if (File.Exists(bookFilePath)) // Shouldn't ever happen, but... just being careful.
-			{
-				RobustFile.Delete(bookFilePath);
-			}
-			_dom = SetupTestDom();
-			// Write out our test book
-			File.WriteAllText(bookFilePath, _dom.RawDom.OuterXml.ToString());
-			var storage = new BookStorage(_bookFolder.FolderPath, fileLocator, new BookRenamedEvent(), settings);
+            var fileLocator = new BloomFileLocator(
+                settings,
+                new XMatterPackFinder(new string[] { }),
+                ProjectContext.GetFactoryFileLocations(),
+                ProjectContext.GetFoundFileLocations(),
+                ProjectContext.GetAfterXMatterFileLocations()
+            );
+            var bookFilePath = Path.Combine(_bookFolder.FolderPath, "testBook.htm");
+            if (File.Exists(bookFilePath)) // Shouldn't ever happen, but... just being careful.
+            {
+                RobustFile.Delete(bookFilePath);
+            }
+            _dom = SetupTestDom();
+            // Write out our test book
+            File.WriteAllText(bookFilePath, _dom.RawDom.OuterXml.ToString());
+            var storage = new BookStorage(
+                _bookFolder.FolderPath,
+                fileLocator,
+                new BookRenamedEvent(),
+                settings
+            );
 
-			var book = new Bloom.Book.Book(new BookInfo(_bookFolder.FolderPath, true), storage, null,
-				settings, new Bloom.Edit.PageSelection(),
-				new PageListChangedEvent(), new BookRefreshEvent());
+            var book = new Bloom.Book.Book(
+                new BookInfo(_bookFolder.FolderPath, true),
+                storage,
+                null,
+                settings,
+                new Bloom.Edit.PageSelection(),
+                new PageListChangedEvent(),
+                new BookRefreshEvent()
+            );
 
-			// Create the regular production importer
-			_importer = new SpreadsheetImporter(null, book, _bookFolder.FolderPath);
+            // Create the regular production importer
+            _importer = new SpreadsheetImporter(null, book, _bookFolder.FolderPath);
 
-			// Set up the internal spreadsheet rows directly.
-			var ss = new InternalSpreadsheet();
-			var columnForEn = ss.AddColumnForLang("en", "English");
-			var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+            // Set up the internal spreadsheet rows directly.
+            var ss = new InternalSpreadsheet();
+            var columnForEn = ss.AddColumnForLang("en", "English");
+            var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
-			var newTitle = "My new book title";
-			var titleRow = new ContentRow(ss);
-			titleRow.AddCell(InternalSpreadsheet.BookTitleRowLabel);
-			titleRow.SetCell(columnForEn, newTitle);
+            var newTitle = "My new book title";
+            var titleRow = new ContentRow(ss);
+            titleRow.AddCell(InternalSpreadsheet.BookTitleRowLabel);
+            titleRow.SetCell(columnForEn, newTitle);
 
-			var coverImageRow = new ContentRow(ss);
-			coverImageRow.AddCell(InternalSpreadsheet.CoverImageRowLabel);
-			coverImageRow.SetCell(columnForImage, Path.Combine("images", "Othello 199.jpg"));
+            var coverImageRow = new ContentRow(ss);
+            coverImageRow.AddCell(InternalSpreadsheet.CoverImageRowLabel);
+            coverImageRow.SetCell(columnForImage, Path.Combine("images", "Othello 199.jpg"));
 
-			var justTextRow = new ContentRow(ss);
-			justTextRow.AddCell(InternalSpreadsheet.PageContentRowLabel);
-			justTextRow.SetCell(columnForEn, "this is page 1");
+            var justTextRow = new ContentRow(ss);
+            justTextRow.AddCell(InternalSpreadsheet.PageContentRowLabel);
+            justTextRow.SetCell(columnForEn, "this is page 1");
 
-			await _importer.ImportAsync(ss);
+            await _importer.ImportAsync(ss);
 
-			_resultElement = ReadResultingBookToXml(newTitle);
-		}
+            _resultElement = ReadResultingBookToXml(newTitle);
+        }
 
-		private HtmlDom SetupTestDom()
-		{
-			// Create an HtmlDom for a template to import into
-			var xml = string.Format(templateDom, coverPage + pageWithJustText);
-			return new HtmlDom(xml, true);
-		}
+        private HtmlDom SetupTestDom()
+        {
+            // Create an HtmlDom for a template to import into
+            var xml = string.Format(templateDom, coverPage + pageWithJustText);
+            return new HtmlDom(xml, true);
+        }
 
-		public static string templateDom = @"
+        public static string templateDom =
+            @"
 <!DOCTYPE html>
 
 <html>
@@ -120,8 +137,8 @@ namespace BloomTests.Spreadsheet
 </html>
 ";
 
-		public static string coverPage =
-			@"<div class=""bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover A5Portrait side-right"" data-page=""required singleton"" data-export=""front-matter-cover"" id=""bc85989e-9503-4f4e-b12f-f83a4002937f"">
+        public static string coverPage =
+            @"<div class=""bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover A5Portrait side-right"" data-page=""required singleton"" data-export=""front-matter-cover"" id=""bc85989e-9503-4f4e-b12f-f83a4002937f"">
         <div class=""pageLabel"" lang=""en"">
             Front Cover
         </div>
@@ -170,8 +187,8 @@ namespace BloomTests.Spreadsheet
         </div>
     </div>";
 
-		public static string pageWithJustText =
-		@"<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
+        public static string pageWithJustText =
+            @"<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
 			<div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
 				Basic Text &amp; Picture
 			</div>
@@ -193,72 +210,110 @@ namespace BloomTests.Spreadsheet
 			</div>
 		</div>";
 
-		private XmlElement ReadResultingBookToXml(string newTitle)
-		{
-			// _bookFolder is no longer accurate here, since BringBookUpToDate has renamed the folder
-			// to match the new title.
-			var bookPath = Path.Combine(_testFolder.FolderPath, newTitle, newTitle + ".htm");
-			if (!File.Exists(bookPath))
-				return null;
-			var dom = new XmlDocument();
-			try
-			{
-				dom.LoadXml(RobustFile.ReadAllText(bookPath));
-			}
-			catch (Exception)
-			{
-				return null;
-			}
-			return dom.DocumentElement;
-		}
+        private XmlElement ReadResultingBookToXml(string newTitle)
+        {
+            // _bookFolder is no longer accurate here, since BringBookUpToDate has renamed the folder
+            // to match the new title.
+            var bookPath = Path.Combine(_testFolder.FolderPath, newTitle, newTitle + ".htm");
+            if (!File.Exists(bookPath))
+                return null;
+            var dom = new XmlDocument();
+            try
+            {
+                dom.LoadXml(RobustFile.ReadAllText(bookPath));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+            return dom.DocumentElement;
+        }
 
-		[Test]
-		public void BookTitleGetsPersisted()
-		{
-			var datadivdom = AssertThatXmlIn.Element(_resultElement.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement);
-			var frontCoverDom = AssertThatXmlIn.Element(_resultElement.SelectSingleNode("//div[contains(@class, 'frontCover')]") as XmlElement);
+        [Test]
+        public void BookTitleGetsPersisted()
+        {
+            var datadivdom = AssertThatXmlIn.Element(
+                _resultElement.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement
+            );
+            var frontCoverDom = AssertThatXmlIn.Element(
+                _resultElement.SelectSingleNode("//div[contains(@class, 'frontCover')]")
+                    as XmlElement
+            );
 
-			// Check DataDiv title
-			datadivdom.HasSpecifiedNumberOfMatchesForXpath("./div[@data-book='bookTitle' and @lang='en' and contains(text(), 'My new book title')]", 1);
-			datadivdom.HasNoMatchForXpath("./div[@data-book='bookTitle' and @lang='en' and contains(text(), 'Another lion book')]");
+            // Check DataDiv title
+            datadivdom.HasSpecifiedNumberOfMatchesForXpath(
+                "./div[@data-book='bookTitle' and @lang='en' and contains(text(), 'My new book title')]",
+                1
+            );
+            datadivdom.HasNoMatchForXpath(
+                "./div[@data-book='bookTitle' and @lang='en' and contains(text(), 'Another lion book')]"
+            );
 
-			// Check Front Cover title
-			frontCoverDom.HasNoMatchForXpath(".//div[@data-book='bookTitle' and @lang='en' and contains(text(), 'Another lion book')]");
-			frontCoverDom.HasSpecifiedNumberOfMatchesForXpath(".//div[@data-book='bookTitle' and @lang='en' and contains(text(), 'My new book title')]", 1);
-		}
+            // Check Front Cover title
+            frontCoverDom.HasNoMatchForXpath(
+                ".//div[@data-book='bookTitle' and @lang='en' and contains(text(), 'Another lion book')]"
+            );
+            frontCoverDom.HasSpecifiedNumberOfMatchesForXpath(
+                ".//div[@data-book='bookTitle' and @lang='en' and contains(text(), 'My new book title')]",
+                1
+            );
+        }
 
-		[Test]
-		public void FrontCoverImageGetsPersisted()
-		{
-			var datadivdom = AssertThatXmlIn.Element(_resultElement.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement);
-			var frontCoverDom = AssertThatXmlIn.Element(_resultElement.SelectSingleNode("//div[contains(@class, 'frontCover')]") as XmlElement);
+        [Test]
+        public void FrontCoverImageGetsPersisted()
+        {
+            var datadivdom = AssertThatXmlIn.Element(
+                _resultElement.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement
+            );
+            var frontCoverDom = AssertThatXmlIn.Element(
+                _resultElement.SelectSingleNode("//div[contains(@class, 'frontCover')]")
+                    as XmlElement
+            );
 
-			// Check DataDiv front cover image
-			datadivdom.HasSpecifiedNumberOfMatchesForXpath("./div[@data-book='coverImage' and @lang='*' and contains(text(), 'Othello 199.jpg')]", 1);
-			datadivdom.HasNoMatchForXpath("./div[@data-book='coverImage' and @lang='*' and contains(text(), 'some image.jpg')]");
+            // Check DataDiv front cover image
+            datadivdom.HasSpecifiedNumberOfMatchesForXpath(
+                "./div[@data-book='coverImage' and @lang='*' and contains(text(), 'Othello 199.jpg')]",
+                1
+            );
+            datadivdom.HasNoMatchForXpath(
+                "./div[@data-book='coverImage' and @lang='*' and contains(text(), 'some image.jpg')]"
+            );
 
-			// Check Front Cover image
-			frontCoverDom.HasNoMatchForXpath("//img[@data-book='coverImage' and @src='some image.jpg']");
-			frontCoverDom.HasSpecifiedNumberOfMatchesForXpath("//img[@data-book='coverImage' and @src='Othello%20199.jpg']", 1);
-		}
+            // Check Front Cover image
+            frontCoverDom.HasNoMatchForXpath(
+                "//img[@data-book='coverImage' and @src='some image.jpg']"
+            );
+            frontCoverDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//img[@data-book='coverImage' and @src='Othello%20199.jpg']",
+                1
+            );
+        }
 
-		// At one point, if we had a real CollectionSettings object, the importer just updated the
-		// side-classes (.side-right/.side-left). For that change, we had a fairly elaborate test to see if
-		// the side-classes for each page were updated correctly.
-		// Since then we've updated the importer to just call BringBookUpToDate() after the import process.
-		// That does an already well-tested set of things that includes setting the side-classes,
-		// so I think this simple test is enough to see that the update process happened correctly.
-		[Test]
-		public void PageHasCorrectSideClass()
-		{
-			var pageWithJustTextDom = AssertThatXmlIn.Element(_resultElement.SelectSingleNode("//div[@id='dc90dbe0-7584-4d9f-bc06-0e0326060054']") as XmlElement);
-			// This page we added started out as 'side-left'.
-			// The xmatter update process changes our frontCover xmatter to frontCoverPage +
-			// insideFrontCoverPage + titlePage + creditsPage. This switches the side-left to side-right.
-			var expectedClass = "side-right";
-			var unexpectedClass = "side-left";
-			pageWithJustTextDom.HasNoMatchForXpath($"self::div[contains(@class, '" + unexpectedClass + "')]");
-			pageWithJustTextDom.HasSpecifiedNumberOfMatchesForXpath($"self::div[contains(@class, '" + expectedClass + "')]", 1);
-		}
-	}
+        // At one point, if we had a real CollectionSettings object, the importer just updated the
+        // side-classes (.side-right/.side-left). For that change, we had a fairly elaborate test to see if
+        // the side-classes for each page were updated correctly.
+        // Since then we've updated the importer to just call BringBookUpToDate() after the import process.
+        // That does an already well-tested set of things that includes setting the side-classes,
+        // so I think this simple test is enough to see that the update process happened correctly.
+        [Test]
+        public void PageHasCorrectSideClass()
+        {
+            var pageWithJustTextDom = AssertThatXmlIn.Element(
+                _resultElement.SelectSingleNode("//div[@id='dc90dbe0-7584-4d9f-bc06-0e0326060054']")
+                    as XmlElement
+            );
+            // This page we added started out as 'side-left'.
+            // The xmatter update process changes our frontCover xmatter to frontCoverPage +
+            // insideFrontCoverPage + titlePage + creditsPage. This switches the side-left to side-right.
+            var expectedClass = "side-right";
+            var unexpectedClass = "side-left";
+            pageWithJustTextDom.HasNoMatchForXpath(
+                $"self::div[contains(@class, '" + unexpectedClass + "')]"
+            );
+            pageWithJustTextDom.HasSpecifiedNumberOfMatchesForXpath(
+                $"self::div[contains(@class, '" + expectedClass + "')]",
+                1
+            );
+        }
+    }
 }

@@ -8,22 +8,24 @@ using SIL.Extensions;
 
 namespace BloomTests.Publish
 {
-	[TestFixture]
-	// This class implements what is conceptually one or two tests in the ExportEpubTests group.
-	// But as there are many different outcomes to verify, and a much more complicated book to
-	// create, it's cleaner to make a distinct class, and do the complete book creation setup in
-	// OneTimeSetup.
-	public class EpubValidAndAccessible : ExportEpubTestsBaseClass
-	{
+    [TestFixture]
+    // This class implements what is conceptually one or two tests in the ExportEpubTests group.
+    // But as there are many different outcomes to verify, and a much more complicated book to
+    // create, it's cleaner to make a distinct class, and do the complete book creation setup in
+    // OneTimeSetup.
+    public class EpubValidAndAccessible : ExportEpubTestsBaseClass
+    {
+        [OneTimeSetUp]
+        public override void OneTimeSetup()
+        {
+            base.OneTimeSetup();
+            base.Setup(); // since this class represents just one test, we can do it here.
 
-		[OneTimeSetUp]
-		public override void OneTimeSetup()
-		{
-			base.OneTimeSetup();
-			base.Setup(); // since this class represents just one test, we can do it here.
-
-			var book = SetupBookLong("This is some text", "xyz", " bloom-frontMatter frontCover' data-page='required singleton",
-				optionalDataDiv: @"
+            var book = SetupBookLong(
+                "This is some text",
+                "xyz",
+                " bloom-frontMatter frontCover' data-page='required singleton",
+                optionalDataDiv: @"
 <div id='bloomDataDiv'>
 	<div data-book='contentLanguage1' lang='*'>xyz</div>
 	<div data-book='contentLanguage2' lang='*'>en</div>
@@ -51,7 +53,7 @@ namespace BloomTests.Publish
 	</div>
 </div>
 ",
-				extraContentOutsideTranslationGroup: @"
+                extraContentOutsideTranslationGroup: @"
 <div class=""bloom-imageContainer"">
 	<img data-book=""coverImage"" src=""DevilsSlide.png"" data-copyright=""Copyright © 2015, Stephen McConnel"" data-creator=""Stephen McConnel"" data-license=""cc-by-sa""></img>
 	<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style"" data-default-languages=""auto"" data-book=""coverImageDescription"">
@@ -61,7 +63,7 @@ namespace BloomTests.Publish
 	</div>
 </div>
 ",
-				extraPages: @"
+                extraPages: @"
 <div class='bloom-page numberedPage' data-page-number='1'>
 	<div class=""marginBox"">
 		<div style=""min-height: 42px;"" class=""split-pane horizontal-percent"">
@@ -169,245 +171,456 @@ namespace BloomTests.Publish
 	<div class=""pageDescription"" lang=""xyz""></div>
 	<div class=""marginBox""><img class=""branding"" src=""back-cover-outside.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img></div>
 </div>
-");
-			MakeImageFiles(book, "DevilsSlide", "SteveAtMalad", "Bloom Against Light HD.png");
-			// The end page is rebuilt using the xmatter and branding settings, so the xhtml referencing back-cover-outside.svg is thrown away.
-			// However, the title page with the given branding references BloomLocal.svg so we'll create that and test it.
-			MakeSampleSvgImage(book.FolderPath.CombineForPath("BloomLocal.svg"));
-			// Add some accessibility stuff from the ePUB metadata dialog
-			var metadata = book.BookInfo.MetaData;
-			metadata.Hazards = "flashingHazard,noMotionSimulationHazard";
-			metadata.A11yFeatures = "signLanguage";
-			// Without a branding, Bloom Enterprise-only features are removed
-			string branding = "Local-Community";
-			// Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
-			// May need to try more than once on Linux to make the epub without an exception for failing to complete loading the document.
-			MakeEpubWithRetries(kMakeEpubTrials, "output", "ExportEpubWithSvgTests", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding);
-			GetPageOneData();
-			_ns = GetNamespaceManager();
-		}
+"
+            );
+            MakeImageFiles(book, "DevilsSlide", "SteveAtMalad", "Bloom Against Light HD.png");
+            // The end page is rebuilt using the xmatter and branding settings, so the xhtml referencing back-cover-outside.svg is thrown away.
+            // However, the title page with the given branding references BloomLocal.svg so we'll create that and test it.
+            MakeSampleSvgImage(book.FolderPath.CombineForPath("BloomLocal.svg"));
+            // Add some accessibility stuff from the ePUB metadata dialog
+            var metadata = book.BookInfo.MetaData;
+            metadata.Hazards = "flashingHazard,noMotionSimulationHazard";
+            metadata.A11yFeatures = "signLanguage";
+            // Without a branding, Bloom Enterprise-only features are removed
+            string branding = "Local-Community";
+            // Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
+            // May need to try more than once on Linux to make the epub without an exception for failing to complete loading the document.
+            MakeEpubWithRetries(
+                kMakeEpubTrials,
+                "output",
+                "ExportEpubWithSvgTests",
+                book,
+                BookInfo.HowToPublishImageDescriptions.OnPage,
+                branding
+            );
+            GetPageOneData();
+            _ns = GetNamespaceManager();
+        }
 
-		[OneTimeTearDown]
-		public override void OneTimeTearDown()
-		{
-			base.TearDown(); // since we did Setup in OneTimeSetup
-			base.OneTimeTearDown();
-		}
+        [OneTimeTearDown]
+        public override void OneTimeTearDown()
+        {
+            base.TearDown(); // since we did Setup in OneTimeSetup
+            base.OneTimeTearDown();
+        }
 
-		public override void Setup()
-		{
-			// do nothing; we call base.Setup() for this class in OneTimeSetup().
-		}
+        public override void Setup()
+        {
+            // do nothing; we call base.Setup() for this class in OneTimeSetup().
+        }
 
-		public override void TearDown()
-		{
-			// do nothing; we call base.TearDown() for this class in OneTimeTearDown().
-		}
+        public override void TearDown()
+        {
+            // do nothing; we call base.TearDown() for this class in OneTimeTearDown().
+        }
 
-		[Test]
-		public void CheckEpubBasics()
-		{
-			CheckBasicsInPage("DevilsSlide");
-			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(false, true, false, _defaultSourceValue, false); // no sound files, but some image files
-		}
+        [Test]
+        public void CheckEpubBasics()
+        {
+            CheckBasicsInPage("DevilsSlide");
+            CheckBasicsInManifest();
+            CheckAccessibilityInManifest(false, true, false, _defaultSourceValue, false); // no sound files, but some image files
+        }
 
-		[Test]
-		public void CheckFrontCoverAccessibility()
-		{
-			// Verify the ARIA role and labels for the front cover page.
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo']", _ns, 1);
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 2);
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Front Cover']", _ns, 1);
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Front Cover']", _ns, 1);
+        [Test]
+        public void CheckFrontCoverAccessibility()
+        {
+            // Verify the ARIA role and labels for the front cover page.
+            AssertThatXmlIn
+                .String(_page1Data)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo']", _ns, 1);
+            AssertThatXmlIn
+                .String(_page1Data)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 2);
+            AssertThatXmlIn
+                .String(_page1Data)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@aria-label='Front Cover']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(_page1Data)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@role='contentinfo' and @aria-label='Front Cover']",
+                    _ns,
+                    1
+                );
 
-			// Check the page break references.
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak' and @aria-label='Front Cover']", _ns, 1);
+            // Check the page break references.
+            AssertThatXmlIn
+                .String(_page1Data)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
+            AssertThatXmlIn
+                .String(_page1Data)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:span[@role='doc-pagebreak' and @aria-label='Front Cover']",
+                    _ns,
+                    1
+                );
 
-			XmatterPageHasContentInfoNotMain(_page1Data);
-			ImageDescriptionIsMarkedForAccessibility(_page1Data, "1");
-		}
+            XmatterPageHasContentInfoNotMain(_page1Data);
+            ImageDescriptionIsMarkedForAccessibility(_page1Data, "1");
+        }
 
-		[Test]
-		public void CheckContentPageAccessibility()
-		{
-			var pageData = GetPageNData(2);
-			// Verify the ARIA role and labels for the content page.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='main']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 2);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='main' and @aria-label='Main Content']", _ns, 1);
+        [Test]
+        public void CheckContentPageAccessibility()
+        {
+            var pageData = GetPageNData(2);
+            // Verify the ARIA role and labels for the content page.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='main']", _ns, 1);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 2);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@role='main' and @aria-label='Main Content']",
+                    _ns,
+                    1
+                );
 
-			// Check the page break references.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak' and @aria-label='1']", _ns, 1);
+            // Check the page break references.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:span[@role='doc-pagebreak' and @aria-label='1']",
+                    _ns,
+                    1
+                );
 
-			// Verify that the content page does not have a "contentinfo" role.
-			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//xhtml:*[@role='contentinfo']", _ns);
+            // Verify that the content page does not have a "contentinfo" role.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasNoMatchForXpath("//xhtml:*[@role='contentinfo']", _ns);
 
-			ImageDescriptionIsMarkedForAccessibility(pageData, "2");
-		}
+            ImageDescriptionIsMarkedForAccessibility(pageData, "2");
+        }
 
-		[Test]
-		public void CheckTitlePageAccessibility()
-		{
-			var pageData = GetPageNData(4);
-			// Verify the ARIA roles and labels for the Bloom title page.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 4);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Title Page']", _ns, 1);
+        [Test]
+        public void CheckTitlePageAccessibility()
+        {
+            var pageData = GetPageNData(4);
+            // Verify the ARIA roles and labels for the Bloom title page.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 4);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@role='contentinfo' and @aria-label='Title Page']",
+                    _ns,
+                    1
+                );
 
-			// Check our standard subsections of the title page as well.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Original Contributions']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[ @aria-label='Funding']", _ns, 1);
+            // Check our standard subsections of the title page as well.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@aria-label='Original Contributions']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[ @aria-label='Funding']", _ns, 1);
 
-			// Check the page break references.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak' and @aria-label='Title Page']", _ns, 1);
+            // Check the page break references.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:span[@role='doc-pagebreak' and @aria-label='Title Page']",
+                    _ns,
+                    1
+                );
 
-			XmatterPageHasContentInfoNotMain(pageData);
-			EpubBackmatterPageHasNoDescribableImage(pageData);
-		}
+            XmatterPageHasContentInfoNotMain(pageData);
+            EpubBackmatterPageHasNoDescribableImage(pageData);
+        }
 
-		[Test]
-		public void CheckContentInfoOnChildElementsOutsideContentInfoPages()
-		{
-			// These elements would not normally be on a numbered page, and a numbered page would not normally be data-page="requiredSingleton".
-			// I set up some unusual data to test that these elements, in the right circumstances, get given their own contentinfo and label.
-			// The contentinfo is NOT added when, as usual and as tested elsewhere, they are on a page like title page that is ALL contentinfo.
-			var pageData = GetPageNData(3);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Original Contributions']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Copyright']", _ns, 1);
-		}
+        [Test]
+        public void CheckContentInfoOnChildElementsOutsideContentInfoPages()
+        {
+            // These elements would not normally be on a numbered page, and a numbered page would not normally be data-page="requiredSingleton".
+            // I set up some unusual data to test that these elements, in the right circumstances, get given their own contentinfo and label.
+            // The contentinfo is NOT added when, as usual and as tested elsewhere, they are on a page like title page that is ALL contentinfo.
+            var pageData = GetPageNData(3);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@role='contentinfo' and @aria-label='Original Contributions']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@role='contentinfo' and @aria-label='Copyright']",
+                    _ns,
+                    1
+                );
+        }
 
-		[Test]
-		public void CheckCreditsPageAccessibility()
-		{
-			var pageData = GetPageNData(5);
-			// Verify the ARIA roles and labels for the Bloom credits page.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 6);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Credits Page']", _ns, 1);
+        [Test]
+        public void CheckCreditsPageAccessibility()
+        {
+            var pageData = GetPageNData(5);
+            // Verify the ARIA roles and labels for the Bloom credits page.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 6);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@role='contentinfo' and @aria-label='Credits Page']",
+                    _ns,
+                    1
+                );
 
-			// Check our standard subsections of the credits page as well.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Copyright']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Version Acknowledgments']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Original Copyright']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Original Acknowledgments']", _ns, 1);
+            // Check our standard subsections of the credits page as well.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@aria-label='Copyright']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@aria-label='Version Acknowledgments']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@aria-label='Original Copyright']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[@aria-label='Original Acknowledgments']",
+                    _ns,
+                    1
+                );
 
-			// Check the page break references.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak' and @aria-label='Credits Page']", _ns, 1);
+            // Check the page break references.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:span[@role='doc-pagebreak' and @aria-label='Credits Page']",
+                    _ns,
+                    1
+                );
 
-			XmatterPageHasContentInfoNotMain(pageData);
-			EpubBackmatterPageHasNoDescribableImage(pageData);
-		}
+            XmatterPageHasContentInfoNotMain(pageData);
+            EpubBackmatterPageHasNoDescribableImage(pageData);
+        }
 
-		[Test]
-		public void CheckEndPageAccessibility()
-		{
-			var pageData = GetPageNData(6);
-			// Verify the ARIA roles and labels for the End Page.
-			// currently one thing gets role attr, a doc-pageBreak.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role]", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 1);
+        [Test]
+        public void CheckEndPageAccessibility()
+        {
+            var pageData = GetPageNData(6);
+            // Verify the ARIA roles and labels for the End Page.
+            // currently one thing gets role attr, a doc-pageBreak.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role]", _ns, 1);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 1);
 
-			// Check the page break references.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak' and @aria-label='The End']", _ns, 1);
+            // Check the page break references.
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:span[@role='doc-pagebreak' and @aria-label='The End']",
+                    _ns,
+                    1
+                );
 
-			EpubBackmatterPageHasNoDescribableImage(pageData);
-		}
+            EpubBackmatterPageHasNoDescribableImage(pageData);
+        }
 
-		[Test]
-		public void CheckEpubSvgValidity()
-		{
-			var svgData = GetFileData(EpubMaker.kImagesFolder + "/BloomLocal.svg");
-			var ns = new XmlNamespaceManager(new NameTable());
-			ns.AddNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-			ns.AddNamespace("sodipodi", "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd");
-			ns.AddNamespace("inkscape", "http://www.inkscape.org/namespaces/inkscape");
+        [Test]
+        public void CheckEpubSvgValidity()
+        {
+            var svgData = GetFileData(EpubMaker.kImagesFolder + "/BloomLocal.svg");
+            var ns = new XmlNamespaceManager(new NameTable());
+            ns.AddNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+            ns.AddNamespace("sodipodi", "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd");
+            ns.AddNamespace("inkscape", "http://www.inkscape.org/namespaces/inkscape");
 
-			AssertThatXmlIn.String(_originalSvgContent).HasAtLeastOneMatchForXpath("//@inkscape:version", ns);
-			AssertThatXmlIn.String(svgData).HasNoMatchForXpath("//@inkscape:version", ns);
+            AssertThatXmlIn
+                .String(_originalSvgContent)
+                .HasAtLeastOneMatchForXpath("//@inkscape:version", ns);
+            AssertThatXmlIn.String(svgData).HasNoMatchForXpath("//@inkscape:version", ns);
 
-			AssertThatXmlIn.String(_originalSvgContent).HasAtLeastOneMatchForXpath("//sodipodi:namedview", ns);
-			AssertThatXmlIn.String(svgData).HasNoMatchForXpath("//sodipodi:namedview", ns);
+            AssertThatXmlIn
+                .String(_originalSvgContent)
+                .HasAtLeastOneMatchForXpath("//sodipodi:namedview", ns);
+            AssertThatXmlIn.String(svgData).HasNoMatchForXpath("//sodipodi:namedview", ns);
 
-			AssertThatXmlIn.String(_originalSvgContent).HasAtLeastOneMatchForXpath("//rdf:RDF", ns);
-			AssertThatXmlIn.String(svgData).HasNoMatchForXpath("//rdf:RDF", ns);
+            AssertThatXmlIn.String(_originalSvgContent).HasAtLeastOneMatchForXpath("//rdf:RDF", ns);
+            AssertThatXmlIn.String(svgData).HasNoMatchForXpath("//rdf:RDF", ns);
 
-			AssertThatXmlIn.String(_originalSvgContent).HasAtLeastOneMatchForXpath("//flowRoot");
-			AssertThatXmlIn.String(svgData).HasNoMatchForXpath("//flowRoot");
+            AssertThatXmlIn.String(_originalSvgContent).HasAtLeastOneMatchForXpath("//flowRoot");
+            AssertThatXmlIn.String(svgData).HasNoMatchForXpath("//flowRoot");
 
-			Assert.AreEqual(-1, svgData.IndexOf("inkscape:", StringComparison.InvariantCulture), "No remnants of inkscape elements or attributes should remain in the svg file");
-			Assert.AreEqual(-1, svgData.IndexOf("rdf:", StringComparison.InvariantCulture), "No remnants of rdf elements or attributes should remain in the svg file");
-			Assert.AreEqual(-1, svgData.IndexOf("sodipodi:", StringComparison.InvariantCulture), "No remnants of sodipodi elements or attributes should remain in the svg file");
-		}
+            Assert.AreEqual(
+                -1,
+                svgData.IndexOf("inkscape:", StringComparison.InvariantCulture),
+                "No remnants of inkscape elements or attributes should remain in the svg file"
+            );
+            Assert.AreEqual(
+                -1,
+                svgData.IndexOf("rdf:", StringComparison.InvariantCulture),
+                "No remnants of rdf elements or attributes should remain in the svg file"
+            );
+            Assert.AreEqual(
+                -1,
+                svgData.IndexOf("sodipodi:", StringComparison.InvariantCulture),
+                "No remnants of sodipodi elements or attributes should remain in the svg file"
+            );
+        }
 
-		[Test]
-		public void CheckEpubManifestPropertiesValidity()
-		{
-			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='f4' and @properties='svg']");
-			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='svg']", 1);
+        [Test]
+        public void CheckEpubManifestPropertiesValidity()
+        {
+            AssertThatXmlIn
+                .String(_manifestContent)
+                .HasAtLeastOneMatchForXpath(
+                    "package/manifest/item[@id='f4' and @properties='svg']"
+                );
+            AssertThatXmlIn
+                .String(_manifestContent)
+                .HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='svg']", 1);
 
-			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='epub-thumbnail' and @properties='cover-image']");
-			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='cover-image']", 1);
+            AssertThatXmlIn
+                .String(_manifestContent)
+                .HasAtLeastOneMatchForXpath(
+                    "package/manifest/item[@id='epub-thumbnail' and @properties='cover-image']"
+                );
+            AssertThatXmlIn
+                .String(_manifestContent)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "package/manifest/item[@properties='cover-image']",
+                    1
+                );
 
-			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='nav' and @properties='nav']");
-			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='nav']", 1);
-		}
+            AssertThatXmlIn
+                .String(_manifestContent)
+                .HasAtLeastOneMatchForXpath(
+                    "package/manifest/item[@id='nav' and @properties='nav']"
+                );
+            AssertThatXmlIn
+                .String(_manifestContent)
+                .HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='nav']", 1);
+        }
 
+        [Test]
+        public void CheckEpubPagesValidity()
+        {
+            CheckPageForEpubValidity(1);
+            CheckPageForEpubValidity(2);
+            CheckPageForEpubValidity(3);
+            CheckPageForEpubValidity(4);
+            CheckPageForEpubValidity(5);
+        }
 
-		[Test]
-		public void CheckEpubPagesValidity()
-		{
-			CheckPageForEpubValidity(1);
-			CheckPageForEpubValidity(2);
-			CheckPageForEpubValidity(3);
-			CheckPageForEpubValidity(4);
-			CheckPageForEpubValidity(5);
-		}
+        private void CheckPageForEpubValidity(int n)
+        {
+            var pageData = GetPageNData(n);
+            AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//img[@type]");
+            AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//img[@src='']");
+            AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//img[not(@src)]");
+            AssertThatXmlIn
+                .String(pageData)
+                .HasNoMatchForXpath(
+                    "//div[contains(@class, 'split-pane-component-inner') and @min-height]"
+                );
+            AssertThatXmlIn
+                .String(pageData)
+                .HasNoMatchForXpath(
+                    "//div[contains(@class, 'split-pane-component-inner') and @min-width]"
+                );
+        }
 
-		private void CheckPageForEpubValidity (int n)
-		{
-			var pageData = GetPageNData(n);
-			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//img[@type]");
-			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//img[@src='']");
-			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//img[not(@src)]");
-			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//div[contains(@class, 'split-pane-component-inner') and @min-height]");
-			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//div[contains(@class, 'split-pane-component-inner') and @min-width]");
-		}
+        /// <summary>
+        /// Verify that an image has a description linked to it properly.
+        /// If this method needs to handle multiple descriptions for the same image someday, it'll need reworking.
+        /// </summary>
+        private void ImageDescriptionIsMarkedForAccessibility(string pageData, string figureNumber)
+        {
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby]", _ns, 1);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:img[@aria-describedby='figdesc"
+                        + figureNumber
+                        + ".0' and @id='bookfig"
+                        + figureNumber
+                        + "']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:aside[@id='figdesc" + figureNumber + ".0']",
+                    _ns,
+                    1
+                );
+        }
 
-		/// <summary>
-		/// Verify that an image has a description linked to it properly.
-		/// If this method needs to handle multiple descriptions for the same image someday, it'll need reworking.
-		/// </summary>
-		private void ImageDescriptionIsMarkedForAccessibility(string pageData, string figureNumber)
-		{
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby]", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby='figdesc"+figureNumber+".0' and @id='bookfig"+figureNumber+"']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:aside[@id='figdesc"+figureNumber+".0']", _ns, 1);
-		}
+        /// <summary>
+        /// Verify that an ePUB backmatter page does not have an image description set up.
+        /// </summary>
+        private void EpubBackmatterPageHasNoDescribableImage(string pageData)
+        {
+            AssertThatXmlIn
+                .String(pageData)
+                .HasNoMatchForXpath("//xhtml:img[@aria-describedby]", _ns);
+        }
 
-		/// <summary>
-		/// Verify that an ePUB backmatter page does not have an image description set up.
-		/// </summary>
-		private void EpubBackmatterPageHasNoDescribableImage(string pageData)
-		{
-			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//xhtml:img[@aria-describedby]", _ns);
-		}
+        /// <summary>
+        /// Verify that an xmatter page has a "contentinfo" role, but no "main" role.
+        /// </summary>
+        private void XmatterPageHasContentInfoNotMain(string pageData)
+        {
+            AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//xhtml:*[@role='main']", _ns);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasAtLeastOneMatchForXpath("//xhtml:div[@role='contentinfo']", _ns);
+        }
 
-		/// <summary>
-		/// Verify that an xmatter page has a "contentinfo" role, but no "main" role.
-		/// </summary>
-		private void XmatterPageHasContentInfoNotMain(string pageData)
-		{
-			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//xhtml:*[@role='main']", _ns);
-			AssertThatXmlIn.String(pageData).HasAtLeastOneMatchForXpath("//xhtml:div[@role='contentinfo']", _ns);
-		}
-
-			const string _originalSvgContent = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
+        const string _originalSvgContent =
+            @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
@@ -502,15 +715,15 @@ namespace BloomTests.Publish
            style=""font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:115.67372894px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:10.28210926px"">Local</tspan></text>
 </g></g></svg>";
 
-		protected void MakeSampleSvgImage(string path)
-		{
-			File.WriteAllText(path, _originalSvgContent);
-		}
+        protected void MakeSampleSvgImage(string path)
+        {
+            File.WriteAllText(path, _originalSvgContent);
+        }
 
-		[Test]
-		public void CheckEpubFolderStructure()
-		{
-			CheckFolderStructure();
-		}
-	}
+        [Test]
+        public void CheckEpubFolderStructure()
+        {
+            CheckFolderStructure();
+        }
+    }
 }

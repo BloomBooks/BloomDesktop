@@ -8,18 +8,20 @@ using System.Threading.Tasks;
 
 namespace Bloom.Spreadsheet
 {
-	/// <summary>
-	/// Class that represents options for SpreadsheetExporter in a form suitable
-	/// for serializing to Json
-	/// </summary>
-	public class SpreadsheetExportParams
-	{
-		[JsonProperty("retainMarkup")]
-		public bool RetainMarkup;
+    /// <summary>
+    /// Class that represents options for SpreadsheetExporter in a form suitable
+    /// for serializing to Json
+    /// </summary>
+    public class SpreadsheetExportParams
+    {
+        [JsonProperty("retainMarkup")]
+        public bool RetainMarkup;
 
-		public static SpreadsheetExportParams FromFile(string path)
-		{
-			return JsonConvert.DeserializeObject<SpreadsheetExportParams>(RobustFile.ReadAllText(path, Encoding.UTF8));
-		}
-	}
+        public static SpreadsheetExportParams FromFile(string path)
+        {
+            return JsonConvert.DeserializeObject<SpreadsheetExportParams>(
+                RobustFile.ReadAllText(path, Encoding.UTF8)
+            );
+        }
+    }
 }
