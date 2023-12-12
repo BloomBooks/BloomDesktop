@@ -42,6 +42,7 @@ To build the .NET/C# part of Bloom you'll need Visual Studio Community Edition.
 
 In Visual Studio, under Extensions, install "CSharpier".
 In Preferences, under CSharpier, set `Reformat with CSharpier` to `true`.
+You should also install the CSharpier extension in vscode.
 
 
 ## Get Binary Dependencies
