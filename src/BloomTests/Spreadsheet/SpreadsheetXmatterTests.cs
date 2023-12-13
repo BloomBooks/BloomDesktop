@@ -9,12 +9,13 @@ using Moq;
 
 namespace BloomTests.Spreadsheet
 {
-	/// <summary>
-	/// This class tests exporting xmatter when exporting to spreadsheet.
-	/// </summary>
-	public class SpreadsheetXmatterTests
-	{
-		public const string dataDivBook = @"
+    /// <summary>
+    /// This class tests exporting xmatter when exporting to spreadsheet.
+    /// </summary>
+    public class SpreadsheetXmatterTests
+    {
+        public const string dataDivBook =
+            @"
 <html>
 <head>
     <meta charset=""UTF-8""></meta>
@@ -111,137 +112,176 @@ namespace BloomTests.Spreadsheet
 </body>
 </html>";
 
-		private SpreadsheetExporter _exporter;
-		// The tests are all written in terms of _sheet and _rows, the output
-		// of an export operation. But we create two sheets, one by export, and
-		// one by writing the first to file and reading it back. We want to apply
-		// the same tests to each. This is currently achieved by using the test
-		// case to select one pair (_sheetFromExport, _rowsFromExport)
-		// or (_sheetFromFile, _rowsFromFile) to set as _sheet and _rows.
-		private InternalSpreadsheet _sheet;
-		private List<ContentRow> _rows;
-		private InternalSpreadsheet _sheetFromExport;
-		private List<ContentRow> _rowsFromExport;
-		private InternalSpreadsheet _sheetFromFile;
-		private List<ContentRow> _rowsFromFile;
-		private TemporaryFolder _spreadsheetFolder;
+        private SpreadsheetExporter _exporter;
 
-		[OneTimeSetUp]
-		public void OneTimeSetUp()
-		{
-			var dom = new HtmlDom(dataDivBook, true);
+        // The tests are all written in terms of _sheet and _rows, the output
+        // of an export operation. But we create two sheets, one by export, and
+        // one by writing the first to file and reading it back. We want to apply
+        // the same tests to each. This is currently achieved by using the test
+        // case to select one pair (_sheetFromExport, _rowsFromExport)
+        // or (_sheetFromFile, _rowsFromFile) to set as _sheet and _rows.
+        private InternalSpreadsheet _sheet;
+        private List<ContentRow> _rows;
+        private InternalSpreadsheet _sheetFromExport;
+        private List<ContentRow> _rowsFromExport;
+        private InternalSpreadsheet _sheetFromFile;
+        private List<ContentRow> _rowsFromFile;
+        private TemporaryFolder _spreadsheetFolder;
 
-			_spreadsheetFolder = new TemporaryFolder("SpreadsheetXmatterTests");
-			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
-			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
-			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("es")).Returns("Español");
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            var dom = new HtmlDom(dataDivBook, true);
 
-			_exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
-			_sheetFromExport = _exporter.ExportToFolder(dom, "fakeImagesFolderpath", _spreadsheetFolder.FolderPath,
-				out string outputPath, null, OverwriteOptions.Overwrite);
+            _spreadsheetFolder = new TemporaryFolder("SpreadsheetXmatterTests");
+            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("en"))
+                .Returns("English");
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("es"))
+                .Returns("Español");
 
-			_rowsFromExport = _sheetFromExport.ContentRows.ToList();
-			_sheetFromFile = InternalSpreadsheet.ReadFromFile(outputPath);
-			_rowsFromFile = _sheetFromFile.ContentRows.ToList();
-		}
+            _exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+            _sheetFromExport = _exporter.ExportToFolder(
+                dom,
+                "fakeImagesFolderpath",
+                _spreadsheetFolder.FolderPath,
+                out string outputPath,
+                null,
+                OverwriteOptions.Overwrite
+            );
 
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
-		{
-			_spreadsheetFolder?.Dispose();
-		}
+            _rowsFromExport = _sheetFromExport.ContentRows.ToList();
+            _sheetFromFile = InternalSpreadsheet.ReadFromFile(outputPath);
+            _rowsFromFile = _sheetFromFile.ContentRows.ToList();
+        }
 
-		void SetupFor(string source)
-		{
-			switch (source)
-			{
-				case "fromExport":
-					_sheet = _sheetFromExport;
-					_rows = _rowsFromExport;
-					break;
-				case "fromFile":
-					_sheet = _sheetFromFile;
-					_rows = _rowsFromFile;
-					break;
-				default:
-					// Whatever's going on needs to fail
-					Assert.That(source, Is.Not.EqualTo(source));
-					break;
-			}
-		}
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _spreadsheetFolder?.Dispose();
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void BasicXmatterTest(string source)
-		{
-			SetupFor(source);
-			var starLangCol = _sheet.GetRequiredColumnForLang("*");
-			var styleNumberSequenceRow = _rows.Find(x => x.MetadataKey.Equals("[styleNumberSequence]"));
-			Assert.That(styleNumberSequenceRow, Is.Not.Null);
-			Assert.That(styleNumberSequenceRow.GetCell(starLangCol).Content, Is.EqualTo("0"));
-		}
+        void SetupFor(string source)
+        {
+            switch (source)
+            {
+                case "fromExport":
+                    _sheet = _sheetFromExport;
+                    _rows = _rowsFromExport;
+                    break;
+                case "fromFile":
+                    _sheet = _sheetFromFile;
+                    _rows = _rowsFromFile;
+                    break;
+                default:
+                    // Whatever's going on needs to fail
+                    Assert.That(source, Is.Not.EqualTo(source));
+                    break;
+            }
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void MultilingualXmatterTest(string source)
-		{
-			SetupFor(source);
-			var contentLangRow = _rows.Find(x => x.MetadataKey.Equals("[bookTitle]"));
-			Assert.That(contentLangRow, Is.Not.Null);
-			Assert.That(contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("es")).Content, Is.EqualTo("<p>Spanish Microwave</p>"));
-			Assert.That(contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("en")).Content, Is.EqualTo("<p>English Microwave</p>"));
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void BasicXmatterTest(string source)
+        {
+            SetupFor(source);
+            var starLangCol = _sheet.GetRequiredColumnForLang("*");
+            var styleNumberSequenceRow = _rows.Find(
+                x => x.MetadataKey.Equals("[styleNumberSequence]")
+            );
+            Assert.That(styleNumberSequenceRow, Is.Not.Null);
+            Assert.That(styleNumberSequenceRow.GetCell(starLangCol).Content, Is.EqualTo("0"));
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void ISBN_Correct(string source)
-		{
-			SetupFor(source);
-			var contentLangRow = _rows.Find(x => x.MetadataKey.Equals("[ISBN]"));
-			Assert.That(contentLangRow, Is.Not.Null);
-			Assert.That(contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("en")).Content, Is.EqualTo("<p>123456</p>"));
-			Assert.That(contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("*")).Content, Is.EqualTo("<p>123456</p>"));
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void MultilingualXmatterTest(string source)
+        {
+            SetupFor(source);
+            var contentLangRow = _rows.Find(x => x.MetadataKey.Equals("[bookTitle]"));
+            Assert.That(contentLangRow, Is.Not.Null);
+            Assert.That(
+                contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("es")).Content,
+                Is.EqualTo("<p>Spanish Microwave</p>")
+            );
+            Assert.That(
+                contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("en")).Content,
+                Is.EqualTo("<p>English Microwave</p>")
+            );
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void ImageSourceXmatterTest(string source)
-		{
-			SetupFor(source);
-			var imageSourceCol = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void ISBN_Correct(string source)
+        {
+            SetupFor(source);
+            var contentLangRow = _rows.Find(x => x.MetadataKey.Equals("[ISBN]"));
+            Assert.That(contentLangRow, Is.Not.Null);
+            Assert.That(
+                contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("en")).Content,
+                Is.EqualTo("<p>123456</p>")
+            );
+            Assert.That(
+                contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("*")).Content,
+                Is.EqualTo("<p>123456</p>")
+            );
+        }
 
-			var coverImageRow = _rows.Find(x => x.MetadataKey.Equals("[coverImage]"));
-			Assert.That(coverImageRow, Is.Not.Null);
-			Assert.That(coverImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("images","microwave1.png")));
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void ImageSourceXmatterTest(string source)
+        {
+            SetupFor(source);
+            var imageSourceCol = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
-			var licenseImageRow = _rows.Find(x => x.MetadataKey.Equals("[licenseImage]"));
-			Assert.That(licenseImageRow, Is.Null);
+            var coverImageRow = _rows.Find(x => x.MetadataKey.Equals("[coverImage]"));
+            Assert.That(coverImageRow, Is.Not.Null);
+            Assert.That(
+                coverImageRow.GetCell(imageSourceCol).Content,
+                Is.EqualTo(Path.Combine("images", "microwave1.png"))
+            );
 
-			var backImageRow = _rows.Find(x => x.MetadataKey.Equals("[outside-back-cover-bottom-html]"));
-			Assert.That(backImageRow, Is.Not.Null);
-			Assert.That(backImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("images", "BloomWithTaglineAgainstLight.svg")));
-		}
+            var licenseImageRow = _rows.Find(x => x.MetadataKey.Equals("[licenseImage]"));
+            Assert.That(licenseImageRow, Is.Null);
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void ZLanguageXmatterNotExported(string source)
-		{
-			SetupFor(source);
-			Assert.That(_sheet.Languages.Contains("z"), Is.False);
-			Assert.That(_rows.FirstOrDefault(x => x.MetadataKey.Equals("[ztest]")), Is.Null);
-		}
+            var backImageRow = _rows.Find(
+                x => x.MetadataKey.Equals("[outside-back-cover-bottom-html]")
+            );
+            Assert.That(backImageRow, Is.Not.Null);
+            Assert.That(
+                backImageRow.GetCell(imageSourceCol).Content,
+                Is.EqualTo(Path.Combine("images", "BloomWithTaglineAgainstLight.svg"))
+            );
+        }
 
-		[Test]
-		public void MetadataRowsAreHiddenExceptTitleAndImageCover()
-		{
-			SetupFor("fromExport");
-			foreach (var row in _rows)
-			{
-				if (new string[] { InternalSpreadsheet.BookTitleRowLabel, InternalSpreadsheet.CoverImageRowLabel }.Contains(row.MetadataKey))
-					Assert.That(row.Hidden, Is.False);
-				else
-					Assert.That(row.Hidden, Is.True);
-			}
-		}
-	}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void ZLanguageXmatterNotExported(string source)
+        {
+            SetupFor(source);
+            Assert.That(_sheet.Languages.Contains("z"), Is.False);
+            Assert.That(_rows.FirstOrDefault(x => x.MetadataKey.Equals("[ztest]")), Is.Null);
+        }
+
+        [Test]
+        public void MetadataRowsAreHiddenExceptTitleAndImageCover()
+        {
+            SetupFor("fromExport");
+            foreach (var row in _rows)
+            {
+                if (
+                    new string[]
+                    {
+                        InternalSpreadsheet.BookTitleRowLabel,
+                        InternalSpreadsheet.CoverImageRowLabel
+                    }.Contains(row.MetadataKey)
+                )
+                    Assert.That(row.Hidden, Is.False);
+                else
+                    Assert.That(row.Hidden, Is.True);
+            }
+        }
+    }
 }

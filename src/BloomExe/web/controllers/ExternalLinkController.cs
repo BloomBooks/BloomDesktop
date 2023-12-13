@@ -4,67 +4,74 @@ using Bloom.ToPalaso;
 
 namespace Bloom.web
 {
-	/// <summary>
-	/// Handles GET requests to open a page, shipped with Bloom in an external browser.
-	/// For other web resources, just use http/https and the c# Browser class will intercept
-	/// and open the browser.
-	///
-	/// For html pages shipped with bloom, use this controller by writing
-	/// <a href='/api/externalLink/blah/foo.html#fragment=idOfSomeSectionOfFoo'></a>
-	/// </summary>
-	public class ExternalLinkController
-	{
-		const string kPrefix = "externalLink";
-		public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
-		{
-			// Opening a page, better be in UI thread.
-			apiHandler.RegisterEndpointLegacy(kPrefix+"/.*", HandleRequest, true);
-			// It's odd not to use kPrefix. However, the above handler wants to handle ANY link that starts
-			// with externalLink/, and it feels confusing to have both that and one that handles
-			// externalLink by itself. Yet this class feels like the right place to handle links
-			// that simply open a link in the external browser. So I decided to use a simpler pattern.
-			apiHandler.RegisterEndpointHandler("link", HandleLink, true);
-		}
+    /// <summary>
+    /// Handles GET requests to open a page, shipped with Bloom in an external browser.
+    /// For other web resources, just use http/https and the c# Browser class will intercept
+    /// and open the browser.
+    ///
+    /// For html pages shipped with bloom, use this controller by writing
+    /// <a href='/api/externalLink/blah/foo.html#fragment=idOfSomeSectionOfFoo'></a>
+    /// </summary>
+    public class ExternalLinkController
+    {
+        const string kPrefix = "externalLink";
 
-		// Javascript currently activates this for links that start with http or mailto.
-		// It opens the link in the system default browser.
-		private static void HandleLink(ApiRequest request)
-		{
-			var href = request.RequiredPostString();
-			ProcessExtra.SafeStartInFront(href);
-			request.PostSucceeded();
-		}
+        public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
+        {
+            // Opening a page, better be in UI thread.
+            apiHandler.RegisterEndpointLegacy(kPrefix + "/.*", HandleRequest, true);
+            // It's odd not to use kPrefix. However, the above handler wants to handle ANY link that starts
+            // with externalLink/, and it feels confusing to have both that and one that handles
+            // externalLink by itself. Yet this class feels like the right place to handle links
+            // that simply open a link in the external browser. So I decided to use a simpler pattern.
+            apiHandler.RegisterEndpointHandler("link", HandleLink, true);
+        }
 
-		/// <summary>
-		/// Handles a url starting with api/kPrefix by stripping off that prefix, searching for the file
-		/// named in the remainder of the url, and opening it in some browser (passing on any anchor specified).
-		/// </summary>
-		public static void HandleRequest(ApiRequest request)
-		{
-			//NB: be careful not to lose case, as at least chrome is case-sensitive with anchors (e.g. #ChoiceOfTopic)
-			var localPath = Regex.Replace(request.LocalPath(), "api/"+ kPrefix+"/", "", RegexOptions.IgnoreCase);
-			var completeUiLangPath = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, localPath);
-			var cleanUrl = completeUiLangPath.Replace("\\", "/"); // allows jump to file to work
+        // Javascript currently activates this for links that start with http or mailto.
+        // It opens the link in the system default browser.
+        private static void HandleLink(ApiRequest request)
+        {
+            var href = request.RequiredPostString();
+            ProcessExtra.SafeStartInFront(href);
+            request.PostSucceeded();
+        }
 
+        /// <summary>
+        /// Handles a url starting with api/kPrefix by stripping off that prefix, searching for the file
+        /// named in the remainder of the url, and opening it in some browser (passing on any anchor specified).
+        /// </summary>
+        public static void HandleRequest(ApiRequest request)
+        {
+            //NB: be careful not to lose case, as at least chrome is case-sensitive with anchors (e.g. #ChoiceOfTopic)
+            var localPath = Regex.Replace(
+                request.LocalPath(),
+                "api/" + kPrefix + "/",
+                "",
+                RegexOptions.IgnoreCase
+            );
+            var completeUiLangPath =
+                BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, localPath);
+            var cleanUrl = completeUiLangPath.Replace("\\", "/"); // allows jump to file to work
 
-			//we would like to get something like foo.htm#secondPart but the browser strips off that fragment part
-			//so we require that to be written as foo.htm?fragment=secondPart so it gets to us, then we convert
-			//it back to the normal format before sending it to a parser
-			if (!string.IsNullOrEmpty(request.Parameters["fragment"]))
-			{
-				cleanUrl += "#" + request.Parameters["fragment"];
-				request.Parameters.Remove("fragment");
-			}
+            //we would like to get something like foo.htm#secondPart but the browser strips off that fragment part
+            //so we require that to be written as foo.htm?fragment=secondPart so it gets to us, then we convert
+            //it back to the normal format before sending it to a parser
+            if (!string.IsNullOrEmpty(request.Parameters["fragment"]))
+            {
+                cleanUrl += "#" + request.Parameters["fragment"];
+                request.Parameters.Remove("fragment");
+            }
 
-			// If we simply provide a path to the file and have a fragment (#xxx), we get file not found exception.
-			// If we prepend "file:///", the fragment part of the link (#xxx) is not sent unless we provide the browser path too.
-			// This is the same behavior when simply typing a url into the Run command on Windows.
-			// Previously, we were attempting to look up the browser path and passing that to SafeStart, but later versions of Windows
-			// changed the way to look up the browser path, and we were opening links in Internet Explorer regardless of the default browser. (BL-6952)
-			// So now we serve the file using Bloom as the server. This launches in the default browser and makes fragments work.
-			var urlToOpenInExternalBrowser = $"http://localhost:{BloomServer.portForHttp}/bloom/{cleanUrl}";
-			ProcessExtra.SafeStartInFront(urlToOpenInExternalBrowser);
-			request.ExternalLinkSucceeded();
-		}
-	}
+            // If we simply provide a path to the file and have a fragment (#xxx), we get file not found exception.
+            // If we prepend "file:///", the fragment part of the link (#xxx) is not sent unless we provide the browser path too.
+            // This is the same behavior when simply typing a url into the Run command on Windows.
+            // Previously, we were attempting to look up the browser path and passing that to SafeStart, but later versions of Windows
+            // changed the way to look up the browser path, and we were opening links in Internet Explorer regardless of the default browser. (BL-6952)
+            // So now we serve the file using Bloom as the server. This launches in the default browser and makes fragments work.
+            var urlToOpenInExternalBrowser =
+                $"http://localhost:{BloomServer.portForHttp}/bloom/{cleanUrl}";
+            ProcessExtra.SafeStartInFront(urlToOpenInExternalBrowser);
+            request.ExternalLinkSucceeded();
+        }
+    }
 }

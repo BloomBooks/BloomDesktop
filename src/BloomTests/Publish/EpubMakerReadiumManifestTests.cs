@@ -14,9 +14,10 @@ using SIL.IO;
 
 namespace BloomTests.Publish
 {
-	public class EpubMakerReadiumManifestTests
-	{
-		private const string opfData = @"<?xml version=""1.0"" encoding=""utf-8""?>
+    public class EpubMakerReadiumManifestTests
+    {
+        private const string opfData =
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
 <package version=""3.0"" unique-identifier=""I7cd3b13a-402f-4d58-b57d-7ffc41008222"" prefix=""a11y: http://www.idpf.org/epub/vocab/package/a11y/# epub32: https://w3c.github.io/publ-epub-revision/epub32/spec/epub-packages.html# http://www.idpf.org/vocab/rendition/#"" xmlns=""http://www.idpf.org/2007/opf"">
   <opf:metadata xmlns:dc=""http://purl.org/dc/elements/1.1/"" xmlns:opf=""http://www.idpf.org/2007/opf"">
     <dc:title>comic 2</dc:title>
@@ -95,7 +96,8 @@ namespace BloomTests.Publish
   </spine>
 </package>";
 
-		private const string page2Smil = @"<?xml version=""1.0"" encoding=""utf-8""?>
+        private const string page2Smil =
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
 <smil xmlns=""http://www.w3.org/ns/SMIL"" xmlns:epub=""http://www.idpf.org/2007/ops"" version=""3.0"">
   <body>
     <seq id=""id1"" epub:textref=""2.xhtml"" epub:type=""bodymatter chapter"">
@@ -115,7 +117,8 @@ namespace BloomTests.Publish
   </body>
 </smil>";
 
-		private const string page4Smil = @"<?xml version=""1.0"" encoding=""utf-8""?>
+        private const string page4Smil =
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
 <smil xmlns=""http://www.w3.org/ns/SMIL"" xmlns:epub=""http://www.idpf.org/2007/ops"" version=""3.0"">
   <body>
     <seq id=""id1"" epub:textref=""4.xhtml"" epub:type=""bodymatter chapter"">
@@ -127,112 +130,139 @@ namespace BloomTests.Publish
   </body>
 </smil>";
 
-		private TemporaryFolder _folder;
-		ReadiumManifestRoot _manifest;
-		private ReadiumMediaOverlay[] _overlays = new ReadiumMediaOverlay[2];
+        private TemporaryFolder _folder;
+        ReadiumManifestRoot _manifest;
+        private ReadiumMediaOverlay[] _overlays = new ReadiumMediaOverlay[2];
 
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _folder = new TemporaryFolder("EpubMakerReadiumManifestTests");
+            var contentFolder = Path.Combine(_folder.FolderPath, "content");
+            Directory.CreateDirectory(contentFolder);
+            var opfPath = Path.Combine(contentFolder, "content.opf");
+            RobustFile.WriteAllText(opfPath, opfData);
+            var smil2Path = Path.Combine(contentFolder, "2_overlay.smil");
+            RobustFile.WriteAllText(smil2Path, page2Smil);
+            var smil4Path = Path.Combine(contentFolder, "4_overlay.smil");
+            RobustFile.WriteAllText(smil4Path, page4Smil);
 
-		[OneTimeSetUp]
-		public void OneTimeSetUp()
-		{
-			_folder = new TemporaryFolder("EpubMakerReadiumManifestTests");
-			var contentFolder = Path.Combine(_folder.FolderPath, "content");
-			Directory.CreateDirectory(contentFolder);
-			var opfPath = Path.Combine(contentFolder, "content.opf");
-			RobustFile.WriteAllText(opfPath, opfData);
-			var smil2Path = Path.Combine(contentFolder, "2_overlay.smil");
-			RobustFile.WriteAllText(smil2Path, page2Smil);
-			var smil4Path = Path.Combine(contentFolder, "4_overlay.smil");
-			RobustFile.WriteAllText(smil4Path, page4Smil);
+            var outputPath = ReadiumManifest.MakeReadiumManifest(_folder.FolderPath);
 
-			var outputPath = ReadiumManifest.MakeReadiumManifest(_folder.FolderPath);
+            _manifest = JsonConvert.DeserializeObject<ReadiumManifestRoot>(
+                RobustFile.ReadAllText(outputPath)
+            );
+            var overlay2Path = Path.Combine(_folder.FolderPath, "2-media-overlay.json");
+            _overlays[0] = JsonConvert.DeserializeObject<ReadiumMediaOverlay>(
+                RobustFile.ReadAllText(overlay2Path)
+            );
+            var overlay4Path = Path.Combine(_folder.FolderPath, "4-media-overlay.json");
+            _overlays[1] = JsonConvert.DeserializeObject<ReadiumMediaOverlay>(
+                RobustFile.ReadAllText(overlay4Path)
+            );
+        }
 
-			_manifest = JsonConvert.DeserializeObject<ReadiumManifestRoot>(RobustFile.ReadAllText(outputPath));
-			var overlay2Path = Path.Combine(_folder.FolderPath, "2-media-overlay.json");
-			_overlays[0] = JsonConvert.DeserializeObject<ReadiumMediaOverlay>(RobustFile.ReadAllText(overlay2Path));
-			var overlay4Path = Path.Combine(_folder.FolderPath, "4-media-overlay.json");
-			_overlays[1] = JsonConvert.DeserializeObject<ReadiumMediaOverlay>(RobustFile.ReadAllText(overlay4Path));
-		}
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _folder.Dispose();
+        }
 
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
-		{
-			_folder.Dispose();
-		}
+        [Test]
+        public void HasExpectedType()
+        {
+            Assert.That(_manifest.type, Is.EqualTo("application/webpub+json"));
+        }
 
-		[Test]
-		public void HasExpectedType()
-		{
-			Assert.That(_manifest.type, Is.EqualTo("application/webpub+json"));
-		}
+        [Test]
+        public void HasExpectedTitle()
+        {
+            Assert.That(_manifest.title, Is.EqualTo("comic 2"));
+        }
 
-		[Test]
-		public void HasExpectedTitle()
-		{
-			Assert.That(_manifest.title, Is.EqualTo("comic 2"));
-		}
+        [Test]
+        public void HasFixedLayout()
+        {
+            Assert.That(_manifest.metadata.rendition.layout, Is.EqualTo("fixed"));
+        }
 
-		[Test]
-		public void HasFixedLayout()
-		{
-			Assert.That(_manifest.metadata.rendition.layout, Is.EqualTo("fixed"));
-		}
+        [Test]
+        public void HasMediaLayout()
+        {
+            Assert.That(_manifest.metadata.MediaOverlay.ActiveClass, Is.EqualTo("ui-audioCurrent"));
+        }
 
-		[Test]
-		public void HasMediaLayout()
-		{
-			Assert.That(_manifest.metadata.MediaOverlay.ActiveClass, Is.EqualTo("ui-audioCurrent"));
-		}
+        [Test]
+        public void HasSelfLink()
+        {
+            var selfLink = _manifest.links[0];
+            Assert.That(selfLink.type, Is.EqualTo("application/webpub+json"));
+            Assert.That(selfLink.rel, Is.EqualTo("self"));
+            var manifestPath = Path.Combine(_folder.FolderPath, "manifest.json");
+            Assert.That(selfLink.href, Is.EqualTo(manifestPath.ToLocalhost()));
+        }
 
+        [TestCase(0, "content/1.xhtml")]
+        [TestCase(1, "content/2.xhtml")]
+        [TestCase(2, "content/3.xhtml")]
+        public void HasSimpleReadingOrderEntry(int pageNum, string href)
+        {
+            var roItem = _manifest.readingOrder[pageNum];
+            Assert.That(roItem.type, Is.EqualTo("application/xhtml+xml"));
+            Assert.That(roItem.href, Is.EqualTo(href));
+        }
 
-		[Test]
-		public void HasSelfLink()
-		{
-			var selfLink = _manifest.links[0];
-			Assert.That(selfLink.type, Is.EqualTo("application/webpub+json"));
-			Assert.That(selfLink.rel, Is.EqualTo("self"));
-			var manifestPath = Path.Combine(_folder.FolderPath, "manifest.json");
-			Assert.That(selfLink.href, Is.EqualTo(manifestPath.ToLocalhost()));
-		}
+        [TestCase(1, "3727.523", "2-media-overlay.json")]
+        [TestCase(3, "2.403", "4-media-overlay.json")]
+        public void HasOverlayReadingOrderEntry(int pageNum, string duration, string overlay)
+        {
+            var roItem = _manifest.readingOrder[pageNum];
+            Assert.That(roItem.type, Is.EqualTo("application/xhtml+xml"));
+            Assert.That(roItem.duration, Is.EqualTo(duration));
+            Assert.That(roItem.properties.MediaOverlay, Is.EqualTo(overlay));
+        }
 
-		[TestCase(0, "content/1.xhtml")]
-		[TestCase(1, "content/2.xhtml")]
-		[TestCase(2, "content/3.xhtml")]
-		public void HasSimpleReadingOrderEntry(int pageNum, string href)
-		{
-			var roItem = _manifest.readingOrder[pageNum];
-			Assert.That(roItem.type, Is.EqualTo("application/xhtml+xml"));
-			Assert.That(roItem.href, Is.EqualTo(href));
-		}
+        [TestCase(0, "content/2.xhtml")]
+        [TestCase(1, "content/4.xhtml")]
+        public void HasTextAndRoles(int index, string text)
+        {
+            Assert.That(_overlays[index].role, Is.EqualTo("section"));
+            Assert.That(
+                _overlays[index].narration[0].role,
+                Is.EqualTo(new[] { "section", "bodymatter", "chapter" })
+            );
+            Assert.That(_overlays[index].narration[0].text, Is.EqualTo(text));
+        }
 
-		[TestCase(1, "3727.523", "2-media-overlay.json")]
-		[TestCase(3, "2.403", "4-media-overlay.json")]
-		public void HasOverlayReadingOrderEntry(int pageNum, string duration, string overlay)
-		{
-			var roItem = _manifest.readingOrder[pageNum];
-			Assert.That(roItem.type, Is.EqualTo("application/xhtml+xml"));
-			Assert.That(roItem.duration, Is.EqualTo(duration));
-			Assert.That(roItem.properties.MediaOverlay, Is.EqualTo(overlay));
-		}
-
-		[TestCase(0, "content/2.xhtml")]
-		[TestCase(1, "content/4.xhtml")]
-		public void HasTextAndRoles(int index, string text)
-		{
-			Assert.That(_overlays[index].role, Is.EqualTo("section"));
-			Assert.That(_overlays[index].narration[0].role, Is.EqualTo(new[] {"section", "bodymatter", "chapter"}));
-			Assert.That(_overlays[index].narration[0].text, Is.EqualTo(text));
-		}
-
-		[TestCase(0, 0, "content/2.xhtml#f8b18f34-1da2-4c86-9a4b-1c76eabe61bd", "content/audio/page2.mp3#t=0.000,2.011")]
-		[TestCase(0, 1, "content/2.xhtml#abb8d0d7-34c3-4099-a3c7-f1ed1b379b13", "content/audio/special.mp3#t=2.011,5.120")]
-		[TestCase(0, 2, "content/2.xhtml#fe5483f1-28e3-4cc5-97c1-db2e312c85e8", "content/audio/page2.mp3#t=5.120,3727.523")]
-		[TestCase(1, 0, "content/4.xhtml#ffcc72a7-9ee5-4ff3-91dd-5fa4834368bc", "content/audio/ffcc72a7-9ee5-4ff3-91dd-5fa4834368bc.mp3#t=0.000,2.403")]
-		public void HasTextAndAudio(int index, int item, string text, string audio)
-		{
-			var innerNarration = _overlays[index].narration[0].narration[item];
-			Assert.That(innerNarration.text, Is.EqualTo(text));
-			Assert.That(innerNarration.audio, Is.EqualTo(audio));
-		}
-	}
+        [TestCase(
+            0,
+            0,
+            "content/2.xhtml#f8b18f34-1da2-4c86-9a4b-1c76eabe61bd",
+            "content/audio/page2.mp3#t=0.000,2.011"
+        )]
+        [TestCase(
+            0,
+            1,
+            "content/2.xhtml#abb8d0d7-34c3-4099-a3c7-f1ed1b379b13",
+            "content/audio/special.mp3#t=2.011,5.120"
+        )]
+        [TestCase(
+            0,
+            2,
+            "content/2.xhtml#fe5483f1-28e3-4cc5-97c1-db2e312c85e8",
+            "content/audio/page2.mp3#t=5.120,3727.523"
+        )]
+        [TestCase(
+            1,
+            0,
+            "content/4.xhtml#ffcc72a7-9ee5-4ff3-91dd-5fa4834368bc",
+            "content/audio/ffcc72a7-9ee5-4ff3-91dd-5fa4834368bc.mp3#t=0.000,2.403"
+        )]
+        public void HasTextAndAudio(int index, int item, string text, string audio)
+        {
+            var innerNarration = _overlays[index].narration[0].narration[item];
+            Assert.That(innerNarration.text, Is.EqualTo(text));
+            Assert.That(innerNarration.audio, Is.EqualTo(audio));
+        }
+    }
 }

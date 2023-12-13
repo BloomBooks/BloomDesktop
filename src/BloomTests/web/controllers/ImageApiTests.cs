@@ -7,35 +7,36 @@ using NUnit.Framework;
 
 namespace BloomTests.web.controllers
 {
-	[TestFixture]
-	internal class ImageApiTests
-	{
-		private BookSelection _selection;
-		private ImageApi _apiObject;
-		private Dictionary<string, List<string>> _creditsToFormat;
+    [TestFixture]
+    internal class ImageApiTests
+    {
+        private BookSelection _selection;
+        private ImageApi _apiObject;
+        private Dictionary<string, List<string>> _creditsToFormat;
 
-		[SetUp]
-		public void Setup()
-		{
-			_selection = new BookSelection();
-			_apiObject = new ImageApi(_selection);
-			_creditsToFormat = new Dictionary<string, List<string>>();
-			// Ensure only English UI strings (the default value).
-			L10NSharp.LocalizationManager.SetUILanguage("en", false);
-		}
+        [SetUp]
+        public void Setup()
+        {
+            _selection = new BookSelection();
+            _apiObject = new ImageApi(_selection);
+            _creditsToFormat = new Dictionary<string, List<string>>();
+            // Ensure only English UI strings (the default value).
+            L10NSharp.LocalizationManager.SetUILanguage("en", false);
+        }
 
-		[TearDown]
-		public void TearDown()
-		{
-			_selection = null;
-			_apiObject = null;
-			_creditsToFormat = null;
-		}
+        [TearDown]
+        public void TearDown()
+        {
+            _selection = null;
+            _apiObject = null;
+            _creditsToFormat = null;
+        }
 
-		[Test]
-		public void GetFilteredImageNameToPagesDictionary_AccumulatesCorrectly()
-		{
-			const string xhtml = @"
+        [Test]
+        public void GetFilteredImageNameToPagesDictionary_AccumulatesCorrectly()
+        {
+            const string xhtml =
+                @"
 <body>
 	<div class='bloom-page bloom-frontMatter cover' data-page-number=''>
 		<div data-after-content='' class='pageLabel' lang='en'>
@@ -171,37 +172,77 @@ namespace BloomTests.web.controllers
 	</div>
 </body>";
 
-			var dom = new XmlDocument();
-			dom.LoadXml(xhtml);
-			var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(dom.SelectSingleNode("//body"));
-			Assert.AreEqual(7, imageNameToPages.Keys.Count, "Should be a total of 7 unique images");
-			Assert.AreEqual("Front Cover", imageNameToPages["AOR_aa013m.png"].First(), "Should include xmatter pics");
-			Assert.AreEqual("2", imageNameToPages["AOR_aa013m.png"].Last(), "Numbered pages should be after front matter");
-			Assert.IsFalse(imageNameToPages.ContainsKey("title-page.svg"), "Branding images get filtered out");
-			Assert.IsFalse(imageNameToPages.ContainsKey("credits-page-bottom.png"), "Branding images get filtered out");
-			Assert.IsFalse(imageNameToPages.ContainsKey("back-cover-outside.svg"), "Branding images get filtered out");
-			Assert.IsFalse(imageNameToPages.ContainsKey("back-cover-outside-wide.png"), "Branding images get filtered out");
-			Assert.IsFalse(imageNameToPages.ContainsKey("placeHolder.png"), "Placeholder images get filtered out");
-			Assert.IsTrue(imageNameToPages.ContainsKey("AOR_aa017m.png"), "Should include background images from numbered pages");
-			Assert.IsTrue(imageNameToPages.ContainsKey("The Moon and The Cap_Page 041.jpg"), "Missing normal Moon and Cap image");
-			var moonAndCap = imageNameToPages["The Moon and The Cap_Page 041.jpg"];
-			Assert.AreEqual(2, moonAndCap.Count, "Wrong number of Moon and Cap images");
-			Assert.AreEqual("2", moonAndCap.First());
-			Assert.AreEqual("3", moonAndCap.Last());
-			var aorEag = imageNameToPages["AOR_EAG00864.png"];
-			Assert.AreEqual(3, aorEag.Count);
-			Assert.AreEqual("4", aorEag.First(), "Should sort '4' before '5' and '10'");
-			Assert.AreEqual("10", aorEag.Last(), "Should sort '10' after '5'");
-			Assert.IsTrue(aorEag.Contains("5"), "'5' should be there in the middle");
-			var backCvr = imageNameToPages["AOR_aa018.png"];
-			Assert.AreEqual("10", backCvr.First(), "Page 10 image should report before back matter");
-			Assert.AreEqual("Outside Back Cover", backCvr.Last(), "Back cover non-branding image should report Outside Back Cover");
-		}
+            var dom = new XmlDocument();
+            dom.LoadXml(xhtml);
+            var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(
+                dom.SelectSingleNode("//body")
+            );
+            Assert.AreEqual(7, imageNameToPages.Keys.Count, "Should be a total of 7 unique images");
+            Assert.AreEqual(
+                "Front Cover",
+                imageNameToPages["AOR_aa013m.png"].First(),
+                "Should include xmatter pics"
+            );
+            Assert.AreEqual(
+                "2",
+                imageNameToPages["AOR_aa013m.png"].Last(),
+                "Numbered pages should be after front matter"
+            );
+            Assert.IsFalse(
+                imageNameToPages.ContainsKey("title-page.svg"),
+                "Branding images get filtered out"
+            );
+            Assert.IsFalse(
+                imageNameToPages.ContainsKey("credits-page-bottom.png"),
+                "Branding images get filtered out"
+            );
+            Assert.IsFalse(
+                imageNameToPages.ContainsKey("back-cover-outside.svg"),
+                "Branding images get filtered out"
+            );
+            Assert.IsFalse(
+                imageNameToPages.ContainsKey("back-cover-outside-wide.png"),
+                "Branding images get filtered out"
+            );
+            Assert.IsFalse(
+                imageNameToPages.ContainsKey("placeHolder.png"),
+                "Placeholder images get filtered out"
+            );
+            Assert.IsTrue(
+                imageNameToPages.ContainsKey("AOR_aa017m.png"),
+                "Should include background images from numbered pages"
+            );
+            Assert.IsTrue(
+                imageNameToPages.ContainsKey("The Moon and The Cap_Page 041.jpg"),
+                "Missing normal Moon and Cap image"
+            );
+            var moonAndCap = imageNameToPages["The Moon and The Cap_Page 041.jpg"];
+            Assert.AreEqual(2, moonAndCap.Count, "Wrong number of Moon and Cap images");
+            Assert.AreEqual("2", moonAndCap.First());
+            Assert.AreEqual("3", moonAndCap.Last());
+            var aorEag = imageNameToPages["AOR_EAG00864.png"];
+            Assert.AreEqual(3, aorEag.Count);
+            Assert.AreEqual("4", aorEag.First(), "Should sort '4' before '5' and '10'");
+            Assert.AreEqual("10", aorEag.Last(), "Should sort '10' after '5'");
+            Assert.IsTrue(aorEag.Contains("5"), "'5' should be there in the middle");
+            var backCvr = imageNameToPages["AOR_aa018.png"];
+            Assert.AreEqual(
+                "10",
+                backCvr.First(),
+                "Page 10 image should report before back matter"
+            );
+            Assert.AreEqual(
+                "Outside Back Cover",
+                backCvr.Last(),
+                "Back cover non-branding image should report Outside Back Cover"
+            );
+        }
 
-		[Test]
-		public void GetFilteredImageNameToPagesDictionary_WorksWithBengaliNumerals()
-		{
-			const string xhtml = @"
+        [Test]
+        public void GetFilteredImageNameToPagesDictionary_WorksWithBengaliNumerals()
+        {
+            const string xhtml =
+                @"
 <body>
 	<div class=""bloom-page bloom-frontMatter"" data-page-number="""">
 		<div data-after-content="""" class=""pageLabel"" lang=""en"">
@@ -302,22 +343,35 @@ namespace BloomTests.web.controllers
 	</div>
 </body>";
 
-			var dom = new XmlDocument();
-			dom.LoadXml(xhtml);
-			var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(dom.SelectSingleNode("//body"));
-			Assert.AreEqual(7, imageNameToPages.Keys.Count, "Should be a total of 7 unique images");
-			Assert.IsTrue(imageNameToPages.ContainsKey("The Moon and The Cap_Page 041.jpg"), "Missing normal Moon and Cap image");
-			var moonAndCap = imageNameToPages["The Moon and The Cap_Page 041.jpg"];
-			Assert.AreEqual(2, moonAndCap.Count, "Wrong number of Moon and Cap images");
-			Assert.AreEqual(new SortedSet<string> { "১", "২" }, moonAndCap, "Should return Bengali page numbers");
-			Assert.AreEqual("বাইরের পিছনে কভার", imageNameToPages["AOR_aa010.png"].First(),
-				"If pageLabel is translated, we should get the translated value.");
-		}
+            var dom = new XmlDocument();
+            dom.LoadXml(xhtml);
+            var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(
+                dom.SelectSingleNode("//body")
+            );
+            Assert.AreEqual(7, imageNameToPages.Keys.Count, "Should be a total of 7 unique images");
+            Assert.IsTrue(
+                imageNameToPages.ContainsKey("The Moon and The Cap_Page 041.jpg"),
+                "Missing normal Moon and Cap image"
+            );
+            var moonAndCap = imageNameToPages["The Moon and The Cap_Page 041.jpg"];
+            Assert.AreEqual(2, moonAndCap.Count, "Wrong number of Moon and Cap images");
+            Assert.AreEqual(
+                new SortedSet<string> { "১", "২" },
+                moonAndCap,
+                "Should return Bengali page numbers"
+            );
+            Assert.AreEqual(
+                "বাইরের পিছনে কভার",
+                imageNameToPages["AOR_aa010.png"].First(),
+                "If pageLabel is translated, we should get the translated value."
+            );
+        }
 
-		[Test]
-		public void GetFilteredImageNameToPagesDictionary_WorksWithBishmallahImageInDataDiv()
-		{
-			const string xhtml = @"
+        [Test]
+        public void GetFilteredImageNameToPagesDictionary_WorksWithBishmallahImageInDataDiv()
+        {
+            const string xhtml =
+                @"
 <body>
 	<div id=""bloomDataDiv"">
 		<div lang=""*"" data-book=""bishmallah"">
@@ -326,66 +380,87 @@ namespace BloomTests.web.controllers
 	</div>
 </body>";
 
-			var dom = new XmlDocument();
-			dom.LoadXml(xhtml);
-			var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(dom.SelectSingleNode("//body"));
-			Assert.AreEqual(0, imageNameToPages.Keys.Count, "Unique image is not on a bloom-page");
-		}
+            var dom = new XmlDocument();
+            dom.LoadXml(xhtml);
+            var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(
+                dom.SelectSingleNode("//body")
+            );
+            Assert.AreEqual(0, imageNameToPages.Keys.Count, "Unique image is not on a bloom-page");
+        }
 
-		[Test]
-		public void CollectFormattedCredits_SingleCredit_Works()
-		{
-			_creditsToFormat.Add("my credit", new List<string> {"Front Cover", "2"});
-			var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
-			Assert.That(results.Count(), Is.EqualTo(1));
-			Assert.That(results.First(), Is.EqualTo("Images by my credit."), "Single credit should have non-page format.");
-		}
+        [Test]
+        public void CollectFormattedCredits_SingleCredit_Works()
+        {
+            _creditsToFormat.Add("my credit", new List<string> { "Front Cover", "2" });
+            var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
+            Assert.That(results.Count(), Is.EqualTo(1));
+            Assert.That(
+                results.First(),
+                Is.EqualTo("Images by my credit."),
+                "Single credit should have non-page format."
+            );
+        }
 
-		[Test]
-		public void CollectFormattedCredits_MultipleCredits_Works()
-		{
-			_creditsToFormat.Add("my credit", new List<string> { "Front Cover", "2" });
-			_creditsToFormat.Add("next credit", new List<string> { "2", "4", "Outside Back Cover" });
-			var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
-			Assert.That(results.Count(), Is.EqualTo(2));
-			Assert.That(results.First(), Is.EqualTo("Images on pages Front Cover, 2 by my credit."));
-			Assert.That(results.Last(), Is.EqualTo("Images on pages 2, 4, Outside Back Cover by next credit."));
-		}
+        [Test]
+        public void CollectFormattedCredits_MultipleCredits_Works()
+        {
+            _creditsToFormat.Add("my credit", new List<string> { "Front Cover", "2" });
+            _creditsToFormat.Add(
+                "next credit",
+                new List<string> { "2", "4", "Outside Back Cover" }
+            );
+            var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
+            Assert.That(results.Count(), Is.EqualTo(2));
+            Assert.That(
+                results.First(),
+                Is.EqualTo("Images on pages Front Cover, 2 by my credit.")
+            );
+            Assert.That(
+                results.Last(),
+                Is.EqualTo("Images on pages 2, 4, Outside Back Cover by next credit.")
+            );
+        }
 
-		[Test]
-		public void CollectFormattedCredits_MultipleCredits_WorksWithEnDash()
-		{
-			_creditsToFormat.Add("my credit", new List<string> { "2" });
-			_creditsToFormat.Add("next credit", new List<string> { "2", "3", "4", "Outside Back Cover" });
-			var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
-			Assert.That(results.Count(), Is.EqualTo(2));
-			Assert.That(results.First(), Is.EqualTo("Image on page 2 by my credit."));
-			// This is an en-dash, not a hyphen!
-			Assert.That(results.Last(), Is.EqualTo("Images on pages 2–4, Outside Back Cover by next credit."));
-		}
+        [Test]
+        public void CollectFormattedCredits_MultipleCredits_WorksWithEnDash()
+        {
+            _creditsToFormat.Add("my credit", new List<string> { "2" });
+            _creditsToFormat.Add(
+                "next credit",
+                new List<string> { "2", "3", "4", "Outside Back Cover" }
+            );
+            var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
+            Assert.That(results.Count(), Is.EqualTo(2));
+            Assert.That(results.First(), Is.EqualTo("Image on page 2 by my credit."));
+            // This is an en-dash, not a hyphen!
+            Assert.That(
+                results.Last(),
+                Is.EqualTo("Images on pages 2–4, Outside Back Cover by next credit.")
+            );
+        }
 
-		[Test]
-		public void CollectFormattedCredits_MultipleCredits_WorksWithEnDash2()
-		{
-			_creditsToFormat.Add("abc credit", new List<string> { "5", "7", "8", "9", "10", "12" });
-			_creditsToFormat.Add("some credit", new List<string> { "6" });
-			var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
-			Assert.That(results.Count(), Is.EqualTo(2));
-			// This is an en-dash, not a hyphen!
-			Assert.That(results.First(), Is.EqualTo("Images on pages 5, 7–10, 12 by abc credit."));
-			Assert.That(results.Last(), Is.EqualTo("Image on page 6 by some credit."));
-		}
+        [Test]
+        public void CollectFormattedCredits_MultipleCredits_WorksWithEnDash2()
+        {
+            _creditsToFormat.Add("abc credit", new List<string> { "5", "7", "8", "9", "10", "12" });
+            _creditsToFormat.Add("some credit", new List<string> { "6" });
+            var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
+            Assert.That(results.Count(), Is.EqualTo(2));
+            // This is an en-dash, not a hyphen!
+            Assert.That(results.First(), Is.EqualTo("Images on pages 5, 7–10, 12 by abc credit."));
+            Assert.That(results.Last(), Is.EqualTo("Image on page 6 by some credit."));
+        }
 
-		[Test]
-		public void CollectFormattedCredits_MultipleCredits_WorksWithEnDash3()
-		{
-			_creditsToFormat.Add("some credit", new List<string> { "1" });
-			_creditsToFormat.Add("abc credit", new List<string> { "5", "7", "8", "9", "10" });
-			var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
-			Assert.That(results.Count(), Is.EqualTo(2));
-			// This is an en-dash, not a hyphen!
-			Assert.That(results.First(), Is.EqualTo("Image on page 1 by some credit."));
-			Assert.That(results.Last(), Is.EqualTo("Images on pages 5, 7–10 by abc credit."));
-		}
-	}
+        [Test]
+        public void CollectFormattedCredits_MultipleCredits_WorksWithEnDash3()
+        {
+            _creditsToFormat.Add("some credit", new List<string> { "1" });
+            _creditsToFormat.Add("abc credit", new List<string> { "5", "7", "8", "9", "10" });
+            var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
+            Assert.That(results.Count(), Is.EqualTo(2));
+            // This is an en-dash, not a hyphen!
+            Assert.That(results.First(), Is.EqualTo("Image on page 1 by some credit."));
+            Assert.That(results.Last(), Is.EqualTo("Images on pages 5, 7–10 by abc credit."));
+        }
+    }
 }

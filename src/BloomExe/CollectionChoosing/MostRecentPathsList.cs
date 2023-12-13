@@ -8,99 +8,102 @@ using SIL.IO;
 
 namespace Bloom.CollectionChoosing
 {
-	/// <summary>
-	/// A serializable list of most recently used file paths
-	/// </summary>
-	[Serializable]
-	[XmlRoot("RecentlyUsedFiles")]
-	public class MostRecentPathsList
-	{
-//        public static MostRecentPathsList CreateOne
-//        {
-//            get { return new MostRecentPathsList(); }
-//        }
+    /// <summary>
+    /// A serializable list of most recently used file paths
+    /// </summary>
+    [Serializable]
+    [XmlRoot("RecentlyUsedFiles")]
+    public class MostRecentPathsList
+    {
+        //        public static MostRecentPathsList CreateOne
+        //        {
+        //            get { return new MostRecentPathsList(); }
+        //        }
 
-		private readonly List<string> _paths;
+        private readonly List<string> _paths;
 
-		public MostRecentPathsList()
-		{
-			_paths = new List<string>();
-		}
+        public MostRecentPathsList()
+        {
+            _paths = new List<string>();
+        }
 
-		[XmlElement("Path")]
-		public string[] Paths
-		{
-			get
-			{
-				List<string> paths = new List<string>(GetNonStalePaths());
-				return paths.ToArray();
-			}
-			set
-			{
-				_paths.Clear();
-				if (value != null)
-				{
-					foreach (string path in value)
-					{
-						if (!_paths.Contains(path))
-						{
-							_paths.Add(path);
-						}
-					}
-				}
-			}
-		}
+        [XmlElement("Path")]
+        public string[] Paths
+        {
+            get
+            {
+                List<string> paths = new List<string>(GetNonStalePaths());
+                return paths.ToArray();
+            }
+            set
+            {
+                _paths.Clear();
+                if (value != null)
+                {
+                    foreach (string path in value)
+                    {
+                        if (!_paths.Contains(path))
+                        {
+                            _paths.Add(path);
+                        }
+                    }
+                }
+            }
+        }
 
-		[XmlIgnore]
-		public string Latest
-		{
-			get
-			{
-				foreach (string path in GetNonStalePaths())
-				{
-					return path;
-				}
-				return null;
-			}
-		}
+        [XmlIgnore]
+        public string Latest
+        {
+            get
+            {
+                foreach (string path in GetNonStalePaths())
+                {
+                    return path;
+                }
+                return null;
+            }
+        }
 
-		private IEnumerable<string> GetNonStalePaths()
-		{
-			foreach (string path in _paths)
-			{
-				if (RobustFile.Exists(path) || Directory.Exists(path))
-				{
-					yield return path;
-				}
-			}
-		}
+        private IEnumerable<string> GetNonStalePaths()
+        {
+            foreach (string path in _paths)
+            {
+                if (RobustFile.Exists(path) || Directory.Exists(path))
+                {
+                    yield return path;
+                }
+            }
+        }
 
-		/// <summary>
-		/// Adds path to top of list of most recently used files if it exists (returns false if it doesn't exist)
-		/// </summary>
-		/// <param name="path"></param>
-		/// <returns>true if successful, false if given file does not exist</returns>
-		public bool AddNewPath(string path)
-		{
-			if (path == null)
-			{
-				throw new ArgumentNullException("path");
-			}
-			Debug.Assert(!LongPathAware.GetExceedsMaxPath(path), "AddNewPath() expects that paths that get here are short enough (BL-10012).");
-			// NB: this will be false if the path exceeds maxpath, and so we just don't add this collection to the MRU. (BL-10012)
-			if (!RobustFile.Exists(path) && ! Directory.Exists(path))
-			{
-				return false;
-			}
-			_paths.Remove(path);
+        /// <summary>
+        /// Adds path to top of list of most recently used files if it exists (returns false if it doesn't exist)
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns>true if successful, false if given file does not exist</returns>
+        public bool AddNewPath(string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException("path");
+            }
+            Debug.Assert(
+                !LongPathAware.GetExceedsMaxPath(path),
+                "AddNewPath() expects that paths that get here are short enough (BL-10012)."
+            );
+            // NB: this will be false if the path exceeds maxpath, and so we just don't add this collection to the MRU. (BL-10012)
+            if (!RobustFile.Exists(path) && !Directory.Exists(path))
+            {
+                return false;
+            }
+            _paths.Remove(path);
 
-			_paths.Insert(0, path);
-			return true;
-		}
+            _paths.Insert(0, path);
+            return true;
+        }
 
-		public void RemovePath(string path)
-		{
-			_paths.Remove(path);
-		}
-	}
+        public void RemovePath(string path)
+        {
+            _paths.Remove(path);
+        }
+    }
 }
