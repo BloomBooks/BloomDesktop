@@ -185,10 +185,11 @@ namespace Bloom.web.controllers
 				{
 					// Something went wrong, possibly already reported.
 					// If the book has sign language videos, we don't create a PDF, so we don't want to report a PDF generation failure.
-					if (Model.PdfGenerationSucceeded || Model.Book.HasSignLanguageVideos())
-						ReportTryAgainDuringUpload();
-					else
-						ReportPdfGenerationFailed();
+					// Somewhere in 5.5, we lost setting PdfGenerationSucceeded; so I'm just commenting this out for now.
+					//if (Model.PdfGenerationSucceeded || Model.Book.HasSignLanguageVideos())
+					ReportTryAgainDuringUpload();
+					//else
+					//	ReportPdfGenerationFailed();
 				}
 				else
 				{
@@ -303,9 +304,39 @@ namespace Bloom.web.controllers
 			_webSocketProgress.Message("CheckingExistingCopy", "Checking for existing copy on server...");
 
 			dynamic collisionDialogInfo;
-			if (Model.BookIsAlreadyOnServer)
+			bool isBookOnServer;
+			try
 			{
-				collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToAdvertiseOnBloomLibrary, ModelIndicatesSignLanguageChecked);
+				isBookOnServer = Model.IsBookAlreadyOnServer();
+			}
+			catch
+			{
+				// This should be pretty rare. We can't get this far unless we already verified the user is logged in.
+				_webSocketProgress.MessageWithoutLocalizing("Unable to check for existing copy on server. Please try again in a minute or two.", ProgressKind.Error);
+				request.ReplyWithJson(new
+				{
+					error = true,
+					shouldShow = false
+				});
+				return;
+			}
+			if (isBookOnServer)
+			{
+				try
+				{
+					collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToAdvertiseOnBloomLibrary, ModelIndicatesSignLanguageChecked);
+				}
+				catch
+				{
+					// This should be very rare. We just determined above that the book is on the server.
+					_webSocketProgress.MessageWithoutLocalizing("Unable to get existing book information. Please try again in a minute or two.", ProgressKind.Error);
+					request.ReplyWithJson(new
+					{
+						error = true,
+						shouldShow = false
+					});
+					return;
+				}
 			}
 			else
 			{

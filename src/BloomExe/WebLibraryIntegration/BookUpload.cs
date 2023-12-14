@@ -233,8 +233,9 @@ namespace Bloom.WebLibraryIntegration
 					if (parseId == "books")
 					{
 						// For NEW books the response URL is useless...need to do a new query to get the ID.
-						var json = ParseClient.GetSingleBookRecord(metadata.Id);
-						parseId = json.objectId.Value;
+						var successfulRequest = ParseClient.TryGetSingleBookRecord(metadata.Id, out var json);
+						if (successfulRequest)
+							parseId = json.objectId.Value;
 					}
 					//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
 					{
@@ -355,7 +356,12 @@ namespace Bloom.WebLibraryIntegration
 		public bool IsBookOnServer(string bookPath)
 		{
 			var metadata = BookMetaData.FromFile(bookPath.CombineForPath(BookInfo.MetaDataFileName));
-			return ParseClient.GetSingleBookRecord(metadata.Id) != null;
+			var successfulLookup = ParseClient.TryGetSingleBookRecord(metadata.Id, out var book);
+
+			if (!successfulLookup)
+				throw new ApplicationException($"Unable to look up whether book with ID {metadata.Id} is on the server.");
+
+			return book != null;
 		}
 
 		/// <summary>
@@ -365,7 +371,12 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var metadata = BookMetaData.FromFile(bookPath.CombineForPath(BookInfo.MetaDataFileName));
 			// 'true' parameter tells the query to include language information so we can get the names.
-			return ParseClient.GetSingleBookRecord(metadata.Id, true);
+			var successfulLookup = ParseClient.TryGetSingleBookRecord(metadata.Id, out var book, true);
+
+			if (!successfulLookup)
+				throw new ApplicationException($"Unable to look up book with ID {metadata.Id}");
+
+			return book;
 		}
 
 		// Wait (up to three seconds) for data uploaded to become available.

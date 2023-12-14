@@ -186,13 +186,17 @@ namespace Bloom.WebLibraryIntegration
 			return Client.Execute(request);
 		}
 
-		public dynamic GetSingleBookRecord(string id, bool includeLanguageInfo = false)
+		public bool TryGetSingleBookRecord(string id, out dynamic bookRecord, bool includeLanguageInfo = false)
 		{
+			bookRecord = null;
 			var json = GetBookRecords(id, includeLanguageInfo);
-			if (json == null || json.Count < 1)
-				return null;
+			if (json == null)
+				return false;
 
-			return json[0];
+			if (json.Count > 0)
+				bookRecord = json[0];
+
+			return true;
 		}
 
 		/// <summary>
@@ -209,8 +213,10 @@ namespace Bloom.WebLibraryIntegration
 
 		public dynamic GetBookRecords(string id, bool includeLanguageInfo, bool includeBooksFromOtherUploaders = false)
 		{
-			if (!UrlLookup.CheckGeneralInternetAvailability(false))
+			if (!UrlLookup.CheckGeneralInternetAvailability(false)) {
+				SIL.Reporting.Logger.WriteEvent("Internet was unavailable when trying to get book records.");
 				return null;
+			}
 			var query = "{\"bookInstanceId\":\"" + id + "\"";
 			if (!includeBooksFromOtherUploaders)
 			{
@@ -219,10 +225,21 @@ namespace Bloom.WebLibraryIntegration
 			query += "}";
 			var response = GetBookRecordsByQuery(query, includeLanguageInfo);
 			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				SIL.Reporting.Logger.WriteEvent($"Unable to query book records on parse.\n" +
+					$"query = {query}\n" +
+					$"response.StatusCode = {response.StatusCode}\n" +
+					$"response.Content = {response.Content}"
+					);
 				return null;
+			}
 			dynamic json = JObject.Parse(response.Content);
 			if (json == null)
+			{
+				SIL.Reporting.Logger.WriteEvent($"Unable to parse book records query result.\n" +
+					$"response.Content = {response.Content}");
 				return null;
+			}
 			return json.results;
 		}
 
@@ -266,7 +283,9 @@ namespace Bloom.WebLibraryIntegration
 			if (BookUpload.IsDryRun)
 				throw new ApplicationException("Should not call SetBookRecord during dry run!");
 			var metadata = BookMetaData.FromString(metadataJson);
-			var book = GetSingleBookRecord(metadata.Id);
+			var successfulRequest = TryGetSingleBookRecord(metadata.Id, out var book);
+			if (!successfulRequest)
+				throw new ApplicationException("BloomParseClient.SetBookRecord: Could not get book record for book with id " + metadata.Id);
 			metadataJson = ChangeJsonBeforeCreatingOrModifyingBook(metadataJson);
 			if (book == null)
 				return CreateBookRecord(metadataJson);
