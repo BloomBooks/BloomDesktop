@@ -188,7 +188,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public dynamic GetSingleBookRecord(string id, bool includeLanguageInfo = false)
 		{
-			var json = GetBookRecords(id, includeLanguageInfo);
+			var json = GetBookRecordsOrThrow(id, includeLanguageInfo);
 			if (json == null || json.Count < 1)
 				return null;
 
@@ -207,10 +207,17 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		public dynamic GetBookRecords(string id, bool includeLanguageInfo, bool includeBooksFromOtherUploaders = false)
+		// Query parse for books. Throw if there is any reason we can't make a successful query, including if there is no internet.
+		public dynamic GetBookRecordsOrThrow(string id, bool includeLanguageInfo, bool includeBooksFromOtherUploaders = false)
 		{
-			if (!UrlLookup.CheckGeneralInternetAvailability(false))
-				return null;
+			// For current usage of this method, we really need to know the difference between "no books found" and "we couldn't check".
+			// So all paths which don't allow us to check need to throw.
+			// Note that all this gets completely reworked in 5.7, so we don't have to live with this very long.
+
+			if (!UrlLookup.CheckGeneralInternetAvailability(false)) {
+				SIL.Reporting.Logger.WriteEvent("Internet was unavailable when trying to get book records.");
+				throw new ApplicationException("Unable to look up book records because there is no internet connection.");
+			}
 			var query = "{\"bookInstanceId\":\"" + id + "\"";
 			if (!includeBooksFromOtherUploaders)
 			{
@@ -219,10 +226,21 @@ namespace Bloom.WebLibraryIntegration
 			query += "}";
 			var response = GetBookRecordsByQuery(query, includeLanguageInfo);
 			if (response.StatusCode != HttpStatusCode.OK)
-				return null;
+			{
+				SIL.Reporting.Logger.WriteEvent($"Unable to query book records on parse.\n" +
+					$"query = {query}\n" +
+					$"response.StatusCode = {response.StatusCode}\n" +
+					$"response.Content = {response.Content}"
+					);
+				throw new ApplicationException("Unable to look up book records.");
+			}
 			dynamic json = JObject.Parse(response.Content);
 			if (json == null)
-				return null;
+			{
+				SIL.Reporting.Logger.WriteEvent($"Unable to parse book records query result.\n" +
+					$"response.Content = {response.Content}");
+				throw new ApplicationException("Unable to look up book records.");
+			}
 			return json.results;
 		}
 
