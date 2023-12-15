@@ -1182,6 +1182,7 @@ namespace Bloom.Publish.Video
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 #endif
+
         void PreventSleep()
         {
 #if __MonoCS__
