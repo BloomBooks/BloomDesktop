@@ -46,6 +46,9 @@ import ReactDOM = require("react-dom");
 import { FunctionComponentElement } from "react";
 export { getImageUrlFromImageButton } from "./js/bloomImages";
 
+import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
+export { showAdjustTimingsDialog as showAdjustTimingsDialogFromEditViewFrame };
+
 //Called by c# using editTabBundle.handleUndo()
 export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.

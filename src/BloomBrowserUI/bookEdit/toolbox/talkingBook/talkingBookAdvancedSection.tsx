@@ -29,6 +29,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     handleImportRecordingClick: () => void;
     split: (timingFilePath: string) => Promise<void>;
     editTimingsFile: () => void;
+    adjustTimings: () => void; // GUI for adjusting timings
     applyTimingsFile: () => void;
     setRecordingMode: (recordingMode: RecordingMode) => Promise<void>;
     inShowPlaybackOrderMode: boolean;
@@ -246,6 +247,32 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             }
                             l10nKey="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile"
                             onClick={props.applyTimingsFile}
+                        />
+                    </BloomTooltip>
+                    <BloomTooltip
+                        showDisabled={!enabledImportRecordingButton}
+                        tip={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.AdjustTimings"
+                        }}
+                        tipWhenDisabled={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" // TODO
+                        }}
+                        {...commonTooltipProps}
+                    >
+                        <BloomButton
+                            id="adjust-timings-button"
+                            //iconBeforeText={React.createElement(ImportIcon)}
+                            hasText={true}
+                            variant="outlined"
+                            size="small"
+                            enabled={
+                                props.recordingMode === RecordingMode.TextBox &&
+                                props.hasAudio // review: should this be enableEditTimings
+                            }
+                            l10nKey="EditTab.Toolbox.TalkingBookTool.AdjustTimings" // TODO
+                            onClick={() => props.adjustTimings()}
                         />
                     </BloomTooltip>
                 </div>

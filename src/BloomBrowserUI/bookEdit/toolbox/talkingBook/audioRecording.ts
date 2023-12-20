@@ -33,8 +33,10 @@ import axios, { AxiosResponse } from "axios";
 import {
     get,
     getWithPromise,
+    post,
     postData,
-    postJson
+    postJson,
+    postString
 } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
@@ -107,7 +109,7 @@ const kDisableHighlightClass = "ui-disableHighlight";
 const kSuppressHighlightClass = "ui-suppressHighlight";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
 const kAudioSentenceClassSelector = "." + kAudioSentence;
-const kAudioCurrent = "ui-audioCurrent";
+export const kAudioCurrent = "ui-audioCurrent";
 const kAudioCurrentClassSelector = "." + kAudioCurrent;
 const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
@@ -4304,6 +4306,12 @@ export default class AudioRecording {
                     }
 
                     await this.split(result.data);
+                },
+                adjustTimings: async () => {
+                    postString(
+                        "editView/runJavascriptOnEditFrame",
+                        "showAdjustTimingsDialogFromEditViewFrame()"
+                    );
                 }
             }),
             container
