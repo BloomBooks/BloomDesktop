@@ -31,6 +31,7 @@ using SIL.PlatformUtilities;
 using ThreadState = System.Threading.ThreadState;
 using Bloom.web.controllers;
 using Bloom.FontProcessing;
+using System.Web.UI.WebControls;
 
 namespace Bloom.Api
 {

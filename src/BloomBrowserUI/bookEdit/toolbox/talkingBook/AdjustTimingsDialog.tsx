@@ -17,12 +17,12 @@ import {
 } from "../../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
-    DialogCloseButton,
     DialogOkButton
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { postBoolean } from "../../../utils/bloomApi";
 import { kAudioCurrent } from "./audioRecording";
+import { AdjustTimingsControl, TimedTextSegment } from "./AdjustTimingsControl";
 
 export const AdjustTimingsDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
@@ -32,11 +32,11 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
-
-    const [currentTextBox, setCurrentTextBox] = useState<HTMLElement>();
     const [segments, setSegments] = useState<
         { start: number; end: number; text: string }[]
     >();
+    const [endTimes, setEndTimes] = useState<number[]>([]);
+    const [url, setUrl] = useState<string>();
 
     // Configure the local function (`show`) for showing the dialog to be the one derived from useSetupBloomDialog (`showDialog`)
     // which allows js launchers of the dialog to make it visible (by calling showCopyrightAndLicenseInfoOrDialog)
@@ -59,13 +59,6 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     React.useEffect(() => {
         if (!propsForBloomDialog.open) return;
         const bloomEditable = getCurrentTextBox();
-
-        interface Segment {
-            start: number;
-            end: number;
-            text: string;
-        }
-
         const endTimes = bloomEditable
             .getAttribute("data-audiorecordingendtimes")
             ?.split(" ")
@@ -73,7 +66,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         const segmentElements = Array.from(
             bloomEditable.getElementsByClassName("bloom-highlightSegment")
         ) as HTMLSpanElement[];
-        const segmentArray: Segment[] = [];
+        const segmentArray: TimedTextSegment[] = [];
 
         let start = 0;
         for (let i = 0; i < segmentElements.length; i++) {
@@ -86,6 +79,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             start = end;
         }
         setSegments(segmentArray);
+        setUrl(`audio/${bloomEditable.getAttribute("id")}.mp3`);
     }, [propsForBloomDialog.open]);
 
     return (
@@ -101,26 +95,25 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         >
             <DialogTitle title={dialogTitle} />
             <DialogMiddle>
+                <AdjustTimingsControl
+                    segments={segments!}
+                    url={url!}
+                    setEndTimes={endTimes => setEndTimes(endTimes)}
+                />
                 <div id={"json"}>
                     {/* {segments?.map(segment => JSON.stringify(segment, null, 2))} */}
                     {JSON.stringify(segments, null, 2)}
                 </div>
+                <div>{endTimes.join(" ")}</div>
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogOkButton
                     onClick={() => {
                         // read json from #json and then update the data-audiorecordingendtimes attribute in the getCurrentTextBox() div
                         const bloomEditable = getCurrentTextBox();
-                        const json = document.getElementById(
-                            "json"
-                        ) as HTMLElement;
-                        const segments = JSON.parse(json.textContent || "");
-                        const endTimes = segments.map(
-                            (segment: any) => segment.end
-                        );
                         bloomEditable.setAttribute(
                             "data-audiorecordingendtimes",
-                            endTimes.join(" ").replace("2.72", "1.12")
+                            endTimes.join(" ")
                         );
 
                         closeDialog();

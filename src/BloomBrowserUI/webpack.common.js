@@ -110,6 +110,7 @@ module.exports = merge(core, {
             ".",
             pathToOriginalJavascriptFilesInLib,
             "node_modules",
+            "node_modules/wavesurfer.js/dist/plugins/regions.js",
             pathToBookEditJS,
             pathToOriginalJavascriptFilesInModified_Libraries
         ],
