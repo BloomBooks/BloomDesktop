@@ -5,9 +5,9 @@
     left: 5px;
 }
 ::part(region-handle-right) {
-    border-left: dashed;
+    border-right: dashed;
 
-    border-left-color: #d65649;
+    border-right-color: #d65649;
 }
 /* hide the start-marker handles */
 ::part(region-handle-left) {

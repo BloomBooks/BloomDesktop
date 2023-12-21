@@ -59,10 +59,14 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     React.useEffect(() => {
         if (!propsForBloomDialog.open) return;
         const bloomEditable = getCurrentTextBox();
+        console.log(
+            `AudjustTimingsControl bloomEditable: ${bloomEditable.outerHTML}`
+        );
         const endTimes = bloomEditable
             .getAttribute("data-audiorecordingendtimes")
             ?.split(" ")
             .map(parseFloat);
+        console.log(`AudjustTimingsControl endTimes: ${endTimes}`);
         const segmentElements = Array.from(
             bloomEditable.getElementsByClassName("bloom-highlightSegment")
         ) as HTMLSpanElement[];
@@ -78,7 +82,17 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             });
             start = end;
         }
+        console.log(
+            `AudjustTimingsControl segmentArray: ${JSON.stringify(
+                segmentArray,
+                null,
+                2
+            )}`
+        );
         setSegments(segmentArray);
+        console.log(
+            `AudjustTimingsControl url: ${bloomEditable.getAttribute("id")}`
+        );
         setUrl(`audio/${bloomEditable.getAttribute("id")}.mp3`);
     }, [propsForBloomDialog.open]);
 
@@ -100,11 +114,10 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                     url={url!}
                     setEndTimes={endTimes => setEndTimes(endTimes)}
                 />
-                <div id={"json"}>
-                    {/* {segments?.map(segment => JSON.stringify(segment, null, 2))} */}
+                {/* <div id={"json"}>
                     {JSON.stringify(segments, null, 2)}
                 </div>
-                <div>{endTimes.join(" ")}</div>
+                <div>{endTimes.join(" ")}</div> */}
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogOkButton

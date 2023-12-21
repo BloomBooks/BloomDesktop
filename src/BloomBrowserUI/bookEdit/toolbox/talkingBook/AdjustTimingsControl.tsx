@@ -41,6 +41,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
 
         function enqueue(playSpan: playSpan) {
             playQueueRef.current!.push(playSpan);
+            console.log("enqueue: " + playSpan.regionIndex.toString());
             // if this is the only item in the queue, start playing
             if (playQueueRef.current!.length === 1) {
                 /* somehow touching the style prevents wavesurfer seeing the the mouse up click, or something like that
@@ -90,6 +91,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 });
                 // after dragging, adjust the start time of the next region and the end time of the previous region
                 region.on("update-end", () => {
+                    console.log("update-end: " + index.toString());
                     const nextRegion = rp.getRegions()[index + 1];
                     if (nextRegion) {
                         nextRegion.start = region.end;
@@ -111,22 +113,27 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                     const endTimes = rp.getRegions().map(region => region.end);
                     props.setEndTimes(endTimes);
                     stopAndClearQueue();
-                    if (index > 0) {
+                    console.log("enqueue before: " + index.toString());
+
+                    // play the last bit before the divider
+                    // enqueue({
+                    //     start: Math.max(region.end - 1, region.start),
+                    //     // until 1 second later
+                    //     // end: region.start + 1,
+                    //     // to the end
+                    //     end: region.end,
+                    //     regionIndex: index
+                    // });
+                    // play the next bit after the divider
+                    if (index < props.segments.length - 1) {
+                        const nextRegion = rp.getRegions()[index + 1];
+                        console.log("enqueue after: " + (index + 1).toString());
                         enqueue({
-                            start: region.start - 0.5,
-                            end: region.start,
-                            regionIndex: index - 1
+                            start: nextRegion.start,
+                            end: Math.min(nextRegion.start + 1, nextRegion.end),
+                            regionIndex: index + 1
                         });
                     }
-                    // now play from the start the region
-                    enqueue({
-                        start: region.start,
-                        // until 1 second later
-                        // end: region.start + 1,
-                        // to the end
-                        end: region.end,
-                        regionIndex: index
-                    });
                 });
             });
         });
@@ -138,20 +145,20 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 //dequeue
                 playQueueRef.current?.shift();
                 if (playQueueRef.current!.length > 0) {
-                    const audio = new Audio(splat);
-                    const waitForTick = true; // I can't decide which I like better
+                    //const audio = new Audio(splat);
+                    //const waitForTick = true; // I can't decide which I like better
 
-                    if (waitForTick) {
-                        audio.play().then(() => {
-                            ws.setTime(playQueueRef.current![0].start);
-                            ws.play();
-                        });
-                    } else {
-                        audio.play();
-                        // now play the next time
-                        ws.setTime(playQueueRef.current![0].start);
-                        ws.play();
-                    }
+                    // if (waitForTick) {
+                    //     audio.play().then(() => {
+                    //         ws.setTime(playQueueRef.current![0].start);
+                    //         ws.play();
+                    //     });
+                    // } else {
+                    //audio.play();
+                    // now play the next time
+                    ws.setTime(playQueueRef.current![0].start);
+                    ws.play();
+                    //}
                 }
             }
         });
