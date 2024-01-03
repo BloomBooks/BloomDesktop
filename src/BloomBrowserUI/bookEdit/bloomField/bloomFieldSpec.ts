@@ -501,3 +501,34 @@ describe("fixPasteData", () => {
         );
     });
 });
+
+describe("removeUselessSpanMarkup", () => {
+    it("removes span with no attributes", () => {
+        expect(
+            BloomField.removeUselessSpanMarkup(
+                "<p><em><span>This is a test.</span></em></p>"
+            )
+        ).toBe("<p><em>This is a test.</em></p>");
+    });
+    it("does not remove span with attribute", () => {
+        expect(
+            BloomField.removeUselessSpanMarkup(
+                "<p><span id='s1'>This is a test.</span></p>"
+            )
+        ).toBe("<p><span id='s1'>This is a test.</span></p>");
+    });
+    it("handles input without spans", () => {
+        expect(
+            BloomField.removeUselessSpanMarkup(
+                "<p><em>This is a test.</em></p>"
+            )
+        ).toBe("<p><em>This is a test.</em></p>");
+    });
+    it("handles span with embedded markup elements", () => {
+        expect(
+            BloomField.removeUselessSpanMarkup(
+                "<p><span>This <strong>is</strong> a <em>test</em>.</span></p>"
+            )
+        ).toBe("<p>This <strong>is</strong> a <em>test</em>.</p>");
+    });
+});
