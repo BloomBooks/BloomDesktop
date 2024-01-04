@@ -54,6 +54,7 @@ namespace Bloom.WebLibraryIntegration
 
         public dynamic CallLongRunningAction(
             RestRequest request,
+            IProgress progress,
             string messageToShowUserOnFailure,
             string endpointForFailureLog
         )
@@ -79,7 +80,7 @@ namespace Bloom.WebLibraryIntegration
             string status = null;
             dynamic result = null;
             var statusRequest = new RestRequest(operationLocation.Value.ToString(), Method.GET);
-            while (!IsStatusTerminal(status))
+            while (!progress.CancelRequested && !IsStatusTerminal(status))
             {
                 response = AzureRestClient.Execute(statusRequest);
                 if (response.StatusCode != HttpStatusCode.OK)
@@ -147,7 +148,7 @@ namespace Bloom.WebLibraryIntegration
             string transactionId,
             string storageKeyOfBookFolderParentOnS3,
             AmazonS3Credentials uploadCredentials
-        ) InitiateBookUpload(string existingBookObjectId = null)
+        ) InitiateBookUpload(IProgress progress, string existingBookObjectId = null)
         {
             if (!LoggedIn)
                 throw new ApplicationException("Must be logged in to upload a book");
@@ -159,9 +160,13 @@ namespace Bloom.WebLibraryIntegration
 
             var result = CallLongRunningAction(
                 request,
+                progress,
                 messageToShowUserOnFailure: "Unable to initiate book upload on the server.",
                 endpointForFailureLog: "upload-start"
             );
+
+            if (progress.CancelRequested)
+                return (null, null, null);
 
             return (
                 result["transaction-id"],
@@ -182,7 +187,7 @@ namespace Bloom.WebLibraryIntegration
         //  - Updates the `books` record in parse-server with all fields from the client,
         //     including the new baseUrl which points to the new S3 location. Sets uploadPendingTimestamp to null.
         //  - Deletes the book files from the old S3 location
-        public void FinishBookUpload(string transactionId, string metadataJson)
+        public void FinishBookUpload(IProgress progress, string transactionId, string metadataJson)
         {
             if (!LoggedIn)
                 throw new ApplicationException("Must be logged in to upload a book");
@@ -195,6 +200,7 @@ namespace Bloom.WebLibraryIntegration
 
             CallLongRunningAction(
                 request,
+                progress,
                 messageToShowUserOnFailure: "Unable to finalize book upload on the server.",
                 endpointForFailureLog: "upload-finish"
             );
