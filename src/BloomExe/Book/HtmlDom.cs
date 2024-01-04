@@ -917,6 +917,17 @@ namespace Bloom.Book
                 newPage.SetAttribute("data-page", dataPageValue); //the template has these as data-page='extra'
             }
 
+            // Preserve the data-page-number attribute of the old page, which might be empty or missing.  (BL-12903)
+            var dataPageNumber = page.GetAttribute("data-page-number");
+            if (String.IsNullOrEmpty(dataPageNumber))
+            {
+                newPage.RemoveAttribute("data-page-number");
+            }
+            else
+            {
+                newPage.SetAttribute("data-page-number", dataPageNumber);
+            }
+
             // preserve the 'side' setting of the old page
             var classes = page.Attributes["class"].Value;
             var sideMatch = new Regex(@"\bside-\w*\b").Match(classes);
