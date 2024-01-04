@@ -400,7 +400,7 @@ namespace Bloom.WebLibraryIntegration
 
         // Setting param 'includeLanguageInfo' to true adds a param to the query that causes it to fold in
         // useful language information instead of only having the arcane langPointers object.
-        public IRestResponse GetBookRecordsByQuery(string query, bool includeLanguageInfo)
+        private IRestResponse GetBookRecordsByQuery(string query, bool includeLanguageInfo)
         {
             var request = MakeParseGetRequest("classes/books");
             request.AddParameter("where", query, ParameterType.QueryString);
@@ -411,6 +411,7 @@ namespace Bloom.WebLibraryIntegration
             return ParseRestClient.Execute(request);
         }
 
+        // Will throw an exception if there is any reason we can't make a successful query, including if there is no internet.
         public dynamic GetSingleBookRecord(string id, bool includeLanguageInfo = false)
         {
             var json = GetBookRecords(id, includeLanguageInfo);
@@ -434,14 +435,28 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
+        // Query parse for books.
+        // Will throw an exception if there is any reason we can't make a successful query, including if there is no internet.
         public dynamic GetBookRecords(
             string bookInstanceId,
             bool includeLanguageInfo,
             bool includeBooksFromOtherUploaders = false
         )
         {
+            // For current usage of this method, we really need to know the difference between "no books found" and "we couldn't check".
+            // So all paths which don't allow us to check need to throw.
+            // Note that all this gets completely reworked in 5.7, so we don't have to live with this very long.
+
             if (!UrlLookup.CheckGeneralInternetAvailability(false))
-                return null;
+            {
+                SIL.Reporting.Logger.WriteEvent(
+                    "Internet was unavailable when trying to get book records."
+                );
+                throw new ApplicationException(
+                    "Unable to look up book records because there is no internet connection."
+                );
+            }
+
             var query = "{\"bookInstanceId\":\"" + bookInstanceId + "\"";
             if (!includeBooksFromOtherUploaders)
             {
@@ -450,10 +465,26 @@ namespace Bloom.WebLibraryIntegration
             query += "}";
             var response = GetBookRecordsByQuery(query, includeLanguageInfo);
             if (response.StatusCode != HttpStatusCode.OK)
-                return null;
+            {
+                SIL.Reporting.Logger.WriteEvent(
+                    $"Unable to query book records on parse.\n"
+                        + $"query = {query}\n"
+                        + $"response.StatusCode = {response.StatusCode}\n"
+                        + $"response.Content = {response.Content}"
+                );
+                throw new ApplicationException("Unable to look up book records.");
+            }
+
             dynamic json = JObject.Parse(response.Content);
             if (json == null)
-                return null;
+            {
+                SIL.Reporting.Logger.WriteEvent(
+                    $"Unable to parse book records query result.\n"
+                        + $"response.Content = {response.Content}"
+                );
+                throw new ApplicationException("Unable to look up book records.");
+            }
+
             return json.results;
         }
 

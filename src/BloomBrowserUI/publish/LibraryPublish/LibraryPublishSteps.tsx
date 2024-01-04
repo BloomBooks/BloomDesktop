@@ -222,6 +222,10 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         setIsUploadComplete(false);
         setIsUploading(true);
         get("libraryPublish/getUploadCollisionInfo", result => {
+            if (result.data.error) {
+                // The API already sent an error message
+                return;
+            }
             if (result.data.shouldShow) {
                 setUploadCollisionInfo(result.data);
                 showUploadCollisionDialog();

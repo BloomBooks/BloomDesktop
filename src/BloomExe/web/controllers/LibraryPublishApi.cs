@@ -385,15 +385,37 @@ namespace Bloom.web.controllers
 
             _existingBookObjectIdOrNull = null;
 
-            dynamic collisionDialogInfo = Model.GetUploadCollisionDialogProps(
-                Model.TextLanguagesToAdvertiseOnBloomLibrary,
-                ModelIndicatesSignLanguageChecked
-            );
+            dynamic collisionDialogInfo;
+            try
+            {
+                collisionDialogInfo = Model.GetUploadCollisionDialogProps(
+                    Model.TextLanguagesToAdvertiseOnBloomLibrary,
+                    ModelIndicatesSignLanguageChecked
+                );
+            }
+            catch
+            {
+                // This should be pretty rare. We can't get this far unless we already verified the user is logged in.
+                _webSocketProgress.MessageWithoutLocalizing(
+                    "Unable to check for existing copy on server. Please try again in a minute or two.",
+                    ProgressKind.Error
+                );
+                request.ReplyWithJson(CollisionDialogInfoForErrorCondition);
+                return;
+            }
+
             if (collisionDialogInfo.shouldShow)
                 _existingBookObjectIdOrNull = collisionDialogInfo.existingBookObjectId.ToString();
 
             request.ReplyWithJson(collisionDialogInfo);
         }
+
+        private dynamic CollisionDialogInfoForErrorCondition =>
+            new
+            {
+                error = true, // Inform the client there was an error. Don't continue with the upload.
+                shouldShow = false // Don't show the dialog. (Currently this is ignored if error is true; in that case, we never show the dialog.)
+            };
 
         private void HandleUploadAfterChangingBookId(ApiRequest request)
         {
