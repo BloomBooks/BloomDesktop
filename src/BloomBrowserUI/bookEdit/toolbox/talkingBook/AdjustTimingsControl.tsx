@@ -5,11 +5,9 @@ import { Fragment, useState, useEffect, useRef } from "react";
 import WaveSurfer from "wavesurfer.js";
 import * as WaveSurferNamespace from "wavesurfer.js";
 
-//I could not get webpack to find this or any of the various versions of the file: import RegionsPlugin from "wavesurfer.js/dist/plugins/regions";
-//So I've copied this in
-import RegionsPlugin from "./regions";
+import RegionsPlugin from "../../../node_modules/wavesurfer.js/dist/plugins/regions";
 
-import splat from "./splat.mp3"; // sound curtesy zapsplat.com
+//import splat from "./splat.mp3"; // sound curtesy zapsplat.com
 
 export type TimedTextSegment = {
     start: number;

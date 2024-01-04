@@ -99,12 +99,11 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     return (
         <BloomDialog
             {...propsForBloomDialog}
-            css={css`
-                padding-left: 18px;
-                .MuiDialog-paperWidthSm {
-                    max-width: 720px;
-                }
-            `}
+            // css={css`
+            //     padding-left: 18px;
+            // `}
+            fullWidth={true}
+            maxWidth="lg"
             onCancel={closeDialog}
         >
             <DialogTitle title={dialogTitle} />
