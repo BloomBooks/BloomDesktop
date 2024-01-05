@@ -70,6 +70,16 @@ namespace Bloom.Edit
 
         internal const string PageScalingDivId = "page-scaling-container";
 
+        /// <summary>
+        /// Currently this is only valid in EditingView, since it depends on the Javascript code being
+        /// configured to send appropriate messages to the editView/setIsSelectionRange API.
+        /// </summary>
+        public static bool IsTextSelected;
+
+        private FileSystemWatcher _developerFileWatcher;
+        private DateTime _lastTimeWeReloadedBecauseOfDeveloperChange;
+        private bool _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles;
+
         //public event EventHandler UpdatePageList;
 
         public delegate EditingModel Factory(); //autofac uses this
@@ -167,6 +177,22 @@ namespace Bloom.Edit
                 }
             });
             _contentLanguages = new List<ContentLanguage>();
+
+            if (Debugger.IsAttached)
+            {
+                StartWatchingDeveloperChanges();
+            }
+        }
+
+        ~EditingModel()
+        {
+            // Note, as far as I can tell, EditingModels are never disposed of, so this is never caleld.
+            // New ones are created each time you open a new collection.
+            if (_developerFileWatcher != null)
+            {
+                _developerFileWatcher.Dispose();
+                _developerFileWatcher = null;
+            }
         }
 
         private Form _oldActiveForm;
@@ -695,7 +721,12 @@ namespace Bloom.Edit
         private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
         {
             CheckForBL2634("start of page selection changing--should have old IDs");
-            if (_view != null && !_inProcessOfDeleting && !_inProcessOfLoading)
+            if (
+                _view != null
+                && !_inProcessOfDeleting
+                && !_inProcessOfLoading
+                && !_skipNextSaveBecauseDeveloperIsTweakingSupportingFiles
+            )
             {
                 _view.ChangingPages = true;
                 _view.RunJavascriptWithStringResult_Sync_Dangerous(
@@ -706,6 +737,7 @@ namespace Bloom.Edit
                     "if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {editTabBundle.getEditablePageBundleExports().disconnectForGarbageCollection();}"
                 );
             }
+            _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = false;
         }
 
         void OnPageSelectionChanged(object sender, EventArgs e)
@@ -1732,10 +1764,79 @@ namespace Bloom.Edit
             EditPagePainted?.Invoke(sender, args);
         }
 
-        /// <summary>
-        /// Currently this is only valid in EditingView, since it depends on the Javascript code being
-        /// configured to send appropriate messages to the editView/setIsSelectionRange API.
-        /// </summary>
-        public static bool IsTextSelected;
+        // This speeds up developing brandings. It may speed up other things, but I haven't tested those.
+        // Currently, branding.json changes won't be visible until you change pages (or click on the current page thumbnail)
+        private void StartWatchingDeveloperChanges()
+        {
+            // This speeds up the process of tweaking branding files
+            if (Debugger.IsAttached)
+            {
+                _developerFileWatcher = new FileSystemWatcher { IncludeSubdirectories = true, };
+                _developerFileWatcher.Path =
+                    FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                        BloomFileLocator.BrowserRoot
+                    );
+                _developerFileWatcher.Changed += async (sender, args) =>
+                {
+                    if (CurrentBook == null)
+                        return;
+                    // if we've been called already in the past 5 seconds, don't do it again
+                    if (
+                        DateTime.Now
+                            .Subtract(_lastTimeWeReloadedBecauseOfDeveloperChange)
+                            .TotalSeconds < 2
+                    )
+                        return;
+                    _lastTimeWeReloadedBecauseOfDeveloperChange = DateTime.Now;
+
+                    // About this doing one thing for json and another for css; at the moment, I can't only
+                    // figure out how to do EITHER a BringBookUpToDate (make use of new json presets from branding)
+                    // OR actually refresh the page (make use of new css).
+                    //
+                    // Enhance: I suspect all the problems here are related to us changing the page id's each time we load, which I don't understand.
+                    // It may just be a mistake.
+                    if (args.Name.EndsWith(".json"))
+                    {
+                        CurrentBook.BringBookUpToDate(new NullProgress());
+                        _view.Invoke(
+                            (MethodInvoker)(
+                                async () =>
+                                {
+                                    var pageIndex = _pageSelection.CurrentSelection.GetIndex();
+                                    // Because BringBookUpToDate will have changed page id's, we need to rebuild the page
+                                    // list else the next time you click on one, that page won't be found.
+                                    _view.UpdatePageList(true);
+                                    // And also, when you click on another page, if we try to save the current page, it won't be found.
+                                    _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = true;
+
+                                    // ** I tried a lot of things to get this to work but was stymied. So you have
+                                    // to manually reload the page to see these kinds of changes.
+
+                                    // get the page object for the current page, which will have the new id
+                                    //var page = _currentlyDisplayedBook.GetPageByIndex(pageIndex);
+                                    //_pageSelection.SelectPage(page,true/* don't do anything else */);
+
+                                    //await Task.Delay(500);
+                                    //RefreshDisplayOfCurrentPage(false);
+                                    // dies _pageSelection.SelectPage(page);
+                                }
+                            )
+                        );
+                    }
+                    else // css, png, svg, js, etc.
+                    {
+                        CurrentBook.Storage.UpdateSupportFiles();
+                        _view.Invoke(
+                            (MethodInvoker)
+                                delegate
+                                {
+                                    RefreshDisplayOfCurrentPage(false);
+                                }
+                        );
+                    }
+                };
+                _developerFileWatcher.EnableRaisingEvents = true;
+            }
+        }
     }
 }
