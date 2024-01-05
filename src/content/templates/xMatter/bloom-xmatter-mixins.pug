@@ -54,6 +54,8 @@ mixin field-acknowledgments-originalVersion(lang="N1", hint="Original (or Shell)
 		+editable(kLanguageForPrototypeOnly).bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')&attributes(attributes)
 			| {Original Acknowledgments}
 
+mixin cover-bottom-first-row-branding
+	div(data-book='cover-bottom-first-row-branding-html' lang="*")
 
 //- This was special for Afghanistan, isn't currently available in standard page
 mixin cover-branding-bottom-left
@@ -128,6 +130,7 @@ mixin standard-cover-contents
 
 	// 2 columns: first for an optional logo, then text content
 	.bottomBlock
+		+cover-bottom-first-row-branding.coverBottomFirstRowBranding
 		+cover-branding-bottom-left.bottom-left-branding
 
 		// 2 rows
@@ -262,6 +265,7 @@ mixin factoryStandard-insideBackCover
 	// Inside Back Cover
 	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover', data-xmatter-page='insideBackCover')&attributes(attributes)#502BE62F-A4D0-4225-A598-1A203FA73239
 		block insideBackCoverContents
+			div(data-book='inside-back-cover-branding-top-html' lang="*")
 			+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style
 				label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
 
