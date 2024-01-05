@@ -9,13 +9,13 @@ using System.Xml.Linq;
 using Bloom;
 using Bloom.Book;
 using Bloom.Publish;
-using BloomBook = Bloom.Book.Book;
 using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.PlatformUtilities;
+using BloomBook = Bloom.Book.Book;
 
 namespace BloomTests.Publish
 {
@@ -247,8 +247,8 @@ namespace BloomTests.Publish
                 branding: "Test"
             );
             // MakeEpub (when using a physical file as we are) creates Device Xmatter, so usually page one is cover, page 2 is ours.
-            // But the added front cover is empty so it gets deleted. So page 1 is the one we're testing.
-            var assertThatPageOneData = AssertThatXmlIn.String(GetPageNData(1));
+            // If we go to default theme, the cover will be empty and get deleted, and we'll need to test page 1.
+            var assertThatPageOneData = AssertThatXmlIn.String(GetPageNData(2));
             assertThatPageOneData.HasNoMatchForXpath(
                 "//xhtml:div[contains(@class,'bloom-imageDescription')]",
                 _ns

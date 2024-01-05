@@ -36,6 +36,7 @@ import {
 } from "../../react_components/color-picking/colorPickerDialog";
 import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
 import {
+    post,
     postJson,
     useApiObject,
     useApiStringState
@@ -44,6 +45,7 @@ import { ShowEditViewDialog } from "../editViewFrame";
 import { useL10n } from "../../react_components/l10nHooks";
 import { Div } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
+import { default as TrashIcon } from "@mui/icons-material/Delete";
 
 let isOpenAlready = false;
 
@@ -53,6 +55,19 @@ type IAppearanceUIOptions = {
     firstPossiblyLegacyCss?: string;
     themeNames: IPageStyles;
 };
+
+// Stuff we find in the appearance property of the object we get from the book/settings api.
+// Not yet complete
+export interface IAppearanceSettings {
+    cssThemeName: string;
+}
+
+// Stuff we get from the book/settings api.
+// Not yet complete
+export interface IBookSettings {
+    appearance: IAppearanceSettings;
+    firstPossiblyLegacyCss?: string;
+}
 
 export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const {
@@ -86,6 +101,19 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
 
     const [appearanceDisabled, setAppearanceDisabled] = React.useState(false);
 
+    // We use state here to allow the dialog UI to update without permanently changing the settings
+    // and getting notified of  those changes. The changes are persisted when the user clicks OK
+    // (except for the button to delete customBookStyles.css, which is done immediately).
+    // A downside of this is that when we delete customBookStyles.css, we don't know whether
+    // the result will be no conflicts or that customCollectionStyles.css will now be the
+    // firstPossiblyLegacyCss. For now it just behaves as if there are now no conflicts.
+    // One possible approach is to have the server return the new firstPossiblyLegacyCss
+    // as the result of the deleteCustomBookStyles call.
+    const [theme, setTheme] = React.useState("");
+    const [firstPossiblyLegacyCss, setFirstPossiblyLegacyCss] = React.useState(
+        ""
+    );
+
     React.useEffect(() => {
         if (settingsString === "{}") {
             return; // leave settings as undefined
@@ -97,21 +125,27 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         }
     }, [settingsString]);
 
+    React.useEffect(() => {
+        setFirstPossiblyLegacyCss(
+            appearanceUIOptions?.firstPossiblyLegacyCss ?? ""
+        );
+    }, [appearanceUIOptions]);
+
     const bookSettingsTitle = useL10n("Book Settings", "BookSettings.Title");
-    const resolutionLabel = useL10n(
-        "Resolution",
-        "BookSettings.eBook.Image.MaxResolution"
-    );
     React.useEffect(() => {
         if (settings && (settings as any).appearance) {
             const liveSettings = settingsToReturnLater || settings;
             setAppearanceDisabled(
-                !!appearanceUIOptions?.firstPossiblyLegacyCss ||
-                    (liveSettings as any)?.appearance?.cssThemeName ===
-                        "legacy-5-6"
+                (liveSettings as any)?.appearance?.cssThemeName === "legacy-5-6"
             );
+            setTheme((liveSettings as IBookSettings)?.appearance?.cssThemeName);
         }
     }, [settings, settingsToReturnLater]);
+
+    const deleteCustomBookStyles = () => {
+        post("book/settings/deleteCustomBookStyles");
+        setFirstPossiblyLegacyCss("");
+    };
 
     return (
         <BloomDialog
@@ -173,20 +207,13 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                         }}
                     >
                         <ConfigrGroup label="Appearance" level={1}>
-                            {appearanceUIOptions?.firstPossiblyLegacyCss && (
-                                <WarningBox>
-                                    {`"${appearanceUIOptions?.firstPossiblyLegacyCss}" might not be compatible with  modern Appearance settings, so this book is in "legacy" mode. See (TODO) for more information.`}
-                                </WarningBox>
-                            )}
                             <ConfigrSubgroup
                                 label="Page Theme"
                                 path={`appearance`}
                             >
                                 <ConfigrSelect
                                     label="Theme"
-                                    disabled={
-                                        !!appearanceUIOptions?.firstPossiblyLegacyCss
-                                    }
+                                    disabled={false}
                                     path={`appearance.cssThemeName`}
                                     options={appearanceUIOptions.themeNames.map(
                                         x => {
@@ -196,10 +223,75 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                             };
                                         }
                                     )}
-                                    description="Choose a theme to easily change margins, borders, an other page settings."
+                                    description="Choose a theme to easily change margins, borders, and other page settings."
                                 />
                             </ConfigrSubgroup>
-                            {!appearanceUIOptions?.firstPossiblyLegacyCss &&
+                            {
+                                // This group of three possible messages...sometimes none of them shows, so there are four options...
+                                // is very similar to the one in BookInfoIndicator.tsx. If you change one, you may need to change the other.
+                                // In particular, the logic for which to show and the text of the messages should be kept in sync.
+                                // Unfortunately, the formatting is quite different, and here we want to use the Warning/NoteBox
+                                // components, but they don't apply there. Probably, when we internationalize and implement the
+                                // TODO links, we'll want to refactor this to use at least one common components for
+                                // Internationalized-messages-with-link. (I think all three message in both locations will use the
+                                // same link, so that could be built into the component.)
+                                // I'm not seeing a clean way to reuse the logic. Some sort of higher-order component might work,
+                                // but I don't think the logic is complex enough to be worth it, when only used in two places.
+                            }
+                            {firstPossiblyLegacyCss && theme === "legacy-5-6" && (
+                                <WarningBox>
+                                    {`The "${firstPossiblyLegacyCss}" stylesheet of this book is incompatible with
+                                    modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click (TODO) for more information.`}
+                                </WarningBox>
+                            )}
+                            {firstPossiblyLegacyCss ===
+                                "customBookStyles.css" &&
+                                theme !== "legacy-5-6" && (
+                                    <div>
+                                        <NoteBox>
+                                            {`The "customBookStyles.css" stylesheet of this book is incompatible with
+                                    modern themes. Bloom is currently ignoring it. If you don't need those
+                                    customizations any more, you can delete your customBookStyles.css. Click (TODO) for more information.`}
+                                        </NoteBox>
+
+                                        <div
+                                            css={css`
+                                                display: flex;
+                                                align-items: center;
+                                                margin-top: 10px;
+                                                margin-bottom: 10px;
+                                            `}
+                                            onClick={() =>
+                                                deleteCustomBookStyles()
+                                            }
+                                        >
+                                            <TrashIcon
+                                                id="trashIcon"
+                                                color="primary"
+                                            />
+                                            <div
+                                                css={css`
+                                                    color: ${kBloomBlue};
+                                                `}
+                                            >
+                                                Delete customBookStyles.css
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            {firstPossiblyLegacyCss &&
+                                firstPossiblyLegacyCss !==
+                                    "customBookStyles.css" &&
+                                theme !== "legacy-5-6" && (
+                                    <NoteBox>
+                                        {`"The ${firstPossiblyLegacyCss}" stylesheet of this book is incompatible with
+                                    modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`}
+                                    </NoteBox>
+                                )}
+                            {
+                                // This is not part of the group of three mutually exclusive messages above
+                            }
+                            {!firstPossiblyLegacyCss &&
                                 (settingsToReturnLater as any)?.appearance
                                     ?.cssThemeName === "legacy-5-6" && (
                                     <NoteBox>
@@ -262,8 +354,8 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             </ConfigrSubgroup>
                         </ConfigrGroup>
                         <ConfigrGroup label="BloomPUB" level={1}>
-                             {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}
-                           <BloomResolutionSlider
+                            {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}
+                            <BloomResolutionSlider
                                 label="Resolution"
                                 path={`publish.bloomPUB.imageSettings`}
                             />

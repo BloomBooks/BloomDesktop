@@ -303,8 +303,12 @@ namespace Bloom.Api
                 socket == null
                     ? "web socket is null; "
                     : $"web socket is not available, {connectionInfoDetail}; ";
+            // JT Dec 2023: getting so many of these they drive me crazy, and sometimes manange to deadlock our server.
+            // I'm becoming more and more convinced that we're just including sockets on pages that we have navigated away from
+            // or even opened by browser windows we have closed. I do note that they seem more common when the system has been asleep
+            // while Bloom is running.
             NonFatalProblem.Report(
-                ModalIf.Alpha,
+                ModalIf.None,
                 PassiveIf.Alpha,
                 "web socket is not available when trying to send",
                 $"{socketDetail} bundle clientContext: {eventObject.clientContext}, eventId: {eventObject.id}, eventBundle: {eventBundle}",

@@ -1221,3 +1221,13 @@ body {
         display: flex;
     }
 }
+
+// For some reason, in 5.6 and before we had this being set in every xmatter.css for every page size
+// independently. We took that out to accommodate the new theme system, but we need some left
+// margin in legacy mode!
+// There are exceptions where outer cover left: is set to 0 in Kyrgystan-2020 epub and Uzbekistan 2023 xmatter,
+// but we'll deal with those later if they are still in use.
+.outsideFrontCover .marginBox,
+.outsideBackCover .marginBox {
+  left: 15mm;
+}

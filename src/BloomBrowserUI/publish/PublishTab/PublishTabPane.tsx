@@ -21,7 +21,7 @@ import { PDFPrintPublishScreen } from "../PDFPrintPublish/PDFPrintPublishScreen"
 import { PublishAudioVideo } from "../video/PublishAudioVideo";
 import { EPUBPublishScreen } from "../ePUBPublish/ePUBPublishScreen";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
-import { WarningBox } from "../../react_components/boxes";
+import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { kBloomUnselectedTabBackground } from "../../utils/colorUtils";
 
 export const EnterpriseNeededScreen: React.FunctionComponent<{
@@ -57,29 +57,71 @@ export const EnterpriseNeededScreen: React.FunctionComponent<{
                 position: absolute;
             `}
         >
-            <div
+            <NoteBox
                 css={css`
-                    background-color: white;
-                    box-sizing: border-box;
                     max-width: 800px;
-                    height: fit-content;
                     width: fit-content;
                     margin: 30px;
-                    padding: 20px;
                 `}
+                iconSize="large"
             >
-                <H2
-                    l10nKey="Common.EnterpriseRequired"
-                    css={css`
-                        margin-top: 0;
-                    `}
-                >
-                    Enterprise Required
-                </H2>
-                <p>{needsEnterpriseText1}</p>
-                <p>{needsEnterpriseText2}</p>
-                <p>{needsEnterpriseText3}</p>
-            </div>
+                <div>
+                    <H2
+                        l10nKey="Common.EnterpriseRequired"
+                        css={css`
+                            margin-top: 0;
+                        `}
+                    >
+                        Enterprise Required
+                    </H2>
+                    <p>{needsEnterpriseText1}</p>
+                    <p>{needsEnterpriseText2}</p>
+                    <p>{needsEnterpriseText3}</p>
+                </div>
+            </NoteBox>
+        </div>
+    );
+};
+
+export const CheckoutNeededScreen: React.FunctionComponent<{
+    titleForDisplay: string;
+}> = props => {
+    const needsCheckoutText1 = useL10n(
+        "Please check out this book from the Team Collection before publishing it.",
+        "TeamCollection.CheckoutRequiredExplanation"
+    );
+
+    return (
+        <div
+            css={css`
+                background-color: ${kBloomUnselectedTabBackground};
+                margin: 0;
+                height: 100%;
+                width: 100%;
+                position: absolute;
+            `}
+        >
+            <NoteBox
+                css={css`
+                    max-width: 800px;
+                    width: fit-content;
+                    margin: 30px;
+                `}
+                iconSize="large"
+            >
+                <div>
+                    <H2
+                        l10nKey="TeamCollection.CheckoutRequired"
+                        css={css`
+                            margin-top: 0;
+                        `}
+                        temporarilyDisableI18nWarning={true}
+                    >
+                        Checkout Required
+                    </H2>
+                    <p>{needsCheckoutText1}</p>
+                </div>
+            </NoteBox>
         </div>
     );
 };
@@ -90,6 +132,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
     const [publishTabReady, setPublishTabReady] = React.useState(false);
     const [publishTabInfo, setPublishTabInfo] = React.useState({
         enterpriseNeeded: false,
+        checkoutNeeded: false,
         canUpload: false,
         bookTitle: "",
         firstOverlayPage: 0
@@ -105,7 +148,8 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                 return;
             }
             setPublishTabInfo({
-                enterpriseNeeded: !result.data.canPublish,
+                enterpriseNeeded: result.data.cannotPublishWithoutEnterprise,
+                checkoutNeeded: result.data.cannotPublishWithoutCheckout,
                 canUpload: result.data.canUpload,
                 bookTitle: result.data.titleForDisplay,
                 firstOverlayPage: result.data.numberOfFirstPageWithOverlay
@@ -126,6 +170,23 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
         setup();
     }, []);
 
+    let altContent: JSX.Element | undefined = undefined;
+    if (!publishTabReady) {
+        // Show a blank screen until we get initial data for the publish tab
+        altContent = <div></div>;
+    } else if (publishTabInfo.enterpriseNeeded) {
+        altContent = (
+            <EnterpriseNeededScreen
+                titleForDisplay={publishTabInfo.bookTitle}
+                firstOverlayPage={publishTabInfo.firstOverlayPage}
+            />
+        );
+    } else if (publishTabInfo.checkoutNeeded) {
+        altContent = (
+            <CheckoutNeededScreen titleForDisplay={publishTabInfo.bookTitle} />
+        );
+    }
+
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>
@@ -136,15 +197,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                         background-color: ${kBloomUnselectedTabBackground};
                     `}
                 >
-                    {!publishTabReady ? (
-                        // Show a blank screen until we get initial data for the publish tab
-                        <div></div>
-                    ) : publishTabInfo.enterpriseNeeded ? (
-                        <EnterpriseNeededScreen
-                            titleForDisplay={publishTabInfo.bookTitle}
-                            firstOverlayPage={publishTabInfo.firstOverlayPage}
-                        />
-                    ) : (
+                    {altContent || (
                         <BloomTabs
                             id="tabs"
                             color="white"

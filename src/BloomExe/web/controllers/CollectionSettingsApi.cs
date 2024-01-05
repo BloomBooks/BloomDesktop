@@ -9,6 +9,7 @@ using Bloom.Collection;
 using L10NSharp;
 using SIL.Code;
 using SIL.IO;
+using SIL.Progress;
 
 namespace Bloom.web.controllers
 {
@@ -358,8 +359,7 @@ namespace Bloom.web.controllers
                         // Normally, we require a restart to change branding.
                         var key = request.RequiredPostString();
                         _collectionSettings.BrandingProjectKey = key;
-                        _bookSelection.CurrentSelection?.EnsureUpToDate(forceUpdate: true); // in case we changed the book's branding
-                        _bookSelection.CurrentSelection?.Storage.UpdateSupportFiles();
+                        _bookSelection.CurrentSelection?.BringBookUpToDate(new NullProgress()); // in case we changed the book's branding
                         request.PostSucceeded();
                     }
                 },

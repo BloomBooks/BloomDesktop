@@ -5280,6 +5280,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.</source>
         <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.CheckoutRequired" sil:dynamic="true" translate="no">
+        <source xml:lang="en">CheckoutRequired</source>
+        <note>ID: TeamCollection.ConflictingEdit</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.CreateTeamCollection" sil:dynamic="true">
         <source xml:lang="en">Create a Team Collection</source>
         <note>ID: TeamCollection.CreateTeamCollection</note>
@@ -5372,7 +5376,12 @@ Do you want to go ahead?</note>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.CheckoutRequiredExplanation" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Please check out this book from the Team Collection before publishing it.</source>
+        <note>ID: TeamCollection.ConflictingEdit</note>
+      </trans-unit>
 -->
+
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
         <source xml:lang="en">Activity</source>
         <note>ID: TemplateBooks.BookName.Activity</note>

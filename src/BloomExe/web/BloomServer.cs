@@ -5,32 +5,32 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.Edit;
+using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
+using Bloom.Properties;
+using Bloom.Publish;
+using Bloom.Publish.BloomPub;
+using Bloom.Publish.Epub;
+using Bloom.web;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
 using SIL.IO;
-using SIL.Reporting;
-using Bloom.Book;
-using Bloom.ImageProcessing;
-using Bloom.Collection;
-using Bloom.Edit;
-using Bloom.Publish.Epub;
-using Bloom.Properties;
-using Bloom.Publish;
-using Bloom.Publish.BloomPub;
-using Bloom.web;
 using SIL.PlatformUtilities;
+using SIL.Reporting;
 using ThreadState = System.Threading.ThreadState;
-using Bloom.web.controllers;
-using Bloom.FontProcessing;
 
 namespace Bloom.Api
 {
@@ -585,6 +585,13 @@ namespace Bloom.Api
             return ProcessContent(info, localPath);
         }
 
+        bool IsInBookFolder(string path)
+        {
+            if (CurrentBook == null || CurrentBook.FolderPath == null) // FolderPath may be null in unit tests
+                return false;
+            return path.Replace("\\", "/").StartsWith(CurrentBook.FolderPath.Replace("\\", "/"));
+        }
+
         // Handle requests for image files, that is, URLs that end in one of our image extensions.
         // Returns true if this is, in fact, a request for an image, in which case it will have
         // been handled; any reporting of problems will have been done, and a response generated.
@@ -619,8 +626,11 @@ namespace Bloom.Api
                     // we were accidentally finding license.png in a template book. See BL-4290.
                     return false;
                 }
+                info.ReplyWithImage(imageFile);
+                return true;
             }
-            else if (!RobustFileExistsWithCaseCheck(imageFile))
+            // Not a case where we are forcing the use of an unmodified image in the book folder.
+            if (!RobustFileExistsWithCaseCheck(imageFile))
             {
                 // Generally, the path we started with will only work when the HTML file is the root file of a book,
                 // or another file (other than preview) that is simulated to be in the book folder,
@@ -1092,23 +1102,26 @@ namespace Bloom.Api
             // BL-2219: "OriginalImages" means we're generating a pdf and want full images,
             // but it has nothing to do with css files and defeats the following 'if'
             var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");
-            // is this request the full path to a real file?
-            if (RobustFileExistsWithCaseCheck(localPath) && Path.IsPathRooted(localPath))
+            if (IsInBookFolder(localPath))
             {
-                // Typically this will be files in the book directory, since the browser
-                // is supplying the path.
-
-                var cssFileName = Path.GetFileName(localPath);
-
-                // enhance: you would think this was the default, but we currently
-                // have to treat these as a special case!!! Else the system is liable
-                // to go give you a file from some template book somewhere. Uggghhh.
-                if (BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(cssFileName))
+                // Any CSS files that are in the book folder should be up to date so we'll just use them.
+                info.ResponseContentType = "text/css";
+                if (!RobustFile.Exists(localPath))
                 {
-                    info.ResponseContentType = "text/css";
-                    info.ReplyWithFileContent(localPath);
-                    return true;
+                    // Some supporting css files, like editMode.css, are not copied to the book folder
+                    // because they are not needed for viewing or publishing.
+                    localPath = _bookSelection.CurrentSelection?.Storage.GetSupportingFile(
+                        Path.GetFileName(localPath)
+                    );
                 }
+                if (RobustFile.Exists(localPath))
+                    info.ReplyWithFileContent(localPath);
+                else
+                {
+                    info.WriteCompleteOutput("");
+                }
+
+                return true;
             }
 
             // if not a full path, try to find the correct file
@@ -1128,19 +1141,7 @@ namespace Bloom.Api
             // book folder; searching our usual path might find an undesirable one in some other collection.
             string path = "";
 
-            if (
-                RobustFileExistsWithCaseCheck(localPath)
-                && BookStorage.CssFilesThatAreDynamicallyUpdated.Any(
-                    s => fileName.ToLowerInvariant().Contains(s)
-                )
-            )
-            {
-                path = localPath;
-            }
-            else
-            {
-                path = _fileLocator.LocateFile(fileName);
-            }
+            path = _fileLocator.LocateFile(fileName);
             // if still not found, and localPath is an actual file path, use it
             if (String.IsNullOrEmpty(path) && RobustFileExistsWithCaseCheck(localPath))
             {

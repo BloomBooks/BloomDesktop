@@ -14,12 +14,12 @@ using Bloom.Publish.BloomPub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
-using SIL.Reporting;
-using SIL.WritingSystems;
+using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
+using SIL.Reporting;
+using SIL.WritingSystems;
 using Directory = System.IO.Directory;
-using SIL.Code;
 
 namespace Bloom.Collection
 {
@@ -309,7 +309,7 @@ namespace Bloom.Collection
                 "/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */"
             );
             sb.AppendLine(
-                "/* They may be over-ridden by rules in customCollectionStyles.css, appearance.css or customBookStyles.css */"
+                "/* They may be over-ridden by rules in customCollectionStyles.css, appearance.css or customBookStyles[2].css */"
             );
             // note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts not covered by Andika New Basic.
             WritingSystem.AddSelectorCssRule(

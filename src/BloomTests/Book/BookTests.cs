@@ -1,13 +1,18 @@
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Web;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Publish;
 using Bloom.web.controllers;
+using BloomTemp;
 using Moq;
 using NUnit.Framework;
 using SIL.Extensions;
@@ -15,11 +20,6 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Web;
-using BloomTemp;
 
 namespace BloomTests.Book
 {
@@ -226,7 +226,8 @@ namespace BloomTests.Book
             var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS(
                 "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
             );
-            Assert.AreEqual(placeHolderFile, dataBookImage.InnerText);
+            if (dataBookImage != null) // used to just set the src of the img, but removing the dataDiv element altogether is better still.
+                Assert.AreEqual(placeHolderFile, dataBookImage.InnerText);
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
                 "//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']"
             );

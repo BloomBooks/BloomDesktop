@@ -1,36 +1,36 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Api;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
-using Bloom.web;
-using L10NSharp;
-using Messir.Windows.Forms;
-using SIL.IO;
-using SIL.Reporting;
-using SIL.Windows.Forms.ReleaseNotes;
-using SIL.Windows.Forms.SettingProtection;
-using System.Collections.Generic;
-using System.ComponentModel;
-using Bloom.Api;
-using Bloom.Book;
-using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
+using L10NSharp;
+using Messir.Windows.Forms;
 using Newtonsoft.Json;
+using SIL.IO;
 using SIL.PlatformUtilities;
-using SIL.Windows.Forms.Miscellaneous;
+using SIL.Reporting;
 using SIL.Unicode;
+using SIL.Windows.Forms.Miscellaneous;
+using SIL.Windows.Forms.ReleaseNotes;
+using SIL.Windows.Forms.SettingProtection;
 using SIL.WritingSystems;
 
 namespace Bloom.Workspace
@@ -303,12 +303,20 @@ namespace Bloom.Workspace
                         .Exists(folder => selBookCollectionFolder == folder);
                 if (inCurrentCollection || inSourceFolder)
                 {
-                    var info = new BookInfo(
-                        selBookPath,
-                        inCurrentCollection,
-                        _tcManager.CurrentCollectionEvenIfDisconnected
-                            ?? new AlwaysEditSaveContext() as ISaveContext
-                    );
+                    // We used to just create a BookInfo here. But there was a race condition where
+                    // an API call on another thread looking for the books of the collection would cause
+                    // the collection to independently create a bookInfo for the same book while
+                    // the book object was being created but before it is registered as the selected book.
+                    // Then the book and the collection go on having independent bookInfo objects, and
+                    // the bookInfo in the collection doesn't get some important initialization that
+                    // we do to (at least) the AppearanceSettings of the selected book.
+                    // So now we wait, if necessary, until we can get the bookInfo from the
+                    // appropriate collection.
+                    // Note: I think the checks above for inCurrentCollection and inSourceFolder can now
+                    // be dropped in favor of just checking that we got a bookInfo here. If it's not in
+                    // one of the current collections, we won't get one.
+                    var info = _collectionTabView.GetBookInfoByFolderPath(selBookPath);
+                    //var info = new BookInfo(selBookPath, inCurrentCollection, _tcManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
                     // Fully updating book files ensures that the proper branding files are found for
                     // previewing when the collection settings change but the book selection does not.
                     var book = _bookServer.GetBookFromBookInfo(info, fullyUpdateBookFiles: true);

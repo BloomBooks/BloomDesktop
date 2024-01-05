@@ -85,7 +85,8 @@ namespace Bloom
 
         private Book.Book CreateTemplateBookByFolderPath(string folderPath)
         {
-            return _bookFactory(new BookInfo(folderPath, false), _storageFactory(folderPath));
+            var bookInfo = new BookInfo(folderPath, false);
+            return _bookFactory(bookInfo, _storageFactory(bookInfo));
         }
 
         public Book.Book FindAndCreateTemplateBook(Func<string, bool> predicate)

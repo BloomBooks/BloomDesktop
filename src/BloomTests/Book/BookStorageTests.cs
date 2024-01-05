@@ -136,26 +136,21 @@ namespace BloomTests.Book
             AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//p", 5);
         }
 
-        [Test]
-        public void Save_BookHadEditStyleSheet_NowHasPreviewAndBaseAndAppearance()
-        {
-            GetInitialStorageWithCustomHtml(
-                "<html><head><link rel='stylesheet' href='editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>"
-            );
-            AssertThatXmlIn
-                .HtmlFile(_bookPath)
-                .HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'editMode.css']", 0);
-            AssertThatXmlIn
-                .HtmlFile(_bookPath)
-                .HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'basePage.css']", 1);
-            AssertThatXmlIn
-                .HtmlFile(_bookPath)
-                .HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'previewMode.css']", 1);
-            AssertThatXmlIn
-                .HtmlFile(_bookPath)
-                .HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'appearance.css']", 1);
-        }
-
+        // Review JohnH: We no longer migrate to Themes except when creating a new book.
+        // So just initializing a storage won't migrate the HTML to use Themes if the HTML doesn't
+        // already have the relevant links.
+        // I added tests that book starter creates a book with the right theme (depending on customStyles),
+        // but we may need another on Book to verify that BBUD inserts the right stylesheet links for
+        // appearance.css (in default) and basePage-legacy-5-6.css (in legacy).
+        //[Test]
+        //public void Save_BookHadEditStyleSheet_NowHasPreviewAndBaseAndAppearance()
+        //{
+        //	GetInitialStorageWithCustomHtml("<html><head><link rel='stylesheet' href='editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
+        //	AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'editMode.css']", 0);
+        //	AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'basePage.css']", 1);
+        //	AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'previewMode.css']", 1);
+        //	AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[@href = 'appearance.css']", 1);
+        //}
         [Test]
         public void Save_BookHadNarrationAudioRecordedByWholeTextBox_AddsFeatureRequirementMetadata()
         {
@@ -1681,7 +1676,9 @@ namespace BloomTests.Book
             );
 
             //SUT
-            storage.PerformNecessaryMaintenanceOnBook();
+            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToLevel2RemoveTransparentComicalSvgs();
+            storage.MigrateToLevel3PutImgFirst();
 
             //Verification
             var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
@@ -1713,7 +1710,9 @@ namespace BloomTests.Book
             );
 
             //SUT
-            storage.PerformNecessaryMaintenanceOnBook();
+            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToLevel2RemoveTransparentComicalSvgs();
+            storage.MigrateToLevel3PutImgFirst();
 
             //Verification
             var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
@@ -1749,7 +1748,9 @@ namespace BloomTests.Book
             );
 
             //SUT
-            storage.PerformNecessaryMaintenanceOnBook();
+            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToLevel2RemoveTransparentComicalSvgs();
+            storage.MigrateToLevel3PutImgFirst();
 
             //Verification
             var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
@@ -1792,7 +1793,9 @@ namespace BloomTests.Book
             );
 
             //SUT
-            storage.PerformNecessaryMaintenanceOnBook();
+            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToLevel2RemoveTransparentComicalSvgs();
+            storage.MigrateToLevel3PutImgFirst();
 
             //Verification
             var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
@@ -1823,7 +1826,9 @@ namespace BloomTests.Book
             );
 
             //SUT
-            storage.PerformNecessaryMaintenanceOnBook();
+            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToLevel2RemoveTransparentComicalSvgs();
+            storage.MigrateToLevel3PutImgFirst();
 
             //Verification
             var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");

@@ -6,16 +6,13 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Autofac;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
-using Bloom.WebLibraryIntegration;
-using Bloom.Workspace;
-using Bloom.Api;
-using Bloom.TeamCollection;
 using Bloom.Publish;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.BloomPub;
@@ -23,15 +20,18 @@ using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
 using Bloom.Publish.Video;
 using Bloom.Spreadsheet;
+using Bloom.TeamCollection;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using BloomTests.web.controllers;
+using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
-using Bloom.ToPalaso;
-using SIL.Code;
 
 namespace Bloom
 {
@@ -653,8 +653,8 @@ namespace Bloom
             bool result;
             if (_mapPathToIsTemplateFolder.TryGetValue(path, out result))
                 return result;
-            var info = new BookInfo(path, false);
-            result = info.IsSuitableForMakingShells || info.IsSuitableForMakingTemplates;
+            var metaData = BookMetaData.FromFolder(path);
+            result = metaData.IsSuitableForMakingShells || metaData.IsSuitableForMakingTemplates;
             _mapPathToIsTemplateFolder[path] = result;
             return result;
         }

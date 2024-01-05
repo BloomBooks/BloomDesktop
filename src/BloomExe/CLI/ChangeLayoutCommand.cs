@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -131,7 +131,7 @@ namespace Bloom.CLI
             var templateBook = new Book.Book(
                 templateBookInfo,
                 new BookStorage(
-                    templateBookInfo.FolderPath,
+                    templateBookInfo,
                     locator,
                     new BookRenamedEvent(),
                     collectionSettings
@@ -162,7 +162,7 @@ namespace Bloom.CLI
                     var book = new Book.Book(
                         bookInfo,
                         new BookStorage(
-                            bookInfo.FolderPath,
+                            bookInfo,
                             locator,
                             new BookRenamedEvent(),
                             collectionSettings

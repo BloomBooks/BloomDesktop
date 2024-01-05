@@ -394,7 +394,13 @@ namespace Bloom.web.controllers
 
         internal void HandleSaveAsDotBloomSource(Book.Book book)
         {
-            book.EnsureUpToDate();
+            // If the book is not saveable, we can't legitimately bring it all-the-way up to date,
+            // with all the supporting files updated in the book folder. Better to just save
+            // what we have, which should at least be consistent.
+            // Since it's already the selected book, usually this won't do anything. However,
+            // the user might have checked it out since selecting it.
+            if (book.IsSaveable)
+                book.EnsureUpToDate();
 
             const string bloomFilter =
                 "Bloom Source files (*.bloomSource)|*.bloomSource|All files (*.*)|*.*";
