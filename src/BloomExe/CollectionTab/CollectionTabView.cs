@@ -1,21 +1,21 @@
 using System;
-using System.Windows.Forms;
-using Bloom.Properties;
-using Bloom.Workspace;
-using L10NSharp;
-using SIL.Reporting;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
+using Bloom.Properties;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.web;
+using Bloom.Workspace;
+using L10NSharp;
+using SIL.Reporting;
 using SIL.Windows.Forms.SettingProtection;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Bloom.CollectionTab
 {
@@ -155,6 +155,21 @@ namespace Bloom.CollectionTab
                     _bookChangesPending = true;
                 }
             };
+        }
+
+        /// <summary>
+        /// Review: this doesn't feel comfortable here. But the Workspace needs it, and it has
+        /// a reference to this and not to the model. The alternative would be to have a public
+        /// Model property. I think this is better, at least until we have more reasons to
+        /// make the model public.
+        /// This should be thread safe, since the methods that create collections and BookInfos
+        /// are locked.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public BookInfo GetBookInfoByFolderPath(string path)
+        {
+            return _model.GetBookInfoByFolderPath(path);
         }
 
         private void UpdateForBookChanges(Book.Book book)

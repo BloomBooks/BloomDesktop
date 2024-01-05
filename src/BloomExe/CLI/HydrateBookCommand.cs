@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -86,7 +86,7 @@ namespace Bloom.CLI
             var bookInfo = new BookInfo(options.Path, true, new AlwaysEditSaveContext());
             var book = new Book.Book(
                 bookInfo,
-                new BookStorage(options.Path, locator, new BookRenamedEvent(), collectionSettings),
+                new BookStorage(bookInfo, locator, new BookRenamedEvent(), collectionSettings),
                 null,
                 collectionSettings,
                 null,

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Edit;
@@ -45,10 +45,7 @@ namespace Bloom.Book
                 );
             }
 
-            var book = _bookFactory(
-                bookInfo,
-                _storageFactory(bookInfo.FolderPath, fullyUpdateBookFiles)
-            );
+            var book = _bookFactory(bookInfo, _storageFactory(bookInfo, fullyUpdateBookFiles));
             return book;
         }
 

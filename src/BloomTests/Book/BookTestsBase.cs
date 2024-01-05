@@ -10,9 +10,9 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
+using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
-using SIL.Code;
 using SIL.Progress;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ImageToolbox;
@@ -438,15 +438,14 @@ namespace BloomTests.Book
                     );
                 },
                 // storage factory
-                (path, fullyUpdateBookFiles) =>
+                (info, fullyUpdateBookFiles) =>
                 {
                     var storage = new BookStorage(
-                        path,
+                        info,
                         fileLocator,
                         new BookRenamedEvent(),
                         _collectionSettings
                     );
-                    storage.BookInfo = new BookInfo(path, true);
                     return storage;
                 },
                 // book starter factory

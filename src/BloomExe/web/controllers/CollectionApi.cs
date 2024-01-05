@@ -335,10 +335,13 @@ namespace Bloom.web.controllers
                 GetBookOnBloomBadgeInfo,
                 false
             );
+            // This one can take quite a long time and lock up the browser if no other thread can do anything. And it doesn't manipulate any
+            // shared data. So we'll allow it to run on a background thread without locking.
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "getBookCountByLanguage",
                 HandleGetBookCountByLanguage,
-                true
+                true,
+                false
             );
         }
 

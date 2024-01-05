@@ -685,6 +685,13 @@ namespace Bloom.Book
             return !stylesheetsToIgnoreAdding.Contains(path);
         }
 
+        /// <summary>
+        /// We're trying to get names of style sheets that need to be copied from one book to another.
+        /// So not the standard ones that every book has, but things like one specific to the particular
+        /// template the source was made from, or that got added becuase we used an Activity page that
+        /// has an associated one.
+        /// </summary>
+        /// <returns></returns>
         public virtual IEnumerable<string> GetTemplateStyleSheets()
         {
             var stylesheetsToIgnore = new List<string>();

@@ -5,23 +5,23 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using Bloom;
+using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
+using Bloom.Publish;
 using Bloom.Publish.BloomPub;
 using Bloom.web;
 using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
+using SIL.PlatformUtilities;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using Color = System.Drawing.Color;
-using Bloom.Api;
-using Bloom.Collection;
-using Bloom.ImageProcessing;
-using Bloom.Publish;
-using SIL.PlatformUtilities;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 
@@ -110,6 +110,7 @@ namespace BloomTests.Publish
                 "customCollectionStyles.css", // should be copied from parent directory
                 "defaultLangStyles.css"
             };
+            string collectionStylesPath = null;
 
             TestHtmlAfterCompression(
                 kMinimumValidBookHtml,
@@ -128,6 +129,11 @@ namespace BloomTests.Publish
                         Path.Combine(folderPath, "previewMode.css"),
                         @"This is wanted"
                     );
+                    collectionStylesPath = Path.Combine(
+                        Path.GetDirectoryName(folderPath),
+                        "customCollectionStyles.css"
+                    );
+                    File.WriteAllText(collectionStylesPath, "color: red");
                 },
                 assertionsOnResultingHtmlString: html =>
                 {
@@ -156,6 +162,7 @@ namespace BloomTests.Publish
                     Assert.That(meta.BloomdVersion, Is.EqualTo(1));
                 }
             );
+            RobustFile.Delete(collectionStylesPath);
         }
 
         [Test]

@@ -1,3 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows.Forms;
+using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -14,18 +26,6 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Xml;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Windows.Forms;
-using System.Xml;
 
 namespace Bloom.Publish
 {
@@ -91,9 +91,7 @@ namespace Bloom.Publish
             _collectionSettings = collectionSettings;
             _bookServer = bookServer;
             _thumbNailer = thumbNailer;
-            bookSelection.SelectionChanged += OnBookSelectionChanged;
             //we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
-            CanPublish = DeterminePublishability();
 
             _makePdfBackgroundWorker.WorkerReportsProgress = true;
             _makePdfBackgroundWorker.WorkerSupportsCancellation = true;
@@ -104,8 +102,6 @@ namespace Bloom.Publish
                 _makePdfBackgroundWorker_RunWorkerCompleted;
         }
 
-        public bool CanPublish { get; set; }
-
         public PublishView View { get; set; }
 
         bool _pdfSucceeded;
@@ -113,24 +109,6 @@ namespace Bloom.Publish
         {
             get { return _pdfSucceeded; }
             set { _pdfSucceeded = value; }
-        }
-
-        private void OnBookSelectionChanged(
-            object sender,
-            BookSelectionChangedEventArgs bookSelectionChangedEventArgs
-        )
-        {
-            //some of this checking is about bl-272, which was replicated by having one book, going to publish, then deleting that last book.
-            if (
-                BookSelection != null
-                && View != null
-                && BookSelection.CurrentSelection != null
-                && _currentlyLoadedBook != BookSelection.CurrentSelection
-                && View.Visible
-            )
-            {
-                CanPublish = DeterminePublishability();
-            }
         }
 
         private void _makePdfBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
@@ -267,24 +245,47 @@ namespace Bloom.Publish
             }
         }
 
-        private bool DeterminePublishability()
+        /// <summary>
+        /// Answer true if the publish tab should show a message indicating that we can't publish
+        /// the current book without Enterprise features enabled. (Actually the current message is
+        /// pretty detailed about the use of Comical on a particular page.)
+        /// </summary>
+        /// <note>This was previously cached, and possibly should be if it is called often, as it
+        /// is fairly expensive to compute. Currently, however, it is only called once each time
+        /// the preview tab is shown. </note>
+        public bool CannotPublishWithoutEnterprise
         {
-            // At this point (5.1), this should only be false iff:
-            // - User is not in Enterprise mode AND
-            // - Book contains overlay elements AND
-            // - Book is not a translated shell
+            get
+            {
+                // At this point (5.1), we have an enterprise-related publishing problem if :
+                // - User is not in Enterprise mode AND
+                // - Book contains overlay elements AND
+                // - Book is not a translated shell
 
-            var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SelectNodes(
-                "//div[contains(@class, 'bloom-textOverPicture')]"
-            );
-            var bookContainsOverlayElements = (overlayElementNodes?.Count ?? 0) > 0;
+                var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SelectNodes(
+                    "//div[contains(@class, 'bloom-textOverPicture')]"
+                );
+                var bookContainsOverlayElements = (overlayElementNodes?.Count ?? 0) > 0;
 
-            var bookIsTranslatedFromShell =
-                BookSelection?.CurrentSelection?.BookData?.BookIsDerivative() ?? false;
-            return _collectionSettings.HaveEnterpriseFeatures
-                || !bookContainsOverlayElements
-                || bookIsTranslatedFromShell;
+                var bookIsTranslatedFromShell =
+                    BookSelection?.CurrentSelection?.BookData?.BookIsDerivative() ?? false;
+                return !_collectionSettings.HaveEnterpriseFeatures
+                    && bookContainsOverlayElements
+                    && !bookIsTranslatedFromShell;
+            }
         }
+
+        /// <summary>
+        /// // As of 5.7, we have a problem if we can't bring the book up to date because we're not allowed to save it.
+        /// Enhance: We could fairly easily allow publishing a book which was previously checked out
+        /// and brought up to date and checked in and is still selected, since the Book object knows it
+        /// is already up-to-date.
+        /// With quite a bit more work we might be able to make a more permanent record of the version of
+        /// Bloom that brought a book up-to-date, the branding, xmatter, and page size in effect at the time,
+        /// and so forth, and determine that a book does not need updating.
+        /// </summary>
+        public bool CannotPublishWithoutCheckout =>
+            _currentlyLoadedBook != null && !_currentlyLoadedBook.IsSaveable;
 
         internal static string GetPreparingImageFilter()
         {
@@ -408,11 +409,16 @@ namespace Bloom.Publish
             var orientationChanging =
                 BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape
                 != PageLayout.SizeAndOrientation.IsLandScape;
+            if (orientationChanging)
+            {
+                throw new ApplicationException(
+                    "We no longer support creating a PDF in a different orientation from the one set in edit mode"
+                );
+            }
             var dom = BookSelection.CurrentSelection.GetDomForPrinting(
                 BookletPortion,
                 _currentBookCollectionSelection.CurrentSelection,
                 _bookServer,
-                orientationChanging,
                 PageLayout
             );
 
@@ -828,18 +834,12 @@ namespace Bloom.Publish
                 return;
             _currentlyLoadedBook = BookSelection.CurrentSelection;
 
-            // Previous code here always called BBUD, claiming (from BL-8648) that it might be
-            // possible it had not been done if the user publishes a newly created book without
-            // ever editing it. I don't think so, because the only way to Publish tab is when
-            // a book in the editable collection is selected, and selecting a book there always
-            // brings it up to date. But in case that somehow changes, I'm going to preserve
-            // the guarantee that a book being published is up-to-date. However, since I think
-            // this call will always return immediately, I'm not going to create a progress
-            // dialog. We might want to resurrect that if we get to a situation where it is
-            // possible for there to be a significant delay here.
-            _currentlyLoadedBook.EnsureUpToDate();
-
-            CanPublish = DeterminePublishability(); // in case the user edited the book without changing the selected book
+            // At one point this was important for immediately publishing a newly created book
+            // (BL-8648). But selecting a book now brings it up to date if it is in the
+            // editable collection and Saveable. However, it is possible that since selecting
+            // it, the user has checked it out and so it is now possible to update it.
+            if (_currentlyLoadedBook.IsSaveable)
+                _currentlyLoadedBook.EnsureUpToDate();
         }
 
         public IEnumerable<HtmlDom> GetPageDoms()
@@ -897,33 +897,6 @@ namespace Bloom.Publish
                     yield return previewXmlDocumentForPage;
                 }
             }
-        }
-
-        public void GetThumbnailAsync(
-            int width,
-            int height,
-            HtmlDom dom,
-            Action<Image> onReady,
-            Action<Exception> onError
-        )
-        {
-            var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
-            {
-                BackgroundColor = Color.White,
-                BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.None,
-                CenterImageUsingTransparentPadding = false,
-                Height = height,
-                Width = width
-            };
-            dom.UseOriginalImages = true; // apparently these thumbnails can be big...anyway we want printable images.
-            _thumbNailer.HtmlThumbNailer.GetThumbnailAsync(
-                String.Empty,
-                string.Empty,
-                dom,
-                thumbnailOptions,
-                onReady,
-                onError
-            );
         }
 
         public void ReportAnalytics(string eventName)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -14,9 +15,10 @@ using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
 using Bloom.ImageProcessing;
-using Bloom.Publish;
 using Bloom.MiscUI;
+using Bloom.Publish;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
@@ -24,14 +26,12 @@ using Newtonsoft.Json;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
+using SIL.Linq;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Xml;
-using Bloom.Utils;
 using Image = System.Drawing.Image;
-using SIL.Linq;
-using System.Collections;
 
 namespace Bloom.Book
 {
@@ -56,6 +56,7 @@ namespace Bloom.Book
         bool GetLooksOk();
         HtmlDom Dom { get; }
         void Save();
+
         void SaveForPageChanged(string pageId, XmlElement modifiedPage);
         HtmlDom GetRelocatableCopyOfDom();
         HtmlDom MakeDomRelocatable(HtmlDom dom);
@@ -88,10 +89,15 @@ namespace Bloom.Book
         string Duplicate();
         IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav);
         IEnumerable<string> GetBackgroundMusicFileNamesReferencedInBook();
+        string GetSupportingFile(string relativePath);
         void EnsureOriginalTitle();
+        bool LinkToLocalCollectionStyles { get; set; }
 
         IEnumerable<string> GetActivityFolderNamesReferencedInBook();
-        void PerformNecessaryMaintenanceOnBook();
+        void MigrateMaintenanceLevels();
+        void MigrateToMediaLevel1ShrinkLargeImages();
+        void MigrateToLevel2RemoveTransparentComicalSvgs();
+        void MigrateToLevel3PutImgFirst();
 
         CollectionSettings CollectionSettings { get; }
 
@@ -99,12 +105,16 @@ namespace Bloom.Book
 
         string[] GetCssFilesToLinkForPreview();
 
-        Tuple<string, string>[] GetCssFilesToCheckForAppearanceCompatibility();
+        Tuple<string, string>[] GetCssFilesToCheckForAppearanceCompatibility(
+            bool justOldCustomFiles = false
+        );
+
+        string PathToXMatterStylesheet { get; }
     }
 
     public class BookStorage : IBookStorage
     {
-        public delegate BookStorage Factory(string folderPath, bool fullyUpdateBookFiles = false); //autofac uses this
+        public delegate BookStorage Factory(BookInfo bookInfo, bool fullyUpdateBookFiles = false); //autofac uses this
 
         /// <summary>
         /// History of these numbers:
@@ -131,12 +141,21 @@ namespace Bloom.Book
         internal const string kMaxBloomFormatVersionToRead = "2.1";
 
         /// <summary>
-        /// History of this number:
+        /// These constants are not currently actually used in code, but indicate the largest
+        /// number currently used for some DOM metadata elements that keep track of how much
+        /// a book has been migrated.
+        /// History of these numbers:
         ///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size.
         ///              2 = Remove any 'comical-generated' svgs that are transparent.
         ///				 3 = Ensure main img comes first in image container
+        ///   Bloom 5.7 added kMediaMaintenanceLevel so we could distinguish migrations that affect
+        ///   other files (typically images or media) in the book folder from ones that only affect
+        ///   the DOM and can safely be done in memory.
+        ///       0 = No media maintenance has been done
+        ///       1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
         public const int kMaintenanceLevel = 3;
+        public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
         private IChangeableFileLocator _fileLocator;
@@ -145,7 +164,6 @@ namespace Bloom.Book
         private static bool _alreadyNotifiedAboutOneFailedCopy;
         private BookInfo _metaData;
         private bool _errorAlreadyContainsInstructions;
-
         public event EventHandler FolderPathChanged;
         public event EventHandler BookTitleChanged;
 
@@ -157,8 +175,7 @@ namespace Bloom.Book
         {
             get
             {
-                if (_metaData == null)
-                    _metaData = new BookInfo(FolderPath, false);
+                Debug.Assert(_metaData != null);
                 return _metaData;
             }
             set { _metaData = value; }
@@ -172,14 +189,42 @@ namespace Bloom.Book
                 );
         }
 
-        public BookStorage(
+        /// <summary>
+        /// Historically, we used this constructor, but every call resulted in initializing a new BookInfo
+        /// during ExpensiveInitialization. Then, right after we finish constructing it, we set the BookInfo
+        /// we really want. That became more of a problem in 5.7, when we started doing more expensive
+        /// initialization of AppearanceSettings and could get in trouble working with one that was not
+        /// fully initialized. So now we use the other constructor, which takes the BookInfo
+        /// we really want to use. This one is retained only for convenience of old unit tests.
+        /// </summary>
+        internal BookStorage(
             string folderPath,
             IChangeableFileLocator baseFileLocator,
             BookRenamedEvent bookRenamedEvent,
             CollectionSettings collectionSettings
         )
+            : this(
+                new BookInfo(folderPath, false),
+                baseFileLocator,
+                bookRenamedEvent,
+                collectionSettings
+            )
         {
-            FolderPath = folderPath;
+            if (!Program.RunningUnitTests)
+                throw new ApplicationException(
+                    "BookStorage constructor passing folder name instead of bookInfo is allowed only in unit tests!"
+                );
+        }
+
+        public BookStorage(
+            BookInfo bookInfo,
+            IChangeableFileLocator baseFileLocator,
+            BookRenamedEvent bookRenamedEvent,
+            CollectionSettings collectionSettings
+        )
+        {
+            FolderPath = bookInfo.FolderPath;
+            _metaData = bookInfo;
 
             // We clone this because we'll be customizing it for use by just this book
             _fileLocator = (IChangeableFileLocator)
@@ -194,6 +239,29 @@ namespace Bloom.Book
 
         private string _cachedFolderPath;
         private string _cachedPathToHtml;
+
+        public string GetSupportingFile(string relativePath)
+        {
+            var localPath = Path.Combine(FolderPath, relativePath);
+            if (BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(relativePath))
+            {
+                if (RobustFile.Exists(localPath))
+                {
+                    return localPath;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            if (relativePath == Path.GetFileName(PathToXMatterStylesheet))
+            {
+                return PathToXMatterStylesheet;
+            }
+
+            return _fileLocator.LocateFile(relativePath);
+        }
 
         public static void RemoveLocalOnlyFiles(string folderPath)
         {
@@ -1995,14 +2063,28 @@ namespace Bloom.Book
 
         #endregion
 
-        // ExpensiveInitialization is called repeatedly during idle time and thus can check the
-        // same book for errors repeatedly.  This could result in dozens of open error message dialogs
+
+        // It is remotely possible (see comment on ExpensiveInitialization) that this might be
+        // called repeatedly on the same book. This could result in many open error message dialogs
         // at the same time reporting the same error.  So we keep track of what we've complained about
         // already to prevent this from happening.
         private static HashSet<string> _booksWithMultipleHtmlFiles = new HashSet<string>();
 
         /// <summary>
-        /// Do whatever is needed to do more than just show a title and thumbnail
+        /// An old comment says that ExpensiveInitialization is called repeatedly during idle time, but
+        /// a quick test (Dec 2023) indicates this is not the case; it is called whenever we create a book
+        /// object, but we generally only do that for the selected book. One exception is when the book folder
+        /// does not contain a thumbnail; we create a book object in order to find the cover image.
+        /// However, it should be very rare for this to be missing.
+        /// Another is when we create a template book in order to display its pages in the Add Page dialog.
+        /// Thus, the main reason to call this is when we are selecting a book and about to show its
+        /// preview. This means it has basically the same purpose as Book.BringBookUpToDateMemory().
+        /// We would like to fold its functionality into that method, so don't add new functionality
+        /// here, at least without checking with JohnT, JohnH, or Andrew.
+        /// Note that this routine is theoretically bound by the same constraint as Book.BringBookUpToDatePreview(),
+        /// that it ought not to modify anything in the book folder, at least not if we're not allowed
+        /// to save the book.  Ideally this routine should not modify anything in the book folder.
+        /// For now, we're making an exception if things are so bad that we need to restore a backup.
         /// </summary>
         private void ExpensiveInitialization()
         {
@@ -2242,8 +2324,6 @@ namespace Bloom.Book
 
                 // probably not needed at runtime if !fullyUpdateBookFiles, but one unit test relies on it having been done, and is very fast, so ok.
                 Dom.UpdatePageDivs();
-                UpdateSupportFiles();
-                CleanupUnusedSupportFiles(false);
             }
         }
 
@@ -2408,7 +2488,8 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// we update these so that the file continues to look the same when you just open it in the browser
+        /// Update our cache to contain all the support files, so Save will update all of them.
+        /// May also note some that should be deleted when we can Save.
         /// </summary>
         public void UpdateSupportFiles()
         {
@@ -2420,79 +2501,79 @@ namespace Bloom.Book
                     "Not updating files in folder {0} because the directory is read-only.",
                     FolderPath
                 );
+                return;
             }
-            else
-            {
-                var supportFilesToAlwaysUpdate = new[]
+
+            // We want current shipping versions of these copied into the destination folder always.
+            var supportFilesToUpdate = new List<string>(
+                new[]
                 {
                     "placeHolder.png",
                     BookInfo.AppearanceSettings.BasePageCssName,
                     "previewMode.css",
                     "origami.css"
-                };
-                foreach (var supportFile in supportFilesToAlwaysUpdate)
-                {
-                    Update(supportFile);
                 }
+            );
 
-                // Now we want to look for any other .css files, besides those listed above and update them.
-                // There are a few we want to skip, however.
-                // In BL-5824, we got bit by design decisions we made that allow stylesheets installed via
-                // bloompack and by new Bloom versions to replace local ones. This was done so that we could
-                // send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
-                // and have those used in all the books. This works well for most stylesheets.
-                //
-                // But customBookStyles.css  and customCollectionStyles.css are exceptions;
-                // their whole purpose is to let the local book or collection override Bloom's normal
-                // behavior or anything in a bloompack.
-                //
-                // And defaultLangStyles.css is another file that should not be updated because it is always
-                // generated from the local collection settings.
-                //
-                // Also, we don't want to update branding.css here because the default update process may pull it from
-                // who knows where; it doesn't come from one of the directories we search early.
-                // Instead, normally one is fetched from the right branding in CopyBrandingFiles,
-                // or if the branding is under development we generate a placeholder, or if there is no branding
-                // we generate an empty placeholder.
-                var cssFilesToSkipInThisPhase = new ArrayList()
-                {
-                    // Files we just updated
-                    this.BookInfo
-                        .AppearanceSettings
-                        . // Files we just updated
-                        BasePageCssName,
-                    "previewmode.css",
-                    "origami.css"
-                };
-                cssFilesToSkipInThisPhase.AddRange(BookStorage.CssFilesThatAreDynamicallyUpdated);
+            // Now we want to look for any other .css files already in the book folder and update them.
+            // There are a few we want to skip, however.
+            // In BL-5824, we got bit by design decisions we made that allow stylesheets installed via
+            // bloompack and by new Bloom versions to replace local ones. This was done so that we could
+            // send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
+            // and have those used in all the books. This works well for most stylesheets.
+            //
+            // But customBookStyles.css, customBookStyles2.css,  and customCollectionStyles.css are exceptions;
+            // their whole purpose is to let the local book or collection override Bloom's normal
+            // behavior or anything in a bloompack.
+            //
+            // And defaultLangStyles.css is another file that should not be updated because it is always
+            // generated from the local collection settings.
+            //
+            // Also, we don't want to update branding.css here because the default update process may pull it from
+            // who knows where; it doesn't come from one of the directories we search early.
+            // Instead, normally one is fetched from the right branding in LoadCurrentBrandingFilesIntoBookFolder,
+            // or if the branding is under development we generate a placeholder, or if there is no branding
+            // we generate an empty placeholder.
+            var cssFilesToSkipInThisPhase = new HashSet<string>();
+            cssFilesToSkipInThisPhase.AddRange(BookStorage.CssFilesThatAreDynamicallyUpdated);
+            // We don't need to consider these now because they are already listed to be copied in.
+            cssFilesToSkipInThisPhase.AddRange(supportFilesToUpdate);
+            // In this phase of scanning the book directory, we will delete most xmatter stylesheets.
+            // But not the current one! That we DO want to copy in.
+            var xmatterCss = Path.GetFileName(XMatterHelper.PathToXMatterStylesheet);
+            cssFilesToSkipInThisPhase.Add(xmatterCss); // prevent deleting it
+            supportFilesToUpdate.Add(xmatterCss); // make sure it gets copied in
 
-                foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
-                {
-                    var file = Path.GetFileName(path);
-                    if (cssFilesToSkipInThisPhase.Contains(file.ToLowerInvariant()))
-                        continue;
-
-                    Update(file);
-                }
-            }
-
-            try
+            foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
             {
-                var path = PathToXMatterStylesheet;
-                Update(Path.GetFileName(path), path);
-            }
-            catch (Exception error)
-            {
-                ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
-                ErrorAllowsReporting = true;
+                var file = Path.GetFileName(path);
+                if (cssFilesToSkipInThisPhase.Contains(file))
+                    continue;
+                // clean up any unwanted Xmatter CSS files. The one we want is already skipped.
+                // Get rid of any versions of basePage.css that aren't in cssFilesToSkipInThisPhase
+                if (file.EndsWith("XMatter.css") || file.StartsWith("basePage"))
+                    RobustFile.Delete(path);
+                else
+                    supportFilesToUpdate.Add(file);
             }
 
-            CopyBrandingFiles();
+            // This will pull them into the book folder.
+            foreach (var file in supportFilesToUpdate)
+            {
+                var sourcePath = GetSupportingFile(file);
+                var destPath = Path.Combine(FolderPath, file);
+                if (sourcePath == destPath)
+                    continue; // don't copy from ourselves
+                if (!string.IsNullOrEmpty(sourcePath) && RobustFile.Exists(sourcePath))
+                    RobustFile.Copy(sourcePath, destPath, true);
+            }
+
+            LoadCurrentBrandingFilesIntoBookFolder();
         }
 
         // Brandings come with logos and such... we want them in the book folder itself so that they work
         // apart from Bloom and in web browsing, ePUB, and BloomPUB contexts.
-        private void CopyBrandingFiles()
+        private void LoadCurrentBrandingFilesIntoBookFolder()
         {
             _brandingImageNames.Clear();
             try
@@ -2502,6 +2583,8 @@ namespace Bloom.Book
                 // (like "FactoryTemplateBookDirectory" or "SampleShellsDirectory").  If Bloom is installed "for all users" on Windows,
                 // it is also impossible to copy files there.  Copying files to those locations would allow Bloom to show branding for
                 // a template preview or a sample shell preview, which seems rather unimportant.
+                // Review: the above is no longer a problem, because we're keeping the branding files in memory.
+                // Do we WANT our factory templates to show what they will look like in the current branding? If so we can just remove this.
                 if (
                     FolderPath.StartsWith(
                         BloomFileLocator.FactoryCollectionsDirectory,
@@ -2533,43 +2616,33 @@ namespace Bloom.Book
                                 .Split(',')
                                 .Contains(Path.GetExtension(path).ToLowerInvariant())
                     );
-
+                var gotBrandingCss = false;
                 foreach (var sourcePath in filesToCopy)
                 {
                     var fileName = Path.GetFileName(sourcePath);
                     var destPath = Path.Combine(FolderPath, fileName);
-                    try
+                    Utils.LongPathAware.ThrowIfExceedsMaxPath(destPath); //example: BL-8284
+                    RobustFile.Copy(sourcePath, destPath, true);
+                    if (fileName.EndsWith(".css"))
                     {
-                        Utils.LongPathAware.ThrowIfExceedsMaxPath(destPath); //example: BL-8284
-                        RobustFile.Copy(sourcePath, destPath, true);
+                        gotBrandingCss |= fileName == "branding.css";
                     }
-                    catch (UnauthorizedAccessException err)
+                    else
                     {
-                        if (RobustFile.Exists(destPath))
-                        {
-                            // It's probably a minor problem if we just can't update it but already have it.
-                            ReportCantUpdateSupportFile(sourcePath, destPath);
-                        }
-                        else
-                        {
-                            throw new BloomUnauthorizedAccessException(destPath, err);
-                        }
+                        _brandingImageNames.Add(fileName);
                     }
-
-                    _brandingImageNames.Add(fileName);
                 }
 
                 // Typically the above will copy a branding.css into the book folder.
                 // Check that, and attempt to recover if it didn't happen.
-                var brandingPath = Path.Combine(FolderPath, "branding.css");
-                if (!RobustFile.Exists(brandingPath))
+                if (!gotBrandingCss)
                 {
                     Debug.Fail("Brandings MUST provide a branding.css");
                     // An empty branding.css is better than having the file server search who-knows-where
                     // and coming up with some arbitrary branding.css. At least all Bloom installations,
                     // including the evil dev one that introduced a branding without the required file,
                     // will behave the same.
-                    RobustFile.WriteAllText(brandingPath, "");
+                    RobustFile.WriteAllText(Path.Combine(FolderPath, "branding.css"), "");
                 }
             }
             catch (Exception err)
@@ -2624,7 +2697,7 @@ namespace Bloom.Book
             }
         }
 
-        private string PathToXMatterStylesheet => XMatterHelper.PathToXMatterStylesheet;
+        public string PathToXMatterStylesheet => XMatterHelper.PathToXMatterStylesheet;
 
         private bool IsPathReadonly(string path)
         {
@@ -2719,6 +2792,8 @@ namespace Bloom.Book
                         RemoveExistingFilesBySuffix("XMatter.css");
 
                     RobustFile.Copy(sourcePathIncludingFileName, documentPath);
+                    //if the source was locked, don't copy the lock over
+                    RobustFile.SetAttributes(documentPath, FileAttributes.Normal);
                     return;
                 }
                 // due to BL-2166, we no longer compare times since downloaded books often have
@@ -2851,35 +2926,23 @@ namespace Bloom.Book
             Dom.RemoveNormalStyleSheetsLinks();
             EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
-            getMinimalCssFilesFromInstallThatDoNotChangeAtRuntime()
-                .ForEach(x =>
-                {
-                    EnsureHasLinkToStyleSheet(dom, x);
-                });
-            BookStorage.CssFilesThatAreDynamicallyUpdated.ForEach(x =>
+            CssFilesThatAreAlwaysWanted.ForEach(x =>
+            {
+                EnsureHasLinkToStyleSheet(dom, x);
+            });
+            var appearanceRelatedCssFiles = BookInfo.AppearanceSettings.AppearanceRelatedCssFiles(
+                LinkToLocalCollectionStyles
+            );
+            appearanceRelatedCssFiles.ForEach(x =>
             {
                 EnsureHasLinkToStyleSheet(dom, x);
             });
 
-            // the link will be added above as we go through DynamicallyUpdatedLocalBookCssInOrder,
-            // but for tidyness, let's take the link out if we don't have the file.
-            if (
-                !RobustFile.Exists(Path.Combine(FolderPath, "customBookStyles.css"))
-                // if we're substituting a theme for this customBookStyles.css, we don't want to the link to it
-                || BookInfo.AppearanceSettings.SubstitutedCssFile == "customBookStyles.css"
-            )
-            {
-                EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
-            }
+            // If we're not supposed to have these links, make sure we don't.
+            AppearanceSettings.PossibleAppearanceRelatedCssFiles
+                .Except(appearanceRelatedCssFiles)
+                .ForEach(file => EnsureDoesNotHaveLinkToStyleSheet(dom, file));
 
-            // if we're substituting a theme for this customBookStyles.css or customCollectionStyles.css, we don't want to the link to it
-            if (!string.IsNullOrEmpty(BookInfo.AppearanceSettings.SubstitutedCssFile))
-            {
-                EnsureDoesntHaveLinkToStyleSheet(
-                    dom,
-                    BookInfo.AppearanceSettings.SubstitutedCssFile
-                );
-            }
             dom.SortStyleSheetLinks();
         }
 
@@ -2890,7 +2953,7 @@ namespace Bloom.Book
             if (currentXmatterName != nameOfXMatterPack)
             {
                 const string xmatterSuffix = "-XMatter.css";
-                EnsureDoesntHaveLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
+                EnsureDoesNotHaveLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
                 EnsureHasLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
                 // Since HtmlDom.GetMetaValue() is always called with the collection's xmatter pack as default,
                 // we can just remove this wrong meta element.
@@ -2899,7 +2962,7 @@ namespace Bloom.Book
             return currentXmatterName;
         }
 
-        private void EnsureDoesntHaveLinkToStyleSheet(HtmlDom dom, string path)
+        private void EnsureDoesNotHaveLinkToStyleSheet(HtmlDom dom, string path)
         {
             foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
             {
@@ -2927,6 +2990,11 @@ namespace Bloom.Book
             dom.AddStyleSheetIfMissing(path);
         }
 
+        public string[] CssFilesThatAreAlwaysWanted
+        {
+            get { return new[] { "origami.css", "branding.css", "defaultLangStyles.css" }; }
+        }
+
         // note: order is not significant here. We apply our standard stylesheet sorter later.
         // Enhance: it would be cleaner if most of these were in a common list, and this method just knew
         // what extra ones we need for a preview. Note also that (at least) MakeCssLinksAppropriateForStoredFile(),
@@ -2936,14 +3004,14 @@ namespace Bloom.Book
         // (Possibly cleaner still to have way fewer stylesheets, and turn rules on with classes.)
         public string[] GetCssFilesToLinkForPreview()
         {
-            return new string[]
-            {
-                this.BookInfo.AppearanceSettings.BasePageCssName,
-                "previewMode.css",
-                "origami.css",
-                "branding.css",
-                "appearance.css"
-            };
+            return new[] { "previewMode.css" }
+                .Concat(CssFilesThatAreAlwaysWanted)
+                .Concat(
+                    this.BookInfo.AppearanceSettings.AppearanceRelatedCssFiles(
+                        LinkToLocalCollectionStyles
+                    )
+                )
+                .ToArray();
         }
 
         // While in Bloom, we could have an edit style sheet or (someday) other modes. But when stored,
@@ -3279,16 +3347,42 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Perform expensive updates that new versions of Bloom can perform on older books that don't
-        /// involve actual book format changes.
+        /// Prior to Bloom 5.7, we had a single metadata element called "maintenanceLevel" that was used to
+        /// keep track of whether a book had been updated to the latest version of Bloom in certain somewhat
+        /// time-consuming ways. (BringBookUpToDate does other migrations, too, but we just run them every time.)
+        /// We did not distinguish between changes that only affect the DOM and ones we could only make in
+        /// folders where we can write, nor between ones that must be done before editing, ones that must be
+        /// done before we do anything with the book, or ones that are optional.
+        /// In 5.7 we introduced a new metadata element called "mediaMaintenanceLevel" that is used to keep
+        /// track of migrations that affect files other than the main HTML one. This function,
+        /// which must be called before any of the ones that might change the old maintenanceLevel metadata,
+        /// initializes the new mediaMaintenanceLevel to the appropriate value based on the old maintenanceLevel
+        /// if it does not already exist.
         /// </summary>
-        public void PerformNecessaryMaintenanceOnBook()
+        public void MigrateMaintenanceLevels()
         {
-            var levelString = Dom.GetMetaValue("maintenanceLevel", "0");
+            var mediaLevelString = Dom.GetMetaValue("mediaMaintenanceLevel", "bad");
+            if (int.TryParse(mediaLevelString, out int mediaLevel))
+                return; // already have mediaMaintenanceLevel
+
+            // If mediaMaintenanceLevel is missing, it should be set to zero if the old maintenanceLevel
+            // indicates we have not done MigrateToMediaLevel1ShrinkLargeImages, and to 1 if we have.
+            Dom.UpdateMetaElement("mediaMaintenanceLevel", GetMaintenanceLevel() >= 1 ? "1" : "0");
+            ;
+        }
+
+        /// <summary>
+        /// In very old books (before 4.9) we did not shrink even very large images before adding them to
+        /// books. When we encounter such a book, we go ahead and shrink them. This is probably less
+        /// necessary than in Gecko days, when super-large images were prone to make Bloom run out of
+        /// memory. However, it is still helpful for performance and reducing published file sizes.
+        /// Does nothing if mediaMaintenanceLevel indicates it has already been done.
+        /// </summary>
+        public void MigrateToMediaLevel1ShrinkLargeImages()
+        {
+            var levelString = Dom.GetMetaValue("mediaMaintenanceLevel", "0");
             if (!int.TryParse(levelString, out int level))
                 level = 0;
-            if (level >= kMaintenanceLevel)
-                return;
             if (level < 1 && ImageUtils.NeedToShrinkImages(FolderPath))
             {
                 // If the book contains overlarge images, we want to fix those before editing because this can lead
@@ -3334,16 +3428,32 @@ namespace Bloom.Book
                 }
             }
 
-            if (level < 2)
+            Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
+        }
+
+        private int GetMaintenanceLevel()
+        {
+            var levelString = Dom.GetMetaValue("maintenanceLevel", "0");
+            if (!int.TryParse(levelString, out int level))
+                level = 0;
+            return level;
+        }
+
+        /// <summary>
+        /// Bloom 4.9 and later (a bit later than the above 4.9 and therefore a separate maintenance
+        /// level) will only put comical-generated svgs in Bloom imageContainers if they are
+        /// non-transparent. Since our test for whether a book is Comical for Publishing restrictions
+        /// will now be a simple scan for these svgs, we here remove legacy svgs whose bubble style
+        /// was "none", implying transparency.
+        /// In Bloom 5.0, we renamed the Comic Tool -> Overlay Tool, but "comical" refers to the comical.js
+        /// npm project which creates the svgs. It and the "Comic" feature have not been renamed for backward
+        /// compatibility.
+        /// This does nothing if maintenanceLevel indicates it has already been done.
+        /// </summary>
+        public void MigrateToLevel2RemoveTransparentComicalSvgs()
+        {
+            if (GetMaintenanceLevel() < 2)
             {
-                // Bloom 4.9 and later (a bit later than the above 4.9 and therefore a separate maintenance
-                // level) will only put comical-generated svgs in Bloom imageContainers if they are
-                // non-transparent. Since our test for whether a book is Comical for Publishing restrictions
-                // will now be a simple scan for these svgs, we here remove legacy svgs whose bubble style
-                // was "none", implying transparency.
-                // In Bloom 5.0, we renamed the Comic Tool -> Overlay Tool, but "comical" refers to the comical.js
-                // npm project which creates the svgs. It and the "Comic" feature have not been renamed for backward
-                // compatibility.
                 var comicalSvgs = Dom.SafeSelectNodes(ComicalXpath).Cast<XmlElement>();
                 var elementsToSave = new HashSet<XmlElement>();
                 foreach (var svgElement in comicalSvgs)
@@ -3370,6 +3480,7 @@ namespace Bloom.Book
                         break;
                     }
                 }
+
                 // Now delete the SVGs that only have bubbles of style 'none'.
                 var dirty = false;
                 foreach (var svgElement in comicalSvgs.ToArray())
@@ -3394,7 +3505,12 @@ namespace Bloom.Book
                 }
             }
 
-            if (level < 3)
+            Dom.UpdateMetaElement("maintenanceLevel", "2");
+        }
+
+        public void MigrateToLevel3PutImgFirst()
+        {
+            if (GetMaintenanceLevel() < 3)
             {
                 // Make sure that in every image container, the first element is the img.
                 // This is important because, since 5.4, we don't use a z-index to put overlays above the base image
@@ -3424,11 +3540,8 @@ namespace Bloom.Book
                 }
             }
 
-            // future additional levels will add additional "if (level < N)" blocks.
-            Dom.UpdateMetaElement(
-                "maintenanceLevel",
-                kMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
-            );
+            // We only want to update the maintenance level if we finished the job.
+            Dom.UpdateMetaElement("maintenanceLevel", "3");
         }
 
         public CollectionSettings CollectionSettings => _collectionSettings;
@@ -3510,7 +3623,8 @@ namespace Bloom.Book
             "defaultLangStyles.css",
             "customCollectionStyles.css",
             "appearance.css",
-            "customBookStyles.css"
+            "customBookStyles.css",
+            "customBookStyles2.css"
         };
 
         /// <summary>
@@ -3527,48 +3641,71 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Should we look for customCollectionStyles.css in the book folder itself, or in the parent folder?
+        /// Normally we look in the parent folder, but if we are making a bloomPub or similar copy,
+        /// we copy it into the book folder itself, and that's where we should look.
+        /// </summary>
+        public bool LinkToLocalCollectionStyles { get; set; }
+
+        /// <summary>
         /// Files that might contain rules that conflict with the new appearance model (currently, that is if they affect
         /// the size and position of the marginBox).
         /// In the resulting list, the first item is the file name, and the second is content.
+        /// Note that this routine must find and use the files that UpdateSupportingFiles will copy into the book.
+        /// It has to be called before UpdateSupportingFiles, because it is used to initialize the
+        /// appearanceSettings that determines which files UpdateSupportingFiles will copy.
         /// </summary>
         /// <returns></returns>
-        public Tuple<string, string>[] GetCssFilesToCheckForAppearanceCompatibility()
+        public Tuple<string, string>[] GetCssFilesToCheckForAppearanceCompatibility(
+            bool justOldCustomFiles = false
+        )
         {
-            // This is right on the edge of deserving a method to make a tuple or a loop over a list of files.
-            // Don't add more duplicates of lines like these. But two of the four are a little bit different.
-            var brandingCssPath = FolderPath.CombineForPath("branding.css");
-            var brandingCss = RobustFile.Exists(brandingCssPath)
-                ? RobustFile.ReadAllText(brandingCssPath)
-                : null;
+            var result = new List<Tuple<string, string>>();
 
-            var customBookStylesPath = FolderPath.CombineForPath("customBookStyles.css");
-            var customBookCss = RobustFile.Exists(customBookStylesPath)
-                ? RobustFile.ReadAllText(customBookStylesPath)
-                : null;
-
-            // this is sometimes copied into the book folder, but that's not reliable except in BloomPubs. Check the version actually used
-            // in the parent folder.
+            // Must come before customCollectionStyles.css (see AppearanceSettings.Initialize).
+            result.Add(
+                Tuple.Create(
+                    "customBookStyles.css",
+                    GetSupportingFileString("customBookStyles.css")
+                )
+            );
+            // this is sometimes copied into the book folder, but that's not reliable except in BloomPubs.
+            // A flag in AppearanceSettings allows it to tell us which of them we should use for this book.
             var customCollectionStylesPath = FolderPath.CombineForPath(
-                "../",
-                "customCollectionStyles.css"
+                RelativePathToCollectionStyles(LinkToLocalCollectionStyles)
             );
             var customCollectionCss = RobustFile.Exists(customCollectionStylesPath)
                 ? RobustFile.ReadAllText(customCollectionStylesPath)
                 : null;
+            result.Add(Tuple.Create("customCollectionStyles.css", customCollectionCss));
 
-            // find the first file in FolderPath that ends in "xmatter.css".
-            var xmatterPath = Directory.GetFiles(FolderPath, "*xmatter.css").FirstOrDefault();
-            var xmatterFileName = xmatterPath != null ? Path.GetFileName(xmatterPath) : "";
-            var xmatterCss = xmatterPath != null ? RobustFile.ReadAllText(xmatterPath) : "";
-
-            return new Tuple<string, string>[]
+            if (!justOldCustomFiles)
             {
-                // note, the first item here is actually for user consumption in error messages.
-                new Tuple<string, string>("customCollectionStyles.css", customCollectionCss),
-                new Tuple<string, string>("customBookStyles.css", customBookCss),
-                new Tuple<string, string>("branding.css", brandingCss),
-                new Tuple<string, string>(xmatterFileName, xmatterCss)
-            };
+                result.Add(Tuple.Create("branding.css", GetSupportingFileString("branding.css")));
+                result.Add(
+                    Tuple.Create(
+                        "customBookStyles2.css",
+                        GetSupportingFileString("customBookStyles2.css")
+                    )
+                );
+                result.Add(
+                    Tuple.Create("appearance.css", GetSupportingFileString("appearance.css"))
+                );
+
+                var xmatterFileName = Path.GetFileName(PathToXMatterStylesheet);
+                result.Add(Tuple.Create(xmatterFileName, GetSupportingFileString(xmatterFileName)));
+            }
+            return result.ToArray();
+        }
+
+        private string GetSupportingFileString(string file)
+        {
+            // Do the search for the file that UpdateSupportingFiles will copy into the book
+            // folder, since this is called BEFORE we do that.
+            var path = GetSupportingFile(file);
+            if (RobustFile.Exists(path))
+                return RobustFile.ReadAllText(path);
+            return null;
         }
 
         public static readonly string[] CssFilesThatAreObsolete =
@@ -3591,7 +3728,21 @@ namespace Bloom.Book
             "defaultLangStyles.css",
             "customCollectionStyles.css",
             "appearance.css",
+            // We don't usually have both of these, and I don't have a clear idea why one should come before
+            // the other. But the order should be consistent, and if both are there, typically customBookStyles2.css
+            // came from our system, while the other was added by the user. So allow the user one to win.
+            "customBookStyles2.css",
             "customBookStyles.css"
         };
+
+        /// <summary>
+        /// Relative to the book folder, where should we find the customCollectionStyles.css file?
+        /// Normally we look in the parent folder, but if we are making a bloomPub or similar copy,
+        /// we copy it into the book folder itself, and that's where we should look.
+        /// </summary>
+        public static string RelativePathToCollectionStyles(bool useLocalCollectionStyles)
+        {
+            return (useLocalCollectionStyles ? "" : "../") + "customCollectionStyles.css";
+        }
     }
 }

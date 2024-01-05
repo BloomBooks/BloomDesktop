@@ -5,8 +5,9 @@ import * as React from "react";
 import { Link } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import WarningIcon from "@mui/icons-material/Warning";
+import InfoIcon from "@mui/icons-material/Info";
 import { BloomTooltip } from "./BloomToolTip";
-import { postJson, useApiObject } from "../utils/bloomApi";
+import { postJson, useApiObject, useWatchApiData } from "../utils/bloomApi";
 
 export const BookInfoIndicator: React.FunctionComponent<{
     bookId: string;
@@ -15,16 +16,20 @@ export const BookInfoIndicator: React.FunctionComponent<{
         id: string;
         factoryInstalled: boolean;
         path: string;
-        cssThemeWeWillActuallyUse: string;
+        cssThemeName: string;
         firstPossiblyOffendingCssFile: string;
         substitutedCssFile: string;
-        offendingCss: string;
         error: string;
     };
-    const info = useApiObject<IndicatorInfo | undefined>(
+    const info = useWatchApiData<IndicatorInfo | undefined>(
         `book/indicatorInfo?id=${props.bookId}`,
-        undefined
+        undefined,
+        "book",
+        "indicatorInfo"
     );
+    const firstPossiblyConflictingCss =
+        info?.firstPossiblyOffendingCssFile ?? "";
+    const theme = info?.cssThemeName ?? "";
 
     const tip = info && (
         <div>
@@ -51,32 +56,63 @@ export const BookInfoIndicator: React.FunctionComponent<{
             <p>
                 <b>Theme</b>
                 <br />
-                {info.cssThemeWeWillActuallyUse}
+                {info.cssThemeName}
             </p>
-            {info.substitutedCssFile && (
-                <p>{`😀Bloom will use the ${info.cssThemeWeWillActuallyUse} theme, which is designed to replace the old ${info.substitutedCssFile} that this book was using.`}</p>
-            )}
-            {info.firstPossiblyOffendingCssFile && (
-                <React.Fragment>
-                    <p>
-                        ⚠️{" "}
-                        {`One of this book's stylesheets, "${info.firstPossiblyOffendingCssFile}", might not be fully
-                        compatible with this version of Bloom. In order to preserve the layout, Bloom is showing this book using the "legacy" theme. See (TODO) for more
-                        information.`}
-                    </p>
-                    <div
+            {
+                // The logic that shows one or none of these three messages is similar to that in BookSettingsDialog.
+                // See the comment there.
+            }
+            {firstPossiblyConflictingCss && theme === "legacy-5-6" && (
+                <div>
+                    <WarningIcon
                         css={css`
-                            font-family: "Courier New", Courier, monospace;
-                            max-height: 200px;
-                            overflow-x: auto;
-                            overflow-y: auto;
-                            white-space: pre;
+                            position: relative;
+                            top: 2px; // to align with text
+                            margin-right: 5px;
                         `}
-                    >
-                        {info.offendingCss}
-                    </div>
-                </React.Fragment>
+                        color="warning"
+                        fontSize="small"
+                    />
+                    <span>
+                        {`"The ${firstPossiblyConflictingCss}" stylesheet of this book is incompatible with
+                                    modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click (TODO) for more information.`}
+                    </span>
+                </div>
             )}
+            {firstPossiblyConflictingCss === "customBookStyles.css" &&
+                theme !== "legacy-5-6" && (
+                    <div>
+                        <span>
+                            <InfoIcon
+                                css={css`
+                                    position: relative;
+                                    top: 2px;
+                                    margin-right: 5px;
+                                `}
+                                fontSize="small"
+                            />
+                            {`"The ${firstPossiblyConflictingCss}" stylesheet of this book is incompatible with
+                                    modern themes. Bloom is currently ignoring it. If you don't need those
+                                    customizations any more, you can delete your customBookStyles.css. Click (TODO) for more information.`}
+                        </span>
+                    </div>
+                )}
+            {firstPossiblyConflictingCss &&
+                firstPossiblyConflictingCss !== "customBookStyles.css" &&
+                theme !== "legacy-5-6" && (
+                    <span>
+                        <InfoIcon
+                            css={css`
+                                position: relative;
+                                top: 2px;
+                                margin-right: 5px;
+                            `}
+                            fontSize="small"
+                        />
+                        {`"The ${firstPossiblyConflictingCss}" stylesheet of this book is incompatible with
+                                    modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`}
+                    </span>
+                )}
         </div>
     );
 
@@ -84,9 +120,9 @@ export const BookInfoIndicator: React.FunctionComponent<{
         info.factoryInstalled ||
         info.error ||
         // we don't show if we don't have this because it is misleading to see info (instead of a warning) if we don't actually know
-        !info.cssThemeWeWillActuallyUse ? null : (
+        !info.cssThemeName ? null : (
         <BloomTooltip enableClickInTooltip={true} tip={tip}>
-            {info.firstPossiblyOffendingCssFile ? (
+            {firstPossiblyConflictingCss && theme === "legacy-5-6" ? (
                 <WarningIcon color="warning" />
             ) : (
                 <InfoOutlinedIcon color="primary" />

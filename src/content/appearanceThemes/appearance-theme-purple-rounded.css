@@ -1,7 +1,12 @@
 /* based onhttps://bloomlibrary.org/player/vPftT2H1eE */
 /* {
-    substitutionChecksums: "6d540d3c796842b382db5dbd10826655"
+    substitutionChecksums: "6d540d3c796842b382db5dbd10826655","23c76394fefc12d620b3d7b646850ae3"
 } */
+/* JohnT 2 Jan 2023: added the second checksum, which is correct for the customBookStyles.css in the current version of
+the book at https://bloomlibrary.org/player/vPftT2H1eE. This however is just for testing (as is this whole theme).
+I don't know, or think it likely, that this theme is actually a good substitute for the customBookStyles.css in
+https://bloomlibrary.org/player/vPftT2H1eE, nor for any book (if there is one) that actually matches
+6d540d3c796842b382db5dbd10826655 */
 .bloom-page {
     --marginBox-border-radius: 25px;
     /*--marginBox-border-color: rgb(77, 68, 68);*/

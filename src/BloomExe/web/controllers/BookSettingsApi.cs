@@ -1,10 +1,12 @@
-using Bloom.Book;
-using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using Bloom.Book;
+using Bloom.web.controllers;
 using Newtonsoft.Json;
+using Newtonsoft.Json;
+using SIL.IO;
 
 namespace Bloom.Api
 {
@@ -42,6 +44,22 @@ namespace Bloom.Api
                 HandleGetAvailableAppearanceUIOptions,
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                "book/settings/deleteCustomBookStyles",
+                HandleDeleteCustomBookStyles,
+                false
+            );
+        }
+
+        private void HandleDeleteCustomBookStyles(ApiRequest request)
+        {
+            RobustFile.Delete(
+                Path.Combine(_bookSelection.CurrentSelection.FolderPath, "customBookStyles.css")
+            );
+            _bookSelection.CurrentSelection.SettingsUpdated();
+            // We should only delete it when it's not in use, so we should not need to refresh the page.
+            IndicatorInfoApi.NotifyIndicatorInfoChanged();
+            request.PostSucceeded();
         }
 
         private void HandleGetAvailableAppearanceUIOptions(ApiRequest request)
@@ -99,6 +117,7 @@ namespace Bloom.Api
                     _pageRefreshEvent.Raise(
                         PageRefreshEvent.SaveBehavior.SaveBeforeRefreshFullSave
                     );
+                    IndicatorInfoApi.NotifyIndicatorInfoChanged();
 
                     request.PostSucceeded();
                     break;

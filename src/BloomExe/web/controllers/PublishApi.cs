@@ -462,7 +462,8 @@ namespace Bloom.web.controllers
                             .CurrentSelection
                             .BookInfo
                             .AllowUploading,
-                        canPublish = _publishModel.CanPublish,
+                        cannotPublishWithoutEnterprise = _publishModel.CannotPublishWithoutEnterprise,
+                        cannotPublishWithoutCheckout = _publishModel.CannotPublishWithoutCheckout,
                         canDownloadPDF = _publishModel.PdfGenerationSucceeded, // To be used for the context menu
                         titleForDisplay = _publishModel
                             .BookSelection

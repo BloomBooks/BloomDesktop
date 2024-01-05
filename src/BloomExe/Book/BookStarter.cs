@@ -164,9 +164,19 @@ namespace Bloom.Book
 
         private string SetupNewDocumentContents(string sourceFolderPath, string initialPath)
         {
-            var storage = _bookStorageFactory(initialPath);
-            bool usingTemplate = storage.BookInfo.IsSuitableForMakingShells;
-            bool makingTemplate = storage.BookInfo.IsSuitableForMakingTemplates;
+            // This bookInfo is temporary, just used to make the (also temporary) BookStorage we
+            // use here in this method. I don't think it actually matters what its save context is.
+            // If it were going to continue to be used, we'd have to get it a real one, because
+            // it could later be checked in. But it's going to be writeable for as long as this one
+            // is in use.
+            var bookInfo = new BookInfo(initialPath, true, new AlwaysEditSaveContext());
+            // We know we'll make another instance for this folder later, so we don't need a warning that
+            // we already made one.
+            bookInfo.AppearanceSettings.AllowLaterInstance(initialPath);
+            var storage = _bookStorageFactory(bookInfo);
+
+            bool usingTemplate = bookInfo.IsSuitableForMakingShells;
+            bool makingTemplate = bookInfo.IsSuitableForMakingTemplates;
             // If we're not making it from a template or making a template, we're deriving a translation from an existing book
             var makingTranslation = !usingTemplate && !makingTemplate;
 
@@ -305,7 +315,20 @@ namespace Bloom.Book
             ClearAwayDraftText(storage.Dom.RawDom);
 
             storage.UpdateSupportFiles(); // Copy branding files etc.
-            storage.PerformNecessaryMaintenanceOnBook(); // Fix image files as needed etc.
+            // We need to do this before we save the book, because it Saving will write the appearance settings,
+            // destroying the information we need about whether the book already had some.
+            var cssFiles = storage.GetCssFilesToCheckForAppearanceCompatibility(true);
+            var substituteCssPath = storage.BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(
+                cssFiles
+            );
+            if (substituteCssPath != null)
+            {
+                var destPath = Path.Combine(storage.FolderPath, "customBookStyles2.css");
+                // if we're doing an automatic substitution, we don't expect there to be a customBookStyles2.css already,
+                // since substitution is used when the source book is NOT in the new appearance format, while
+                // customBookStyles2.css is only supported in that format.
+                RobustFile.Copy(substituteCssPath, destPath, false);
+            }
 
             try
             {
@@ -408,7 +431,7 @@ namespace Bloom.Book
             string lineage = null;
             if (RobustFile.Exists(Path.Combine(sourceFolderPath, BookInfo.MetaDataFileName)))
             {
-                var sourceMetaData = new BookInfo(sourceFolderPath, false);
+                var sourceMetaData = BookMetaData.FromFolder(sourceFolderPath);
                 parentId = sourceMetaData.Id;
                 lineage = sourceMetaData.BookLineage;
             }

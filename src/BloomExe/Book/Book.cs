@@ -16,6 +16,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.ErrorReporter;
 using Bloom.FontProcessing;
 using Bloom.History;
 using Bloom.Publish;
@@ -78,6 +79,8 @@ namespace Bloom.Book
         public const string PictureAndVideoGuid = "24c90e90-2711-465d-8f20-980d9ffae299";
         public const string BigTextDiglotGuid = "08422e7b-9406-4d11-8c71-02005b1b8095";
         public const string WidgetGuid = "3a705ac1-c1f2-45cd-8a7d-011c009cf406"; // default page type for a single widget
+
+        public bool UpToDate = false;
 
         /// <summary>
         /// Flag whether we want to write out the @font-face lines for served fonts to defaultLangStyles.css.
@@ -923,11 +926,6 @@ namespace Bloom.Book
             set { OurHtmlDom.UpdateMetaElement("pageTemplateSource", value); }
         }
 
-        /// <summary>
-        /// once in our lifetime, we want to do any migrations needed for this version of bloom
-        /// </summary>
-        private bool _haveDoneUpdate = false;
-
         public virtual HtmlDom OurHtmlDom => Storage.Dom;
 
         public virtual XmlDocument RawDom => OurHtmlDom.RawDom;
@@ -953,27 +951,13 @@ namespace Bloom.Book
                 //Console.WriteLine("DEBUG GetPreviewHtmlFileForWholeBook(): using cached _previewDOM");
                 return _previewDom;
             }
-            var previewDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 
-            // If we're going to show modern (post 5.6) basepage.css instead of basePage-legacy-5-6,
-            // make sure there is an appearance.css to compliment it.
-            // review should AppearanceSettings really be under BookInfo?
-            BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
+            var previewDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 
             //We may have just run into an error for the first time
             if (HasFatalError)
             {
                 return GetErrorDom();
-            }
-
-            // Only BringBookUpToDate if necessary, since it's an expensive operation.
-            // Note that editable books have already done this, so it's not necessary.
-            // Only non-editable books need to do this. Due to the previewDom, it's much
-            // easier to hold off on this until now instead of bringing the book up to date at selection time.
-            if (!this.IsEditable)
-            {
-                //Console.WriteLine("DEBUG GetPreviewHtmlFileForWholeBook(): calling BringBookUpToDate() for new previewDOM");
-                BringBookUpToDateInternal(previewDom, new NullProgress());
             }
 
             // this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
@@ -1052,75 +1036,56 @@ namespace Bloom.Book
             }
         }
 
-        // Generally BringBookUpToDate only needs doing once, so keep track of whether we have.
-        // Since we don't currently have any way to know whether a book on disk needs updating,
-        // this is true (as far as we know) until BringBookUpToDate is first called for this session.
-        private bool _needsUpdate = true;
-
-        public void EnsureUpToDate(bool forceUpdate = false)
+        /// <summary>
+        /// Force a full run of the book up to date process, even if we've already done it.
+        /// This is not very wasteful if we know we're working on a new book or a newly made copy.
+        /// Otherwise, it should only be used if we've changed something radical, like branding
+        /// or xmatter, and want to make sure everything is consistent with that. (A lot of what this
+        /// does is really migration from earlier versions of Bloom, and does not need to be
+        /// done every time. A useful optimization would be to move such things into
+        /// methods that use the maintenanceLevel to know whether they need doing.)
+        /// </summary>
+        public void BringBookUpToDate(IProgress progress, bool forCopyOfUpToDateBook = false)
         {
-            if (_needsUpdate || forceUpdate)
-                BringBookUpToDate(new NullProgress());
+            UpToDate = false; // force a full update
+            EnsureUpToDate(progress, forCopyOfUpToDateBook);
         }
 
         /// <summary>
         /// Make any needed changes to make a book which might have come from an old version of Bloom
         /// consistent with the current data model. Also makes sure it has the current XMatter
         /// and a folder name consistent with its title (unless folder name has been overridden).
-        /// Consider using EnsureUpToDate() unless you know for sure that the book object is new
-        /// or that something has changed which requires BBUD to happen again. Usually it only
-        /// needs doing at most once, and it is slow.
         /// </summary>
-        public void BringBookUpToDate(IProgress progress, bool forCopyOfUpToDateBook = false)
+        public void EnsureUpToDate(IProgress progress = null, bool forCopyOfUpToDateBook = false)
         {
-            _needsUpdate = false;
+            if (progress == null)
+                progress = new NullProgress();
+            if (UpToDate)
+                return;
+            if (!IsSaveable)
+            {
+                NonFatalProblem.Report(
+                    ModalIf.Alpha,
+                    PassiveIf.All,
+                    "Bloom attempted to update a book which cannot currently be saved: "
+                        + FolderPath
+                );
+                return;
+            }
             _pagesCache = null;
             string oldMetaData = string.Empty;
-            if (RobustFile.Exists(BookInfo.MetaDataPath))
-            {
-                oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
-            }
-            BringBookUpToDateInternal(OurHtmlDom, progress, oldMetaData);
-            progress.WriteStatus("Updating pages...");
-            foreach (
-                XmlElement pageDiv in OurHtmlDom.SafeSelectNodes(
-                    "//body/div[contains(@class, 'bloom-page')]"
-                )
-            )
-            {
-                BringPageUpToDate(pageDiv);
-            }
 
-            if (IsEditable)
-            {
-                // If the user might be editing it we want it more thoroughly up-to-date
-                try
-                {
-                    ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(
-                        FolderPath,
-                        OurHtmlDom,
-                        progress
-                    );
-                }
-                catch (UnauthorizedAccessException e)
-                {
-                    BookStorage.ShowAccessDeniedErrorReport(e);
-                }
+            // This does its own check for whether it needs to be done, and updates the state
+            // after doing anything it needs to.
+            EnsureUpToDateMemory(progress);
 
-                VerifyLayout(OurHtmlDom); // make sure we have something recognizable for layout
-                // Restore possibly messed up multilingual settings.
-                UpdateMultilingualSettings(OurHtmlDom);
-                // This is only needed for updating from old Bloom versions. No need if we're copying the current
-                // edit book, on which it's already been done, to make an epub or similar.
-                if (!forCopyOfUpToDateBook)
-                    Storage.PerformNecessaryMaintenanceOnBook();
-                UpdateSupportFiles();
-                Save(); // <---- REVIEW why is this called here? It's repeated below
-            }
+            Storage.MigrateToMediaLevel1ShrinkLargeImages();
 
-            OurHtmlDom.FixDivOrdering();
+            Storage.CleanupUnusedSupportFiles(forCopyOfUpToDateBook);
 
             Save();
+            UpToDate = true;
+
             _bookRefreshEvent?.Raise(this);
         }
 
@@ -1632,27 +1597,53 @@ namespace Bloom.Book
 
         /// <summary>
         /// As the bloom format evolves, including structure and classes and other attributes, this
-        /// makes changes to old books. It needs to be very fast, because currently we dont' have
+        /// makes changes to old books. We'd like it to be very fast, because currently we don't have
         /// a real way to detect the need for migration. So we do it all the time.
         ///
         /// Yes, we have format version number, but, for example, one overhaul of the common xmatter
         /// html introduced a new class, "frontCover". Hardly enough to justify bumping the version number
         /// and making older Blooms unable to read new books. But because this is run, the xmatter will be
         /// migrated to the new template.
+        ///
+        /// We also have maintenanceLevel in the book metadata. This can be used (in methods like
+        /// MigrateToMediaLevel1ShrinkLargeImages, called below) to do longer-running things that
+        /// definitely only need doing once. Probably it would be good for more of the work done here
+        /// to be moved into such methods.
+        ///
+        /// The code here was historically used, roughly, to bring a book as far up to date as possible
+        /// without changing files in the book folder. In the course of switching to the Appearance/Theme
+        /// system, we realized that isn't really feasible. So now we either bring a book up to date or
+        /// don't, and we only bring it up to date if we can save it. This method should only be called
+        /// by the main Update method. We may inline it at some point, but for now, that would make
+        /// seeing changes more difficult.
+        ///
+        /// If we need to reinstate the ability to bring a book up to date without saving it, JohnT's fork
+        /// has two branches, AppearanceChanges3 and AppearanceChanges4. The changes made going from 3
+        /// to 4 basically remove the cache, so making the opposite change should be about right for
+        /// restoring it. Be careful, though...the AppearanceChanges3 version would wrongly save
+        /// editMode.css into the book folder. The fix getting rid of DeterminePublishability() is worth
+        /// keeping (though we'll no longer need CannotPublishWithoutCheckout).
+        /// SaveAsBloomSourceFile should draw from the cache if we allow it to save a book that isn't
+        /// all the way up to date.
         /// </summary>
-        private void BringBookUpToDateInternal(
-            HtmlDom bookDOM /* may be a 'preview' version*/
-            ,
-            IProgress progress,
-            string oldMetaData = ""
-        )
+        private void EnsureUpToDateMemory(IProgress progress)
         {
-            RemoveImgTagInDataDiv(bookDOM);
-            RemoveCkeEditorResidue(bookDOM);
+            Guard.Against(
+                !IsSaveable,
+                "EnsureUpToDateMemory should only now be called for Saveable books as part of the main book updating"
+            );
+            string oldMetaData = "";
+            if (RobustFile.Exists(BookInfo.MetaDataPath))
+            {
+                oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
+            }
+
+            RemoveImgTagInDataDiv(OurHtmlDom);
+            RemoveCkeEditorResidue(OurHtmlDom);
             if (Title.Contains("allowSharedUpdate"))
             {
                 // Original version of this code that suffers BL_3166
-                BringBookUpToDateUnprotected(bookDOM, progress);
+                EnsureUpToDateMemoryUnprotected(progress);
             }
             else
             {
@@ -1660,42 +1651,36 @@ namespace Bloom.Book
                 if (_doingBookUpdate)
                 {
                     // Nag user if we appear to be updating the same DOM (OurHtmlDom or the previewDom which is always new)
-                    if (
-                        bookDOM == _domBeingUpdated
-                        || (bookDOM != OurHtmlDom && _domBeingUpdated != OurHtmlDom)
-                    )
-                    {
 #if DEBUG
-                        if (SIL.PlatformUtilities.Platform.IsWindows) // hangs on Linux
-                            MessageBox.Show(
-                                "Caught Bloom doing two updates at once! Possible BL-3166 is being prevented"
-                            );
-#endif
-                        Console.WriteLine(
-                            "WARNING: Bloom appears to be updating the same DOM twice at the same time! (BL-3166??)"
+                    if (SIL.PlatformUtilities.Platform.IsWindows) // hangs on Linux
+                        MessageBox.Show(
+                            "Caught Bloom doing two updates at once! Possible BL-3166 is being prevented"
                         );
-                        Console.WriteLine("Current StackTrace: {0}", Environment.StackTrace);
-                        Console.WriteLine("Prior StackTrace: {0}", _updateStackTrace);
-                    }
+#endif
+                    Console.WriteLine(
+                        "WARNING: Bloom appears to be updating the same DOM twice at the same time! (BL-3166??)"
+                    );
+                    Console.WriteLine("Current StackTrace: {0}", Environment.StackTrace);
+                    Console.WriteLine("Prior StackTrace: {0}", _updateStackTrace);
                 }
                 lock (_updateLock)
                 {
-                    _domBeingUpdated = bookDOM;
+                    _domBeingUpdated = OurHtmlDom;
                     _updateStackTrace = Environment.StackTrace;
                     _doingBookUpdate = true;
-                    BringBookUpToDateUnprotected(bookDOM, progress);
+                    EnsureUpToDateMemoryUnprotected(progress);
                     _doingBookUpdate = false;
                     _domBeingUpdated = null;
                     _updateStackTrace = null;
                 }
             }
-            RemoveObsoleteSoundAttributes(bookDOM);
-            RemoveObsoleteImageAttributes(bookDOM);
+            RemoveObsoleteSoundAttributes(OurHtmlDom);
+            RemoveObsoleteImageAttributes(OurHtmlDom);
             BringBookInfoUpToDate(oldMetaData);
-            FixErrorsEncounteredByUsers(bookDOM);
-            AddReaderBodyAttributes(bookDOM);
-            AddLanguageAttributesToBody(bookDOM);
-            bookDOM.Body.SetAttribute(
+            FixErrorsEncounteredByUsers(OurHtmlDom);
+            AddReaderBodyAttributes(OurHtmlDom);
+            AddLanguageAttributesToBody(OurHtmlDom);
+            OurHtmlDom.Body.SetAttribute(
                 "data-bookshelfurlkey",
                 this.CollectionSettings.DefaultBookshelf
             );
@@ -1703,19 +1688,71 @@ namespace Bloom.Book
             if (IsTemplateBook)
             {
                 // this will turn on rules in previewMode.css that show the structure of the template and names of pages
-                HtmlDom.AddClassToBody(RawDom, "template");
+                HtmlDom.AddClassToBody(OurHtmlDom.RawDom, "template");
             }
             else
             {
                 // It might be there when not appropriate, because this is a new book created from a template,
                 // or one that was created from a template in an earlier version of Bloom without this fix!
                 // Make sure it's not.
-                HtmlDom.RemoveClassFromBody(RawDom, "template");
+                HtmlDom.RemoveClassFromBody(OurHtmlDom.RawDom, "template");
             }
 
+            // Following code (roughly) was in the main BBUD but we were doing it when the book gets selected.
+            // We've now simplified to only three states, so it makes most sense to do everything we can
+            // that doesn't involve writing files here.
+            progress.WriteStatus("Updating pages...");
+            foreach (
+                XmlElement pageDiv in OurHtmlDom.SafeSelectNodes(
+                    "//body/div[contains(@class, 'bloom-page')]"
+                )
+            )
+            {
+                BringPageUpToDate(pageDiv);
+            }
+
+            if (IsEditable)
+            {
+                // Most of this probably only needs doing if we're actually about to edit it.
+                // But earlier versions did it whenever we did BBUD on a book in the editable collection,
+                // and I'm not game to change it.
+                try
+                {
+                    ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(
+                        FolderPath,
+                        OurHtmlDom,
+                        progress
+                    );
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    BookStorage.ShowAccessDeniedErrorReport(e);
+                }
+
+                VerifyLayout(OurHtmlDom); // make sure we have something recognizable for layout
+                // Restore possibly messed up multilingual settings.
+                UpdateMultilingualSettings(OurHtmlDom);
+
+                // These (and maybe other stuff) could be avoided when updating a copy of an up-to-date book,
+                // but it takes almost no time when the book IS already up-to-date.
+                // These three methods work with the same book metadata to determine what migration has
+                // already been done, so they must be called in exactly this order.
+                Storage.MigrateMaintenanceLevels();
+                Storage.MigrateToMediaLevel1ShrinkLargeImages();
+                Storage.MigrateToLevel3PutImgFirst();
+            }
+
+            // Enhance: there's probably some case where this will get unnecessarily repeated,
+            // but I think it would only be in the very rare case of repeatedly needing to update
+            // a pre-4.9 book when we can't Save().
+            OurHtmlDom.FixDivOrdering();
+
+            // Make sure the appearance settings are initialized for the current state of things.
+            // This should be done before UpdateSupportFiles, because those settings affect
+            // what files are put in the cache.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
-            Debug.WriteLine(this.FolderPath); // todo remove
-            BookInfo.AppearanceSettings.ComputeThemeAndBasePageCssVersionToUse(cssFiles);
+            BookInfo.AppearanceSettings.Initialize(cssFiles);
+            UpdateSupportFiles();
         }
 
         private void AddLanguageAttributesToBody(HtmlDom bookDom)
@@ -1795,7 +1832,7 @@ namespace Bloom.Book
             }
         }
 
-        private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)
+        private void EnsureUpToDateMemoryUnprotected(IProgress progress)
         {
             // With one exception, handled below, nothing in the update process should change the license info, so save what is current before we mess with
             // anything (may fix BL-3166).
@@ -1804,7 +1841,7 @@ namespace Bloom.Book
             progress.WriteStatus("Updating collection settings...");
             try
             {
-                UpdateCollectionRelatedStylesAndSettings(bookDOM);
+                UpdateCollectionRelatedStylesAndSettings(OurHtmlDom);
             }
             catch (UnauthorizedAccessException e)
             {
@@ -1813,16 +1850,16 @@ namespace Bloom.Book
             }
 
             progress.WriteStatus("Updating Front/Back Matter...");
-            BringXmatterHtmlUpToDate(bookDOM);
-            RepairBrokenSmallCoverCredits(bookDOM);
-            RepairCoverImageDescriptions(bookDOM);
+            BringXmatterHtmlUpToDate(OurHtmlDom);
+            RepairBrokenSmallCoverCredits(OurHtmlDom);
+            RepairCoverImageDescriptions(OurHtmlDom);
 
             progress.WriteStatus("Repair page label localization");
-            RepairPageLabelLocalization(bookDOM);
+            RepairPageLabelLocalization(OurHtmlDom);
 
             progress.WriteStatus("Repair possible messed up Questions pages and migrate classes");
-            RepairQuestionsPages(bookDOM);
-            MigrateNonstandardClassNames(bookDOM);
+            RepairQuestionsPages(OurHtmlDom);
+            MigrateNonstandardClassNames(OurHtmlDom);
 
             // migrate our cover color to the new system
             // ToDo: when we implement this setting.
@@ -1832,7 +1869,7 @@ namespace Bloom.Book
             // }
 
             progress.WriteStatus("Gathering Data...");
-            TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _bookData);
+            TranslationGroupManager.PrepareElementsInPageOrDocument(OurHtmlDom.RawDom, _bookData);
             progress.WriteStatus("Updating Data...");
 
             InjectStringListingActiveLanguagesOfBook();
@@ -1840,58 +1877,49 @@ namespace Bloom.Book
             if (_bookData.BookIsDerivative())
                 Storage.EnsureOriginalTitle();
 
-            //hack
-            if (bookDOM == OurHtmlDom) //we already have a data for this
+            // The one step that can legitimately change the metadata...though current branding packs
+            // will only do so if it is originally empty. So set the saved one before it and then get a new one.
+            BookCopyrightAndLicense.SetMetadata(
+                licenseMetadata,
+                OurHtmlDom,
+                FolderPath,
+                _bookData,
+                BookInfo.MetaData.UseOriginalCopyright
+            );
+            _bookData.MergeBrandingSettings(CollectionSettings.BrandingProjectKey);
+            _bookData.SynchronizeDataItemsThroughoutDOM();
+            licenseMetadata = GetLicenseMetadata();
+            // I think we should only mess with tags if we are updating the book for real.
+            var oldTagsPath = Path.Combine(Storage.FolderPath, "tags.txt");
+            if (RobustFile.Exists(oldTagsPath))
             {
-                // The one step that can legitimately change the metadata...though current branding packs
-                // will only do so if it is originally empty. So set the saved one before it and then get a new one.
-                BookCopyrightAndLicense.SetMetadata(
-                    licenseMetadata,
-                    bookDOM,
-                    FolderPath,
-                    _bookData,
-                    BookInfo.MetaData.UseOriginalCopyright
-                );
-                _bookData.MergeBrandingSettings(CollectionSettings.BrandingProjectKey);
-                _bookData.SynchronizeDataItemsThroughoutDOM();
-                licenseMetadata = GetLicenseMetadata();
-                // I think we should only mess with tags if we are updating the book for real.
-                var oldTagsPath = Path.Combine(Storage.FolderPath, "tags.txt");
-                if (RobustFile.Exists(oldTagsPath))
-                {
-                    ConvertTagsToMetaData(oldTagsPath, BookInfo);
-                    RobustFile.Delete(oldTagsPath);
-                }
-                BookInfo.BrandingProjectKey = CollectionSettings.BrandingProjectKey;
+                ConvertTagsToMetaData(oldTagsPath, BookInfo);
+                RobustFile.Delete(oldTagsPath);
             }
-            else //used for making a preview dom
-            {
-                var bd = new BookData(bookDOM, CollectionSettings, UpdateImageMetadataAttributes);
-                bd.MergeBrandingSettings(CollectionSettings.BrandingProjectKey);
-                bd.SynchronizeDataItemsThroughoutDOM();
-            }
+            BookInfo.BrandingProjectKey = CollectionSettings.BrandingProjectKey;
+
             // get any license info into the json and restored in the replaced front matter.
             BookCopyrightAndLicense.SetMetadata(
                 licenseMetadata,
-                bookDOM,
+                OurHtmlDom,
                 FolderPath,
                 _bookData,
                 BookInfo.MetaData.UseOriginalCopyright
             );
 
-            bookDOM.RemoveMetaElement(
+            OurHtmlDom.RemoveMetaElement(
                 "bloomBookLineage",
                 () => BookInfo.BookLineage,
                 val => BookInfo.BookLineage = val
             );
-            bookDOM.RemoveMetaElement(
+            OurHtmlDom.RemoveMetaElement(
                 "bookLineage",
                 () => BookInfo.BookLineage,
                 val => BookInfo.BookLineage = val
             );
             // BookInfo will always have an ID, the constructor makes one even if there is no json file.
             // To allow migration, pretend it has no ID if there is not yet a meta.json.
-            bookDOM.RemoveMetaElement(
+            OurHtmlDom.RemoveMetaElement(
                 "bloomBookId",
                 () => (RobustFile.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
                 val => BookInfo.Id = val
@@ -1903,22 +1931,22 @@ namespace Bloom.Book
             // Bit of a kludge, but there's no way to tell whether a boolean is already set in the JSON, so we fake that it is not,
             // thus ensuring that if something is in the metadata we use it.
             // If there is nothing there the default of true will survive.
-            bookDOM.RemoveMetaElement(
+            OurHtmlDom.RemoveMetaElement(
                 "SuitableForMakingVernacularBooks",
                 () => null,
                 val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely"
             );
 
-            bookDOM.UpdatePageNumberAndSideClassOfPages(
+            OurHtmlDom.UpdatePageNumberAndSideClassOfPages(
                 CollectionSettings.CharactersForDigitsForPageNumbers,
                 IsPrimaryLanguageRtl
             );
 
-            UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
+            UpdateTextsNewlyChangedToRequiresParagraph(OurHtmlDom);
 
-            UpdateCharacterStyleMarkup(bookDOM);
+            UpdateCharacterStyleMarkup(OurHtmlDom);
 
-            bookDOM.SetImageAltAttrsFromDescriptions(_bookData.Language1.Tag);
+            OurHtmlDom.SetImageAltAttrsFromDescriptions(_bookData.Language1.Tag);
 
             //we've removed and possible added pages, so our page cache is invalid
             _pagesCache = null;
@@ -2289,25 +2317,6 @@ namespace Bloom.Book
                 // so all of them have to be removed.
                 dataDiv.RemoveChild(coverImageDescription);
             }
-        }
-
-        public void UpdateBrandingForCurrentOrientation(HtmlDom bookDOM)
-        {
-            BringBookUpToDateInternal(bookDOM, new NullProgress());
-            // We need this to reinstate the classes that control visibility, otherwise no bloom-editable
-            // text is shown
-            UpdateMultilingualSettings(bookDOM);
-
-            // The following is PROBABLY enough; but since this is such a rare case that two major versions
-            // of Bloom shipped with it badly broken before we noticed (and no user ever reported it), it seems
-            // worth using the fullest possible version of updating the book to bring it in line
-            // with the current orientation.
-            //BringXmatterHtmlUpToDate(bookDOM); // wipes out xmatter content!
-            //bookDOM.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, IsPrimaryLanguageRtl);
-            // // restore xmatter page content from datadiv
-            //var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
-            //bd.SynchronizeDataItemsThroughoutDOM();
-            //UpdateMultilingualSettings(bookDOM); // fix visibility classes
         }
 
         public void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
@@ -4142,7 +4151,6 @@ namespace Bloom.Book
             PublishModel.BookletPortions bookletPortion,
             BookCollection currentBookCollection,
             BookServer bookServer,
-            bool orientationChanging,
             Layout pageLayout
         )
         {
@@ -4157,13 +4165,6 @@ namespace Bloom.Book
             //we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
             SizeAndOrientation.UpdatePageSizeAndOrientationClasses(printingDom.RawDom, pageLayout);
 
-            if (orientationChanging)
-            {
-                // Need to update the xmatter in the print dom...it may use different images.
-                // Make sure we do this AFTER setting PageOrientation in Dom.
-                // Also must be BEFORE we delete unwanted pages
-                UpdateBrandingForCurrentOrientation(printingDom);
-            }
             //whereas the base is to our embedded server during editing, it's to the file folder
             //when we make a PDF, because we wan the PDF to use the original hi-res versions
 
@@ -4367,11 +4368,12 @@ namespace Bloom.Book
         /// </summary>
         public void PrepareForEditing()
         {
-            if (!_haveDoneUpdate)
-            {
-                BringBookUpToDateInternal(OurHtmlDom, new NullProgress());
-                _haveDoneUpdate = true;
-            }
+            // If the book was in a TC and not checked out when we selected it, some migration
+            // that might be helpful or even necessary when editing it was skipped. Do it now.
+            // If it was already checked out or not in a TC, this will be a no-op, because
+            // we did it all when we selected it.
+            EnsureUpToDate(new NullProgress());
+
             //We could re-enable RebuildXMatter() here later, so that we get this nice refresh each time.
             //But currently this does some really slow image compression:	RebuildXMatter(RawDom);
             UpdateEditableAreasOfElement(OurHtmlDom);
@@ -4519,6 +4521,16 @@ namespace Bloom.Book
             // does the removal, I don't see why it's needed here either.)
             Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
             Guard.Against(!IsEditable, "Tried to save a non-editable book.");
+            if (!IsSaveable)
+            {
+                NonFatalProblem.Report(
+                    ModalIf.Alpha,
+                    PassiveIf.All,
+                    "Bloom attempted to Save a book which cannot currently be saved: " + FolderPath
+                );
+                return;
+            }
+
             RemoveObsoleteSoundAttributes(OurHtmlDom);
             _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo); //will update the title if needed
             if (OkToChangeFileAndFolderName)
@@ -5600,9 +5612,25 @@ namespace Bloom.Book
 
         internal void SettingsUpdated()
         {
-            BookInfo.Save();
+            // Something has changed in relation to settings. For example, we may have changed theme,
+            // or deleted customBookStyles.css. We need to update things to reflect the new state of things.
+            var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
+            // This might produce different results if customBookStyles.css has been deleted.
+            BookInfo.AppearanceSettings.Initialize(cssFiles);
+            // At one point the line commented out here was all this function did.
+            // It needs to be done at some point at least if the theme has changed, to generate the updated
+            // Appearance.css. But usually the caller does a full Save() after calling this, so
+            // doing it here is redundant. In the case of deleting customBookStyles.css,
+            // Appearance.css should not be affected, so I don't think it would matter not to do it.
+            // I'm leaving it commented out for now in case something in our Appearance/Theme
+            // testing indicates it is needed, since it may help whoever is looking for any problem
+            // that removing it causes. If you find a reason we need it, please document thoroughly.
+            //BookInfo.Save();
+            // Should not be needed when deleting customBookStyles.css, but definitely when we change theme.
+            Storage.UpdateSupportFiles();
             // temporary while we're in transition between storing cover color in the HTML and in the bookInfo
             //SetCoverColor(BookInfo.AppearanceSettings.CoverColor);
+            _pageListChangedEvent.Raise(true);
         }
     }
 }

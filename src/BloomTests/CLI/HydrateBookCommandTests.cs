@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Bloom;
@@ -191,9 +191,10 @@ namespace BloomTests.CLI
             Debug.Write(File.ReadAllText(_eventualHtmlPath));
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(File.ReadAllText(_eventualHtmlPath));
 
+            // HydrateBookCommand brings book up to date but not to the theme system.
             AssertThatXmlIn
                 .Dom(dom)
-                .HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']", 1);
+                .HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage-legacy-5-6.css']", 1);
 
             AssertThatXmlIn
                 .Dom(dom)

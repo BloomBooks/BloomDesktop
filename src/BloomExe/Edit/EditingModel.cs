@@ -9,11 +9,13 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.ToPalaso.Experimental;
-using Bloom.Api;
+using Bloom.ErrorReporter;
+using Bloom.FontProcessing;
 using Bloom.MiscUI;
+using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
 using DesktopAnalytics;
 using L10NSharp;
@@ -22,10 +24,8 @@ using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using SIL.Xml;
-using Bloom.ErrorReporter;
 using SIL.Windows.Forms.Miscellaneous;
-using Bloom.FontProcessing;
+using SIL.Xml;
 
 namespace Bloom.Edit
 {
@@ -633,12 +633,6 @@ namespace Bloom.Edit
                 var contentLanguages = GetMultilingualContentLanguages();
                 CurrentBook.SetMultilingualContentLanguages(contentLanguages);
                 CurrentBook.PrepareForEditing();
-                // As of 4.9, we are adding a hook here to do one-time maintenance to books, based on a
-                // metadata 'maintenanceLevel'.
-                // 0 -> 1 Deal with overlarge images.
-                // 1 -> 2 Remove comical SVGs associated with 'none' style textboxes.
-                // Takes almost no time if the maintenanceLevel has been set for this book.
-                CurrentBook.Storage.PerformNecessaryMaintenanceOnBook();
             }
 
             _currentlyDisplayedBook = CurrentBook;

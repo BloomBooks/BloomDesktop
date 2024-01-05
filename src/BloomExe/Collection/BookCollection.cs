@@ -393,7 +393,14 @@ namespace Bloom.Collection
                     ? _tcManager?.CurrentCollectionEvenIfDisconnected
                         ?? new AlwaysEditSaveContext() as ISaveContext
                     : new NoEditSaveContext() as ISaveContext;
-                var bookInfo = new BookInfo(folderPath, editable, sc);
+                // I think this is no longer true, but at one point we could sometimes (race condition) select a book
+                // before its containing collection was initialized.
+                // The bookInfo already in the book would eventually be more up-to-date (e.g., its AppearanceSettings gets
+                // Initialized) than a new one we would create here. So use it instead of making a new one.
+                var bookInfo =
+                    (folderPath == _bookSelection.CurrentSelection?.FolderPath)
+                        ? _bookSelection.CurrentSelection.BookInfo
+                        : new BookInfo(folderPath, editable, sc);
 
                 _bookInfos.Add(bookInfo);
             }
@@ -524,6 +531,11 @@ namespace Bloom.Collection
                     _webSocketServer.SendString("bookCollection", "updateBookBadge", bookInfo.Id);
                 }
             }
+        }
+
+        public BookInfo GetBookInfoByFolderPath(string path)
+        {
+            return GetBookInfos().FirstOrDefault(b => b.FolderPath == path);
         }
 
         public BookInfo GetBookInfoById(string id)
