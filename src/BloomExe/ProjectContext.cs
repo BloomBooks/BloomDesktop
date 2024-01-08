@@ -653,7 +653,7 @@ namespace Bloom
             bool result;
             if (_mapPathToIsTemplateFolder.TryGetValue(path, out result))
                 return result;
-            var metaData = BookMetaData.FromFolder(path);
+            var metaData = BookMetaData.FromFolder(path) ?? new BookMetaData();
             result = metaData.IsSuitableForMakingShells || metaData.IsSuitableForMakingTemplates;
             _mapPathToIsTemplateFolder[path] = result;
             return result;
