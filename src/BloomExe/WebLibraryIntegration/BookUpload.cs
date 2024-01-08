@@ -302,6 +302,7 @@ namespace Bloom.WebLibraryIntegration
                         audioLanguages,
                         metadataLang1Code,
                         metadataLang2Code,
+                        existingBookObjectIdOrNull == null,
                         collectionSettings?.SettingsFilePath,
                         isForBulkUpload
                     );

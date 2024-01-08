@@ -71,7 +71,8 @@ namespace BloomTests.WebLibraryIntegration
                     null,
                     null,
                     null,
-                    null
+                    null,
+                    true
                 );
             }
             // This doesn't actually create an entry, since the folder is empty,

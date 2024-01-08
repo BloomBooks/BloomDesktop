@@ -221,6 +221,7 @@ namespace Bloom.WebLibraryIntegration
             string[] audioLanguagesToInclude,
             string metadataLang1Code,
             string metadataLang2Code,
+            bool isNewBook,
             string collectionSettingsPath = null,
             bool isForBulkUpload = false
         )
@@ -263,6 +264,7 @@ namespace Bloom.WebLibraryIntegration
                 PublishHelper.ReportInvalidFonts(stagingDirectory, progress);
 
                 SyncBookFiles(
+                    isNewBook,
                     storageKeyOfBookFolderParent,
                     stagingParentDirectory.FolderPath,
                     progress
@@ -360,6 +362,7 @@ namespace Bloom.WebLibraryIntegration
         // When/if we do this, the logic would be something like: queue up all the deletes, run them in parallel. Then queue up
         // all the puts (ensuring we don't put the same file twice) and run those in parallel.
         public void SyncBookFiles(
+            bool isNewBook,
             string storageKeyOfBookFolderParent,
             string stagingDirectory,
             IProgress progress
@@ -372,47 +375,52 @@ namespace Bloom.WebLibraryIntegration
                     "Source directory does not exist or could not be found: " + stagingDirectory
                 );
 
-            // sync all files which are already on S3
-            var listObjectRequest = new ListObjectsV2Request
+            var existingObjectsOnS3 = new List<S3Object>();
+            if (!isNewBook)
             {
-                BucketName = _bucketName,
-                Prefix = storageKeyOfBookFolderParent
-            };
-            foreach (S3Object s3Object in _amazonS3ForBookUpload.ListAllObjects(listObjectRequest))
-            {
-                // If the user cancels at this point, we don't tell the API, but there is a cleanup function which runs each day.
-                // It will find the parse record which never finished uploading, reset it, and delete the copy of the book files on S3.
-                if (progress.CancelRequested)
-                    return;
+                // sync all files which are already on S3
+                var listObjectRequest = new ListObjectsV2Request
+                {
+                    BucketName = _bucketName,
+                    Prefix = storageKeyOfBookFolderParent
+                };
+                existingObjectsOnS3 = _amazonS3ForBookUpload.ListAllObjects(listObjectRequest);
+                foreach (S3Object s3Object in existingObjectsOnS3)
+                {
+                    // If the user cancels at this point, we don't tell the API, but there is a cleanup function which runs each day.
+                    // It will find the parse record which never finished uploading, reset it, and delete the copy of the book files on S3.
+                    if (progress.CancelRequested)
+                        return;
 
-                string localFilePath = Path.Combine(
-                    stagingDirectory,
-                    s3Object.Key.Substring(storageKeyOfBookFolderParent.Length)
-                );
-                if (
-                    IsExcludedFromUploadByExtension(localFilePath)
-                    || !RobustFile.Exists(localFilePath)
-                )
-                {
-                    _amazonS3ForBookUpload.DeleteObject(_bucketName, s3Object.Key);
-                }
-                else
-                {
-                    string localFileEtag = GetEtag(localFilePath);
-                    if (localFileEtag != s3Object.ETag)
+                    string localFilePath = Path.Combine(
+                        stagingDirectory,
+                        s3Object.Key.Substring(storageKeyOfBookFolderParent.Length)
+                    );
+                    if (
+                        IsExcludedFromUploadByExtension(localFilePath)
+                        || !RobustFile.Exists(localFilePath)
+                    )
                     {
-                        PutFileOnS3(localFilePath, s3Object.Key, progress);
+                        _amazonS3ForBookUpload.DeleteObject(_bucketName, s3Object.Key);
                     }
                     else
                     {
-                        progress.WriteStatus(
-                            LocalizationManager.GetString(
-                                "PublishTab.Upload.FileIsUnchanged",
-                                "{0} is unchanged",
-                                "{0} is a file name; this message indicates we are not uploading the file because the contents are the same they were when it was uploaded previously"
-                            ),
-                            Path.GetFileName(localFilePath)
-                        );
+                        string localFileEtag = GetEtag(localFilePath);
+                        if (localFileEtag != s3Object.ETag)
+                        {
+                            PutFileOnS3(localFilePath, s3Object.Key, progress);
+                        }
+                        else
+                        {
+                            progress.WriteStatus(
+                                LocalizationManager.GetString(
+                                    "PublishTab.Upload.FileIsUnchanged",
+                                    "{0} is unchanged",
+                                    "{0} is a file name; this message indicates we are not uploading the file because the contents are the same they were when it was uploaded previously"
+                                ),
+                                Path.GetFileName(localFilePath)
+                            );
+                        }
                     }
                 }
             }
@@ -438,7 +446,7 @@ namespace Bloom.WebLibraryIntegration
                     storageKeyOfBookFolderParent
                     + localFilePath.Substring(stagingDirectory.Length).Replace("\\", "/");
                 key = key.Replace("//", "/"); // safety net
-                if (!DoesS3ObjectExist(_amazonS3ForBookUpload, _bucketName, key))
+                if (isNewBook || !existingObjectsOnS3.Any(o => o.Key == key))
                 {
                     PutFileOnS3(localFilePath, key, progress);
                 }
@@ -472,7 +480,10 @@ namespace Bloom.WebLibraryIntegration
             {
                 FilePath = localFilePath,
                 BucketName = _bucketName,
-                Key = s3Key
+                Key = s3Key,
+                // Allows any browser to download it.
+                // Purposefully, this is the only ACL our temporary permissions allow us to set.
+                CannedACL = S3CannedACL.PublicRead
             };
 
             SetContentDisposition(request, localFilePath);
@@ -499,23 +510,6 @@ namespace Bloom.WebLibraryIntegration
                     byte[] hash = md5.ComputeHash(stream);
                     return "\"" + BitConverter.ToString(hash).Replace("-", "").ToLower() + "\"";
                 }
-            }
-        }
-
-        private bool DoesS3ObjectExist(IAmazonS3 s3Client, string bucketName, string key)
-        {
-            try
-            {
-                s3Client.GetObjectMetadata(bucketName, key);
-                return true;
-            }
-            catch (AmazonS3Exception e)
-            {
-                if (e.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    return false;
-
-                // We have an error other than NotFound; throw the exception
-                throw;
             }
         }
 
