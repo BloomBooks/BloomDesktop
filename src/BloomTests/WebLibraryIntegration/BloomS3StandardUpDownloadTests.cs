@@ -109,7 +109,8 @@ namespace BloomTests.WebLibraryIntegration
                 null,
                 null,
                 null,
-                null
+                null,
+                true
             );
         }
 
