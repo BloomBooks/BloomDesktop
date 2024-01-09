@@ -166,7 +166,9 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     }, [summary]); // purposefully not including bookInfo, so we don't post on initial load
 
     function isReadyForAgreements(): boolean {
-        return !!bookInfo?.title && !!bookInfo?.copyright;
+        return (
+            !!bookInfo?.title && (!!bookInfo?.copyright || bookInfo?.isTemplate)
+        );
     }
     const [agreedPreviously, setAgreedPreviously] = useState<boolean>(false);
     const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
