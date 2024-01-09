@@ -10,7 +10,7 @@
  * For example, page-margin-right is set to 12mm in a .bloom-page block early in this file.
  * For an A4Landscape page, a later rule in this file overrides the .bloom-page rule and makes it 15mm.
  * If the book uses the large margins theme, a .bloom-page rule in that file overrides it again to 25mm.
- * The rounded border theme overrides it to 2.5mm for Device page sizes, using a differerent selector again.
+ * The rounded border theme overrides it to 2.5mm for Device page sizes, using a different selector again.
  * These rules all have the same specificity even though they have different selectors, so the last one wins.
  * I don't much like depending on the order of rules like this, or having rules left in the
  * generated appearance.css file that we know will never apply to anything. But I don't see a better way
@@ -20,33 +20,106 @@
  * - a way to override for certain themes (either for all page sizes or by page-size)
 */
 .bloom-page {
-    --top-bottom-gap: 1mm;
+    /* font-size: value in .numberedPage:after to display the page number */
     --pageNumber-font-size: 14pt;
+    /* Either --pageNumber-top or --pageNumber-bottom should be set to a value, but not both. */
+    /* bottom: value in .numberedPage:after to display the page number */
     --pageNumber-bottom: 10px;
+    /* top: value in .numberedPage:after to display the page number */
+    --pageNumber-top: unset;
+    /* used for both height: and width: values in .numberedPage:after to display the page number.
+     * Values like 20mm or 20vmin are valid. */
     --pageNumber-background-width: unset; /* for when we need to have a colored background, e.g. a circle */
+    /* background-color: value in .numberedPage:after to display the page number */
+    --pageNumber-background-color: transparent;
+    /* border-radius: value in .numberedPage:after to display the page number */
+    --pageNumber-border-radius: 0px;
+    /* left: value in .numberedPage.side-left:after to display the page number */
+    --pageNumber-left-margin: auto;
+
+    /* right: value in .numberedPage.side-right:after to display the page number
+     * If this is used, --pageNumber-always-left-margin should be set to unset (a keyword).
+     * Note that if used, this should be set the same value as --page-margin-right, which is
+     * what this default value achieves. */
+    --pageNumber-right-margin: var(--page-margin-right);
+
+    /* left: value in .numberedPage.side-right:after to display the page number */
+    /*  This allows the page number to always be on the left, regardless of page side.
+     *  If this is used, --pageNumber-right-margin must be set to unset (a keyword).
+     *  Valid values would include auto (a keyword), 5px, or 8%.
+     *  The unset keyword removes having any value associated with this variable. */
     --pageNumber-always-left-margin: unset;
+
+    /* background-color: value in .bloom-page */
     --page-background-color: white;
-    --marginBox-background-color: transparent;
+    /* padding-left: value in .split-pane.vertical-percent
+     *  .split-pane-component.position-right .split-pane-component-inner > div */
     --page-split-vertical-gap: 2mm;
+    /* padding-top: value in .split-pane.horizontal-percent
+     *  .split-pane-component.position-bottom .split-pane-component-inner > div */
     --page-split-horizontal-gap: 1mm;
+    /* gap: value for .bloom-translationGroup */
+    /* When Bloom is configured to show each block of text in more than one language, this controls
+       the space between the different language sections of each block. */
     --multilingual-editable-vertical-gap: 10px;
-    --page-gutter: 0mm; /* most Bloom books are too small to need a gutter. NB: THIS MUST HAVE UNITS even when 0, else calc() fails */
-    --cover-margin-top: 12mm;
-    --cover-margin-bottom: 12mm;
-    --marginBox-padding: 0; /* If this gets used in calc, may need to give it some unit. */
+    /* border-radius: value in .bloom-imageContainer (picture added by user to front cover or content page) */
+    --image-border-radius: 0px; /* 0px is the default, but we want to be explicit about square corners */
+    /* added to --page-margin-right for padding-right: value in .bloom-page.side-left */
+    /* added to --page-margin-left for padding-left: value in .bloom-page.side-right */
+    /* Most Bloom books are too small to need a gutter. NB: THIS MUST HAVE UNITS even when 0, else calc() fails */
+    --page-gutter: 0mm;
 
-/* the margin values here (and in the page-size-specific rules below) come from recommendations from Little Zebra
-> We just looked at several versions of the books in different Bloom formats and we think that having the same margins,
-> inside and outside on ALL pages is most useful.
-> A4 books are big, so we used 15mm for the top and bottom (short sides)
-> We also want to be sure that all the title pages and credit pages and inside cover pages have the same margins as the rest of the book.
-*/
+    /* padding-top: value in .bloom-page.outsideFrontCover and .bloom-page.outsideBackCover */
+    --cover-margin-top: 12mm;   /* same default value as --page-margin-top, but used for outside cover pages */
+    /* padding-bottom: value in .bloom-page.outsideFrontCover and .bloom-page.outsideBackCover */
+    --cover-margin-bottom: 12mm;    /* same default value as --page-margin-bottom, but used for outside cover pages */
+    /* display: value in .Title-On-Cover-style.bloom-contentNational1 */
+    --coverShowTitleL2: block;  /* default is L2 title displaying in a separate block ('block' is a keyword) */
+    /* display: value in .Title-On-Cover-style.bloom-contentNational2 */
+    --coverShowTitleL3: none;   /* default is L3 title not displaying at all ('none' is a keyword) */
+    /* display: value in .coverBottomBookTopic */
+    --coverShowTopic: inline-block; /* default is topic displaying ('inline-block' is a keyword) */
+    /* display: value in .coverBottomLangName */
+    --coverShowLanguageName: inline-block;  /* default is language name displaying ('inline-block' is a keyword) */
 
-    /* these are just defaults in case we miss some. If you override, remember that the bottom margin needs
-    to be big enough for the page number, unless you put it elsewhere. */
+    /* background-color: value in .numberedPage .marginBox */
+    /* This is not just for text boxes, but for everything inside the page margins.
+       (For example, the space between text boxes or the background of partly transparent images.) */
+    --marginBox-background-color: transparent;
+    /* padding: value in .numberedPage .marginBox */
+    --marginBox-padding: 0px;
+    /* border-radius: value in .numberedPage .marginBox */
+    --marginBox-border-radius: 0px;
+    /* border-color: value in .numberedPage .marginBox */
+    --marginBox-border-color: black;
+    /* border-style: value in .numberedPage .marginBox */
+    --marginBox-border-style: none; /* default is no border, but we want to be explicit. 'none' is a keyword. */
+    /* border-width: value in .numberedPage .marginBox */
+    --marginBox-border-width: medium;   /* must not be 0px/0mm/0in to have a border. 'medium' is a keyword. */
+
+    /* The margin values here (and in the page-size-specific rules below) come from recommendations from
+     * Little Zebra. We just looked at several versions of the books in different Bloom formats and we think
+     * that having the same margins, inside and outside on ALL pages is most useful.
+     * A4 books are big, so we used 15mm for the top and bottom (short sides).
+     * We also want to be sure that all the title pages and credit pages and inside cover pages have the same
+     * margins as the rest of the book.
+     */
+
+     /* these are just defaults in case we miss some. If you override, remember that the bottom margin needs
+     * to be big enough for the page number, unless you put it elsewhere.
+     */
+
+    /* padding-top: value in .bloom-page: affects all pages except outside cover pages */
     --page-margin-top: 12mm;
+    /* padding-bottom: value in .bloom-page: affects all pages except outside cover pages */
     --page-margin-bottom: 12mm;
+    /* padding-right: value in .bloom-page.side-right */
+    /* added to --page-gutter for padding-right: value in .bloom-page.side-left */
     --page-margin-right: 12mm;
+    /* padding-left: value in .bloom-page.side-left */
+    /* added to --page-gutter for padding-left: value in .bloom-page.side-right */
+    /* padding-left: and padding-right: values for pages that are symmetrical left vs. right
+     *   (outside cover pages, calendar pages, Bloom Player pages, "Device16x9..." pages) */
     --page-margin-left: 12mm;
 }
 
