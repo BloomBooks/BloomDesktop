@@ -1,0 +1,143 @@
+@import "../branding-base.less";
+
+.frontCover .bottomBlock {
+    flex-direction: column !important;
+
+    .coverBottomLangName,
+    .coverBottomBookTopic {
+        font-size: 14pt !important;
+    }
+}
+.insideBackCover {
+    [data-book="inside-back-cover-branding-top-html"] {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        font-family: "Andika";
+        font-size: 12pt;
+        p {
+            margin-top: 1em;
+        }
+    }
+    // hide the editable text here
+    .bloom-translationGroup {
+        display: none !important;
+    }
+    img.badge {
+        width: 20%;
+    }
+    .bloom-translationGroup {
+        display: none;
+    }
+}
+
+// Default sizes and layouts
+.bloom-page {
+    --backOutsideCoverFontSize: 10pt;
+    --robotsMaliLogoWidth: 20%;
+    [data-book="outside-back-cover-branding-bottom-html"] {
+        align-items: center;
+    }
+}
+.Device16x9Portrait {
+    --backOutsideCoverFontSize: 9pt;
+}
+.Device16x9Landscape {
+    --robotsMaliLogoWidth: 12%;
+    --backOutsideCoverFontSize: 8pt;
+}
+
+.credits {
+    .licenseNotes {
+        margin-top: 1em;
+    }
+}
+
+.insideBackCover,
+.outsideBackCover,
+.theEndPage  // the need for theEndPage seems like a bug in the xmatter pug
+{
+    .marginBox {
+        display: flex !important;
+        flex-direction: column; // text block on top, logos on bottom
+        justify-content: space-between; // push text to the top, logos to the bottom
+
+        [data-book="outside-back-cover-branding-top-html"] {
+            display: block;
+            overflow-y: auto !important; // see https://issues.bloomlibrary.org/youtrack/issue/BL-12970/Allow-branding-boilerplate-to-be-scrollable
+            height: 100%; // without this, it always shows the scrollbar even if not needed
+        }
+
+        // hide the editable text here
+        .bloom-translationGroup {
+            display: none !important;
+        }
+
+        [data-book="inside-back-cover-branding-top-html"],
+        [data-book="outside-back-cover-branding-top-html"] {
+            text-align: center;
+            font-family: "Andika";
+            font-size: var(--backOutsideCoverFontSize);
+            h1 {
+                font-weight: normal;
+                font-size: var(--backOutsideCoverFontSize);
+            }
+            p + h1,
+            p + p {
+                margin-top: 1em;
+            }
+            h1 + p {
+                margin-top: 0;
+            }
+        }
+        // LOGOS
+        [data-book="outside-back-cover-branding-bottom-html"] {
+            position: relative !important;
+            // margin-top: auto !important;
+            img.badge {
+                margin-top: 10px;
+                width: 20%;
+            }
+        }
+    }
+}
+
+// ----------------------------------------------
+// The Robots Mali logo appears on 4 pages
+// ----------------------------------------------
+img[src*="RobotsMali.svg"] {
+    width: var(--robotsMaliLogoWidth);
+
+    .frontCover & {
+        margin-right: 0 !important; // there is a rule coming from Traditional xmatter that adds a right margin, throwing off centering
+    }
+}
+
+// ---------------------------------------------
+// Adaptive bottom logo block for back cover
+// ---------------------------------------------
+[data-book*="branding"] img {
+    margin-left: 0;
+    margin-right: 0;
+}
+[data-book="outside-back-cover-branding-bottom-html"] {
+    img.branding.badge,
+    .spacer {
+        width: var(--robotsMaliLogoWidth);
+    }
+}
+.spacer {
+    display: none;
+    height: 20px;
+}
+[class*="Landscape"],
+[class*="Device"] {
+    .spacer {
+        display: block;
+    }
+    [data-book="outside-back-cover-branding-bottom-html"] {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}

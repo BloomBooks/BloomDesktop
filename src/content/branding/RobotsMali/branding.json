@@ -1,0 +1,70 @@
+{
+    "presets": [
+        {
+            "data-book": "cover-bottom-first-row-branding-html",
+            "lang": "*",
+            "content": "<img class='branding' src='RobotsMali.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "inside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "<div class='bloom-force-publish'><p>Bamanankan: <strong>An kunkanko</strong></p>            <p>Nin gafe dilanna RobotsMali fɛ Bamakɔ, Mali la. RobotsMali ye kalan, ɲinini, ani kɛnyɛrɛye baarakɛ yɔrɔ ye min ɲɛsinnen bɛ fɛɛrɛsira nafamaw i n'a fɔ orobotiki ani Ɛntelizansi Aritifisiɛli baaraw ka ɲɛsin jamana sɔrɔko ni sigida yiriwali ma.</p>                <p>Kalanni daminɛni joona nafa ka bon kosɛbɛ dɔnniya yiriwali la ani lakɔlikalan sankɔrɔtali la. Mali demisɛnw ka kan ka kalanni kɛ joona u fakan na . Walasa ka dɔ fara a ka baara kan, ka Bamanankan gafe caman dilan demisɛnniw ye, RobotsMali sɛbɛnikɛlaw ni a ja dilannaw ye baarakɛ ni Ɛntelizansi Aritifisiɛli ye k'u dɛmɛ ka nin gafe in dilan ani gafe wɛrɛw.</p></div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='RobotsMali.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='RobotsMali.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "content": "RobotsMali, email: info@robotsmali.org, web: https://robotsmali.org",
+            "condition": "always"
+        },
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by-nc-nd/4.0/",
+            "condition": "always"
+        },
+        {
+            "data-book": "licenseNotes",
+            "lang": "en",
+            "content": "This license does not permit translation, adaptation or other derivation of this work. Requests for authorization for translation or adaptation under a different license can be sent to the copyright holder, RobotsMali, at info@robotsmali.org.",
+            "condition": "always"
+        },
+        {
+            "data-book": "licenseNotes",
+            "lang": "fr",
+            "content": "Cette licence ne permet pas la traduction, l'adaptation ou toute autre dérivation de cette œuvre. Les demandes d'autorisation de traduction ou d'adaptation sous une autre licence peuvent être envoyées au détenteur des droits d'auteur, RobotsMali, à l'adresse info@robotsmali.org.",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "condition": "always",
+            "content": "<h1>Français: <strong>À Propos de nous</strong></h1>
+                <p>Cet ouvrage est né au sein de RobotsMali, à Bamako, au Mali. RobotsMali est un centre dédié à l'éducation, la recherche, et l'entrepreneuriat, se focalisant sur l'utilisation bénéfique des technologies comme la robotique et l'intelligence artificielle pour le développement économique et social.</p>
+                <p>Nous croyons fermement que la lecture dès le plus jeune âge est essentielle pour le développement cognitif et la réussite scolaire. Chaque enfant malien a le droit de découvrir la joie et les avantages durables de la lecture précoce dans sa langue maternelle. Pour accélérer la création d'une vaste bibliothèque de littérature pour enfants en bambara, nos auteurs et illustrateurs, épaulés par l'intelligence artificielle, ont donné vie à ce livre et bien d'autres.</p>
+                <h1>English : <strong>About us</strong></h1>
+                <p>This book was created by RobotsMali in Bamako, Mali. RobotsMali is a center for education, research, and entrepreneurship centered around the beneficial use of technologies such as robotics and artificial intelligence for economic and social development.</p>
+                <p>Reading from an early age is crucial for cognitive development and is key to academic success. Malian children have a right to experience the joy and lifelong benefits of early reading in their mother tongue. In order to accelerate the creation of a large library of children&#x2019;s literature in Bambara, human authors and illustrators at RobotsMali used artificial intelligence to help them create this book and many others.</p>"
+
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<div class='spacer'/><img class='branding' src='RobotsMali.svg'/><img class='branding badge' src='made-with-bloom-badge.svg'/>",
+            "condition": "always"
+        }
+    ]
+}

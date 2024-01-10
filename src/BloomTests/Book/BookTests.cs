@@ -6394,5 +6394,55 @@ namespace BloomTests.Book
 
             Assert.That(result, Is.EqualTo("Enter Shift-Enter Last Line "));
         }
+
+		[Test]
+		public void ElementIsInXMatter_AncestorHasBloomFrontMatter_ReturnsTrue()
+		{
+			XmlDocument doc = new XmlDocument();
+			XmlElement body = doc.CreateElement("body");
+			XmlElement xmatterDiv = doc.CreateElement("div");
+			xmatterDiv.SetAttribute("class", "bloom-frontMatter");
+			body.AppendChild(xmatterDiv);
+			XmlElement parentDiv = doc.CreateElement("div");
+			xmatterDiv.AppendChild(parentDiv);
+			XmlElement div = doc.CreateElement("div");
+			parentDiv.AppendChild(div);
+
+			Assert.That(Bloom.Book.Book.ElementIsInXMatter(div), Is.True);
+
+			XmlElement innerDiv = doc.CreateElement("div");
+			div.AppendChild(innerDiv);
+
+			Assert.That(Bloom.Book.Book.ElementIsInXMatter(innerDiv), Is.True);
+		}
+
+		[Test]
+		public void ElementIsInXMatter_NoAncestorHasBloomFrontMatter_ReturnsFalse()
+		{
+			XmlDocument doc = new XmlDocument();
+			XmlElement body = doc.CreateElement("body");
+			XmlElement nonXmatterDiv = doc.CreateElement("div");
+			body.AppendChild(nonXmatterDiv);
+			XmlElement parentDiv = doc.CreateElement("div");
+			nonXmatterDiv.AppendChild(parentDiv);
+			XmlElement div = doc.CreateElement("div");
+			parentDiv.AppendChild(div);
+
+			Assert.That(Bloom.Book.Book.ElementIsInXMatter(div), Is.False);
+
+			XmlElement innerDiv = doc.CreateElement("div");
+			div.AppendChild(innerDiv);
+
+			Assert.That(Bloom.Book.Book.ElementIsInXMatter(innerDiv), Is.False);
+		}
+
+		[Test]
+		public void ElementIsInXMatter_ElementIsBody_ReturnsFalse()
+		{
+			XmlDocument doc = new XmlDocument();
+			XmlElement body = doc.CreateElement("body");
+
+			Assert.That(Bloom.Book.Book.ElementIsInXMatter(body), Is.False);
+		}
     }
 }

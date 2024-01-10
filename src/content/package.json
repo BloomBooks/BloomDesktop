@@ -25,7 +25,7 @@
         "build:layout:less": "less-watch-compiler --source-map --run-once  bookLayout ../../output/browser/bookLayout",
         "build:appearance": "cpx \"appearanceThemes/**/*.css\" ../../output/browser/appearanceThemes -v",
         "watch:appearance": "cpx \"appearanceThemes/**/*.css\" ../../output/browser/appearanceThemes --watch -v",
-        "watch:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm,html,txt,js}\" ../../output/browser/branding --watch",
+        "watch:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm,html,txt,js}\" ../../output/browser/branding --watch -v",
         "watch:branding:less": "less-watch-compiler --source-map branding ../../output/browser/branding",
         "watch:templates:less": "less-watch-compiler --source-map  templates  ../../output/browser/templates",
         "watch:layout:less": "less-watch-compiler --source-map  bookLayout ../../output/browser/bookLayout",
