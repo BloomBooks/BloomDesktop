@@ -255,6 +255,13 @@ mixin title-page-contents
 		div.fillPageFlexGap.
 		+title-page-branding-bottom
 
+mixin back-cover-inner-contents
+	block insideBackCoverContents
+		div(data-book='inside-back-cover-branding-top-html' lang="*")
+		+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style
+			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
+
+
 mixin factory-insideFrontCover
 	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover', data-xmatter-page='insideFrontCover')#BA00DE13-734C-4036-9901-7040275B9000
 		block insideFrontCoverContents
@@ -264,10 +271,7 @@ mixin factory-insideFrontCover
 mixin factoryStandard-insideBackCover
 	// Inside Back Cover
 	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover', data-xmatter-page='insideBackCover')&attributes(attributes)#502BE62F-A4D0-4225-A598-1A203FA73239
-		block insideBackCoverContents
-			div(data-book='inside-back-cover-branding-top-html' lang="*")
-			+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style
-				label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
+		+back-cover-inner-contents
 
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover
@@ -299,11 +303,12 @@ mixin standard-endExtra2PageForDevice
 	//- In paper books, this is the inside back cover
 	//- When making a .bloompub, Bloom will remove this if it is empty.
 	+page-xmatter('End Extra 2').cover.coverColor.insideBackCover.bloom-backMatter(data-xmatter-page="insideBackCover")#898b6622-837b-49cd-9938-2de76f6d4b20
-		+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style
+		+back-cover-inner-contents
 
 mixin standard-endExtra3PageForDevice
 	//- In paper books, this is the outside back cover
 	//- When making a .bloompub, Bloom will remove this if it is empty.
+	//- TODO: we're going to clean up this confusion in https://issues.bloomlibrary.org/youtrack/issue/BL-12969/Simplify-the-end-pages-in-device-xmatter
 	+page-xmatter('End Extra 3 ').cover.coverColor.outsideBackCover.bloom-backMatter(data-xmatter-page="outsideBackCover")#898b6622-837b-49cd-9938-2de76f6d4b21
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
