@@ -355,7 +355,7 @@ namespace Bloom.WebLibraryIntegration
 
 			if (blPublishModel.MetadataIsReadyToPublish && (hasAtLeastOneLanguageToUpload || blPublishModel.OkToUploadWithNoLanguages))
 			{
-				bool updatingBook = blPublishModel.BookIsAlreadyOnServer;   // this is a live value, so make local copy.
+				bool updatingBook = blPublishModel.IsBookAlreadyOnServer();   // this is a live value, so make local copy.
 				if (updatingBook)
 				{
 					var msg = $"Overwriting the copy of {uploadParams.Folder} on the server...";

@@ -116,9 +116,14 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool IsBookPublicDomain => _license?.Url != null && _license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/");
 
-		internal bool BookIsAlreadyOnServer => LoggedIn && _uploader.IsBookOnServer(Book.FolderPath);
+		internal bool IsBookAlreadyOnServer() {
+			return LoggedIn && _uploader.IsBookOnServer(Book.FolderPath);
+		}
 
-		internal dynamic ConflictingBookInfo => _uploader.GetBookOnServer(Book.FolderPath);
+		internal dynamic GetConflictingBookInfo()
+		{
+			return _uploader.GetBookOnServer(Book.FolderPath);
+		}
 
 		private string Uploader => _uploader.UserId;
 
@@ -525,7 +530,7 @@ namespace Bloom.Publish.BloomLibrary
 				newLanguages = newLangs;
 			}
 
-			var existingBookInfo = ConflictingBookInfo;
+			var existingBookInfo = GetConflictingBookInfo();
 			var updatedDateTime = (DateTime)existingBookInfo.updatedAt;
 			var createdDateTime = (DateTime)existingBookInfo.createdAt;
 			// Find the best title available (BL-11027)
@@ -571,7 +576,7 @@ namespace Bloom.Publish.BloomLibrary
 			// Must match IUploadCollisionDlgProps in uploadCollisionDlg.tsx.
 			return new
 			{
-				shouldShow = BookIsAlreadyOnServer,
+				shouldShow = true,
 				userEmail = LoggedIn ? WebUserId : "",
 				newThumbUrl = newThumbPath,
 				newTitle,

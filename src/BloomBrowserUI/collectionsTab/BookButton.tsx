@@ -354,7 +354,7 @@ export const BookButton: React.FunctionComponent<{
         } else {
             // Click on the same book. If we recently clicked it and haven't yet been told
             // that the double-click timer elapsed, treat it as a double-click.
-            if (awaitingDoubleClick.current) {
+            if (event.button === 0 && awaitingDoubleClick.current) {
                 handleDoubleClick();
             }
         }

@@ -2363,12 +2363,12 @@ namespace Bloom.Book
 			return result;
 		}
 
-		private static bool ElementIsInXMatter(XmlElement element)
+		internal static bool ElementIsInXMatter(XmlElement element)
 		{
 			if (element == null)
 				return false;
-			while (element.ParentNode.Name != "body")
-			{
+			while (element.ParentNode != null && element.ParentNode.Name != "body")
+                {
 				if (element.ParentWithClass("bloom-frontMatter") != null ||
 				    element.ParentWithClass("bloom-backMatter") != null)
 					return true;
