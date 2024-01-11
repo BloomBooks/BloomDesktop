@@ -30,7 +30,8 @@ namespace BloomTests.Publish
 								<div lang = '*'>more text</div>
 							</div>
 						</div>
-					</div>"
+					</div>",
+                createPhysicalFile: true
             );
             MakeEpub("output", "ExportFixedLayoutEpub", book, unpaginated: false);
             GetPageOneData();

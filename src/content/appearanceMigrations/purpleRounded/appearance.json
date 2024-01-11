@@ -1,0 +1,10 @@
+// Matches customBookStyles.css with checksum 23c76394fefc12d620b3d7b646850ae3
+// On 5 January 2024 this was used by at least one book (made by hand for testing).
+// Affected branding projects are "Education-For-Life".
+// Uploaders included joe@example.com, anne@example.com.
+// Example Book: https://bloomlibrary.org/player/vPftT2H1eE
+// A replacement customBookStyles.css was created for testing.
+{
+    "cssThemeName": "purple-rounded",
+    "page-background-color": "red"
+}

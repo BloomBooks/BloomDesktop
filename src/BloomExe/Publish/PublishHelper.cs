@@ -308,7 +308,10 @@ namespace Bloom.Publish
             // BloomReader will obey rules like display:none.
             // For epubs, we don't; display:none is not reliably obeyed, so the reader could see
             // unexpected things.
-
+            // We make this displayDom because, at least in the case of flowable epubs,
+            // the very simplified stylesheet in use in the epub dom doesn't hide anything, so we
+            // need to use the real DOM with its stylesheets to figure out what is hidden there
+            // and should be removed in the epub.
             HtmlDom displayDom = null;
             foreach (XmlElement page in pageElts)
             {
@@ -316,6 +319,7 @@ namespace Bloom.Publish
                 if (displayDom == null)
                 {
                     displayDom = book.GetHtmlDomWithJustOnePage(page);
+                    displayDom.BaseForRelativePaths = book.FolderPath;
                 }
                 else
                 {

@@ -74,13 +74,13 @@
     /* padding-bottom: value in .bloom-page.outsideFrontCover and .bloom-page.outsideBackCover */
     --cover-margin-bottom: 12mm;    /* same default value as --page-margin-bottom, but used for outside cover pages */
     /* display: value in .Title-On-Cover-style.bloom-contentNational1 */
-    --coverShowTitleL2: block;  /* default is L2 title displaying in a separate block ('block' is a keyword) */
+    --cover-title-L2-show: doShow-css-will-ignore-this-and-use-default;  /* default is L2 title displaying in a separate block (the value is a self-documenting trick) */
     /* display: value in .Title-On-Cover-style.bloom-contentNational2 */
-    --coverShowTitleL3: none;   /* default is L3 title not displaying at all ('none' is a keyword) */
+    --cover-title-L3-show: none;   /* default is L3 title not displaying at all ('none' is a keyword) */
     /* display: value in .coverBottomBookTopic */
-    --coverShowTopic: inline-block; /* default is topic displaying ('inline-block' is a keyword) */
+    --cover-topic-show: doShow-css-will-ignore-this-and-use-default; /* default is topic displaying (the value is a self-documenting trick) */
     /* display: value in .coverBottomLangName */
-    --coverShowLanguageName: inline-block;  /* default is language name displaying ('inline-block' is a keyword) */
+    --cover-languageName-show: doShow-css-will-ignore-this-and-use-defaultblock;  /* default is language name displaying (the value is a self-documenting trick) */
 
     /* background-color: value in .numberedPage .marginBox */
     /* This is not just for text boxes, but for everything inside the page margins.

@@ -303,6 +303,12 @@ namespace BloomTests.Book
             var book = CreateBook(CreateDefaultCollectionsSettings());
             if (bringBookUpToDate)
                 book.BringBookUpToDate(new NullProgress());
+            else
+            {
+                // We have to at least fake this, or basePage.css won't find the default
+                // variables it expects.
+                new AppearanceSettings().WriteToFolder(book.FolderPath);
+            }
             return book;
         }
 

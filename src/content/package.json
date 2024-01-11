@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "build": "npm-run-all build:pug build:less build:branding:files build:templates:files build:templates:typescript build:appearance",
+        "build": "npm-run-all build:pug build:less build:branding:files build:templates:files build:templates:typescript build:appearance build:appearanceMigrations",
         "watch": "npm-run-all watch:pug watch:less watch:branding:files",
         "//1": "TODO: currently we haven't figured this out without gulp, so we're just building *all* pugs in this directory along with BloomBrowserUI/",
         "//2": "See https://github.com/Qard/onchange/issues/118",
@@ -26,6 +26,9 @@
         "build:appearance": "cpx \"appearanceThemes/**/*.css\" ../../output/browser/appearanceThemes -v",
         "watch:appearance": "cpx \"appearanceThemes/**/*.css\" ../../output/browser/appearanceThemes --watch -v",
         "watch:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm,html,txt,js}\" ../../output/browser/branding --watch -v",
+        "build:appearanceMigrations": "cpx \"appearanceMigrations/**\" ../../output/browser/appearanceMigrations -v",
+        "watch:appearanceMigrations": "cpx \"appearanceMigrations/**\" ../../output/browser/appearanceMigrations --watch -v",
+        "watch:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm,html,txt,js}\" ../../output/browser/branding --watch",
         "watch:branding:less": "less-watch-compiler --source-map branding ../../output/browser/branding",
         "watch:templates:less": "less-watch-compiler --source-map  templates  ../../output/browser/templates",
         "watch:layout:less": "less-watch-compiler --source-map  bookLayout ../../output/browser/bookLayout",

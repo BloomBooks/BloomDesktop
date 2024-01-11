@@ -316,22 +316,22 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             >
                                 <ConfigrBoolean
                                     disabled={appearanceDisabled}
-                                    path={`appearance.coverShowTitleL2`}
+                                    path={`appearance.cover-title-L2-show`}
                                     label="Show Written Language 2 Title"
                                 />
                                 <ConfigrBoolean
                                     disabled={appearanceDisabled}
-                                    path={`appearance.coverShowTitleL3`}
+                                    path={`appearance.cover-title-L3-show`}
                                     label="Show Written Language 3 Title"
                                 />
                                 <ConfigrBoolean
                                     disabled={appearanceDisabled}
-                                    path={`appearance.coverShowLanguageName`}
+                                    path={`appearance.cover-languageName-show`}
                                     label="Show Language Name"
                                 />
                                 <ConfigrBoolean
                                     disabled={appearanceDisabled}
-                                    path={`appearance.coverShowTopic`}
+                                    path={`appearance.cover-topic-show`}
                                     label="Show Topic"
                                 />
                             </ConfigrSubgroup>
