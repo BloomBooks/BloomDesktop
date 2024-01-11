@@ -115,7 +115,7 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void PrepareElementsOnPage_HasTextAreaInsideTranslationGroup_MakesVernacularAndNational()
+        public void PrepareElementsOnPage_HasTextAreaInsideTranslationGroup_MakesVernacularAndNationalAndL3()
         {
             var contents =
                 @"<html><body><div class='bloom-page bloom-translationGroup'>
@@ -130,7 +130,7 @@ namespace BloomTests.Book
                 bookData
             );
 
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 3);
+            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 4);
             AssertThatXmlIn
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en']", 1);
@@ -139,7 +139,7 @@ namespace BloomTests.Book
                 .HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='fr']", 1);
             AssertThatXmlIn
                 .Dom(dom)
-                .HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='es']", 0);
+                .HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='es']", 1);
             AssertThatXmlIn
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz']", 1);
@@ -150,7 +150,7 @@ namespace BloomTests.Book
         /// The key challenge for the code is, there's no prototype div to copy.
         /// </summary>
         [Test]
-        public void PrepareElementsOnPage_HasEmptyTranslationGroup_MakesVernacularAndNational()
+        public void PrepareElementsOnPage_HasEmptyTranslationGroup_MakesVernacularAndNationalAndL3()
         {
             var contents =
                 @"<html><body><div class='bloom-page bloom-translationGroup'>
@@ -168,13 +168,13 @@ namespace BloomTests.Book
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]",
-                    2
+                    3
                 );
             AssertThatXmlIn
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'normal-style') and contains(@class, 'bloom-editable')]",
-                    2
+                    3
                 );
             AssertThatXmlIn
                 .Dom(dom)
@@ -184,7 +184,7 @@ namespace BloomTests.Book
                 );
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 0);
+            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace BloomTests.Book
         /// but the new ones should remain empty.
         /// </summary>
         [Test]
-        public void PrepareElementsOnPage_FromShell_MakesVernacularAndNationalEmpty()
+        public void PrepareElementsOnPage_FromShell_MakesVernacularAndNationalAndL3Empty()
         {
             var contents =
                 @"<html><body><div class='bloom-page numberedPage A5Portrait bloom-monolingual'
@@ -225,13 +225,13 @@ namespace BloomTests.Book
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]",
-                    4
+                    5
                 );
             AssertThatXmlIn
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'normal-style') and contains(@class, 'bloom-editable')]",
-                    4
+                    5
                 );
             AssertThatXmlIn
                 .Dom(dom)
@@ -241,7 +241,7 @@ namespace BloomTests.Book
                 );
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 0);
+            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
             AssertThatXmlIn
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath(
@@ -696,7 +696,7 @@ namespace BloomTests.Book
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'plain-style') and contains(@class, 'bloom-editable')]",
-                    3
+                    4
                 );
             AssertThatXmlIn
                 .Dom(dom)
@@ -706,7 +706,7 @@ namespace BloomTests.Book
                 );
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 0);
+            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
             AssertThatXmlIn
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath(
@@ -751,7 +751,7 @@ namespace BloomTests.Book
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'plain-style') and contains(@class, 'bloom-editable')]",
-                    3
+                    4
                 );
             AssertThatXmlIn
                 .Dom(dom)

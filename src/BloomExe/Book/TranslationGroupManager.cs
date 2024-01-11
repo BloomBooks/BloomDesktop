@@ -39,35 +39,20 @@ namespace Bloom.Book
         {
             GenerateEditableDivsWithPreTranslatedContent(pageOrDocumentNode);
 
-            foreach (var code in bookData.GetBasicBookLanguageCodes())
+            // Earlier (pre-5.7) versions of Bloom were selective about creating editable divs for
+            // languages that were not being used for this field, based on data-default-languages.
+            // But the logic for this was already complex in 5.6, and had caused bugs, and the Appearance
+            // system made it almost impossible, since the visibility of the L3 bloom-editable
+            // can be controlled by various theme files as well as the book-settings dialog
+            // (and the logic differs depending on whether we're in legacy theme).
+            // Rather than add a lot more complexity, we're going to just create bloom-editables
+            // for all the languages in use in the book at all. It is somewhat rare even to have
+            // L3, and even when we do, the overhead is small (and invisible stuff is removed from
+            // publications).
+            foreach (var code in bookData.GetAllBookLanguageCodes(includeMetaData2: true))
                 PrepareElementsOnPageOneLanguage(pageOrDocumentNode, code);
-            // I'm not sure exactly why, but GetBasicBookLanguageCodes() returns
-            // the languages identified as L1 (and possibly, if turned on, L2 and L3)
-            // and M1. I'm nervous about changing that. But it's now possible for
-            // a group to specify (using N2 in data-default-languages) that it should
-            // have an M2 block, and M2 may not be any of the GetBasicBookLanguageCodes()
-            // languages (unless we're in trilingual mode). So we need another method
-            // to handle any special languages this block needs that are not considered
-            // 'basic' for this book.
-            PrepareSpecialLanguageGroups(pageOrDocumentNode, bookData);
 
             FixGroupStyleSettings(pageOrDocumentNode);
-        }
-
-        static void PrepareSpecialLanguageGroups(XmlNode pageDiv, BookData bookData)
-        {
-            foreach (
-                XmlElement groupElement in pageDiv.SafeSelectNodes(
-                    "descendant-or-self::*[contains(@class,'bloom-translationGroup')]"
-                )
-            )
-            {
-                var dataDefaultLangs = groupElement.Attributes["data-default-languages"]?.Value;
-                if (dataDefaultLangs != null && dataDefaultLangs.Contains("N2"))
-                {
-                    MakeElementWithLanguageForOneGroup(groupElement, bookData.MetadataLanguage2Tag);
-                }
-            }
         }
 
         /// <summary>
