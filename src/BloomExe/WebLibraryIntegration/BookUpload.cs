@@ -13,8 +13,11 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Publish;
 using Bloom.web;
+using Bloom.web.controllers;
+using BloomTemp;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
@@ -32,7 +35,7 @@ namespace Bloom.WebLibraryIntegration
         public BloomLibraryBookApiClient BloomLibraryBookApiClient;
         private BloomS3Client _s3Client;
         internal readonly BookThumbNailer _thumbnailer;
-        private string _storageKeyOfBookFolderParentOnS3 = "";
+        private string _s3PrefixToUploadTo = "";
         public IProgress Progress;
 
         public const string UploadHashesFilename = ".lastUploadInfo"; // this filename must begin with a period
@@ -163,7 +166,7 @@ namespace Bloom.WebLibraryIntegration
 
         internal string UploadBook_ForUnitTest(
             string bookFolder,
-            out string storageKeyOfBookFolderParentOnS3,
+            out string s3PrefixUploadedTo,
             IProgress progress = null,
             string existingBookObjectId = null
         )
@@ -184,7 +187,7 @@ namespace Bloom.WebLibraryIntegration
                 null
             );
 
-            storageKeyOfBookFolderParentOnS3 = _storageKeyOfBookFolderParentOnS3;
+            s3PrefixUploadedTo = _s3PrefixToUploadTo;
             return result;
         }
 
@@ -269,58 +272,88 @@ namespace Bloom.WebLibraryIntegration
                     if (progress.CancelRequested)
                         return "";
 
-                    // The server will create a new folder for our upload or sync. If the book already exists, the new folder gets prepopulated with the existing files.
-                    // (after we are done, the server handles making the new folder the current one)
-                    (var transactionId, _storageKeyOfBookFolderParentOnS3, var s3Credentials) =
-                        BloomLibraryBookApiClient.InitiateBookUpload(
+                    bool isNewBook = existingBookObjectIdOrNull == null;
+
+                    // This currently (unfortunately) enforces a single upload at a time.
+                    // If we want to change that in the future, we would need different folder names,
+                    // perhaps appending an ID or even just a GUID.
+                    using (
+                        var stagingDirectoryTempFolder = new TemporaryFolder("BloomUploadStaging")
+                    )
+                    {
+                        var stagingDirectory = stagingDirectoryTempFolder.FolderPath;
+                        SetUpStaging(
+                            bookFolder,
+                            stagingDirectory,
                             progress,
+                            pdfToInclude,
+                            includeNarrationAudio,
+                            includeMusic,
+                            textLanguages,
+                            audioLanguages,
+                            metadataLang1Code,
+                            metadataLang2Code,
+                            collectionSettings?.SettingsFilePath,
+                            isForBulkUpload
+                        );
+
+                        string[] filesToUpload = null;
+                        List<FilePathAndHash> bookFiles = GetStagedFilesAndHashes(stagingDirectory);
+
+                        if (progress.CancelRequested)
+                            return "";
+
+                        // The server determines our upload location (_s3PrefixToUploadTo)
+                        // and, for an existing book, copies the files which haven't been modified.
+                        // It also reports which files should be uploaded (new and modified).
+                        // After we are done uploading those files, the server points the book
+                        // database record at the new S3 location.
+                        (
+                            var transactionId,
+                            var s3Credentials,
+                            _s3PrefixToUploadTo,
+                            filesToUpload
+                        ) = BloomLibraryBookApiClient.InitiateBookUpload(
+                            progress,
+                            bookFiles,
+                            Path.GetFileName(bookFolder), // This last part of the path is the book title
                             existingBookObjectIdOrNull
                         );
 
 #if DEBUG
-                    // S3 URL can be reasonably deduced, as long as we have the S3 ID, so print that out in Debug mode.
-                    // Format: $"https://s3.amazonaws.com/BloomLibraryBooks{isSandbox}/{storageKeyOfBookFolderParentOnS3}/{title}"
-                    // Example: https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/8xhqkxGvg1/1697233000925/AutoSplit+Timings
-                    // Example (old format): https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/jeffrey_su@sil.org/8d0d9043-a1bb-422d-aa5b-29726cdcd96a/AutoSplit+Timings
-                    var msgBookId =
-                        "storageKeyOfBookFolderParentOnS3: " + _storageKeyOfBookFolderParentOnS3;
-                    progress.WriteMessage(msgBookId);
+                        // S3 URL can be reasonably deduced, as long as we have the S3 prefix, so print that out in Debug mode.
+                        // Format: $"https://s3.amazonaws.com/BloomLibraryBooks{isSandbox}/{s3PrefixToUploadTo}"
+                        // Example: https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/8xhqkxGvg1/1697233000925/AutoSplit+Timings
+                        // Example (old format): https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/bob_example@sil.org/8d0d9043-a1bb-422d-aa5b-29726cdcd96a/AutoSplit+Timings
+                        var msgBookId = "s3PrefixToUploadTo: " + _s3PrefixToUploadTo;
+                        progress.WriteMessage(msgBookId);
 #endif
 
-                    if (progress.CancelRequested)
-                        return "";
+                        if (progress.CancelRequested)
+                            return "";
 
-                    _s3Client.SetTemporaryCredentialsForBookUpload(s3Credentials);
-                    _s3Client.UploadBook(
-                        _storageKeyOfBookFolderParentOnS3,
-                        bookFolder,
-                        progress,
-                        pdfToInclude,
-                        includeNarrationAudio,
-                        includeMusic,
-                        textLanguages,
-                        audioLanguages,
-                        metadataLang1Code,
-                        metadataLang2Code,
-                        existingBookObjectIdOrNull == null,
-                        collectionSettings?.SettingsFilePath,
-                        isForBulkUpload
-                    );
-                    metadata.BaseUrl = _s3Client.GetBaseUrl(
-                        $"{_storageKeyOfBookFolderParentOnS3}{Path.GetFileName(bookFolder)}/"
-                    );
+                        _s3Client.SetTemporaryCredentialsForBookUpload(s3Credentials);
+                        _s3Client.UploadBook(
+                            _s3PrefixToUploadTo,
+                            stagingDirectory,
+                            filesToUpload,
+                            progress
+                        );
+                        metadata.BaseUrl = _s3Client.GetBaseUrl($"{_s3PrefixToUploadTo}");
 
-                    if (progress.CancelRequested)
-                        return "";
+                        if (progress.CancelRequested)
+                            return "";
 
-                    // Inform the server we have completed the upload. It will update baseUrl to point to the new files and delete the old ones.
-                    BloomLibraryBookApiClient.FinishBookUpload(
-                        progress,
-                        transactionId,
-                        metadata.WebDataJson
-                    );
+                        // Inform the server we have completed the upload.
+                        // It will update the database record's baseUrl to point to the new files and delete the old ones.
+                        BloomLibraryBookApiClient.FinishBookUpload(
+                            progress,
+                            transactionId,
+                            metadata.WebDataJson
+                        );
 
-                    bookObjectId = transactionId;
+                        bookObjectId = transactionId;
+                    }
 
                     //   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
                     {
@@ -426,6 +459,156 @@ namespace Bloom.WebLibraryIntegration
             return bookObjectId;
         }
 
+        private List<FilePathAndHash> GetStagedFilesAndHashes(string stagingDirectory)
+        {
+            var fileInfos = new List<FilePathAndHash>();
+            foreach (
+                var fullFilePath in Directory.GetFiles(
+                    stagingDirectory,
+                    "*.*",
+                    SearchOption.AllDirectories
+                )
+            )
+            {
+                fileInfos.Add(
+                    new FilePathAndHash()
+                    {
+                        Path = fullFilePath
+                            .Substring(stagingDirectory.Length + 1)
+                            .Replace("\\", "/"),
+                        Hash = BloomS3Client.GetProbableEtag(fullFilePath)
+                    }
+                );
+            }
+            return fileInfos;
+        }
+
+        // Copy the needed files to the staging directory and make any modifications needed before upload.
+        private void SetUpStaging(
+            string pathToBloomBookDirectory,
+            string stagingDirectory,
+            IProgress progress,
+            string pdfToInclude,
+            bool includeNarrationAudio,
+            bool includeMusic,
+            string[] textLanguagesToInclude,
+            string[] audioLanguagesToInclude,
+            string metadataLang1Code,
+            string metadataLang2Code,
+            string collectionSettingsPath = null,
+            bool isForBulkUpload = false
+        )
+        {
+            var filter = new BookFileFilter(pathToBloomBookDirectory)
+            {
+                IncludeFilesForContinuedEditing = true,
+                NarrationLanguages = (
+                    includeNarrationAudio ? audioLanguagesToInclude : Array.Empty<string>()
+                ),
+                WantVideo = true,
+                WantMusic = includeMusic
+            };
+            if (pdfToInclude != null)
+                filter.AlwaysAccept(pdfToInclude);
+            if (isForBulkUpload)
+                filter.AlwaysAccept(".lastUploadInfo");
+            filter.CopyBookFolderFiltered(stagingDirectory);
+
+            ProcessVideosInTempDirectory(stagingDirectory);
+            CopyCollectionSettingsToTempDirectory(collectionSettingsPath, stagingDirectory);
+
+            if (textLanguagesToInclude != null && textLanguagesToInclude.Count() > 0)
+                RemoveUnwantedLanguageData(
+                    stagingDirectory,
+                    textLanguagesToInclude,
+                    metadataLang1Code,
+                    metadataLang2Code
+                );
+
+            PublishHelper.ReportInvalidFonts(stagingDirectory, progress);
+        }
+
+        private void ProcessVideosInTempDirectory(string destDirName)
+        {
+            var htmlFilePath = BookStorage.FindBookHtmlInFolder(destDirName);
+            if (string.IsNullOrEmpty(htmlFilePath))
+                return;
+            var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFilePath);
+            var domForVideoProcessing = new HtmlDom(xmlDomFromHtmlFile);
+            var videoContainerElements = HtmlDom
+                .SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement)
+                .Cast<XmlElement>();
+            if (!videoContainerElements.Any())
+                return;
+            SignLanguageApi.ProcessVideos(videoContainerElements, destDirName);
+            XmlHtmlConverter.SaveDOMAsHtml5(domForVideoProcessing.RawDom, htmlFilePath);
+        }
+
+        /// <summary>
+        /// Copy a sanitized (no subscription code) collection settings file to the temp folder so that
+        /// harvester will have access to it.
+        /// </summary>
+        /// <remarks>
+        /// See BL-12583.
+        /// </remarks>
+        private static void CopyCollectionSettingsToTempDirectory(
+            string settingsPath,
+            string tempBookFolder
+        )
+        {
+            if (String.IsNullOrEmpty(settingsPath) || !RobustFile.Exists(settingsPath))
+                return;
+            var settingsText = RobustFile.ReadAllText(settingsPath);
+            var doc = new XmlDocument();
+            doc.PreserveWhitespace = true;
+            doc.LoadXml(settingsText);
+            var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
+            if (subscriptionNode != null)
+                subscriptionNode.InnerText = "";
+            Directory.CreateDirectory(Path.Combine(tempBookFolder, "collectionFiles"));
+            doc.Save(
+                Path.Combine(tempBookFolder, "collectionFiles", "book.uploadCollectionSettings")
+            );
+        }
+
+        private void RemoveUnwantedLanguageData(
+            string destDirName,
+            IEnumerable<string> languagesToInclude,
+            string metadataLang1Code,
+            string metadataLang2Code
+        )
+        {
+            // There should be only one html file with the same name as the directory it's in, but let's
+            // not make any assumptions here.
+            foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.htm"))
+            {
+                var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(filepath, false);
+                var dom = new HtmlDom(xmlDomFromHtmlFile);
+                // Since we're not pruning xmatter, it doesn't matter what we pass for the set of xmatter langs to keep.
+                PublishModel.RemoveUnwantedLanguageData(
+                    dom,
+                    languagesToInclude,
+                    false,
+                    new HashSet<string>()
+                );
+                XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, filepath);
+            }
+            // Remove language specific style settings from all CSS files for unwanted languages.
+            // For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
+            // In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
+            PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(
+                destDirName,
+                languagesToInclude.Append(metadataLang1Code).Append(metadataLang2Code)
+            );
+            var metadata = BookMetaData.FromFolder(destDirName);
+            metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(
+                metadata.AllTitles,
+                languagesToInclude.ToArray()
+            );
+            // For this use case, we don't want to create a backup (meta.bak) because we never want to upload one.
+            metadata.WriteToFolder(destDirName, makeBackup: false);
+        }
+
         /// <summary>
         /// The upload destination possibly set from the command line.  This must be set even before calling
         /// the constructor of this class because it is used in UploadBucketNameForCurrentEnvironment
@@ -506,14 +689,14 @@ namespace Bloom.WebLibraryIntegration
         internal bool CheckAgainstHashFileOnS3(
             string currentHashes,
             string bookFolder,
-            string storageKeyOfBookFolder,
+            string s3Prefix,
             IProgress progress
         )
         {
             string hashInfoOnS3 = null;
             try
             {
-                var key = storageKeyOfBookFolder + UploadHashesFilename;
+                var key = s3Prefix + UploadHashesFilename;
                 hashInfoOnS3 = _s3Client.DownloadFile(
                     UseSandbox
                         ? BloomS3Client.SandboxBucketName
@@ -852,5 +1035,14 @@ namespace Bloom.WebLibraryIntegration
             ForceUpload = options.ForceUpload;
             IsForBulkUpload = true;
         }
+    }
+
+    public class FilePathAndHash
+    {
+        [JsonProperty("path")]
+        public string Path;
+
+        [JsonProperty("hash")]
+        public string Hash;
     }
 }
