@@ -205,271 +205,51 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
-        /// <summary>
-        /// The thing here is that we need to guarantee unique names at the top level, so we wrap the books inside a folder
-        /// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
-        /// except the one we want.
-        /// </summary>
-        public void UploadBook(
-            string storageKeyOfBookFolderParent,
-            string pathToBloomBookDirectory,
-            IProgress progress,
-            string pdfToInclude,
-            bool includeNarrationAudio,
-            bool includeMusic,
-            string[] textLanguagesToInclude,
-            string[] audioLanguagesToInclude,
-            string metadataLang1Code,
-            string metadataLang2Code,
-            bool isNewBook,
-            string collectionSettingsPath = null,
-            bool isForBulkUpload = false
-        )
-        {
-            // This currently (unfortunately) enforces a single upload at a time.
-            // We considered modifying it now, but decided we would discover the problem
-            // if and when we try to implement parallel uploads.
-            using (var stagingParentDirectory = new TemporaryFolder("BloomUploadStaging"))
-            {
-                var stagingDirectory = Path.Combine(
-                    stagingParentDirectory.FolderPath,
-                    Path.GetFileName(pathToBloomBookDirectory)
-                );
-                var filter = new BookFileFilter(pathToBloomBookDirectory)
-                {
-                    IncludeFilesForContinuedEditing = true,
-                    NarrationLanguages = (
-                        includeNarrationAudio ? audioLanguagesToInclude : Array.Empty<string>()
-                    ),
-                    WantVideo = true,
-                    WantMusic = includeMusic
-                };
-                if (pdfToInclude != null)
-                    filter.AlwaysAccept(pdfToInclude);
-                if (isForBulkUpload)
-                    filter.AlwaysAccept(".lastUploadInfo");
-                filter.CopyBookFolderFiltered(stagingDirectory);
-
-                ProcessVideosInTempDirectory(stagingDirectory);
-                CopyCollectionSettingsToTempDirectory(collectionSettingsPath, stagingDirectory);
-
-                if (textLanguagesToInclude != null && textLanguagesToInclude.Count() > 0)
-                    RemoveUnwantedLanguageData(
-                        stagingDirectory,
-                        textLanguagesToInclude,
-                        metadataLang1Code,
-                        metadataLang2Code
-                    );
-
-                PublishHelper.ReportInvalidFonts(stagingDirectory, progress);
-
-                SyncBookFiles(
-                    isNewBook,
-                    storageKeyOfBookFolderParent,
-                    stagingParentDirectory.FolderPath,
-                    progress
-                );
-            }
-        }
-
-        private void ProcessVideosInTempDirectory(string destDirName)
-        {
-            var htmlFilePath = BookStorage.FindBookHtmlInFolder(destDirName);
-            if (string.IsNullOrEmpty(htmlFilePath))
-                return;
-            var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFilePath);
-            var domForVideoProcessing = new HtmlDom(xmlDomFromHtmlFile);
-            var videoContainerElements = HtmlDom
-                .SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement)
-                .Cast<XmlElement>();
-            if (!videoContainerElements.Any())
-                return;
-            SignLanguageApi.ProcessVideos(videoContainerElements, destDirName);
-            XmlHtmlConverter.SaveDOMAsHtml5(domForVideoProcessing.RawDom, htmlFilePath);
-        }
-
-        /// <summary>
-        /// Copy a sanitized (no subscription code) collection settings file to the temp folder so that
-        /// harvester will have access to it.
-        /// </summary>
-        /// <remarks>
-        /// See BL-12583.
-        /// </remarks>
-        private static void CopyCollectionSettingsToTempDirectory(
-            string settingsPath,
-            string tempBookFolder
-        )
-        {
-            if (String.IsNullOrEmpty(settingsPath) || !RobustFile.Exists(settingsPath))
-                return;
-            var settingsText = RobustFile.ReadAllText(settingsPath);
-            var doc = new XmlDocument();
-            doc.PreserveWhitespace = true;
-            doc.LoadXml(settingsText);
-            var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
-            if (subscriptionNode != null)
-                subscriptionNode.InnerText = "";
-            Directory.CreateDirectory(Path.Combine(tempBookFolder, "collectionFiles"));
-            doc.Save(
-                Path.Combine(tempBookFolder, "collectionFiles", "book.uploadCollectionSettings")
-            );
-        }
-
-        public void RemoveUnwantedLanguageData(
-            string destDirName,
-            IEnumerable<string> languagesToInclude,
-            string metadataLang1Code,
-            string metadataLang2Code
-        )
-        {
-            // There should be only one html file with the same name as the directory it's in, but let's
-            // not make any assumptions here.
-            foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.htm"))
-            {
-                var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(filepath, false);
-                var dom = new HtmlDom(xmlDomFromHtmlFile);
-                // Since we're not pruning xmatter, it doesn't matter what we pass for the set of xmatter langs to keep.
-                PublishModel.RemoveUnwantedLanguageData(
-                    dom,
-                    languagesToInclude,
-                    false,
-                    new HashSet<string>()
-                );
-                XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, filepath);
-            }
-            // Remove language specific style settings from all CSS files for unwanted languages.
-            // For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
-            // In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
-            PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(
-                destDirName,
-                languagesToInclude.Append(metadataLang1Code).Append(metadataLang2Code)
-            );
-            var metadata = BookMetaData.FromFolder(destDirName);
-            metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(
-                metadata.AllTitles,
-                languagesToInclude.ToArray()
-            );
-            metadata.WriteToFolder(destDirName);
-        }
-
-        // At this point, the API has created an S3 folder for us to work with. If the book aready exists, it
-        // has a copy of the existing book files.
-        // We work with that copy, deleting, adding, and updating files as needed.
-        // If we never finish for some reason, we never tell the API we finished, the book record is never updated to point
+        // Either we are a new book, or the API has determined which files are new or modified, and we need to upload those.
+        // Either way, the list of files we need to upload is filesToUpload.
+        // Unmodified files are copied by the Azure function. Obsolete files don't need to be copied or uploaded.
+        //
+        // If we never finish our upload for some reason, we never tell the API we finished, the book record is never updated to point
         // to the new files, and a cleanup function will eventually reset the book record and delete the copy of the book files.
+        //
         //Enhance: This is currently synchronous. Research how we can make use of the async SDK methods to enable parallel uploads
         // or whatever other performance enhancements we can gain.
-        // When/if we do this, the logic would be something like: queue up all the deletes, run them in parallel. Then queue up
-        // all the puts (ensuring we don't put the same file twice) and run those in parallel.
-        public void SyncBookFiles(
-            bool isNewBook,
+        public void UploadBook(
             string storageKeyOfBookFolderParent,
             string stagingDirectory,
+            string[] filesToUpload,
             IProgress progress
         )
         {
             Guard.Against(BookUpload.IsDryRun, "We shouldn't try to sync files on S3 in a dry run");
+
+            if (filesToUpload == null)
+                return;
 
             if (!Directory.Exists(stagingDirectory))
                 throw new DirectoryNotFoundException(
                     "Source directory does not exist or could not be found: " + stagingDirectory
                 );
 
-            var existingObjectsOnS3 = new List<S3Object>();
-            if (!isNewBook)
+            foreach (var fileToUpload in filesToUpload)
             {
-                // sync all files which are already on S3
-                var listObjectRequest = new ListObjectsV2Request
-                {
-                    BucketName = _bucketName,
-                    Prefix = storageKeyOfBookFolderParent
-                };
-                existingObjectsOnS3 = _amazonS3ForBookUpload.ListAllObjects(listObjectRequest);
-                foreach (S3Object s3Object in existingObjectsOnS3)
-                {
-                    // If the user cancels at this point, we don't tell the API, but there is a cleanup function which runs each day.
-                    // It will find the parse record which never finished uploading, reset it, and delete the copy of the book files on S3.
-                    if (progress.CancelRequested)
-                        return;
-
-                    string localFilePath = Path.Combine(
-                        stagingDirectory,
-                        s3Object.Key.Substring(storageKeyOfBookFolderParent.Length)
-                    );
-                    if (
-                        IsExcludedFromUploadByExtension(localFilePath)
-                        || !RobustFile.Exists(localFilePath)
-                    )
-                    {
-                        _amazonS3ForBookUpload.DeleteObject(_bucketName, s3Object.Key);
-                    }
-                    else
-                    {
-                        string localFileEtag = GetEtag(localFilePath);
-                        if (localFileEtag != s3Object.ETag)
-                        {
-                            PutFileOnS3(localFilePath, s3Object.Key, progress);
-                        }
-                        else
-                        {
-                            progress.WriteStatus(
-                                LocalizationManager.GetString(
-                                    "PublishTab.Upload.FileIsUnchanged",
-                                    "{0} is unchanged",
-                                    "{0} is a file name; this message indicates we are not uploading the file because the contents are the same they were when it was uploaded previously"
-                                ),
-                                Path.GetFileName(localFilePath)
-                            );
-                        }
-                    }
-                }
-            }
-
-            // We've synced all the existing files on S3.
-            // Now upload any files which are not on S3.
-            foreach (
-                var localFilePath in Directory.GetFiles(
-                    stagingDirectory,
-                    "*.*",
-                    SearchOption.AllDirectories
-                )
-            )
-            {
-                // See cancel comment above.
+                // If the user cancels at this point, we don't tell the API, but there is a cleanup function which runs each day.
+                // It will find the parse record which never finished uploading, reset it, and delete the copy of the book files on S3.
                 if (progress.CancelRequested)
                     return;
 
-                if (IsExcludedFromUploadByExtension(localFilePath))
-                    continue; // BL-2246: skip uploading this one
-
+                var localFilePath = Path.Combine(stagingDirectory, fileToUpload);
+                if (!RobustFile.Exists(localFilePath))
+                    throw new FileNotFoundException(
+                        "File to upload does not exist or could not be found: " + localFilePath
+                    );
+                string stagingDirectoryParent = Path.GetDirectoryName(stagingDirectory);
                 string key =
                     storageKeyOfBookFolderParent
-                    + localFilePath.Substring(stagingDirectory.Length).Replace("\\", "/");
+                    + localFilePath.Substring(stagingDirectoryParent.Length).Replace("\\", "/");
                 key = key.Replace("//", "/"); // safety net
-                if (isNewBook || !existingObjectsOnS3.Any(o => o.Key == key))
-                {
-                    PutFileOnS3(localFilePath, key, progress);
-                }
+                PutFileOnS3(localFilePath, key, progress);
             }
-        }
-
-        //Note: there is a similar list for BloomPacks, but it is not identical, so don't just copy/paste
-        private static readonly string[] excludedFileExtensionsLowerCase =
-        {
-            ".db",
-            ".bloompack",
-            ".bak",
-            ".userprefs",
-            ".md",
-            ".map"
-        };
-
-        // Argh! Why isn't this handled by the BookFileFilter??
-        private bool IsExcludedFromUploadByExtension(string localFilePath)
-        {
-            return excludedFileExtensionsLowerCase.Contains(
-                Path.GetExtension(localFilePath).ToLowerInvariant()
-            );
         }
 
         private void PutFileOnS3(string localFilePath, string s3Key, IProgress progress)
@@ -501,7 +281,7 @@ namespace Bloom.WebLibraryIntegration
             _amazonS3ForBookUpload.PutObject(request);
         }
 
-        private string GetEtag(string filePath)
+        public static string GetEtag(string filePath)
         {
             using (var md5 = MD5.Create())
             {

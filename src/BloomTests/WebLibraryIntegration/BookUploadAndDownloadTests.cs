@@ -75,6 +75,27 @@ namespace BloomTests.WebLibraryIntegration
             var f = new TemporaryFolder(_workFolder, bookName);
             File.WriteAllText(Path.Combine(f.FolderPath, "one.htm"), data);
             File.WriteAllText(Path.Combine(f.FolderPath, "one.css"), @"test");
+            File.WriteAllText(Path.Combine(f.FolderPath, "unmodified.css"), @"test");
+
+            // Subdirectory test:
+            // We're using the "activities" directory out of convenience.
+            // Files in the activities folder get an automatic pass when copying to staging.
+            // In other words, we don't have to make an explicit reference to it in the .htm
+            // to prevent them getting cleaned up (like we would for audio or other files).
+            Directory.CreateDirectory(Path.Combine(f.FolderPath, "activities"));
+            File.WriteAllText(
+                Path.Combine(f.FolderPath, "activities", "file-to-replace.txt"),
+                "file to replace in subdirectory"
+            );
+            File.WriteAllText(
+                Path.Combine(f.FolderPath, "activities", "file-to-modify.txt"),
+                "file to modify in subdirectory"
+            );
+            File.WriteAllText(
+                Path.Combine(f.FolderPath, "activities", "unmodified.txt"),
+                @"unmodified subdirectory file"
+            );
+
             if (makeCorruptFile)
                 File.WriteAllText(
                     Path.Combine(f.FolderPath, BookStorage.PrefixForCorruptHtmFiles + ".htm"),
@@ -127,7 +148,7 @@ namespace BloomTests.WebLibraryIntegration
             // The files that actually get uploaded omit some of the ones in the folder.
             // The only omitted one that messes up current unit tests is meta.bak
             var filesToUpload = Directory
-                .GetFiles(originalBookFolder)
+                .GetFiles(originalBookFolder, "*.*", SearchOption.AllDirectories)
                 .Where(
                     p => !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
                 );
@@ -170,7 +191,10 @@ namespace BloomTests.WebLibraryIntegration
                 + storageKeyOfBookFolderParentOnS3;
             var newBookFolder = _downloader.HandleDownloadWithoutProgress(url, dest);
 
-            Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount));
+            Assert.That(
+                Directory.GetFiles(newBookFolder, "*.*", SearchOption.AllDirectories).Length,
+                Is.EqualTo(fileCount)
+            );
 
             Assert.That(_downloadedBooks.Count, Is.EqualTo(1));
             Assert.That(_downloadedBooks[0].FolderPath, Is.EqualTo(newBookFolder));
@@ -260,8 +284,18 @@ namespace BloomTests.WebLibraryIntegration
             var bookObjectId = _uploader.UploadBook_ForUnitTest(bookFolder);
             Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
             File.Delete(bookFolder.CombineForPath("one.css"));
+            File.Delete(bookFolder.CombineForPath("activities", "file-to-replace.txt"));
             File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "something new");
             File.WriteAllText(Path.Combine(bookFolder, "two.css"), @"test");
+            File.WriteAllText(
+                Path.Combine(bookFolder, "activities", "replacement-file.txt"),
+                "another fake activity file"
+            );
+            File.WriteAllText(
+                Path.Combine(bookFolder, "activities", "file-to-modify.txt"),
+                "modified file content"
+            );
+
             // Tweak the json, but don't change the ID.
             newJson = jsonStart + ",\"bookLineage\":\"other\"}";
             File.WriteAllText(jsonPath, newJson);
@@ -287,14 +321,46 @@ namespace BloomTests.WebLibraryIntegration
                 "We should have overwritten the changed file"
             );
             Assert.That(
+                File.Exists(newBookFolder.CombineForPath("unmodified.css")),
+                Is.True,
+                "We should have kept the unmodified file"
+            );
+            Assert.That(
+                File.Exists(newBookFolder.CombineForPath("activities", "unmodified.txt")),
+                Is.True,
+                "We should have kept the unmodified file in a subdirectory"
+            );
+            Assert.That(
                 File.Exists(newBookFolder.CombineForPath("two.css")),
                 Is.True,
                 "We should have added the new file"
             );
             Assert.That(
+                File.Exists(newBookFolder.CombineForPath("activities", "replacement-file.txt")),
+                Is.True,
+                "We should have added the new file in a subdirectory"
+            );
+
+            Assert.That(
+                File.Exists(newBookFolder.CombineForPath("activities", "file-to-modify.txt")),
+                Is.True,
+                "We should have kept the modified file in a subdirectory"
+            );
+            Assert.That(
+                File.ReadAllText(newBookFolder.CombineForPath("activities", "file-to-modify.txt")),
+                Is.EqualTo("modified file content"),
+                "We should have the new contents of the file in a subdirectory"
+            );
+
+            Assert.That(
                 File.Exists(newBookFolder.CombineForPath("one.css")),
                 Is.False,
                 "We should have deleted the obsolete file"
+            );
+            Assert.That(
+                File.Exists(newBookFolder.CombineForPath("activities", "file-to-replace.txt")),
+                Is.False,
+                "We should have deleted the obsolete file in a subdirectory"
             );
 
             // Verify that metadata was overwritten, new record not created.

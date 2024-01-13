@@ -1071,7 +1071,7 @@ namespace Bloom.Book
             return Path.ChangeExtension(MetaDataPath(bookFolderPath), BackupExtension);
         }
 
-        public void WriteToFolder(string bookFolderPath)
+        public void WriteToFolder(string bookFolderPath, bool makeBackup = true)
         {
             string tempFilePath;
             var metaDataPath = MetaDataPath(bookFolderPath);
@@ -1089,7 +1089,11 @@ namespace Bloom.Book
 
             RobustFile.WriteAllText(tempFilePath, Json);
             if (RobustFile.Exists(metaDataPath))
-                RobustFile.Replace(tempFilePath, metaDataPath, BackupFilePath(bookFolderPath));
+                RobustFile.Replace(
+                    tempFilePath,
+                    metaDataPath,
+                    makeBackup ? BackupFilePath(bookFolderPath) : null
+                );
             else
                 RobustFile.Move(tempFilePath, metaDataPath);
         }

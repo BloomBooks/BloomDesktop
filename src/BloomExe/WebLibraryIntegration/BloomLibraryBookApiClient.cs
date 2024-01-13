@@ -141,14 +141,23 @@ namespace Bloom.WebLibraryIntegration
         // Existing book:
         //  - Verifies the user has permission to update the book (using parse-server session)
         //  - Sets uploadPendingTimestamp on the `books` record in parse-server
-        //  - Copies book files from existing S3 location to a new S3 location based on bookObjectId/timestamp
+        //  - Using the provided file paths and hashes, determines which files need to be copied from the existing
+        //     S3 location and which need to be uploaded by the client
+        //  - Copies book files from existing S3 location to a new S3 location based on bookObjectId/timestamp;
+        //     sets public-read permissions on these files
         // New and existing books:
         //  - Generates temporary credentials for the client to upload the book files to the new S3 location
         public (
             string transactionId,
+            AmazonS3Credentials uploadCredentials,
             string storageKeyOfBookFolderParentOnS3,
-            AmazonS3Credentials uploadCredentials
-        ) InitiateBookUpload(IProgress progress, string existingBookObjectId = null)
+            string[] filesToUpload
+        ) InitiateBookUpload(
+            IProgress progress,
+            string existingBookObjectId = null,
+            string bookTitle = null,
+            List<FilePathAndHash> bookFiles = null
+        )
         {
             if (!LoggedIn)
                 throw new ApplicationException("Must be logged in to upload a book");
@@ -156,7 +165,21 @@ namespace Bloom.WebLibraryIntegration
             var request = MakePostRequest("upload-start");
 
             if (!string.IsNullOrEmpty(existingBookObjectId))
+            {
                 request.AddQueryParameter("existing-book-object-id", existingBookObjectId);
+                // If uploading an existing book, we give the server a list of files and their hashes.
+                // Format is `files: [{ "path": "abc", "hash": "123" }, ...]`
+                var obj = new Dictionary<string, object>
+                {
+                    // Because the title could change between uploads, we can't rely on the existing
+                    // path on S3 (which includes the title). We have to provide it ourselves.
+                    // However, we don't call it book-title in the API because some day we would like
+                    // to get away from that being part of the path.
+                    { "files-prefix", bookTitle + "/" },
+                    { "files", JsonConvert.SerializeObject(bookFiles) },
+                };
+                request.AddJsonBody(obj);
+            }
 
             var result = CallLongRunningAction(
                 request,
@@ -166,24 +189,24 @@ namespace Bloom.WebLibraryIntegration
             );
 
             if (progress.CancelRequested)
-                return (null, null, null);
+                return (null, null, null, null);
 
             return (
                 result["transaction-id"],
-                BloomS3Client.GetStorageKeyOfBookFolderParentFromUrl((string)result.url),
                 new AmazonS3Credentials
                 {
                     AccessKey = result.credentials.AccessKeyId,
                     SecretAccessKey = result.credentials.SecretAccessKey,
                     SessionToken = result.credentials.SessionToken
-                }
+                },
+                BloomS3Client.GetStorageKeyOfBookFolderParentFromUrl((string)result.url),
+                result["files-to-upload"].ToObject<string[]>()
             );
         }
 
         // This calls an azure function which does the following:
         //  - Verifies the user has permission to update the book (using parse-server session)
         //  - Verifies the baseUrl includes the expected S3 location
-        //  - Sets up read permission on the files in the new S3 location
         //  - Updates the `books` record in parse-server with all fields from the client,
         //     including the new baseUrl which points to the new S3 location. Sets uploadPendingTimestamp to null.
         //  - Deletes the book files from the old S3 location
