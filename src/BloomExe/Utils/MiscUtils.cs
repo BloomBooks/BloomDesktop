@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
 using System.Security.AccessControl;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,8 +14,6 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Mono.Unix;
 using NAudio.Wave;
-using SIL.Code;
-using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
 #if __MonoCS__
@@ -669,6 +667,30 @@ namespace Bloom.Utils
                     return true;
             }
             return false;
+        }
+
+        public static string GetMd5HashOfFile(string filePath)
+        {
+            using (var stream = RobustFile.OpenRead(filePath))
+            using (var md5 = MD5.Create())
+            {
+                byte[] hash = md5.ComputeHash(stream);
+                return ConvertHashToString(hash);
+            }
+        }
+
+        public static string GetMd5HashOfString(string str)
+        {
+            using (var md5 = MD5.Create())
+            {
+                byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(str));
+                return ConvertHashToString(hash);
+            }
+        }
+
+        private static string ConvertHashToString(byte[] hash)
+        {
+            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
     }
 }
