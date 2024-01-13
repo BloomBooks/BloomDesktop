@@ -78,11 +78,7 @@ namespace Bloom.Book
 
         public static string GetChecksum(string css)
         {
-            using (var md5 = MD5.Create())
-            {
-                var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(css));
-                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-            }
+            return Utils.MiscUtils.GetMd5HashOfString(css);
         }
     }
 }
