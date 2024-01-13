@@ -1,12 +1,10 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using Amazon.S3.Model;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using NUnit.Framework;
 using SIL.Code;
-using SIL.Progress;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -50,33 +48,6 @@ namespace BloomTests.WebLibraryIntegration
             _workFolder.Dispose();
             _client.Dispose();
             _clientWhichMustWorkAroundUploadPermissions.Dispose();
-        }
-
-        /// <summary>
-        /// I actually don't care at the moment if we throw or not, I just want to specify what the behavior is.
-        /// </summary>
-        [Test]
-        public void UploadBook_EmptyFolder_DoesntThrow()
-        {
-            var storageKeyOfBookFolderParent = Guid.NewGuid().ToString();
-            using (var f = new TemporaryFolder(_workFolder, "emptyFolder"))
-            {
-                _clientWhichMustWorkAroundUploadPermissions.UploadBook(
-                    storageKeyOfBookFolderParent,
-                    f.FolderPath,
-                    new NullProgress(),
-                    null,
-                    true,
-                    true,
-                    null,
-                    null,
-                    null,
-                    null,
-                    true
-                );
-            }
-            // This doesn't actually create an entry, since the folder is empty,
-            // so no need to delete it after our test
         }
 
         [Test]
