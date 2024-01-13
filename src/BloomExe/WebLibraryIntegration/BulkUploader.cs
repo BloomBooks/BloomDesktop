@@ -393,13 +393,11 @@ namespace Bloom.WebLibraryIntegration
                 }
                 else if (existingBook != null)
                 {
-                    var storageKeyOfBookFolderParent = BloomS3Client.GetStorageKeyOfBookFolder(
-                        existingBook.baseUrl.Value
-                    );
+                    var s3Prefix = BloomS3Client.GetPrefixFromBaseUrl(existingBook.baseUrl.Value);
                     canSkip = _singleBookUploader.CheckAgainstHashFileOnS3(
                         currentHashes,
                         uploadParams.Folder,
-                        storageKeyOfBookFolderParent,
+                        s3Prefix,
                         progress
                     );
                     RobustFile.WriteAllText(pathToLocalHashInfoFromLastUpload, currentHashes); // ensure local copy is saved
