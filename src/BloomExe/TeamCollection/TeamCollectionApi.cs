@@ -399,7 +399,7 @@ namespace Bloom.TeamCollection
                     _tcManager.CurrentCollectionEvenIfDisconnected != null
                         && (
                             _bookSelection.CurrentSelection == null
-                            || _bookSelection.CurrentSelection.IsEditable
+                            || _bookSelection.CurrentSelection.IsInEditableCollection
                         )
                 );
             }

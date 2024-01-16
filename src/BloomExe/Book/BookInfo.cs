@@ -50,24 +50,26 @@ namespace Bloom.Book
             AppearanceSettings = new AppearanceSettings();
         }
 
-        internal BookInfo(string folderPath, bool isEditable)
+        internal BookInfo(string folderPath, bool isInEditableCollection)
             // By default (especially for many test cases), BookInfo's should assume savability
             // unless not editable
             : this(
                 folderPath,
-                isEditable,
-                isEditable ? new AlwaysEditSaveContext() : new NoEditSaveContext() as ISaveContext
+                isInEditableCollection,
+                isInEditableCollection
+                    ? new AlwaysEditSaveContext()
+                    : new NoEditSaveContext() as ISaveContext
             )
         {
-            // For real code, please explicitly provide a correct saveContext unless isEditable is false
-            if (isEditable)
+            // For real code, please explicitly provide a correct saveContext unless isInEditableCollection is false
+            if (isInEditableCollection)
                 Guard.Against(
                     !Program.RunningUnitTests,
                     "Only use this ctor for tests and non-editable collections"
                 );
         }
 
-        public BookInfo(string folderPath, bool isEditable, ISaveContext saveContext)
+        public BookInfo(string folderPath, bool isInEditableCollection, ISaveContext saveContext)
             : this()
         {
             Guard.AgainstNull(saveContext, "Please supply an actual saveContext");
@@ -75,7 +77,7 @@ namespace Bloom.Book
             _saveContext =
                 saveContext
                 ?? (
-                    isEditable
+                    isInEditableCollection
                         ? new AlwaysEditSaveContext()
                         : new NoEditSaveContext() as ISaveContext
                 );
@@ -86,7 +88,7 @@ namespace Bloom.Book
 
             UpdateFromDisk();
 
-            IsEditable = isEditable;
+            IsInEditableCollection = isInEditableCollection;
 
             FixDefaultsIfAppropriate();
         }
@@ -299,17 +301,17 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Determined at construction time, and really means whether it is part of the editable collection.
-        /// May not really be OK to edit, for example, if it isn't checked out.
-        /// Wants a better name; consider whether IsSaveable should be used instead.
+        /// Determined at construction time, tells whether the book is part of the editable collection.
+        /// This does not necessarily mean we can edit it, for example, it may not be checked out.
+        /// Often, IsSaveable is a better test.
         /// </summary>
-        public bool IsEditable { get; private set; }
+        public bool IsInEditableCollection { get; private set; }
 
         /// <summary>
         /// Determined by the SaveContext, which if relevant will consider team collection status.
         /// This determines whether changes to this book can currently be saved.
         /// </summary>
-        public bool IsSaveable => IsEditable && _saveContext.CanSaveChanges(this);
+        public bool IsSaveable => IsInEditableCollection && _saveContext.CanSaveChanges(this);
 
         /// <summary>
         /// If true, use a device-specific xmatter pack.
@@ -852,7 +854,7 @@ namespace Bloom.Book
                 // behave as expected.
                 foreach (var lang in langs.Where((l) => l != "item"))
                     multiText[lang] = titles[lang].Trim();
-                return Book.GetBestTitleForDisplay(multiText, langCodes, IsEditable);
+                return Book.GetBestTitleForDisplay(multiText, langCodes, IsInEditableCollection);
             }
             catch (Exception e)
             {

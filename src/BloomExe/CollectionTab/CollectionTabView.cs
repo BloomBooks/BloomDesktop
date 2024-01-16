@@ -142,7 +142,7 @@ namespace Bloom.CollectionTab
         {
             if (book == null)
                 return;
-            if (book.IsEditable)
+            if (book.IsSaveable)
                 _model.UpdateThumbnailAsync(book);
             book.ContentsChanged += (sender, args) =>
             {

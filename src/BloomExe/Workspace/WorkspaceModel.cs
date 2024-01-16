@@ -39,7 +39,7 @@ namespace Bloom.Workspace
             get
             {
                 return _bookSelection.CurrentSelection != null
-                    && _bookSelection.CurrentSelection.IsEditable
+                    && _bookSelection.CurrentSelection.IsInEditableCollection
                     && !_bookSelection.CurrentSelection.HasFatalError;
             }
         }
@@ -56,7 +56,7 @@ namespace Bloom.Workspace
             get
             {
                 return _bookSelection.CurrentSelection != null
-                    && _bookSelection.CurrentSelection.CanPublish;
+                    && _bookSelection.CurrentSelection.IsInEditableCollection;
             }
         }
 
