@@ -158,8 +158,14 @@ namespace Bloom.Book
 
             InjectStringListingActiveLanguagesOfBook();
 
-            if (!HasFatalError && IsEditable)
+            if (IsInEditableCollection)
             {
+                // This is usually unnecessary since it happens as part of ensure-up-to-date,
+                // which is called before we do anything much with a book. But if we are starting
+                // with a book that has no data-div (mainly testing), this copies data from
+                // xmatter pages to the data-div that would otherwise be lost when we update
+                // the xmatter pages. That's important in some unit tests, at least. And a few
+                // other unit tests fail if we don't do this.
                 _bookData.SynchronizeDataItemsThroughoutDOM();
             }
 
@@ -174,9 +180,8 @@ namespace Bloom.Book
             // we want to use the color that we used for the sample shell/template we showed them previously.
             // (BL-11490 Even shells or downloaded books should preserve the original cover color.)
             if (
-                !info.IsEditable
-                && Path.GetDirectoryName(info.FolderPath)
-                    == BloomFileLocator.FactoryTemplateBookDirectory
+                Path.GetDirectoryName(info.FolderPath)
+                == BloomFileLocator.FactoryTemplateBookDirectory
             )
             {
                 SelectNextCoverColor(); // we only increment when showing a built-in template
@@ -297,7 +302,7 @@ namespace Bloom.Book
                 return GetBestTitleForDisplay(
                     _bookData.GetMultiTextVariableOrEmpty("bookTitle"),
                     _bookData.GetBasicBookLanguageCodes().ToList(),
-                    IsEditable
+                    IsInEditableCollection
                 );
             }
         }
@@ -476,7 +481,7 @@ namespace Bloom.Book
             {
                 Debug.Assert(BookInfo.FolderPath == Storage.FolderPath);
 
-                if (IsEditable)
+                if (IsInEditableCollection)
                 {
                     //REVIEW: evaluate and explain when we would choose the value in the html over the name of the folder.
                     //1 advantage of the folder is that if you have multiple copies, the folder tells you which one you are looking at
@@ -821,42 +826,19 @@ namespace Bloom.Book
 
         // BL-2678: we want the user to be able to delete troublesome/no longer needed books
         // downloaded from BloomLibrary.org
-        public virtual bool CanDelete => IsEditable || IsDownloaded;
-
-        public bool CanPublish
-        {
-            get
-            {
-                if (!BookInfo.IsEditable)
-                    return false;
-                return !HasFatalError;
-            }
-        }
+        public virtual bool CanDelete => IsSaveable || IsDownloaded;
 
         /// <summary>
-        /// In the Bloom app, only one collection at a time is editable; that's the library they opened. All the other collections of templates, shells, etc., are not editable.
-        /// So, a book is editable if it's in that one collection (unless it's in an error state).
-        /// This wants a better name, because if it's in a team collection, we can't really edit it unless it's checked out.
-        /// "IsInEditableCollection" would almost work, but then, the HasFatalError check wouldn't survive,
-        /// which affects existing callers.
-        /// We could try to make it return false if the book needs to be checked out for editing,
-        /// but Book doesn't feel like an object that should know about Team Collections...it's already
-        /// way too complicated to create a mock book for testing. And some of the usages are more in line
-        /// with the "IsInEditableCollection" meaning. Not seeing a good way to improve things.
-        /// The official way to decide whether a book can really be edited (or modified in any way
-        /// that would require it to be checked out in a TC) is to call
-        /// TeamCollectionApi.TheOneInstance.CanEditBook()...from C# if asking about the current book
-        /// book.IsEditable && !_tcManager.NeedCheckoutToEdit(book.FolderPath)...if asking about some other book
-        /// const [canModifyCurrentBook] = BloomApi.useApiBoolean(
-        ///     "common/canModifyCurrentBook",
-        ///      false
-        /// ); in Typescript
+        /// In the Bloom app, only one collection at a time is editable; that's the library they opened.
+        /// All the other collections of templates, shells, etc., are not editable.
+        /// Everything special we want to do about books in this collection we do NOT want to do if
+        /// the book is in some error state, so we only return true if that is false.
         /// </summary>
-        public virtual bool IsEditable
+        public virtual bool IsInEditableCollection
         {
             get
             {
-                if (BookInfo == null || !BookInfo.IsEditable)
+                if (BookInfo == null || !BookInfo.IsInEditableCollection)
                     return false;
                 return !HasFatalError;
             }
@@ -867,7 +849,7 @@ namespace Bloom.Book
         /// if it is in a team collection, and by intent should include any future requirements.
         /// </summary>
         /// <remarks>Making this virtual allows tests to mock it.</remarks>
-        public virtual bool IsSaveable => IsEditable && BookInfo.IsSaveable;
+        public virtual bool IsSaveable => IsInEditableCollection && BookInfo.IsSaveable;
 
         /// <summary>
         /// First page in the book (or null if there are none)
@@ -894,7 +876,7 @@ namespace Bloom.Book
         public Book FindTemplateBook()
         {
             Guard.AgainstNull(_templateFinder, "_templateFinder");
-            if (!IsEditable)
+            if (!IsInEditableCollection)
                 return null; // won't be adding pages, don't need source of templates
             string templateKey = PageTemplateSource;
 
@@ -960,9 +942,9 @@ namespace Bloom.Book
                 return GetErrorDom();
             }
 
-            // this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
+            // this is normally the vernacular, but books outside the editable collection won't usually have anything for the vernacular
             var primaryLanguage = Language1Tag;
-            if (IsShellOrTemplate)
+            if (!IsInEditableCollection)
             {
                 //TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
 
@@ -1711,36 +1693,33 @@ namespace Bloom.Book
                 BringPageUpToDate(pageDiv);
             }
 
-            if (IsEditable)
+            // Most of this probably only needs doing if we're actually about to edit it.
+            // But earlier versions did it whenever we did BBUD on a book in the editable collection,
+            // and I'm not game to change it.
+            try
             {
-                // Most of this probably only needs doing if we're actually about to edit it.
-                // But earlier versions did it whenever we did BBUD on a book in the editable collection,
-                // and I'm not game to change it.
-                try
-                {
-                    ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(
-                        FolderPath,
-                        OurHtmlDom,
-                        progress
-                    );
-                }
-                catch (UnauthorizedAccessException e)
-                {
-                    BookStorage.ShowAccessDeniedErrorReport(e);
-                }
-
-                VerifyLayout(OurHtmlDom); // make sure we have something recognizable for layout
-                // Restore possibly messed up multilingual settings.
-                UpdateMultilingualSettings(OurHtmlDom);
-
-                // These (and maybe other stuff) could be avoided when updating a copy of an up-to-date book,
-                // but it takes almost no time when the book IS already up-to-date.
-                // These three methods work with the same book metadata to determine what migration has
-                // already been done, so they must be called in exactly this order.
-                Storage.MigrateMaintenanceLevels();
-                Storage.MigrateToMediaLevel1ShrinkLargeImages();
-                Storage.MigrateToLevel3PutImgFirst();
+                ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(
+                    FolderPath,
+                    OurHtmlDom,
+                    progress
+                );
             }
+            catch (UnauthorizedAccessException e)
+            {
+                BookStorage.ShowAccessDeniedErrorReport(e);
+            }
+
+            VerifyLayout(OurHtmlDom); // make sure we have something recognizable for layout
+            // Restore possibly messed up multilingual settings.
+            UpdateMultilingualSettings(OurHtmlDom);
+
+            // These (and maybe other stuff) could be avoided when updating a copy of an up-to-date book,
+            // but it takes almost no time when the book IS already up-to-date.
+            // These three methods work with the same book metadata to determine what migration has
+            // already been done, so they must be called in exactly this order.
+            Storage.MigrateMaintenanceLevels();
+            Storage.MigrateToMediaLevel1ShrinkLargeImages();
+            Storage.MigrateToLevel3PutImgFirst();
 
             // Enhance: there's probably some case where this will get unnecessarily repeated,
             // but I think it would only be in the very rare case of repeatedly needing to update
@@ -2612,9 +2591,6 @@ namespace Bloom.Book
             targetElement.SetAttribute("class", templateElement.GetAttribute("class"));
         }
 
-        //hack. Eventually we might be able to lock books so that you can't edit them.
-        public bool IsShellOrTemplate => !IsEditable;
-
         public bool HasOriginalCopyrightInfo
         {
             get
@@ -2652,10 +2628,6 @@ namespace Bloom.Book
         public string ThumbnailPath => Path.Combine(FolderPath, "thumbnail.png");
 
         public string NonPaddedThumbnailPath => Path.Combine(FolderPath, "nonPaddedThumbnail.png");
-
-        public virtual bool CanUpdate => IsEditable && !HasFatalError;
-
-        public virtual bool CanExport => IsEditable && !HasFatalError;
 
         /// <summary>
         /// In a vernacular library, we want to hide books that are meant only for people making shells
@@ -3465,7 +3437,7 @@ namespace Bloom.Book
         public void InsertPageAfter(IPage pageBefore, IPage templatePage, int numberToAdd = 1)
         {
             Guard.Against(HasFatalError, "Insert page failed: " + FatalErrorDescription);
-            Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
+            Guard.Against(!IsSaveable, "Tried to edit a non-editable book.");
 
             // we need to break up the effects of changing the selected page.
             // The before-selection-changes stuff includes saving the old page. We want any changes
@@ -3706,7 +3678,7 @@ namespace Bloom.Book
                 // in which edit/make button should not show at all.
                 collectionKind = "error";
             }
-            else if (book != null && book.IsEditable)
+            else if (book != null && book.IsInEditableCollection)
             {
                 collectionKind = "main";
             }
@@ -3821,7 +3793,7 @@ namespace Bloom.Book
         public void DeletePage(IPage page)
         {
             Guard.Against(HasFatalError, "Delete page failed: " + FatalErrorDescription);
-            Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
+            Guard.Against(!IsSaveable, "Tried to edit a non-editable book.");
 
             if (GetPages().Count() < 2)
                 return;
@@ -3905,7 +3877,7 @@ namespace Bloom.Book
         /// </summary>
         public void SavePage(HtmlDom editedPageDom, bool needToDoFullSave = true)
         {
-            Debug.Assert(IsEditable);
+            Debug.Assert(IsSaveable);
             try
             {
                 // This is needed if the user did some ChangeLayout (origami) manipulation. This will populate new
@@ -4049,7 +4021,7 @@ namespace Bloom.Book
         public bool RelocatePage(IPage page, int indexOfItemAfterRelocation)
         {
             Guard.Against(HasFatalError, "Move page failed: " + FatalErrorDescription);
-            Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
+            Guard.Against(!IsSaveable, "Tried to edit a non-editable book.");
 
             if (!CanRelocatePageAsRequested(indexOfItemAfterRelocation))
             {
@@ -4520,7 +4492,7 @@ namespace Bloom.Book
             // (In fact, since we bring a book up to date before editing, and that code
             // does the removal, I don't see why it's needed here either.)
             Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
-            Guard.Against(!IsEditable, "Tried to save a non-editable book.");
+            Guard.Against(!IsSaveable, "Tried to save a non-editable book.");
             if (!IsSaveable)
             {
                 NonFatalProblem.Report(
@@ -4560,7 +4532,7 @@ namespace Bloom.Book
         public void SaveForPageChanged(string pageId, XmlElement modifiedPage)
         {
             Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
-            Guard.Against(!IsEditable, "Tried to save a non-editable book.");
+            Guard.Against(!IsSaveable, "Tried to save a non-editable book.");
             Storage.SaveForPageChanged(pageId, modifiedPage);
             DoPostSaveTasks();
         }

@@ -99,24 +99,6 @@ namespace Bloom.CollectionTab
             }
         }
 
-        public bool CanExportSelection
-        {
-            get
-            {
-                return _bookSelection.CurrentSelection != null
-                    && _bookSelection.CurrentSelection.CanExport;
-            }
-        }
-
-        public bool CanUpdateSelection
-        {
-            get
-            {
-                return _bookSelection.CurrentSelection != null
-                    && _bookSelection.CurrentSelection.CanUpdate;
-            }
-        }
-
         internal CollectionSettings CollectionSettings
         {
             get { return _collectionSettings; }
@@ -982,7 +964,7 @@ namespace Bloom.CollectionTab
                     _bookSelection.SelectBook(newBook, aboutToEdit: true);
                 }
                 //enhance: would be nice to know if this is a new shell
-                if (sourceBook.IsShellOrTemplate)
+                if (!sourceBook.IsInEditableCollection)
                 {
                     Analytics.Track(
                         "Create Book",

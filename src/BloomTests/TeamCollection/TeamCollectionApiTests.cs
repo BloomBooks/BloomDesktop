@@ -505,7 +505,7 @@ namespace BloomTests.TeamCollection
                 .Returns(mockTeamCollection.Object);
 
             var mockBook = new Mock<Bloom.Book.Book>();
-            mockBook.SetupGet(x => x.IsEditable).Returns(false);
+            mockBook.SetupGet(x => x.IsInEditableCollection).Returns(false);
 
             apiBuilder.MockBookSelection.SetupGet(x => x.CurrentSelection).Returns(mockBook.Object);
 
@@ -556,7 +556,7 @@ namespace BloomTests.TeamCollection
                 .Returns(mockTeamCollection.Object);
 
             var mockBook = new Mock<Bloom.Book.Book>();
-            mockBook.SetupGet(x => x.IsEditable).Returns(true);
+            mockBook.SetupGet(x => x.IsInEditableCollection).Returns(true);
 
             apiBuilder.MockBookSelection.SetupGet(x => x.CurrentSelection).Returns(mockBook.Object);
 
