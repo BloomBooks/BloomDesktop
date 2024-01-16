@@ -457,9 +457,16 @@ namespace BloomTests.Publish
             AssertThatXmlIn
                 .String(pageData)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//xhtml:span[@role='doc-pagebreak' and @aria-label='The End']",
+                    "//xhtml:span[@role='doc-pagebreak' and @aria-label='Outside Back Cover']",
                     _ns,
                     1
+                );
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:span[@role='doc-pagebreak' and @aria-label='The End']",
+                    _ns,
+                    0
                 );
 
             EpubBackmatterPageHasNoDescribableImage(pageData);
