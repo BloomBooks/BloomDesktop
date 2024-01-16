@@ -603,7 +603,7 @@ namespace BloomTests.Publish
                         CheckPageBreakMarker(currentPage, "pgCreditsPage", "Credits Page");
                         break;
                     case 5:
-                        CheckPageBreakMarker(currentPage, "pgTheEnd", "The End");
+                        CheckPageBreakMarker(currentPage, "pgOutsideBackCover", "Outside Back Cover");
                         CheckEpubTypeAttributes(currentPage, null);
                         break;
                     default:
@@ -620,7 +620,10 @@ namespace BloomTests.Publish
             Assert.AreEqual(5, pageCount);
             AssertThatXmlIn
                 .String(currentPage)
-                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'theEndPage')]", 1);
+                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'outsideBackCover')]", 1);
+            AssertThatXmlIn
+                .String(currentPage)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'theEndPage')]", 0);
             var navPageData = CheckNavPage();
             AssertThatXmlIn
                 .String(navPageData)
@@ -687,7 +690,7 @@ namespace BloomTests.Publish
             AssertThatXmlIn
                 .String(navPageData)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml#pgTheEnd']",
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml#pgOutsideBackCover']",
                     _ns,
                     1
                 );
