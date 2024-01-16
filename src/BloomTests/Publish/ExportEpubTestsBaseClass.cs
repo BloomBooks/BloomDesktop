@@ -446,6 +446,7 @@ namespace BloomTests.Publish
             string head =
                 @"<meta charset='UTF-8'/>
 				<link rel='stylesheet' href='defaultLangStyles.css'/>
+                <link rel='stylesheet' href='appearance.css' type='text/css'/>
 				<link rel='stylesheet' href='basePage.css' type='text/css'/>
 				<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'/>
 				<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>

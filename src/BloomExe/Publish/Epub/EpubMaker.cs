@@ -1684,9 +1684,13 @@ namespace Bloom.Publish.Epub
             }
             else
             {
-                pageDom.AddStyleSheet(
-                    Storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost()
-                );
+                // Not sure why we need to add any of these things, but reluctant to change things we presumably
+                // once needed. Possibly previewMode.css adds some stuff that is helpful when editing is not allowed.
+                // Adding basePage.css is definitely a bad idea, because it's now possible we want basePageLegacy instead.
+                // The DOM should already have whichever one we need. (It should already have origami.css, though, too.)
+                //pageDom.AddStyleSheet(
+                //    Storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost()
+                //);
                 pageDom.AddStyleSheet(
                     Storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css")
                 );

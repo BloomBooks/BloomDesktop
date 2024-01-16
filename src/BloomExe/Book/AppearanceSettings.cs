@@ -28,20 +28,23 @@ public class AppearanceSettings
         _properties = new ExpandoObject();
         if (_substitutinator == null)
         {
-            _substitutinator = new AppearanceCustomCssToThemeSubstitutinator();
+            _substitutinator = new AppearanceMigrator();
         }
 
         // copy in the default values from each definition
         foreach (var definition in propertyDefinitions)
         {
-            definition.SetDefault(_properties); // this is a workaround using ref because c# doesn't have union types, or `any`, sigh
+            if (definition.DefaultValue != null)
+            {
+                definition.SetDefault(_properties); // this is a workaround using ref because c# doesn't have union types, or `any`, sigh
+            }
         }
     }
 
     public static string kDoShowValueForDisplay = "doShow-css-will-ignore-this-and-use-default"; // by using an illegal value, we just get a no-op rule, which is what we want
     public static string kHideValueForDisplay = "none";
     public static string kOverrideGroupsArrayKey = "groupsToOverrideFromParent"; // e.g. "coverFields, xmatter"
-    private static AppearanceCustomCssToThemeSubstitutinator _substitutinator;
+    private static AppearanceMigrator _substitutinator;
 
     // A representation of the content of Appearance.json
     internal dynamic _properties;
@@ -103,14 +106,42 @@ public class AppearanceSettings
         // this one is special because it doesn't correspond to a CSS variable. Instead, we will copy the contents of named file as rules at the end of the CSS file.
         // The default here is rarely if ever relevant. Usually a newly created instance will be initialized from a folder, and the default will be overwritten,
         // either to whatever we find in appearance.json, or to "legacy-5-6" if there is no appearance.json.
-        new StringPropertyDef("cssThemeName", "default", "cssThemeName"),
+        new StringPropertyDef("cssThemeName", "cssThemeName", "default"),
         // Todo: when we implement this setting, we want to migrate the old record of color color.
         // See code commented out in BringBookUpToDateUnprotected.
-        //new CssStringVariableDef("coverColor","yellow","colors"),
-        new CssDisplayVariableDef("coverShowTitleL2", true, "coverFields"),
-        new CssDisplayVariableDef("coverShowTitleL3", false, "coverFields"),
-        new CssDisplayVariableDef("coverShowTopic", true, "coverFields"),
-        new CssDisplayVariableDef("coverShowLanguageName", false, "coverFields"),
+        //new CssStringVariableDef("coverColor","colors","yellow"),
+        new CssDisplayVariableDef("cover-title-L2-show", "coverFields", true),
+        new CssDisplayVariableDef("cover-title-L3-show", "coverFields", false),
+        new CssDisplayVariableDef("cover-topic-show", "coverFields", true),
+        new CssDisplayVariableDef("cover-languageName-show", "coverFields", true),
+        // these ones are not in the dialog yet, but are used in our css, so if they are somehow in appearance.json,
+        // we want to output them to css. The override groups are a guess and not yet used.
+        new CssStringVariableDef("cover-margin-bottom", "margins"),
+        new CssStringVariableDef("cover-margin-top", "margins"),
+        new CssStringVariableDef("image-border-radius", "images"),
+        new CssStringVariableDef("marginBox-background-color", "colors"),
+        new CssStringVariableDef("marginBox-border-color", "colors"),
+        new CssStringVariableDef("marginBox-border-radius", "margins"),
+        new CssStringVariableDef("marginBox-border-style", "margins"),
+        new CssStringVariableDef("marginBox-border-width", "margins"),
+        new CssStringVariableDef("marginBox-padding", "margins"),
+        new CssStringVariableDef("multilingual-editable-vertical-gap", "margins"),
+        new CssStringVariableDef("page-background-color", "colors"),
+        new CssStringVariableDef("page-gutter", "margins"),
+        new CssStringVariableDef("page-margin-bottom", "margins"),
+        new CssStringVariableDef("page-margin-left", "margins"),
+        new CssStringVariableDef("page-margin-top", "margins"),
+        new CssStringVariableDef("page-split-horizontal-gap", "margins"),
+        new CssStringVariableDef("page-split-vertical-gap", "margins"),
+        new CssStringVariableDef("pageNumber-always-left-margin", "page-number"),
+        new CssStringVariableDef("pageNumber-background-color", "page-number"),
+        new CssStringVariableDef("pageNumber-background-width", "page-number"),
+        new CssStringVariableDef("pageNumber-border-radius", "page-number"),
+        new CssStringVariableDef("pageNumber-bottom", "page-number"),
+        new CssStringVariableDef("pageNumber-font-size", "page-number"),
+        new CssStringVariableDef("pageNumber-left-margin", "page-number"),
+        new CssStringVariableDef("pageNumber-right-margin", "page-number"),
+        new CssStringVariableDef("pageNumber-top", "page-number"),
     };
 
     /// <summary>
@@ -229,6 +260,7 @@ public class AppearanceSettings
     /// Given a list of CSS files from a new book, typically customBookStyles.css and customCollectionStyles.css,
     /// decide what theme the book should use, and if we need a specialized customBookStyles2.css file,
     /// return a path to the file that should be copied there.
+    /// Also leaves this object in a state where it represents the settings that should be written to appearance.json.
     /// </summary>
     public string GetThemeAndSubstituteCss(Tuple<string, string>[] cssFilesToCheck)
     {
@@ -241,7 +273,7 @@ public class AppearanceSettings
         // try to use the default or some substitute them, and only switch back to the legacy theme,
         // if we don't know of a substitute theme and its associated customBookStyles2.css file.
         CssThemeName = "default";
-        string substituteTheme = null;
+        string substituteAppearance = null;
 
         foreach (var css in cssFilesToCheck.Where(css => !string.IsNullOrWhiteSpace(css.Item2)))
         {
@@ -254,18 +286,18 @@ public class AppearanceSettings
             // (and they aren't identical) we just can't substitute at all.
             // So we'll let the second one we encounter, which finds that it is incompatible, cause
             // us to use the legacy theme.
-            var substitutionThemeName = _substitutinator.GetThemeThatSubstitutesForCustomCSS(
-                css.Item2
-            );
+            var possibleSubstituteAppearance =
+                AppearanceMigrator.Instance.GetAppearanceThatSubstitutesForCustomCSS(css.Item2);
             if (
-                substitutionThemeName != null
-                && (substituteTheme == null || substituteTheme == substitutionThemeName)
+                possibleSubstituteAppearance != null
+                && (
+                    substituteAppearance == null
+                    || substituteAppearance == possibleSubstituteAppearance
+                )
             )
             {
                 // We may be able to use the substitute theme... don't celebrate just yet... any other css file could still be incompatible
-                substituteTheme = substitutionThemeName;
-                CssThemeName = substitutionThemeName;
-                SIL.Reporting.Logger.WriteEvent($"** Could use {CssThemeName} BasePage and Theme");
+                substituteAppearance = possibleSubstituteAppearance;
                 continue;
             }
 
@@ -274,13 +306,13 @@ public class AppearanceSettings
             if (TestCompatibility(css.Item1, css.Item2, out string _))
             {
                 // We found a custom CSS we don't have a rule for, or possibly a second custom CSS different from one that already needed a substitution.
-                if (substituteTheme != null)
+                if (substituteAppearance != null)
                 {
                     // We process customBookStyles first. If we were planning to substitute for it, presumably it is also incompatible.
                     _customBookStylesAreIncompatibleWithNewSystem = true;
                 }
 
-                substituteTheme = null;
+                substituteAppearance = null;
                 // Don't use FirstPossiblyOffendingCssFile here, typically we haven't been Initialized, so it will throw.
                 _firstPossiblyOffendingCssFile = _firstPossiblyOffendingCssFile ?? css.Item1;
                 CssThemeName = "legacy-5-6";
@@ -288,13 +320,21 @@ public class AppearanceSettings
             }
         }
 
-        Debug.WriteLine($"** Will use {CssThemeName}");
-        return substituteTheme == null
-            ? null
-            : Path.Combine(
-                BloomFileLocator.GetFolderContainingAppearanceThemeFiles(),
-                $"appearance-theme-{substituteTheme}.css"
-            );
+        if (substituteAppearance != null)
+        {
+            // substituteAppearance is something like "appearanceMigrations/migrationName/appearance.json".
+            var substituteFolder = Path.GetDirectoryName(substituteAppearance);
+            // Load this instance from what's in the appearance.json in substituteFolder (i.e., substituteAppearance).
+            // This may include changing the current instance's CssThemeName.
+            // When this current instance is saved to the book folder, not only will those settings transfer to the new book,
+            // but a corresponding appearance.css will be generated.
+            UpdateFromFolder(substituteFolder);
+            Debug.WriteLine($"** Will use {CssThemeName}");
+            return Path.Combine(substituteFolder, "customBookStyles.css");
+        }
+
+        // We've already set the relevant bits of our state, particularly CssThemeName to either default or legacy-5-6.
+        return null;
     }
 
     /// <summary>
@@ -486,6 +526,9 @@ public class AppearanceSettings
             _areSettingsConsistentWithFiles = true;
 
             var json = RobustFile.ReadAllText(jsonPath);
+            // remove obsolete (renamed in alpha) properties. (They would mostly be ignored, but would
+            // trigger warnings when writing the settings back out.)
+            json = new Regex(@"""coverShow.*?"": (true|false),?").Replace(json, "");
             UpdateFromJson(json);
             Debug.WriteLine(
                 $"Found existing appearance json. CssThemeName is currently {CssThemeName}"
@@ -508,18 +551,19 @@ public class AppearanceSettings
     }
 
     /// <summary>
-    /// Create something like this:
-    /// ":root{
-    ///		--coverShowTitleL2: bogus-value-so-default-is-used;
-    ///		--coverShowTitleL3: none;
-    ///		--coverShowTopic: bogus-value-so-default-is-used;
-    ///		--coverShowLanguageName: none;
+    /// Create something like this, with rules for whatever properties are set:
+    /// ".bloom-page{
+    ///		--cover-title-L2-show: bogus-value-so-default-is-used;
+    ///		--cover-title-L3-show: none;
+    ///		--cover-topic-show: bogus-value-so-default-is-used;
+    ///		--cover-languageName-show: none;
     ///	}"
     /// </summary>
-    public string GetCssRootDeclaration(AppearanceSettings parent = null)
+    public string GetCssOwnPropsDeclaration(AppearanceSettings parent = null)
     {
         var cssBuilder = new StringBuilder();
-        cssBuilder.AppendLine(":root{");
+        // Don't be tempted by :root. It doesn't work in Bloom player, because of the way we polyfill scoped styles.
+        cssBuilder.AppendLine(".bloom-page {");
         var overrides = Properties.ContainsKey(kOverrideGroupsArrayKey)
             ? (System.Collections.Generic.List<object>)Properties[kOverrideGroupsArrayKey]
             : null;
@@ -585,9 +629,11 @@ public class AppearanceSettings
             }
 
             if (definition is CssPropertyDef)
-                cssBuilder.AppendLine(
-                    ((PropertyDef)definition).GetCssVariableDeclaration(keyValuePair)
-                );
+            {
+                var setting = ((PropertyDef)definition).GetCssVariableDeclaration(keyValuePair);
+                if (!string.IsNullOrEmpty(setting))
+                    cssBuilder.AppendLine(setting);
+            }
         }
 
         cssBuilder.AppendLine("}");
@@ -608,11 +654,25 @@ public class AppearanceSettings
             return;
         }
 
-        var cssBuilder = new StringBuilder();
+        RobustFile.WriteAllText(targetPath, ToCss());
+        var settings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            Formatting = Formatting.Indented,
+            /* doesn't work: CreateProperty() is never called
+              ContractResolver = new PropertiesContractResolver()
+            */
+        };
 
-        // Add in all the user's settings
-        cssBuilder.AppendLine("/* From this book's appearance settings */");
-        cssBuilder.AppendLine(GetCssRootDeclaration(null));
+        var s = JsonConvert.SerializeObject(_properties, settings);
+
+        RobustFile.WriteAllText(AppearanceJsonPath(folder), s);
+        _areSettingsConsistentWithFiles = true;
+    }
+
+    public String ToCss()
+    {
+        var cssBuilder = new StringBuilder();
 
         var theme = CssThemeName;
 
@@ -649,20 +709,10 @@ public class AppearanceSettings
             }
         }
 
-        RobustFile.WriteAllText(targetPath, cssBuilder.ToString());
-        var settings = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            Formatting = Formatting.Indented,
-            /* doesn't work: CreateProperty() is never called
-              ContractResolver = new PropertiesContractResolver()
-            */
-        };
-
-        var s = JsonConvert.SerializeObject(_properties, settings);
-
-        RobustFile.WriteAllText(AppearanceJsonPath(folder), s);
-        _areSettingsConsistentWithFiles = true;
+        // Add in all the user's settings
+        cssBuilder.AppendLine("/* From this book's appearance settings */");
+        cssBuilder.AppendLine(GetCssOwnPropsDeclaration(null));
+        return cssBuilder.ToString();
     }
 
     /// <summary>
@@ -690,14 +740,6 @@ public class AppearanceSettings
         {
             ((IDictionary<string, object>)_properties)[property.Key] = property.Value;
         }
-    }
-
-    public static IEnumerable<string> GetPathsToThemeFiles()
-    {
-        return Directory.EnumerateFiles(
-            BloomFileLocator.GetFolderContainingAppearanceThemeFiles(),
-            "*.css"
-        );
     }
 
     public static IEnumerable<string> GetAppearanceThemeFileNames()
@@ -766,7 +808,7 @@ abstract class CssPropertyDef : PropertyDef { }
 
 class StringPropertyDef : PropertyDef
 {
-    public StringPropertyDef(string name, string defaultValue, string overrideGroup)
+    public StringPropertyDef(string name, string overrideGroup, string defaultValue)
     {
         Name = name;
         DefaultValue = defaultValue;
@@ -781,7 +823,7 @@ class StringPropertyDef : PropertyDef
 
 class CssStringVariableDef : CssPropertyDef
 {
-    public CssStringVariableDef(string name, string defaultValue, string overrideGroup)
+    public CssStringVariableDef(string name, string overrideGroup, string defaultValue = null)
     {
         Name = name;
         DefaultValue = defaultValue;
@@ -790,19 +832,21 @@ class CssStringVariableDef : CssPropertyDef
 
     public override string GetCssVariableDeclaration(dynamic property)
     {
+        if (string.IsNullOrEmpty(property.Value))
+            return "";
         return $"--{Name}: {property.Value};";
     }
 }
 
 /// <summary>
-/// variables that can be used in rules like ` .something { display: var(--coverShowTopic) }`
+/// variables that can be used in rules like ` .something { display: var(--cover-topic-show) }`
 /// </summary>
 class CssDisplayVariableDef : CssPropertyDef
 {
     public string TrueValue;
     public string FalseValue;
 
-    public CssDisplayVariableDef(string name, bool defaultValue, string overrideGroup)
+    public CssDisplayVariableDef(string name, string overrideGroup, bool defaultValue)
     {
         Name = name;
         TrueValue = AppearanceSettings.kDoShowValueForDisplay; // by using an illegal value, we just get a no-op rule, which is what we want

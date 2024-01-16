@@ -1167,7 +1167,8 @@ namespace BloomTests.Publish
 							</div>
 						</div>
 					</div>",
-                defaultLanguages: "V"
+                defaultLanguages: "V",
+                createPhysicalFile: true
             );
 
             MakeEpub("output", "InvisibleAndUnwantedContentRemoved", book);
@@ -1203,15 +1204,17 @@ namespace BloomTests.Publish
                 "English text (first national language) should display in title.",
                 "en",
                 extraPageClass: " bloom-frontMatter frontCover' data-page='required singleton",
-                extraContent: @"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
-							<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
-							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+                extraContent: @"<div class='bloom-editable' lang='xyz' data-book='bookTitle'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
+							<div class='bloom-editable' lang='fr' data-book='bookTitle'>French text (second national language) should not display</div>
+							<div class='bloom-editable' lang='de' data-book='bookTitle'>German should never display in this collection</div>",
                 optionalDataDiv: @"<div id='bloomDataDiv'>
 						<div data-book='contentLanguage1' lang='*'>xyz</div>
 						<div data-book='contentLanguage2' lang='*'>en</div>
 					</div>",
                 extraEditGroupClasses: "bookTitle",
-                defaultLanguages: "V,N1"
+                defaultLanguages: "V,N1",
+                // This test needs real stylesheets to determine what should be visible.
+                createPhysicalFile: true
             );
 
             MakeEpub("output", "National1_InXMatter_IsNotRemoved", book);
@@ -1336,7 +1339,8 @@ namespace BloomTests.Publish
                 extraContent: @"<div class='bloom-editable' lang='xyz'>vernacular text should not display in this case because the user turned it off</div>
 							<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
 							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
-                defaultLanguages: "N1"
+                defaultLanguages: "N1",
+                createPhysicalFile: true
             );
 
             MakeEpub("output", "UserSpecifiedNoVernacular_VernacularRemoved", book);
@@ -1377,7 +1381,8 @@ namespace BloomTests.Publish
 						<div data-book=""originalAcknowledgments"" lang=""en""><p>English Acknowledgments</p></div>
 					</div>",
                 extraEditGroupClasses: "originalAcknowledgments",
-                defaultLanguages: "N1"
+                defaultLanguages: "N1",
+                createPhysicalFile: true
             );
 
             MakeEpub(
@@ -1468,7 +1473,8 @@ namespace BloomTests.Publish
 						<div data-book=""licenseUrl"" lang=""*"">http://creativecommons.org/licenses/by/4.0/</div>
 						<div data-book=""licenseDescription"" lang=""en"">http://creativecommons.org/licenses/by/4.0/<br></br>You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.</div>
 						<div data-book=""licenseImage"" lang=""*"">license.png</div>
-					</div>"
+					</div>",
+                createPhysicalFile: true
             );
             MakeImageFiles(book, "license");
 

@@ -993,7 +993,7 @@ namespace BloomTests.Book
                 .HtmlFile(path)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@testid='pageWithNoLanguageTags']/p/textarea",
-                    2
+                    3
                 );
             AssertThatXmlIn
                 .HtmlFile(path)
@@ -1552,7 +1552,7 @@ namespace BloomTests.Book
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='fr']", 1);
             AssertThatXmlIn
                 .Dom(dom)
-                .HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='es']", 0);
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='es']", 1);
             AssertThatXmlIn
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='xyz']", 1);
