@@ -55,7 +55,13 @@ namespace Bloom.Utils
 			var result = Convert.ToInt32(GetLongPathName(path, builder, builder.Capacity));
 			if (result == 0)
 			{
-				throw new FileNotFoundException("The file was not found", path);
+				// The original code threw a FileNotFoundException here.
+				// But there are cases where we call this and don't expect the file to exist yet,
+				// such as validating the destination path of a copy is not too long.
+				// It seems safer to just return the original path. If it truly was a 8.3 path
+				// which needed to be converted, GetLongPathName should have worked.
+				// See BL-12986.
+				return path;
 			}
 			if (result >= builder.Capacity)
 			{
