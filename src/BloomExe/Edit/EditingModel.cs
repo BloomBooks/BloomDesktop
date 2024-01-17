@@ -1234,10 +1234,10 @@ namespace Bloom.Edit
                     //error if, for example, it was deleted:
                     try
                     {
-                        if (!_pageSelection.CurrentSelection.Book.CanUpdate)
+                        if (!_pageSelection.CurrentSelection.Book.IsSaveable)
                         {
                             Logger.WriteEvent(
-                                "Error: SaveNow() found that this book had CanUpdate=='false'"
+                                "Error: SaveNow() found that this book had IsSaveable=='false'"
                             );
                             Logger.WriteEvent(
                                 "Book path was {0}",

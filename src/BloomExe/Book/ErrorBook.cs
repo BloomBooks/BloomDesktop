@@ -55,11 +55,6 @@ namespace Bloom.Book
             get { return _canDelete; }
         }
 
-        public override bool CanUpdate
-        {
-            get { return false; }
-        }
-
         public override bool HasFatalError
         {
             get { return true; }
