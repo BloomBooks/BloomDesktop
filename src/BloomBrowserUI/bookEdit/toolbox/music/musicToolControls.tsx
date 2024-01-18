@@ -59,12 +59,12 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // But we can't do the previous way of setting this.state and THEN using our state to setState().
     public getStateFromHtmlOfPage(): IMusicState {
         const musicState: any = {};
-        let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
+        let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttrDecoded(
             MusicToolControls.musicAttrName
         );
         const hasMusicAttr = typeof audioFileName === typeof ""; // may be false or undefined if missing
         if (!audioFileName) {
-            audioFileName = ""; // null won't handle split
+            audioFileName = ""; // undefined won't handle split
         }
         if (!hasMusicAttr) {
             // No data-backgroundAudio attr at all is our default state, continue from previous page
@@ -234,7 +234,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         // call-back function for changing playing state
         // automatic indentation is weird here. This is the start of the body of previewBackgroundMusic,
         // not of setPlayState, which is just a function parameter.
-        const audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
+        const audioFileName = ToolboxToolReactAdaptor.getBloomPageAttrDecoded(
             this.musicAttrName
         );
         if (!audioFileName) {
@@ -283,7 +283,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         });
         switch (val) {
             case "noMusic":
-                ToolboxToolReactAdaptor.setBloomPageAttr(
+                ToolboxToolReactAdaptor.encodeAndSetPageAttr(
                     MusicToolControls.musicAttrName,
                     ""
                 );
@@ -309,7 +309,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     private static getPlayerVolumeFromAttributeOnPage(
         audioFileName: string
     ): number {
-        const audioVolumeStr = ToolboxToolReactAdaptor.getBloomPageAttr(
+        const audioVolumeStr = ToolboxToolReactAdaptor.getBloomPageAttrDecoded(
             this.musicVolumeAttrName
         );
         let audioVolumeFraction: number =
@@ -364,7 +364,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         const volume = MusicToolControls.convertSliderPositionToVolume(
             position1to100
         );
-        ToolboxToolReactAdaptor.setBloomPageAttr(
+        ToolboxToolReactAdaptor.encodeAndSetPageAttr(
             MusicToolControls.musicVolumeAttrName,
             volume.toString()
         );
@@ -380,7 +380,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
             if (!fileName) {
                 return;
             }
-            ToolboxToolReactAdaptor.setBloomPageAttr(
+            ToolboxToolReactAdaptor.encodeAndSetPageAttr(
                 MusicToolControls.musicAttrName,
                 fileName
             );
