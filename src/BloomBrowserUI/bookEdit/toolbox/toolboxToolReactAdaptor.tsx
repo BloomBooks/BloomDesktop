@@ -70,20 +70,24 @@ export default abstract class ToolboxToolReactAdaptor
         return page.querySelector(".bloom-page") as HTMLElement;
     }
 
-    public static getBloomPageAttr(name: string): string | null {
+    public static getBloomPageAttrDecoded(name: string): string | undefined {
         const page = this.getBloomPage();
-        if (!page) return null;
-        return page.getAttribute(name);
+        if (!page) return undefined;
+        const v = page.getAttribute(name);
+        return v ? decodeURIComponent(v) : undefined;
     }
 
-    public static setBloomPageAttr(name: string, val: string): void {
+    public static encodeAndSetPageAttr(
+        name: string,
+        unencodedValue: string
+    ): void {
         const page = this.getBloomPage();
         if (!page) return;
-        page.setAttribute(name, val);
+        page.setAttribute(name, encodeURIComponent(unencodedValue));
     }
 
     public static isXmatter(): boolean {
-        const pageClass = this.getBloomPageAttr("class");
+        const pageClass = this.getBloomPageAttrDecoded("class");
         return !pageClass
             ? false // paranoia
             : pageClass.indexOf("bloom-frontMatter") >= 0 ||
