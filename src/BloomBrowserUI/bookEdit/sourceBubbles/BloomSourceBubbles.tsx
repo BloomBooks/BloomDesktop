@@ -473,7 +473,7 @@ export default class BloomSourceBubbles {
         let shouldShowAlways = true;
 
         const $group = $(group);
-        if (bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group)) {
+        if (bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group) || !$group.is(':visible')) {
             showEvents = true;
             showEventsStr = "focusin";
             hideEvents = true;
