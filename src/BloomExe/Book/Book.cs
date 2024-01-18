@@ -580,6 +580,7 @@ namespace Bloom.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 dom.RawDom,
                 _bookData,
+                BookInfo.AppearanceSettings.UsingLegacy,
                 Language1Tag,
                 Language2Tag,
                 Language3Tag
@@ -961,6 +962,7 @@ namespace Bloom.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 previewDom.RawDom,
                 _bookData,
+                BookInfo.AppearanceSettings.UsingLegacy,
                 primaryLanguage,
                 _bookData.Language2Tag,
                 _bookData.Language3Tag
@@ -2840,6 +2842,13 @@ namespace Bloom.Book
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the given language bloom-editable is wanted (should be visible, and therefore typically
+        /// published) in the given parent.
+        /// Currently this is reliable only for elements where visibility is controlled by the old data-default-languages
+        /// attribute rather than the new appearance system. It is currently only used for content (not xmatter) divs,
+        /// so this is good enough.
+        /// </summary>
         private bool IsLanguageWanted(XmlElement parent, string lang)
         {
             var defaultLangs = parent.GetAttribute("data-default-languages");
@@ -3474,6 +3483,7 @@ namespace Bloom.Book
                 TranslationGroupManager.UpdateContentLanguageClasses(
                     newPageDiv,
                     _bookData,
+                    BookInfo.AppearanceSettings.UsingLegacy,
                     Language1Tag,
                     Language2Tag,
                     Language3Tag
@@ -4367,6 +4377,7 @@ namespace Bloom.Book
                 TranslationGroupManager.UpdateContentLanguageClasses(
                     div,
                     _bookData,
+                    BookInfo.AppearanceSettings.UsingLegacy,
                     language1Tag,
                     language2Tag,
                     language3Tag

@@ -304,9 +304,8 @@ body {
     align-items: center;
   }
   .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) .bloom-editable.bloom-visibility-code-on,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-editable.bloom-visibility-code-on,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) .bloom-editable.bloom-visibility-user-on,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-editable.bloom-visibility-user-on {
+  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-editable.bloom-visibility-code-on
+  {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -314,9 +313,7 @@ body {
     align-content: center;
   }
   .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) .bloom-editable.bloom-visibility-code-on p,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-editable.bloom-visibility-code-on p,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) .bloom-editable.bloom-visibility-user-on p,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-editable.bloom-visibility-user-on p {
+  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-editable.bloom-visibility-code-on p {
     flex-basis: 100%;
     flex-grow: 0;
   }
@@ -925,8 +922,7 @@ body {
   .box-header-off {
     display: none !important;
   }
-  .bloom-editable.bloom-visibility-code-on ~ .bloom-editable,
-  .bloom-editable.bloom-visibility-user-on ~ .bloom-editable {
+  .bloom-editable.bloom-visibility-code-on ~ .bloom-editable {
     margin-top: 10px;
   }
   .customPage .bloom-imageContainer {
@@ -1208,16 +1204,10 @@ body {
 .bloom-editable.bloom-visibility-code-on {
     display: block;
 }
-.bloom-editable.bloom-visibility-user-on {
-    display: block;
-}
-.bloom-editable.bloom-visibility-user-off {
-    display: none !important;
-}
+
 .bloom-vertical-align-center,
 .bloom-vertical-align-bottom {
-    .bloom-editable.bloom-visibility-code-on,
-    .bloom-editable.bloom-visibility-user-on {
+    .bloom-editable.bloom-visibility-code-on {
         display: flex;
     }
 }

@@ -128,6 +128,7 @@ namespace Bloom.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 wrapper,
                 currentBook.BookData,
+                currentBook.BookInfo.AppearanceSettings.UsingLegacy,
                 currentBook.Language1Tag,
                 currentBook.Language2Tag,
                 currentBook.Language3Tag
@@ -230,6 +231,7 @@ namespace Bloom.Book
         public static void UpdateContentLanguageClasses(
             XmlNode elementOrDom,
             BookData bookData,
+            bool usingLegacy,
             string language1Tag,
             string language2Tag,
             string language3Tag
@@ -274,9 +276,36 @@ namespace Bloom.Book
             // This is the "code" part of the visibility system: https://goo.gl/EgnSJo
             foreach (XmlElement group in GetTranslationGroups(elementOrDom))
             {
-                var dataDefaultLanguages = HtmlDom
-                    .GetAttributeValue(@group, "data-default-languages")
-                    .Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var defLangsAttr = HtmlDom.GetAttributeValue(group, "data-default-languages");
+                // We want bloom-visibility-code-on added (where appropriate) if
+                // - we found data-default-languages
+                // - we found data-default-languages-legacy and we're using legacy
+                // - we found neither (see below)
+                // If we found data-default-languages-legacy and we're not using legacy,
+                // we don't want visibility codes, because these fields have other visibility controls
+                // in the Appearance system.
+                // If we found neither data-default-languages attr, previous history requires that we treat the field
+                // as 'auto', that is, we DO want visibility codes, whether or not we're
+                // using legacy. This is slightly unfortunate, since if we ever add
+                // an Appearance setting for such a field, we'll have to add a
+                // data-default-languages-legacy="auto" just to PREVENT the visibility
+                // codes from being added when we're NOT using legacy. Maybe if that ever
+                // happens we'll come up with a better way.
+                // We should not find both, but if we do, the non-legacy one wins.
+                var wantVisibilityCode = !string.IsNullOrEmpty(defLangsAttr);
+                if (!wantVisibilityCode)
+                {
+                    defLangsAttr = HtmlDom.GetAttributeValue(
+                        group,
+                        "data-default-languages-legacy"
+                    );
+                    // The first test here achieves the "we want it if both attrs are missing" behavior described above.
+                    wantVisibilityCode = string.IsNullOrEmpty(defLangsAttr) || usingLegacy;
+                }
+                var dataDefaultLanguages = defLangsAttr.Split(
+                    new char[] { ',', ' ' },
+                    StringSplitOptions.RemoveEmptyEntries
+                );
 
                 //nb: we don't necessarily care that a div is editable or not
                 foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div"))
@@ -285,6 +314,7 @@ namespace Bloom.Book
                         e,
                         contentLanguages,
                         bookData,
+                        wantVisibilityCode,
                         language2Tag,
                         language3Tag,
                         dataDefaultLanguages
@@ -309,6 +339,8 @@ namespace Bloom.Book
                         e,
                         contentLanguages,
                         bookData,
+                        // The old behavior will do for now, since we don't have Appearance settings for these fields.
+                        true,
                         language2Tag,
                         language3Tag,
                         dataDefaultLanguages
@@ -336,6 +368,7 @@ namespace Bloom.Book
             XmlElement e,
             Dictionary<string, string> contentLanguages,
             BookData bookData,
+            bool wantVisibilityCode,
             string contentLanguageTag2,
             string contentLanguageTag3,
             string[] dataDefaultLanguages
@@ -372,7 +405,8 @@ namespace Bloom.Book
 
             HtmlDom.RemoveClassesBeginingWith(e, "bloom-visibility-code");
             if (
-                ShouldNormallyShowEditable(
+                wantVisibilityCode
+                && ShouldNormallyShowEditable(
                     lang,
                     dataDefaultLanguages,
                     contentLanguageTag2,
@@ -405,7 +439,7 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Here, "normally" means unless the user overrides via a .bloom-visibility-user-on/off
+        /// Here, "normally" means unless the field's visibility is now controlled by the Appearance system.
         /// </summary>
         internal static bool ShouldNormallyShowEditable(
             string lang,
