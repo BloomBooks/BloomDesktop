@@ -934,37 +934,17 @@ namespace Bloom.Book
                 return _previewDom;
             }
 
-            var previewDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
+            var previewDom = Storage.GetRelocatableCopyOfDom();
+            // Earlier code also added origami.css, but I don't know any reason to add it now
+            // in the unlikely event it isn't already loaded. We want the preview to look just
+            // like the HTML would look if we opened the file.
+            previewDom.AddStyleSheet("previewMode.css");
 
-            //We may have just run into an error for the first time
-            if (HasFatalError)
-            {
-                return GetErrorDom();
-            }
-
-            // this is normally the vernacular, but books outside the editable collection won't usually have anything for the vernacular
-            var primaryLanguage = Language1Tag;
-            if (!IsInEditableCollection)
-            {
-                //TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
-
-                // If it DOES have text in the Language1Tag (e.g., a French collection, and we're looking at Moon and Cap...BL-6465),
-                // don't mess with it.
-                if (
-                    previewDom.SelectSingleNode(
-                        $"//*[@lang='{primaryLanguage}' and contains(@class, 'bloom-editable') and text()!='']"
-                    ) == null
-                )
-                    primaryLanguage = _bookData.MetadataLanguage1Tag;
-            }
-
-            TranslationGroupManager.UpdateContentLanguageClasses(
-                previewDom.RawDom,
-                _bookData,
-                primaryLanguage,
-                _bookData.Language2Tag,
-                _bookData.Language3Tag
-            );
+            // Older code (pre-5.7) called UpdateContentLanguageClasses() here with code that chose the
+            // collection L1 language if the book has it, otherwise, the book's own L1. That now results
+            // in a preview that may lack a title. Not really sure why, it may
+            // be something to do with our previously bringing the selected book partly up to date.
+            // For now, we'll just leave the preview showing whatever language the HTML says to.
 
             AddPreviewJavascript(previewDom);
             previewDom.AddPublishClassToBody("preview");
