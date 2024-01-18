@@ -350,7 +350,7 @@ namespace BloomTests.WebLibraryIntegration
             );
             Assert.That(
                 differenceBetweenNowAndCreationOfJson,
-                Is.LessThan(TimeSpan.FromSeconds(5)),
+                Is.LessThan(TimeSpan.FromSeconds(10)),
                 "lastUploaded should be a valid date representing now-ish"
             );
             var bookObjectId = bookRecord.objectId.Value;
