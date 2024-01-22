@@ -1964,16 +1964,6 @@
         <target xml:lang="pbu" state="final">، </target>
         <note>ID: EditTab.FrontMatter.ListSeparator</note>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.MarkTheBookEnd" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Something to tell the reader/viewer that this is the end of the book.</source>
-        <target xml:lang="pbu" state="final">هغه څه چې بايد لوستونکي او يا هم کتونکي ته وويل شي دادي چې دا د کتاب پای دی.</target>
-        <note>ID: EditTab.FrontMatter.MarkTheBookEnd</note>
-      </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.MarkTheVideoEnd" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Something to tell the reader/viewer that this is the end.</source>
-        <target xml:lang="pbu" state="final">هغه څه چې بايد لوستونکي او يا هم کتونکي ته وويل شي دادي چې دا وروستۍ برخه ده.</target>
-        <note>ID: EditTab.FrontMatter.MarkTheVideoEnd</note>
-      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MultipleImageCredit" approved="yes">
         <source xml:lang="en">Images on pages {0} by {1}.</source>
         <target xml:lang="pbu" state="final">پر  {0} پر {1}" پاڼو انځورونه.</target>
@@ -6027,6 +6017,10 @@
         <source xml:lang="en">The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.</source>
         <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.CheckoutRequired" sil:dynamic="true" translate="no">
+        <source xml:lang="en">CheckoutRequired</source>
+        <note>ID: TeamCollection.ConflictingEdit</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.CreateTeamCollection" sil:dynamic="true">
         <source xml:lang="en">Create a Team Collection</source>
         <note>ID: TeamCollection.CreateTeamCollection</note>
@@ -6118,6 +6112,10 @@
         <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckoutRequiredExplanation" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Please check out this book from the Team Collection before publishing it.</source>
+        <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
 -->
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
