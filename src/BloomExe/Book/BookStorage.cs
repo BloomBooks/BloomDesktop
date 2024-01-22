@@ -99,6 +99,8 @@ namespace Bloom.Book
         void MigrateToLevel2RemoveTransparentComicalSvgs();
         void MigrateToLevel3PutImgFirst();
 
+        void MigrateToLevel4UseAppearanceSystem();
+
         CollectionSettings CollectionSettings { get; }
 
         void ReloadFromDisk(string renamedTo, Action betweenReloadAndEvents);
@@ -149,6 +151,7 @@ namespace Bloom.Book
         ///              2 = Remove any 'comical-generated' svgs that are transparent.
         ///				 3 = Ensure main img comes first in image container
         ///   Bloom 5.7 added kMediaMaintenanceLevel so we could distinguish migrations that affect
+        ///   Bloom 5.7  4 = Switched to using a theme (or explicitly using legacy)
         ///   other files (typically images or media) in the book folder from ones that only affect
         ///   the DOM and can safely be done in memory.
         ///       0 = No media maintenance has been done
@@ -3646,6 +3649,37 @@ namespace Bloom.Book
         /// we copy it into the book folder itself, and that's where we should look.
         /// </summary>
         public bool LinkToLocalCollectionStyles { get; set; }
+
+        /// <summary>
+        /// Migrate to the new appearance system if we haven't already tried to do so.
+        /// </summary>
+        public void MigrateToLevel4UseAppearanceSystem()
+        {
+            Guard.Against(!BookInfo.IsSaveable, "We should not even think about migrating a book that is not Saveable");
+            if (GetMaintenanceLevel() < 4)
+            {
+                var cssFiles = GetCssFilesToCheckForAppearanceCompatibility(true);
+                var substituteCssPath = BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(
+                    cssFiles
+                );
+                if (substituteCssPath != null)
+                {
+                    var destPath = Path.Combine(FolderPath, "customBookStyles2.css");
+                    // if we're doing an automatic substitution, we don't expect there to be a customBookStyles2.css already,
+                    // since substitution is used when the source book is NOT in the new appearance format, while
+                    // customBookStyles2.css is only supported in that format.
+                    RobustFile.Copy(substituteCssPath, destPath, false);
+                }
+
+                // This would happen as a side effect of saving the book at the end of updating it, but
+                // we need it to happen before we re-initialize the settings and UpdateSupportFiles so
+                // that the settings knows it is consistent with the state of things on disk, which allows
+                // the right links to be made and the right files copied to the book folder.
+                BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
+                
+                Dom.UpdateMetaElement("maintenanceLevel", "4");
+            }
+        }
 
         /// <summary>
         /// Files that might contain rules that conflict with the new appearance model (currently, that is if they affect
