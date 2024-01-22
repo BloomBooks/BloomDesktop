@@ -392,19 +392,6 @@ namespace Bloom.Book
 
             // "No Topic" localization for Topic Chooser
             AddTranslationToDictionaryUsingKey(d, "Topics.NoTopic", "No Topic");
-
-            // Used in Device-XMatter
-            AddTranslationToDictionaryUsingKey(
-                d,
-                "EditTab.FrontMatter.MarkTheBookEnd",
-                "Something to tell the reader/viewer that this is the end of the book."
-            );
-            // Used in Video-XMatter
-            AddTranslationToDictionaryUsingKey(
-                d,
-                "EditTab.FrontMatter.MarkTheVideoEnd",
-                "Something to tell the reader/viewer that this is the end."
-            );
         }
 
         private static void AddTranslationToDictionaryUsingKey(
