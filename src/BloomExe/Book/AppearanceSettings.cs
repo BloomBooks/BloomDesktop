@@ -371,12 +371,11 @@ public class AppearanceSettings
                 }
                 if (!css.Item1.StartsWith("custom"))
                 {
-                    SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-                        "Unexpectedly found a branding or xmatter CSS not compatible with appearance system: "
+                    var msg = "Unexpectedly found a branding or xmatter CSS not compatible with appearance system: "
                             + css.Item1
                             + " problem rule is: "
-                            + OffendingCssRule
-                    );
+                            + OffendingCssRule;
+                    SIL.Reporting.ErrorReport.NotifyUserOfProblem("{0}", msg);
                     // This shouldn't happen, but is probably the best way to carry on if we must
                     if (CssThemeName != "legacy-5-6")
                     {
