@@ -168,3 +168,35 @@ mixin afg-messagePage
 		+field-prototypeDeclaredExplicity("N1").message
 			//-+hint-bubble(langForBubbles,'','','Message, in {lang}')
 			+editable(kLanguageForPrototypeOnly).message.Message-Page-style(data-book="message")
+
+//- The next two mixins used to be defined in bloom-xmatter-mixins.pug as standard-endExtra3PageForDevice
+//- and standard-theEndPageForDevice.  BL-12969 merged the split outer back cover back together for
+//- standard device xmatter.  We're leaving the split for these special project-specific xmatters to
+//- preserve existing behavior.
+
+mixin afg-endExtra3PageForDevice
+	//- In paper books, this is the outside back cover
+	//- When making a .bloompub, Bloom will remove this if it is empty.
+	+page-xmatter('End Extra 3 ').cover.coverColor.outsideBackCover.bloom-backMatter(data-xmatter-page="outsideBackCover")#898b6622-837b-49cd-9938-2de76f6d4b21
+		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
+		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
+
+mixin afg-theEndPageForDevice
+	+page-xmatter("The End").bloom-backMatter.theEndPage(data-xmatter-page="endPage")#898b6622-837b-49cd-9938-2de76f6d4b22
+		+outside-back-cover-branding-top
+		//- would be nice to use data-collection instead of data-book, but that isn't working in Bloom these
+		//- days (was a version 1-ish feature that never got used, and atrophied).
+		//- When we do have it, that would save typing it in for each book in the Local Language... and ideally it would also overwrite
+		//- the national language here, since typically someone would enter the vernacular and delete the national language.
+
+		//- disabled for now, until we provide a way to (1) enter a new lang without switching to device xmatter
+		//- and (2) save the result in a data-collection variable, so that you don't have to do it for every single book.
+		//- +field("auto")(data-book="end-of-book-label",data-default-languages="V N1", data-hint="Something to tell the reader/viewer that this is the end of the book.")
+		//-	+editable("en")
+		//-		p The End
+		//-	+editable("fr")
+		//-		p FIN
+		//-	+editable("es")
+		//-		p Fin
+
+		+outside-back-cover-branding-bottom
