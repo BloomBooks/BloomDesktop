@@ -343,76 +343,140 @@ namespace BloomTests.Publish
 				@"<div id='bloomDataDiv'>
 					<div data-book='contentLanguage1' lang='*'>xyz</div>
 					<div data-book='contentLanguage2' lang='*'>en</div>
-				</div>");
-			MakeEpub("output", "BookSwitchedToDeviceXMatter", book);
-			// This is a rather crude way to test that it is switched to device XMatter, but we aren't even sure we
-			// really want to do that yet. This at least gets something in there which should fail if we somehow
-			// lose that fix, although currently the failure that happens if I take out the conversion is not
-			// a simple failure of this assert...something goes wrong before that making a real physical file
-			// for the unit test.
-			var currentPage = String.Empty;
-			int pageCount = 0;
-			for (int i = 1; ; ++i)
-			{
-				var entryPath = "content/" + i + ".xhtml";
-				var entry = _epub.GetEntry(entryPath);
-				if (entry == null)
-					break;
-				++pageCount;
-				currentPage = ExportEpubTestsBaseClass.GetZipContent(_epub, entryPath);
-				switch (i)
-				{
-				case 1:
-					CheckPageBreakMarker(currentPage, "pgFrontCover", "Front Cover");
-					break;
-				case 2:
-					CheckPageBreakMarker(currentPage, "pg1", "1");
-					CheckEpubTypeAttributes(currentPage, null);
-					break;
-				case 3:
-					CheckPageBreakMarker(currentPage, "pgTitlePage", "Title Page");
-					CheckEpubTypeAttributes(currentPage, null, "titlepage");
-					break;
-				case 4:
-					CheckPageBreakMarker(currentPage, "pgCreditsPage", "Credits Page");
-					break;
-				case 5:
-					CheckPageBreakMarker(currentPage, "pgTheEnd", "The End");
-					CheckEpubTypeAttributes(currentPage, null);
-					break;
-				default:
-					// We should never get here!
-					Assert.IsTrue(i > 0 && i < 6, "unexpected page number {0} should be between 1 and 5 inclusive", i);
-					break;
-				}
-			}
-			// device xmatter currently has 1 front and a default of 3 back pages, so we should have exactly five pages.
-			Assert.AreEqual(5, pageCount);
-			AssertThatXmlIn.String(currentPage).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'theEndPage')]", 1);
-			var navPageData = CheckNavPage();
-			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml']", _ns, 1);
-			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml']", _ns, 1);
-			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml']", _ns, 1);
-			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml']", _ns, 1);
-			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='6.xhtml']", _ns);
-			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml#pgFrontCover']", _ns, 1);
-			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml#pg1']", _ns, 1);
-			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml#pgTitlePage']", _ns, 1);
-			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml#pgCreditsPage']", _ns, 1);
-			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml#pgTheEnd']", _ns, 1);
-			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[contains(@href, '6.xhtml')]", _ns);
-		}
+					<div data-book='bookTitle' lang='en'>title</div>
+				</div>"
+            );
+            MakeEpub("output", "BookSwitchedToDeviceXMatter", book);
+            // This is a rather crude way to test that it is switched to device XMatter, but we aren't even sure we
+            // really want to do that yet. This at least gets something in there which should fail if we somehow
+            // lose that fix, although currently the failure that happens if I take out the conversion is not
+            // a simple failure of this assert...something goes wrong before that making a real physical file
+            // for the unit test.
+            var currentPage = String.Empty;
+            int pageCount = 0;
+            for (int i = 1; ; ++i)
+            {
+                var entryPath = "content/" + i + ".xhtml";
+                var entry = _epub.GetEntry(entryPath);
+                if (entry == null)
+                    break;
+                ++pageCount;
+                currentPage = ExportEpubTestsBaseClass.GetZipContent(_epub, entryPath);
+                switch (i)
+                {
+                    case 1:
+                        CheckPageBreakMarker(currentPage, "pgFrontCover", "Front Cover");
+                        break;
+                    case 2:
+                        CheckPageBreakMarker(currentPage, "pg1", "1");
+                        CheckEpubTypeAttributes(currentPage, null);
+                        break;
+                    case 3:
+                        CheckPageBreakMarker(currentPage, "pgTitlePage", "Title Page");
+                        CheckEpubTypeAttributes(currentPage, null, "titlepage");
+                        break;
+                    case 4:
+                        CheckPageBreakMarker(currentPage, "pgCreditsPage", "Credits Page");
+                        break;
+                    case 5:
+                        CheckPageBreakMarker(currentPage, "pgOutsideBackCover", "Outside Back Cover");
+                        CheckEpubTypeAttributes(currentPage, null);
+                        break;
+                    default:
+                        // We should never get here!
+                        Assert.IsTrue(
+                            i > 0 && i < 6,
+                            "unexpected page number {0} should be between 1 and 5 inclusive",
+                            i
+                        );
+                        break;
+                }
+            }
+            // device xmatter currently has 1 front and a default of 3 back pages, so we should have exactly five pages.
+            Assert.AreEqual(5, pageCount);
+            AssertThatXmlIn
+                .String(currentPage)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'outsideBackCover')]", 1);
+            AssertThatXmlIn
+                .String(currentPage)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'theEndPage')]", 0);
+            var navPageData = CheckNavPage();
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasNoMatchForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='6.xhtml']",
+                    _ns
+                );
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml#pgFrontCover']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml#pg1']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml#pgTitlePage']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml#pgCreditsPage']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml#pgOutsideBackCover']",
+                    _ns,
+                    1
+                );
+            AssertThatXmlIn
+                .String(navPageData)
+                .HasNoMatchForXpath(
+                    "xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[contains(@href, '6.xhtml')]",
+                    _ns
+                );
+        }
 
 		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
 		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
