@@ -146,18 +146,21 @@ namespace Bloom.Book
         /// These constants are not currently actually used in code, but indicate the largest
         /// number currently used for some DOM metadata elements that keep track of how much
         /// a book has been migrated.
-        /// History of these numbers:
+        /// History of kMaintenanceLevel:
         ///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size.
         ///              2 = Remove any 'comical-generated' svgs that are transparent.
         ///				 3 = Ensure main img comes first in image container
-        ///   Bloom 5.7 added kMediaMaintenanceLevel so we could distinguish migrations that affect
-        ///   Bloom 5.7  4 = Switched to using a theme (or explicitly using legacy)
+        ///   (Bloom 5.7 added kMediaMaintenanceLevel so we could distinguish migrations that affect
         ///   other files (typically images or media) in the book folder from ones that only affect
-        ///   the DOM and can safely be done in memory.
-        ///       0 = No media maintenance has been done
-        ///       1 = maintenanceLevel at least 1 (so images are opaque and not too big)
+        ///   the DOM and can safely be done in memory. (Later in 5.7 we stopped doing incomplete
+        ///   book updates in memory, so this distinction may no longer be helpful.))
+        ///   Bloom 5.7  4 = Switched to using a theme (or explicitly using legacy)
+        /// History of kMediaMaintenanceLevel (introduced in 5.7)
+        ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
+        ///              0 = No media maintenance has been done
+        ///   Bloom 5.7: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 3;
+        public const int kMaintenanceLevel = 4;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -3655,7 +3658,10 @@ namespace Bloom.Book
         /// </summary>
         public void MigrateToLevel4UseAppearanceSystem()
         {
-            Guard.Against(!BookInfo.IsSaveable, "We should not even think about migrating a book that is not Saveable");
+            Guard.Against(
+                !BookInfo.IsSaveable,
+                "We should not even think about migrating a book that is not Saveable"
+            );
             if (GetMaintenanceLevel() < 4)
             {
                 var cssFiles = GetCssFilesToCheckForAppearanceCompatibility(true);
@@ -3676,7 +3682,7 @@ namespace Bloom.Book
                 // that the settings knows it is consistent with the state of things on disk, which allows
                 // the right links to be made and the right files copied to the book folder.
                 BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
-                
+
                 Dom.UpdateMetaElement("maintenanceLevel", "4");
             }
         }
