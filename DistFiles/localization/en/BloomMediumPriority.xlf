@@ -324,6 +324,21 @@
         <source xml:lang="en">Problem</source>
         <note>CollectionTab.OnBlorgBadge.Problem</note>
       </trans-unit>
+      <trans-unit id="BookSettings.LockedByBranding" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Locked by {0} Branding</source>
+        <note>BookSettings.LockedByBranding</note>
+        <note>{0} is the name of a Branding pack</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LockedByLegacy" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Locked by Legacy-5-6 theme</source>
+        <note>BookSettings.LockedByLegacy</note>
+        <note>{0} is the name of a Branding pack</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LockedByXMatter" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Locked by {0} Front/Back matter</source>
+        <note>BookSettings.LockedByXMatter</note>
+        <note>{0} is the name of an xmatter pack</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Title" sil:dynamic="true">
         <source xml:lang="en">Book Settings</source>
         <note>BookSettings.Title</note>

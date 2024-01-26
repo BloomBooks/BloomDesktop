@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -79,6 +80,9 @@ namespace Bloom.Book
         void CleanupUnusedAudioFiles(bool isForPublish, HashSet<string> langsToExcludeAudioFor);
         void CleanupUnusedVideoFiles();
         void CleanupUnusedActivities();
+
+        ExpandoObject XmatterAppearanceSettings { get; }
+        ExpandoObject BrandingAppearanceSettings { get; }
 
         BookInfo BookInfo { get; set; }
         string NormalBaseForRelativepaths { get; }
@@ -1818,7 +1822,7 @@ namespace Bloom.Book
 
                 // Branding images are handled in a special way in BrandingApi.cs.
                 // Without this, we get "Warning: Image /bloom/api/branding/image is missing from the folder xxx" (see BL-3975)
-                if (imageFileName.EndsWith(BrandingSettings.kBrandingImageUrlPart))
+                if (imageFileName.EndsWith(Bloom.Api.BrandingSettings.kBrandingImageUrlPart))
                     continue;
 
                 //trim off the end of "license.png?123243"
@@ -2494,8 +2498,7 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Update our cache to contain all the support files, so Save will update all of them.
-        /// May also note some that should be deleted when we can Save.
+        /// Update our book folder to contain all the support files that should be copied there.
         /// </summary>
         public void UpdateSupportFiles()
         {
@@ -2575,7 +2578,20 @@ namespace Bloom.Book
             }
 
             LoadCurrentBrandingFilesIntoBookFolder();
+            BookInfo.AppearanceSettings.WriteCssToFolder(
+                FolderPath,
+                BrandingAppearanceSettings,
+                XmatterAppearanceSettings
+            );
         }
+
+        public ExpandoObject XmatterAppearanceSettings =>
+            XMatterSettings.GetSettingsOrNull(XMatterHelper.PathToXMatterSettings)?.Appearance;
+
+        public ExpandoObject BrandingAppearanceSettings =>
+            Api.BrandingSettings
+                .GetSettingsOrNull(CollectionSettings.BrandingProjectKey)
+                ?.Appearance;
 
         // Brandings come with logos and such... we want them in the book folder itself so that they work
         // apart from Bloom and in web browsing, ePUB, and BloomPUB contexts.

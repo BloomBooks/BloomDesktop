@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
@@ -84,6 +85,9 @@ namespace Bloom.Api
         {
             [JsonProperty("presets")]
             public PresetItem[] Presets;
+
+            [JsonProperty("appearance")]
+            public ExpandoObject Appearance;
 
             public string GetXmatterToUse()
             {
