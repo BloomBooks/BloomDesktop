@@ -325,13 +325,25 @@ div.bloomPlayer-page {
    Rules for HalfLetterPortrait
    ----------------------------------------------------------------------------*/
 // this template is meant for half-letter portrait pages
+.HalfLetterPortrait.bloom-page {
+    --cover-margin-top: 0.5in;
+    --cover-margin-bottom: 0.4in;
+    --page-margin-top: 0.5in;
+    --page-margin-left: 0.5in;
+    --page-margin-right: 0.5in;
+    --page-margin-bottom: 0.4in;
+    &.frontCover {
+        --cover-margin-top: 0.4in;
+        --cover-margin-bottom: 0.5in;
+    }
+    &.numberedPage {
+        --pageNumber-bottom: 20px;
+        --pageNumber-right-margin: 0.6in;
+        --pageNumber-left-margin: 0.6in;
+    }
+}
 .HalfLetterPortrait {
     .marginBox {
-        top: 0.5in !important;
-        left: 0.5in !important;
-        width: (@halfLetterPageWidth - 1in) !important;
-        height: (@halfLetterPageHeight - 0.9in) !important;
-
         img {
             // Override a rather persistent base rule that wanted to take into account gutter
             // margins that we aren't using. This would have made the image skinnier and left-justified,
@@ -341,7 +353,7 @@ div.bloomPlayer-page {
     }
 
     &.frontCover .marginBox {
-        top: 0.4in !important; // leave room for inevitable font space above title
+        // top: 0.4in !important; // leave room for inevitable font space above title
 
         .bottomBlock,
         .bottomTextContent,

@@ -171,3 +171,12 @@
     --page-margin-left: 0;
     --pageNumber-font-size: 0; /* review will this work to hide it? */
 }
+
+/* copied from MXBCommon-XMatter.css since they care about this page size */
+.HalfLetterPortrait {
+    --page-margin-top: 15mm;
+    --page-margin-bottom: 15mm;
+    --page-margin-left: 15mm;
+    --page-margin-right: 15mm;
+    --page-gutter: 10mm;    /* same as  @ExtraSpaceForBinding in old bookLayout/common-mixins.less */
+}
