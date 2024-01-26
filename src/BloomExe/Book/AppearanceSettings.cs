@@ -92,12 +92,14 @@ public class AppearanceSettings
     // Instance is typically created using UpdateFromFolder, which will set this to true if it found and loaded
     // an existing appearance.json file.
     // It is therefore false if the books is, or was created from, a book created by an earlier version of Bloom
-    // that does not use the appearance system. Such books are forced into the legacy-5-6 theme, except possibly
-    // when deriving a new book from them.
+    // that does not use the appearance system. Such books are forced into the legacy-5-6 theme, unless they
+    // are Saveable, in which case, Book.EnsureUpToDate will migrate them (possibly still using the legacy-5-6 theme
+    // explicitly).
     // It can also be set when WriteToFolder() updates the appearance files to be consistent with the current settings.
     // This only gets called if Bloom is allowed to make changes to the folder, so it remains false
     // if we are loading a legacy book in a folder we can't write.
     private bool _areSettingsConsistentWithFiles;
+
     public bool IsInitialized { get; private set; }
 
     // create an array of properties and fill it in
@@ -257,19 +259,14 @@ public class AppearanceSettings
     }
 
     /// <summary>
-    /// Given a list of CSS files from a new book, typically customBookStyles.css and customCollectionStyles.css,
+    /// Given a list of CSS files from pre-5.7 book, typically customBookStyles.css and customCollectionStyles.css,
     /// decide what theme the book should use, and if we need a specialized customBookStyles2.css file,
     /// return a path to the file that should be copied there.
     /// Also leaves this object in a state where it represents the settings that should be written to appearance.json.
     /// </summary>
     public string GetThemeAndSubstituteCss(Tuple<string, string>[] cssFilesToCheck)
     {
-        // This is currently only used when creating a new book. If the source book was already in the Appearance/Theme system,
-        // it will have an appearance.json file, and we will stick with whatever theme and related settings
-        // the original book had.
-        if (_areSettingsConsistentWithFiles)
-            return null;
-        // Otherwise, cssThemeName will already be set to "legacy-5-6" by UpdateFromFolder, but for new books we want to
+        // cssThemeName will already be set to "legacy-5-6" by UpdateFromFolder, but for new books we want to
         // try to use the default or some substitute them, and only switch back to the legacy theme,
         // if we don't know of a substitute theme and its associated customBookStyles2.css file.
         CssThemeName = "default";

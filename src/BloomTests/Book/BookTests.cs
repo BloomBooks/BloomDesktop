@@ -312,6 +312,67 @@ namespace BloomTests.Book
             Assert.That(img.Attributes["alt"].Value, Is.EqualTo("Bird with wings stretched wide"));
         }
 
+
+        [Test]
+        public void CreateBookOnDiskFromTemplate_NoPossiblyConflictingCss_MigratesToDefaultTheme()
+        {
+            var body =
+                @"<div class='bloom-page'>
+						<div class='bloom-translationGroup'>
+						 <div lang='en'>This is some English</div>
+						</div>
+					</div>";
+            var book = CreateBookWithPhysicalFile(body, true);
+
+            var appearanceSettings = book.BookInfo.AppearanceSettings;
+            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("default"));
+
+            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']", 1);
+            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='appearance.css']", 1);
+        }
+
+        [Test]
+        public void CreateBookOnDiskFromTemplate_KnownConflictingCss_MigratesToKnownTheme()
+        {
+            var body =
+                @"<div class='bloom-page'>
+						<div class='bloom-translationGroup'>
+						 <div lang='en'>This is some English</div>
+						</div>
+					</div>";
+            var book = CreateBookWithPhysicalFile(body, false);
+            var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
+            File.WriteAllText(cssPath, AppearanceMigratorTests.cssThatTriggersPurpleRoundedTheme);
+            book.EnsureUpToDate();
+
+            var appearanceSettings = book.BookInfo.AppearanceSettings;
+            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("purple-rounded"));
+
+            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']", 1);
+            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='appearance.css']", 1);
+        }
+
+        [Test]
+        public void CreateBookOnDiskFromTemplate_UnknownConflictingCss_StaysWithLegacy()
+        {
+            var body =
+                @"<div class='bloom-page'>
+						<div class='bloom-translationGroup'>
+						 <div lang='en'>This is some English</div>
+						</div>
+					</div>";
+            var book = CreateBookWithPhysicalFile(body, false);
+            var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
+            File.WriteAllText(cssPath, @".marginBox {left: 40px;}");
+            book.EnsureUpToDate();
+
+            var appearanceSettings = book.BookInfo.AppearanceSettings;
+            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("legacy-5-6"));
+
+            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage-legacy-5-6.css']", 1);
+            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasNoMatchForXpath("//link[@href='appearance.css']");
+        }
+
         [Test]
         public void BringBookUpToDate_EmbeddedEncodedXmlImgTagRemoved()
         {

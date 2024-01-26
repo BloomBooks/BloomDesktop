@@ -191,10 +191,10 @@ namespace BloomTests.CLI
             Debug.Write(File.ReadAllText(_eventualHtmlPath));
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(File.ReadAllText(_eventualHtmlPath));
 
-            // HydrateBookCommand brings book up to date but not to the theme system.
+            // HydrateBookCommand brings book up to date and (unless there is conflicting CSS) to the theme system.
             AssertThatXmlIn
                 .Dom(dom)
-                .HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage-legacy-5-6.css']", 1);
+                .HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']", 1);
 
             AssertThatXmlIn
                 .Dom(dom)

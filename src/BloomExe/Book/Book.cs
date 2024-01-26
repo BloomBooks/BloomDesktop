@@ -1695,11 +1695,12 @@ namespace Bloom.Book
 
             // These (and maybe other stuff) could be avoided when updating a copy of an up-to-date book,
             // but it takes almost no time when the book IS already up-to-date.
-            // These three methods work with the same book metadata to determine what migration has
+            // These methods work with the same book metadata to determine what migration has
             // already been done, so they must be called in exactly this order.
             Storage.MigrateMaintenanceLevels();
             Storage.MigrateToMediaLevel1ShrinkLargeImages();
             Storage.MigrateToLevel3PutImgFirst();
+            Storage.MigrateToLevel4UseAppearanceSystem();
 
             // Enhance: there's probably some case where this will get unnecessarily repeated,
             // but I think it would only be in the very rare case of repeatedly needing to update
@@ -1708,7 +1709,7 @@ namespace Bloom.Book
 
             // Make sure the appearance settings are initialized for the current state of things.
             // This should be done before UpdateSupportFiles, because those settings affect
-            // what files are put in the cache.
+            // what files are copied to the book folder.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
             BookInfo.AppearanceSettings.Initialize(cssFiles);
             UpdateSupportFiles();

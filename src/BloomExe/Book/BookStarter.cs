@@ -314,22 +314,7 @@ namespace Bloom.Book
 
             ClearAwayDraftText(storage.Dom.RawDom);
 
-            storage.UpdateSupportFiles(); // Copy branding files etc.
-            // We need to do this before we save the book, because it Saving will write the appearance settings,
-            // destroying the information we need about whether the book already had some.
-            var cssFiles = storage.GetCssFilesToCheckForAppearanceCompatibility(true);
-            var substituteCssPath = storage.BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(
-                cssFiles
-            );
-            if (substituteCssPath != null)
-            {
-                var destPath = Path.Combine(storage.FolderPath, "customBookStyles2.css");
-                // if we're doing an automatic substitution, we don't expect there to be a customBookStyles2.css already,
-                // since substitution is used when the source book is NOT in the new appearance format, while
-                // customBookStyles2.css is only supported in that format.
-                RobustFile.Copy(substituteCssPath, destPath, false);
-            }
-
+            storage.UpdateSupportFiles();
             try
             {
                 storage.Save();
