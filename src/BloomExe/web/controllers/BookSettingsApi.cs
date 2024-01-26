@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
@@ -45,10 +47,30 @@ namespace Bloom.Api
                 false
             );
             apiHandler.RegisterEndpointHandler(
+                "book/settings/overrides",
+                HandleGetOverrides,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
                 "book/settings/deleteCustomBookStyles",
                 HandleDeleteCustomBookStyles,
                 false
             );
+        }
+
+        private void HandleGetOverrides(ApiRequest request)
+        {
+            var x = new ExpandoObject() as IDictionary<string, object>;
+            // The values set here should correspond to the declaration of IOverrideValues
+            // in BookSettingsDialog.tsx.
+            x["branding"] = _bookSelection.CurrentSelection.Storage.BrandingAppearanceSettings;
+            x["xmatter"] = _bookSelection.CurrentSelection.Storage.XmatterAppearanceSettings;
+            x["brandingName"] = _bookSelection
+                .CurrentSelection
+                .CollectionSettings
+                .BrandingProjectKey;
+            x["xmatterName"] = _bookSelection.CurrentSelection.CollectionSettings.XMatterPackName;
+            request.ReplyWithJson(JsonConvert.SerializeObject(x));
         }
 
         private void HandleDeleteCustomBookStyles(ApiRequest request)

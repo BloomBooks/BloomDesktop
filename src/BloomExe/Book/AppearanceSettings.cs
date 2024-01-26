@@ -547,6 +547,11 @@ public class AppearanceSettings
         _instances.Remove(bookFolderPath);
     }
 
+    public string GetCssOwnPropsDeclaration(AppearanceSettings parent = null)
+    {
+        return GetCssOwnPropsDeclaration(_properties, parent);
+    }
+
     /// <summary>
     /// Create something like this, with rules for whatever properties are set:
     /// ".bloom-page{
@@ -556,17 +561,19 @@ public class AppearanceSettings
     ///		--cover-languageName-show: none;
     ///	}"
     /// </summary>
-    public string GetCssOwnPropsDeclaration(AppearanceSettings parent = null)
+    public string GetCssOwnPropsDeclaration(dynamic properties, AppearanceSettings parent = null)
     {
+        // it's a big hassle working directly with the ExpandoObject. By casting it this way, you can do the things you expect.
+        var props = ((IDictionary<string, object>)properties);
+
         var cssBuilder = new StringBuilder();
         // Don't be tempted by :root. It doesn't work in Bloom player, because of the way we polyfill scoped styles.
         cssBuilder.AppendLine(".bloom-page {");
-        var overrides = Properties.ContainsKey(kOverrideGroupsArrayKey)
-            ? (System.Collections.Generic.List<object>)Properties[kOverrideGroupsArrayKey]
+        var overrides = props.ContainsKey(kOverrideGroupsArrayKey)
+            ? (System.Collections.Generic.List<object>)props[kOverrideGroupsArrayKey]
             : null;
 
-        //foreach (var property in _properties.Properties())
-        foreach (var property in (IDictionary<string, object>)_properties)
+        foreach (var property in props)
         {
             if (property.Key == kOverrideGroupsArrayKey)
                 continue;
@@ -589,7 +596,7 @@ public class AppearanceSettings
                 if (!string.IsNullOrEmpty(definition.OverrideGroup))
                 {
                     // if _properties has a value for kOverrideGroupListPropertyKey
-                    if (Properties.ContainsKey(kOverrideGroupsArrayKey))
+                    if (props.ContainsKey(kOverrideGroupsArrayKey))
                     {
                         // but that group is not listed as something to override...
                         if (overrides == null || !overrides.Contains(definition.OverrideGroup))
@@ -642,16 +649,6 @@ public class AppearanceSettings
     /// </summary>
     public void WriteToFolder(string folder)
     {
-        var targetPath = AppearanceCssPath(folder);
-
-        if (Program.RunningHarvesterMode && RobustFile.Exists(targetPath))
-        {
-            // Would overwrite, but overwrite not allowed in Harvester mode.
-            // Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
-            return;
-        }
-
-        RobustFile.WriteAllText(targetPath, ToCss());
         var settings = new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Ignore,
@@ -661,13 +658,39 @@ public class AppearanceSettings
             */
         };
 
+        var jsonPath = AppearanceJsonPath(folder);
+        if (Program.RunningHarvesterMode && RobustFile.Exists(jsonPath))
+        {
+            // Would overwrite, but overwrite not allowed in Harvester mode.
+            // Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
+            return;
+        }
+
         var s = JsonConvert.SerializeObject(_properties, settings);
 
-        RobustFile.WriteAllText(AppearanceJsonPath(folder), s);
+        RobustFile.WriteAllText(jsonPath, s);
         _areSettingsConsistentWithFiles = true;
     }
 
-    public String ToCss()
+    public void WriteCssToFolder(
+        string folder,
+        dynamic brandingJson = null,
+        dynamic xmatterJson = null
+    )
+    {
+        var cssPath = AppearanceCssPath(folder);
+
+        if (Program.RunningHarvesterMode && RobustFile.Exists(cssPath))
+        {
+            // Would overwrite, but overwrite not allowed in Harvester mode.
+            // Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
+            return;
+        }
+
+        RobustFile.WriteAllText(cssPath, ToCss(brandingJson, xmatterJson));
+    }
+
+    public String ToCss(dynamic brandingJson = null, dynamic xmatterJson = null)
     {
         var cssBuilder = new StringBuilder();
 
@@ -709,6 +732,17 @@ public class AppearanceSettings
         // Add in all the user's settings
         cssBuilder.AppendLine("/* From this book's appearance settings */");
         cssBuilder.AppendLine(GetCssOwnPropsDeclaration(null));
+        if (brandingJson != null)
+        {
+            cssBuilder.AppendLine("/* From branding.json */");
+            cssBuilder.AppendLine(GetCssOwnPropsDeclaration(brandingJson));
+        }
+
+        if (xmatterJson != null)
+        {
+            cssBuilder.AppendLine("/* From xmatter.json */");
+            cssBuilder.AppendLine(GetCssOwnPropsDeclaration(xmatterJson));
+        }
         return cssBuilder.ToString();
     }
 
