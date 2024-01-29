@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using Bloom.Book;
 using BloomTemp;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -45,6 +47,66 @@ namespace BloomTests.Book
             Assert.That(
                 appearance.GetCssOwnPropsDeclaration(),
                 Does.Contain("--cover-title-L2-show: none;")
+            );
+        }
+
+        [Test]
+        public void GetCssOwnPropsDeclaration_WithBrandingAndXmatter_ProducesCorrectCss()
+        {
+            var appearance = new AppearanceSettings();
+            dynamic brandingSettings = JsonConvert.DeserializeObject<ExpandoObject>(
+                @"{
+  ""cover-title-L2-show"": false,
+  ""cover-title-L3-show"": true,
+  ""cover-topic-show"": false,
+  ""cover-languageName-show"": false
+}"
+            );
+
+            dynamic xmatterSettings = JsonConvert.DeserializeObject<ExpandoObject>(
+                @"{
+  ""cover-topic-show"": true
+}"
+            );
+
+            var css = appearance.ToCss(
+                brandingJson: brandingSettings,
+                xmatterJson: xmatterSettings
+            );
+            var parts = css.Split(
+                new[] { "/* From xmatter.json */" },
+                StringSplitOptions.RemoveEmptyEntries
+            );
+            var xmatterCss = parts[1];
+            parts = parts[0].Split(
+                new[] { "/* From branding.json */" },
+                StringSplitOptions.RemoveEmptyEntries
+            );
+            var brandingCss = parts[1];
+            parts = parts[0].Split(
+                new[] { "/* From this book's appearance settings */" },
+                StringSplitOptions.RemoveEmptyEntries
+            );
+            ;
+            var ownCss = parts[1];
+
+            Assert.That(
+                ownCss,
+                Does.Contain("--cover-title-L2-show: doShow-css-will-ignore-this-and-use-default;")
+            );
+            Assert.That(ownCss, Does.Contain($"--cover-title-L3-show: none"));
+
+            Assert.That(brandingCss, Does.Contain($"--cover-title-L2-show: none"));
+
+            Assert.That(
+                brandingCss,
+                Does.Contain("--cover-title-L3-show: doShow-css-will-ignore-this-and-use-default;")
+            );
+            Assert.That(brandingCss, Does.Contain("--cover-topic-show: none;"));
+
+            Assert.That(
+                xmatterCss,
+                Does.Contain("--cover-topic-show: doShow-css-will-ignore-this-and-use-default;")
             );
         }
 
@@ -267,6 +329,7 @@ namespace BloomTests.Book
             var jsonSettings = Newtonsoft.Json.Linq.JObject.Parse("{\"page-margin-top\":\"15mm\"}");
             _settings.UpdateFromJson(jsonSettings.ToString());
             _settings.WriteToFolder(_bookFolder);
+            _settings.WriteCssToFolder(_bookFolder);
             _resultingAppearance = new AppearanceSettings();
             _resultingAppearance.UpdateFromFolder(_bookFolder);
             _resultingAppearance.Initialize(

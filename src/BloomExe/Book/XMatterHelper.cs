@@ -100,6 +100,7 @@ namespace Bloom.Book
                 throw new ApplicationException();
             }
             PathToXMatterStylesheet = directoryPath.CombineForPath(GetStyleSheetFileName());
+            PathToXMatterSettings = directoryPath.CombineForPath("xmatter.json");
             if (!RobustFile.Exists(PathToXMatterStylesheet))
             {
                 ErrorReport.NotifyUserOfProblem(
@@ -267,6 +268,8 @@ namespace Bloom.Book
         /// The location of the stylesheet for the selected xmatter pack.
         /// </summary>
         public string PathToXMatterStylesheet { get; set; }
+
+        public string PathToXMatterSettings { get; }
 
         /// <summary>
         /// This exists in an XMatter-pack folder, which we infer from this file location.
