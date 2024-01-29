@@ -323,7 +323,10 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                     form {
                         overflow-y: scroll;
                         height: 600px;
-                        width: 600px;
+                        // This odd width was chosen to make the customBookStyles alert box format nicely.
+                        // See BL-12956. It's not that important, but I don't think anything else is affected
+                        // much by the exact witdh.
+                        width: 638px;
                         #groups {
                             margin-right: 10px; // make room for the scrollbar
                         }
@@ -390,37 +393,39 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             {firstPossiblyLegacyCss ===
                                 "customBookStyles.css" &&
                                 theme !== "legacy-5-6" && (
-                                    <div>
-                                        <NoteBox>
+                                    <NoteBox>
+                                        <div>
                                             {`The "customBookStyles.css" stylesheet of this book is incompatible with
                                     modern themes. Bloom is currently ignoring it. If you don't need those
                                     customizations any more, you can delete your customBookStyles.css. Click (TODO) for more information.`}
-                                        </NoteBox>
-
-                                        <div
-                                            css={css`
-                                                display: flex;
-                                                align-items: center;
-                                                margin-top: 10px;
-                                                margin-bottom: 10px;
-                                            `}
-                                            onClick={() =>
-                                                deleteCustomBookStyles()
-                                            }
-                                        >
-                                            <TrashIcon
-                                                id="trashIcon"
-                                                color="primary"
-                                            />
                                             <div
                                                 css={css`
-                                                    color: ${kBloomBlue};
+                                                    display: flex;
+                                                    align-items: center;
+                                                    // The way it comes out in English, we'd be better off without this, or even
+                                                    // some negative margin. But a translation may produce a last line of the
+                                                    // main message
+                                                    margin-top: 2px;
+                                                    justify-content: flex-end;
                                                 `}
+                                                onClick={() =>
+                                                    deleteCustomBookStyles()
+                                                }
                                             >
-                                                Delete customBookStyles.css
+                                                <TrashIcon
+                                                    id="trashIcon"
+                                                    color="primary"
+                                                />
+                                                <div
+                                                    css={css`
+                                                        color: ${kBloomBlue};
+                                                    `}
+                                                >
+                                                    Delete customBookStyles.css
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </NoteBox>
                                 )}
                             {firstPossiblyLegacyCss &&
                                 firstPossiblyLegacyCss !==
