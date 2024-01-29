@@ -79,43 +79,6 @@ interface IOverrideInformation {
     brandingName: string;
     xmatterName: string;
 }
-// We derive a list of these from the ILockInformation and theme, organized so the one that
-// should win is first.
-type OverrideValue = {
-    localizedSourceDescription: string; // name like "Locked by Mexico Branding"
-    path: string;
-    value: unknown;
-};
-
-// This is a wrapper around ConfigrBoolean that handles a list of possible overrides,
-// an invokes ConfigrBoolean with the appropriate one if any
-// Overrides contains a list of overrides in effect. If one of them contains our path,
-// we show its value (and description) instead of the one in settings.
-const OverrideConfigrBoolean: React.FunctionComponent<{
-    disabled: boolean;
-    path: string;
-    label: string;
-    description?: string;
-    overrides: OverrideValue[];
-}> = props => {
-    // Are there any overrides that apply to this path? We take the first one if so.
-    const override = props.overrides.find(x => x.path === props.path);
-    const overrideValue = override?.value as boolean;
-    console.log(`path: ${props.path} overrideValue: ${overrideValue}`);
-
-    return (
-        <>
-            <ConfigrBoolean
-                disabled={props.disabled}
-                overrideValue={overrideValue}
-                overrideDescription={override?.localizedSourceDescription}
-                path={props.path}
-                label={props.label}
-                description={props.description}
-            />
-        </>
-    );
-};
 
 export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const {
@@ -141,10 +104,46 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         xmatterName: "",
         brandingName: ""
     });
+    const xmatterDescription = useL10n(
+        "Locked by {0} Front/Back matter",
+        "BookSettings.LockedByXMatter",
+        "",
+        overrideInformation?.xmatterName
+    );
 
-    const [overrideValuesArray, setOverrideValuesArray] = React.useState<
-        OverrideValue[]
-    >([]);
+    const brandingDescription = useL10n(
+        "Locked by {0} Branding",
+        "BookSettings.LockedByBranding",
+        "",
+        overrideInformation?.brandingName
+    );
+
+    // This is a helper function to make it easier to pass the override information
+    function getAdditionalProps<T>(subPath: string) {
+        // some properties will be overridden by branding and/or xmatter
+        const xmatterOverride: T | undefined =
+            overrideInformation?.xmatter?.[subPath];
+        const brandingOverride = overrideInformation?.branding?.[subPath];
+        const override = xmatterOverride ?? brandingOverride;
+        // nb: xmatterOverride can be boolean, hence the need to spell out !==undefined
+        let description =
+            xmatterOverride !== undefined ? xmatterDescription : undefined;
+        if (!description) {
+            // xmatter wins if both are present
+            description =
+                brandingOverride !== undefined
+                    ? brandingDescription
+                    : undefined;
+        }
+        // make a an object that can be spread as props in any of the Configr controls
+        return {
+            path: "appearance." + subPath,
+            disabled: appearanceDisabled,
+            overrideValue: override as T,
+            // if we're disabling all appearance controls (e.g. because we're in legacy), don't list a second reason for this overload
+            overrideDescription: appearanceDisabled ? "" : description
+        };
+    }
 
     const [settingsString] = useApiStringState(
         "book/settings",
@@ -175,88 +174,6 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         ""
     );
 
-    const legacyThemeDescription = useL10n(
-        "Locked by Legacy-5-6 theme",
-        "BookSettings.LockedByLegacy"
-    );
-
-    const xmatterDescription = useL10n(
-        "Locked by {0} Front/Back matter",
-        "BookSettings.LockedByXMatter",
-        "",
-        overrideInformation?.xmatterName
-    );
-
-    const brandingDescription = useL10n(
-        "Locked by {0} Branding",
-        "BookSettings.LockedByBranding",
-        "",
-        overrideInformation?.brandingName
-    );
-
-    React.useEffect(() => {
-        if (theme === "legacy-5-6") {
-            // Enhance: really, in legacy, the visibility is controlled by the xmatter.
-            // - languageName and topic are always shown, unless the particular xmatter leaves them out
-            // - title usually shows L2 and not L3, but can show both or neither, depending on the value
-            // in data-default-languages-legacy.
-            // But this is about what the new dialog shows when the book is in a state such that it
-            // can't use the new appearance settings, so maybe it's good enough to hard-code the defaults?
-            setOverrideValuesArray([
-                {
-                    path: "appearance.cover-title-L2-show",
-                    value: true,
-                    localizedSourceDescription: legacyThemeDescription
-                },
-                {
-                    path: "appearance.cover-title-L3-show",
-                    value: false,
-                    localizedSourceDescription: legacyThemeDescription
-                },
-                {
-                    path: "appearance.cover-languageName-show",
-                    value: true,
-                    localizedSourceDescription: legacyThemeDescription
-                },
-                {
-                    path: "appearance.cover-topic-show",
-                    value: true,
-                    localizedSourceDescription: legacyThemeDescription
-                }
-            ]);
-            return;
-        }
-
-        setOverrideValuesArray(
-            Object.entries(overrideInformation.xmatter ?? {})
-                // putting xmatter first means they win, if both contain the same prop.
-                .map(([key, value]) => {
-                    return {
-                        localizedSourceDescription: xmatterDescription,
-                        path: "appearance." + key,
-                        value: value
-                    };
-                })
-                .concat(
-                    Object.entries(overrideInformation.branding ?? {}).map(
-                        ([key, value]) => {
-                            return {
-                                localizedSourceDescription: brandingDescription,
-                                path: "appearance." + key,
-                                value: value
-                            };
-                        }
-                    )
-                )
-        );
-    }, [
-        brandingDescription,
-        legacyThemeDescription,
-        overrideInformation,
-        theme,
-        xmatterDescription
-    ]);
-
     React.useEffect(() => {
         if (settingsString === "{}") {
             return; // leave settings as undefined
@@ -278,6 +195,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     React.useEffect(() => {
         if (settings && (settings as any).appearance) {
             const liveSettings = settingsToReturnLater || settings;
+            // when we're in legacy, we're just going to disable all the appearance controls
             setAppearanceDisabled(
                 (liveSettings as any)?.appearance?.cssThemeName === "legacy-5-6"
             );
@@ -462,29 +380,29 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 label="What to Show on Cover"
                                 path={`appearance`}
                             >
-                                <OverrideConfigrBoolean
-                                    disabled={appearanceDisabled}
-                                    path={`appearance.cover-title-L2-show`}
+                                <ConfigrBoolean
                                     label="Show Written Language 2 Title"
-                                    overrides={overrideValuesArray}
+                                    {...getAdditionalProps<boolean>(
+                                        "cover-title-L2-show"
+                                    )}
                                 />
-                                <OverrideConfigrBoolean
-                                    disabled={appearanceDisabled}
-                                    path={`appearance.cover-title-L3-show`}
+                                <ConfigrBoolean
                                     label="Show Written Language 3 Title"
-                                    overrides={overrideValuesArray}
+                                    {...getAdditionalProps<boolean>(
+                                        `cover-title-L3-show`
+                                    )}
                                 />
-                                <OverrideConfigrBoolean
-                                    disabled={appearanceDisabled}
-                                    path={`appearance.cover-languageName-show`}
+                                <ConfigrBoolean
                                     label="Show Language Name"
-                                    overrides={overrideValuesArray}
+                                    {...getAdditionalProps<boolean>(
+                                        `cover-languageName-show`
+                                    )}
                                 />
-                                <OverrideConfigrBoolean
-                                    disabled={appearanceDisabled}
-                                    path={`appearance.cover-topic-show`}
+                                <ConfigrBoolean
                                     label="Show Topic"
-                                    overrides={overrideValuesArray}
+                                    {...getAdditionalProps<boolean>(
+                                        `cover-topic-show`
+                                    )}
                                 />
                             </ConfigrSubgroup>
 
