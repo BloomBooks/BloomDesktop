@@ -153,11 +153,14 @@
     --page-margin-left: 10mm;
 }
 
-.Device16x9Portrait {
+.Device16x9Portrait,
+.Device16x9Landscape {
     --page-margin-top: 10px;
     --page-margin-bottom: 45px; /* need room for page number, so not as small as others */
     --page-margin-right: 10px;
     --page-margin-left: 10px;
+    --cover-margin-top: 10px; /* page-margin-top does not affect cover */
+    --cover-margin-bottom: 10px; /* don't need room for page number on cover */
 }
 
 .no-margin-page,
