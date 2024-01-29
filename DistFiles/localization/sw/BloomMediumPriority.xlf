@@ -347,6 +347,21 @@
         <target xml:lang="sw" state="needs-translation">Problem</target>
         <note>CollectionTab.OnBlorgBadge.Problem</note>
       </trans-unit>
+      <trans-unit id="BookSettings.LockedByBranding" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Locked by {0} Branding</source>
+        <target xml:lang="sw" state="needs-translation">Locked by {0} Branding</target>
+        <note>BookSettings.LockedByBranding</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LockedByLegacy" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Locked by Legacy-5-6 theme</source>
+        <target xml:lang="sw" state="needs-translation">Locked by Legacy-5-6 theme</target>
+        <note>BookSettings.LockedByLegacy</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LockedByXMatter" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Locked by {0} Front/Back matter</source>
+        <target xml:lang="sw" state="needs-translation">Locked by {0} Front/Back matter</target>
+        <note>BookSettings.LockedByXMatter</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Title" sil:dynamic="true">
         <source xml:lang="en">Book Settings</source>
         <target xml:lang="sw" state="needs-translation">Book Settings</target>
