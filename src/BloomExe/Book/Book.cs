@@ -580,6 +580,7 @@ namespace Bloom.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 dom.RawDom,
                 _bookData,
+                BookInfo.AppearanceSettings.UsingLegacy,
                 Language1Tag,
                 Language2Tag,
                 Language3Tag
@@ -2778,7 +2779,7 @@ namespace Bloom.Book
                     if (ElementIsInXMatter(parent))
                         continue;
                     isXmatterOnly = false;
-                    if (IsLanguageWanted(parent, lang) && !HasContentInLang(parent, lang))
+                    if (IsLanguageWantedInContent(parent, lang) && !HasContentInLang(parent, lang))
                     {
                         result[lang] = false; // not complete
                         break; // no need to check other parents.
@@ -2821,7 +2822,14 @@ namespace Bloom.Book
             return false;
         }
 
-        private bool IsLanguageWanted(XmlElement parent, string lang)
+        /// <summary>
+        /// Determines whether the given language bloom-editable is wanted (should be visible, and therefore typically
+        /// published) in the given parent.
+        /// Currently this is reliable only for elements where visibility is controlled by the old data-default-languages
+        /// attribute rather than the new appearance system. It will need enhancement if we ever need to use it for xmatter,
+        /// or for that matter if the appearance system is used to control visibility of something on content pages.
+        /// </summary>
+        private bool IsLanguageWantedInContent(XmlElement parent, string lang)
         {
             var defaultLangs = parent.GetAttribute("data-default-languages");
             if (String.IsNullOrEmpty(defaultLangs) || defaultLangs == "auto")
@@ -3455,6 +3463,7 @@ namespace Bloom.Book
                 TranslationGroupManager.UpdateContentLanguageClasses(
                     newPageDiv,
                     _bookData,
+                    BookInfo.AppearanceSettings.UsingLegacy,
                     Language1Tag,
                     Language2Tag,
                     Language3Tag
@@ -4348,6 +4357,7 @@ namespace Bloom.Book
                 TranslationGroupManager.UpdateContentLanguageClasses(
                     div,
                     _bookData,
+                    BookInfo.AppearanceSettings.UsingLegacy,
                     language1Tag,
                     language2Tag,
                     language3Tag

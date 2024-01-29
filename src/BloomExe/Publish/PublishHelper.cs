@@ -223,10 +223,6 @@ namespace Bloom.Publish
                     if (HasClass(elt, "pageDescription"))
                         elt.ParentNode.RemoveChild(elt);
                 }
-
-                // REVIEW: is this needed now with the new strategy?
-                if (HasClass(elt, "bloom-editable") && HasClass(elt, "bloom-visibility-user-off"))
-                    elt.ParentNode.RemoveChild(elt);
             }
             // Our recordingmd5 attribute is not allowed by epub
             foreach (

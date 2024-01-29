@@ -94,6 +94,10 @@ mixin field-prototypeDeclaredExplicity(languages)
 	- requireOneArgument('field-prototypeDeclaredExplicity', arguments);
 	.bloom-translationGroup(data-default-languages=languages)&attributes(attributes)
 		block
+mixin field-prototypeDeclaredExplicity-legacy(languages)
+	- requireOneArgument('field-prototypeDeclaredExplicity', arguments);
+	.bloom-translationGroup(data-default-languages-legacy=languages)&attributes(attributes)
+		block
 
 //- deprecated. Starting with version 2.0, we've changed how placeholders are handled
 mixin field-version1(placeholder)
