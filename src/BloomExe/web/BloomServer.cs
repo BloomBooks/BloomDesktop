@@ -971,7 +971,10 @@ namespace Bloom.Api
             // but it has nothing to do with css files and defeats the following 'if'
             var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");
             if (
-                localPath.EndsWith("appearance.css")
+                (
+                    localPath.EndsWith("appearance.css")
+                    || localPath.EndsWith("basePage-legacy-5-6.css")
+                )
                 && Assembly.GetExecutingAssembly().GetName().Version < Version.Parse("5.7")
             )
             {
