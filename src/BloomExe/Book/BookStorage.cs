@@ -3475,91 +3475,90 @@ namespace Bloom.Book
         /// </summary>
         public void MigrateToLevel2RemoveTransparentComicalSvgs()
         {
-            if (GetMaintenanceLevel() < 2)
+            if (GetMaintenanceLevel() >= 2)
+                return;
+
+            var comicalSvgs = Dom.SafeSelectNodes(ComicalXpath).Cast<XmlElement>();
+            var elementsToSave = new HashSet<XmlElement>();
+            foreach (var svgElement in comicalSvgs)
             {
-                var comicalSvgs = Dom.SafeSelectNodes(ComicalXpath).Cast<XmlElement>();
-                var elementsToSave = new HashSet<XmlElement>();
-                foreach (var svgElement in comicalSvgs)
+                var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
+                var textOverPictureDivs = container.SelectNodes(
+                    "div[contains(@class, 'bloom-textOverPicture')]"
+                );
+                if (textOverPictureDivs == null) // unlikely, but maybe possible
+                    continue;
+
+                foreach (XmlElement textOverPictureDiv in textOverPictureDivs)
                 {
-                    var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
-                    var textOverPictureDivs = container.SelectNodes(
-                        "div[contains(@class, 'bloom-textOverPicture')]"
-                    );
-                    if (textOverPictureDivs == null) // unlikely, but maybe possible
+                    var bubbleData = textOverPictureDiv.GetAttribute("data-bubble");
+                    if (string.IsNullOrEmpty(bubbleData))
                         continue;
-
-                    foreach (XmlElement textOverPictureDiv in textOverPictureDivs)
-                    {
-                        var bubbleData = textOverPictureDiv.GetAttribute("data-bubble");
-                        if (string.IsNullOrEmpty(bubbleData))
-                            continue;
-                        var jsonObject = HtmlDom.GetJsonObjectFromDataBubble(bubbleData);
-                        if (jsonObject == null)
-                            continue; // only happens if it fails to parse the "json"
-                        var style = HtmlDom.GetStyleFromDataBubbleJsonObj(jsonObject);
-                        if (style == "none")
-                            continue;
-                        elementsToSave.Add(svgElement);
-                        break;
-                    }
-                }
-
-                // Now delete the SVGs that only have bubbles of style 'none'.
-                var dirty = false;
-                foreach (var svgElement in comicalSvgs.ToArray())
-                {
-                    if (!elementsToSave.Contains(svgElement))
-                    {
-                        svgElement.ParentNode.RemoveChild(svgElement);
-                        dirty = true;
-                    }
-                }
-
-                if (dirty)
-                {
-                    try
-                    {
-                        Save();
-                    }
-                    catch (UnauthorizedAccessException e)
-                    {
-                        ShowAccessDeniedErrorReport(e);
-                    }
+                    var jsonObject = HtmlDom.GetJsonObjectFromDataBubble(bubbleData);
+                    if (jsonObject == null)
+                        continue; // only happens if it fails to parse the "json"
+                    var style = HtmlDom.GetStyleFromDataBubbleJsonObj(jsonObject);
+                    if (style == "none")
+                        continue;
+                    elementsToSave.Add(svgElement);
+                    break;
                 }
             }
 
+            // Now delete the SVGs that only have bubbles of style 'none'.
+            var dirty = false;
+            foreach (var svgElement in comicalSvgs.ToArray())
+            {
+                if (!elementsToSave.Contains(svgElement))
+                {
+                    svgElement.ParentNode.RemoveChild(svgElement);
+                    dirty = true;
+                }
+            }
+
+            if (dirty)
+            {
+                try
+                {
+                    Save();
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    ShowAccessDeniedErrorReport(e);
+                }
+            }
             Dom.UpdateMetaElement("maintenanceLevel", "2");
         }
 
         public void MigrateToLevel3PutImgFirst()
         {
-            if (GetMaintenanceLevel() < 3)
+            if (GetMaintenanceLevel() >= 3)
+                return;
+
+            // Make sure that in every image container, the first element is the img.
+            // This is important because, since 5.4, we don't use a z-index to put overlays above the base image
+            // (so the overlay image container does not become a stacking context, so we can use
+            // z-index on its children to put them above the comicaljs canvas),
+            // which means we depend on the img being first to make sure the overlays are on top of it.
+            // (I'm not sure we ever created situations where the img was not first, but now it's vital,
+            // so I added this maintenance to make sure of it.)
+            var imageContainers = Dom.SafeSelectNodes(
+                    "//*[contains(@class, 'bloom-imageContainer')]"
+                )
+                .Cast<XmlElement>();
+            foreach (var ic in imageContainers)
             {
-                // Make sure that in every image container, the first element is the img.
-                // This is important because, since 5.4, we don't use a z-index to put overlays above the base image
-                // (so the overlay image container does not become a stacking context, so we can use
-                // z-index on its children to put them above the comicaljs canvas),
-                // which means we depend on the img being first to make sure the overlays are on top of it.
-                // (I'm not sure we ever created situations where the img was not first, but now it's vital,
-                // so I added this maintenance to make sure of it.)
-                var imageContainers = Dom.SafeSelectNodes(
-                        "//*[contains(@class, 'bloom-imageContainer')]"
-                    )
-                    .Cast<XmlElement>();
-                foreach (var ic in imageContainers)
+                var firstImage = ic.ChildNodes
+                    .Cast<XmlNode>()
+                    .FirstOrDefault(x => x is XmlElement && ((XmlElement)x).Name == "img");
+                if (firstImage == null)
+                    continue;
+                var firstElement = ic.ChildNodes
+                    .Cast<XmlNode>()
+                    .FirstOrDefault(x => x is XmlElement);
+                if (firstElement != firstImage)
                 {
-                    var firstImage = ic.ChildNodes
-                        .Cast<XmlNode>()
-                        .FirstOrDefault(x => x is XmlElement && ((XmlElement)x).Name == "img");
-                    if (firstImage == null)
-                        continue;
-                    var firstElement = ic.ChildNodes
-                        .Cast<XmlNode>()
-                        .FirstOrDefault(x => x is XmlElement);
-                    if (firstElement != firstImage)
-                    {
-                        ic.InsertBefore(firstImage, firstElement);
-                    }
+                    ic.InsertBefore(firstImage, firstElement);
                 }
             }
 
@@ -3679,29 +3678,29 @@ namespace Bloom.Book
                 !BookInfo.IsSaveable,
                 "We should not even think about migrating a book that is not Saveable"
             );
-            if (GetMaintenanceLevel() < 4)
+            if (GetMaintenanceLevel() >= 4)
+                return;
+
+            var cssFiles = GetCssFilesToCheckForAppearanceCompatibility(true);
+            var substituteCssPath = BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(
+                cssFiles
+            );
+            if (substituteCssPath != null)
             {
-                var cssFiles = GetCssFilesToCheckForAppearanceCompatibility(true);
-                var substituteCssPath = BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(
-                    cssFiles
-                );
-                if (substituteCssPath != null)
-                {
-                    var destPath = Path.Combine(FolderPath, "customBookStyles2.css");
-                    // if we're doing an automatic substitution, we don't expect there to be a customBookStyles2.css already,
-                    // since substitution is used when the source book is NOT in the new appearance format, while
-                    // customBookStyles2.css is only supported in that format.
-                    RobustFile.Copy(substituteCssPath, destPath, false);
-                }
-
-                // This would happen as a side effect of saving the book at the end of updating it, but
-                // we need it to happen before we re-initialize the settings and UpdateSupportFiles so
-                // that the settings knows it is consistent with the state of things on disk, which allows
-                // the right links to be made and the right files copied to the book folder.
-                BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
-
-                Dom.UpdateMetaElement("maintenanceLevel", "4");
+                var destPath = Path.Combine(FolderPath, "customBookStyles2.css");
+                // if we're doing an automatic substitution, we don't expect there to be a customBookStyles2.css already,
+                // since substitution is used when the source book is NOT in the new appearance format, while
+                // customBookStyles2.css is only supported in that format.
+                RobustFile.Copy(substituteCssPath, destPath, false);
             }
+
+            // This would happen as a side effect of saving the book at the end of updating it, but
+            // we need it to happen before we re-initialize the settings and UpdateSupportFiles so
+            // that the settings knows it is consistent with the state of things on disk, which allows
+            // the right links to be made and the right files copied to the book folder.
+            BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
+
+            Dom.UpdateMetaElement("maintenanceLevel", "4");
         }
 
         /// <summary>
@@ -3722,7 +3721,7 @@ namespace Bloom.Book
             // Must come before customCollectionStyles.css (see AppearanceSettings.Initialize).
             result.Add(
                 Tuple.Create(
-                    "customBookStyles.css",
+                    GetSupportingFile("customBookStyles.css"),
                     GetSupportingFileString("customBookStyles.css")
                 )
             );
@@ -3734,23 +3733,23 @@ namespace Bloom.Book
             var customCollectionCss = RobustFile.Exists(customCollectionStylesPath)
                 ? RobustFile.ReadAllText(customCollectionStylesPath)
                 : null;
-            result.Add(Tuple.Create("customCollectionStyles.css", customCollectionCss));
+            result.Add(Tuple.Create(customCollectionStylesPath, customCollectionCss));
 
             if (!justOldCustomFiles)
             {
-                result.Add(Tuple.Create("branding.css", GetSupportingFileString("branding.css")));
+                result.Add(Tuple.Create(GetSupportingFile("branding.css"), GetSupportingFileString("branding.css")));
                 result.Add(
                     Tuple.Create(
-                        "customBookStyles2.css",
+                        GetSupportingFile("customBookStyles2.css"),
                         GetSupportingFileString("customBookStyles2.css")
                     )
                 );
                 result.Add(
-                    Tuple.Create("appearance.css", GetSupportingFileString("appearance.css"))
+                    Tuple.Create(GetSupportingFile("appearance.css"), GetSupportingFileString("appearance.css"))
                 );
 
                 var xmatterFileName = Path.GetFileName(PathToXMatterStylesheet);
-                result.Add(Tuple.Create(xmatterFileName, GetSupportingFileString(xmatterFileName)));
+                result.Add(Tuple.Create(GetSupportingFile(xmatterFileName), GetSupportingFileString(xmatterFileName)));
             }
             return result.ToArray();
         }

@@ -75,8 +75,15 @@ namespace Bloom.Api
 
         private void HandleDeleteCustomBookStyles(ApiRequest request)
         {
+            // filename is usually "customBookStyles.css" but could possibly be "customCollectionStyles.css"
+            var filename = request.GetParamOrNull("file");
+            if (filename == null)
+            {
+                request.Failed("No file specified");
+                return;
+            }
             RobustFile.Delete(
-                Path.Combine(_bookSelection.CurrentSelection.FolderPath, "customBookStyles.css")
+                Path.Combine(_bookSelection.CurrentSelection.FolderPath, filename)
             );
             _bookSelection.CurrentSelection.SettingsUpdated();
             // We should only delete it when it's not in use, so we should not need to refresh the page.
