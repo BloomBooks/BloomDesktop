@@ -5,6 +5,7 @@
 .numberedPage {
     &:after {
         content: attr(data-page-number);
+        display: var(--pageNumber-show);
         font-size: var(--pageNumber-font-size);
         position: absolute;
         width: var(
@@ -20,6 +21,10 @@
         background-color: var(--pageNumber-background-color);
         border-radius: var(--pageNumber-border-radius);
         z-index: 1000;
+        // These are needed to get the number centered in a circle.  They have
+        // no effect if --pageNumber-background-width is not set.
+        line-height: var(--pageNumber-background-width); // centers vertically
+        text-align: center !important; // centers horizontally
     }
 
     &.side-left:after {
@@ -33,6 +38,5 @@
         left: var(
             --pageNumber-always-left-margin
         ) !important; // allow page number to always be on the left, regardless of page side. If this is used, --pageNumber-right-margin should be set to unset
-        text-align: right;
     }
 }
