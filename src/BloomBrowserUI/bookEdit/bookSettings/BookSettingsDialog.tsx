@@ -53,6 +53,7 @@ type IPageStyle = { label: string; value: string };
 type IPageStyles = Array<IPageStyle>;
 type IAppearanceUIOptions = {
     firstPossiblyLegacyCss?: string;
+    substitutedCssFile?: string;
     themeNames: IPageStyles;
 };
 
@@ -173,6 +174,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const [firstPossiblyLegacyCss, setFirstPossiblyLegacyCss] = React.useState(
         ""
     );
+    const [substitutedCssFile, setSubstitutedCssFile] = React.useState("");
 
     React.useEffect(() => {
         if (settingsString === "{}") {
@@ -189,6 +191,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         setFirstPossiblyLegacyCss(
             appearanceUIOptions?.firstPossiblyLegacyCss ?? ""
         );
+        setSubstitutedCssFile(appearanceUIOptions?.substitutedCssFile ?? "");
     }, [appearanceUIOptions]);
 
     const bookSettingsTitle = useL10n("Book Settings", "BookSettings.Title");
@@ -204,8 +207,11 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     }, [settings, settingsToReturnLater]);
 
     const deleteCustomBookStyles = () => {
-        post("book/settings/deleteCustomBookStyles");
+        post(
+            `book/settings/deleteCustomBookStyles?file=${firstPossiblyLegacyCss}`
+        );
         setFirstPossiblyLegacyCss("");
+        setSubstitutedCssFile("");
     };
 
     return (
@@ -313,9 +319,13 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 theme !== "legacy-5-6" && (
                                     <NoteBox>
                                         <div>
-                                            {`The "customBookStyles.css" stylesheet of this book is incompatible with
+                                            {substitutedCssFile
+                                                ? `Bloom found a known version of ${firstPossiblyLegacyCss} in this
+                                    book and replaced it with a modern theme. You can delete it unless you still need to
+                                    publish the book from an earlier version of Bloom.`
+                                                : `The ${firstPossiblyLegacyCss} stylesheet of this book is incompatible with
                                     modern themes. Bloom is currently ignoring it. If you don't need those
-                                    customizations any more, you can delete your customBookStyles.css. Click (TODO) for more information.`}
+                                    customizations any more, you can delete your ${firstPossiblyLegacyCss}. Click (TODO) for more information.`}
                                             <div
                                                 css={css`
                                                     display: flex;
@@ -339,7 +349,8 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                                         color: ${kBloomBlue};
                                                     `}
                                                 >
-                                                    Delete customBookStyles.css
+                                                    Delete{" "}
+                                                    {firstPossiblyLegacyCss}
                                                 </div>
                                             </div>
                                         </div>

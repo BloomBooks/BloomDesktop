@@ -1,0 +1,14 @@
+/* replace EFL Template 3 custom CSS: whatever is left after migrating to theme file */
+
+/* The statement below hides the credits row from the Front page. It allows for a bigger picture.
+ * Simply delete this statement if you want the credits row back. */
+.Device16x9Landscape.frontCover .creditsRow {
+    --cover-creditsRow-show: none;
+}
+
+
+.Device16x9Landscape.numberedPage::after {
+    /* It's arguable that this isn't needed, but default for color is inherit,
+     * and this was in the template's custom CSS file. */
+    color: black;
+}

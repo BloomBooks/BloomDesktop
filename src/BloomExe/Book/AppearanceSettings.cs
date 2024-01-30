@@ -370,14 +370,15 @@ public class AppearanceSettings
         // state on things like _customBookStylesExists and _customBookStylesAreIncompatibleWithNewSystem, we need to check them all.
         foreach (var css in cssFilesToCheck.Where(css => !string.IsNullOrWhiteSpace(css.Item2)))
         {
-            if (TestCompatibility(css.Item1, css.Item2, out string offendingCssRule))
+            var cssFileName = Path.GetFileName(css.Item1);
+            if (TestCompatibility(cssFileName, css.Item2, out string offendingCssRule))
             {
                 if (FirstPossiblyOffendingCssFile == null)
                 {
                     OffendingCssRule = offendingCssRule;
                     FirstPossiblyOffendingCssFile = css.Item1;
                 }
-                if (!css.Item1.StartsWith("custom"))
+                if (!cssFileName.StartsWith("custom"))
                 {
                     var msg = "Unexpectedly found a branding or xmatter CSS not compatible with appearance system: "
                             + css.Item1
@@ -813,9 +814,37 @@ public class AppearanceSettings
             x["themeNames"] =
                 from name in names.ToArray<string>()
                 select new { label = name, value = name };
-            x["firstPossiblyLegacyCss"] = FirstPossiblyOffendingCssFile;
+            x["firstPossiblyLegacyCss"] = Path.GetFileName(FirstPossiblyOffendingCssFile);
+            x["substitutedCssFile"] = GetPossiblyMigratedCssFile();
             return JsonConvert.SerializeObject(x);
         }
+    }
+
+    /// <summary>
+    /// We may have a CSS file that is not compatible with the new system, but it may not be a problem.
+    /// If that file was the basis for migrating to a theme, it gets ignored.  We check for that in
+    /// this method.
+    /// </summary>
+    /// <returns>base filename of offending CSS file, or null if it either doesn't exist or isn't migrated</returns>
+    internal string GetPossiblyMigratedCssFile()
+    {
+        if (String.IsNullOrEmpty(FirstPossiblyOffendingCssFile))
+            return null;
+        if (!RobustFile.Exists(FirstPossiblyOffendingCssFile))
+            return null;
+        var offendingFile = Path.GetFileName(FirstPossiblyOffendingCssFile); // minimize for display to user
+        if (offendingFile == "customBookStyles2.css")
+            return null;   // not something that got migrated
+        var cssContent = RobustFile.ReadAllText(FirstPossiblyOffendingCssFile);
+        var migrant = AppearanceMigrator.Instance.GetAppearanceThatSubstitutesForCustomCSS(cssContent);
+        if (!String.IsNullOrEmpty(migrant))
+        {
+            // We have a file that looks like it has been migrated, so we don't want to complain about it
+            // quite the same way as other offending files.  (Users may want to keep it around for backwards
+            // compatibility with earlier versions of Bloom.)
+            return offendingFile;
+        }
+        return null;
     }
 
     public object ChangeableSettingsForUI

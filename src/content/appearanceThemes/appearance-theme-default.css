@@ -20,6 +20,8 @@
  * - a way to override for certain themes (either for all page sizes or by page-size)
 */
 .bloom-page {
+    /* display: value in .numberedPage:after to display the page number */
+    --pageNumber-show: doShow-css-will-ignore-this-and-use-default; /* default is number displaying (the value is a self-documenting trick) */
     /* font-size: value in .numberedPage:after to display the page number */
     --pageNumber-font-size: 14pt;
     /* Either --pageNumber-top or --pageNumber-bottom should be set to a value, but not both. */
@@ -81,6 +83,8 @@
     --cover-topic-show: doShow-css-will-ignore-this-and-use-default; /* default is topic displaying (the value is a self-documenting trick) */
     /* display: value in .coverBottomLangName */
     --cover-languageName-show: doShow-css-will-ignore-this-and-use-defaultblock;  /* default is language name displaying (the value is a self-documenting trick) */
+    /* display: value in .cover .creditsRow */
+    --cover-creditsRow-show: doShow-css-will-ignore-this-and-use-default; /* default is credits row displaying (the value is a self-documenting trick) */
 
     /* background-color: value in .numberedPage .marginBox */
     /* This is not just for text boxes, but for everything inside the page margins.
