@@ -1,0 +1,59 @@
+/* replace EFL Template 3 custom CSS: curved design and fancy page numbers */
+
+/* Below you find the settings of this custom theme. This theme only applies to "Device 16x9 Landscape" pages. */
+
+/* The statement below hides the credits row from the Front page. It allows for a bigger picture.
+ * Simply delete this statement if you want the credits row back. */
+.creditsRow {
+  display: none;
+}
+
+/* The statements below control the design for 'Device16x9Landscape'. */
+
+/* The below statements control the size and color of the marginbox. It holds the text and picture of that page.
+ * The top and left numbers determine the position of the margin box on the page. */
+
+:not(.bloom-interactive-page).Device16x9Landscape  {
+  --cover-margin-top: 2mm;
+  --cover-margin-bottom: 2mm;
+  --page-margin-top: 2mm;
+  --page-margin-bottom: 2mm;
+  --page-margin-left: 2mm;
+  --page-margin-right: 2mm;
+  --page-background-color: #2E2E2E;  /* almost black */
+  --page-split-horizontal-gap: 1mm;
+  --page-split-vertical-gap: 1mm;
+  --marginBox-border-radius: 15px;
+  --marginBox-padding: 1.5mm;
+  --marginBox-background-color: #ffffff;  /* white */
+}
+
+/* The following two statements control the position of the page number   */
+
+.Device16x9Landscape.numberedPage.side-left::after {
+  --pageNumber-left-margin: var(--page-margin-left);
+}
+
+.Device16x9Landscape.numberedPage.side-right::after {
+  --pageNumber-always-left-margin: var(--page-margin-left);
+}
+
+/* The section below controls the pagenumber and the white circle around it.  */
+
+.Device16x9Landscape.numberedPage::after {
+  --pageNumber-bottom: 2mm;
+  --pageNumber-top: unset;
+  --pageNumber-font-size: 10pt;
+  --pageNumber-border-radius: 50%;
+  --pageNumber-background-color: #ffffff;
+  --pageNumber-background-width: 33px;
+  --pageNumber-right-margin: unset;
+
+  /* the following don't have variables to set, or to use the variables we do have. */
+  color: black;
+  /* these are both needed to get the number centered in the circle. */
+  line-height: var(--pageNumber-background-width);
+  text-align: center !important;
+}
+
+/* End of statements controlling layout of 'Device16x9Landscape'.*/

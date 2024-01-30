@@ -1,0 +1,59 @@
+/* replace EFL Template 1 custom CSS: no margins, no page numbers */
+
+/* This first statement hides the page numbers. */
+
+.numberedPage::after {
+  display: none;
+}
+
+/* This statement hides the credits row on the front cover. */
+
+.creditsRow {
+  display: none;
+}
+
+/* This statement sets the margins on the front-matter and back-matter pages */
+
+.bloom-frontMatter.Device16x9Landscape,
+.bloom-backMatter.Device16x9Landscape,
+.bloom-frontMatter.Device16x9Portrait,
+.bloom-backMatter.Device16x9Portrait {
+  --cover-margin-top: 3mm;
+  --cover-margin-bottom: 3mm;
+  --page-margin-top: 3mm;
+  --page-margin-bottom: 3mm;
+  --page-margin-left: 3mm ;
+  --page-margin-right: 3mm;
+}
+
+/* This statement sets the margins on the numbered content pages */
+
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape,
+:not(.bloom-interactive-page).numberedPage.Device16x9Portrait {
+  --page-margin-top: 0mm;
+  --page-margin-bottom: 0.0mm;
+  --page-margin-left: 0mm ;
+  --page-margin-right: 0.0mm;
+  --page-split-horizontal-gap: 1mm;
+  --page-split-vertical-gap: 1mm;
+}
+
+/* Below you find code that controls layout for pages in Device16x9Landscape layout */
+
+.Device16x9Landscape .marginBox img {
+  max-width: 177.777778mm;
+}
+.Device16x9Landscape.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+  /* Get past ios "background-size:cover" bug. See BL-7458 */
+  width: 177.777778mm;
+}
+
+/* Below you find code that controls layout for pages in Device16x9Portrait layout */
+
+.Device16x9Portrait .marginBox img {
+  max-width: 100mm;
+}
+.Device16x9Portrait.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+  /* Get past ios "background-size:cover" bug. See BL-7458 */
+  width: 100mm;
+}
