@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using SIL.IO;
 using SIL.Reporting;
@@ -217,6 +218,14 @@ namespace Bloom.ErrorReporter
 
             try
             {
+                string filePath = FileException.GetFilePathIfPresent(exception);
+                // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
+                Exception originalException = FileException.UnwrapIfFileException(exception);
+                if (OneDriveUtils.CheckForAndHandleOneDriveExceptions(originalException, filePath))
+                {
+                    return;
+                }
+
                 if (policy == null)
                 {
                     policy = new ShowAlwaysPolicy();
@@ -227,7 +236,7 @@ namespace Bloom.ErrorReporter
                     ShowNotifyDialog(
                         ProblemLevel.kNotify,
                         message,
-                        exception,
+                        originalException,
                         reportButtonLabel,
                         onReportButtonClicked,
                         extraButtonLabel,
