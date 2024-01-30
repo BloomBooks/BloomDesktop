@@ -78,7 +78,14 @@ namespace Bloom.Book
 
         public static string GetChecksum(string css)
         {
-            return Utils.MiscUtils.GetMd5HashOfString(css);
+            // We want to ignore the boilerplate that is almost the same in all custom css files.
+            // We also ignore any leading or trailing whitespace.
+            // This is effectively the same as the code in bloom-utility-scripts that groups together
+            // books with the same custom CSS.
+            var boilerplate =
+                "/\\* *Some books may need control over aspects of layout that cannot yet be adjusted(.|[\\r\\n])*?\\*/";
+            var css2 = Regex.Replace(css, boilerplate, "").Trim();
+            return Utils.MiscUtils.GetMd5HashOfString(css2);
         }
     }
 }
