@@ -59,7 +59,7 @@ namespace Bloom.Book
         void Save();
 
         void SaveForPageChanged(string pageId, XmlElement modifiedPage);
-        HtmlDom GetRelocatableCopyOfDom();
+        HtmlDom GetRelocatableCopyOfDom(bool withUpdatedStylesheets = true);
         HtmlDom MakeDomRelocatable(HtmlDom dom);
         string SaveHtml(HtmlDom bookDom);
         void SetBookName(string name);
@@ -1587,12 +1587,13 @@ namespace Bloom.Book
         /// creates a relocatable copy of our main HtmlDom
         /// </summary>
         /// <returns></returns>
-        public HtmlDom GetRelocatableCopyOfDom()
+        public HtmlDom GetRelocatableCopyOfDom(bool withUpdatedStylesheets = true)
         {
             HtmlDom relocatableDom = Dom.Clone();
 
             SetBaseForRelativePaths(relocatableDom, FolderPath);
-            EnsureHasLinksToStylesheets(relocatableDom);
+            if (withUpdatedStylesheets)
+                EnsureHasLinksToStylesheets(relocatableDom);
 
             return relocatableDom;
         }

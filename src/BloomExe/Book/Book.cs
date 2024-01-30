@@ -935,7 +935,9 @@ namespace Bloom.Book
                 return _previewDom;
             }
 
-            var previewDom = Storage.GetRelocatableCopyOfDom();
+            // We want to use exactly the stylesheets that are already there, especially if we
+            // are previewing a book we can't EnsureUpToDate().
+            var previewDom = Storage.GetRelocatableCopyOfDom(false);
             // Earlier code also added origami.css, but I don't know any reason to add it now
             // in the unlikely event it isn't already loaded. We want the preview to look just
             // like the HTML would look if we opened the file.
