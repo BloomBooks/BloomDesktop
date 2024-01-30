@@ -9,6 +9,53 @@ import InfoIcon from "@mui/icons-material/Info";
 import { BloomTooltip } from "./BloomToolTip";
 import { postJson, useApiObject, useWatchApiData } from "../utils/bloomApi";
 
+export interface ICssDisplayMessages {
+    warningMessage: string | null;
+    infoMessageForPossibleDelete: string | null;
+    infoMessage: string | null;
+}
+export function setCssDisplayMessages(
+    theme: string,
+    substitutedCssFile: string,
+    firstPossiblyOffendingCssFile: string
+): ICssDisplayMessages {
+    let warningMessage: string | null = null;
+    let infoMessageForPossibleDelete: string | null = null;
+    let infoMessage: string | null = null;
+    if (theme !== "legacy-5-6") {
+        if (
+            substitutedCssFile &&
+            firstPossiblyOffendingCssFile === substitutedCssFile
+        ) {
+            infoMessageForPossibleDelete = `Bloom found a known version of ${firstPossiblyOffendingCssFile} in this book
+                and replaced it with a modern theme. You can delete it unless you still
+                need to publish the book from an earlier version of Bloom.`;
+        } else if (
+            !substitutedCssFile &&
+            (firstPossiblyOffendingCssFile === "customBookStyles.css" ||
+                firstPossiblyOffendingCssFile === "customCollectionStyles.css")
+        ) {
+            infoMessageForPossibleDelete = `The ${firstPossiblyOffendingCssFile} stylesheet of this book is incompatible with
+                modern themes. Bloom is currently ignoring it. If you don't need those
+                customizations any more, you can delete your ${firstPossiblyOffendingCssFile}. Click (TODO) for more information.`;
+        } else if (
+            !substitutedCssFile &&
+            firstPossiblyOffendingCssFile &&
+            firstPossiblyOffendingCssFile !== "customBookStyles.css" &&
+            firstPossiblyOffendingCssFile !== "customCollectionStyles.css"
+        ) {
+            infoMessage = `The "${firstPossiblyOffendingCssFile}" stylesheet of this book is incompatible with
+                modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`;
+        }
+    } else {
+        if (firstPossiblyOffendingCssFile && theme === "legacy-5-6") {
+            warningMessage = `The "${firstPossiblyOffendingCssFile}" stylesheet of this book is incompatible with
+                modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click (TODO) for more information.`;
+        }
+    }
+    return { warningMessage, infoMessageForPossibleDelete, infoMessage };
+}
+
 export const BookInfoIndicator: React.FunctionComponent<{
     bookId: string;
 }> = props => {
@@ -29,7 +76,18 @@ export const BookInfoIndicator: React.FunctionComponent<{
     );
     const firstPossiblyConflictingCss =
         info?.firstPossiblyOffendingCssFile ?? "";
+    const possiblySubstitutedCss = info?.substitutedCssFile ?? "";
     const theme = info?.cssThemeName ?? "";
+
+    const {
+        warningMessage,
+        infoMessageForPossibleDelete,
+        infoMessage
+    } = setCssDisplayMessages(
+        theme,
+        possiblySubstitutedCss,
+        firstPossiblyConflictingCss
+    );
 
     const tip = info && (
         <div>
@@ -64,7 +122,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
                 // The logic that shows one or none of these three messages is similar to that in BookSettingsDialog.
                 // See the comment there.
             }
-            {firstPossiblyConflictingCss && theme === "legacy-5-6" && (
+            {warningMessage && (
                 <div>
                     <WarningIcon
                         css={css`
@@ -75,33 +133,11 @@ export const BookInfoIndicator: React.FunctionComponent<{
                         color="warning"
                         fontSize="small"
                     />
-                    <span>
-                        {`"The ${firstPossiblyConflictingCss}" stylesheet of this book is incompatible with
-                                    modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click (TODO) for more information.`}
-                    </span>
+                    <span>{warningMessage}</span>
                 </div>
             )}
-            {firstPossiblyConflictingCss === "customBookStyles.css" &&
-                theme !== "legacy-5-6" && (
-                    <div>
-                        <span>
-                            <InfoIcon
-                                css={css`
-                                    position: relative;
-                                    top: 2px;
-                                    margin-right: 5px;
-                                `}
-                                fontSize="small"
-                            />
-                            {`"The ${firstPossiblyConflictingCss}" stylesheet of this book is incompatible with
-                                    modern themes. Bloom is currently ignoring it. If you don't need those
-                                    customizations any more, you can delete your customBookStyles.css. Click (TODO) for more information.`}
-                        </span>
-                    </div>
-                )}
-            {firstPossiblyConflictingCss &&
-                firstPossiblyConflictingCss !== "customBookStyles.css" &&
-                theme !== "legacy-5-6" && (
+            {infoMessageForPossibleDelete && (
+                <div>
                     <span>
                         <InfoIcon
                             css={css`
@@ -111,10 +147,23 @@ export const BookInfoIndicator: React.FunctionComponent<{
                             `}
                             fontSize="small"
                         />
-                        {`"The ${firstPossiblyConflictingCss}" stylesheet of this book is incompatible with
-                                    modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`}
+                        {infoMessageForPossibleDelete}
                     </span>
-                )}
+                </div>
+            )}
+            {infoMessage && (
+                <span>
+                    <InfoIcon
+                        css={css`
+                            position: relative;
+                            top: 2px;
+                            margin-right: 5px;
+                        `}
+                        fontSize="small"
+                    />
+                    {infoMessage}
+                </span>
+            )}
         </div>
     );
 

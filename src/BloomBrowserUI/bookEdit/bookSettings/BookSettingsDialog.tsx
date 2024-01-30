@@ -46,13 +46,15 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { Div } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
+import { setCssDisplayMessages } from "../../react_components/BookInfoIndicator";
 
 let isOpenAlready = false;
 
 type IPageStyle = { label: string; value: string };
 type IPageStyles = Array<IPageStyle>;
 type IAppearanceUIOptions = {
-    firstPossiblyLegacyCss?: string;
+    firstPossiblyOffendingCssFile?: string;
+    substitutedCssFile?: string;
     themeNames: IPageStyles;
 };
 
@@ -66,7 +68,7 @@ export interface IAppearanceSettings {
 // Not yet complete
 export interface IBookSettings {
     appearance: IAppearanceSettings;
-    firstPossiblyLegacyCss?: string;
+    firstPossiblyOffendingCssFile?: string;
 }
 
 // Stuff we get from the book/settings/overrides api.
@@ -166,13 +168,15 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     // (except for the button to delete customBookStyles.css, which is done immediately).
     // A downside of this is that when we delete customBookStyles.css, we don't know whether
     // the result will be no conflicts or that customCollectionStyles.css will now be the
-    // firstPossiblyLegacyCss. For now it just behaves as if there are now no conflicts.
-    // One possible approach is to have the server return the new firstPossiblyLegacyCss
+    // firstPossiblyOffendingCssFile. For now it just behaves as if there are now no conflicts.
+    // One possible approach is to have the server return the new firstPossiblyOffendingCssFile
     // as the result of the deleteCustomBookStyles call.
     const [theme, setTheme] = React.useState("");
-    const [firstPossiblyLegacyCss, setFirstPossiblyLegacyCss] = React.useState(
-        ""
-    );
+    const [
+        firstPossiblyOffendingCssFile,
+        setFirstPossiblyOffendingCssFile
+    ] = React.useState("");
+    const [substitutedCssFile, setSubstitutedCssFile] = React.useState("");
 
     React.useEffect(() => {
         if (settingsString === "{}") {
@@ -186,9 +190,10 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     }, [settingsString]);
 
     React.useEffect(() => {
-        setFirstPossiblyLegacyCss(
-            appearanceUIOptions?.firstPossiblyLegacyCss ?? ""
+        setFirstPossiblyOffendingCssFile(
+            appearanceUIOptions?.firstPossiblyOffendingCssFile ?? ""
         );
+        setSubstitutedCssFile(appearanceUIOptions?.substitutedCssFile ?? "");
     }, [appearanceUIOptions]);
 
     const bookSettingsTitle = useL10n("Book Settings", "BookSettings.Title");
@@ -204,9 +209,22 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     }, [settings, settingsToReturnLater]);
 
     const deleteCustomBookStyles = () => {
-        post("book/settings/deleteCustomBookStyles");
-        setFirstPossiblyLegacyCss("");
+        post(
+            `book/settings/deleteCustomBookStyles?file=${firstPossiblyOffendingCssFile}`
+        );
+        setFirstPossiblyOffendingCssFile("");
+        setSubstitutedCssFile("");
     };
+
+    const {
+        warningMessage,
+        infoMessageForPossibleDelete,
+        infoMessage
+    } = setCssDisplayMessages(
+        theme,
+        substitutedCssFile,
+        firstPossiblyOffendingCssFile
+    );
 
     return (
         <BloomDialog
@@ -291,73 +309,51 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 />
                             </ConfigrSubgroup>
                             {
-                                // This group of three possible messages...sometimes none of them shows, so there are four options...
-                                // is very similar to the one in BookInfoIndicator.tsx. If you change one, you may need to change the other.
-                                // In particular, the logic for which to show and the text of the messages should be kept in sync.
-                                // Unfortunately, the formatting is quite different, and here we want to use the Warning/NoteBox
-                                // components, but they don't apply there. Probably, when we internationalize and implement the
-                                // TODO links, we'll want to refactor this to use at least one common components for
-                                // Internationalized-messages-with-link. (I think all three message in both locations will use the
-                                // same link, so that could be built into the component.)
-                                // I'm not seeing a clean way to reuse the logic. Some sort of higher-order component might work,
-                                // but I don't think the logic is complex enough to be worth it, when only used in two places.
+                                // The logic and methods are shared with BookInfoIndicator.tsx, in the function
+                                // setCssDisplayMessages.
                             }
-                            {firstPossiblyLegacyCss && theme === "legacy-5-6" && (
-                                <WarningBox>
-                                    {`The "${firstPossiblyLegacyCss}" stylesheet of this book is incompatible with
-                                    modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click (TODO) for more information.`}
-                                </WarningBox>
+                            {warningMessage && (
+                                <WarningBox>{warningMessage}</WarningBox>
                             )}
-                            {firstPossiblyLegacyCss ===
-                                "customBookStyles.css" &&
-                                theme !== "legacy-5-6" && (
-                                    <NoteBox>
-                                        <div>
-                                            {`The "customBookStyles.css" stylesheet of this book is incompatible with
-                                    modern themes. Bloom is currently ignoring it. If you don't need those
-                                    customizations any more, you can delete your customBookStyles.css. Click (TODO) for more information.`}
+                            {infoMessageForPossibleDelete && (
+                                <NoteBox>
+                                    <div>
+                                        {infoMessageForPossibleDelete}
+                                        <div
+                                            css={css`
+                                                display: flex;
+                                                align-items: center;
+                                                // The way it comes out in English, we'd be better off without this, or even
+                                                // some negative margin. But a translation may produce a last line of the
+                                                // main message
+                                                margin-top: 2px;
+                                                justify-content: flex-end;
+                                            `}
+                                            onClick={() =>
+                                                deleteCustomBookStyles()
+                                            }
+                                        >
+                                            <TrashIcon
+                                                id="trashIcon"
+                                                color="primary"
+                                            />
                                             <div
                                                 css={css`
-                                                    display: flex;
-                                                    align-items: center;
-                                                    // The way it comes out in English, we'd be better off without this, or even
-                                                    // some negative margin. But a translation may produce a last line of the
-                                                    // main message
-                                                    margin-top: 2px;
-                                                    justify-content: flex-end;
+                                                    color: ${kBloomBlue};
                                                 `}
-                                                onClick={() =>
-                                                    deleteCustomBookStyles()
-                                                }
                                             >
-                                                <TrashIcon
-                                                    id="trashIcon"
-                                                    color="primary"
-                                                />
-                                                <div
-                                                    css={css`
-                                                        color: ${kBloomBlue};
-                                                    `}
-                                                >
-                                                    Delete customBookStyles.css
-                                                </div>
+                                                Delete{" "}
+                                                {firstPossiblyOffendingCssFile}
                                             </div>
                                         </div>
-                                    </NoteBox>
-                                )}
-                            {firstPossiblyLegacyCss &&
-                                firstPossiblyLegacyCss !==
-                                    "customBookStyles.css" &&
-                                theme !== "legacy-5-6" && (
-                                    <NoteBox>
-                                        {`"The ${firstPossiblyLegacyCss}" stylesheet of this book is incompatible with
-                                    modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`}
-                                    </NoteBox>
-                                )}
+                                    </div>
+                                </NoteBox>
+                            )}
+                            {infoMessage && <NoteBox>{infoMessage}</NoteBox>}
                             {
                                 // This is not part of the group of three mutually exclusive messages above
                             }
-                            {!firstPossiblyLegacyCss &&
+                            {!firstPossiblyOffendingCssFile &&
                                 (settingsToReturnLater as any)?.appearance
                                     ?.cssThemeName === "legacy-5-6" && (
                                     <NoteBox>
@@ -537,6 +533,48 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
         </div>
     );
 };
+
+function newFunction(
+    theme: string,
+    substitutedCssFile: string,
+    firstPossiblyOffendingCssFile: string
+) {
+    let infoMessageForPossibleDelete: string = "";
+    let warningMessage: string = "";
+    let infoMessage: string = "";
+    if (theme !== "legacy-5-6") {
+        if (
+            substitutedCssFile &&
+            firstPossiblyOffendingCssFile === substitutedCssFile
+        ) {
+            infoMessageForPossibleDelete = `Bloom found a known version of ${firstPossiblyOffendingCssFile} in this book
+            and replaced it with a modern theme. You can delete it unless you still
+            need to publish the book from an earlier version of Bloom.`;
+        } else if (
+            !substitutedCssFile &&
+            (firstPossiblyOffendingCssFile === "customBookStyles.css" ||
+                firstPossiblyOffendingCssFile === "customCollectionStyles.css")
+        ) {
+            infoMessageForPossibleDelete = `The ${firstPossiblyOffendingCssFile} stylesheet of this book is incompatible with
+            modern themes. Bloom is currently ignoring it. If you don't need those
+            customizations any more, you can delete your ${firstPossiblyOffendingCssFile}. Click (TODO) for more information.`;
+        } else if (
+            !substitutedCssFile &&
+            firstPossiblyOffendingCssFile &&
+            firstPossiblyOffendingCssFile !== "customBookStyles.css" &&
+            firstPossiblyOffendingCssFile !== "customCollectionStyles.css"
+        ) {
+            infoMessage = `The "${firstPossiblyOffendingCssFile}" stylesheet of this book is incompatible with
+                    modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`;
+        }
+    } else {
+        if (firstPossiblyOffendingCssFile && theme === "legacy-5-6") {
+            warningMessage = `The "${firstPossiblyOffendingCssFile}" stylesheet of this book is incompatible with
+            modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click (TODO) for more information.`;
+        }
+    }
+    return { warningMessage, infoMessageForPossibleDelete, infoMessage };
+}
 
 export function showBookSettingsDialog() {
     // once Bloom's tab bar is also in react, it won't be possible
