@@ -393,7 +393,11 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 
     private getDisplayNameOfMusicFile(fileName: string) {
-        return fileName.split(".")[0];
+        const lastPeriodIndex = fileName.lastIndexOf(".");
+        if (lastPeriodIndex < 0) {
+            return fileName;
+        }
+        return fileName.substring(0, lastPeriodIndex);
     }
 }
 
