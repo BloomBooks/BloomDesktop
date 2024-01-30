@@ -39,6 +39,7 @@ using SIL.Xml;
 using Microsoft.Web.WebView2.Core;
 using System.Text;
 using Bloom.Utils;
+using Bloom.web.controllers;
 
 namespace Bloom
 {
@@ -1297,6 +1298,22 @@ namespace Bloom
                 _projectContext = null;
             }
 
+            // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
+            Exception originalError = FileException.UnwrapIfFileException(error);
+            string errorFilePath = FileException.GetFilePathIfPresent(error);
+            Logger.WriteError(
+                $"*** Error loading collection {Path.GetFileNameWithoutExtension(projectPath)}, on filepath: {errorFilePath}",
+                originalError
+            );
+
+            // Normally, NotifyUserOfProblem would take an exception and do this special-exception processing for us.
+            // But in this case, we don't pass the exception to NotifyUserOfProblem because we may subsequently end up
+            // calling SendReportWithoutUI. Therefore, we must check for the special exception independently.
+            if (ProblemReportApi.CheckForAndHandleOneDriveExceptions(error))
+            {
+                return;
+            }
+
             ErrorResult reportPressedResult = ErrorResult.Yes;
             // NB: I added the email to this directly because, at least on my machine, the old error report dialog had become unworkable
             // because, presumably, I haven't set things up properly with gmail.
@@ -1322,7 +1339,7 @@ namespace Bloom
                     var additionalPathsToInclude = Directory.GetFiles(dirName);
                     _applicationContainer.ProblemReportApi.SendReportWithoutUI(
                         ProblemLevel.kNonFatal,
-                        error,
+                        originalError,
                         errorMessage,
                         "",
                         additionalPathsToInclude
@@ -1333,7 +1350,7 @@ namespace Bloom
                     // No email... just fallback to the WinFormsErrorReporter, which will allow the user to email us.
                     // Unfortunately, we won't be able to automatically get the .bloomCollection file from that.
                     SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(
-                        error,
+                        originalError,
                         errorMessage
                     );
                 }

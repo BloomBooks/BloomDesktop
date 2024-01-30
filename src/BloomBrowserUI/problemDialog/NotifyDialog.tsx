@@ -1,4 +1,5 @@
 import * as React from "react";
+import { css } from "@emotion/react";
 import {
     Dialog,
     DialogActions,
@@ -14,17 +15,27 @@ import BloomButton from "../react_components/bloomButton";
 import { makeTheme, kindParams } from "./theme";
 import { useL10n } from "../react_components/l10nHooks";
 import { ProblemKind } from "./ProblemDialog";
+import { hookupLinkHandler } from "../utils/linkHandler";
+import { kBloomBlue, kFormBackground } from "../utils/colorUtils";
 
-export const NotifyDialog: React.FunctionComponent<{
-    reportLabel?: string | null;
-    secondaryLabel?: string | null;
-    message: string | null;
-}> = props => {
-    const theme = makeTheme(ProblemKind.NonFatal);
+export interface INotifyDialogProps {
+    message?: string | null; // The localized message to notify the user about.
+    reportLabel?: string | null; // The localized text that goes on the Report button. Omit or pass "" to disable Report button.
+    secondaryLabel?: string | null; // The localized text that goes on the secondary action button. Omit or pass "" to disable the secondary action button.
+    detailsBoxText?: string | null; // Localized text to go into a grey details box under the message. Omit or pass "" to not show a details box.
+    titleOverride?: string | null; // If present, wil be used in place of the dialog title defined for this level in themes.ts
+    titleL10nKeyOverride?: string | null; // The L10nKey for the titleOverride, if present.
+    themeOverride?: ProblemKind | null; // If present, will be used in place of the dialog theme defined for this level in themes.ts
+}
 
-    const englishTitle = kindParams[ProblemKind.NonFatal].title;
-    const titleKey = kindParams[ProblemKind.NonFatal].l10nKey;
+export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
+    const theme = makeTheme(props.themeOverride || ProblemKind.NonFatal);
+
+    const englishTitle = props.titleOverride ?? kindParams[ProblemKind.NonFatal].title;
+    const titleKey = props.titleL10nKeyOverride ?? kindParams[ProblemKind.NonFatal].l10nKey;
     const localizedDlgTitle = useL10n(englishTitle, titleKey);
+
+    React.useEffect(() => hookupLinkHandler(), []);
 
     const getDialog = () => {
         return (
@@ -45,16 +56,32 @@ export const NotifyDialog: React.FunctionComponent<{
                         onClick={() => post("common/closeReactDialog")}
                     /> */}
                 </DialogTitle>
-                <DialogContent className={"dialog-content"}>
-                    {/* InnerHTML is used so that we can insert markup like <br> into the message. */}
-                    <DialogContentText
-                        className="allowSelect"
-                        dangerouslySetInnerHTML={{
-                            __html: props.message || ""
-                        }}
-                    />
-                </DialogContent>
-                {getDialogActionButtons()}
+                    <DialogContent className={"dialog-content"}>
+                        {/* InnerHTML is used so that we can insert markup like <br> into the message. */}
+                        <DialogContentText
+                            className="allowSelect"
+                            dangerouslySetInnerHTML={{
+                                __html: props.message || ""
+                            }}
+                        />
+                        {props.detailsBoxText && 
+                            <DialogContentText
+                                css={css`
+                                    background-color: ${kFormBackground}; 
+                                    padding: 10px; 
+                                    margin-top: 20px; 
+                                    margin-bottom: 20px; 
+                                    a {
+                                        color: ${kBloomBlue}; // we are passing links in the text
+                                    }
+                                }`}
+                                dangerouslySetInnerHTML={{
+                                    __html: props.detailsBoxText || ""
+                                }}
+                            />
+                        }
+                    </DialogContent>
+                    {getDialogActionButtons()} 
             </Dialog>
         );
     };
@@ -111,16 +138,21 @@ export const NotifyDialog: React.FunctionComponent<{
     };
 
     const getCloseButton = (): JSX.Element | null => {
+        const buttonLabel = props.themeOverride === ProblemKind.Fatal ? "Quit" : "Close";
+        const l10nKey =
+                props.themeOverride === ProblemKind.Fatal
+                    ? "ReportProblemDialog.Quit" 
+                    : "Common.Close";
         return (
             <BloomButton
                 enabled={true}
-                l10nKey={"Common.Close"}
+                l10nKey={l10nKey}
                 hasText={true}
                 onClick={() => {
                     post("common/closeReactDialog");
                 }}
             >
-                Close
+                {buttonLabel}
             </BloomButton>
         );
     };

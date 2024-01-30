@@ -29,7 +29,7 @@ export const kindParams = {
         primaryColor: kNonFatalColor,
         title: "Bloom had a problem",
         l10nKey: "ReportProblemDialog.NonFatalTitle"
-    }
+    },
 };
 
 export function makeTheme(kind: ProblemKind): Theme {
