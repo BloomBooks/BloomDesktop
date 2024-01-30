@@ -255,17 +255,6 @@ namespace Bloom.Collection
         /// </summary>
         public string GetLanguageName(string tag, string inLanguage)
         {
-            // Use the WritingSystem name based on Ethnologue (or customized) in preference to the
-            // IeftLanguageTag name based on older ISO 639 data.  See BL-12992.
-            if (tag == Language1Tag)
-                return Language1.Name;
-            if (tag == Language2Tag)
-                return Language2.Name;
-            if (tag == Language3Tag)
-                return Language3.Name;
-            if (tag == SignLanguageTag)
-                return SignLanguage.Name;
-            // Note: the inLanguage parameter is often ignored by IetfLanguageTag.GetLocalizedLanguageName().
             return IetfLanguageTag.GetLocalizedLanguageName(tag, inLanguage);
         }
         #endregion
