@@ -992,7 +992,7 @@ namespace Bloom.WebLibraryIntegration
             Func<string, bool> okToChangeId
         )
         {
-            BookInfo.RepairDuplicateInstanceIds(rootFolderPath, okToChangeId);
+            BookInfo.CheckForDuplicateInstanceIds(rootFolderPath, okToChangeId);
         }
 
         /// <summary>

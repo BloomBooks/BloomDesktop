@@ -13,7 +13,8 @@ const handler = (e: Event) => {
     if (!href) {
         return;
     }
-    if (href.startsWith("http") || href.startsWith("mailto")) {
+    if (href.startsWith("http") || href.startsWith("mailto") || href.startsWith('file')) { // TODO? will it cause problems elsewhere to add file here?
+        console.log('handling link ', href);
         e.preventDefault();
         e.stopPropagation();
         postString("link", href);

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { css } from "@emotion/react";
 import {
     Dialog,
     DialogActions,
@@ -14,17 +15,25 @@ import BloomButton from "../react_components/bloomButton";
 import { makeTheme, kindParams } from "./theme";
 import { useL10n } from "../react_components/l10nHooks";
 import { ProblemKind } from "./ProblemDialog";
+import { hookupLinkHandler } from "../utils/linkHandler";
 
 export const NotifyDialog: React.FunctionComponent<{
     reportLabel?: string | null;
     secondaryLabel?: string | null;
     message: string | null;
+    detailsBoxText?: string | null;
+    level?: ProblemKind | null;
 }> = props => {
-    const theme = makeTheme(ProblemKind.NonFatal);
+    console.log(props);
+    const kind = props.level || ProblemKind.NonFatal;
 
-    const englishTitle = kindParams[ProblemKind.NonFatal].title;
-    const titleKey = kindParams[ProblemKind.NonFatal].l10nKey;
+    const theme = makeTheme(kind);
+
+    const englishTitle = kindParams[kind].title;
+    const titleKey = kindParams[kind].l10nKey;
     const localizedDlgTitle = useL10n(englishTitle, titleKey);
+
+    React.useEffect(() => hookupLinkHandler(), []);
 
     const getDialog = () => {
         return (
@@ -45,16 +54,24 @@ export const NotifyDialog: React.FunctionComponent<{
                         onClick={() => post("common/closeReactDialog")}
                     /> */}
                 </DialogTitle>
-                <DialogContent className={"dialog-content"}>
-                    {/* InnerHTML is used so that we can insert markup like <br> into the message. */}
-                    <DialogContentText
-                        className="allowSelect"
-                        dangerouslySetInnerHTML={{
-                            __html: props.message || ""
-                        }}
-                    />
-                </DialogContent>
-                {getDialogActionButtons()}
+                    <DialogContent className={"dialog-content"}>
+                        {/* InnerHTML is used so that we can insert markup like <br> into the message. */}
+                        <DialogContentText
+                            className="allowSelect"
+                            dangerouslySetInnerHTML={{
+                                __html: props.message || ""
+                            }}
+                        />
+                        {props.detailsBoxText && 
+                            <DialogContentText
+                                css={css`background-color: #f0f0f0; padding: 10px; margin-top: 20px; margin-bottom: 20px;`}
+                                dangerouslySetInnerHTML={{
+                                    __html: props.detailsBoxText || ""
+                                }}
+                            />
+                        }
+                    </DialogContent>
+                    {getDialogActionButtons()} 
             </Dialog>
         );
     };
@@ -111,16 +128,21 @@ export const NotifyDialog: React.FunctionComponent<{
     };
 
     const getCloseButton = (): JSX.Element | null => {
+        const buttonLabel = kind === ProblemKind.OneDriveFatal ? "Quit" : "Close";
+        const l10nKey =
+                kind === ProblemKind.OneDriveFatal // currently the only fatal problem kind that should land us in this dialog
+                    ? "ReportProblemDialog.Quit" 
+                    : "Common.Close";
         return (
             <BloomButton
                 enabled={true}
-                l10nKey={"Common.Close"}
+                l10nKey={l10nKey}
                 hasText={true}
                 onClick={() => {
                     post("common/closeReactDialog");
                 }}
             >
-                Close
+                {buttonLabel}
             </BloomButton>
         );
     };

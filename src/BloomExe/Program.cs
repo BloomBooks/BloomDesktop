@@ -39,6 +39,7 @@ using SIL.Xml;
 using Microsoft.Web.WebView2.Core;
 using System.Text;
 using Bloom.Utils;
+using Bloom.web.controllers;
 
 namespace Bloom
 {
@@ -1297,6 +1298,18 @@ namespace Bloom
                 _projectContext = null;
             }
 
+            string filePath = FileException.FilePathIfPresent(error);
+            // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
+            Exception originalError = FileException.UnwrapIfFileException(error);
+
+            // Normally NotifyUserOfProblem would check for special exceptions and handle them appropriately.
+            // But, the code below doesn't use the usual NotifyUserOfProblem path (because we may want to SendReportWithoutUI below)
+            // There we can't pass the exception through to NotifyUserOfProblem, so we need to check it here
+            if (ProblemReportApi.CheckForAndHandleOneDriveExceptions(error))
+            {
+                return;
+            }
+
             ErrorResult reportPressedResult = ErrorResult.Yes;
             // NB: I added the email to this directly because, at least on my machine, the old error report dialog had become unworkable
             // because, presumably, I haven't set things up properly with gmail.
@@ -1322,7 +1335,7 @@ namespace Bloom
                     var additionalPathsToInclude = Directory.GetFiles(dirName);
                     _applicationContainer.ProblemReportApi.SendReportWithoutUI(
                         ProblemLevel.kNonFatal,
-                        error,
+                        originalError,
                         errorMessage,
                         "",
                         additionalPathsToInclude
@@ -1333,7 +1346,7 @@ namespace Bloom
                     // No email... just fallback to the WinFormsErrorReporter, which will allow the user to email us.
                     // Unfortunately, we won't be able to automatically get the .bloomCollection file from that.
                     SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(
-                        error,
+                        originalError,
                         errorMessage
                     );
                 }

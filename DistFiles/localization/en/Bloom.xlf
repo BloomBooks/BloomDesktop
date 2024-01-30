@@ -5138,6 +5138,19 @@ Do you want to go ahead?</note>
         <note>ID: ReportProblemDialog.WhatDoing</note>
         <note>This is the label for the text field where the user enters what they were doing at the time of the problem.</note>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.SearchOnline" translate="no">
+        <source xml:lang="en">Search online</source>
+        <note>ID: ReportProblemDialog.SearchOnline</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveProblem" translate="no">
+        <source xml:lang="en">OneDriveProblem</source>
+        <note>ID: ReportProblemDialog.OneDriveProblem</note>
+        <note>The title of a dialog telling the user about a problem with their Microsoft OneDrive.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveErrorMessage" translate="no">
+        <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
+        <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
+      </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt">
         <source xml:lang="en">I get it. Do not show this again.</source>
         <note>ID: SamplePrintNotification.IGetIt</note>
