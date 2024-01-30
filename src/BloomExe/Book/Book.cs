@@ -5415,7 +5415,7 @@ namespace Bloom.Book
         /// <returns></returns>
         public string GetFilesafeLanguage1Name(string inLanguage)
         {
-            var languageName = _bookData.Language1.GetNameInLanguage(inLanguage);
+            var languageName = _bookData.CollectionSettings.GetLanguageName(_bookData.Language1.Tag, inLanguage);
             return Path.GetInvalidFileNameChars()
                 .Aggregate(languageName, (current, character) => current.Replace(character, ' '));
         }
