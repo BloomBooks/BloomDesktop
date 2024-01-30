@@ -558,18 +558,40 @@ div[data-book*="branding"] {
     background-color: black;
 }
 
+// See comments below about the horizontal version of this rule.
 .split-pane.vertical-percent
     .split-pane-component.position-right
-    .split-pane-component-inner
-    > div {
+    > .split-pane-component-inner {
     padding-left: var(--page-split-vertical-gap);
+    box-sizing: border-box;
 }
-
+// The standard structure of an origami split is
+// .split-pane.horizontal-percent
+//     .split-pane-component.position-top style="bottom: x%
+//         .split-pane-component-inner
+//             whatever (image/text/...
+//     .split-pane-component.position-bottom style ="height: (100-x)%
+//         .split-pane-component-inner
+//             whatever (image/text/...
+// We want to insert a gap between them, without complicating the percentages.
+// The .split-pane-component-inner is always 100%, so with the right box-sizing
+// we can add padding to it and it will still be the right height.
+// The tricky thing is that the .split-pane-component-inner may be nested inside
+// another level of split, so that it is inside a .split-pane-component.position-bottom
+// even though its direct parent is a .split-pane-component.position-top.
+// We only want the padding on an immediate child of .split-pane-component.position-bottom.
+// Note: an earlier version of this rule put the padding on any div that was a direct child of
+// the .split-pane-component-inner. I don't know why. It messed up the border drawing on
+// bloom-imageContainer, because the padding between it and a previous text block was
+// being put on the image container, and thus inside the border.
 .split-pane.horizontal-percent
     .split-pane-component.position-bottom
-    .split-pane-component-inner
-    > div {
+    > .split-pane-component-inner {
     padding-top: var(--page-split-horizontal-gap);
+    // I think this is redundant with a rule elsewhere, but it's VITAL
+    // when we are adding padding to a 100% height element, so I'm repeating
+    // it here.
+    box-sizing: border-box;
 }
 
 // ------------------------------------------------------------------------
