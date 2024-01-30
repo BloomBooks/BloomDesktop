@@ -1,0 +1,29 @@
+/* replace EFL Template 2 custom CSS: whatever is left after migrating to theme file */
+
+/* The line below hides the credits row on the front cover. */
+
+.Device16x9Landscape.frontCover .creditsRow {
+    --cover-creditsRow-show: none;
+}
+
+/* Below you find code that controls layout for pages in Device16x9Landscape layout */
+
+.Device16x9Landscape .marginBox img {
+    max-width: 177.777778mm;
+}
+
+.Device16x9Landscape.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+    /* Get past ios "background-size:cover" bug. See BL-7458 */
+    width: 177.77777778mm;
+}
+
+/* Below you find code that controls layout for pages in Device16x9Portrait layout */
+
+.Device16x9Portrait .marginBox img {
+    max-width: 100mm;
+}
+
+.Device16x9Portrait.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+    /* Get past ios "background-size:cover" bug. See BL-7458 */
+    width: 100mm;
+}
