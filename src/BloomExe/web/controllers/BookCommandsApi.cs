@@ -367,6 +367,7 @@ namespace Bloom.web.controllers
             catch (IOException error)
             {
                 SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+                    error,
                     error.Message,
                     "Could not export the book"
                 );

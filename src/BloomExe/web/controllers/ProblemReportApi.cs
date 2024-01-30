@@ -629,6 +629,107 @@ namespace Bloom.web.controllers
         // ENHANCE: I think levelOfProblem would benefit from being required and being an enum.
 
         /// <summary>
+        /// Try to show the react problem dialog, but show fallback dialogs if appropriate.
+        /// Currently called by ShowProblemDialog and CheckForAndHandleOneDriveExceptions, for the logic they share
+        /// </summary>
+        private static void ShowProblemReactDialogWithFallbacks(
+            Action showFallbackDialogAction,
+            dynamic reactDialogProps,
+            string reactDialogHeader,
+            IEnumerable<string> additionalPathsToInclude,
+            Control control,
+            Exception exception,
+            int height = 616
+        )
+        {
+            SafeInvoke.InvokeIfPossible(
+                "Show Problem Dialog",
+                control,
+                false,
+                () =>
+                {
+                    // Uses a browser ReactDialog (if possible) to show the problem report
+                    try
+                    {
+                        // We call CloseSplashScreen() above too, where it might help in some cases, but
+                        // this one, while apparently redundant might be wise to keep since closing the splash screen
+                        // needs to be done on the UI thread.
+                        try
+                        {
+                            StartupScreenManager.CloseSplashScreen();
+                        }
+                        catch (System.InvalidOperationException e)
+                        {
+                            // Depending on the timing, we can get a "Invoke or BeginInvoke cannot be called on a control until the window handle has been created."
+                            // exception here. Ignore
+                        }
+
+                        if (!BloomServer.ServerIsListening)
+                        {
+                            // We can't use the react dialog!
+                            showFallbackDialogAction();
+                            return;
+                        }
+
+                        // Precondition: we must be on the UI thread for Gecko to work.
+                        using (
+                            var dlg = new ReactDialog(
+                                "problemReportBundle",
+                                reactDialogProps,
+                                reactDialogHeader
+                            )
+                        )
+                        {
+                            _additionalPathsToInclude = additionalPathsToInclude;
+                            dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow; // Allows the window to be dragged around
+                            dlg.ControlBox = true; // Add controls like the X button back to the top bar
+                            dlg.Text = ""; // Remove the title from the WinForms top bar
+
+                            dlg.Width = 731;
+                            dlg.Height = height;
+
+                            // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
+                            BloomServer._theOneInstance.RegisterThreadBlocking();
+                            try
+                            {
+                                // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
+                                dlg.ShowDialog(GetParentFormForErrorDialogs());
+                            }
+                            finally
+                            {
+                                BloomServer._theOneInstance.RegisterThreadUnblocked();
+                                _additionalPathsToInclude = null;
+                            }
+                        }
+                    }
+                    catch (Exception problemReportException)
+                    {
+                        Logger.WriteError(
+                            "*** ProblemReportApi threw an exception trying to display",
+                            problemReportException
+                        );
+                        // At this point our problem reporter has failed for some reason, so we want the old WinForms handler
+                        // to report both the original error for which we tried to open our dialog and this new one where
+                        // the dialog itself failed.
+                        // In order to do that, we create a new exception with the original exception (if there was one) as the
+                        // inner exception. We include the message of the exception we just caught. Then we call the
+                        // old WinForms fatal exception report directly.
+                        // In any case, both of the errors will be logged by now.
+                        var message =
+                            "Bloom's error reporting failed: " + problemReportException.Message;
+
+                        // Fallback to Winforms in case of trouble getting the browser up
+                        var fallbackReporter = new WinFormsErrorReporter();
+                        // ENHANCE?: If reporting a non-fatal problem failed, why is the program required to abort? It might be able to handle other tasks successfully
+                        fallbackReporter.ReportFatalException(
+                            new ApplicationException(message, exception ?? problemReportException)
+                        );
+                    }
+                }
+            );
+        }
+
+        /// <summary>
         /// Shows a problem dialog.
         /// </summary>
         /// <param name="controlForScreenshotting"></param>
@@ -685,6 +786,10 @@ namespace Bloom.web.controllers
                 _showingProblemReport = true;
             }
 
+            string filePath = FileException.GetFilePathIfPresent(exception);
+            // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
+            Exception originalException = FileException.UnwrapIfFileException(exception);
+
             // We have a better UI for this problem
             // Note that this will trigger whether it's a plain 'ol System.IO.PathTooLongException, or our own enhanced subclass, Bloom.Utiles.PathTooLongException
             if (exception is System.IO.PathTooLongException)
@@ -693,8 +798,17 @@ namespace Bloom.web.controllers
                 return;
             }
 
+            if (CheckForAndHandleOneDriveExceptions(exception, filePath, levelOfProblem))
+            {
+                lock (_showingProblemReportLock)
+                {
+                    _showingProblemReport = false;
+                }
+                return;
+            }
+
             GatherReportInfoExceptScreenshot(
-                exception,
+                originalException,
                 detailedMessage,
                 shortUserLevelMessage,
                 isShortMessagePreEncoded
@@ -711,110 +825,168 @@ namespace Bloom.web.controllers
             // Now we use SafeInvoke only inside of this extracted method.
             TryGetScreenshot(controlForScreenshotting);
 
-            if (BloomServer._theOneInstance == null)
+            var showFallbackDialogAction = new Action(() =>
             {
-                // We got an error really early, before we can use HTML dialogs. Report using the old dialog.
-                // Hopefully we're still on the one main thread.
                 HtmlErrorReporter.ShowFallbackProblemDialog(
                     levelOfProblem,
-                    exception,
+                    originalException,
                     detailedMessage,
                     shortUserLevelMessage,
                     isShortMessagePreEncoded
                 );
+            });
+
+            if (BloomServer._theOneInstance == null)
+            {
+                // We got an error really early, before we can use HTML dialogs. Report using the old dialog.
+                // Hopefully we're still on the one main thread.
+                showFallbackDialogAction();
                 return;
             }
 
-            SafeInvoke.InvokeIfPossible(
-                "Show Problem Dialog",
-                controlForScreenshotting,
-                false,
-                () =>
+            var reactDialogProps = new { level = levelOfProblem };
+            try
+            { // We want to show the problem dialog with the screenshot if we can, but if we can't, we want to show the fallback dialog.
+                ShowProblemReactDialogWithFallbacks(
+                    showFallbackDialogAction,
+                    reactDialogProps,
+                    "Problem Report",
+                    additionalPathsToInclude,
+                    controlForScreenshotting,
+                    originalException
+                );
+            }
+            finally
+            {
+                lock (_showingProblemReportLock)
                 {
-                    // Uses a browser ReactDialog (if possible) to show the problem report
-                    try
-                    {
-                        // We call CloseSplashScreen() above too, where it might help in some cases, but
-                        // this one, while apparently redundant might be wise to keep since closing the splash screen
-                        // needs to be done on the UI thread.
-                        StartupScreenManager.CloseSplashScreen();
-
-                        if (!BloomServer.ServerIsListening)
-                        {
-                            // We can't use the react dialog!
-                            HtmlErrorReporter.ShowFallbackProblemDialog(
-                                levelOfProblem,
-                                exception,
-                                detailedMessage,
-                                shortUserLevelMessage,
-                                isShortMessagePreEncoded
-                            );
-                            return;
-                        }
-
-                        // Precondition: we must be on the UI thread for Gecko to work.
-                        using (
-                            var dlg = new ReactDialog(
-                                "problemReportBundle",
-                                new { level = levelOfProblem },
-                                "Problem Report"
-                            )
-                        )
-                        {
-                            _additionalPathsToInclude = additionalPathsToInclude;
-                            dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow; // Allows the window to be dragged around
-                            dlg.ControlBox = true; // Add controls like the X button back to the top bar
-                            dlg.Text = ""; // Remove the title from the WinForms top bar
-
-                            dlg.Width = 731;
-                            dlg.Height = 616;
-
-                            // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
-                            BloomServer._theOneInstance.RegisterThreadBlocking();
-                            try
-                            {
-                                // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
-                                dlg.ShowDialog(GetParentFormForErrorDialogs());
-                            }
-                            finally
-                            {
-                                BloomServer._theOneInstance.RegisterThreadUnblocked();
-                                _additionalPathsToInclude = null;
-                            }
-                        }
-                    }
-                    catch (Exception problemReportException)
-                    {
-                        Logger.WriteError(
-                            "*** ProblemReportApi threw an exception trying to display",
-                            problemReportException
-                        );
-                        // At this point our problem reporter has failed for some reason, so we want the old WinForms handler
-                        // to report both the original error for which we tried to open our dialog and this new one where
-                        // the dialog itself failed.
-                        // In order to do that, we create a new exception with the original exception (if there was one) as the
-                        // inner exception. We include the message of the exception we just caught. Then we call the
-                        // old WinForms fatal exception report directly.
-                        // In any case, both of the errors will be logged by now.
-                        var message =
-                            "Bloom's error reporting failed: " + problemReportException.Message;
-
-                        // Fallback to Winforms in case of trouble getting the browser up
-                        var fallbackReporter = new WinFormsErrorReporter();
-                        // ENHANCE?: If reporting a non-fatal problem failed, why is the program required to abort? It might be able to handle other tasks successfully
-                        fallbackReporter.ReportFatalException(
-                            new ApplicationException(message, exception ?? problemReportException)
-                        );
-                    }
-                    finally
-                    {
-                        lock (_showingProblemReportLock)
-                        {
-                            _showingProblemReport = false;
-                        }
-                    }
+                    _showingProblemReport = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// We want to show different UI for exceptions caused by the user's OneDrive, which we cannot do anything about
+        /// And should inform the user about. See BL-12977
+        /// Recursively checks inner exceptions.
+        /// </summary>
+        /// <param name="error">The exception to check. We will check its inner exceptions also.</param>
+        /// <param name="filePath">Path of file that we were trying to access, causing this error. To display to the user</param>
+        /// <param name="levelOfProblem">"fatal" or "nonfatal", for UI display</param>
+        public static bool CheckForAndHandleOneDriveExceptions(
+            System.Exception error,
+            string filePath = "",
+            string levelOfProblem = "nonfatal"
+        )
+        {
+            if (error == null)
+                return false;
+
+            string fileExceptionFilePath = FileException.GetFilePathIfPresent(error);
+            if (!string.IsNullOrEmpty(fileExceptionFilePath))
+            {
+                filePath = fileExceptionFilePath;
+            }
+            // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
+            Exception originalError = FileException.UnwrapIfFileException(error);
+
+            string errorCode = originalError.HResult.ToString("X");
+
+            if (!OneDriveUtils.IsOneDriveErrorCode(errorCode))
+            {
+                // This exception is not one of the OneDrive exception codes we check for,
+                // but check if it has an inner exception that is
+                if (originalError?.InnerException != null)
+                {
+                    return CheckForAndHandleOneDriveExceptions(
+                        originalError.InnerException,
+                        filePath
+                    );
+                }
+                else
+                {
+                    // this is not a special error code, return to normal error handling
+                    return false;
+                }
+            }
+
+            Control control = Shell.GetShellOrOtherOpenForm();
+            if (control == null) // still possible if we come from a "Details" button
+                control = FatalExceptionHandler.ControlOnUIThread;
+
+            string logPath = Logger.LogPath.Replace('\\', '/');
+
+            string errorMessageLabel = "Error Message";
+            string errorCodeLabel = "Error Number";
+            string filePathLabel = "File";
+            string logPathLabel = "Bloom Log";
+            void ShowOneDriveExceptionFallbackDialog(
+                Exception error,
+                string errorCode,
+                string filePath,
+                string logPath
+            )
+            {
+                // We decided not to localize this for now.
+                MessageBox.Show(
+                    OneDriveUtils.GetOneDriveErrorDialogMessage()
+                        + Environment.NewLine
+                        + Environment.NewLine
+                        + $"{errorMessageLabel}: {error.Message}{Environment.NewLine}"
+                        + $"{errorCodeLabel}: {errorCode}{Environment.NewLine}"
+                        + $"{filePathLabel}: {filePath}{Environment.NewLine}"
+                        + $"{logPathLabel}: {logPath}",
+                    OneDriveUtils.GetOneDriveErrorDialogHeader(),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+
+            if (BloomServer._theOneInstance == null)
+            {
+                // We got an error really early, before we can use HTML dialogs
+                ShowOneDriveExceptionFallbackDialog(originalError, errorCode, filePath, logPath);
+
+                return true;
+            }
+            var showOneDriveFallbackDialogAction = new Action(() =>
+            {
+                ShowOneDriveExceptionFallbackDialog(originalError, errorCode, filePath, logPath);
+            });
+
+            string searchOnline = L10NSharp.LocalizationManager.GetString(
+                "ReportProblemDialog.SearchOnline",
+                "Search online"
             );
+            string searchOnlineLink =
+                errorCode == "80070184"
+                    ? "" // as of now, error "80070184" does not have good online microsoft support results
+                    : $"<a href=\"https://support.microsoft.com/en-us/search?query=0x{errorCode}\">{searchOnline}</a><br>";
+
+            var reactDialogProps = new
+            {
+                level = ProblemLevel.kNotify, // Always use the notify dialog (no report button) for OneDrive errors
+                message = OneDriveUtils.GetOneDriveErrorDialogMessage(),
+                detailsBoxText = $"Error message<br>{originalError.Message}<br>Error number<br>"
+                    + $"0x{errorCode} {searchOnlineLink}"
+                    + (!string.IsNullOrEmpty(filePath) ? $"File<br>{filePath}<br>" : "")
+                    + $"<a href=\"file:///{logPath}\">Bloom Log</a><br>",
+                titleOverride = OneDriveUtils.GetOneDriveErrorDialogHeader(),
+                titleL10nKeyOverride = "ReportProblemDialog.OneDriveProblem",
+                themeOverride = levelOfProblem,
+            };
+
+            ShowProblemReactDialogWithFallbacks(
+                showOneDriveFallbackDialogAction,
+                reactDialogProps,
+                OneDriveUtils.GetOneDriveErrorDialogHeader(),
+                null,
+                control,
+                originalError,
+                450
+            );
+
+            return true;
         }
 
         /// <summary>
