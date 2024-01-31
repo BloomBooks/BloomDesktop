@@ -87,7 +87,9 @@ namespace Bloom.Api
         private void HandleGetAvailableAppearanceUIOptions(ApiRequest request)
         {
             request.ReplyWithJson(
-                _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.AppearanceUIOptions
+                _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.AppearanceUIOptions(
+                    _bookSelection.CurrentSelection.Storage.DisableLegacyTheme
+                )
             );
         }
 

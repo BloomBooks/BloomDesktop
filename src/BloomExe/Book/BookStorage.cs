@@ -84,6 +84,8 @@ namespace Bloom.Book
         ExpandoObject XmatterAppearanceSettings { get; }
         ExpandoObject BrandingAppearanceSettings { get; }
 
+        bool DisableLegacyTheme { get; }
+
         BookInfo BookInfo { get; set; }
         string NormalBaseForRelativepaths { get; }
         string InitialLoadErrors { get; }
@@ -2588,6 +2590,10 @@ namespace Bloom.Book
 
         public ExpandoObject XmatterAppearanceSettings =>
             XMatterSettings.GetSettingsOrNull(XMatterHelper.PathToXMatterSettings)?.Appearance;
+        public bool DisableLegacyTheme =>
+            XMatterSettings
+                .GetSettingsOrNull(XMatterHelper.PathToXMatterSettings)
+                ?.DisableLegacyTheme ?? false;
 
         public ExpandoObject BrandingAppearanceSettings =>
             Api.BrandingSettings
@@ -3692,6 +3698,10 @@ namespace Bloom.Book
                     // since substitution is used when the source book is NOT in the new appearance format, while
                     // customBookStyles2.css is only supported in that format.
                     RobustFile.Copy(substituteCssPath, destPath, false);
+                }
+                else
+                {
+                    BookInfo.AppearanceSettings.DisableLegacyTheme(DisableLegacyTheme);
                 }
 
                 // This would happen as a side effect of saving the book at the end of updating it, but

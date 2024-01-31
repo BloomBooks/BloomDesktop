@@ -156,6 +156,19 @@ public class AppearanceSettings
     }
 
     /// <summary>
+    /// If the argument is true and we are using the legacy theme, switch to default.
+    /// (Even if we had reason to use legacy, such as customCSS, if legacy is disabled don't use it.)
+    /// </summary>
+    /// <param name="legacyDisabled"></param>
+    public void DisableLegacyTheme(bool legacyDisabled)
+    {
+        if (legacyDisabled && CssThemeName == "legacy-5-6")
+        {
+            CssThemeName = "default";
+        }
+    }
+
+    /// <summary>
     /// Are we going to use the legacy theme? We MUST use it if we haven't been able to write out a consistent appearance.css file yet.
     /// Otherwise, it generally depends on whether the user selected it, though when we first see a book we may decide to force it.
     /// Review: an alternative is to put the appropriate CSS for the chosen theme into the Book supporting files cache.
@@ -343,7 +356,7 @@ public class AppearanceSettings
     /// Currently we also pass Css files from branding and xmatter, but we will report a problem if one of them isn't compatible.
     /// When we get more confidence that we have migrated all the brandings and xmatters, we can stop passing them in.
     /// </summary>
-    public bool Initialize(Tuple<string, string>[] cssFilesToCheck)
+    public bool Initialize(Tuple<string, string>[] cssFilesToCheck, bool disableLegacyTheme)
     {
         var result = false;
         // in case we are reinitializing, clear out any old state
@@ -369,12 +382,13 @@ public class AppearanceSettings
                     OffendingCssRule = offendingCssRule;
                     FirstPossiblyOffendingCssFile = css.Item1;
                 }
-                if (!css.Item1.StartsWith("custom"))
+                if (!disableLegacyTheme && !css.Item1.StartsWith("custom"))
                 {
-                    var msg = "Unexpectedly found a branding or xmatter CSS not compatible with appearance system: "
-                            + css.Item1
-                            + " problem rule is: "
-                            + OffendingCssRule;
+                    var msg =
+                        "Unexpectedly found a branding or xmatter CSS not compatible with appearance system: "
+                        + css.Item1
+                        + " problem rule is: "
+                        + OffendingCssRule;
                     SIL.Reporting.ErrorReport.NotifyUserOfProblem("{0}", msg);
                     // This shouldn't happen, but is probably the best way to carry on if we must
                     if (CssThemeName != "legacy-5-6")
@@ -795,19 +809,18 @@ public class AppearanceSettings
     }
 
     // things that aren't settings but are used by the BookSettings UI
-    public string AppearanceUIOptions
+    public string AppearanceUIOptions(bool disableLegacy)
     {
-        get
-        {
-            var names = GetAppearanceThemeNames();
-            var x = new ExpandoObject() as IDictionary<string, object>;
+        var names = GetAppearanceThemeNames();
+        if (disableLegacy)
+            names = names.Where(n => n != "legacy-5-6");
+        var x = new ExpandoObject() as IDictionary<string, object>;
 
-            x["themeNames"] =
-                from name in names.ToArray<string>()
-                select new { label = name, value = name };
-            x["firstPossiblyLegacyCss"] = FirstPossiblyOffendingCssFile;
-            return JsonConvert.SerializeObject(x);
-        }
+        x["themeNames"] =
+            from name in names.ToArray<string>()
+            select new { label = name, value = name };
+        x["firstPossiblyLegacyCss"] = FirstPossiblyOffendingCssFile;
+        return JsonConvert.SerializeObject(x);
     }
 
     public object ChangeableSettingsForUI
