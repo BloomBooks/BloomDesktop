@@ -338,7 +338,8 @@ namespace BloomTests.Book
                     cssFilesToCheck[0],
                     cssFilesToCheck[1],
                     Tuple.Create("customBookStyles2.css", RobustFile.ReadAllText(_pathToCustomCss))
-                }
+                },
+                false
             );
 
             _generatedAppearanceCss = RobustFile.ReadAllText(

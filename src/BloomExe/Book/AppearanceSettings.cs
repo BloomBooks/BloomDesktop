@@ -343,7 +343,7 @@ public class AppearanceSettings
     /// Currently we also pass Css files from branding and xmatter, but we will report a problem if one of them isn't compatible.
     /// When we get more confidence that we have migrated all the brandings and xmatters, we can stop passing them in.
     /// </summary>
-    public bool Initialize(Tuple<string, string>[] cssFilesToCheck)
+    public bool Initialize(Tuple<string, string>[] cssFilesToCheck, bool disableLegacyTheme)
     {
         var result = false;
         // in case we are reinitializing, clear out any old state
@@ -369,7 +369,7 @@ public class AppearanceSettings
                     OffendingCssRule = offendingCssRule;
                     FirstPossiblyOffendingCssFile = css.Item1;
                 }
-                if (!css.Item1.StartsWith("custom"))
+                if (!disableLegacyTheme && !css.Item1.StartsWith("custom"))
                 {
                     var msg = "Unexpectedly found a branding or xmatter CSS not compatible with appearance system: "
                             + css.Item1
@@ -795,19 +795,18 @@ public class AppearanceSettings
     }
 
     // things that aren't settings but are used by the BookSettings UI
-    public string AppearanceUIOptions
+    public string AppearanceUIOptions(bool disableLegacy)
     {
-        get
-        {
-            var names = GetAppearanceThemeNames();
-            var x = new ExpandoObject() as IDictionary<string, object>;
+        var names = GetAppearanceThemeNames();
+        if (disableLegacy)
+            names = names.Where(n => n != "legacy-5-6");
+        var x = new ExpandoObject() as IDictionary<string, object>;
 
-            x["themeNames"] =
-                from name in names.ToArray<string>()
-                select new { label = name, value = name };
-            x["firstPossiblyLegacyCss"] = FirstPossiblyOffendingCssFile;
-            return JsonConvert.SerializeObject(x);
-        }
+        x["themeNames"] =
+            from name in names.ToArray<string>()
+            select new { label = name, value = name };
+        x["firstPossiblyLegacyCss"] = FirstPossiblyOffendingCssFile;
+        return JsonConvert.SerializeObject(x);
     }
 
     public object ChangeableSettingsForUI

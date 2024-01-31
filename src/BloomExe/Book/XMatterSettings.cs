@@ -18,6 +18,9 @@ namespace Bloom.Book
         {
             [JsonProperty("appearance")]
             public ExpandoObject Appearance;
+
+            [JsonProperty("disableLegacyTheme")]
+            public bool DisableLegacyTheme;
         }
 
         public static Settings GetSettingsOrNull(string settingsPath)
