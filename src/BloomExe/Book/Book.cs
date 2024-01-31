@@ -1716,7 +1716,7 @@ namespace Bloom.Book
             // This should be done before UpdateSupportFiles, because those settings affect
             // what files are copied to the book folder.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
-            BookInfo.AppearanceSettings.Initialize(cssFiles);
+            BookInfo.AppearanceSettings.Initialize(cssFiles, Storage.LegacyThemeCanBeUsed);
             UpdateSupportFiles();
         }
 
@@ -5586,7 +5586,7 @@ namespace Bloom.Book
             // or deleted customBookStyles.css. We need to update things to reflect the new state of things.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
             // This might produce different results if customBookStyles.css has been deleted.
-            BookInfo.AppearanceSettings.Initialize(cssFiles);
+            BookInfo.AppearanceSettings.Initialize(cssFiles, Storage.LegacyThemeCanBeUsed);
             // At one point the line commented out here was all this function did.
             // It needs to be done at some point at least if the theme has changed, to generate the updated
             // Appearance.css. But usually the caller does a full Save() after calling this, so

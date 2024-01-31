@@ -84,6 +84,8 @@ namespace Bloom.Book
         ExpandoObject XmatterAppearanceSettings { get; }
         ExpandoObject BrandingAppearanceSettings { get; }
 
+        bool LegacyThemeCanBeUsed { get; }
+
         BookInfo BookInfo { get; set; }
         string NormalBaseForRelativepaths { get; }
         string InitialLoadErrors { get; }
@@ -2589,6 +2591,15 @@ namespace Bloom.Book
         public ExpandoObject XmatterAppearanceSettings =>
             XMatterSettings.GetSettingsOrNull(XMatterHelper.PathToXMatterSettings)?.Appearance;
 
+        /// <summary>
+        /// Is it OK to use legacy themes with this xmatter? Note that this defaults TRUE if
+        /// there is no xmatter.json or it does not contain this field.
+        /// </summary>
+        public bool LegacyThemeCanBeUsed =>
+            XMatterSettings
+                .GetSettingsOrNull(XMatterHelper.PathToXMatterSettings)
+                ?.LegacyThemeCanBeUsed ?? true;
+
         public ExpandoObject BrandingAppearanceSettings =>
             Api.BrandingSettings
                 .GetSettingsOrNull(CollectionSettings.BrandingProjectKey)
@@ -3693,6 +3704,12 @@ namespace Bloom.Book
                 // customBookStyles2.css is only supported in that format.
                 RobustFile.Copy(substituteCssPath, destPath, false);
             }
+            else
+                {
+                    // if there wasn't a substitute, we may have chosen legacy theme.
+                    // That might be disabled by xmatter, but we'll handle that later in
+                    // EnsureUpToDate.
+                }
 
             // This would happen as a side effect of saving the book at the end of updating it, but
             // we need it to happen before we re-initialize the settings and UpdateSupportFiles so
