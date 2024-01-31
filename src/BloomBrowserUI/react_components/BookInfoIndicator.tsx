@@ -53,11 +53,13 @@ export const BookInfoIndicator: React.FunctionComponent<{
                 {info.id}
             </p>
 
-            <p>
-                <b>Theme</b>
-                <br />
-                {info.cssThemeName}
-            </p>
+            {theme !== "none" && (
+                <p>
+                    <b>Theme</b>
+                    <br />
+                    {info.cssThemeName}
+                </p>
+            )}
             {
                 // The logic that shows one or none of these three messages is similar to that in BookSettingsDialog.
                 // See the comment there.

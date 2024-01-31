@@ -156,6 +156,14 @@ public class AppearanceSettings
     }
 
     /// <summary>
+    /// Usually, this is simply the theme name, but if the book doesn't have one (that is, it was made by
+    /// an earlier Bloom and has not been migrated), it answers "none". Currently this is used only
+    /// to allow the BookInfoIndicator to show nothing at all in the case were we don't have a definite,
+    /// recorded theme (BL-13006)
+    /// </summary>
+    public string ThemeNameForDisplay => _areSettingsConsistentWithFiles ? CssThemeName : "none";
+
+    /// <summary>
     /// Are we going to use the legacy theme? We MUST use it if we haven't been able to write out a consistent appearance.css file yet.
     /// Otherwise, it generally depends on whether the user selected it, though when we first see a book we may decide to force it.
     /// Review: an alternative is to put the appropriate CSS for the chosen theme into the Book supporting files cache.
