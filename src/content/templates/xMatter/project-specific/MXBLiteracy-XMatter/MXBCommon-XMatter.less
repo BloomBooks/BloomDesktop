@@ -120,18 +120,19 @@
 }
 
 .HalfLetterPortrait {
-    &.outsideFrontCover .marginBox,
-    &.insideFrontCover .marginBox,
-    &.titlePage .marginBox,
-    &.credits .marginBox,
-    &.insideBackCover .marginBox,
-    &.outsideBackCover .marginBox {
-        height: unset;
-        bottom: 0.75in; // make bottom margin on all xmatter pages 3/4"
+    &.outsideFrontCover,
+    &.insideFrontCover,
+    &.titlePage,
+    &.credits,
+    &.insideBackCover,
+    &.outsideBackCover {
+        --cover-margin-bottom: 0.75in;
+        --page-margin-bottom: 0.75in;
     }
-    &.outsideFrontCover .marginBox,
-    &.titlePage .marginBox {
-        top: 1in;
+    &.outsideFrontCover,
+    &.titlePage {
+        --cover-margin-top: 1in;
+        --page-margin-top: 1in;
     }
 }
 
@@ -178,34 +179,8 @@
     }
 }
 
-// override .bloom-content1 min-height 3em from bloom-xmatter-common.less
-body[bookcreationtype="original"] {
-    .titlePage {
-        #languageInformation {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
-        }
-        #contributions {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
-        }
-        #localizedAcknowledgments {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
-        }
-        #funding {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
-        }
-    }
-}
-
 // override .bloom-contentNational1 min-height 3em from bloom-xmatter-common.less
-body[bookcreationtype="translation"] {
+body {
     .titlePage {
         #languageInformation {
             .bloom-content1 {
