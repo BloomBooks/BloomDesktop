@@ -218,7 +218,7 @@ namespace Bloom.ErrorReporter
 
             try
             {
-                string filePath = FileException.FilePathIfPresent(exception);
+                string filePath = FileException.getFilePathIfPresent(exception);
                 // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
                 Exception originalException = FileException.UnwrapIfFileException(exception);
                 if (
@@ -228,11 +228,7 @@ namespace Bloom.ErrorReporter
                     )
                 )
                 {
-                    if (!wasAlreadyLocked)
-                    {
-                        System.Threading.Monitor.Exit(_lock);
-                    }
-                    return;
+                    return; // TODO make sure we are letting go of the lock
                 }
 
                 if (policy == null)

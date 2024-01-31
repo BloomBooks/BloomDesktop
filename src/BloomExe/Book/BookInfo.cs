@@ -745,7 +745,7 @@ namespace Bloom.Book
         /// This method recurses through the folders under 'pathToDirectory' and keeps track of all the unique bookInstanceId
         /// guids. When a duplicate is found, we will call InstallFreshInstanceGuid().
         /// </summary>
-        public static void CheckForDuplicateInstanceIds(
+        public static void CheckForDuplicateInstanceIdsAndRepair(
             string pathToDirectory,
             Func<string, bool> okToChangeId
         )
@@ -1011,7 +1011,6 @@ namespace Bloom.Book
                 {
                     id = GetIdFromDamagedMetaDataString(RobustFile.ReadAllText(metaDataPath));
                 }
-                // TODO? should I replace all calls to RobustFile.Read... with wrapped versions?
                 catch (IOException error)
                 {
                     throw new FileException(metaDataPath, error);

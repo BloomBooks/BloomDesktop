@@ -30,18 +30,6 @@ export const kindParams = {
         title: "Bloom had a problem",
         l10nKey: "ReportProblemDialog.NonFatalTitle"
     },
-    onedrivenonfatal: {
-        dialogHeaderColor: kNonFatalColor,
-        primaryColor: kNonFatalColor,
-        title: "OneDrive Problem",
-        l10nKey: "ReportProblemDialog.OneDriveProblem"
-    },
-    onedrivefatal: {
-        dialogHeaderColor: "#f44336", // bright red
-        primaryColor: "#f44336", 
-        title: "OneDrive Problem",
-        l10nKey: "ReportProblemDialog.OneDriveProblem"
-    },
 };
 
 export function makeTheme(kind: ProblemKind): Theme {

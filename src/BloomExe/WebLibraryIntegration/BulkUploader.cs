@@ -541,7 +541,7 @@ namespace Bloom.WebLibraryIntegration
             Func<string, bool> okToChangeId
         )
         {
-            BookInfo.CheckForDuplicateInstanceIds(rootFolderPath, okToChangeId);
+            BookInfo.CheckForDuplicateInstanceIdsAndRepair(rootFolderPath, okToChangeId);
         }
     }
 }

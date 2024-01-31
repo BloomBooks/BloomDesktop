@@ -16,6 +16,7 @@ import { makeTheme, kindParams } from "./theme";
 import { useL10n } from "../react_components/l10nHooks";
 import { ProblemKind } from "./ProblemDialog";
 import { hookupLinkHandler } from "../utils/linkHandler";
+import { kFormBackground } from "../utils/colorUtils";
 
 export const NotifyDialog: React.FunctionComponent<{
     reportLabel?: string | null;
@@ -23,14 +24,15 @@ export const NotifyDialog: React.FunctionComponent<{
     message: string | null;
     detailsBoxText?: string | null;
     level?: ProblemKind | null;
+    titleOverride?: string | null;
+    titleL10nKeyOverride?: string | null;
 }> = props => {
-    console.log(props);
     const kind = props.level || ProblemKind.NonFatal;
 
     const theme = makeTheme(kind);
 
-    const englishTitle = kindParams[kind].title;
-    const titleKey = kindParams[kind].l10nKey;
+    const englishTitle = props.titleOverride ?? kindParams[kind].title;
+    const titleKey = props.titleL10nKeyOverride ?? kindParams[kind].l10nKey;
     const localizedDlgTitle = useL10n(englishTitle, titleKey);
 
     React.useEffect(() => hookupLinkHandler(), []);
@@ -64,7 +66,7 @@ export const NotifyDialog: React.FunctionComponent<{
                         />
                         {props.detailsBoxText && 
                             <DialogContentText
-                                css={css`background-color: #f0f0f0; padding: 10px; margin-top: 20px; margin-bottom: 20px;`}
+                                css={css`background-color: ${kFormBackground}; padding: 10px; margin-top: 20px; margin-bottom: 20px;`}
                                 dangerouslySetInnerHTML={{
                                     __html: props.detailsBoxText || ""
                                 }}
@@ -128,9 +130,9 @@ export const NotifyDialog: React.FunctionComponent<{
     };
 
     const getCloseButton = (): JSX.Element | null => {
-        const buttonLabel = kind === ProblemKind.OneDriveFatal ? "Quit" : "Close";
+        const buttonLabel = kind === ProblemKind.Fatal ? "Quit" : "Close";
         const l10nKey =
-                kind === ProblemKind.OneDriveFatal // currently the only fatal problem kind that should land us in this dialog
+                kind === ProblemKind.Fatal
                     ? "ReportProblemDialog.Quit" 
                     : "Common.Close";
         return (

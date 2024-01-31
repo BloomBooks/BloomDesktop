@@ -480,7 +480,7 @@ namespace Bloom.Collection
 
                 LoadDictionary(xml, "Palette", ColorPalettes);
             }
-            catch (Exception outerError)
+            catch (Exception originalError)
             {
                 string settingsContents;
                 try
@@ -497,7 +497,7 @@ namespace Bloom.Collection
                 // But now we decided it is better to catch at a higher level, at OpenProjectWindow(), else we have two different
                 // error UI dialogs for the same problem. See BL-9916.
 
-                throw new FileException(SettingsFilePath, outerError);
+                throw new FileException(SettingsFilePath, originalError);
             }
 
             try

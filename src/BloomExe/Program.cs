@@ -1298,13 +1298,12 @@ namespace Bloom
                 _projectContext = null;
             }
 
-            string filePath = FileException.FilePathIfPresent(error);
             // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
             Exception originalError = FileException.UnwrapIfFileException(error);
 
-            // Normally NotifyUserOfProblem would check for special exceptions and handle them appropriately.
-            // But, the code below doesn't use the usual NotifyUserOfProblem path (because we may want to SendReportWithoutUI below)
-            // There we can't pass the exception through to NotifyUserOfProblem, so we need to check it here
+            // Normally, NotifyUserOfProblem would take an exception and do this special-exception processing for us.
+            // But in this case, we don't pass the exception to NotifyUserOfProblem because we may subsequently end up
+            // calling SendReportWithoutUI. Therefore, we must check for the special exception independently.
             if (ProblemReportApi.CheckForAndHandleOneDriveExceptions(error))
             {
                 return;

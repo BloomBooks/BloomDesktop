@@ -10,8 +10,6 @@ export enum ProblemKind {
     User = "user",
     NonFatal = "nonfatal",
     Fatal = "fatal",
-    OneDriveNonFatal = "onedrivenonfatal",
-    OneDriveFatal = "onedrivefatal"
 }
 
 export const ProblemDialog: React.FunctionComponent<{
@@ -19,8 +17,9 @@ export const ProblemDialog: React.FunctionComponent<{
     message: string; // The localized message to notify the user about.
     reportLabel?: string; // The localized text that goes on the Report button. Omit or pass "" to disable Report button.
     secondaryLabel?: string; // The localized text that goes on the secondary action button. Omit or pass "" to disable the secondary action button.
+    notifyOnly?: boolean; // If true, use the NotifyDialog with no report button regardless of the level.
 }> = props => {
-    if ([ProblemKind.Notify, ProblemKind.OneDriveNonFatal, ProblemKind.OneDriveFatal].includes(props.level)) { // TODO? is there a better way to do this?
+    if (props.level === ProblemKind.Notify || props.notifyOnly) {
         return <NotifyDialog {...props} />;
     } else {
         return <ReportDialog kind={props.level} />;

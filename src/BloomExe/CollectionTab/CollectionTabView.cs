@@ -278,19 +278,19 @@ namespace Bloom.CollectionTab
                         // However, until we get rid of the old collection tab, it's tricky to move it, so I've just
                         // duplicated it here.
                         // Doing it at this point seems to work fine.
-                        CheckForDuplicates();
+                        CheckForDuplicatesAndRepair();
                         Controls.Add(_reactControl);
                     }
                 )
             );
         }
 
-        private void CheckForDuplicates()
+        private void CheckForDuplicatesAndRepair()
         {
             var collectionPath = _model.TheOneEditableCollection.PathToDirectory;
             // A book's ID may not be changed if we have a TC and the book is actually in the shared folder.
             // Eventually we may allow it if the book is checked out.
-            BookInfo.CheckForDuplicateInstanceIds(
+            BookInfo.CheckForDuplicateInstanceIdsAndRepair(
                 collectionPath,
                 (bookPath) =>
                 {
