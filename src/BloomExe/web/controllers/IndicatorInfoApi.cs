@@ -56,7 +56,7 @@ namespace Bloom.web.controllers
                         {
                             id = bookInfo.Id,
                             factoryInstalled = collection.IsFactoryInstalled,
-                            cssThemeName = bookInfo.AppearanceSettings.CssThemeName,
+                            cssThemeName = bookInfo.AppearanceSettings.ThemNameForDisplay,
                             firstPossiblyOffendingCssFile = firstPossiblyOffendingCssFile,
                             //substitutedCssFile = bookInfo.AppearanceSettings.SubstitutedCssFile,
                             path = bookInfo.FolderPath,
