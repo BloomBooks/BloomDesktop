@@ -155,6 +155,8 @@ public class AppearanceSettings
         set { _properties.cssThemeName = value; }
     }
 
+    public string ThemNameForBookInfo => _areSettingsConsistentWithFiles ? CssThemeName : "none";
+
     /// <summary>
     /// Are we going to use the legacy theme? We MUST use it if we haven't been able to write out a consistent appearance.css file yet.
     /// Otherwise, it generally depends on whether the user selected it, though when we first see a book we may decide to force it.
