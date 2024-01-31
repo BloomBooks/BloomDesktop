@@ -1705,6 +1705,10 @@ namespace Bloom.Book
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
 
+            BookInfo.AppearanceSettings.ChangeThemeIfCurrentOneNotAllowed(
+                Storage.LegacyThemeCanBeUsed
+            );
+
             // Enhance: there's probably some case where this will get unnecessarily repeated,
             // but I think it would only be in the very rare case of repeatedly needing to update
             // a pre-4.9 book when we can't Save().
@@ -5417,7 +5421,10 @@ namespace Bloom.Book
         /// <returns></returns>
         public string GetFilesafeLanguage1Name(string inLanguage)
         {
-            var languageName = _bookData.CollectionSettings.GetLanguageName(_bookData.Language1.Tag, inLanguage);
+            var languageName = _bookData.CollectionSettings.GetLanguageName(
+                _bookData.Language1.Tag,
+                inLanguage
+            );
             return Path.GetInvalidFileNameChars()
                 .Aggregate(languageName, (current, character) => current.Replace(character, ' '));
         }
