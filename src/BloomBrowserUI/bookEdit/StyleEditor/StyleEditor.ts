@@ -30,6 +30,8 @@ import {
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
+import { RenderOverlayRoot } from "./OverlayFormatPage";
+import { BubbleManager } from "../js/bubbleManager";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -57,6 +59,7 @@ interface IFormattingValues {
     // when it is not specified.
     hiliteTextColor: string | undefined;
     hiliteBgColor: string;
+    padding: string;
 }
 
 // Class provides a convenient way to group a style id and display name
@@ -947,7 +950,8 @@ export default class StyleEditor {
             underline: underline,
             color: textColor,
             hiliteTextColor,
-            hiliteBgColor
+            hiliteBgColor,
+            padding: box.css("padding-left")
         };
     }
 
@@ -1210,6 +1214,16 @@ export default class StyleEditor {
                             if (this.xmatterMode) {
                                 $("#style-page").remove();
                             }
+                            // Show the overlay tab only if the box being edited is in an overlay
+                            if (
+                                !this.boxBeingEdited.closest(
+                                    ".bloom-textOverPicture"
+                                )
+                            ) {
+                                document
+                                    .getElementById("overlay-page")
+                                    ?.remove();
+                            }
 
                             const visibleTabs = $(".tab-page:visible");
                             if (visibleTabs.length === 1) {
@@ -1250,6 +1264,13 @@ export default class StyleEditor {
                             current.hiliteBgColor,
                             (textColor, bgColor) =>
                                 this.changeHiliteProps(textColor, bgColor)
+                        );
+
+                        RenderOverlayRoot(
+                            current.padding,
+                            (newPadding: string) => {
+                                this.changePadding(newPadding);
+                            }
                         );
 
                         if (!noFormatChange) {
@@ -1378,6 +1399,27 @@ export default class StyleEditor {
                     })
             );
         });
+    }
+    changePadding(padding: string) {
+        if (this.ignoreControlChanges) {
+            return;
+        }
+        const oldPaddingStr = window.getComputedStyle(this.boxBeingEdited)
+            .paddingLeft;
+        BubbleManager.adjustOverlaysForPaddingChange(
+            this.boxBeingEdited.ownerDocument.body,
+            StyleEditor.GetStyleNameForElement(this.boxBeingEdited) ?? "",
+            oldPaddingStr,
+            padding
+        );
+        const rule = this.getStyleRule(true, false);
+        if (rule !== null) {
+            rule.style.setProperty("padding", padding, "important");
+            this.cleanupAfterStyleChange();
+            RenderOverlayRoot(padding, (newPadding: string) => {
+                this.changePadding(newPadding);
+            });
+        }
     }
 
     // Since both the font list popover and the FontInformationPane use the same root class, and since
@@ -1956,6 +1998,25 @@ export default class StyleEditor {
         }
     }
 
+    changeOverlayProps(padding: string) {
+        if (this.ignoreControlChanges) {
+            return;
+        }
+        // const styleName = StyleEditor.GetStyleNameForElement(
+        //     this.boxBeingEdited
+        // );
+        RenderOverlayRoot(padding, (newPadding: string) => {
+            this.changePadding(newPadding);
+        });
+        // if (styleName) {
+        //     this.putOverlayRulesInDom(styleName, padding);
+        // }
+    }
+
+    // putOverlayRulesInDom(styleName: string, padding: string) {
+    //     // TODO
+    // }
+
     private setColorButtonColor(id: string, color: string) {
         const colorButton = document.getElementById(id);
         colorButton?.setAttribute("style", `background-color:${color}`);
@@ -2256,6 +2317,7 @@ export default class StyleEditor {
         this.selectButtons(current);
         this.setColorButtonColor("colorSelectButton", current.color);
         this.changeHiliteProps(current.color, current.hiliteBgColor);
+        this.changeOverlayProps(current.padding);
         this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     }

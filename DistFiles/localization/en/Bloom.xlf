@@ -1593,6 +1593,15 @@
         <source xml:lang="en">New style</source>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Overlay" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Overlay</source>
+        <note>ID: EditTab.FormatDialog.Overlay</note>
+        <note>Heading of a tab in the format dialog which has special formatting controls for overlays</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Padding: space between the text and its border</source>
+        <note>ID: EditTab.FormatDialog.Padding</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ParagraphSpacing" sil:dynamic="true">
         <source xml:lang="en">Space Between Paragraphs</source>
         <note>ID: EditTab.FormatDialog.ParagraphSpacing</note>
@@ -1620,6 +1629,10 @@
       <trans-unit id="EditTab.FormatDialog.TextColor" sil:dynamic="true">
         <source xml:lang="en">Text Color</source>
         <note>ID: EditTab.FormatDialog.TextColor</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.VisitEachPage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">After making changes to a style, please visit each page that uses it. This allows Bloom to fully apply your changes.</source>
+        <note>ID: EditTab.FormatDialog.VisitEachPage</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
         <source xml:lang="en">Extra Wide</source>
