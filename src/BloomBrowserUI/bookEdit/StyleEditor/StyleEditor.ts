@@ -200,10 +200,28 @@ export default class StyleEditor {
         return styleName.substr(0, suffixIndex);
     }
 
+    // Make the specified style (which should include the trailing '-style') the style for the target element,
+    // and if it's in a translation group, for all the siblings that are bloom-editable.
     private static SetStyleNameForElement(
         target: HTMLElement,
         newStyle: string
     ) {
+        this.SetStyleNameForLeaf(target, newStyle);
+        // If this is a translation group, we need to set the style on all the siblings
+        // that are bloom-editable
+        const group = target.closest(".bloom-translationGroup");
+        if (!group) return;
+        // This will typically include the target itself, but it's not very costly to do
+        // it twice to that one element.
+        const siblings = Array.from(
+            group.getElementsByClassName("bloom-editable")
+        );
+        siblings.forEach(sibling =>
+            this.SetStyleNameForLeaf(sibling as HTMLElement, newStyle)
+        );
+    }
+
+    private static SetStyleNameForLeaf(target: HTMLElement, newStyle: string) {
         const oldStyle: string | null = this.GetStyleClassFromElement(target);
         if (oldStyle != null) $(target).removeClass(oldStyle);
         $(target).addClass(newStyle);
