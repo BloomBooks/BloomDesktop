@@ -5417,7 +5417,10 @@ namespace Bloom.Book
         /// <returns></returns>
         public string GetFilesafeLanguage1Name(string inLanguage)
         {
-            var languageName = _bookData.CollectionSettings.GetLanguageName(_bookData.Language1.Tag, inLanguage);
+            var languageName = _bookData.CollectionSettings.GetLanguageName(
+                _bookData.Language1.Tag,
+                inLanguage
+            );
             return Path.GetInvalidFileNameChars()
                 .Aggregate(languageName, (current, character) => current.Replace(character, ' '));
         }
@@ -5568,7 +5571,7 @@ namespace Bloom.Book
         public bool HasL1Title()
         {
             var titleDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                BookInfo.AllTitles
+                BookInfo.AllTitles ?? "{}"
             );
             if (!titleDict.TryGetValue(Language1Tag, out string l1Title))
                 return false;
