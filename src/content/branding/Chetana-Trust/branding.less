@@ -13,6 +13,16 @@
         height: 110px !important;
     }
 }
+// Device16x9Landscape has limited vertical space, so we specify a smaller minimum height
+// for the branding bottom html, and we reduce the size of the logo image.  See BL-13029.
+// The new min-height is very close to the height generated when the min-height is unset.
+.Device16x9Landscape.titlePage [data-book*="title-page-branding-bottom-html"] {
+    min-height: 133px;
+    flex: unset !important;
+    img {
+        height: 100px !important;
+    }
+}
 
 [data-book*="outside-back-cover-branding-bottom-html"] {
     font-weight: bold;
@@ -29,4 +39,19 @@
 .two-em-shrink {
     height: 2em;
     flex-shrink: 10;
+}
+
+// Device16x9Landscape has limited vertical space so we reduce the minimum
+// height of the originalContributions and funding fields.  See BL-13029.
+.Device16x9Landscape.titlePage {
+    #originalContributions {
+        .bloom-editable {
+            min-height: 1.5em; // one line
+        }
+    }
+    #funding {
+        .bloom-editable {
+            min-height: 1.5em; // one line
+        }
+    }
 }
