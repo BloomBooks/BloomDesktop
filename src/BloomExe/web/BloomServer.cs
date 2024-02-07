@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -966,12 +967,27 @@ namespace Bloom.Api
 
 		private bool ProcessCssFile(IRequestInfo info, string incomingPath)
 		{
-			// BL-2219: "OriginalImages" means we're generating a pdf and want full images,
-			// but it has nothing to do with css files and defeats the following 'if'
-			var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");
-			// is this request the full path to a real file?
-			if (RobustFile.Exists(localPath) && Path.IsPathRooted(localPath))
-			{
+            // BL-2219: "OriginalImages" means we're generating a pdf and want full images,
+            // but it has nothing to do with css files and defeats the following 'if'
+            var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");
+            if (
+                (
+                    localPath.EndsWith("appearance.css")
+                    || localPath.EndsWith("basePage-legacy-5-6.css")
+                )
+                && Assembly.GetExecutingAssembly().GetName().Version < Version.Parse("5.7")
+            )
+            {
+                // Appearance.css was introduced in 5.7. It might contain something that will be problematic
+                // for earlier versions of Bloom, so we'll just return an empty string.
+                // The version test above is just a belt-and-braces thing. This patch should NOT be merged into master!
+                info.ResponseContentType = "text/css";
+                info.WriteCompleteOutput("");
+                return true;
+            }
+            // is this request the full path to a real file?
+            if (RobustFile.Exists(localPath) && Path.IsPathRooted(localPath))
+            {
 				// Typically this will be files in the book directory, since the browser
 				// is supplying the path.
 

@@ -117,7 +117,7 @@ namespace Bloom.TeamCollection
 				}
 				if (settings.Administrators.Length == 0)
 					return true; // legacy TC, no admin recorded
-				return settings.Administrators.Contains(CurrentUser);
+				return settings.Administrators.Contains(CurrentUser, StringComparer.InvariantCultureIgnoreCase);
 			}
 		}
 
