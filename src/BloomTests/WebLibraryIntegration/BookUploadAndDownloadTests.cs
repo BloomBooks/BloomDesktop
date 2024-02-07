@@ -6,8 +6,10 @@ using System.Reflection;
 using System.Threading;
 using Bloom;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
+using BloomTests.Book;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.Extensions;
@@ -548,12 +550,90 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [Test]
-        public void DownloadUrl_GetsDocument()
+        public void DownloadUrl_GetsDocument_AndSettings()
         {
             var id = Guid.NewGuid().ToString();
             var bookFolder = MakeBook("My Url Book", id, "someone", "My content");
             int fileCount = Directory.GetFiles(bookFolder).Length;
             Login();
+            var settings = new CollectionSettings(
+                new NewCollectionSettings()
+                {
+                    PathToSettingsFile = CollectionSettings.GetPathForNewSettings(
+                        _workFolder.FolderPath,
+                        "myCollection"
+                    ),
+                    Language1Tag = "dmx", // Dema language of Mozambique (arbitrary choice)
+                    Language2Tag = "en",
+                    Language3Tag = "fr",
+                }
+            );
+            var bookObjectId = _uploader.UploadBook_ForUnitTest(
+                bookFolder,
+                out var s3PrefixUploadedTo,
+                collectionSettings: settings
+            );
+            Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
+            Assert.That(bookObjectId == "quiet", Is.False);
+            Assert.That(string.IsNullOrEmpty(s3PrefixUploadedTo), Is.False);
+            WaitUntilS3DataIsOnServer(s3PrefixUploadedTo, bookFolder);
+            var dest = _workFolderPath.CombineForPath("output");
+            Directory.CreateDirectory(dest);
+
+            // Todo: reinstate
+            var newBookFolder = _downloader.DownloadFromOrderUrl(
+                BloomLinkArgs.kBloomUrlPrefix
+                    + BloomLinkArgs.kOrderFile
+                    + "="
+                    + "BloomLibraryBooks-UnitTests/"
+                    + GetParentOfS3Prefix(s3PrefixUploadedTo),
+                dest,
+                "nonsense"
+            );
+            Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount));
+
+            var newBookFolder2 = _downloader.DownloadFromOrderUrl(
+                BloomLinkArgs.kBloomUrlPrefix
+                    + BloomLinkArgs.kOrderFile
+                    + "="
+                    + "BloomLibraryBooks-UnitTests/"
+                    + GetParentOfS3Prefix(s3PrefixUploadedTo)
+                    + "&forEdit=true",
+                dest,
+                "nonsense",
+                true
+            );
+            var collectionPath = Path.GetDirectoryName(newBookFolder2);
+            var collectionName = Path.GetFileName(collectionPath);
+            Assert.That(collectionName, Is.EqualTo("Dema Books"));
+            var settings2 = new CollectionSettings(
+                Path.Combine(collectionPath, collectionName + ".bloomCollection")
+            );
+            Assert.That(settings2.Language1Tag, Is.EqualTo("dmx"));
+            Assert.That(settings2.Language2Tag, Is.EqualTo("en"));
+            Assert.That(settings2.Language3Tag, Is.EqualTo("fr"));
+            Assert.That(Directory.GetFiles(newBookFolder2).Length, Is.EqualTo(fileCount));
+            Assert.That(
+                Directory.Exists(Path.Combine(newBookFolder2, "collectionFiles")),
+                Is.False
+            );
+
+            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookObjectId);
+        }
+
+        [Test]
+        public void DownloadUrl_NoCollectionSettings_GetsDocument_AndSettings()
+        {
+            var id = Guid.NewGuid().ToString();
+            var bookFolder = MakeBook(
+                "My No Settings Book",
+                id,
+                "someone",
+                CollectionSettingsReconstructorTests.GetTriLingualHtml()
+            );
+            int fileCount = Directory.GetFiles(bookFolder).Length;
+            Login();
+
             var bookObjectId = _uploader.UploadBook_ForUnitTest(
                 bookFolder,
                 out var s3PrefixUploadedTo
@@ -565,16 +645,31 @@ namespace BloomTests.WebLibraryIntegration
             var dest = _workFolderPath.CombineForPath("output");
             Directory.CreateDirectory(dest);
 
-            var newBookFolder = _downloader.DownloadFromOrderUrl(
+            var newBookFolder2 = _downloader.DownloadFromOrderUrl(
                 BloomLinkArgs.kBloomUrlPrefix
                     + BloomLinkArgs.kOrderFile
                     + "="
                     + "BloomLibraryBooks-UnitTests/"
-                    + GetParentOfS3Prefix(s3PrefixUploadedTo),
+                    + GetParentOfS3Prefix(s3PrefixUploadedTo)
+                    + "&forEdit=true",
                 dest,
-                "nonsense"
+                "nonsense",
+                true
             );
-            Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount));
+            var collectionPath = Path.GetDirectoryName(newBookFolder2);
+            var collectionName = Path.GetFileName(collectionPath);
+            Assert.That(collectionName, Is.EqualTo("L1-Unknown-xk Books"));
+            var settings2 = new CollectionSettings(
+                Path.Combine(collectionPath, collectionName + ".bloomCollection")
+            );
+            Assert.That(settings2.Language1Tag, Is.EqualTo("xk"));
+            Assert.That(settings2.Language2Tag, Is.EqualTo("fr"));
+            Assert.That(settings2.Language3Tag, Is.EqualTo("de"));
+            Assert.That(Directory.GetFiles(newBookFolder2).Length, Is.EqualTo(fileCount));
+            Assert.That(
+                Directory.Exists(Path.Combine(newBookFolder2, "collectionFiles")),
+                Is.False
+            );
 
             _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookObjectId);
         }

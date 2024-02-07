@@ -467,12 +467,21 @@ namespace Bloom
                     }
                     else if (IsBloomBookOrder(args))
                     {
-                        HandleDownload(args[0]);
-                        // If another instance is running, this one has served its purpose and can exit right away. Otherwise,
-                        // carry on with starting up normally.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3822.
-                        if (!UniqueToken.AcquireTokenQuietly(_mutexId))
+                        bool forEdit = HandleDownload(args[0]);
+
+                        if (UniqueToken.AcquireTokenQuietly(_mutexId))
+                        {
+                            // No other instance isrunning. Start up normally (and show the book just downloaded).
+                            // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3822
+                            gotUniqueToken = true;
+                        }
+                        else if (!forEdit)
+                        {
+                            // Another instance is running. For a normal download to "books from bloom library", this
+                            // instance has served its purpose and can exit right away. If we've created a new collection
+                            // for editing the book we downloaded, we will open it now even though we don't have the token.
                             return 0;
-                        gotUniqueToken = true;
+                        }
                     }
                     else
                     {
@@ -805,7 +814,7 @@ namespace Bloom
         /// older Bloom will be in trouble.
         /// Most of the core implementation of the download process is common.
         /// </summary>
-        private static void HandleDownload(string bookOrderUrl)
+        private static bool HandleDownload(string bookOrderUrl)
         {
             // We will start up just enough to download the book. This avoids the code that normally tries to keep only a single instance running.
             // There is probably a pathological case here where we are overwriting an existing template just as the main instance is trying to
@@ -814,6 +823,7 @@ namespace Bloom
             // step of copying the template to the new book. Hopefully users have (or will soon learn) enough sense not to
             // try to use a template while in the middle of downloading a new version.
             SetUpErrorHandling();
+            bool forEdit = false;
             using (_applicationContainer = new ApplicationContainer())
             {
                 SetUpLocalization();
@@ -823,8 +833,20 @@ namespace Bloom
                 var downloader = new BookDownload(ProjectContext.CreateBloomS3Client());
                 downloader.HandleBloomBookOrder(bookOrderUrl);
                 PathToBookDownloadedAtStartup = downloader.LastBookDownloadedPath;
+                if (downloader.CollectionCreatedForLastDownload != null)
+                {
+                    Settings.Default.MruProjects.AddNewPath(
+                        downloader.CollectionCreatedForLastDownload
+                    );
+                    Settings.Default.Save();
+                    forEdit = true;
+                }
                 // BL-2143: Don't show download complete message if download was not successful
-                if (!string.IsNullOrEmpty(PathToBookDownloadedAtStartup))
+                // Also, if we're about to open a new collection (BL-13036), I don't think we need a message...
+                // it will be obvious we succeeded, and there is nothing to say about finding
+                // the book because it's the only one. If we do want a message in that case,
+                // it needs rewording.
+                if (!string.IsNullOrEmpty(PathToBookDownloadedAtStartup) && !forEdit)
                 {
                     var caption = LocalizationManager.GetString(
                         "Download.CompletedCaption",
@@ -841,6 +863,8 @@ namespace Bloom
                     MessageBox.Show(message, caption);
                 }
             }
+
+            return forEdit;
         }
 
         public static string BloomExePath => Application.ExecutablePath;

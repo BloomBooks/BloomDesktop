@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Web;
 using System.Windows.Forms;
 using Amazon.Runtime;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
@@ -19,6 +22,8 @@ using Bloom.web.controllers;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Microsoft.VisualBasic;
+using BloomTemp;
+using SIL.IO;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -46,7 +51,8 @@ namespace Bloom.WebLibraryIntegration
         public string DownloadFromOrderUrl(
             string orderUrl,
             string destPath,
-            string bookTitleForAnalytics = "unknown"
+            string bookTitleForAnalytics = "unknown",
+            bool forEdit = false
         )
         {
             string storageKeyOfBookFolderParentOnS3 = "unknown";
@@ -78,7 +84,8 @@ namespace Bloom.WebLibraryIntegration
                 var destinationPath = DownloadBook(
                     bucket,
                     storageKeyOfBookFolderParentOnS3,
-                    destPath
+                    destPath,
+                    forEdit
                 );
                 LastBookDownloadedPath = destinationPath;
 
@@ -311,7 +318,14 @@ namespace Bloom.WebLibraryIntegration
             if (IsUrlOrder(_bookOrderUrl))
             {
                 var link = new BloomLinkArgs(_bookOrderUrl);
-                DownloadFromOrderUrl(_bookOrderUrl, DownloadFolder, link.Title);
+                DownloadFromOrderUrl(
+                    _bookOrderUrl,
+                    link.ForEdit
+                        ? NewCollectionWizard.DefaultParentDirectoryForCollections
+                        : DownloadFolder,
+                    link.Title,
+                    link.ForEdit
+                );
             }
             else
             {
@@ -329,19 +343,101 @@ namespace Bloom.WebLibraryIntegration
             return argument.ToLowerInvariant().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
         }
 
+        public string CollectionCreatedForLastDownload { get; private set; }
+
         // Internal for testing
         internal string DownloadBook(
             string bucket,
             string storageKeyOfBookFolderParentOnS3,
-            string dest
+            string dest,
+            bool forEdit = false
         )
         {
-            var destinationPath = _s3Client.DownloadBook(
-                bucket,
-                storageKeyOfBookFolderParentOnS3,
-                dest,
-                _progressDialog
-            );
+            string destinationPath;
+            if (forEdit)
+            {
+                using (
+                    var tempDestination = new TemporaryFolder(
+                        _s3Client.GetMinimalRandomFolderName()
+                    )
+                )
+                {
+                    var tempDirectory = tempDestination.FolderPath;
+
+                    var bookFolderName = _s3Client.DownLoadBookDirect(
+                        bucket,
+                        storageKeyOfBookFolderParentOnS3,
+                        _progressDialog,
+                        forEdit,
+                        tempDirectory
+                    );
+
+                    var bookFolderPathTemp = Path.Combine(tempDirectory, bookFolderName);
+                    var settingsPath = Path.Combine(
+                        bookFolderPathTemp,
+                        "collectionFiles",
+                        "book.uploadCollectionSettings"
+                    );
+                    string bookFolder = "";
+
+                    if (!File.Exists(settingsPath))
+                    {
+                        var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPathTemp);
+                        var metadataPath = BookMetaData.MetaDataPath(bookFolderPathTemp);
+                        var reconstructor = new CollectionSettingsReconstructor(
+                            RobustFile.ReadAllText(htmlPath, Encoding.UTF8),
+                            RobustFile.ReadAllText(metadataPath, Encoding.UTF8),
+                            bookFolderPathTemp
+                        );
+                        var settingsContent = reconstructor.BloomCollection;
+                        Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
+                        RobustFile.WriteAllText(settingsPath, settingsContent);
+                    }
+
+                    var settings = new CollectionSettings(settingsPath);
+                    var langName = settings.Language1.Name;
+                    // Review: should we localize this?
+                    var collectionName = langName + " Books";
+                    var collectionPath = BookStorage.GetUniqueFolderPath(
+                        dest,
+                        collectionName,
+                        collectionName + " {0}"
+                    );
+                    Debug.Assert(!Directory.Exists(collectionPath));
+                    Directory.CreateDirectory(collectionPath);
+                    bookFolder = Path.Combine(collectionPath, bookFolderName);
+                    BloomS3Client.MoveOrCopyDirectory(bookFolderPathTemp, bookFolder);
+                    var collectionFilePath = Path.Combine(
+                        collectionPath,
+                        collectionName + ".bloomCollection"
+                    );
+                    RobustFile.Move(
+                        Path.Combine(
+                            bookFolder,
+                            "collectionFiles",
+                            "book.uploadCollectionSettings"
+                        ),
+                        collectionFilePath
+                    );
+                    CollectionCreatedForLastDownload = collectionFilePath;
+
+                    RobustIO.DeleteDirectory(Path.Combine(bookFolder, "collectionFiles"));
+
+                    destinationPath = bookFolder;
+                }
+            }
+            else
+            {
+                CollectionCreatedForLastDownload = null;
+                destinationPath = _s3Client.DownloadBook(
+                    bucket,
+                    storageKeyOfBookFolderParentOnS3,
+                    dest,
+                    _progressDialog,
+                    forEdit
+                );
+            }
+
             if (BookDownLoaded != null)
             {
                 var bookInfo = new BookInfo(destinationPath, false); // A downloaded book is a template, so never editable.

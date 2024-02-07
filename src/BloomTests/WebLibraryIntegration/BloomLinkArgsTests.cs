@@ -38,6 +38,15 @@ namespace BloomTests.WebLibraryIntegration
             Assert.True(args.Title.Contains("pájaro"));
         }
 
+        [Test]
+        public void BloomLinkArgs_ForEdit_SetCorrectly()
+        {
+            var url =
+                "bloom://localhost/order?orderFile=BloomLibraryBooks-Sandbox/OOgCG25FoW%2f1707149386486%2f&title=hello%20world&minVersion=4.8&forEdit=true";
+            var args = new BloomLinkArgs(url);
+            Assert.That(args.ForEdit, Is.True);
+        }
+
         //BL-5419. Chrome was ok, becuase it encoded the accented characters
         [Test]
         public void BloomLinkArgs_WithSpanishFromChrome_DoesNotMangle()
