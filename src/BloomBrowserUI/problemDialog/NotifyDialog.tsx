@@ -18,21 +18,21 @@ import { ProblemKind } from "./ProblemDialog";
 import { hookupLinkHandler } from "../utils/linkHandler";
 import { kFormBackground } from "../utils/colorUtils";
 
-export const NotifyDialog: React.FunctionComponent<{
-    reportLabel?: string | null;
-    secondaryLabel?: string | null;
-    message: string | null;
-    detailsBoxText?: string | null;
-    level?: ProblemKind | null;
-    titleOverride?: string | null;
-    titleL10nKeyOverride?: string | null;
-}> = props => {
-    const kind = props.level || ProblemKind.NonFatal;
+export interface INotifyDialogProps {
+    message?: string | null; // The localized message to notify the user about.
+    reportLabel?: string | null; // The localized text that goes on the Report button. Omit or pass "" to disable Report button.
+    secondaryLabel?: string | null; // The localized text that goes on the secondary action button. Omit or pass "" to disable the secondary action button.
+    detailsBoxText?: string | null; // Localized text to go into a grey details box under the message. Omit or pass "" to not show a details box.
+    titleOverride?: string | null; // If present, wil be used in place of the dialog title defined for this level in themes.ts
+    titleL10nKeyOverride?: string | null; // The L10nKey for the titleOverride, if present.
+    themeOverride?: ProblemKind | null; // If present, will be used in place of the dialog theme defined for this level in themes.ts
+}
 
-    const theme = makeTheme(kind);
+export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
+    const theme = makeTheme(props.themeOverride || ProblemKind.NonFatal);
 
-    const englishTitle = props.titleOverride ?? kindParams[kind].title;
-    const titleKey = props.titleL10nKeyOverride ?? kindParams[kind].l10nKey;
+    const englishTitle = props.titleOverride ?? kindParams[ProblemKind.NonFatal].title;
+    const titleKey = props.titleL10nKeyOverride ?? kindParams[ProblemKind.NonFatal].l10nKey;
     const localizedDlgTitle = useL10n(englishTitle, titleKey);
 
     React.useEffect(() => hookupLinkHandler(), []);
@@ -130,9 +130,9 @@ export const NotifyDialog: React.FunctionComponent<{
     };
 
     const getCloseButton = (): JSX.Element | null => {
-        const buttonLabel = kind === ProblemKind.Fatal ? "Quit" : "Close";
+        const buttonLabel = props.themeOverride === ProblemKind.Fatal ? "Quit" : "Close";
         const l10nKey =
-                kind === ProblemKind.Fatal
+                props.themeOverride === ProblemKind.Fatal
                     ? "ReportProblemDialog.Quit" 
                     : "Common.Close";
         return (

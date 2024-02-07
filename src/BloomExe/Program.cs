@@ -1299,6 +1299,7 @@ namespace Bloom
             }
 
             // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
+            // Noting that we can get the filepath out of the FileException here if e.g. we want to log it directly in the future
             Exception originalError = FileException.UnwrapIfFileException(error);
 
             // Normally, NotifyUserOfProblem would take an exception and do this special-exception processing for us.

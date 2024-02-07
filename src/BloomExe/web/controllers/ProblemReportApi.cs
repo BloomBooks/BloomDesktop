@@ -630,15 +630,8 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Try to show the react problem dialog, but show fallback dialogs if appropriate.
-        /// Currently called by Show Rpoblem Dialog and CheckForAndHandleOneDriveExceptions, for the logic they share
+        /// Currently called by ShowProblemDialog and CheckForAndHandleOneDriveExceptions, for the logic they share
         /// </summary>
-        /// <param name="showFallbackDialogAction"></param>
-        /// <param name="reactDialogProps"></param>
-        /// <param name="reactDialogHeader"></param>
-        /// <param name="additionalPathsToInclude"></param>
-        /// <param name="controlForScreenshotting"></param>
-        /// <param name="exception"></param>
-        /// <param name="height"></param>
         private static void ShowProblemReactDialogWithFallbacks(
             Action showFallbackDialogAction,
             dynamic reactDialogProps,
@@ -864,32 +857,6 @@ namespace Bloom.web.controllers
             }
         }
 
-        private static void ShowOneDriveExceptionFallbackDialog(
-            Exception error,
-            string errorCode,
-            string filePath,
-            string logPath
-        )
-        {
-            // We decided not to localize this for now.
-            string errorMessageLabel = "Error Message";
-            string errorCodeLabel = "Error Number";
-            string filePathLabel = "File";
-            string logPathLabel = "Bloom Log";
-            MessageBox.Show(
-                OneDriveUtils.GetOneDriveErrorDialogMessage()
-                    + Environment.NewLine
-                    + Environment.NewLine
-                    + $"{errorMessageLabel}: {error.Message}{Environment.NewLine}"
-                    + $"{errorCodeLabel}: {errorCode}{Environment.NewLine}"
-                    + $"{filePathLabel}: {filePath}{Environment.NewLine}"
-                    + $"{logPathLabel}: {logPath}",
-                OneDriveUtils.GetOneDriveErrorDialogHeader(),
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error
-            );
-        }
-
         /// <summary>
         /// We want to show different UI for exceptions caused by the user's OneDrive, which we cannot do anything about
         /// And should inform the user about. See BL-12977
@@ -941,6 +908,32 @@ namespace Bloom.web.controllers
 
             string logPath = Logger.LogPath.Replace('\\', '/');
 
+            string errorMessageLabel = "Error Message";
+            string errorCodeLabel = "Error Number";
+            string filePathLabel = "File";
+            string logPathLabel = "Bloom Log";
+            void ShowOneDriveExceptionFallbackDialog(
+                Exception error,
+                string errorCode,
+                string filePath,
+                string logPath
+            )
+            {
+                // We decided not to localize this for now.
+                MessageBox.Show(
+                    OneDriveUtils.GetOneDriveErrorDialogMessage()
+                        + Environment.NewLine
+                        + Environment.NewLine
+                        + $"{errorMessageLabel}: {error.Message}{Environment.NewLine}"
+                        + $"{errorCodeLabel}: {errorCode}{Environment.NewLine}"
+                        + $"{filePathLabel}: {filePath}{Environment.NewLine}"
+                        + $"{logPathLabel}: {logPath}",
+                    OneDriveUtils.GetOneDriveErrorDialogHeader(),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+
             if (BloomServer._theOneInstance == null)
             {
                 // We got an error really early, before we can use HTML dialogs
@@ -964,15 +957,16 @@ namespace Bloom.web.controllers
 
             var reactDialogProps = new
             {
+                level = "notify", // Always use the notify dialog (no report button) for OneDrive errors TODO use enum?
+                additionalProps = new {
                 message = OneDriveUtils.GetOneDriveErrorDialogMessage(),
                 detailsBoxText = $"Error message<br>{originalError.Message}<br>Error number<br>"
                     + $"0x{errorCode} {searchOnlineLink}"
                     + (!string.IsNullOrEmpty(filePath) ? $"File<br>{filePath}<br>" : "")
                     + $"<a href=\"file:///{logPath}\">Bloom Log</a><br>",
-                alwaysUseNotify = true, // don't give the user the ability to report
-                level = levelOfProblem,
                 titleOverride = OneDriveUtils.GetOneDriveErrorDialogHeader(),
-                titleL10nKeyOverride = "ReportProblemDialog.OneDriveProblem"
+                titleL10nKeyOverride = "ReportProblemDialog.OneDriveProblem",
+                themeOverride = levelOfProblem,
             };
 
             ShowProblemReactDialogWithFallbacks(
