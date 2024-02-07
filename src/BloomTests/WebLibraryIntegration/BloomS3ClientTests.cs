@@ -67,9 +67,18 @@ namespace BloomTests.WebLibraryIntegration
         [TestCase("bucket/my.PDF")]
         [TestCase("bucket/thumbs.db")]
         [TestCase("bucket/Basic Book.css.map")]
+        [TestCase("bucket/collectionfiles/book.uploadCollectionSettings")]
         public void AvoidThisFile_ShouldAvoid(string objectKey)
         {
-            Assert.True(BloomS3Client.AvoidThisFile(objectKey));
+            Assert.True(BloomS3Client.AvoidThisFile(objectKey, false));
+        }
+
+        [TestCase("bucket/abc.def.ghi")]
+        // This is the main file for which forEdit makes a difference.
+        [TestCase("bucket/collectionfiles/book.uploadCollectionSettings")]
+        public void AvoidThisFile_ForEdit_ShouldNotAvoid(string objectKey)
+        {
+            Assert.False(BloomS3Client.AvoidThisFile(objectKey, true));
         }
 
         [TestCase("bucket/abc.def")]
@@ -93,7 +102,8 @@ namespace BloomTests.WebLibraryIntegration
         [TestCase("bucket/i1EC14CB3-CAEC-4C83-8092-74C78CA7C515.mp3")]
         public void AvoidThisFile_ShouldNotAvoid(string objectKey)
         {
-            Assert.False(BloomS3Client.AvoidThisFile(objectKey));
+            Assert.False(BloomS3Client.AvoidThisFile(objectKey, false));
+            Assert.False(BloomS3Client.AvoidThisFile(objectKey, true));
         }
     }
 

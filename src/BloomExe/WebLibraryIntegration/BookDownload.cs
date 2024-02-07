@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Web;
 using System.Windows.Forms;
 using Amazon.Runtime;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
@@ -19,6 +22,9 @@ using Bloom.web.controllers;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Microsoft.VisualBasic;
+using BloomTemp;
+using SIL.IO;
+using System.Security;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -46,7 +52,8 @@ namespace Bloom.WebLibraryIntegration
         public string DownloadFromOrderUrl(
             string orderUrl,
             string destPath,
-            string bookTitleForAnalytics = "unknown"
+            string bookTitleForAnalytics = "unknown",
+            bool forEdit = false
         )
         {
             string storageKeyOfBookFolderParentOnS3 = "unknown";
@@ -78,7 +85,8 @@ namespace Bloom.WebLibraryIntegration
                 var destinationPath = DownloadBook(
                     bucket,
                     storageKeyOfBookFolderParentOnS3,
-                    destPath
+                    destPath,
+                    forEdit
                 );
                 LastBookDownloadedPath = destinationPath;
 
@@ -311,7 +319,14 @@ namespace Bloom.WebLibraryIntegration
             if (IsUrlOrder(_bookOrderUrl))
             {
                 var link = new BloomLinkArgs(_bookOrderUrl);
-                DownloadFromOrderUrl(_bookOrderUrl, DownloadFolder, link.Title);
+                DownloadFromOrderUrl(
+                    _bookOrderUrl,
+                    link.ForEdit
+                        ? NewCollectionWizard.DefaultParentDirectoryForCollections
+                        : DownloadFolder,
+                    link.Title,
+                    link.ForEdit
+                );
             }
             else
             {
@@ -329,19 +344,100 @@ namespace Bloom.WebLibraryIntegration
             return argument.ToLowerInvariant().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
         }
 
+        public string CollectionCreatedForLastDownload { get; private set; }
+
         // Internal for testing
         internal string DownloadBook(
             string bucket,
             string storageKeyOfBookFolderParentOnS3,
-            string dest
+            string dest,
+            bool forEdit = false
         )
         {
-            var destinationPath = _s3Client.DownloadBook(
-                bucket,
-                storageKeyOfBookFolderParentOnS3,
-                dest,
-                _progressDialog
-            );
+            string destinationPath;
+            if (forEdit)
+            {
+                using (
+                    var tempDestination = new TemporaryFolder(
+                        _s3Client.GetMinimalRandomFolderName()
+                    )
+                )
+                {
+                    var tempDirectory = tempDestination.FolderPath;
+
+                    var bookFolderName = _s3Client.DownLoadBookDirect(
+                        bucket,
+                        storageKeyOfBookFolderParentOnS3,
+                        _progressDialog,
+                        forEdit,
+                        tempDirectory
+                    );
+
+                    var bookFolderPathTemp = Path.Combine(tempDirectory, bookFolderName);
+                    var settingsPath = Path.Combine(
+                        bookFolderPathTemp,
+                        "collectionFiles",
+                        "book.uploadCollectionSettings"
+                    );
+                    string bookFolder = "";
+
+                    if (!File.Exists(settingsPath))
+                    {
+                        var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPathTemp);
+                        var metadataPath = BookMetaData.MetaDataPath(bookFolderPathTemp);
+                        var reconstructor = new CollectionSettingsReconstructor(
+                            RobustFile.ReadAllText(htmlPath, Encoding.UTF8),
+                            RobustFile.ReadAllText(metadataPath, Encoding.UTF8),
+                            bookFolderPathTemp
+                        );
+                        var settingsContent = reconstructor.BloomCollection;
+                        Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
+                        RobustFile.WriteAllText(settingsPath, settingsContent);
+                    }
+
+                    var settings = new CollectionSettings(settingsPath);
+                    var langName = settings.Language1.Name;
+                    var collectionName = NewCollectionWizard.GetNewCollectionName(langName);
+                    var collectionPath = BookStorage.GetUniqueFolderPath(
+                        dest,
+                        collectionName,
+                        collectionName + " {0}"
+                    );
+                    Debug.Assert(!Directory.Exists(collectionPath));
+                    Directory.CreateDirectory(collectionPath);
+                    bookFolder = Path.Combine(collectionPath, bookFolderName);
+                    MoveOrCopyDirectory(bookFolderPathTemp, bookFolder);
+                    var collectionFilePath = Path.Combine(
+                        collectionPath,
+                        collectionName + ".bloomCollection"
+                    );
+                    RobustFile.Move(
+                        Path.Combine(
+                            bookFolder,
+                            "collectionFiles",
+                            "book.uploadCollectionSettings"
+                        ),
+                        collectionFilePath
+                    );
+                    CollectionCreatedForLastDownload = collectionFilePath;
+
+                    RobustIO.DeleteDirectory(Path.Combine(bookFolder, "collectionFiles"));
+
+                    destinationPath = bookFolder;
+                }
+            }
+            else
+            {
+                CollectionCreatedForLastDownload = null;
+                destinationPath = _s3Client.DownloadBook(
+                    bucket,
+                    storageKeyOfBookFolderParentOnS3,
+                    dest,
+                    _progressDialog,
+                    forEdit
+                );
+            }
+
             if (BookDownLoaded != null)
             {
                 var bookInfo = new BookInfo(destinationPath, false); // A downloaded book is a template, so never editable.
@@ -365,6 +461,139 @@ namespace Bloom.WebLibraryIntegration
                 XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
 
             return destinationPath;
+        }
+
+        /// <summary>
+        /// Most of this wants to be somewhere more general, but the error reporting is specific to downloading books.
+        /// </summary>
+        public static void MoveOrCopyDirectory(string tempDirectory, string destinationPath)
+        {
+            //clear out anything existing on our target
+            var destIsClear = true;
+            if (Directory.Exists(destinationPath))
+            {
+                try
+                {
+                    SIL.IO.RobustIO.DeleteDirectory(destinationPath, true);
+                }
+                catch (IOException)
+                {
+                    // can't delete it...see if we can copy into it.
+                    destIsClear = false;
+                }
+            }
+
+            //if we're on the same volume, we can just move it. Else copy it.
+            // It's important that books appear as nearly complete as possible, because a file watcher will very soon add the new
+            // book to the list of downloaded books the user can make new ones from, once it appears in the target directory.
+            bool done = false;
+            if (destIsClear && PathHelper.AreOnSameVolume(destinationPath, tempDirectory))
+            {
+                try
+                {
+                    SIL.IO.RobustIO.MoveDirectory(tempDirectory, destinationPath);
+                    done = true;
+                }
+                catch (IOException)
+                {
+                    // If moving didn't work we'll just try copying
+                }
+                catch (UnauthorizedAccessException) { }
+            }
+
+            if (!done)
+                done = CopyDirectory(tempDirectory, destinationPath);
+            if (!done)
+            {
+                var msg = LocalizationManager.GetString(
+                    "Download.CopyFailed",
+                    "Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please report the problem to us."
+                );
+                // The exception doesn't add much useful information but it triggers a version of the dialog with a Details button
+                // that leads to the yellow box and an easy way to send the report.
+                ErrorReport.NotifyUserOfProblem(new ApplicationException("File Copy problem"), msg);
+            }
+        }
+
+        /// <summary>
+        /// copy directory and all subdirectories. Catches most likely exceptions and returns false if any occur,
+        /// unless it can read both files and they are the same.
+        /// This is similar to several routines in Libpalaso DirectoryUtilities and DirectoryHelper,
+        /// but I can't find one that is exactly what we need.
+        /// </summary>
+        /// <param name="destDirName">Note, this is not the *parent*; this is the actual name you want, e.g. CopyDirectory("c:/foo", "c:/temp/foo") </param>
+        /// <returns>true if no exception occurred</returns>
+        private static bool CopyDirectory(string sourceDirName, string destDirName)
+        {
+            bool success = true;
+            var sourceDirectory = new DirectoryInfo(sourceDirName);
+
+            if (!sourceDirectory.Exists)
+            {
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: " + sourceDirName
+                );
+            }
+
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            foreach (FileInfo file in sourceDirectory.GetFiles())
+            {
+                var destFileName = Path.Combine(destDirName, file.Name);
+                try
+                {
+                    file.CopyTo(destFileName, true);
+                }
+                catch (Exception ex)
+                {
+                    if (
+                        !(
+                            ex is IOException
+                            || ex is UnauthorizedAccessException
+                            || ex is SecurityException
+                        )
+                    )
+                        throw;
+                    // Maybe we don't need to write it...it hasn't changed since a previous download?
+                    if (!SameFileContent(destFileName, file.FullName))
+                        success = false;
+                }
+            }
+
+            foreach (DirectoryInfo subdir in sourceDirectory.GetDirectories())
+            {
+                success =
+                    CopyDirectory(subdir.FullName, Path.Combine(destDirName, subdir.Name))
+                    && success;
+            }
+            return success;
+        }
+
+        // Return true if both files exist, are readable, and have the same content.
+        static bool SameFileContent(string path1, string path2)
+        {
+            if (!RobustFile.Exists(path1))
+                return false;
+            if (!RobustFile.Exists(path2))
+                return false;
+            try
+            {
+                var first = RobustFile.ReadAllBytes(path1);
+                var second = RobustFile.ReadAllBytes(path2);
+                if (first.Length != second.Length)
+                    return false;
+                for (int i = 0; i < first.Length; i++)
+                    if (first[i] != second[i])
+                        return false;
+                return true;
+            }
+            catch (IOException)
+            {
+                return false; // can't even read
+            }
         }
     }
 }

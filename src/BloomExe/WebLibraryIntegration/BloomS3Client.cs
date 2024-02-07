@@ -303,85 +303,6 @@ namespace Bloom.WebLibraryIntegration
                 request.Headers.ContentDisposition = "attachment";
         }
 
-        /// <summary>
-        /// copy directory and all subdirectories
-        /// </summary>
-        /// <param name="sourceDirName"></param>
-        /// <param name="destDirName">Note, this is not the *parent*; this is the actual name you want, e.g. CopyDirectory("c:/foo", "c:/temp/foo") </param>
-        /// <returns>true if no exception occurred</returns>
-        private static bool CopyDirectory(string sourceDirName, string destDirName)
-        {
-            bool success = true;
-            var sourceDirectory = new DirectoryInfo(sourceDirName);
-
-            if (!sourceDirectory.Exists)
-            {
-                throw new DirectoryNotFoundException(
-                    "Source directory does not exist or could not be found: " + sourceDirName
-                );
-            }
-
-            if (!Directory.Exists(destDirName))
-            {
-                Directory.CreateDirectory(destDirName);
-            }
-
-            foreach (FileInfo file in sourceDirectory.GetFiles())
-            {
-                var destFileName = Path.Combine(destDirName, file.Name);
-                try
-                {
-                    file.CopyTo(destFileName, true);
-                }
-                catch (Exception ex)
-                {
-                    if (
-                        !(
-                            ex is IOException
-                            || ex is UnauthorizedAccessException
-                            || ex is SecurityException
-                        )
-                    )
-                        throw;
-                    // Maybe we don't need to write it...it hasn't changed since a previous download?
-                    if (!SameFileContent(destFileName, file.FullName))
-                        success = false;
-                }
-            }
-
-            foreach (DirectoryInfo subdir in sourceDirectory.GetDirectories())
-            {
-                success =
-                    CopyDirectory(subdir.FullName, Path.Combine(destDirName, subdir.Name))
-                    && success;
-            }
-            return success;
-        }
-
-        // Return true if both files exist, are readable, and have the same content.
-        static bool SameFileContent(string path1, string path2)
-        {
-            if (!RobustFile.Exists(path1))
-                return false;
-            if (!RobustFile.Exists(path2))
-                return false;
-            try
-            {
-                var first = RobustFile.ReadAllBytes(path1);
-                var second = RobustFile.ReadAllBytes(path2);
-                if (first.Length != second.Length)
-                    return false;
-                for (int i = 0; i < first.Length; i++)
-                    if (first[i] != second[i])
-                        return false;
-                return true;
-            }
-            catch (IOException)
-            {
-                return false; // can't even read
-            }
-        }
-
         public string DownloadFile(string bucketName, string storageKeyOfFile)
         {
             var request = new GetObjectRequest()
@@ -399,7 +320,7 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
-        internal static bool AvoidThisFile(string objectKey)
+        internal static bool AvoidThisFile(string objectKey, bool includeCollectionFiles)
         {
             // Note that Amazon S3 regards "/" as the directory delimiter for directory oriented
             // displays of object keys.
@@ -408,7 +329,9 @@ namespace Bloom.WebLibraryIntegration
                 return true;
             // The harvester needs the collection settings file, but we don't want to download it
             // when users are downloading books.  (See BL-12583.)
-            if (!Program.RunningHarvesterMode)
+            // Exception: when we are downloading a book and making a new collection in which
+            // to edit it, we do want the collection settings file.
+            if (!Program.RunningHarvesterMode && !includeCollectionFiles)
             {
                 string[] foldersToAvoid = { "collectionfiles/" };
                 if (foldersToAvoid.Any(folder => objectKey.ToLowerInvariant().Contains(folder)))
@@ -436,12 +359,12 @@ namespace Bloom.WebLibraryIntegration
             return false;
         }
 
-        private int CountDesiredFiles(List<S3Object> matching)
+        private int CountDesiredFiles(List<S3Object> matching, bool includeCollectionFiles)
         {
             int totalItems = 0;
             for (int i = 0; i < matching.Count; ++i)
             {
-                if (AvoidThisFile(matching[i].Key))
+                if (AvoidThisFile(matching[i].Key, includeCollectionFiles))
                     continue;
                 ++totalItems;
             }
@@ -455,17 +378,61 @@ namespace Bloom.WebLibraryIntegration
             string bucketName,
             string storageKeyOfBookFolderParent,
             string pathToDestinationParentDirectory,
-            IProgressDialog downloadProgress = null
+            IProgressDialog downloadProgress = null,
+            bool forEdit = false
         )
         {
             //review: should we instead save to a newly created folder so that we don't have to worry about the
             //other folder existing already? Todo: add a test for that first.
 
+            // Amazon.S3 appears to truncate titles at 50 characters when building directory and filenames.  This means
+            // that relative paths can be as long as 117 characters (2 * 50 + 2 for slashes + 15 for .BloomBookOrder).
+            // So our temporary folder must be no more than 140 characters (allow some margin) since paths can be a
+            // maximum of 260 characters in Windows.  (More margin than that may be needed because there's no guarantee
+            // that image filenames are no longer than 65 characters.)  See https://jira.sil.org/browse/BL-1160.
+            // https://issues.bloomlibrary.org/youtrack/issue/BH-5988 has a book with an image file whose name is 167 characters long.
+            // So, 50 + 2 for slashes + 167 = 219. This means the temporary folder should be no more than 40 characters long.
+            // "C:\Users\steve\AppData\Local\Temp\" is already 35 characters long, and usernames can certainly be longer
+            // than 5 characters.  So we can't really afford much randomness in the folder name.
+            using (var tempDestination = new TemporaryFolder(GetMinimalRandomFolderName()))
+            {
+                var bookFolderName = DownLoadBookDirect(
+                    bucketName,
+                    storageKeyOfBookFolderParent,
+                    downloadProgress,
+                    forEdit,
+                    tempDestination.FolderPath
+                );
+                var tempDirectory = Path.Combine(tempDestination.FolderPath, bookFolderName);
+
+                var destinationPath = Path.Combine(
+                    pathToDestinationParentDirectory,
+                    bookFolderName
+                );
+
+                BookDownload.MoveOrCopyDirectory(tempDirectory, destinationPath);
+
+                return destinationPath;
+            }
+        }
+
+        /// <summary>
+        /// This variant of downloading a book assumes that the caller has already created a temporary directory and
+        /// we can safely make a folder inside it using the natural name for the book's folder
+        /// </summary>
+        public string DownLoadBookDirect(
+            string bucketName,
+            string storageKeyOfBookFolderParent,
+            IProgressDialog downloadProgress,
+            bool forEdit,
+            string tempDestPath
+        )
+        {
             // We need to download individual files to avoid downloading unwanted files (PDFs and thumbs.db to
             // be specific).  See https://silbloom.myjetbrains.com/youtrack/issue/BL-2312.  So we need the list
             // of items, not just the count.
             var matching = GetMatchingItems(bucketName, storageKeyOfBookFolderParent);
-            var totalItems = CountDesiredFiles(matching);
+            var totalItems = CountDesiredFiles(matching, forEdit);
             if (totalItems == 0)
                 throw new DirectoryNotFoundException(
                     "The book we tried to download is no longer in the BloomLibrary"
@@ -488,134 +455,61 @@ namespace Bloom.WebLibraryIntegration
                 // Need to check both / and \
                 bookFolderName = Path.GetDirectoryName(bookFolderName);
             }
-
-            // Amazon.S3 appears to truncate titles at 50 characters when building directory and filenames.  This means
-            // that relative paths can be as long as 117 characters (2 * 50 + 2 for slashes + 15 for .BloomBookOrder).
-            // So our temporary folder must be no more than 140 characters (allow some margin) since paths can be a
-            // maximum of 260 characters in Windows.  (More margin than that may be needed because there's no guarantee
-            // that image filenames are no longer than 65 characters.)  See https://jira.sil.org/browse/BL-1160.
-            // https://issues.bloomlibrary.org/youtrack/issue/BH-5988 has a book with an image file whose name is 167 characters long.
-            // So, 50 + 2 for slashes + 167 = 219. This means the temporary folder should be no more than 40 characters long.
-            // "C:\Users\steve\AppData\Local\Temp\" is already 35 characters long, and usernames can certainly be longer
-            // than 5 characters.  So we can't really afford much randomness in the folder name.
-            using (var tempDestination = new TemporaryFolder(GetMinimalRandomFolderName()))
-            {
-                var tempDirectory = Path.Combine(tempDestination.FolderPath, bookFolderName);
-                float progressStep = 1.0F;
-                float progress = 0.0F;
-                if (downloadProgress != null)
-                    downloadProgress.Invoke(
-                        (Action)(
-                            () =>
-                            {
-                                // We cannot change ProgressRangeMaximum here because the worker thread is already active.
-                                // So we calculate a step value instead.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5443.
-                                progressStep =
-                                    (float)(
-                                        downloadProgress.ProgressRangeMaximum
-                                        - downloadProgress.Progress
-                                    ) / (float)totalItems;
-                                progress = (float)downloadProgress.Progress;
-                            }
-                        )
-                    );
-                // We actually don't need any credentials to download the files we are dealing with because they are public read,
-                // but it simplifies the code a bit to just reuse the existing IAmazonS3 object.
-                using (
-                    var transferUtility = new TransferUtility(GetAmazonS3WithAccessKey(bucketName))
-                )
-                {
-                    for (int i = 0; i < matching.Count; ++i)
-                    {
-                        var objKey = matching[i].Key;
-                        if (AvoidThisFile(objKey))
-                            continue;
-                        // Removing the book's prefix from the object prefix, then using the remainder of the prefix
-                        // in the filepath allows for nested subdirectories.
-                        var filepath = objKey.Substring(storageKeyOfBookFolderParent.Length);
-                        // Download this file then bump progress.
-                        var req = new TransferUtilityDownloadRequest()
+            float progressStep = 1.0F;
+            float progress = 0.0F;
+            if (downloadProgress != null)
+                downloadProgress.Invoke(
+                    (Action)(
+                        () =>
                         {
-                            BucketName = bucketName,
-                            Key = objKey,
-                            FilePath = Path.Combine(tempDestination.FolderPath, filepath)
-                        };
-                        transferUtility.Download(req);
-                        if (downloadProgress != null)
-                            downloadProgress.Invoke(
-                                (Action)(
-                                    () =>
-                                    {
-                                        progress += progressStep;
-                                        downloadProgress.Progress = (int)progress;
-                                    }
-                                )
-                            );
-                    }
-                    var destinationPath = Path.Combine(
-                        pathToDestinationParentDirectory,
-                        bookFolderName
-                    );
-
-                    //clear out anything existing on our target
-                    var didDelete = false;
-                    if (Directory.Exists(destinationPath))
-                    {
-                        try
-                        {
-                            SIL.IO.RobustIO.DeleteDirectory(destinationPath, true);
-                            didDelete = true;
+                            // We cannot change ProgressRangeMaximum here because the worker thread is already active.
+                            // So we calculate a step value instead.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5443.
+                            progressStep =
+                                (float)(
+                                    downloadProgress.ProgressRangeMaximum
+                                    - downloadProgress.Progress
+                                ) / (float)totalItems;
+                            progress = (float)downloadProgress.Progress;
                         }
-                        catch (IOException)
-                        {
-                            // can't delete it...see if we can copy into it.
-                        }
-                    }
-
-                    //if we're on the same volume, we can just move it. Else copy it.
-                    // It's important that books appear as nearly complete as possible, because a file watcher will very soon add the new
-                    // book to the list of downloaded books the user can make new ones from, once it appears in the target directory.
-                    bool done = false;
-                    if (
-                        didDelete
-                        && PathHelper.AreOnSameVolume(
-                            pathToDestinationParentDirectory,
-                            tempDirectory
-                        )
                     )
+                );
+            // We actually don't need any credentials to download the files we are dealing with because they are public read,
+            // but it simplifies the code a bit to just reuse the existing IAmazonS3 object.
+            using (var transferUtility = new TransferUtility(GetAmazonS3WithAccessKey(bucketName)))
+            {
+                for (int i = 0; i < matching.Count; ++i)
+                {
+                    var objKey = matching[i].Key;
+                    if (AvoidThisFile(objKey, forEdit))
+                        continue;
+                    // Removing the book's prefix from the object prefix, then using the remainder of the prefix
+                    // in the filepath allows for nested subdirectories.
+                    var filepath = objKey.Substring(storageKeyOfBookFolderParent.Length);
+                    // Download this file then bump progress.
+                    var req = new TransferUtilityDownloadRequest()
                     {
-                        try
-                        {
-                            SIL.IO.RobustIO.MoveDirectory(tempDirectory, destinationPath);
-                            done = true;
-                        }
-                        catch (IOException)
-                        {
-                            // If moving didn't work we'll just try copying
-                        }
-                        catch (UnauthorizedAccessException) { }
-                    }
-                    if (!done)
-                        done = CopyDirectory(tempDirectory, destinationPath);
-                    if (!done)
-                    {
-                        var msg = LocalizationManager.GetString(
-                            "Download.CopyFailed",
-                            "Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please report the problem to us."
+                        BucketName = bucketName,
+                        Key = objKey,
+                        FilePath = Path.Combine(tempDestPath, filepath)
+                    };
+                    transferUtility.Download(req);
+                    if (downloadProgress != null)
+                        downloadProgress.Invoke(
+                            (Action)(
+                                () =>
+                                {
+                                    progress += progressStep;
+                                    downloadProgress.Progress = (int)progress;
+                                }
+                            )
                         );
-                        // The exception doesn't add much useful information but it triggers a version of the dialog with a Details button
-                        // that leads to the yellow box and an easy way to send the report.
-                        ErrorReport.NotifyUserOfProblem(
-                            new ApplicationException("File Copy problem"),
-                            msg
-                        );
-                    }
-                    return destinationPath;
                 }
             }
+
+            return bookFolderName;
         }
 
-        private string GetMinimalRandomFolderName()
+        public string GetMinimalRandomFolderName()
         {
             if (SIL.PlatformUtilities.Platform.IsLinux)
                 return "BDS_" + Guid.NewGuid(); // no path length limits on Linux

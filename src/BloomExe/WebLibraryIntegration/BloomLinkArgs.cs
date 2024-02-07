@@ -62,6 +62,8 @@ namespace Bloom.WebLibraryIntegration
         public string OrderUrl { get; set; }
         public string Title { get; set; }
 
+        public bool ForEdit { get; }
+
         public BloomLinkArgs(string url)
         {
             if (!url.StartsWith(kBloomUrlPrefix))
@@ -79,6 +81,8 @@ namespace Bloom.WebLibraryIntegration
             OrderUrl = HttpUtility.UrlDecode(parts[1]);
             if (qparams.Length > 1 && qparams[1].StartsWith("title="))
                 Title = HttpUtility.UrlDecode(qparams[1].Substring("title=".Length));
+            if (qparams.Any(x => x == "forEdit=true"))
+                ForEdit = true;
         }
     }
 }
