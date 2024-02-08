@@ -18,7 +18,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
         path: string;
         cssThemeName: string;
         firstPossiblyOffendingCssFile: string;
-        substitutedCssFile: string;
+        migratedTheme: string;
         error: string;
     };
     const info = useWatchApiData<IndicatorInfo | undefined>(
@@ -29,7 +29,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
     );
     const firstPossiblyConflictingCss =
         info?.firstPossiblyOffendingCssFile ?? "";
-    const possiblySubstitutedCss = info?.substitutedCssFile ?? "";
+    const migratedTheme = info?.migratedTheme ?? "";
     const theme = info?.cssThemeName ?? "";
 
     const tip = info && (
@@ -94,7 +94,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
                                 `}
                                 fontSize="small"
                             />
-                            {possiblySubstitutedCss
+                            {migratedTheme
                                 ? `Bloom found a known version of ${firstPossiblyConflictingCss} in this
                                     book and replaced it with a modern theme. You can delete it unless you still need to
                                     publish the book from an earlier version of Bloom.`
