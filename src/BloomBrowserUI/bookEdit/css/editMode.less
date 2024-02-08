@@ -694,7 +694,12 @@ div.textWholePage ul {
 }
 
 .marginBox {
-    border: 1px solid rgba(115, 189, 189, 0.3);
+    // Put a faint border around the margin-box in edit mode.
+    // Not sure why, but it may be to give an idea of the space available for page content.
+    // Can't use border, that is controlled by appearance system
+    // Outline: 1px solid rgba(115, 189, 189, 0.3) is close, but can't make it follow border-radius
+    // This seems to do the job.
+    box-shadow: 0 0 0 1px rgba(115, 189, 189, 0.3);
 }
 
 .bloom-frontMatter div.marginBox {
