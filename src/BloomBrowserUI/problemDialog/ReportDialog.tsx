@@ -105,7 +105,6 @@ export const ReportDialog: React.FunctionComponent<{
                     includeScreenshot
                 },
                 result => {
-                    console.log(JSON.stringify(result.data));
                     const failureResponseString = "failed:";
                     const link = result.data.issueLink;
                     if (link.startsWith(failureResponseString)) {

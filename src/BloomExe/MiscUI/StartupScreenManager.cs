@@ -319,9 +319,14 @@ namespace Bloom.MiscUI
 
         public static void CloseSplashScreen()
         {
-            _splashForm?.FadeAndClose(); //it's going to hang around while it fades,
-            _doWhenSplashScreenShouldClose?.Invoke();
-            DoLastOfAllAfterClosingSplashScreen?.Invoke();
+            if (_splashForm == null || !_splashForm.IsDisposed)
+            {
+                // We just want to skip the following steps if _splashForm is there but disposed, as this will cause errors.
+                // They should behave properly if _splashForm is null.
+                _splashForm?.FadeAndClose(); //it's going to hang around while it fades,
+                _doWhenSplashScreenShouldClose?.Invoke();
+                DoLastOfAllAfterClosingSplashScreen?.Invoke();
+            }
 
             _splashForm = null;
             _doWhenSplashScreenShouldClose = null; // Do these actions only once.

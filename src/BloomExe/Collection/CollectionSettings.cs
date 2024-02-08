@@ -11,6 +11,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Publish.BloomPub;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
@@ -490,7 +491,7 @@ namespace Bloom.Collection
 
                 LoadDictionary(xml, "Palette", ColorPalettes);
             }
-            catch (Exception)
+            catch (Exception originalError)
             {
                 string settingsContents;
                 try
@@ -506,7 +507,8 @@ namespace Bloom.Collection
                 // We used to notify the user of a problem here.
                 // But now we decided it is better to catch at a higher level, at OpenProjectWindow(), else we have two different
                 // error UI dialogs for the same problem. See BL-9916.
-                throw;
+
+                throw new FileException(SettingsFilePath, originalError);
             }
 
             try
