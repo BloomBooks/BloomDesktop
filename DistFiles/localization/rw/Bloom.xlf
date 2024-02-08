@@ -5866,6 +5866,11 @@
         <target xml:lang="rw" state="needs-translation">What were you doing?</target>
         <note>ID: ReportProblemDialog.WhatDoing</note>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.SearchOnline" translate="no">
+        <source xml:lang="en">Search online</source>
+        <target xml:lang="rw" state="needs-translation">Search online</target>
+        <note>ID: ReportProblemDialog.SearchOnline</note>
+      </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt">
         <source xml:lang="en">I get it. Do not show this again.</source>
         <target xml:lang="rw" state="needs-translation">I get it. Do not show this again.</target>
