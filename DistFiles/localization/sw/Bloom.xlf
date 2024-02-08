@@ -5865,6 +5865,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Ulikuwa unafanya nini?</target>
         <note>ID: ReportProblemDialog.WhatDoing</note>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.SearchOnline" translate="no">
+        <source xml:lang="en">Search online</source>
+        <target xml:lang="sw" state="needs-translation">Search online</target>
+        <note>ID: ReportProblemDialog.SearchOnline</note>
+      </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
         <source xml:lang="en">I get it. Do not show this again.</source>
         <target xml:lang="sw" state="final">Naelewa. Usionyeshe hii tena.</target>
