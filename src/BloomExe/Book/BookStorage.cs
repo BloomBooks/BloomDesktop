@@ -2946,7 +2946,7 @@ namespace Bloom.Book
         private void EnsureHasLinksToStylesheets(HtmlDom dom)
         {
             //clear out any old ones
-            Dom.RemoveNormalStyleSheetsLinks();
+            dom.RemoveNormalStyleSheetsLinks();
             EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
             CssFilesThatAreAlwaysWanted.ForEach(x =>
@@ -3406,47 +3406,49 @@ namespace Bloom.Book
             var levelString = Dom.GetMetaValue("mediaMaintenanceLevel", "0");
             if (!int.TryParse(levelString, out int level))
                 level = 0;
-            if (level < 1 && ImageUtils.NeedToShrinkImages(FolderPath))
+            if (level < 1)
             {
-                // If the book contains overlarge images, we want to fix those before editing because this can lead
-                // to thumbnails not being created properly and other bad behavior.  This is a one-time fix that can
-                // permanently change the images in the original book folder.  If any images must be shrunk, then a
-                // progress dialog pops up because that can be a very slow process.  If nothing needs to be done,
-                // nothing will appear on the screen, and it usually takes a small fraction of a second to determine
-                // this.
-
-                // Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
-                // order to avoid out of memory errors that can happen with really large images.
-                // Bloom 5.6 changed this to 3840x2800 to accomodate Ultra HD (aka "4K"). Some older
-                // books have images larger than this that can cause these out of memory problems.  This
-                // method is used to fix these overlarge images before the user starts to edit or publish
-                // the book.  The method also ensures that the images are all opaque since some old versions
-                // of Bloom made all images transparent, which turned out to be a bad idea.
-                // This update can be very slow, so encourage the user that something is happening.
-                // NO images should have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8846.
-
-                if (Program.RunningUnitTests)
+                if (ImageUtils.NeedToShrinkImages(FolderPath))
                 {
-                    // TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
-                    ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                        FolderPath,
-                        new List<string>(),
-                        new NullProgress()
-                    );
-                }
-                else
-                {
-                    using (var dlg = new ProgressDialogBackground())
+                    // If the book contains overlarge images, we want to fix those before editing because this can lead
+                    // to thumbnails not being created properly and other bad behavior.  This is a one-time fix that can
+                    // permanently change the images in the original book folder.  If any images must be shrunk, then a
+                    // progress dialog pops up because that can be a very slow process.  If nothing needs to be done,
+                    // nothing will appear on the screen, and it usually takes a small fraction of a second to determine
+                    // this.
+
+                    // Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
+                    // order to avoid out of memory errors that can happen with really large images.
+                    // Bloom 5.6 changed this to 3840x2800 to accomodate Ultra HD (aka "4K"). Some older
+                    // books have images larger than this that can cause these out of memory problems.  This
+                    // method is used to fix these overlarge images before the user starts to edit or publish
+                    // the book.  The method also ensures that the images are all opaque since some old versions
+                    // of Bloom made all images transparent, which turned out to be a bad idea.
+                    // This update can be very slow, so encourage the user that something is happening.
+                    // NO images should have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8846.
+
+                    if (Program.RunningUnitTests)
                     {
-                        dlg.Text = "Updating Image Files";
-                        dlg.ShowAndDoWork(
-                            (progress, args) =>
-                                ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                                    FolderPath,
-                                    new List<string>(),
-                                    progress
-                                )
+                        // TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
+                        ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                            FolderPath,
+                            new List<string>(),
+                            new NullProgress()
                         );
+                    }
+                    else
+                    {
+                        using (var dlg = new ProgressDialogBackground())
+                        {
+                            dlg.Text = "Updating Image Files";
+                            dlg.ShowAndDoWork(
+                                (progress, args) =>
+                                    ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                                        FolderPath,
+                                        new List<string>(),
+                                        progress
+                                    )
+                            );
                     }
                 }
             }
@@ -3737,7 +3739,12 @@ namespace Bloom.Book
 
             if (!justOldCustomFiles)
             {
-                result.Add(Tuple.Create(GetSupportingFile("branding.css"), GetSupportingFileString("branding.css")));
+                result.Add(
+                    Tuple.Create(
+                        GetSupportingFile("branding.css"),
+                        GetSupportingFileString("branding.css")
+                    )
+                );
                 result.Add(
                     Tuple.Create(
                         GetSupportingFile("customBookStyles2.css"),
@@ -3745,11 +3752,19 @@ namespace Bloom.Book
                     )
                 );
                 result.Add(
-                    Tuple.Create(GetSupportingFile("appearance.css"), GetSupportingFileString("appearance.css"))
+                    Tuple.Create(
+                        GetSupportingFile("appearance.css"),
+                        GetSupportingFileString("appearance.css")
+                    )
                 );
 
                 var xmatterFileName = Path.GetFileName(PathToXMatterStylesheet);
-                result.Add(Tuple.Create(GetSupportingFile(xmatterFileName), GetSupportingFileString(xmatterFileName)));
+                result.Add(
+                    Tuple.Create(
+                        GetSupportingFile(xmatterFileName),
+                        GetSupportingFileString(xmatterFileName)
+                    )
+                );
             }
             return result.ToArray();
         }

@@ -448,7 +448,10 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                 <DialogOkButton
                     default={true}
                     onClick={() => {
-                        postJson("book/settings", settingsToReturnLater);
+                        if (settingsToReturnLater) {
+                            // If nothing changed, we don't get any...and don't need to make this call.
+                            postJson("book/settings", settingsToReturnLater);
+                        }
                         isOpenAlready = false;
                         closeDialog();
                         // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
