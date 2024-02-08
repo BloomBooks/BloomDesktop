@@ -265,6 +265,8 @@ namespace Bloom.Book
                     SourceToReportForNextRename = null;
                 }
             }
+            // Ensure proper path for any new book title and embedded CSS that is now invalid.
+            SettingsUpdated();
         }
 
         void _storage_FolderPathChanged(object sender, EventArgs e)

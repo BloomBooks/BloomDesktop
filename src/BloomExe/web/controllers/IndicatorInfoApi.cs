@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -38,11 +39,15 @@ namespace Bloom.web.controllers
                     if (GetBookInfo(request, out bookInfo, out collection))
                     {
                         var firstPossiblyOffendingCssFile = "";
+                        var substitutedCssFile = "";
                         if (bookInfo.AppearanceSettings.IsInitialized)
                         {
                             firstPossiblyOffendingCssFile = bookInfo
                                 .AppearanceSettings
                                 .FirstPossiblyOffendingCssFile;
+                            if (!String.IsNullOrEmpty(firstPossiblyOffendingCssFile))
+                                firstPossiblyOffendingCssFile = Path.GetFileName(firstPossiblyOffendingCssFile);
+                            substitutedCssFile = bookInfo.AppearanceSettings.GetPossiblyMigratedCssFile();
                         }
                         else
                         {
@@ -58,7 +63,7 @@ namespace Bloom.web.controllers
                             factoryInstalled = collection.IsFactoryInstalled,
                             cssThemeName = bookInfo.AppearanceSettings.ThemeNameForDisplay,
                             firstPossiblyOffendingCssFile = firstPossiblyOffendingCssFile,
-                            //substitutedCssFile = bookInfo.AppearanceSettings.SubstitutedCssFile,
+                            substitutedCssFile = substitutedCssFile,
                             path = bookInfo.FolderPath,
                         };
                         request.ReplyWithJson(data);

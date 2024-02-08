@@ -1,0 +1,9 @@
+// Matches customBookStyles.css with checksum cd8ba30e76755b665723e2f85efba615
+// On Tue Jan 09 2024 this was used by 55 books (43 unique).
+// Affected branding projects included ["EMDC-Workshop","Education-For-Life","PNG-Kokoda-Track-Foundation","PNG-AUS-PIE","Little-Zebra","SIL-PNG","SIL-International"].
+// Uploaders included ["cornelius_tu...@sil.org","dhonduptiger6...@gmail.com","diafragma...@gmail.com"].
+// Example Book: https://bloomlibrary.org/:search:bookInstanceId%3A4ba2d502-ed71-4c45-9e22-164bc9159330
+// A replacement customBookStyles.css has been generated.
+{
+  "cssThemeName": "efl-ebook-3",
+}

@@ -29,6 +29,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
     );
     const firstPossiblyConflictingCss =
         info?.firstPossiblyOffendingCssFile ?? "";
+    const possiblySubstitutedCss = info?.substitutedCssFile ?? "";
     const theme = info?.cssThemeName ?? "";
 
     const tip = info && (
@@ -76,7 +77,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
                         fontSize="small"
                     />
                     <span>
-                        {`"The ${firstPossiblyConflictingCss}" stylesheet of this book is incompatible with
+                        {`The ${firstPossiblyConflictingCss} stylesheet of this book is incompatible with
                                     modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click (TODO) for more information.`}
                     </span>
                 </div>
@@ -93,9 +94,13 @@ export const BookInfoIndicator: React.FunctionComponent<{
                                 `}
                                 fontSize="small"
                             />
-                            {`"The ${firstPossiblyConflictingCss}" stylesheet of this book is incompatible with
+                            {possiblySubstitutedCss
+                                ? `Bloom found a known version of ${firstPossiblyConflictingCss} in this
+                                    book and replaced it with a modern theme. You can delete it unless you still need to
+                                    publish the book from an earlier version of Bloom.`
+                                : `The ${firstPossiblyConflictingCss} stylesheet of this book is incompatible with
                                     modern themes. Bloom is currently ignoring it. If you don't need those
-                                    customizations any more, you can delete your customBookStyles.css. Click (TODO) for more information.`}
+                                    customizations any more, you can delete your ${firstPossiblyConflictingCss}. Click (TODO) for more information.`}
                         </span>
                     </div>
                 )}
@@ -111,8 +116,8 @@ export const BookInfoIndicator: React.FunctionComponent<{
                             `}
                             fontSize="small"
                         />
-                        {`"The ${firstPossiblyConflictingCss}" stylesheet of this book is incompatible with
-                                    modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`}
+                        {`The ${firstPossiblyConflictingCss} stylesheet of this book is incompatible with
+-                                    modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`}
                     </span>
                 )}
         </div>

@@ -1,0 +1,32 @@
+/* replace EFL Template 2 custom CSS: small margins, no page numbers */
+
+/* This line of code hides the page numbers. */
+.bloom-page.numberedPage {
+    --pageNumber-show: none;
+}
+
+/* This statement sets the margins on the front-matter and back-matter pages */
+
+.bloom-frontMatter.Device16x9Landscape,
+.bloom-backMatter.Device16x9Landscape,
+.bloom-frontMatter.Device16x9Portrait,
+.bloom-backMatter.Device16x9Portrait {
+    --cover-margin-top: 2.5mm;
+    --cover-margin-bottom: 2.5mm;
+    --page-margin-top: 2.5mm;
+    --page-margin-bottom: 2.5mm;
+    --page-margin-left: 2.5mm ;
+    --page-margin-right: 2.5mm;
+}
+
+/* This statement sets the margins on the numbered content pages */
+
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape,
+:not(.bloom-interactive-page).numberedPage.Device16x9Portrait {
+    --page-margin-top: 2.5mm;
+    --page-margin-bottom: 2.5mm;
+    --page-margin-left: 2.5mm ;
+    --page-margin-right: 2.5mm;
+    --page-split-horizontal-gap: 1mm;
+    --page-split-vertical-gap: 1mm;
+}

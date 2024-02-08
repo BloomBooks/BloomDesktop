@@ -1,0 +1,41 @@
+/* replace EFL eBook Template 3 custom CSS: curved design and fancy page numbers */
+
+/* This theme applies only to "Device 16x9 Landscape" pages. */
+
+/* The below statements control the size and color of the marginbox. It holds the text and picture of that page.
+ * The top and left numbers determine the position of the margin box on the page. */
+
+:not(.bloom-interactive-page).Device16x9Landscape  {
+    --page-margin-top: 2mm;
+    --page-margin-bottom: 2mm;
+    --page-margin-left: 2mm;
+    --page-margin-right: 2mm;
+    --page-background-color: #2E2E2E;  /* almost black */
+    --page-split-horizontal-gap: 1mm;
+    --page-split-vertical-gap: 1mm;
+    --marginBox-border-radius: 15px;
+    --marginBox-padding: 1.5mm;
+    --marginBox-background-color: #ffffff;  /* white */
+}
+
+/* The following two statements control the position of the page number   */
+
+.Device16x9Landscape.numberedPage.side-left::after {
+    --pageNumber-left-margin: var(--page-margin-left);
+}
+
+.Device16x9Landscape.numberedPage.side-right::after {
+    --pageNumber-always-left-margin: var(--page-margin-left);
+}
+
+/* The section below controls the pagenumber and the white circle around it.  */
+
+.Device16x9Landscape.numberedPage::after {
+    --pageNumber-bottom: 2mm;
+    --pageNumber-top: unset;
+    --pageNumber-font-size: 10pt;
+    --pageNumber-border-radius: 50%;
+    --pageNumber-background-color: #ffffff;
+    --pageNumber-background-width: 33px;
+    --pageNumber-right-margin: unset;
+}
