@@ -173,18 +173,7 @@ namespace Bloom.CollectionCreating
 
             if (caller is LanguageIdControl)
             {
-                var pattern = LocalizationManager.GetString(
-                    "NewCollectionWizard.NewBookPattern",
-                    "{0} Books",
-                    "The {0} is replaced by the name of the language."
-                );
-                // GetPathForNewSettings uses Path.Combine which can fail with certain characters that are illegal in paths, but not in language names.
-                // The characters we ran into were two pipe characters ("|") at the front of the language name.
-                var tentativeCollectionName = string.Format(
-                    pattern,
-                    _collectionInfo.Language1.Name
-                );
-                var sanitizedCollectionName = tentativeCollectionName.SanitizePath('.');
+                var sanitizedCollectionName = GetNewCollectionName(_collectionInfo.Language1.Name);
                 _collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(
                     DefaultParentDirectoryForCollections,
                     sanitizedCollectionName
@@ -194,6 +183,21 @@ namespace Bloom.CollectionCreating
                 // but per BL-2649 we now want to always let the user check the name.
                 _languageLocationPage.NextPage = _collectionNamePage;
             }
+        }
+
+        public static string GetNewCollectionName(string language1Name)
+        {
+            var pattern = LocalizationManager.GetString(
+                "NewCollectionWizard.NewBookPattern",
+                "{0} Books",
+                "The {0} is replaced by the name of the language."
+            );
+            // GetPathForNewSettings uses Path.Combine which can fail with certain characters that are illegal in paths, but not in language names.
+            // The characters we ran into were two pipe characters ("|") at the front of the language name.
+
+            var tentativeCollectionName = string.Format(pattern, language1Name);
+            var sanitizedCollectionName = tentativeCollectionName.SanitizePath('.');
+            return sanitizedCollectionName;
         }
 
         private bool DefaultCollectionPathWouldHaveProblems

@@ -168,7 +168,8 @@ namespace Bloom.WebLibraryIntegration
             string bookFolder,
             out string s3PrefixUploadedTo,
             IProgress progress = null,
-            string existingBookObjectId = null
+            string existingBookObjectId = null,
+            CollectionSettings collectionSettings = null
         )
         {
             if (progress == null)
@@ -182,7 +183,7 @@ namespace Bloom.WebLibraryIntegration
                 true,
                 null,
                 null,
-                null,
+                collectionSettings,
                 null,
                 null
             );
