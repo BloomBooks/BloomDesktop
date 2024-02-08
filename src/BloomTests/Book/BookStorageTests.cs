@@ -1676,13 +1676,17 @@ namespace BloomTests.Book
             );
 
             //SUT
-            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToMediaLevel1ShrinkLargeImages(); // does nothing in this situation, but should still bump level
+            var mediaLevel = storage.Dom.GetMetaValue("mediaMaintenanceLevel", "0");
+            Assert.That(mediaLevel, Is.EqualTo("1"));
             storage.MigrateToLevel2RemoveTransparentComicalSvgs();
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("2"));
             storage.MigrateToLevel3PutImgFirst();
 
             //Verification
-            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
-            Assert.That(maintLevel, Is.GreaterThanOrEqualTo("2"));
+            maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("3"));
             Assert.That(
                 storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count,
                 Is.EqualTo(0)
