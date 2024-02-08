@@ -46,6 +46,7 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { Div } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
+import { PWithLink } from "../../react_components/pWithLink";
 
 let isOpenAlready = false;
 
@@ -53,7 +54,7 @@ type IPageStyle = { label: string; value: string };
 type IPageStyles = Array<IPageStyle>;
 type IAppearanceUIOptions = {
     firstPossiblyLegacyCss?: string;
-    substitutedCssFile?: string;
+    migratedTheme?: string;
     themeNames: IPageStyles;
 };
 
@@ -105,19 +106,79 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         xmatterName: "",
         brandingName: ""
     });
-    const xmatterDescription = useL10n(
+    const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
         "BookSettings.LockedByXMatter",
         "",
         overrideInformation?.xmatterName
     );
 
-    const brandingDescription = useL10n(
+    const brandingLockedBy = useL10n(
         "Locked by {0} Branding",
         "BookSettings.LockedByBranding",
         "",
         overrideInformation?.brandingName
     );
+
+    const appearanceLabel = useL10n(
+        "Appearance",
+        "BookSettings.Appearance",
+        ""
+    );
+    const pageThemeLabel = useL10n("Page Theme", "BookSettings.PageTheme", "");
+    const themeLabel = useL10n("Theme", "BookSettings.Theme", "");
+    const themeDescription = useL10n(
+        "Choose a theme to easily change margins, borders, and other page settings.",
+        "BookSettings.Theme.Description",
+        ""
+    );
+    const coverBackgroundLabel = useL10n(
+        "Cover Background",
+        "BookSettings.CoverBackground",
+        ""
+    );
+    const coverColorLabel = useL10n(
+        "Cover Color",
+        "PublishTab.Android.CoverColor", // reuse the same string localized for the Android tab
+        ""
+    );
+    const whatToShowOnCoverLabel = useL10n(
+        "What to Show on Cover",
+        "BookSettings.WhatToShowOnCover",
+        ""
+    );
+    const showWrittenLanguage2TitleLabel = useL10n(
+        "Show Written Language 2 Title",
+        "BookSettings.ShowWrittenLanguage2Title",
+        ""
+    );
+    const showWrittenLanguage3TitleLabel = useL10n(
+        "Show Written Language 3 Title",
+        "BookSettings.ShowWrittenLanguage3Title",
+        ""
+    );
+    const showLanguageNameLabel = useL10n(
+        "Show Language Name",
+        "BookSettings.ShowLanguageName",
+        ""
+    );
+    const showTopicLabel = useL10n("Show Topic", "BookSettings.ShowTopic", "");
+    const frontAndBackMatterLabel = useL10n(
+        "Front & Back Matter",
+        "BookSettings.FrontAndBackMatter",
+        ""
+    );
+    const frontAndBackMatterDescription = useL10n(
+        "Normally, books use the front & back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.",
+        "BookSettings.FrontAndBackMatter.Description",
+        ""
+    );
+    const resolutionLabel = useL10n(
+        "Resolution",
+        "BookSettings.Resolution",
+        ""
+    );
+    const bloomPubLabel = useL10n("BloomPUB", "PublishTab.bloomPUBButton", ""); // reuse the same string localized for the Publish tab
 
     // This is a helper function to make it easier to pass the override information
     function getAdditionalProps<T>(subPath: string) {
@@ -128,13 +189,11 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         const override = xmatterOverride ?? brandingOverride;
         // nb: xmatterOverride can be boolean, hence the need to spell out !==undefined
         let description =
-            xmatterOverride !== undefined ? xmatterDescription : undefined;
+            xmatterOverride !== undefined ? xmatterLockedBy : undefined;
         if (!description) {
             // xmatter wins if both are present
             description =
-                brandingOverride !== undefined
-                    ? brandingDescription
-                    : undefined;
+                brandingOverride !== undefined ? brandingLockedBy : undefined;
         }
         // make a an object that can be spread as props in any of the Configr controls
         return {
@@ -174,7 +233,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const [firstPossiblyLegacyCss, setFirstPossiblyLegacyCss] = React.useState(
         ""
     );
-    const [substitutedCssFile, setSubstitutedCssFile] = React.useState("");
+    const [migratedTheme, setMigratedTheme] = React.useState("");
 
     React.useEffect(() => {
         if (settingsString === "{}") {
@@ -191,7 +250,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         setFirstPossiblyLegacyCss(
             appearanceUIOptions?.firstPossiblyLegacyCss ?? ""
         );
-        setSubstitutedCssFile(appearanceUIOptions?.substitutedCssFile ?? "");
+        setMigratedTheme(appearanceUIOptions?.migratedTheme ?? "");
     }, [appearanceUIOptions]);
 
     const bookSettingsTitle = useL10n("Book Settings", "BookSettings.Title");
@@ -211,7 +270,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
             `book/settings/deleteCustomBookStyles?file=${firstPossiblyLegacyCss}`
         );
         setFirstPossiblyLegacyCss("");
-        setSubstitutedCssFile("");
+        setMigratedTheme("");
     };
 
     return (
@@ -276,13 +335,13 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             //setSettings(s);
                         }}
                     >
-                        <ConfigrGroup label="Appearance" level={1}>
+                        <ConfigrGroup label={appearanceLabel} level={1}>
                             <ConfigrSubgroup
-                                label="Page Theme"
+                                label={pageThemeLabel}
                                 path={`appearance`}
                             >
                                 <ConfigrSelect
-                                    label="Theme"
+                                    label={themeLabel}
                                     disabled={false}
                                     path={`appearance.cssThemeName`}
                                     options={appearanceUIOptions.themeNames.map(
@@ -293,7 +352,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                             };
                                         }
                                     )}
-                                    description="Choose a theme to easily change margins, borders, and other page settings."
+                                    description={themeDescription}
                                 />
                             </ConfigrSubgroup>
                             {
@@ -310,8 +369,18 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             }
                             {firstPossiblyLegacyCss && theme === "legacy-5-6" && (
                                 <WarningBox>
-                                    {`The "${firstPossiblyLegacyCss}" stylesheet of this book is incompatible with
-                                    modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click (TODO) for more information.`}
+                                    <PWithLink
+                                        href="https://docs.bloomlibrary.org/TODO/"
+                                        l10nKey="BookSettings.UsingLegacyThemeWithIncompatibleCss"
+                                        l10nParam0={firstPossiblyLegacyCss}
+                                        l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+                                    >
+                                        The {0} stylesheet of this book is
+                                        incompatible with modern themes. Bloom
+                                        is using it because the book is using
+                                        the Legacy-5-6 theme. Click [here] for
+                                        more information.
+                                    </PWithLink>
                                 </WarningBox>
                             )}
                             {firstPossiblyLegacyCss ===
@@ -319,13 +388,48 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 theme !== "legacy-5-6" && (
                                     <NoteBox>
                                         <div>
-                                            {substitutedCssFile
-                                                ? `Bloom found a known version of ${firstPossiblyLegacyCss} in this
-                                    book and replaced it with a modern theme. You can delete it unless you still need to
-                                    publish the book from an earlier version of Bloom.`
-                                                : `The ${firstPossiblyLegacyCss} stylesheet of this book is incompatible with
-                                    modern themes. Bloom is currently ignoring it. If you don't need those
-                                    customizations any more, you can delete your ${firstPossiblyLegacyCss}. Click (TODO) for more information.`}
+                                            {migratedTheme ? (
+                                                <Div
+                                                    l10nKey="BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss"
+                                                    l10nParam0={
+                                                        firstPossiblyLegacyCss
+                                                    }
+                                                    l10nComment="{0} is a placeholder for a filename."
+                                                >
+                                                    Bloom found a known version
+                                                    of {firstPossiblyLegacyCss}{" "}
+                                                    in this book and replaced it
+                                                    with a modern theme. You can
+                                                    delete it unless you still
+                                                    need to publish the book
+                                                    from an earlier version of
+                                                    Bloom.
+                                                </Div>
+                                            ) : (
+                                                <PWithLink
+                                                    href="https://docs.bloomlibrary.org/TODO/"
+                                                    l10nKey="BookSettings.IgnoringIncompatibleCssCanDelete"
+                                                    l10nParam0={
+                                                        firstPossiblyLegacyCss
+                                                    }
+                                                    l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+                                                >
+                                                    The
+                                                    {
+                                                        firstPossiblyLegacyCss
+                                                    }{" "}
+                                                    stylesheet of this book is
+                                                    incompatible with modern
+                                                    themes. Bloom is currently
+                                                    ignoring it. If you don't
+                                                    need those customizations
+                                                    any more, you can delete
+                                                    your
+                                                    {firstPossiblyLegacyCss}.
+                                                    Click [here] for more
+                                                    information.
+                                                </PWithLink>
+                                            )}
                                             <div
                                                 css={css`
                                                     display: flex;
@@ -344,14 +448,18 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                                     id="trashIcon"
                                                     color="primary"
                                                 />
-                                                <div
+                                                <Div
+                                                    l10nKey="BookSettings.DeleteCustomBookStyles"
+                                                    l10nParam0={
+                                                        firstPossiblyLegacyCss
+                                                    }
                                                     css={css`
                                                         color: ${kBloomBlue};
                                                     `}
                                                 >
                                                     Delete{" "}
                                                     {firstPossiblyLegacyCss}
-                                                </div>
+                                                </Div>
                                             </div>
                                         </div>
                                     </NoteBox>
@@ -361,56 +469,73 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                     "customBookStyles.css" &&
                                 theme !== "legacy-5-6" && (
                                     <NoteBox>
-                                        {`"The ${firstPossiblyLegacyCss}" stylesheet of this book is incompatible with
-                                    modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`}
+                                        <PWithLink
+                                            href="https://docs.bloomlibrary.org/TODO/"
+                                            l10nKey="BookSettings.IgnoringIncompatibleCss"
+                                            l10nParam0={firstPossiblyLegacyCss}
+                                            l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+                                        >
+                                            The {firstPossiblyLegacyCss}{" "}
+                                            stylesheet of this book is
+                                            incompatible with modern themes.
+                                            Bloom is currently ignoring it.
+                                            Click [here] for more information.
+                                        </PWithLink>
                                     </NoteBox>
                                 )}
                             {
-                                // This is not part of the group of three mutually exclusive messages above
+                                // This is not part of the group of four mutually exclusive messages above
                             }
                             {!firstPossiblyLegacyCss &&
                                 (settingsToReturnLater as any)?.appearance
                                     ?.cssThemeName === "legacy-5-6" && (
                                     <NoteBox>
+                                        <Div l10nKey="BookSettings.AppearanceNotForLegacyTheme">
+                                            The "Legacy" theme does not support
+                                            Appearance settings.
+                                        </Div>
                                         {`The "Legacy" theme does not support Appearance settings.`}
                                     </NoteBox>
                                 )}
                             <ConfigrSubgroup
-                                label="Cover Background  (Not implemented yet)"
+                                label={
+                                    coverBackgroundLabel +
+                                    "  (Not implemented yet)"
+                                }
                                 path={`appearance`}
                             >
                                 <ConfigrCustomStringInput
                                     path={`appearance.coverColor`}
                                     disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
                                     //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
-                                    label="Cover Color"
+                                    label={coverColorLabel}
                                     control={ColorPickerForConfigr}
                                 />
                             </ConfigrSubgroup>
                             <ConfigrSubgroup
-                                label="What to Show on Cover"
+                                label={whatToShowOnCoverLabel}
                                 path={`appearance`}
                             >
                                 <ConfigrBoolean
-                                    label="Show Written Language 2 Title"
+                                    label={showWrittenLanguage2TitleLabel}
                                     {...getAdditionalProps<boolean>(
                                         "cover-title-L2-show"
                                     )}
                                 />
                                 <ConfigrBoolean
-                                    label="Show Written Language 3 Title"
+                                    label={showWrittenLanguage3TitleLabel}
                                     {...getAdditionalProps<boolean>(
                                         `cover-title-L3-show`
                                     )}
                                 />
                                 <ConfigrBoolean
-                                    label="Show Language Name"
+                                    label={showLanguageNameLabel}
                                     {...getAdditionalProps<boolean>(
                                         `cover-languageName-show`
                                     )}
                                 />
                                 <ConfigrBoolean
-                                    label="Show Topic"
+                                    label={showTopicLabel}
                                     {...getAdditionalProps<boolean>(
                                         `cover-topic-show`
                                     )}
@@ -418,26 +543,27 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             </ConfigrSubgroup>
 
                             <ConfigrSubgroup
-                                label="Front & Back Matter (Not implemented yet)"
+                                label={
+                                    frontAndBackMatterLabel +
+                                    "  (Not implemented yet)"
+                                }
                                 path={`appearance`}
                             >
                                 <ConfigrSelect
                                     disabled={true}
-                                    label="Font & Back Matter"
+                                    label={frontAndBackMatterLabel}
                                     path={`appearance.TODO`}
                                     options={[
                                         { label: "Page Saver", value: "TODO" }
                                     ]}
-                                    description={
-                                        "Normally, books use the front & back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one."
-                                    }
+                                    description={frontAndBackMatterDescription}
                                 />
                             </ConfigrSubgroup>
                         </ConfigrGroup>
-                        <ConfigrGroup label="BloomPUB" level={1}>
+                        <ConfigrGroup label={bloomPubLabel} level={1}>
                             {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}
                             <BloomResolutionSlider
-                                label="Resolution"
+                                label={resolutionLabel}
                                 path={`publish.bloomPUB.imageSettings`}
                             />
                         </ConfigrGroup>

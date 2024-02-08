@@ -815,7 +815,7 @@ public class AppearanceSettings
                 from name in names.ToArray<string>()
                 select new { label = name, value = name };
             x["firstPossiblyLegacyCss"] = Path.GetFileName(FirstPossiblyOffendingCssFile);
-            x["substitutedCssFile"] = GetPossiblyMigratedCssFile();
+            x["migratedTheme"] = GetPossiblyMigratedCssTheme();
             return JsonConvert.SerializeObject(x);
         }
     }
@@ -825,8 +825,8 @@ public class AppearanceSettings
     /// If that file was the basis for migrating to a theme, it gets ignored.  We check for that in
     /// this method.
     /// </summary>
-    /// <returns>base filename of offending CSS file, or null if it either doesn't exist or isn't migrated</returns>
-    internal string GetPossiblyMigratedCssFile()
+    /// <returns>name of theme if it was migrated, otherwise null</returns>
+    internal string GetPossiblyMigratedCssTheme()
     {
         if (String.IsNullOrEmpty(FirstPossiblyOffendingCssFile))
             return null;
@@ -839,10 +839,15 @@ public class AppearanceSettings
         var migrant = AppearanceMigrator.Instance.GetAppearanceThatSubstitutesForCustomCSS(cssContent);
         if (!String.IsNullOrEmpty(migrant))
         {
-            // We have a file that looks like it has been migrated, so we don't want to complain about it
-            // quite the same way as other offending files.  (Users may want to keep it around for backwards
-            // compatibility with earlier versions of Bloom.)
-            return offendingFile;
+            var jsonString = RobustFile.ReadAllText(migrant);
+			var json = JsonConvert.DeserializeObject<ExpandoObject>(jsonString) as IDictionary<string,object>;
+            if (json != null && json.ContainsKey("cssThemeName") && json["cssThemeName"] != null)
+            {
+				// We have a file that looks like it has been migrated, so we don't want to complain about it
+				// quite the same way as other offending files.  (Users may want to keep it around for backwards
+				// compatibility with earlier versions of Bloom.)
+				return json["cssThemeName"] as string;
+			}
         }
         return null;
     }
