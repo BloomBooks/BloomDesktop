@@ -82,9 +82,7 @@ namespace Bloom.Api
                 request.Failed("No file specified");
                 return;
             }
-            RobustFile.Delete(
-                Path.Combine(_bookSelection.CurrentSelection.FolderPath, filename)
-            );
+            RobustFile.Delete(Path.Combine(_bookSelection.CurrentSelection.FolderPath, filename));
             _bookSelection.CurrentSelection.SettingsUpdated();
             // We should only delete it when it's not in use, so we should not need to refresh the page.
             IndicatorInfoApi.NotifyIndicatorInfoChanged();
@@ -94,7 +92,9 @@ namespace Bloom.Api
         private void HandleGetAvailableAppearanceUIOptions(ApiRequest request)
         {
             request.ReplyWithJson(
-                _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.AppearanceUIOptions
+                _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.AppearanceUIOptions(
+                    _bookSelection.CurrentSelection.Storage.LegacyThemeCanBeUsed
+                )
             );
         }
 

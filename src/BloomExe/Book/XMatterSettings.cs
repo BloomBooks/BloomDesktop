@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,13 @@ namespace Bloom.Book
         {
             [JsonProperty("appearance")]
             public ExpandoObject Appearance;
+
+            [JsonProperty(
+                "legacyThemeCanBeUsed",
+                DefaultValueHandling = DefaultValueHandling.Populate
+            )]
+            [DefaultValue(true)]
+            public bool LegacyThemeCanBeUsed;
         }
 
         public static Settings GetSettingsOrNull(string settingsPath)
