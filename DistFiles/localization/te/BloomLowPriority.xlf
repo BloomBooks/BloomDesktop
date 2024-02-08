@@ -215,6 +215,16 @@
         <target xml:lang="te" state="needs-translation">Bloom was not able to access a microphone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveProblem" translate="no">
+        <source xml:lang="en">OneDrive Problem</source>
+        <target xml:lang="te" state="needs-translation">OneDrive Problem</target>
+        <note>ID: ReportProblemDialog.OneDriveProblem</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveErrorMessage" translate="no">
+        <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
+        <target xml:lang="te" state="needs-translation">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</target>
+        <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
