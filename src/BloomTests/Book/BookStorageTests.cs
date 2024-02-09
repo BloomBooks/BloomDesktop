@@ -1977,5 +1977,31 @@ namespace BloomTests.Book
                 );
             }
         }
+
+        [Test]
+        public void EnsureHasLinksToStylesheets_MakesExpectedChanges_OnlyToArgumentDom()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                "<html><head><link rel='stylesheet' href='Rubbish-xmatter.css' type='text/css' /><link rel='stylesheet' href='CustomBookStyles.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>"
+            );
+            var dom = new HtmlDom(storage.Dom.RawDom);
+            var html = dom.RawDom.OuterXml;
+            storage.EnsureHasLinksToStylesheets(dom);
+            Assert.That(storage.Dom.RawDom.OuterXml, Is.EqualTo(html)); // should not have modified the built-in dom!
+            var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
+            // Should have added various standard links
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//link[contains(@href, 'origami')]",
+                1
+            );
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//link[contains(@href, 'basePage')]", // currently typically legacy, but it should have SOME basePage link
+                1
+            );
+            // Should have removed the rubbish one
+            assertThatDom.HasNoMatchForXpath("//link[contains(@href, 'Rubbish')]");
+            // And this empty book has no reason to link to CustomBookStyles.css
+            assertThatDom.HasNoMatchForXpath("//link[contains(@href, 'CustomBookStyles')]");
+        }
     }
 }

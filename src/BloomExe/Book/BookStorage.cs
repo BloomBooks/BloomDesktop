@@ -2943,7 +2943,7 @@ namespace Bloom.Book
         }
 
         // NB: this knows nothing of book-specific css's... even "basic book.css"
-        private void EnsureHasLinksToStylesheets(HtmlDom dom)
+        internal void EnsureHasLinksToStylesheets(HtmlDom dom)
         {
             //clear out any old ones
             dom.RemoveNormalStyleSheetsLinks();
@@ -3684,9 +3684,7 @@ namespace Bloom.Book
                 return;
 
             var cssFiles = GetCssFilesToCheckForAppearanceCompatibility(true);
-            var substituteCssPath = BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(
-                cssFiles
-            );
+            var substituteCssPath = BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(cssFiles);
             if (substituteCssPath != null)
             {
                 var destPath = Path.Combine(FolderPath, "customBookStyles2.css");
@@ -3739,7 +3737,12 @@ namespace Bloom.Book
 
             if (!justOldCustomFiles)
             {
-                result.Add(Tuple.Create(GetSupportingFile("branding.css"), GetSupportingFileString("branding.css")));
+                result.Add(
+                    Tuple.Create(
+                        GetSupportingFile("branding.css"),
+                        GetSupportingFileString("branding.css")
+                    )
+                );
                 result.Add(
                     Tuple.Create(
                         GetSupportingFile("customBookStyles2.css"),
@@ -3747,11 +3750,19 @@ namespace Bloom.Book
                     )
                 );
                 result.Add(
-                    Tuple.Create(GetSupportingFile("appearance.css"), GetSupportingFileString("appearance.css"))
+                    Tuple.Create(
+                        GetSupportingFile("appearance.css"),
+                        GetSupportingFileString("appearance.css")
+                    )
                 );
 
                 var xmatterFileName = Path.GetFileName(PathToXMatterStylesheet);
-                result.Add(Tuple.Create(GetSupportingFile(xmatterFileName), GetSupportingFileString(xmatterFileName)));
+                result.Add(
+                    Tuple.Create(
+                        GetSupportingFile(xmatterFileName),
+                        GetSupportingFileString(xmatterFileName)
+                    )
+                );
             }
             return result.ToArray();
         }
