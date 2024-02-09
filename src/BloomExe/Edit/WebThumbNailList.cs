@@ -260,7 +260,7 @@ namespace Bloom.Edit
             if (SIL.PlatformUtilities.Platform.IsLinux)
                 OptimizeForLinux(pageListDom);
 
-            pageListDom = Model.CurrentBook.GetHtmlDomReadyToAddPages(pageListDom);
+            pageListDom = Model.CurrentBook.GetHtmlDomForPageList(pageListDom);
             _browser.DocumentCompleted += WebBrowser_DocumentCompleted;
 
             _baseForRelativePaths = pageListDom.BaseForRelativePaths;
