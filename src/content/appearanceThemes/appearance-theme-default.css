@@ -160,11 +160,22 @@
 .Device16x9Portrait,
 .Device16x9Landscape {
     --page-margin-top: 10px;
-    --page-margin-bottom: 45px; /* need room for page number, so not as small as others */
+    --page-margin-bottom: 10px;
     --page-margin-right: 10px;
     --page-margin-left: 10px;
     --cover-margin-top: 10px; /* page-margin-top does not affect cover */
     --cover-margin-bottom: 10px; /* don't need room for page number on cover */
+}
+
+/* We need a small margin (above) for xmatter pages (e.g., Robots Mali credits page,
+ * expecially in landscape, comment in BL-13002).
+ * But we need more on numbered pages, so we can fit the page number.
+ * This unfortunately breaks our rule about keeping the specificity at one class so that
+ * the settings dialog can override. But currently we don't expect to make page margins
+ * a book setting, so for now we're OK.*/
+.numberedPage.Device16x9Portrait,
+.numberedPage.Device16x9Landscape {
+    --page-margin-bottom: 45px; /* need room for page number, so not as small as others */
 }
 
 .no-margin-page,
