@@ -207,24 +207,6 @@ namespace BloomTests.WebLibraryIntegration
             return (bookObjectId, newBookFolder);
         }
 
-        [Test]
-        public void IsBookOnServer_ExistingBook_ReturnsTrue()
-        {
-            var someBookPath = MakeBook("local", Guid.NewGuid().ToString(), "someone", "test");
-            Login();
-            var bookObjectId = _uploader.UploadBook_ForUnitTest(someBookPath);
-            Assert.That(_uploader.IsBookOnServer(someBookPath), Is.True);
-
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookObjectId);
-        }
-
-        [Test]
-        public void IsBookOnServer_NonExistentBook_ReturnsFalse()
-        {
-            var localBook = MakeBook("local", "someId", "someone", "test");
-            Assert.That(_uploader.IsBookOnServer(localBook), Is.False);
-        }
-
         /// <summary>
         /// Regression test. Using ChangeExtension to append the PDF truncates the name when there is a period.
         /// </summary>
@@ -371,7 +353,11 @@ namespace BloomTests.WebLibraryIntegration
             );
 
             // Verify that metadata was overwritten, new record not created.
-            var records = _bloomLibraryBookApiClient.GetBookRecords("myId" + _thisTestId, false);
+            // TODO: fix
+            var records = _bloomLibraryBookApiClient.GetSingleBookRecord(
+                "myId" + _thisTestId,
+                false
+            );
             Assert.That(
                 records.Count,
                 Is.EqualTo(1),

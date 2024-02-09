@@ -342,23 +342,6 @@ namespace Bloom.WebLibraryIntegration
             return true;
         }
 
-        protected RestClient _parseRestClient;
-        protected RestClient ParseRestClient
-        {
-            get
-            {
-                if (_parseRestClient == null)
-                {
-                    _parseRestClient = new RestClient(GetRealUrl());
-                }
-                return _parseRestClient;
-            }
-        }
-
-        // Don't even THINK of making this mutable so each unit test uses a different class.
-        // Those classes hang around, can only be deleted manually, and eventually use up a fixed quota of classes.
-        protected const string ClassesLanguagePath = "classes/language";
-
         public string UserId
         {
             get { return _userId; }
@@ -368,14 +351,27 @@ namespace Bloom.WebLibraryIntegration
 
         public bool LoggedIn => !string.IsNullOrEmpty(_authenticationToken);
 
-        public string GetRealUrl()
+        #region parse stuff we are trying to get rid of
+        protected RestClient _parseRestClient;
+        protected RestClient ParseRestClient
+        {
+            get
+            {
+                if (_parseRestClient == null)
+                {
+                    _parseRestClient = new RestClient(GetParseUrl());
+                }
+                return _parseRestClient;
+            }
+        }
+
+        public string GetParseUrl()
         {
             return UrlLookup.LookupUrl(UrlType.Parse, null, BookUpload.UseSandbox);
         }
 
         protected RestRequest MakeParseRequest(string path, Method requestType)
         {
-            // client.Authenticator = new HttpBasicAuthenticator(username, password);
             var request = new RestRequest(path, requestType);
             SetParseCommonHeaders(request);
             if (!string.IsNullOrEmpty(_authenticationToken))
@@ -395,10 +391,24 @@ namespace Bloom.WebLibraryIntegration
             request.AddHeader("X-Parse-Application-Id", _parseApplicationId);
         }
 
-        protected RestRequest MakeParsePostRequest(string path)
+        internal bool IsThisVersionAllowedToUpload()
         {
-            return MakeParseRequest(path, Method.POST);
+            var request = MakeParseGetRequest("classes/version");
+            var response = ParseRestClient.Execute(request);
+            var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
+            var row = dy.results[0];
+            string versionString = row.minDesktopVersion;
+            var parts = versionString.Split('.');
+            var requiredMajorVersion = int.Parse(parts[0]);
+            var requiredMinorVersion = int.Parse(parts[1]);
+            parts = Application.ProductVersion.Split('.');
+            var ourMajorVersion = int.Parse(parts[0]);
+            var ourMinorVersion = int.Parse(parts[1]);
+            if (ourMajorVersion == requiredMajorVersion)
+                return ourMinorVersion >= requiredMinorVersion;
+            return ourMajorVersion >= requiredMajorVersion;
         }
+        #endregion
 
         /// <summary>
         /// Get the number of books on bloomlibrary.org that are in the given language.
@@ -431,50 +441,8 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
-        // Setting param 'includeLanguageInfo' to true adds a param to the query that causes it to fold in
-        // useful language information instead of only having the arcane langPointers object.
-        private IRestResponse GetBookRecordsByQuery(string query, bool includeLanguageInfo)
-        {
-            var request = MakeParseGetRequest("classes/books");
-            request.AddParameter("where", query, ParameterType.QueryString);
-            if (includeLanguageInfo)
-            {
-                request.AddParameter("include", "langPointers", ParameterType.QueryString);
-            }
-            return ParseRestClient.Execute(request);
-        }
-
         // Will throw an exception if there is any reason we can't make a successful query, including if there is no internet.
-        public dynamic GetSingleBookRecord(string id, bool includeLanguageInfo = false)
-        {
-            var json = GetBookRecords(id, includeLanguageInfo);
-            if (json == null || json.Count < 1)
-                return null;
-
-            return json[0];
-        }
-
-        /// <summary>
-        /// The string that needs to be embedded in json, either to query for books uploaded by this user,
-        /// or to specify that a book is. (But see the code in BookMetaData which is also involved in upload.)
-        /// </summary>
-        public string UploaderJsonString
-        {
-            get
-            {
-                return "\"uploader\":{\"__type\":\"Pointer\",\"className\":\"_User\",\"objectId\":\""
-                    + UserId
-                    + "\"}";
-            }
-        }
-
-        // Query parse for books.
-        // Will throw an exception if there is any reason we can't make a successful query, including if there is no internet.
-        public dynamic GetBookRecords(
-            string bookInstanceId,
-            bool includeLanguageInfo,
-            bool includeBooksFromOtherUploaders = false
-        )
+        public dynamic GetSingleBookRecord(string bookInstanceId, bool includeLanguageInfo = false)
         {
             // For current usage of this method, we really need to know the difference between "no books found" and "we couldn't check".
             // So all paths which don't allow us to check need to throw.
@@ -490,35 +458,9 @@ namespace Bloom.WebLibraryIntegration
                 );
             }
 
-            var query = "{\"bookInstanceId\":\"" + bookInstanceId + "\"";
-            if (!includeBooksFromOtherUploaders)
-            {
-                query += "," + UploaderJsonString;
-            }
-            query += "}";
-            var response = GetBookRecordsByQuery(query, includeLanguageInfo);
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                SIL.Reporting.Logger.WriteEvent(
-                    $"Unable to query book records on parse.\n"
-                        + $"query = {query}\n"
-                        + $"response.StatusCode = {response.StatusCode}\n"
-                        + $"response.Content = {response.Content}"
-                );
-                throw new ApplicationException("Unable to look up book records.");
-            }
+            //TODO get book record from API
 
-            dynamic json = JObject.Parse(response.Content);
-            if (json == null)
-            {
-                SIL.Reporting.Logger.WriteEvent(
-                    $"Unable to parse book records query result.\n"
-                        + $"response.Content = {response.Content}"
-                );
-                throw new ApplicationException("Unable to look up book records.");
-            }
-
-            return json.results;
+            return null;
         }
 
         public void Logout(bool includeFirebaseLogout = true)
@@ -529,24 +471,6 @@ namespace Bloom.WebLibraryIntegration
             _userId = "";
             if (includeFirebaseLogout)
                 BloomLibraryAuthentication.Logout();
-        }
-
-        internal bool IsThisVersionAllowedToUpload()
-        {
-            var request = MakeParseGetRequest("classes/version");
-            var response = ParseRestClient.Execute(request);
-            var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
-            var row = dy.results[0];
-            string versionString = row.minDesktopVersion;
-            var parts = versionString.Split('.');
-            var requiredMajorVersion = int.Parse(parts[0]);
-            var requiredMinorVersion = int.Parse(parts[1]);
-            parts = Application.ProductVersion.Split('.');
-            var ourMajorVersion = int.Parse(parts[0]);
-            var ourMinorVersion = int.Parse(parts[1]);
-            if (ourMajorVersion == requiredMajorVersion)
-                return ourMinorVersion >= requiredMinorVersion;
-            return ourMajorVersion >= requiredMajorVersion;
         }
 
         /// <summary>
@@ -567,7 +491,7 @@ namespace Bloom.WebLibraryIntegration
         )
         {
             System.Diagnostics.Debug.WriteLine(
-                $"DEBUG BloomParseClient.GetLibraryStatusForBooks(): {bookInfos.Count} books"
+                $"DEBUG BloomLibraryBookApiClient.GetLibraryStatusForBooks(): {bookInfos.Count} books"
             );
             var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
             if (!UrlLookup.CheckGeneralInternetAvailability(false))

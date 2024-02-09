@@ -120,6 +120,11 @@ namespace BloomTests.WebLibraryIntegration
 
     public class BloomLibraryBookApiClientTestDouble : BloomLibraryBookApiClient
     {
+        protected RestRequest MakeParsePostRequest(string path)
+        {
+            return MakeParseRequest(path, Method.POST);
+        }
+
         private RestRequest MakeParsePutRequest(string path)
         {
             return MakeParseRequest(path, Method.PUT);
@@ -244,6 +249,20 @@ namespace BloomTests.WebLibraryIntegration
             var response = ParseRestClient.Execute(request);
             if (response.StatusCode != HttpStatusCode.OK)
                 throw new ApplicationException(response.StatusDescription + " " + response.Content);
+        }
+
+        /// <summary>
+        /// The string that needs to be embedded in json, either to query for books uploaded by this user,
+        /// or to specify that a book is. (But see the code in BookMetaData which is also involved in upload.)
+        /// </summary>
+        public string UploaderJsonString
+        {
+            get
+            {
+                return "\"uploader\":{\"__type\":\"Pointer\",\"className\":\"_User\",\"objectId\":\""
+                    + UserId
+                    + "\"}";
+            }
         }
     }
 }

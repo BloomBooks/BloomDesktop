@@ -721,8 +721,8 @@ namespace Bloom.web.controllers
             }
             else
             {
-                // This may duplicate the action in BloomParseCLient.GetLibraryStatusForBooks, but it doesn't
-                // hurt to generate the url and harvest status twice.  The operation in BloomParseClient can
+                // This may duplicate the action in BloomLibraryBookApiClient.GetLibraryStatusForBooks, but it doesn't
+                // hurt to generate the url and harvest status twice.  The operation in BloomLibraryBookApiClient can
                 // handle duplicate book ids in different collections while this one looks only at the current
                 // collection.
                 apiRequest.ReplyWithJson(

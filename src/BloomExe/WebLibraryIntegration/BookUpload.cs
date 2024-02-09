@@ -26,6 +26,7 @@ using SIL.Reporting;
 namespace Bloom.WebLibraryIntegration
 {
     /// <summary>
+    /// TODO update
     /// Currently pushes a book's metadata to Parse.com (a mongodb service) and files to Amazon S3.
     /// We are using both because Parse offers a more structured, query-able data organization
     /// that is useful for metadata, but does not allow large enough files for some of what we need.
@@ -668,14 +669,6 @@ namespace Bloom.WebLibraryIntegration
                         return UseSandboxByDefault; // dry run
                 }
             }
-        }
-
-        public bool IsBookOnServer(string bookPath)
-        {
-            var metadata = BookMetaData.FromFile(
-                bookPath.CombineForPath(BookInfo.MetaDataFileName)
-            );
-            return BloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id) != null;
         }
 
         /// <returns>book record or null</returns>
