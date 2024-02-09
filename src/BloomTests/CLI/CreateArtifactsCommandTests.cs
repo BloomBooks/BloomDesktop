@@ -96,6 +96,11 @@ namespace BloomTests.CLI
             Assert.That(errors.Contains("Unknown"), Is.True);
         }
 
+        // The idea here is to make the simplest possible book that will get far enough into the
+        // CreateArtifactsCommand code to attempt to migrate a book for publication which can't be
+        // legacy, because the ABC Xmatter does not support legacy. We want to validate the exception.
+        // Of course, it would also be nice to have some tests where artifact creation succeeds, but that's
+        // too big a job for today.
         [Test]
         public void CreateArtifacts_LegacyBookWithInvalidXmatter_ReportsLegacyBookCannotHarvest()
         {

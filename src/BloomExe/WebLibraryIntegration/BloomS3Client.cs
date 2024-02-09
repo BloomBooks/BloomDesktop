@@ -93,17 +93,14 @@ namespace Bloom.WebLibraryIntegration
             {
                 if (_amazonS3WithAccessKey != null)
                     _amazonS3WithAccessKey.Dispose();
-                _amazonS3WithAccessKey = CreateAmazonS3Client(
-                    _s3Config,
-                    GetAccessKeyCredentials(bucketName)
-                );
+                _amazonS3WithAccessKey = CreateAmazonS3Client(_s3Config, bucketName);
 
                 _previousBucketName = bucketName;
             }
             return _amazonS3WithAccessKey; // we keep this so that we can dispose of it later.
         }
 
-        // Overriden in bloom-harvester as of Nov 2023
+        // Overriden in bloom-harvester as of March 2024
         protected virtual AmazonS3Credentials GetAccessKeyCredentials(string bucketName)
         {
             var accessKeys = AccessKeys.GetAccessKeys(bucketName);
@@ -114,8 +111,13 @@ namespace Bloom.WebLibraryIntegration
             };
         }
 
-        // Overriden in bloom-harvester as of Nov 2023
-        protected virtual IAmazonS3 CreateAmazonS3Client(
+        protected virtual IAmazonS3 CreateAmazonS3Client(AmazonS3Config s3Config, string bucketName)
+        {
+            var credentials = GetAccessKeyCredentials(bucketName);
+            return CreateAmazonS3Client(s3Config, credentials);
+        }
+
+        protected IAmazonS3 CreateAmazonS3Client(
             AmazonS3Config s3Config,
             AmazonS3Credentials credentials
         )

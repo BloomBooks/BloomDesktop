@@ -16,12 +16,11 @@ namespace Bloom.Book
     /// Analyze a book and reconstruct as much as possible of the collection settings.
     /// (Adapted from Harvester's BookAnalyzer.cs.)
     /// </summary>
-    class CollectionSettingsReconstructor
+    public class CollectionSettingsReconstructor
     {
-        private readonly HtmlDom _dom;
-        private readonly string _bookDirectory;
-        private readonly string _bookshelf;
-        private readonly Version _bloomVersion;
+        protected readonly HtmlDom _dom;
+        protected readonly string _bookDirectory;
+        protected string _bookshelf;
 
         public CollectionSettingsReconstructor(string html, string meta, string bookDirectory = "")
         {
@@ -315,15 +314,15 @@ namespace Bloom.Book
             return xmatterName ?? "Device";
         }
 
-        public string Language1Code { get; }
-        public string Language2Code { get; }
+        public string Language1Code { get; protected set; }
+        public string Language2Code { get; protected set; }
         public string Language3Code { get; set; }
-        public string SignLanguageCode { get; }
-        public string Branding { get; }
+        public string SignLanguageCode { get; protected set; }
+        public string Branding { get; protected set; }
 
-        public string Country { get; private set; }
-        public string Province { get; private set; }
-        public string District { get; private set; }
+        public string Country { get; protected set; }
+        public string Province { get; protected set; }
+        public string District { get; protected set; }
 
         /// <summary>
         /// Either the contents of the uploaded Collection settings file or a generated
