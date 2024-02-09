@@ -81,6 +81,8 @@ namespace Bloom.Book
         void CleanupUnusedVideoFiles();
         void CleanupUnusedActivities();
 
+        void EnsureHasLinkToStyleSheet(HtmlDom dom, string path);
+
         ExpandoObject XmatterAppearanceSettings { get; }
         ExpandoObject BrandingAppearanceSettings { get; }
 
@@ -3006,7 +3008,7 @@ namespace Bloom.Book
             }
         }
 
-        private void EnsureHasLinkToStyleSheet(HtmlDom dom, string path)
+        public void EnsureHasLinkToStyleSheet(HtmlDom dom, string path)
         {
             foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
             {
@@ -3693,9 +3695,7 @@ namespace Bloom.Book
                 return;
 
             var cssFiles = GetCssFilesToCheckForAppearanceCompatibility(true);
-            var substituteCssPath = BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(
-                cssFiles
-            );
+            var substituteCssPath = BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(cssFiles);
             if (substituteCssPath != null)
             {
                 var destPath = Path.Combine(FolderPath, "customBookStyles2.css");
@@ -3705,11 +3705,11 @@ namespace Bloom.Book
                 RobustFile.Copy(substituteCssPath, destPath, false);
             }
             else
-                {
-                    // if there wasn't a substitute, we may have chosen legacy theme.
-                    // That might be disabled by xmatter, but we'll handle that later in
-                    // EnsureUpToDate.
-                }
+            {
+                // if there wasn't a substitute, we may have chosen legacy theme.
+                // That might be disabled by xmatter, but we'll handle that later in
+                // EnsureUpToDate.
+            }
 
             // This would happen as a side effect of saving the book at the end of updating it, but
             // we need it to happen before we re-initialize the settings and UpdateSupportFiles so
@@ -3754,7 +3754,12 @@ namespace Bloom.Book
 
             if (!justOldCustomFiles)
             {
-                result.Add(Tuple.Create(GetSupportingFile("branding.css"), GetSupportingFileString("branding.css")));
+                result.Add(
+                    Tuple.Create(
+                        GetSupportingFile("branding.css"),
+                        GetSupportingFileString("branding.css")
+                    )
+                );
                 result.Add(
                     Tuple.Create(
                         GetSupportingFile("customBookStyles2.css"),
@@ -3762,11 +3767,19 @@ namespace Bloom.Book
                     )
                 );
                 result.Add(
-                    Tuple.Create(GetSupportingFile("appearance.css"), GetSupportingFileString("appearance.css"))
+                    Tuple.Create(
+                        GetSupportingFile("appearance.css"),
+                        GetSupportingFileString("appearance.css")
+                    )
                 );
 
                 var xmatterFileName = Path.GetFileName(PathToXMatterStylesheet);
-                result.Add(Tuple.Create(GetSupportingFile(xmatterFileName), GetSupportingFileString(xmatterFileName)));
+                result.Add(
+                    Tuple.Create(
+                        GetSupportingFile(xmatterFileName),
+                        GetSupportingFileString(xmatterFileName)
+                    )
+                );
             }
             return result.ToArray();
         }

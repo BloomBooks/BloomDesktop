@@ -635,7 +635,7 @@ namespace Bloom.Book
             return dom;
         }
 
-        public HtmlDom GetHtmlDomReadyToAddPages(HtmlDom inputDom)
+        public HtmlDom GetHtmlDomForPageList(HtmlDom inputDom)
         {
             var headNode = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head");
             var inputHead = inputDom.SelectSingleNodeHonoringDefaultNS("/html/head");
@@ -650,7 +650,9 @@ namespace Bloom.Book
             //foreach (XmlNode child in inputHead.ChildNodes)
             //	importNode.AppendChild(child);
             //inputHead.ParentNode.ReplaceChild(importNode, inputHead);
-            return Storage.MakeDomRelocatable(inputDom);
+            var result = Storage.MakeDomRelocatable(inputDom);
+            Storage.EnsureHasLinkToStyleSheet(result, "previewMode.css");
+            return result;
         }
 
         public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
