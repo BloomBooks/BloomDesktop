@@ -413,7 +413,8 @@ namespace Bloom.web.controllers
                 !CollectionModel.SaveAsBloomSourceFile(
                     book.StoragePageFolder,
                     destFileName,
-                    out var exception
+                    out var exception,
+                    new string[] { book.CollectionSettings.SettingsFilePath }
                 )
             )
             {

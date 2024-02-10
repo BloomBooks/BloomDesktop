@@ -141,6 +141,7 @@ namespace Bloom.CLI
             {
                 exitCode |= CreateBloomSourceArtifact(
                     parameters.BookPath,
+                    parameters.CollectionPath,
                     parameters.Creator,
                     zippedBloomSourceOutputPath
                 );
@@ -197,6 +198,7 @@ namespace Bloom.CLI
 
         private static CreateArtifactsExitCode CreateBloomSourceArtifact(
             string bookPath,
+            string collectionPath,
             string creator,
             string zippedBloomSourceOutputPath
         )
@@ -205,7 +207,8 @@ namespace Bloom.CLI
                 !CollectionTab.CollectionModel.SaveAsBloomSourceFile(
                     bookPath,
                     zippedBloomSourceOutputPath,
-                    out Exception exception
+                    out Exception exception,
+                    new string[] { collectionPath }
                 )
             )
             {
