@@ -123,7 +123,7 @@ namespace Bloom.CLI
 			}
 			if (!String.IsNullOrEmpty(zippedBloomSourceOutputPath))
 			{
-				exitCode |= CreateBloomSourceArtifact(parameters.BookPath, parameters.Creator, zippedBloomSourceOutputPath);
+				exitCode |= CreateBloomSourceArtifact(parameters.BookPath, parameters.CollectionPath, parameters.Creator, zippedBloomSourceOutputPath);                    
 			}
 
 			Control control = new Control();
@@ -168,9 +168,9 @@ namespace Bloom.CLI
 			return exitCode;
 		}
 
-		private static CreateArtifactsExitCode CreateBloomSourceArtifact(string bookPath, string creator, string zippedBloomSourceOutputPath)
+		private static CreateArtifactsExitCode CreateBloomSourceArtifact(string bookPath, string collectionPath, string creator, string zippedBloomSourceOutputPath)
 		{
-			if (!CollectionTab.CollectionModel.SaveAsBloomSourceFile(bookPath, zippedBloomSourceOutputPath, out Exception exception))
+			if (!CollectionTab.CollectionModel.SaveAsBloomSourceFile(bookPath, zippedBloomSourceOutputPath, out Exception exception, new string[] { collectionPath }))
 			{
 				return CreateArtifactsExitCode.UnhandledException;
 			}

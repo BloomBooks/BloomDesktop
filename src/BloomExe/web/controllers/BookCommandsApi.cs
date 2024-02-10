@@ -337,7 +337,7 @@ namespace Bloom.web.controllers
 			if (String.IsNullOrEmpty(destFileName))
 				return;
 
-			if (!CollectionModel.SaveAsBloomSourceFile(book.StoragePageFolder, destFileName, out var exception))
+			if (!CollectionModel.SaveAsBloomSourceFile(book.StoragePageFolder, destFileName, out var exception, new string[] { book.CollectionSettings.SettingsFilePath }))
 			{
 				// Purposefully not adding to the L10N burden...
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None,
