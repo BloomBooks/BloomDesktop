@@ -2956,10 +2956,10 @@ namespace Bloom.Book
         }
 
         // NB: this knows nothing of book-specific css's... even "basic book.css"
-        private void EnsureHasLinksToStylesheets(HtmlDom dom)
+        internal void EnsureHasLinksToStylesheets(HtmlDom dom)
         {
             //clear out any old ones
-            Dom.RemoveNormalStyleSheetsLinks();
+            dom.RemoveNormalStyleSheetsLinks();
             EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
             CssFilesThatAreAlwaysWanted.ForEach(x =>
@@ -3419,7 +3419,9 @@ namespace Bloom.Book
             var levelString = Dom.GetMetaValue("mediaMaintenanceLevel", "0");
             if (!int.TryParse(levelString, out int level))
                 level = 0;
-            if (level < 1 && ImageUtils.NeedToShrinkImages(FolderPath))
+            if (level >= 1)
+                return;
+            if (ImageUtils.NeedToShrinkImages(FolderPath))
             {
                 // If the book contains overlarge images, we want to fix those before editing because this can lead
                 // to thumbnails not being created properly and other bad behavior.  This is a one-time fix that can

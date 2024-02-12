@@ -1676,13 +1676,17 @@ namespace BloomTests.Book
             );
 
             //SUT
-            storage.MigrateToMediaLevel1ShrinkLargeImages();
+            storage.MigrateToMediaLevel1ShrinkLargeImages(); // does nothing in this situation, but should still bump level
+            var mediaLevel = storage.Dom.GetMetaValue("mediaMaintenanceLevel", "0");
+            Assert.That(mediaLevel, Is.EqualTo("1"));
             storage.MigrateToLevel2RemoveTransparentComicalSvgs();
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("2"));
             storage.MigrateToLevel3PutImgFirst();
 
             //Verification
-            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
-            Assert.That(maintLevel, Is.GreaterThanOrEqualTo("2"));
+            maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("3"));
             Assert.That(
                 storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count,
                 Is.EqualTo(0)
@@ -1972,6 +1976,32 @@ namespace BloomTests.Book
                         : !results.Contains(testFilePath)
                 );
             }
+        }
+
+        [Test]
+        public void EnsureHasLinksToStylesheets_MakesExpectedChanges_OnlyToArgumentDom()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                "<html><head><link rel='stylesheet' href='Rubbish-xmatter.css' type='text/css' /><link rel='stylesheet' href='CustomBookStyles.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>"
+            );
+            var dom = new HtmlDom(storage.Dom.RawDom);
+            var html = dom.RawDom.OuterXml;
+            storage.EnsureHasLinksToStylesheets(dom);
+            Assert.That(storage.Dom.RawDom.OuterXml, Is.EqualTo(html)); // should not have modified the built-in dom!
+            var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
+            // Should have added various standard links
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//link[contains(@href, 'origami')]",
+                1
+            );
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//link[contains(@href, 'basePage')]", // currently typically legacy, but it should have SOME basePage link
+                1
+            );
+            // Should have removed the rubbish one
+            assertThatDom.HasNoMatchForXpath("//link[contains(@href, 'Rubbish')]");
+            // And this empty book has no reason to link to CustomBookStyles.css
+            assertThatDom.HasNoMatchForXpath("//link[contains(@href, 'CustomBookStyles')]");
         }
     }
 }
