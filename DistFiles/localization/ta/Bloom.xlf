@@ -1829,6 +1829,16 @@
         <target xml:lang="ta" state="needs-translation">New style</target>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Overlay" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Overlay</source>
+        <target xml:lang="ta" state="needs-translation">Overlay</target>
+        <note>ID: EditTab.FormatDialog.Overlay</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Padding: space between the text and its border</source>
+        <target xml:lang="ta" state="needs-translation">Padding: space between the text and its border</target>
+        <note>ID: EditTab.FormatDialog.Padding</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ParagraphSpacing" sil:dynamic="true">
         <source xml:lang="en">Space Between Paragraphs</source>
         <target xml:lang="ta" state="needs-translation">Space Between Paragraphs</target>
@@ -1863,6 +1873,11 @@
         <source xml:lang="en">Text Color</source>
         <target xml:lang="ta" state="needs-translation">Text Color</target>
         <note>ID: EditTab.FormatDialog.TextColor</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.VisitEachPage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">After making changes to a style, please visit each page that uses it. This allows Bloom to fully apply your changes.</source>
+        <target xml:lang="ta" state="needs-translation">After making changes to a style, please visit each page that uses it. This allows Bloom to fully apply your changes.</target>
+        <note>ID: EditTab.FormatDialog.VisitEachPage</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Extra Wide</source>
