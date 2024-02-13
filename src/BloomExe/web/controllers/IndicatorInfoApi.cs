@@ -39,7 +39,7 @@ namespace Bloom.web.controllers
                     if (GetBookInfo(request, out bookInfo, out collection))
                     {
                         var firstPossiblyOffendingCssFile = "";
-                        var substitutedCssFile = "";
+                        var migratedTheme = "";
                         if (bookInfo.AppearanceSettings.IsInitialized)
                         {
                             firstPossiblyOffendingCssFile = bookInfo
@@ -47,7 +47,7 @@ namespace Bloom.web.controllers
                                 .FirstPossiblyOffendingCssFile;
                             if (!String.IsNullOrEmpty(firstPossiblyOffendingCssFile))
                                 firstPossiblyOffendingCssFile = Path.GetFileName(firstPossiblyOffendingCssFile);
-                            substitutedCssFile = bookInfo.AppearanceSettings.GetPossiblyMigratedCssFile();
+                            migratedTheme = bookInfo.AppearanceSettings.GetPossiblyMigratedCssTheme();
                         }
                         else
                         {
@@ -63,7 +63,7 @@ namespace Bloom.web.controllers
                             factoryInstalled = collection.IsFactoryInstalled,
                             cssThemeName = bookInfo.AppearanceSettings.ThemeNameForDisplay,
                             firstPossiblyOffendingCssFile = firstPossiblyOffendingCssFile,
-                            substitutedCssFile = substitutedCssFile,
+                            migratedTheme = migratedTheme,
                             path = bookInfo.FolderPath,
                         };
                         request.ReplyWithJson(data);
