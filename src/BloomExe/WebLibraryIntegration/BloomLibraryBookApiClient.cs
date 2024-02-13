@@ -25,8 +25,9 @@ namespace Bloom.WebLibraryIntegration
         const string kHost = "https://api.bloomlibrary.org";
 
         //const string kHost = "http://localhost:7071"; // For local testing
+
         const string kVersion = "v1";
-        const string kBookApiUrlPrefix = $"{kHost}/{kVersion}/book/";
+        const string kBookApiUrlPrefix = $"{kHost}/{kVersion}/books/";
 
         protected RestClient _azureRestClient;
         protected string _authenticationToken = String.Empty;
@@ -38,10 +39,10 @@ namespace Bloom.WebLibraryIntegration
             _parseApplicationId = keys.ParseApplicationKey;
         }
 
-        private void LogApiError(string apiEndpoint, IRestResponse response)
+        private void LogApiError(IRestRequest request, IRestResponse response)
         {
             SIL.Reporting.Logger.WriteEvent(
-                $@"BloomLibraryBookApiClient call to {apiEndpoint} failed
+                $@"BloomLibraryBookApiClient call to {request.Resource} failed
   StatusCode: {response.StatusCode}
   Content: {response.Content}
   ResponseStatus: {response.ResponseStatus}
@@ -55,15 +56,14 @@ namespace Bloom.WebLibraryIntegration
         public dynamic CallLongRunningAction(
             RestRequest request,
             IProgress progress,
-            string messageToShowUserOnFailure,
-            string endpointForFailureLog
+            string messageToShowUserOnFailure
         )
         {
             // Make the initial call. If all goes well, we get an Accepted (202) response with a URL to poll.
             var response = AzureRestClient.Execute(request);
             if (response.StatusCode != HttpStatusCode.Accepted)
             {
-                LogApiError(endpointForFailureLog, response);
+                LogApiError(request, response);
                 throw new ApplicationException(messageToShowUserOnFailure);
             }
 
@@ -72,7 +72,7 @@ namespace Bloom.WebLibraryIntegration
             );
             if (operationLocation == null)
             {
-                LogApiError(endpointForFailureLog, response);
+                LogApiError(request, response);
                 throw new ApplicationException(messageToShowUserOnFailure);
             }
 
@@ -85,7 +85,7 @@ namespace Bloom.WebLibraryIntegration
                 response = AzureRestClient.Execute(statusRequest);
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    LogApiError(endpointForFailureLog, response);
+                    LogApiError(request, response);
                     throw new ApplicationException(messageToShowUserOnFailure);
                 }
 
@@ -97,7 +97,7 @@ namespace Bloom.WebLibraryIntegration
                 }
                 catch (Exception e)
                 {
-                    LogApiError(endpointForFailureLog, response);
+                    LogApiError(request, response);
                     SIL.Reporting.Logger.WriteEvent("Failed to parse response content.");
                     SIL.Reporting.Logger.WriteError(e);
                     throw new ApplicationException(messageToShowUserOnFailure);
@@ -107,7 +107,7 @@ namespace Bloom.WebLibraryIntegration
                     return result;
                 else if (status == "Failed" || status == "Cancelled")
                 {
-                    LogApiError(endpointForFailureLog, response);
+                    LogApiError(request, response);
                     throw new ApplicationException(messageToShowUserOnFailure);
                 }
 
@@ -162,30 +162,26 @@ namespace Bloom.WebLibraryIntegration
             if (!LoggedIn)
                 throw new ApplicationException("Must be logged in to upload a book");
 
-            var request = MakePostRequest("upload-start");
-
-            if (!string.IsNullOrEmpty(existingBookObjectId))
-                request.AddQueryParameter("existing-book-object-id", existingBookObjectId);
+            var request = MakePostRequest($"{existingBookObjectId ?? "new"}:upload-start");
 
             // We give the server a list of files and their hashes so it can be the controller of which files to upload.
             // body format is
-            // { title: "My title/", files: [{ "path": "abc", "hash": "123" }, ...] }
+            // { title: "My title", files: [{ "path": "abc", "hash": "123" }, ...] }
             var obj = new Dictionary<string, object>
             {
                 // Because the title could change between uploads, we can't rely on the existing
                 // path on S3 (which includes the title). We have to provide it ourselves.
-                // However, we don't call it book-title in the API because some day we would like
-                // to get away from that being part of the path.
-                { "title", bookTitle + "/" },
+                { "title", bookTitle },
                 { "files", JsonConvert.SerializeObject(bookFiles) },
+                { "clientName", $"Bloom {ApplicationUpdateSupport.ChannelName}" },
+                { "clientVersion", Application.ProductVersion }
             };
             request.AddJsonBody(obj);
 
             var result = CallLongRunningAction(
                 request,
                 progress,
-                messageToShowUserOnFailure: "Unable to initiate book upload on the server.",
-                endpointForFailureLog: "upload-start"
+                messageToShowUserOnFailure: "Unable to initiate book upload on the server."
             );
 
             if (progress.CancelRequested)
@@ -202,7 +198,7 @@ namespace Bloom.WebLibraryIntegration
                 s3PrefixToUploadTo += "/";
 
             return (
-                result["transaction-id"],
+                result["transactionId"],
                 new AmazonS3Credentials
                 {
                     AccessKey = result.credentials.AccessKeyId,
@@ -210,7 +206,7 @@ namespace Bloom.WebLibraryIntegration
                     SessionToken = result.credentials.SessionToken
                 },
                 s3PrefixToUploadTo,
-                result["files-to-upload"].ToObject<string[]>()
+                result["filesToUpload"].ToObject<string[]>()
             );
         }
 
@@ -220,22 +216,23 @@ namespace Bloom.WebLibraryIntegration
         //  - Updates the `books` record in parse-server with all fields from the client,
         //     including the new baseUrl which points to the new S3 location. Sets uploadPendingTimestamp to null.
         //  - Deletes the book files from the old S3 location
-        public void FinishBookUpload(IProgress progress, string transactionId, string metadataJson)
+        public void FinishBookUpload(IProgress progress, string transactionId, dynamic metadata)
         {
             if (!LoggedIn)
                 throw new ApplicationException("Must be logged in to upload a book");
 
-            var request = MakePostRequest("upload-finish");
+            // At this point in our implementation, the transaction ID is the same as the book ID.
+            // That could change at some point in the future.
+            // We use the book ID in the url; we send the transaction ID in the body.
+            var bookId = transactionId;
+            var request = MakePostRequest($"{bookId}:upload-finish");
 
-            request.AddQueryParameter("transaction-id", transactionId);
-
-            request.AddJsonBody(metadataJson);
+            request.AddJsonBody(new { transactionId, metadata });
 
             CallLongRunningAction(
                 request,
                 progress,
-                messageToShowUserOnFailure: "Unable to finalize book upload on the server.",
-                endpointForFailureLog: "upload-finish"
+                messageToShowUserOnFailure: "Unable to finalize book upload on the server."
             );
         }
 
@@ -251,19 +248,19 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
-        private RestRequest MakeGetRequest(string action)
+        private RestRequest MakeGetRequest(string endpoint = "")
         {
-            return MakeRequest(action, Method.GET);
+            return MakeRequest(endpoint, Method.GET);
         }
 
-        private RestRequest MakePostRequest(string action)
+        private RestRequest MakePostRequest(string endpoint = "")
         {
-            return MakeRequest(action, Method.POST);
+            return MakeRequest(endpoint, Method.POST);
         }
 
-        private RestRequest MakeRequest(string action, Method requestType)
+        private RestRequest MakeRequest(string endpoint, Method requestType)
         {
-            string path = kBookApiUrlPrefix + action;
+            string path = kBookApiUrlPrefix + endpoint;
             var request = new RestRequest(path, requestType);
             SetCommonHeadersAndParameters(request);
             return request;
@@ -412,21 +409,23 @@ namespace Bloom.WebLibraryIntegration
         {
             if (!UrlLookup.CheckGeneralInternetAvailability(false))
                 return -1;
-            var request = MakeGetRequest("get-book-count-by-language");
-            request.AddQueryParameter("language-tag", languageCode);
+            var request = MakeGetRequest();
+            request.AddQueryParameter("lang", languageCode);
+            request.AddQueryParameter("limit", "0");
             var response = AzureRestClient.Execute(request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                LogApiError("get-book-count-by-language", response);
+                LogApiError(request, response);
                 return -1;
             }
             try
             {
-                return int.Parse(response.Content);
+                dynamic rawResult = JObject.Parse(response.Content);
+                return rawResult.count;
             }
             catch (Exception e)
             {
-                SIL.Reporting.Logger.WriteEvent("get-book-count-by-language failed: " + e.Message);
+                SIL.Reporting.Logger.WriteEvent("GetBookCountByLanguage failed: " + e.Message);
                 return -1;
             }
         }
@@ -550,16 +549,16 @@ namespace Bloom.WebLibraryIntegration
         }
 
         /// <summary>
-        /// Query the parse server for the status of the given books.  The returned dictionary will have
-        /// an entry for each book that has been uploaded to the parse server.  The keys are the book ids
+        /// Query the API for the status of the given books. The returned dictionary will have
+        /// an entry for each book that has been uploaded to Bloom Library. The keys are the book instance ids
         /// from the BookInfo objects.
-        /// Books with no entry in the dictionary have not been uploaded to Bloom Library.  Books that have
+        /// Books with no entry in the dictionary have not been uploaded to Bloom Library. Books that have
         /// multiple uploads with the same bookInstanceId are flagged as having a problem by having an empty
-        /// string for the BloomLibraryStatus.BloomLibraryBookUrl field.  (The other fields are meaningless
+        /// string for the BloomLibraryStatus.BloomLibraryBookUrl field. (The other fields are meaningless
         /// in that case.)
         /// </summary>
         /// <remarks>
-        /// We want to minimize the number of queries we make to the parse server, so we batch up the book
+        /// We want to minimize the number of queries we make to the API, so we batch up the book instance
         /// ids as much as possible.
         /// </remarks>
         public Dictionary<string, BloomLibraryStatus> GetLibraryStatusForBooks(
@@ -574,20 +573,21 @@ namespace Bloom.WebLibraryIntegration
                 return bloomLibraryStatusesById;
 
             List<string> bookInstanceIds = bookInfos.Select(book => book.Id).ToList();
-            var request = MakePostRequest("get-books");
-            var requestBody = new { bookInstanceIds };
+            var request = MakePostRequest();
+            var requestBody = new { instanceIds = bookInstanceIds };
             request.AddJsonBody(requestBody);
             var response = AzureRestClient.Execute(request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                LogApiError("get-books", response);
+                LogApiError(request, response);
                 return bloomLibraryStatusesById;
             }
 
-            dynamic result = JObject.Parse(response.Content);
-            for (int i = 0; i < result.bookRecords.Count; ++i)
+            dynamic rawResult = JObject.Parse(response.Content);
+            dynamic bookRecords = rawResult.results;
+            for (int i = 0; i < bookRecords.Count; ++i)
             {
-                var bookRecord = result.bookRecords[i];
+                var bookRecord = bookRecords[i];
                 string bookInstanceId = bookRecord.bookInstanceId;
                 if (bloomLibraryStatusesById.ContainsKey(bookInstanceId))
                 {

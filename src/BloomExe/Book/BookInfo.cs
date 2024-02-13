@@ -1115,13 +1115,13 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Get the reduced Json string that we upload to set the database entry for the book on our website.
+        /// Get the reduced Json that we upload to set the database entry for the book on our website.
         /// This leaves out some of the metadata that we use while working on the book.
         /// Note that the full metadata is currently uploaded to S3 as part of the book content;
         /// this reduced subset is just for the website itself.
         /// Note that if you add a property to the upload set here, you must manually add a corresponding field to
-        /// the Book table in Parse.com. This is very important. Currently, the field will auto-add to
-        /// the Parse databases used for unit testing and even (I think) the one for sandbox testing,
+        /// the books table in the database. This is very important. Currently, the field will auto-add to
+        /// the parse-server databases used for unit testing and even (I think) the one for sandbox testing,
         /// but not to the live site; so if you forget to do this uploading will suddenly break.
         /// It is for this reason that we deliberately don't automatically add new fields to the upload set.
         /// Note that it is desirable that the name you give each property in the anonymous object which
@@ -1130,53 +1130,45 @@ namespace Bloom.Book
         /// some fields left out. At least one unit test will fail if the names don't match.
         /// (Though, I don't think anything besides that test currently attempts to create
         /// a BookMetaData object from a WebDataJson string.)
-        /// It is of course vital that the names in the anonymous object match the fields in parse.com.
+        /// It is of course vital that the names in the anonymous object match the fields in the database.
         /// </summary>
         [JsonIgnore]
-        public string WebDataJson
-        {
-            get
+        public dynamic WebDataJson =>
+            new
             {
-                return JsonConvert.SerializeObject(
-                    new
-                    {
-                        bookInstanceId = Id,
-                        suitableForMakingShells = IsSuitableForMakingShells, // not yet used by BL, potentially useful filter
-                        suitableForVernacularLibrary = IsSuitableForVernacularLibrary, // not yet used by BL, potentially useful filter
-                        experimental = IsExperimental, // not yet used by BL (I think), potentially useful filter
-                        title = Title,
-                        allTitles = AllTitles, // created for BL to search, though it doesn't yet.
-                        originalTitle = OriginalTitle,
-                        baseUrl = BaseUrl, // how web site finds image and download
-                        isbn = Isbn,
-                        bookLineage = BookLineage,
-                        license = License,
-                        formatVersion = FormatVersion,
-                        licenseNotes = LicenseNotes,
-                        copyright = Copyright,
-                        credits = Credits,
-                        tags = Tags,
-                        summary = Summary,
-                        pageCount = PageCount,
-                        languageDescriptors = LanguageDescriptors, // the upload azure function converts this to language object pointers before saving to parse
-                        leveledReaderLevel = LeveledReaderLevel,
-                        country = CountryName,
-                        province = ProvinceName,
-                        district = DistrictName,
-                        features = Features,
-                        internetLimits = InternetLimits,
-                        importedBookSourceUrl = ImportedBookSourceUrl,
-                        phashOfFirstContentImage = PHashOfFirstContentImage,
-                        updateSource = GetUpdateSource(),
-                        lastUploaded = GetCurrentDate(),
-                        publisher = Publisher,
-                        originalPublisher = OriginalPublisher,
-                        draft = Draft,
-                        // Other fields are not needed by the web site and we don't expect they will be.
-                    }
-                );
-            }
-        }
+                bookInstanceId = Id,
+                suitableForMakingShells = IsSuitableForMakingShells, // not yet used by BL, potentially useful filter
+                suitableForVernacularLibrary = IsSuitableForVernacularLibrary, // not yet used by BL, potentially useful filter
+                experimental = IsExperimental, // not yet used by BL (I think), potentially useful filter
+                title = Title,
+                allTitles = AllTitles, // created for BL to search, though it doesn't yet.
+                originalTitle = OriginalTitle,
+                baseUrl = BaseUrl, // how web site finds image and download
+                isbn = Isbn,
+                bookLineage = BookLineage,
+                license = License,
+                formatVersion = FormatVersion,
+                licenseNotes = LicenseNotes,
+                copyright = Copyright,
+                credits = Credits,
+                tags = Tags,
+                summary = Summary,
+                pageCount = PageCount,
+                languageDescriptors = LanguageDescriptors, // the upload azure function converts this to language object pointers before saving to parse
+                leveledReaderLevel = LeveledReaderLevel,
+                country = CountryName,
+                province = ProvinceName,
+                district = DistrictName,
+                features = Features,
+                internetLimits = InternetLimits,
+                importedBookSourceUrl = ImportedBookSourceUrl,
+                phashOfFirstContentImage = PHashOfFirstContentImage,
+                updateSource = GetUpdateSource(),
+                publisher = Publisher,
+                originalPublisher = OriginalPublisher,
+                draft = Draft,
+                // Other fields are not needed by the web site and we don't expect they will be.
+            };
 
         [JsonProperty("bookInstanceId")]
         public string Id { get; set; }
@@ -1710,9 +1702,6 @@ namespace Bloom.Book
         /// Prior to that, it was assumed that if the updateSource was not set, the change was coming from BloomDesktop.
         /// </summary>
         private string GetUpdateSource() => $"BloomDesktop {Application.ProductVersion}";
-
-        private ParseServerDate GetCurrentDate() =>
-            new ParseServerDate { Iso = DateTime.UtcNow.ToString("o") };
     }
 
     /// <summary>
@@ -1729,7 +1718,7 @@ namespace Bloom.Book
     }
 
     /// <summary>
-    /// This class represents the parse server Language class (for purposes of generating json)
+    /// This class represents the database Language class (for purposes of generating json)
     /// </summary>
     public class LanguageDescriptor
     {
@@ -1741,23 +1730,6 @@ namespace Bloom.Book
 
         [JsonProperty("ethnologueCode")]
         public string EthnologueCode { get; set; }
-    }
-
-    /// <summary>
-    /// This class represents the parse server Date data type (for purposes of generating json)
-    /// </summary>
-    public class ParseServerDate
-    {
-        public ParseServerDate()
-        {
-            Type = "Date";
-        }
-
-        [JsonProperty("__type")]
-        public string Type { get; set; }
-
-        [JsonProperty("iso")]
-        public string Iso { get; set; }
     }
 
     // In the future, we may add other slots including {TitleLanguage1, TitleLanguage2, CreditsLanguage}
