@@ -64,6 +64,9 @@ export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
                         {/* InnerHTML is used so that we can insert markup like <br> into the message. */}
                         <DialogContentText
                             className="allowSelect"
+                            css={css`
+                                color: rgba(0, 0, 0, 0.87);
+                            `}
                             dangerouslySetInnerHTML={{
                                 __html: props.message || ""
                             }}
@@ -72,9 +75,11 @@ export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
                             <DialogContentText
                                 css={css`
                                     background-color: ${kFormBackground}; 
+                                    color: rgba(0, 0, 0, 0.87);
                                     padding: 10px; 
                                     margin-top: 20px; 
                                     margin-bottom: 20px; 
+                                    font-family: courier;
                                 }`}
                                 dangerouslySetInnerHTML={{
                                     __html: props.detailsBoxText || ""
