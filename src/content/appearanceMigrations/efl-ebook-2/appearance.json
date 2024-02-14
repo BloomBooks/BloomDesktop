@@ -6,4 +6,5 @@
 // A replacement customBookStyles.css has been generated.
 {
   "cssThemeName": "efl-narrow-margin-ebook",
+  "pageNumber-show": "none",
 }
