@@ -491,6 +491,46 @@
         <target xml:lang="ksw" state="needs-translation">The "Legacy" theme does not support Appearance settings.</target>
         <note>BookSettings.AppearanceNotForLegacyTheme</note>
       </trans-unit>
+      <trans-unit id="AppearanceTheme.default" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="ksw" state="needs-translation">Default</target>
+        <note>AppearanceTheme.default</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.ebook-rounded-border-bottom-number" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Experimental Rounded Border</source>
+        <target xml:lang="ksw" state="needs-translation">Experimental Rounded Border</target>
+        <note>AppearanceTheme.ebook-rounded-border-bottom-number</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.efl-zero-margin-ebook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">EFL Zero Margin ebook</source>
+        <target xml:lang="ksw" state="needs-translation">EFL Zero Margin ebook</target>
+        <note>AppearanceTheme.efl-zero-margin-ebook</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.efl-narrow-margin-ebook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">EFL Narrow Margin ebook</source>
+        <target xml:lang="ksw" state="needs-translation">EFL Narrow Margin ebook</target>
+        <note>AppearanceTheme.efl-narrow-margin-ebook</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.efl-rounded-border-ebook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">EFL Rounded Border ebook</source>
+        <target xml:lang="ksw" state="needs-translation">EFL Rounded Border ebook</target>
+        <note>AppearanceTheme.efl-rounded-border-ebook</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.large-margins" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Experimental Large Margins</source>
+        <target xml:lang="ksw" state="needs-translation">Experimental Large Margins</target>
+        <note>AppearanceTheme.large-margins</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.legacy-5-6" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Legacy (Older Bloom Versions)</source>
+        <target xml:lang="ksw" state="needs-translation">Legacy (Older Bloom Versions)</target>
+        <note>AppearanceTheme.legacy-5-6</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.purple-rounded" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Experimental Purple Rounded</source>
+        <target xml:lang="ksw" state="needs-translation">Experimental Purple Rounded</target>
+        <note>AppearanceTheme.purple-rounded</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
