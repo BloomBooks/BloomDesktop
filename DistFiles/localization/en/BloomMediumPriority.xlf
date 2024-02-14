@@ -457,6 +457,41 @@
         <source xml:lang="en">The "Legacy" theme does not support Appearance settings.</source>
         <note>BookSettings.AppearanceNotForLegacyTheme</note>
       </trans-unit>
+      <trans-unit id="AppearanceTheme.default" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Default</source>
+        <note>AppearanceTheme.default</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.ebook-rounded-border-bottom-number" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Experimental Rounded Border</source>
+        <note>AppearanceTheme.ebook-rounded-border-bottom-number</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.efl-zero-margin-ebook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">EFL Zero Margin ebook</source>
+        <note>AppearanceTheme.efl-zero-margin-ebook</note>
+        <note>EFL is an abbreviation for an organization in Papua New Guinea</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.efl-narrow-margin-ebook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">EFL Narrow Margin ebook</source>
+        <note>AppearanceTheme.efl-narrow-margin-ebook</note>
+        <note>EFL is an abbreviation for an organization in Papua New Guinea</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.efl-rounded-border-ebook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">EFL Rounded Border ebook</source>
+        <note>AppearanceTheme.efl-rounded-border-ebook</note>
+        <note>EFL is an abbreviation for an organization in Papua New Guinea</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.large-margins" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Experimental Large Margins</source>
+        <note>AppearanceTheme.large-margins</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.legacy-5-6" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Legacy (Older Bloom Versions)</source>
+        <note>AppearanceTheme.legacy-5-6</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.purple-rounded" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Experimental Purple Rounded</source>
+        <note>AppearanceTheme.purple-rounded</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

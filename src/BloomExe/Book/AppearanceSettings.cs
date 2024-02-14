@@ -11,6 +11,7 @@ using Amazon.Auth.AccessControlPolicy;
 using Bloom;
 using Bloom.Book;
 using Bloom.web.controllers;
+using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
 using SIL.Extensions;
@@ -827,10 +828,19 @@ public class AppearanceSettings
 
         x["themeNames"] =
             from name in names.ToArray<string>()
-            select new { label = name, value = name };
+            select new { label = GetLocalizedLabel(name), value = name };
         x["firstPossiblyLegacyCss"] = Path.GetFileName(FirstPossiblyOffendingCssFile);
         x["migratedTheme"] = GetPossiblyMigratedCssTheme();
         return JsonConvert.SerializeObject(x);
+    }
+
+    private string GetLocalizedLabel(string name)
+    {
+        var key = "AppearanceTheme." + name;
+        var localizedLabel = LocalizationManager.GetDynamicString("BloomMediumPriority", key, null);
+        if (String.IsNullOrEmpty(localizedLabel))
+            return name;
+        return localizedLabel;
     }
 
     /// <summary>
