@@ -1354,6 +1354,11 @@
         <target xml:lang="pbu" state="final">د کتاب ښکته کول</target>
         <note>ID: Download.DownloadingDialogTitle</note>
       </trans-unit>
+      <trans-unit id="Download.FromBloomLibrary" translate="no">
+        <source xml:lang="en">From Bloom Library</source>
+        <target xml:lang="pbu" state="needs-translation">From Bloom Library</target>
+        <note>ID: Download.FromBloomLibrary</note>
+      </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <target xml:lang="pbu" state="final">د کتاب په ښکته کولو کې یوه ستونزه وه. تاسې بيا هڅه وکړئ او که چېرې يې له خپل موقعيت څخه نشی ډونلوډ کولای نو له موږ سره په اړيکه کې شئ: issues@bloomlibrary.org.</target>
