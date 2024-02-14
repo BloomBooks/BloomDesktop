@@ -1354,6 +1354,11 @@
         <target xml:lang="fr" state="final">Téléchargement du livre</target>
         <note>ID: Download.DownloadingDialogTitle</note>
       </trans-unit>
+      <trans-unit id="Download.FromBloomLibrary" translate="no">
+        <source xml:lang="en">From Bloom Library</source>
+        <target xml:lang="fr" state="needs-translation">From Bloom Library</target>
+        <note>ID: Download.FromBloomLibrary</note>
+      </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <target xml:lang="fr" state="final">Un problème a empêché le téléchargement de votre livre. Veuillez réessayer plus tard ou, si vous ne parvenez pas à le télécharger là où vous êtes, veuillez écrire à issues@bloomlibrary.org.</target>
