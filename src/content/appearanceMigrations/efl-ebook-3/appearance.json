@@ -5,5 +5,5 @@
 // Example Book: https://bloomlibrary.org/:search:bookInstanceId%3A4ba2d502-ed71-4c45-9e22-164bc9159330
 // A replacement customBookStyles.css has been generated.
 {
-  "cssThemeName": "efl-ebook-3",
+  "cssThemeName": "efl-rounded-border-ebook",
 }
