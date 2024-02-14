@@ -381,9 +381,9 @@ namespace Bloom.WebLibraryIntegration
                     );
                     string bookFolder = "";
 
+                    var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPathTemp);
                     if (!File.Exists(settingsPath))
                     {
-                        var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPathTemp);
                         var metadataPath = BookMetaData.MetaDataPath(bookFolderPathTemp);
                         var reconstructor = new CollectionSettingsReconstructor(
                             RobustFile.ReadAllText(htmlPath, Encoding.UTF8),
@@ -397,7 +397,21 @@ namespace Bloom.WebLibraryIntegration
 
                     var settings = new CollectionSettings(settingsPath);
                     var langName = settings.Language1.Name;
-                    var collectionName = NewCollectionWizard.GetNewCollectionName(langName);
+                    //var collectionName = NewCollectionWizard.GetNewCollectionName(langName);
+                    var bookName = Path.GetFileNameWithoutExtension(htmlPath);
+                    var nameTemplate = LocalizationManager.GetString(
+                        "Download.FromBloomLibrary",
+                        "From Bloom Library"
+                    );
+                    // Include the template in the sanitization, in case a translator put in a colon or something.
+                    var collectionName = BookStorage.SanitizeNameForFileSystem(
+                        nameTemplate + " - " + bookName
+                    );
+                    // This is somewhat arbitrary, but helps avoid exceeding path name limits.
+                    collectionName = collectionName.Substring(
+                        0,
+                        Math.Min(50, collectionName.Length)
+                    );
                     var collectionPath = BookStorage.GetUniqueFolderPath(
                         dest,
                         collectionName,

@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Web;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
@@ -12,6 +13,7 @@ using BloomTemp;
 using BloomTests.Book;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using SIL.Extensions;
 
 namespace BloomTests.WebLibraryIntegration
@@ -71,11 +73,12 @@ namespace BloomTests.WebLibraryIntegration
             string id,
             string uploader,
             string data,
-            bool makeCorruptFile = false
+            bool makeCorruptFile = false,
+            string htmName = "one.htm"
         )
         {
             var f = new TemporaryFolder(_workFolder, bookName);
-            File.WriteAllText(Path.Combine(f.FolderPath, "one.htm"), data);
+            File.WriteAllText(Path.Combine(f.FolderPath, htmName), data);
             File.WriteAllText(Path.Combine(f.FolderPath, "one.css"), @"test");
             File.WriteAllText(Path.Combine(f.FolderPath, "unmodified.css"), @"test");
 
@@ -604,7 +607,7 @@ namespace BloomTests.WebLibraryIntegration
             );
             var collectionPath = Path.GetDirectoryName(newBookFolder2);
             var collectionName = Path.GetFileName(collectionPath);
-            Assert.That(collectionName, Is.EqualTo("Dema Books"));
+            Assert.That(collectionName, Is.EqualTo("From Bloom Library - one"));
             var settings2 = new CollectionSettings(
                 Path.Combine(collectionPath, collectionName + ".bloomCollection")
             );
@@ -625,10 +628,11 @@ namespace BloomTests.WebLibraryIntegration
         {
             var id = Guid.NewGuid().ToString();
             var bookFolder = MakeBook(
-                "My No Settings Book",
+                "This ངའ་ཁས་འབབ needs encoding and is quite a bit too long",
                 id,
                 "someone",
-                CollectionSettingsReconstructorTests.GetTriLingualHtml()
+                CollectionSettingsReconstructorTests.GetTriLingualHtml(),
+                htmName: "This ངའ་ཁས་འབབ needs encoding and is quite a bit too long.htm"
             );
             int fileCount = Directory.GetFiles(bookFolder).Length;
             Login();
@@ -649,7 +653,7 @@ namespace BloomTests.WebLibraryIntegration
                     + BloomLinkArgs.kOrderFile
                     + "="
                     + "BloomLibraryBooks-UnitTests/"
-                    + GetParentOfS3Prefix(s3PrefixUploadedTo)
+                    + HttpUtility.UrlEncode(GetParentOfS3Prefix(s3PrefixUploadedTo))
                     + "&forEdit=true",
                 dest,
                 "nonsense",
@@ -659,7 +663,10 @@ namespace BloomTests.WebLibraryIntegration
             var collectionName = Path.GetFileName(collectionPath);
             // xk is not a real language tag, so Bloom comes up with this as the language name.
             // Another test tries the happy path where we actually know a likely name for the language.
-            Assert.That(collectionName, Is.EqualTo("L1-Unknown-xk Books"));
+            Assert.That(
+                collectionName,
+                Does.StartWith("From Bloom Library - This ངའ་ཁས་འབབ needs")
+            );
             var settings2 = new CollectionSettings(
                 Path.Combine(collectionPath, collectionName + ".bloomCollection")
             );

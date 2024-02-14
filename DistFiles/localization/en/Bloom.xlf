@@ -1170,6 +1170,11 @@
         <source xml:lang="en">Downloading book</source>
         <note>ID: Download.DownloadingDialogTitle</note>
       </trans-unit>
+      <trans-unit id="Download.FromBloomLibrary" translate="no">
+        <source xml:lang="en">From Bloom Library</source>
+        <note>ID: Download.FromBloomLibrary</note>
+        <note>Will be followed by hyphen, space, and (possibly partial) book title and used as a folder name for a collection containing that one book. Don't include illegal path characters like colon.</note>
+      </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice">
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.GenericNetworkProblemNotice</note>
