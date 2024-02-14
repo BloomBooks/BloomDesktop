@@ -98,6 +98,8 @@ namespace Bloom
 
         public static SynchronizationContext MainContext { get; private set; }
 
+        public static bool RunningSecondInstance { get; private set; }
+
         [STAThread]
         [HandleProcessCorruptedStateExceptions]
         static int Main(string[] args1)
@@ -476,7 +478,11 @@ namespace Bloom
                             // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3822
                             gotUniqueToken = true;
                         }
-                        else if (!forEdit)
+                        else if (forEdit)
+                        {
+                            RunningSecondInstance = true;
+                        }
+                        else
                         {
                             // Another instance is running. For a normal download to "books from bloom library", this
                             // instance has served its purpose and can exit right away. If we've created a new collection
@@ -486,20 +492,23 @@ namespace Bloom
                     }
                     else
                     {
-                        // bypass check if control key is held down
-                        if ((Control.ModifierKeys & Keys.Control) != Keys.Control)
+                        if (UniqueToken.AcquireToken(_mutexId, "Bloom"))
                         {
-                            // August 2022 comment on the following comment: actually, Bloom goes into this code block when I just run Bloom
-                            // nothing to do with Bloom Library:
-
-                            // Check whether another instance of Bloom is running.  That should happen only when downloading a book because
-                            // BloomLibrary starts a new Bloom process even when one is already running.  But that is taken care of in the
-                            // other branch of this if/else.  So quit if we find another instance of Bloom running at this point.
-                            // (A message will pop up to tell the user about this situation if it happens.)
-                            if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
-                                return 1;
+                            // No other instance is running. We own the token and should release it on quitting.
+                            gotUniqueToken = true;
                         }
-                        gotUniqueToken = true;
+                        else if ((Control.ModifierKeys & Keys.Control) != Keys.Control)
+                        {
+                            // bypass check if control key is held down; note that we're deliberately in this state
+                            RunningSecondInstance = true;
+                        }
+                        else
+                        {
+                            // We're trying to run a second instance. This is not allowed except for a few special cases,
+                            // such as (temporarily) when downloading a book from BloomLibrary, or when ctrl is held down. We'll just quit now.
+                            // (A message will pop up to tell the user about this situation if it happens.)
+                            return 1;
+                        }
                     }
                     if (IsInstallerLaunch(args))
                     {
@@ -524,40 +533,36 @@ namespace Bloom
                             args.Length == 1
                             && !IsInstallerLaunch(args)
                             && !IsLocalizationHarvestingLaunch(args)
+                            && !IsBloomBookOrder(args)
                         )
                         {
-                            // Handle an old-style download request which comes as an order URL from BloomLibrary for path length check.
+                            // Might be a double-click on a .bloomCollection file.  We'll open it after running some checks.
                             var argPath = args[0];
-                            const string bloomLibraryHeader =
-                                "bloom://localhost/order?orderFile=BloomLibraryBooks/";
-                            if (argPath.StartsWith(bloomLibraryHeader))
-                            {
-                                var argPathSub = argPath.Substring(bloomLibraryHeader.Length);
-                                var argUrlPath = UrlPathString.CreateFromUrlEncodedString(
-                                    argPathSub
-                                );
-                                var argPathGoodSub = argUrlPath.NotEncoded;
-                                if (argPathGoodSub.Length < argPathSub.Length)
-                                    argPath = bloomLibraryHeader + argPathGoodSub;
-                            }
-                            // See BL-10012. Windows File explorer will give us an 8.3 path with ".BLO" at the end, so might as well convert it now.
-                            var path = Utils.LongPathAware.GetLongPath(argPath);
 
-                            // See BL-10012. We'll die eventually, might as well nip this in the bud.
-                            if (Utils.LongPathAware.GetExceedsMaxPath(path))
-                            {
-                                var pathForWantOfAClosure = path;
-                                StartupScreenManager.AddStartupAction(
-                                    () => Utils.LongPathAware.ReportLongPath(pathForWantOfAClosure)
-                                );
-                                path = ""; // go forwards as if we weren't given an explicit collection to open (except we're showing a report about what happened)
-                            }
+                            // See BL-10012. Windows File explorer will give us an 8.3 path with ".BLO" at the end, so we must convert
+                            // before looking for .bloomCollection.
+                            var path = Utils.LongPathAware.GetLongPath(argPath);
 
                             if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
                             {
-                                if (Utils.MiscUtils.ReportIfInvalidCollectionToEdit(path))
-                                    return 1;
-                                Settings.Default.MruProjects.AddNewPath(path);
+                                // See BL-10012. We'll die eventually, might as well nip this in the bud.
+                                if (Utils.LongPathAware.GetExceedsMaxPath(path))
+                                {
+                                    var pathForWantOfAClosure = path;
+                                    StartupScreenManager.AddStartupAction(
+                                        () =>
+                                            Utils.LongPathAware.ReportLongPath(
+                                                pathForWantOfAClosure
+                                            )
+                                    );
+                                    // go forwards as if we weren't given an explicit collection to open (except we're showing a report about what happened)
+                                }
+                                else
+                                {
+                                    if (Utils.MiscUtils.ReportIfInvalidCollectionToEdit(path))
+                                        return 1;
+                                    Settings.Default.MruProjects.AddNewPath(path);
+                                }
                             }
                         }
 

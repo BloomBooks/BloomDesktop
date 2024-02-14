@@ -1269,7 +1269,7 @@ namespace Bloom.Api
 
         private bool HandleExceptionOpeningPort(Exception error)
         {
-            if (!Program.RunningUnitTests)
+            if (!Program.RunningUnitTests && !Program.RunningSecondInstance)
                 NonFatalProblem.Report(
                     ModalIf.None,
                     PassiveIf.Alpha,
