@@ -1354,6 +1354,11 @@
         <target xml:lang="prs" state="final">دونلود نمودن کتاب</target>
         <note>ID: Download.DownloadingDialogTitle</note>
       </trans-unit>
+      <trans-unit id="Download.FromBloomLibrary" translate="no">
+        <source xml:lang="en">From Bloom Library</source>
+        <target xml:lang="prs" state="needs-translation">From Bloom Library</target>
+        <note>ID: Download.FromBloomLibrary</note>
+      </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <target xml:lang="prs" state="final">در دونلود نمودن کتاب تان یک مشکل وجود داشت. شما دوباره کوشش نمائيد ویا به ما از طریق این ایمیل ادرس بنویسید: issues@bloomlibrary.org اگر از موقعیت تان دونلود کرده نمی توانید.</target>
