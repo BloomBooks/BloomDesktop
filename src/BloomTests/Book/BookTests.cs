@@ -342,11 +342,11 @@ namespace BloomTests.Book
 					</div>";
             var book = CreateBookWithPhysicalFile(body, false);
             var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
-            File.WriteAllText(cssPath, AppearanceMigratorTests.cssThatTriggersPurpleRoundedTheme);
+            File.WriteAllText(cssPath, AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme);
             book.EnsureUpToDate();
 
             var appearanceSettings = book.BookInfo.AppearanceSettings;
-            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("purple-rounded"));
+            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("efl-zero-margin-ebook"));
 
             AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']", 1);
             AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='appearance.css']", 1);

@@ -301,7 +301,7 @@ namespace BloomTests.Book
         AppearanceSettings _resultingAppearance;
         private string _generatedAppearanceCss;
         private string _cssOfDefaultTheme;
-        private string _cssOfPurpleRoundedTheme;
+        private string _cssOfEbookZeroMarginTheme;
         private string _cssOfSettingsObject;
 
         [OneTimeSetUp]
@@ -310,19 +310,16 @@ namespace BloomTests.Book
             _tempFolder = new TemporaryFolder("GetThemeAndSubstituteCssSuccessTests");
             _bookFolder = _tempFolder.Combine("book");
             Directory.CreateDirectory(_bookFolder);
-            //RobustFile.WriteAllText(Path.Combine(_bookFolder, "customBookStyles.css"),
-            //    AppearanceMigratorTests.cssThatTriggersPurpleRoundedTheme
-            //);
             _settings = new AppearanceSettings();
             var cssFilesToCheck = new[]
             {
                 Tuple.Create(
                     "customBookStyles.css",
-                    AppearanceMigratorTests.cssThatTriggersPurpleRoundedTheme
+                    AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme
                 ),
                 Tuple.Create(
                     "customCollectionStyles.css",
-                    AppearanceMigratorTests.cssThatTriggersPurpleRoundedTheme
+                    AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme
                 )
             };
             _pathToCustomCss = _settings.GetThemeAndSubstituteCss(cssFilesToCheck);
@@ -348,13 +345,13 @@ namespace BloomTests.Book
             var splits = _generatedAppearanceCss.Split(
                 new[]
                 {
-                    "from the current appearance theme, 'purple-rounded'",
+                    "from the current appearance theme, 'efl-zero-margin-ebook'",
                     "/* From this book's appearance settings */"
                 },
                 StringSplitOptions.None
             );
             _cssOfDefaultTheme = splits[0];
-            _cssOfPurpleRoundedTheme = splits[1];
+            _cssOfEbookZeroMarginTheme = splits[1];
             _cssOfSettingsObject = splits[2];
         }
 
@@ -372,7 +369,7 @@ namespace BloomTests.Book
                 Is.EqualTo(
                     Path.Combine(
                         AppearanceMigrator.GetFolderContainingAppearanceMigrations(),
-                        "purpleRounded",
+                        "efl-ebook-1",
                         "customBookStyles.css"
                     )
                 )
@@ -382,7 +379,7 @@ namespace BloomTests.Book
         [Test]
         public void GetsRightTheme()
         {
-            Assert.That(_resultingAppearance.CssThemeName, Is.EqualTo("purple-rounded"));
+            Assert.That(_resultingAppearance.CssThemeName, Is.EqualTo("efl-zero-margin-ebook"));
         }
 
         [Test]
@@ -413,7 +410,7 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasDefaultSettings()
         {
-            // One that is not overridden in purple-rounded
+            // One that is not overridden in efl-zero-margin-ebook
             Assert.That(_generatedAppearanceCss, Does.Contain("--cover-margin-top: 12mm;"));
         }
 
@@ -426,15 +423,20 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasThemeSettings()
         {
-            // from purple-rounded
-            Assert.That(_generatedAppearanceCss, Does.Contain("--marginBox-border-radius: 25px;"));
+            // from efl-zero-margin-ebook
+            Assert.That(_generatedAppearanceCss, Does.Contain("--cover-margin-top: 3mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain(":not(.bloom-interactive-page).numberedPage.Device16x9Landscape"));
+            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin-top: 0mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin-bottom: 0mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin-left: 0mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin-right: 0mm;"));
         }
 
         [Test]
         public void AppearanceCss_HasMigrationSettings()
         {
-            // from purple-rounded
-            Assert.That(_generatedAppearanceCss, Does.Contain("--page-background-color: red"));
+            // from efl-zero-margin-ebook
+            Assert.That(_generatedAppearanceCss, Does.Contain("--pageNumber-show: none;"));
         }
 
         /// <summary>
@@ -444,7 +446,7 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasNoRootRules()
         {
-            // from purple-rounded
+            // from efl-zero-margin-ebook
             Assert.That(_generatedAppearanceCss, Does.Not.Contain(":root"));
         }
 
@@ -471,13 +473,18 @@ namespace BloomTests.Book
         [Test]
         public void CssOfChosenTheme_OverridesMargin()
         {
-            Assert.That(_cssOfPurpleRoundedTheme, Does.Contain("--page-margin-top: 7mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain("--cover-margin-top: 3mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain(":not(.bloom-interactive-page).numberedPage.Device16x9Landscape"));
+            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin-top: 0mm;"));
+            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin-bottom: 0mm;"));
+            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin-left: 0mm;"));
+            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin-right: 0mm;"));
         }
 
         [Test]
         public void CssOfChosenTheme_DoesNotOverrideTitleVisibility()
         {
-            Assert.That(_cssOfPurpleRoundedTheme, Does.Not.Contain("--cover-title-L2-show:")); // not overridden in the purple-rounded theme
+            Assert.That(_cssOfEbookZeroMarginTheme, Does.Not.Contain("--cover-title-L2-show:")); // not overridden in the efl-zero-margin-ebook theme
         }
 
         [Test]
