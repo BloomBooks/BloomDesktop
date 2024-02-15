@@ -178,8 +178,11 @@
     --page-margin-bottom: 45px; /* need room for page number, so not as small as others */
 }
 
-.no-margin-page,
-.comic {
+/* classes are doubled in this rule because it needs to beat the one above that sets the
+ * bottom margin for numbered pages in Device page sizes. This makes it equally specific
+ * and thus the last one wins. */
+.no-margin-page.no-margin-page,
+.comic.comic {
     --page-margin-top: 0;
     --page-margin-bottom: 0;
     --page-margin-right: 0;
