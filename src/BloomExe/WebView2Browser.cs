@@ -260,9 +260,19 @@ namespace Bloom
 
             // I suspect that some situations may require the user deleting this folder to get things working again.
             // Normally, it seems to get deleted automatically when we exit. But if we crash, it may not.
-            // We are adding the language code because otherwise if you run two copies of Bloom with different languages, WV2 will fail to initialize.
-            //var dataFolder = Path.Combine(Path.GetTempPath(), "Bloom WebView2 "+_uiLanguageOfThisRun).Trim(); // TODO: was dying in tests
-            var dataFolder = Path.Combine(Path.GetTempPath(), "Bloom WebView2");
+            // Apparently if more than one instance of Bloom is running, they must use different folders, or WV2 will fail to initialize
+            // We tried adding the language code like this, but it died in tests
+            // var dataFolder = Path.Combine(Path.GetTempPath(), "Bloom WebView2 "+_uiLanguageOfThisRun).Trim();
+            // Now using the port number. This should be unique to each running instance of Bloom, and should be the
+            // same for all browsers in a given instance. I also shortened the name, in case that was the cause of the previous problem.
+            // This is a better strategy than language name, as it should give each instance its own folder, even if the language is the same.
+            // And it should always be a short name using simple ASCII characters, which might help.
+            // I don't think this is ever called before the server chooses a port, but just in case, I'm providing a default
+            // that won't match any port we actually use.
+            var dataFolder = Path.Combine(
+                Path.GetTempPath(),
+                "Bloom WV2-" + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
+            );
             var env = await CoreWebView2Environment.CreateAsync(
                 browserExecutableFolder: AlternativeWebView2Path,
                 userDataFolder: dataFolder,
