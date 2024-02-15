@@ -1,0 +1,40 @@
+/* migrated from customBookStyles.css distributed by Little Zebra */
+
+.A4Portrait.outsideFrontCover  {
+  --cover-margin-top: 10mm; /* default should be 15mm for both of these values */
+  --cover-margin-bottom: 10mm;
+}
+
+.A5Portrait.outsideFrontCover {
+  --cover-margin-top: 10mm; /* default should be 12mm for both of these values */
+  --cover-margin-bottom: 10mm;
+}
+
+.A5Portrait.outsideBackCover {
+  --cover-margin-top: 10mm; /* default should be 12mm for both of these values */
+  --cover-margin-bottom: 15mm;
+}
+
+/* we decided to make the default margins for A6 smaller than these */
+
+.A6Portrait.outsideFrontCover,
+.A6Portrait.outsideBackCover {
+  --cover-margin-top: 10mm;
+  --cover-margin-bottom: 10mm;
+  --page-margin-left: 10mm;
+  --page-margin-right: 10mm;
+}
+
+.A6Portrait {
+    --page-margin-top: 10mm;
+    --page-margin-bottom: 10mm;
+    --page-margin-left: 10mm;
+    --page-margin-right: 10mm;
+  }
+
+.A6Landscape {
+  --page-margin-top: 10mm;
+  --page-margin-bottom: 10mm;
+  --page-margin-left: 10mm;
+  --page-margin-right: 10mm;
+}

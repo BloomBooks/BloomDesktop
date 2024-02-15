@@ -1,0 +1,14 @@
+// Matches customBookStyles.css with checksum 1761e6e20d331c721c7e4481f56bbcb7, 256e13b37f74767dab276d9c531415f0, 799e88cccdee6d08c2251c347ffde001, be80675c87e972275cc41d8c6202bb01, 722b7ac72bc67c7b4a82b4b28e911254
+// On Tue Jan 09 2024 this was used by 5 books (4 unique).
+// On Tue Jan 09 2024 this was used by 7 books (7 unique).
+// On Tue Jan 09 2024 this was used by 3 books (3 unique).
+// On Tue Jan 09 2024 this was used by 3 books (2 unique).
+// On Tue Jan 09 2024 this was used by 1 books (1 unique).
+// Affected branding projects included ["Little-Zebra"].
+// Uploaders included ["inte...@littlezebrabooks.com","j.l.schafer...@gmail.com","jeni_bist...@sil.org"].
+// Example Book: https://bloomlibrary.org/:search:bookInstanceId%3Ad3cb9d52-326f-4b03-a8bd-d348a7055fab
+// A replacement customBookStyles.css has been generated.
+{
+  "cssThemeName": "default",
+  "pageNumber-show": "none",
+}

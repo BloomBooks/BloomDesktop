@@ -1,0 +1,10 @@
+// Matches customBookStyles.css with checksum bf08018061d36afa0f4b5470b1c55666, 8194e2b927619fd596ece0a747a59665
+// On Tue Jan 09 2024 this was used by 516 books (432 unique).
+// On Tue Jan 09 2024 this was used by 28 books (28 unique).
+// Affected branding projects included ["Little-Zebra","SIL-International","EMDC-Workshop"].
+// Uploaders included ["anne-christie_hellenth...@sil.org","avamarie.malla...@deped.gov.ph","bep_langho...@sil.org"].
+// Example Book: https://bloomlibrary.org/:search:bookInstanceId%3A76b0e641-9cdf-46b6-bd5b-57f6b324f20c
+// A replacement customBookStyles.css has been generated.
+{
+  "cssThemeName": "default",
+}
