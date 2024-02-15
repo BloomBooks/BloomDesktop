@@ -1,9 +1,6 @@
 /* replace EFL Template 2 custom CSS: small margins, no page numbers */
 
-/* This line of code hides the page numbers. */
-.bloom-page.numberedPage {
-    --pageNumber-show: none;
-}
+/* Hiding the page numbers is done by a setting in appearance.json. */
 
 /* This statement sets the margins on the front-matter and back-matter pages */
 
