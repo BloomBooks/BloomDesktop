@@ -13,114 +13,135 @@ namespace BloomTests.Book
     public class AppearanceMigratorTests
     {
         // This must not be modified even slightly, or the checksum will not match.
-        public static string cssThatTriggersPurpleRoundedTheme =
-            @" /* Below you find the settings for this custom Bloom design. This book only has a custom design for ""A5Portrait"".   */
+        public static string cssThatTriggersEbookZeroMarginTheme =
+            @"/*  Some books may need control over aspects of layout that cannot yet be adjusted
+    from the Bloom interface. In those cases, Bloom provides this ""under the hood"" method
+    of creating style rules using the underlying ""Cascading Stylesheets"" system.
+    These rules are then applied to all books in this collection.  EDIT THIS FILE ONLY
+    IN THE COLLECTION FOLDER:  changes made to a copy found in the book folder will be
+    lost the next time the book is edited with Bloom!
 
+ Note: you can also add a file named ""customBookStyles.css"" in the book folder,
+    to limit the effects of the rules to just that one book.
 
-/* The below statements control margins on the Outside Cover. */
-.outsideFrontCover.A5Portrait .marginBox {
-  height: 190mm; 
-  width: 124mm;
-  top: 10mm;
-  left: 12mm !important;
+    You can learn about CSS from hundreds of books, or online. However chances are, if
+    you need this customization, you will need an expert to create a version of this file
+    for you, or give you rules that you can paste in below this line. */
+
+.position-bottom > .split-pane-component-inner,
+.position-bottom
+  > :not(.split-pane-component-inner)
+  > .split-pane-component-inner,
+.position-bottom
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > .split-pane-component-inner,
+.position-bottom
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > .split-pane-component-inner,
+.position-bottom
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > .split-pane-component-inner,
+.position-bottom
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > .split-pane-component-inner {
+  padding-top: 1mm;
 }
 
-/* The below statements control the size and color of the marginbox. The marginbox holds the text and picture of that page. The top and left numbers determine the position of the margin box on the page.   */
-:not(.bloom-interactive-page).A5Portrait.numberedPage.side-left .marginBox {
-  border: 1.5mm solid;
-  padding: 1.5mm;
-  border-radius: 25px;
-  border-color: #282828;
-  height: 191mm;
-  width: 127.5mm;
-  top: 7mm;
-  left: 7mm !important;
+.position-right > .split-pane-component-inner,
+.position-right
+  > :not(.split-pane-component-inner)
+  > .split-pane-component-inner,
+.position-right
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > .split-pane-component-inner,
+.position-right
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > .split-pane-component-inner,
+.position-right
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > .split-pane-component-inner,
+.position-right
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > :not(.split-pane-component-inner)
+  > .split-pane-component-inner {
+  padding-left: 1mm;
 }
 
-:not(.bloom-interactive-page).A5Portrait.numberedPage.side-left .marginBox img{
+/* This first line of code hides the page numbers. */
+ .numberedPage::after {display:none;} 
 
-  border-radius: 15px 15px 0px 0px;
+/* The line below hides the credits row on the front cover. */ 
+ .creditsRow {display:none}  
+
+/* Below you find code that controls layout for pages in Device16x9Landscape layout */
+
+ .Device16x9Landscape .marginBox img {
+  max-width: 177.777778mm;
+ }
+
+
+.Device16x9Landscape.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+  /* Get past ios ""background-size:cover"" bug. See BL-7458 */
+  width: 177.777778mm;
 }
 
-:not(.bloom-interactive-page).A5Portrait.numberedPage.side-right .marginBox img{
-
-  border-radius: 15px 15px 0px 0px;
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape .marginBox {
+  height: 100mm;
+  width: 177.777778mm;
+  top: 0mm;
+  left:0mm !important;
 }
 
-:not(.bloom-interactive-page).A5Portrait.numberedPage.side-right .marginBox {
-  border: 1.5mm solid;
-  padding: 1.5mm;
-  border-radius: 25px;
-  border-color: #282828;
-  height: 191mm;
-  width: 127.5mm;
-  top: 7mm;
-  left: 8mm !important;
+/* Below you find code that controls layout for pages in Device16x9Portrait layout */
+
+ .Device16x9Portrait .marginBox img {
+  max-width: 100mm;
+ }
+
+.Device16x9Portrait.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+  /* Get past ios ""background-size:cover"" bug. See BL-7458 */
+  width: 100mm;
 }
 
-  
-/* The following two statements control the position of the page number   */ 
-.A5Portrait.numberedPage.side-left::after {
-  left: calc(100% / 2 - 65.5mm);
+:not(.bloom-interactive-page).numberedPage.Device16x9Portrait .marginBox {
+  height: 177.777778mm;
+  width: 100mm;
+  top: 0mm;
+  left:0mm !important;
 }
-
-.A5Portrait.numberedPage.side-right::after {
-  left: calc(100% / 2 + 54mm);
-}
-
-/* The section below controls the pagenumber and the white circle around it.  */ 
-.A5Portrait.numberedPage::after {
-  bottom: 2.5mm !important;
-  font-size: 11pt;
-  color: black;
-  
-}
-/* The section below controls the pagenumber and the white circle around it.  */ 
-.A5Portrait.numberedPage.side-left::after {
-  bottom: 190.5mm !important;
-  font-size: 13pt;
-  z-index: 1000;
-  color: black;
-  border: 0.5mm solid;
-  border-radius: 50%;
-  border-color: #ffffff;
-  background: #ffffff;
-  padding: 1.75mm;
-  width: 7mm;
-  text-align: center !important;
-  margin: auto;
-}  
-.A5Portrait.numberedPage.side-right::after {  
-  bottom: 190.5mm !important;
-  font-size: 13pt;
-  z-index: 1000;
-  color: black;
-  border: 0.5mm solid;
-  border-radius: 50%;
-  border-color: #ffffff;
-  background: #ffffff;
-  padding: 1.75mm;
-  width: 7mm;
-  text-align: center !important;
-  margin: auto;
-}
-
-
-/* End of statements controlling layout of 'A5Portrait'. */
 ";
 
         [Test]
         public void GetJsonThatSubstitutesForCustomCSS_FindsRightTheme()
         {
             var result = AppearanceMigrator.Instance.GetAppearanceThatSubstitutesForCustomCSS(
-                cssThatTriggersPurpleRoundedTheme
+                cssThatTriggersEbookZeroMarginTheme
             );
             Assert.That(
                 result,
                 Is.EqualTo(
                     Path.Combine(
                         AppearanceMigrator.GetFolderContainingAppearanceMigrations(),
-                        "purpleRounded",
+                        "efl-ebook-1",
                         "appearance.json"
                     )
                 )

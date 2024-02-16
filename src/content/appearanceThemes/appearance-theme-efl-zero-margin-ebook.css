@@ -12,7 +12,7 @@
     --cover-margin-bottom: 3mm;
     --page-margin-top: 3mm;
     --page-margin-bottom: 3mm;
-    --page-margin-left: 3mm ;
+    --page-margin-left: 3mm;
     --page-margin-right: 3mm;
 }
 
@@ -21,9 +21,9 @@
 :not(.bloom-interactive-page).numberedPage.Device16x9Landscape,
 :not(.bloom-interactive-page).numberedPage.Device16x9Portrait {
     --page-margin-top: 0mm;
-    --page-margin-bottom: 0.0mm;
-    --page-margin-left: 0mm ;
-    --page-margin-right: 0.0mm;
+    --page-margin-bottom: 0mm;
+    --page-margin-left: 0mm;
+    --page-margin-right: 0mm;
     --page-split-horizontal-gap: 1mm;
     --page-split-vertical-gap: 1mm;
 }
