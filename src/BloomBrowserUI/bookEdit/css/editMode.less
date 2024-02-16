@@ -534,7 +534,7 @@ button.moveButton {
 textarea,
 div.bloom-editable,
 div.pageLabel[contenteditable="true"] {
-    border: thin solid @MediumGray;
+    outline: thin solid @MediumGray;
     /*[disabled]min-height:34px;*/
 }
 
@@ -543,22 +543,21 @@ div.pageLabel[contenteditable="true"] {
 /*need a darker border when we have a background color*/
 div.bloom-editable {
     // Allow book templates to define a custom borderColor, otherwise fallback to the default color
-    border: thin solid
+    outline: thin solid
         var(--bloom-editMode-custom-text-border-color, rgba(0, 0, 0, 0.2));
 }
 
 img.hoverUp {
     background-color: @bloom-buff;
-    border: 1px outset black;
+    outline: 1px outset black;
 }
 
 textarea:focus,
 div.bloom-editable:focus,
 div.pageLabel[contenteditable="true"]:focus {
-    border: 1px solid @focusBorderColor;
+    outline: 1px solid @focusBorderColor;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
         0 0 8px rgba(82, 168, 236, 0.6);
-    outline: 0;
 }
 
 .bloom-editable:focus {

@@ -763,23 +763,23 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         const horizontal = isPaneHorizontal(splitPane);
         if (horizontal) {
             const width = splitPane.offsetWidth;
-            let height = isForSquareSplit
+            const height = isForSquareSplit
                 ? width
                 : (width * img.naturalHeight) / img.naturalWidth;
-            if (isForFirstChildPane) {
-                // 3px of margin on top pane in split that we need to leave room for
-                height += 3;
-            }
+            // if (isForFirstChildPane) {
+            //     // 3px of margin on top pane in split that we need to leave room for
+            //     height += 3;
+            // }
             return (height * 100) / splitPane.offsetHeight;
         } else {
             const height = splitPane.offsetHeight;
-            let width = isForSquareSplit
+            const width = isForSquareSplit
                 ? height
                 : (height * img.naturalWidth) / img.naturalHeight;
-            if (isForFirstChildPane) {
-                // 3px of margin on top pane in split that we need to leave room for
-                width += 3;
-            }
+            // if (isForFirstChildPane) {
+            //     // 3px of margin on top pane in split that we need to leave room for
+            //     width += 3;
+            // }
             return (width * 100) / splitPane.offsetWidth;
         }
     }
