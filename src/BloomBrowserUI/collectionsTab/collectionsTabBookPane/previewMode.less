@@ -43,7 +43,11 @@ textarea {
 }
 
 div.bloom-page {
-    border-bottom: 15px solid @bloom-darkestBackground !important;
+    // Old bloom did this to make a gap between pages, but at some point we
+    // switched to using box-sizing: border-box, and then it changes the size
+    // of the rest of the page and interferes with the padding that positions marginBox.
+    // border-bottom: 15px solid @bloom-darkestBackground !important;
+    margin-bottom: 15px;
     /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
     background-color: white;
 }
