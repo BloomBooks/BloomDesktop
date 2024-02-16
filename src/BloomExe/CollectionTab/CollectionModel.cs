@@ -1022,7 +1022,8 @@ namespace Bloom.CollectionTab
         public static bool SaveAsBloomSourceFile(
             string srcFolderName,
             string destFileName,
-            out Exception exception
+            out Exception exception,
+            string[] extraFilesToInclude = null
         )
         {
             exception = null;
@@ -1041,6 +1042,10 @@ namespace Bloom.CollectionTab
                 Logger.WriteEvent("Zipping up {0} ...", destFileName);
                 var zipFile = new BloomZipFile(destFileName);
                 zipFile.AddDirectoryContents(srcFolderName, excludedExtensions);
+                foreach (var path in extraFilesToInclude ?? new string[0])
+                {
+                    zipFile.AddTopLevelFile(path);
+                }
 
                 Logger.WriteEvent("Saving {0} ...", destFileName);
                 zipFile.Save();
