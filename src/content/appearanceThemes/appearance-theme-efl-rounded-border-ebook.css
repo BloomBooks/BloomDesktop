@@ -18,16 +18,6 @@
     --marginBox-background-color: #ffffff;  /* white */
 }
 
-/* The following two statements control the position of the page number   */
-
-.Device16x9Landscape.numberedPage.side-left::after {
-    --pageNumber-left-margin: var(--page-margin-left);
-}
-
-.Device16x9Landscape.numberedPage.side-right::after {
-    --pageNumber-always-left-margin: var(--page-margin-left);
-}
-
 /* The section below controls the pagenumber and the white circle around it.  */
 
 .Device16x9Landscape.numberedPage::after {
@@ -37,5 +27,6 @@
     --pageNumber-border-radius: 50%;
     --pageNumber-background-color: #ffffff;
     --pageNumber-background-width: 33px;
-    --pageNumber-right-margin: unset;
+    --pageNumber-always-left-margin: var(--page-margin-left);
+    --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
 }

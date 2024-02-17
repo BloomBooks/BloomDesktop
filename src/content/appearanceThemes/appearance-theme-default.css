@@ -165,6 +165,12 @@
     --page-margin-left: 10px;
     --cover-margin-top: 10px; /* page-margin-top does not affect cover */
     --cover-margin-bottom: 10px; /* don't need room for page number on cover */
+    /* Deliberately set both of these, which combines with a special device rule
+     * in basepage.less which sets both left and right margin to auto, and we get
+     * centered as the default for device pages. (To override this, you need to
+     * set the margin you don't want to something like "deliberately-invalid".)*/
+    --pageNumber-right-margin: 0;
+    --pageNumber-always-left-margin: 0;
 }
 
 /* We need a small margin (above) for xmatter pages (e.g., Robots Mali credits page,

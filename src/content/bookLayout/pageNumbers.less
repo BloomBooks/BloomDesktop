@@ -27,16 +27,42 @@
         text-align: center !important; // centers horizontally
     }
 
+    // This was very tricky to get right for ebooks. We usully want the page number in ebooks
+    // to be centered, which requires setting both left and right, typically to zero, and
+    // then setting margin:0 auto. But we also want to be able to set the page number on
+    // the left for the rounded themes that use picture-on-left. And all this has to be
+    // controlled with theme variables, which are very tricky to get back to "no value"
+    // once some rule sets them. (The only way I've found is to set them to something
+    // that is not a valid value, like "deliiberately-invalid".)
+    // Most of the time, this rule doesn't do anything for Device page sizes, because
+    // the following rule sets left to a different variable. But since we don't want
+    // special behaviors for side-left for device page sizes, I decideed to let this
+    // rule go ahead and set left for them, too, just in case we encouter a case where
+    // --pageNumber-always-left-margin has no value.
+    &.Device16x9Landscape:after,
+    &.Device16x9Portrait:after,
     &.side-left:after {
         left: var(
             --pageNumber-left-margin
         ) !important; // TODO: why is Bloom-player setting this at all? (wants to put in center)
     }
 
+    &.Device16x9Landscape:after,
+    &.Device16x9Portrait:after,
     &.side-right:after {
         right: var(--pageNumber-right-margin) !important;
         left: var(
             --pageNumber-always-left-margin
         ) !important; // allow page number to always be on the left, regardless of page side. If this is used, --pageNumber-right-margin should be set to unset
+    }
+
+    /* if pageNumber-always-left-margin and --pageNumber-right-margin are both set to zero,
+     * as we usually do for device page sizes, we get centering of the page number.
+     * To defeat that, either right: or left: must not be set, which I've only managed
+     * to achieve (since the default theme sets them both) by setting to something
+     * deliberately invalid. */
+    &.Device16x9Landscape:after,
+    &.Device16x9Portrait:after {
+        margin:0 auto;
     }
 }

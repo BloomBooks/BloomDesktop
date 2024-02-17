@@ -27,6 +27,8 @@
 
     /* page number circle */
     --pageNumber-always-left: 10px;
+    --pageNumber-right-margin: deliberately-invalid; /* variable has no value at all (unset does not work). Prevent centering for this layout */
+    --pageNumber-always-left-margin: var(--page-margin-left);
     --pageNumber-bottom: 22px;
     --pageNumber-font-size: 14pt;
     --pageNumber-background-color: white;
