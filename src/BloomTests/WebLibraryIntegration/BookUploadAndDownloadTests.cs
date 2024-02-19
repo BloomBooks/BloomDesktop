@@ -418,12 +418,13 @@ namespace BloomTests.WebLibraryIntegration
             var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
             Assert.That(
                 differenceBetweenNowAndCreationOfJson,
-                Is.GreaterThan(TimeSpan.FromSeconds(0)),
+                // Since this is actually set on the server, clocks could be off by several seconds.
+                Is.GreaterThan(TimeSpan.FromSeconds(-20)),
                 "lastUploaded should be a valid date representing now-ish"
             );
             Assert.That(
                 differenceBetweenNowAndCreationOfJson,
-                Is.LessThan(TimeSpan.FromSeconds(10)),
+                Is.LessThan(TimeSpan.FromSeconds(20)),
                 "lastUploaded should be a valid date representing now-ish"
             );
             var bookObjectId = bookRecord.objectId.Value;
@@ -490,12 +491,13 @@ namespace BloomTests.WebLibraryIntegration
             differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
             Assert.That(
                 differenceBetweenNowAndCreationOfJson,
-                Is.GreaterThan(TimeSpan.FromSeconds(0)),
+                // Since this is actually set on the server, clocks could be off by several seconds.
+                Is.GreaterThan(TimeSpan.FromSeconds(-20)),
                 "lastUploaded should be a valid date representing now-ish"
             );
             Assert.That(
                 differenceBetweenNowAndCreationOfJson,
-                Is.LessThan(TimeSpan.FromSeconds(10)),
+                Is.LessThan(TimeSpan.FromSeconds(20)),
                 "lastUploaded should be a valid date representing now-ish"
             );
 
