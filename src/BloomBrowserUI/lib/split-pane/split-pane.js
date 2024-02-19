@@ -763,23 +763,26 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         const horizontal = isPaneHorizontal(splitPane);
         if (horizontal) {
             const width = splitPane.offsetWidth;
-            let height = isForSquareSplit
+            const height = isForSquareSplit
                 ? width
                 : (width * img.naturalHeight) / img.naturalWidth;
-            if (isForFirstChildPane) {
-                // 3px of margin on top pane in split that we need to leave room for
-                height += 3;
-            }
+            // At some point we apparently had 3px of margin on the top pane, possibly something to do
+            // with the splitter control. Somewhere about 5.7 we lost it, so this correction is no longer needed.
+            // I'm leaving it here commented out in case losing that margin was a mistake and we also need
+            // to add it back here. (Also below).
+            // if (isForFirstChildPane) {
+            //     height += 3;
+            // }
             return (height * 100) / splitPane.offsetHeight;
         } else {
             const height = splitPane.offsetHeight;
-            let width = isForSquareSplit
+            const width = isForSquareSplit
                 ? height
                 : (height * img.naturalWidth) / img.naturalHeight;
-            if (isForFirstChildPane) {
-                // 3px of margin on top pane in split that we need to leave room for
-                width += 3;
-            }
+            // See comment above in horizontal block.
+            // if (isForFirstChildPane) {
+            //     width += 3;
+            // }
             return (width * 100) / splitPane.offsetWidth;
         }
     }
