@@ -117,6 +117,7 @@ public class AppearanceSettings
         new CssDisplayVariableDef("cover-title-L3-show", "coverFields", false),
         new CssDisplayVariableDef("cover-topic-show", "coverFields", true),
         new CssDisplayVariableDef("cover-languageName-show", "coverFields", true),
+        new CssDisplayVariableDef("pageNumber-show", "page-number", true),
         // these ones are not in the dialog yet, but are used in our css, so if they are somehow in appearance.json,
         // we want to output them to css. The override groups are a guess and not yet used.
         new CssStringVariableDef("cover-creditsRow-show", "coverFields"),
@@ -146,7 +147,6 @@ public class AppearanceSettings
         new CssStringVariableDef("pageNumber-left-margin", "page-number"),
         new CssStringVariableDef("pageNumber-right-margin", "page-number"),
         new CssStringVariableDef("pageNumber-top", "page-number"),
-        new CssStringVariableDef("pageNumber-show", "page-number"),
     };
 
     /// <summary>
