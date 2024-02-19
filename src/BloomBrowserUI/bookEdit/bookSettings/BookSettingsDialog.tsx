@@ -156,6 +156,14 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         "Front & Back Matter",
         "BookSettings.FrontAndBackMatter"
     );
+    const pageNumbersLabel = useL10n(
+        "Page Numbers",
+        "BookSettings.PageNumbers"
+    );
+    const showPageNumbersLabel = useL10n(
+        "Show Page Numbers",
+        "BookSettings.ShowPageNumbers"
+    );
     const frontAndBackMatterDescription = useL10n(
         "Normally, books use the front & back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.",
         "BookSettings.FrontAndBackMatter.Description"
@@ -524,7 +532,17 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                     )}
                                 />
                             </ConfigrSubgroup>
-
+                            <ConfigrSubgroup
+                                label={pageNumbersLabel}
+                                path={`appearance`}
+                            >
+                                <ConfigrBoolean
+                                    label={showPageNumbersLabel}
+                                    {...getAdditionalProps<boolean>(
+                                        `pageNumber-show`
+                                    )}
+                                />
+                            </ConfigrSubgroup>
                             <ConfigrSubgroup
                                 label={
                                     frontAndBackMatterLabel +
