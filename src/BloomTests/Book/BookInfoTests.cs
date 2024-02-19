@@ -9,8 +9,6 @@ using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
-using SIL.Reflection;
-using Newtonsoft.Json;
 
 namespace BloomTests.Book
 {
@@ -506,7 +504,7 @@ namespace BloomTests.Book
                 ProvinceName = "Provence",
                 DistrictName = "Ocean"
             };
-            var result = JsonConvert.SerializeObject(meta.WebDataJson);
+            var result = meta.WebDataJson;
 
             AssertNonBookMetaDataFieldsAreValid(result);
 

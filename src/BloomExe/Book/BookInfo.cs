@@ -1115,7 +1115,7 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Get the reduced Json that we upload to set the database entry for the book on our website.
+        /// Get the reduced Json string that we upload to set the database entry for the book on our website.
         /// This leaves out some of the metadata that we use while working on the book.
         /// Note that the full metadata is currently uploaded to S3 as part of the book content;
         /// this reduced subset is just for the website itself.
@@ -1129,46 +1129,48 @@ namespace Bloom.Book
         /// That allows the WebDataJson to be a valid Json representation of this class with just
         /// some fields left out. At least one unit test will fail if the names don't match.
         /// (Though, I don't think anything besides that test currently attempts to create
-        /// a BookMetaData object from a WebDataJson object.)
+        /// a BookMetaData object from a WebDataJson string.)
         /// It is of course vital that the names in the anonymous object match the fields in the database.
         /// </summary>
         [JsonIgnore]
-        public dynamic WebDataJson =>
-            new
-            {
-                bookInstanceId = Id,
-                suitableForMakingShells = IsSuitableForMakingShells, // not yet used by BL, potentially useful filter
-                suitableForVernacularLibrary = IsSuitableForVernacularLibrary, // not yet used by BL, potentially useful filter
-                experimental = IsExperimental, // not yet used by BL (I think), potentially useful filter
-                title = Title,
-                allTitles = AllTitles, // created for BL to search, though it doesn't yet.
-                originalTitle = OriginalTitle,
-                baseUrl = BaseUrl, // how web site finds image and download
-                isbn = Isbn,
-                bookLineage = BookLineage,
-                license = License,
-                formatVersion = FormatVersion,
-                licenseNotes = LicenseNotes,
-                copyright = Copyright,
-                credits = Credits,
-                tags = Tags,
-                summary = Summary,
-                pageCount = PageCount,
-                languageDescriptors = LanguageDescriptors, // the upload azure function converts this to language object pointers before saving to parse
-                leveledReaderLevel = LeveledReaderLevel,
-                country = CountryName,
-                province = ProvinceName,
-                district = DistrictName,
-                features = Features,
-                internetLimits = InternetLimits,
-                importedBookSourceUrl = ImportedBookSourceUrl,
-                phashOfFirstContentImage = PHashOfFirstContentImage,
-                updateSource = GetUpdateSource(),
-                publisher = Publisher,
-                originalPublisher = OriginalPublisher,
-                draft = Draft,
-                // Other fields are not needed by the web site and we don't expect they will be.
-            };
+        public string WebDataJson =>
+            JsonConvert.SerializeObject(
+                new
+                {
+                    bookInstanceId = Id,
+                    suitableForMakingShells = IsSuitableForMakingShells, // not yet used by BL, potentially useful filter
+                    suitableForVernacularLibrary = IsSuitableForVernacularLibrary, // not yet used by BL, potentially useful filter
+                    experimental = IsExperimental, // not yet used by BL (I think), potentially useful filter
+                    title = Title,
+                    allTitles = AllTitles, // created for BL to search, though it doesn't yet.
+                    originalTitle = OriginalTitle,
+                    baseUrl = BaseUrl, // how web site finds image and download
+                    isbn = Isbn,
+                    bookLineage = BookLineage,
+                    license = License,
+                    formatVersion = FormatVersion,
+                    licenseNotes = LicenseNotes,
+                    copyright = Copyright,
+                    credits = Credits,
+                    tags = Tags,
+                    summary = Summary,
+                    pageCount = PageCount,
+                    languageDescriptors = LanguageDescriptors, // the upload azure function converts this to language object pointers before saving to parse
+                    leveledReaderLevel = LeveledReaderLevel,
+                    country = CountryName,
+                    province = ProvinceName,
+                    district = DistrictName,
+                    features = Features,
+                    internetLimits = InternetLimits,
+                    importedBookSourceUrl = ImportedBookSourceUrl,
+                    phashOfFirstContentImage = PHashOfFirstContentImage,
+                    updateSource = GetUpdateSource(),
+                    publisher = Publisher,
+                    originalPublisher = OriginalPublisher,
+                    draft = Draft,
+                    // Other fields are not needed by the web site and we don't expect they will be.
+                }
+            );
 
         [JsonProperty("bookInstanceId")]
         public string Id { get; set; }

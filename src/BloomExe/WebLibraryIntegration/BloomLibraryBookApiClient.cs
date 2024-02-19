@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -216,7 +217,11 @@ namespace Bloom.WebLibraryIntegration
         //  - Updates the `books` record in parse-server with all fields from the client,
         //     including the new baseUrl which points to the new S3 location. Sets uploadPendingTimestamp to null.
         //  - Deletes the book files from the old S3 location
-        public void FinishBookUpload(IProgress progress, string transactionId, dynamic metadata)
+        public void FinishBookUpload(
+            IProgress progress,
+            string transactionId,
+            string metadataJsonAsString
+        )
         {
             if (!LoggedIn)
                 throw new ApplicationException("Must be logged in to upload a book");
@@ -227,6 +232,7 @@ namespace Bloom.WebLibraryIntegration
             var bookId = transactionId;
             var request = MakePostRequest($"{bookId}:upload-finish");
 
+            dynamic metadata = JsonConvert.DeserializeObject<ExpandoObject>(metadataJsonAsString);
             request.AddJsonBody(new { transactionId, metadata });
 
             CallLongRunningAction(
