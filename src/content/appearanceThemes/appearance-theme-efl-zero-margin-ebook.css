@@ -27,3 +27,19 @@
     --page-split-horizontal-gap: 1mm;
     --page-split-vertical-gap: 1mm;
 }
+
+/* these rules position images against the nearest border, for common origami layouts. The several layers of selectors
+ * prevent the rules applying to anything but top-level splits.  */
+
+.marginBox > .split-pane > .split-pane-component.position-left > .split-pane-component-inner > .bloom-imageContainer > img {
+    object-position: left;
+}
+.marginBox > .split-pane > .split-pane-component.position-top > .split-pane-component-inner > .bloom-imageContainer > img {
+    object-position: top;
+}
+.marginBox > .split-pane > .split-pane-component.position-bottom > .split-pane-component-inner > .bloom-imageContainer > img {
+    object-position: bottom;
+}
+.marginBox > .split-pane > .split-pane-component.position-right > .split-pane-component-inner > .bloom-imageContainer > img {
+    object-position: right;
+}
