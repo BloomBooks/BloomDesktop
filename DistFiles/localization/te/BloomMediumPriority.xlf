@@ -496,40 +496,29 @@
         <target xml:lang="te" state="needs-translation">Default</target>
         <note>AppearanceTheme.default</note>
       </trans-unit>
-      <trans-unit id="AppearanceTheme.ebook-rounded-border-bottom-number" sil:dynamic="true" translate="no">
+      <!-- <trans-unit id="AppearanceTheme.rounded-border-bottom-number-ebook" sil:dynamic="true" translate="no">
         <source xml:lang="en">Experimental Rounded Border</source>
-        <target xml:lang="te" state="needs-translation">Experimental Rounded Border</target>
         <note>AppearanceTheme.ebook-rounded-border-bottom-number</note>
+      </trans-unit> -->
+      <trans-unit id="AppearanceTheme.zero-margin-ebook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Zero Margin Ebook</source>
+        <target xml:lang="te" state="needs-translation">Zero Margin Ebook</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
-      <trans-unit id="AppearanceTheme.efl-zero-margin-ebook" sil:dynamic="true" translate="no">
-        <source xml:lang="en">EFL Zero Margin ebook</source>
-        <target xml:lang="te" state="needs-translation">EFL Zero Margin ebook</target>
-        <note>AppearanceTheme.efl-zero-margin-ebook</note>
+      <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Narrow Margin Ebook</source>
+        <target xml:lang="te" state="needs-translation">Narrow Margin Ebook</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
-      <trans-unit id="AppearanceTheme.efl-narrow-margin-ebook" sil:dynamic="true" translate="no">
-        <source xml:lang="en">EFL Narrow Margin ebook</source>
-        <target xml:lang="te" state="needs-translation">EFL Narrow Margin ebook</target>
-        <note>AppearanceTheme.efl-narrow-margin-ebook</note>
-      </trans-unit>
-      <trans-unit id="AppearanceTheme.efl-rounded-border-ebook" sil:dynamic="true" translate="no">
-        <source xml:lang="en">EFL Rounded Border ebook</source>
-        <target xml:lang="te" state="needs-translation">EFL Rounded Border ebook</target>
-        <note>AppearanceTheme.efl-rounded-border-ebook</note>
-      </trans-unit>
-      <trans-unit id="AppearanceTheme.large-margins" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Experimental Large Margins</source>
-        <target xml:lang="te" state="needs-translation">Experimental Large Margins</target>
-        <note>AppearanceTheme.large-margins</note>
+      <trans-unit id="AppearanceTheme.rounded-border-ebook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Rounded Border Ebook</source>
+        <target xml:lang="te" state="needs-translation">Rounded Border Ebook</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.legacy-5-6" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Legacy (Older Bloom Versions)</source>
-        <target xml:lang="te" state="needs-translation">Legacy (Older Bloom Versions)</target>
-        <note>AppearanceTheme.legacy-5-6</note>
-      </trans-unit>
-      <trans-unit id="AppearanceTheme.purple-rounded" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Experimental Purple Rounded</source>
-        <target xml:lang="te" state="needs-translation">Experimental Purple Rounded</target>
-        <note>AppearanceTheme.purple-rounded</note>
+        <source xml:lang="en">Legacy (Bloom 5.6)</source>
+        <target xml:lang="te" state="needs-translation">Legacy (Bloom 5.6)</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
     </body>
   </file>
