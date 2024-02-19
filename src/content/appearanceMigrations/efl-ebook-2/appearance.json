@@ -5,6 +5,6 @@
 // Example Book: https://bloomlibrary.org/:search:bookInstanceId%3Acef39e4e-1df3-4659-8310-fc392a50a8e8
 // A replacement customBookStyles.css has been generated.
 {
-  "cssThemeName": "efl-narrow-margin-ebook",
-  "pageNumber-show": "none",
+  "cssThemeName": "narrow-margin-ebook",
+  "pageNumber-show": "none"
 }
