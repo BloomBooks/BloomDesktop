@@ -10,6 +10,7 @@ using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
 using SIL.Reflection;
+using Newtonsoft.Json;
 
 namespace BloomTests.Book
 {
@@ -505,7 +506,7 @@ namespace BloomTests.Book
                 ProvinceName = "Provence",
                 DistrictName = "Ocean"
             };
-            var result = meta.WebDataJson;
+            var result = JsonConvert.SerializeObject(meta.WebDataJson);
 
             AssertNonBookMetaDataFieldsAreValid(result);
 
@@ -561,8 +562,8 @@ namespace BloomTests.Book
 
         private void AssertNonBookMetaDataFieldsAreValid(string webDataJsonString)
         {
-            // These two fields (updateSource & lastUploaded) are only sent to parse server.
-            // They are not part of BookMetaData.
+            // This field (updateSource) is only sent to the server.
+            // i.e. it is not part of BookMetaData.
 
             dynamic jsonResult = JObject.Parse(webDataJsonString);
 
@@ -570,23 +571,6 @@ namespace BloomTests.Book
             Assert.True(
                 jsonResult.updateSource.Value.StartsWith("BloomDesktop "),
                 $"{webDataJsonString}\n\nis expected to contain a proper updateSource"
-            );
-
-            // lastUploaded.__type
-            Assert.That(jsonResult.lastUploaded.__type.Value, Is.EqualTo("Date"));
-
-            // lastUploaded.iso
-            DateTime lastUploadedDateTime = jsonResult.lastUploaded.iso.Value;
-            var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
-            Assert.That(
-                differenceBetweenNowAndCreationOfJson,
-                Is.GreaterThan(TimeSpan.FromSeconds(0)),
-                "lastUploaded should be a valid date representing now-ish"
-            );
-            Assert.That(
-                differenceBetweenNowAndCreationOfJson,
-                Is.LessThan(TimeSpan.FromSeconds(5)),
-                "lastUploaded should be a valid date representing now-ish"
             );
         }
 

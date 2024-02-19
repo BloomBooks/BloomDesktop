@@ -451,7 +451,6 @@ namespace BloomTests.WebLibraryIntegration
                         bookInstanceId,
                         updateSource = "not Bloom",
                         tags = new string[0],
-                        lastUploaded = (ParseServerDate)null,
                         harvestState = "Done"
                     }
                 ),
