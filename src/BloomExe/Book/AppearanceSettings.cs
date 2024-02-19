@@ -931,7 +931,7 @@ class CssStringVariableDef : CssPropertyDef
 
     public override string GetCssVariableDeclaration(dynamic property)
     {
-        if (string.IsNullOrEmpty(property.Value))
+        if (string.IsNullOrEmpty(property?.Value?.ToString()))
             return "";
         return $"--{Name}: {property.Value};";
     }
