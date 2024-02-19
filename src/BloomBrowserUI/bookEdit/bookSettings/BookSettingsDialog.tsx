@@ -353,7 +353,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             {firstPossiblyLegacyCss && theme === "legacy-5-6" && (
                                 <WarningBox>
                                     <PWithLink
-                                        href="https://docs.bloomlibrary.org/TODO/"
+                                        href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
                                         l10nKey="BookSettings.UsingLegacyThemeWithIncompatibleCss"
                                         l10nParam0={firstPossiblyLegacyCss}
                                         l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
@@ -390,7 +390,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                                 </Div>
                                             ) : (
                                                 <PWithLink
-                                                    href="https://docs.bloomlibrary.org/TODO/"
+                                                    href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
                                                     l10nKey="BookSettings.IgnoringIncompatibleCssCanDelete"
                                                     l10nParam0={
                                                         firstPossiblyLegacyCss
@@ -453,7 +453,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 theme !== "legacy-5-6" && (
                                     <NoteBox>
                                         <PWithLink
-                                            href="https://docs.bloomlibrary.org/TODO/"
+                                            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
                                             l10nKey="BookSettings.IgnoringIncompatibleCss"
                                             l10nParam0={firstPossiblyLegacyCss}
                                             l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
