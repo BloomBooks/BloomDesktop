@@ -312,7 +312,6 @@ namespace BloomTests.Book
             Assert.That(img.Attributes["alt"].Value, Is.EqualTo("Bird with wings stretched wide"));
         }
 
-
         [Test]
         public void CreateBookOnDiskFromTemplate_NoPossiblyConflictingCss_MigratesToDefaultTheme()
         {
@@ -327,8 +326,12 @@ namespace BloomTests.Book
             var appearanceSettings = book.BookInfo.AppearanceSettings;
             Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("default"));
 
-            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']", 1);
-            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='appearance.css']", 1);
+            AssertThatXmlIn
+                .Dom(book.OurHtmlDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']", 1);
+            AssertThatXmlIn
+                .Dom(book.OurHtmlDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//link[@href='appearance.css']", 1);
         }
 
         [Test]
@@ -346,10 +349,14 @@ namespace BloomTests.Book
             book.EnsureUpToDate();
 
             var appearanceSettings = book.BookInfo.AppearanceSettings;
-            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("efl-zero-margin-ebook"));
+            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("zero-margin-ebook"));
 
-            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']", 1);
-            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='appearance.css']", 1);
+            AssertThatXmlIn
+                .Dom(book.OurHtmlDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']", 1);
+            AssertThatXmlIn
+                .Dom(book.OurHtmlDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//link[@href='appearance.css']", 1);
         }
 
         [Test]
@@ -369,8 +376,12 @@ namespace BloomTests.Book
             var appearanceSettings = book.BookInfo.AppearanceSettings;
             Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("legacy-5-6"));
 
-            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage-legacy-5-6.css']", 1);
-            AssertThatXmlIn.Dom(book.OurHtmlDom.RawDom).HasNoMatchForXpath("//link[@href='appearance.css']");
+            AssertThatXmlIn
+                .Dom(book.OurHtmlDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage-legacy-5-6.css']", 1);
+            AssertThatXmlIn
+                .Dom(book.OurHtmlDom.RawDom)
+                .HasNoMatchForXpath("//link[@href='appearance.css']");
         }
 
         [Test]
@@ -1734,7 +1745,7 @@ namespace BloomTests.Book
         {
             var htmlSourceBook =
                 @"<html><head></head><body>
-					<div class='bloom-page custom-widget-page customPage bloom-interactive-page enterprise-only no-margin-page numberedPage A5Portrait side-right bloom-monolingual' id='page1' data-page='' data-analyticscategories='widget' help-link='https://docs.bloomlibrary.org/widgets' data-pagelineage='3a705ac1-c1f2-45cd-8a7d-011c009cf406' data-page-number='1' lang='' data-activity='iframe'>					
+					<div class='bloom-page custom-widget-page customPage bloom-interactive-page enterprise-only no-margin-page numberedPage A5Portrait side-right bloom-monolingual' id='page1' data-page='' data-analyticscategories='widget' help-link='https://docs.bloomlibrary.org/widgets' data-pagelineage='3a705ac1-c1f2-45cd-8a7d-011c009cf406' data-page-number='1' lang='' data-activity='iframe'>
 						<div class='bloom-widgetContainer bloom-leadingElement'>
 							<iframe src='activities/my%20Wid%25et/index.htm' />
 						</div>
@@ -5076,7 +5087,7 @@ namespace BloomTests.Book
 					<body>
 <div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
 	<div class='marginBox'>
-		
+
 	</div>
 </div>
 </body></html>";
@@ -6456,54 +6467,54 @@ namespace BloomTests.Book
             Assert.That(result, Is.EqualTo("Enter Shift-Enter Last Line "));
         }
 
-		[Test]
-		public void ElementIsInXMatter_AncestorHasBloomFrontMatter_ReturnsTrue()
-		{
-			XmlDocument doc = new XmlDocument();
-			XmlElement body = doc.CreateElement("body");
-			XmlElement xmatterDiv = doc.CreateElement("div");
-			xmatterDiv.SetAttribute("class", "bloom-frontMatter");
-			body.AppendChild(xmatterDiv);
-			XmlElement parentDiv = doc.CreateElement("div");
-			xmatterDiv.AppendChild(parentDiv);
-			XmlElement div = doc.CreateElement("div");
-			parentDiv.AppendChild(div);
+        [Test]
+        public void ElementIsInXMatter_AncestorHasBloomFrontMatter_ReturnsTrue()
+        {
+            XmlDocument doc = new XmlDocument();
+            XmlElement body = doc.CreateElement("body");
+            XmlElement xmatterDiv = doc.CreateElement("div");
+            xmatterDiv.SetAttribute("class", "bloom-frontMatter");
+            body.AppendChild(xmatterDiv);
+            XmlElement parentDiv = doc.CreateElement("div");
+            xmatterDiv.AppendChild(parentDiv);
+            XmlElement div = doc.CreateElement("div");
+            parentDiv.AppendChild(div);
 
-			Assert.That(Bloom.Book.Book.ElementIsInXMatter(div), Is.True);
+            Assert.That(Bloom.Book.Book.ElementIsInXMatter(div), Is.True);
 
-			XmlElement innerDiv = doc.CreateElement("div");
-			div.AppendChild(innerDiv);
+            XmlElement innerDiv = doc.CreateElement("div");
+            div.AppendChild(innerDiv);
 
-			Assert.That(Bloom.Book.Book.ElementIsInXMatter(innerDiv), Is.True);
-		}
+            Assert.That(Bloom.Book.Book.ElementIsInXMatter(innerDiv), Is.True);
+        }
 
-		[Test]
-		public void ElementIsInXMatter_NoAncestorHasBloomFrontMatter_ReturnsFalse()
-		{
-			XmlDocument doc = new XmlDocument();
-			XmlElement body = doc.CreateElement("body");
-			XmlElement nonXmatterDiv = doc.CreateElement("div");
-			body.AppendChild(nonXmatterDiv);
-			XmlElement parentDiv = doc.CreateElement("div");
-			nonXmatterDiv.AppendChild(parentDiv);
-			XmlElement div = doc.CreateElement("div");
-			parentDiv.AppendChild(div);
+        [Test]
+        public void ElementIsInXMatter_NoAncestorHasBloomFrontMatter_ReturnsFalse()
+        {
+            XmlDocument doc = new XmlDocument();
+            XmlElement body = doc.CreateElement("body");
+            XmlElement nonXmatterDiv = doc.CreateElement("div");
+            body.AppendChild(nonXmatterDiv);
+            XmlElement parentDiv = doc.CreateElement("div");
+            nonXmatterDiv.AppendChild(parentDiv);
+            XmlElement div = doc.CreateElement("div");
+            parentDiv.AppendChild(div);
 
-			Assert.That(Bloom.Book.Book.ElementIsInXMatter(div), Is.False);
+            Assert.That(Bloom.Book.Book.ElementIsInXMatter(div), Is.False);
 
-			XmlElement innerDiv = doc.CreateElement("div");
-			div.AppendChild(innerDiv);
+            XmlElement innerDiv = doc.CreateElement("div");
+            div.AppendChild(innerDiv);
 
-			Assert.That(Bloom.Book.Book.ElementIsInXMatter(innerDiv), Is.False);
-		}
+            Assert.That(Bloom.Book.Book.ElementIsInXMatter(innerDiv), Is.False);
+        }
 
-		[Test]
-		public void ElementIsInXMatter_ElementIsBody_ReturnsFalse()
-		{
-			XmlDocument doc = new XmlDocument();
-			XmlElement body = doc.CreateElement("body");
+        [Test]
+        public void ElementIsInXMatter_ElementIsBody_ReturnsFalse()
+        {
+            XmlDocument doc = new XmlDocument();
+            XmlElement body = doc.CreateElement("body");
 
-			Assert.That(Bloom.Book.Book.ElementIsInXMatter(body), Is.False);
-		}
+            Assert.That(Bloom.Book.Book.ElementIsInXMatter(body), Is.False);
+        }
     }
 }
