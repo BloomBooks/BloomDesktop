@@ -2414,4 +2414,23 @@ export default class StyleEditor {
         };
         showSimpleColorPickerDialog(colorPickerDialogProps);
     }
+
+    public static isStyleDialogOpen(): boolean {
+        // The #format-toolbar element is instantiated on the page only when the
+        // dialog is showing.
+        const page = parent.window.document.getElementById("page");
+        const contentWindow = page
+            ? (<HTMLIFrameElement>page).contentWindow
+            : null;
+
+        // possibly unit-testing
+        if (!contentWindow) {
+            const formatDialog = $(".bloom-page").find("#format-toolbar");
+            return formatDialog.length > 0;
+        }
+        const formatDialog = $("body", contentWindow.document).find(
+            "#format-toolbar"
+        );
+        return formatDialog.length > 0;
+    }
 }

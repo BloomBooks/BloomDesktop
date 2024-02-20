@@ -14,6 +14,7 @@ import {
 import { ITool } from "../../toolbox";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { get } from "../../../../utils/bloomApi";
+import StyleEditor from "../../../StyleEditor/StyleEditor";
 
 export class DecodableReaderToolboxTool implements ITool {
     public makeRootElement(): HTMLDivElement {
@@ -74,7 +75,11 @@ export class DecodableReaderToolboxTool implements ITool {
                     event.relatedTarget.matches(".bloom-editable")
                 )
                     createCkEditorBookMarks = false;
-
+                // If the Format (Styles) dialog is showing, then we don't want to create
+                // bookmarks.  The div#format-toolbar is instantiated only when the dialog
+                // is showing.  See BL-13043.
+                else if (StyleEditor.isStyleDialogOpen())
+                    createCkEditorBookMarks = false;
                 getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
             });
 
