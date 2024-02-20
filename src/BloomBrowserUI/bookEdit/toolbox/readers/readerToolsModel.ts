@@ -1055,10 +1055,16 @@ export class ReaderToolsModel {
                 .closest("body")
                 .children('.qtip:not(".uibloomSourceTextsBubble")')
                 .remove();
-
+            // If the Format (Styles) dialog is showing, then we don't want to create
+            // bookmarks.  The div#format-toolbar is instantiated only when the dialog
+            // is showing.  See BL-13043.
+            const formatDialog = $(editableElements[0])
+                .closest("body")
+                .find("#format-toolbar");
             if (
-                this.currentMarkupType === MarkupType.Decodable ||
-                this.currentMarkupType === MarkupType.Leveled
+                formatDialog.length === 0 &&
+                (this.currentMarkupType === MarkupType.Decodable ||
+                    this.currentMarkupType === MarkupType.Leveled)
             )
                 bookmarksForEachEditable = EditableDivUtils.doCkEditorCleanup(
                     editableElements.toArray(),
