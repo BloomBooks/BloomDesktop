@@ -120,13 +120,33 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         overrideInformation?.brandingName
     );
 
-    const appearanceLabel = useL10n("Appearance", "BookSettings.Appearance");
-    const pageThemeLabel = useL10n("Page Theme", "BookSettings.PageTheme", "");
-    const themeLabel = useL10n("Theme", "BookSettings.Theme", "");
+    const appearanceLabel = useL10n(
+        "Appearance",
+        "BookSettings.AppearanceGroupLabel"
+    );
+    const insidePagesSubgroupLabel = useL10n(
+        "Inside Pages",
+        "BookSettings.InsidePagesGroupLabel",
+        ""
+    );
+    const themeLabel = useL10n("Page Theme", "BookSettings.PageThemeLabel", "");
     const themeDescription = useL10n(
-        "Choose a theme to easily change margins, borders, and other page settings.",
+        "Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog].",
         "BookSettings.Theme.Description"
     );
+    /* can't use this yet. See https://issues.bloomlibrary.org/youtrack/issue/BL-13094/Enable-links-in-Config-r-Descriptions
+    const pageThemeDescriptionElement = (
+        <PWithLink
+            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+            l10nKey="BookSettings.Theme.Description"
+            l10nComment="The text inside the [Page Themes Catalog] will become a link to a website."
+        >
+            Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog].
+        </PWithLink>
+    );
+    */
+
+    /* unused so far
     const coverBackgroundLabel = useL10n(
         "Cover Background",
         "BookSettings.CoverBackground"
@@ -135,6 +155,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         "Cover Color",
         "PublishTab.Android.CoverColor" // reuse the same string localized for the Android tab
     );
+    */
     const whatToShowOnCoverLabel = useL10n(
         "What to Show on Cover",
         "BookSettings.WhatToShowOnCover"
@@ -327,8 +348,17 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                         }}
                     >
                         <ConfigrGroup label={appearanceLabel} level={1}>
+                            {appearanceDisabled && (
+                                <NoteBox>
+                                    <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
+                                        The selected page theme does not support
+                                        Appearance settings. They have been
+                                        disabled.
+                                    </Div>
+                                </NoteBox>
+                            )}
                             <ConfigrSubgroup
-                                label={pageThemeLabel}
+                                label={insidePagesSubgroupLabel}
                                 path={`appearance`}
                             >
                                 <ConfigrSelect
@@ -344,6 +374,12 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                         }
                                     )}
                                     description={themeDescription}
+                                />
+                                <ConfigrBoolean
+                                    label={showPageNumbersLabel}
+                                    {...getAdditionalProps<boolean>(
+                                        `pageNumber-show`
+                                    )}
                                 />
                             </ConfigrSubgroup>
                             {
@@ -477,32 +513,6 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             {
                                 // This is not part of the group of four mutually exclusive messages above
                             }
-                            {!firstPossiblyLegacyCss &&
-                                (settingsToReturnLater as any)?.appearance
-                                    ?.cssThemeName === "legacy-5-6" && (
-                                    <NoteBox>
-                                        <Div l10nKey="BookSettings.AppearanceNotForLegacyTheme">
-                                            The "Legacy" theme does not support
-                                            Appearance settings.
-                                        </Div>
-                                        {`The "Legacy" theme does not support Appearance settings.`}
-                                    </NoteBox>
-                                )}
-                            <ConfigrSubgroup
-                                label={
-                                    coverBackgroundLabel +
-                                    "  (Not implemented yet)"
-                                }
-                                path={`appearance`}
-                            >
-                                <ConfigrCustomStringInput
-                                    path={`appearance.coverColor`}
-                                    disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
-                                    //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
-                                    label={coverColorLabel}
-                                    control={ColorPickerForConfigr}
-                                />
-                            </ConfigrSubgroup>
                             <ConfigrSubgroup
                                 label={whatToShowOnCoverLabel}
                                 path={`appearance`}
@@ -532,17 +542,23 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                     )}
                                 />
                             </ConfigrSubgroup>
-                            <ConfigrSubgroup
-                                label={pageNumbersLabel}
+                            {/* <ConfigrSubgroup
+                                label={
+                                    coverBackgroundLabel +
+                                    "  (Not implemented yet)"
+                                }
                                 path={`appearance`}
                             >
-                                <ConfigrBoolean
-                                    label={showPageNumbersLabel}
-                                    {...getAdditionalProps<boolean>(
-                                        `pageNumber-show`
-                                    )}
+                                <ConfigrCustomStringInput
+                                    path={`appearance.coverColor`}
+                                    disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
+                                    //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
+                                    label={coverColorLabel}
+                                    control={ColorPickerForConfigr}
                                 />
-                            </ConfigrSubgroup>
+                            </ConfigrSubgroup> */}
+                            {/*
+
                             <ConfigrSubgroup
                                 label={
                                     frontAndBackMatterLabel +
@@ -559,7 +575,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                     ]}
                                     description={frontAndBackMatterDescription}
                                 />
-                            </ConfigrSubgroup>
+                            </ConfigrSubgroup> */}
                         </ConfigrGroup>
                         <ConfigrGroup label={bloomPubLabel} level={1}>
                             {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}

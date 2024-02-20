@@ -369,20 +369,20 @@
         <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
         <note>displayed below the slider that is used to set the image resolution</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Appearance" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.AppearanceGroupLabel" sil:dynamic="true" translate="no">
         <source xml:lang="en">Appearance</source>
-        <note>BookSettings.Appearance</note>
+        <note>BookSettings.AppearanceGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.PageTheme" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.InsidePagesGroupLabel" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Inside Pages</source>
+        <note>BookSettings.InsidePagesGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageThemeLabel" sil:dynamic="true" translate="no">
         <source xml:lang="en">Page Theme</source>
-        <note>BookSettings.PageTheme</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.Theme" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Theme</source>
-        <note>BookSettings.Theme</note>
+        <note>BookSettings.PageThemeLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.Theme.Description" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Choose a theme to easily change margins, borders, and other page settings.</source>
+        <source xml:lang="en">Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog].</source>
         <note>BookSettings.Theme.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.CoverBackground" sil:dynamic="true" translate="no">
@@ -461,9 +461,9 @@
         <note>BookSettings.IgnoringIncompatibleCss</note>
         <note>{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website.</note>
       </trans-unit>
-      <trans-unit id="BookSettings.AppearanceNotForLegacyTheme" sil:dynamic="true" translate="no">
-        <source xml:lang="en">The "Legacy" theme does not support Appearance settings.</source>
-        <note>BookSettings.AppearanceNotForLegacyTheme</note>
+      <trans-unit id="BookSettings.ThemeDisablesOptionsNotice" sil:dynamic="true" translate="no">
+        <source xml:lang="en">The selected page theme does not support Appearance settings.</source>
+        <note>BookSettings.ThemeDisablesOptionsNotice</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.default" sil:dynamic="true" translate="no">
         <source xml:lang="en">Default</source>
