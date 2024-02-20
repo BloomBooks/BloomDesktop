@@ -74,7 +74,14 @@ export class DecodableReaderToolboxTool implements ITool {
                     event.relatedTarget.matches(".bloom-editable")
                 )
                     createCkEditorBookMarks = false;
-
+                // If the Format (Styles) dialog is showing, then we don't want to create
+                // bookmarks.  The div#format-toolbar is instantiated only when the dialog
+                // is showing.  See BL-13043.
+                else if (getTheOneReaderToolsModel().isFormatDialogOpen())
+                    createCkEditorBookMarks = false;
+                console.log(
+                    `DEBUG: focusout: createCkEditorBookMarks=${createCkEditorBookMarks}`
+                );
                 getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
             });
 

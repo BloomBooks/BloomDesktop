@@ -952,6 +952,21 @@ export class ReaderToolsModel {
         );
     }
 
+    public isFormatDialogOpen(): boolean {
+        // The #format-toolbar element is instantiated on the page only when the
+        // dialog is showing.
+        const contentWindow = this.safelyGetContentWindow();
+        // possibly unit-testing
+        if (!contentWindow) {
+            const formatDialog = $(".bloom-page").find("#format-toolbar");
+            return formatDialog.length > 0;
+        }
+        const formatDialog = $("body", contentWindow.document).find(
+            "#format-toolbar"
+        );
+        return formatDialog.length > 0;
+    }
+
     public noteFocus(element: HTMLElement): void {
         this.activeElement = element;
         this.undoStack = [];
@@ -1055,7 +1070,6 @@ export class ReaderToolsModel {
                 .closest("body")
                 .children('.qtip:not(".uibloomSourceTextsBubble")')
                 .remove();
-
             if (
                 this.currentMarkupType === MarkupType.Decodable ||
                 this.currentMarkupType === MarkupType.Leveled
