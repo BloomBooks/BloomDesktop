@@ -452,7 +452,6 @@ namespace Bloom.web.controllers
                 _publishModel
             );
             Logger.WriteEvent("Entered Publish Tab");
-            _publishModel.BookSelection.CurrentSelection.ReportIfBrokenAudioSentenceElements();
             request.ReplyWithJson(
                 JsonConvert.SerializeObject(
                     new

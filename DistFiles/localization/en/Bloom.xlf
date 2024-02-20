@@ -3708,6 +3708,7 @@
         <source xml:lang="en">Some audio elements are missing ids</source>
         <note>ID: PublishTab.Audio.ElementsMissingId</note>
         <note>Message briefly displayed to the user in a toast</note>
+        <note>Obsolete as of Bloom 5.7</note>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio">
         <source xml:lang="en">Booklet Insides</source>
