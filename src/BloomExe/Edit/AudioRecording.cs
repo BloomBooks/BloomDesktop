@@ -262,6 +262,11 @@ namespace Bloom.Edit
         }
 
         /// <summary>
+        /// lock object for the BeginMonitoring method.
+        /// </summary>
+        object _beginMonitoringLock = new object();
+
+        /// <summary>
         /// Used to initiate sending the PeakLevelChanged notifications.
         /// Currently this typically happens when the Recorder instance is created,
         /// which is usually when the talking book tool asks for the AudioDevicesJson.
@@ -270,25 +275,38 @@ namespace Bloom.Edit
         /// </summary>
         public void BeginMonitoring()
         {
-            if (!RecordingDevices.Contains(RecordingDevice))
+            // Multiple crashes have been reported due to calling Recorder.BeginMonitoring() more than once for an
+            // instance of Recorder.  Using both a lock and testing the Recorder state should prevent this from happening.
+            // See BL-13003.
+            lock (_beginMonitoringLock)
             {
-                RecordingDevice = RecordingDevices.FirstOrDefault();
-            }
-            if (RecordingDevice != null)
-            {
-                try
+                if (!RecordingDevices.Contains(RecordingDevice))
                 {
-                    Recorder.BeginMonitoring(catchAndReportExceptions: false);
-                    _monitoringAudio = true;
+                    RecordingDevice = RecordingDevices.FirstOrDefault();
                 }
-                catch (Exception e)
+                if (
+                    RecordingDevice != null
+                    && /* Don't check _monitoringAudio because we can have a new Recorder after resuming */
+                    (
+                        Recorder.RecordingState == RecordingState.NotYetStarted
+                        || Recorder.RecordingState == RecordingState.Stopped
+                    )
+                )
                 {
-                    Logger.WriteError("Could not begin monitoring microphone", e);
-                    var msg = LocalizationManager.GetString(
-                        "EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem",
-                        "Bloom was not able to access a microphone."
-                    );
-                    _webSocketServer.SendString(kWebsocketContext, "monitoringStartError", msg);
+                    try
+                    {
+                        Recorder.BeginMonitoring(catchAndReportExceptions: false);
+                        _monitoringAudio = true;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.WriteError("Could not begin monitoring microphone", e);
+                        var msg = LocalizationManager.GetString(
+                            "EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem",
+                            "Bloom was not able to access a microphone."
+                        );
+                        _webSocketServer.SendString(kWebsocketContext, "monitoringStartError", msg);
+                    }
                 }
             }
         }
