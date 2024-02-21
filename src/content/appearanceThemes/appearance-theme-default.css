@@ -72,17 +72,17 @@
     --page-gutter: 0mm;
 
     /* padding-top: value in .bloom-page.outsideFrontCover and .bloom-page.outsideBackCover */
-    --cover-margin-top: 12mm;   /* same default value as --page-margin-top, but used for outside cover pages */
+    --cover-margin-top: 12mm; /* same default value as --page-margin-top, but used for outside cover pages */
     /* padding-bottom: value in .bloom-page.outsideFrontCover and .bloom-page.outsideBackCover */
-    --cover-margin-bottom: 12mm;    /* same default value as --page-margin-bottom, but used for outside cover pages */
+    --cover-margin-bottom: 12mm; /* same default value as --page-margin-bottom, but used for outside cover pages */
     /* display: value in .Title-On-Cover-style.bloom-contentNational1 */
-    --cover-title-L2-show: doShow-css-will-ignore-this-and-use-default;  /* default is L2 title displaying in a separate block (the value is a self-documenting trick) */
+    --cover-title-L2-show: doShow-css-will-ignore-this-and-use-default; /* default is L2 title displaying in a separate block (the value is a self-documenting trick) */
     /* display: value in .Title-On-Cover-style.bloom-contentNational2 */
-    --cover-title-L3-show: none;   /* default is L3 title not displaying at all ('none' is a keyword) */
+    --cover-title-L3-show: none; /* default is L3 title not displaying at all ('none' is a keyword) */
     /* display: value in .coverBottomBookTopic */
     --cover-topic-show: doShow-css-will-ignore-this-and-use-default; /* default is topic displaying (the value is a self-documenting trick) */
     /* display: value in .coverBottomLangName */
-    --cover-languageName-show: doShow-css-will-ignore-this-and-use-defaultblock;  /* default is language name displaying (the value is a self-documenting trick) */
+    --cover-languageName-show: doShow-css-will-ignore-this-and-use-defaultblock; /* default is language name displaying (the value is a self-documenting trick) */
     /* display: value in .cover .creditsRow */
     --cover-creditsRow-show: doShow-css-will-ignore-this-and-use-default; /* default is credits row displaying (the value is a self-documenting trick) */
 
@@ -99,7 +99,7 @@
     /* border-style: value in .numberedPage .marginBox */
     --marginBox-border-style: none; /* default is no border, but we want to be explicit. 'none' is a keyword. */
     /* border-width: value in .numberedPage .marginBox */
-    --marginBox-border-width: medium;   /* must not be 0px/0mm/0in to have a border. 'medium' is a keyword. */
+    --marginBox-border-width: medium; /* must not be 0px/0mm/0in to have a border. 'medium' is a keyword. */
 
     /* The margin values here (and in the page-size-specific rules below) come from recommendations from
      * Little Zebra. We just looked at several versions of the books in different Bloom formats and we think
@@ -109,7 +109,7 @@
      * margins as the rest of the book.
      */
 
-     /* these are just defaults in case we miss some. If you override, remember that the bottom margin needs
+    /* these are just defaults in case we miss some. If you override, remember that the bottom margin needs
      * to be big enough for the page number, unless you put it elsewhere.
      */
 
@@ -202,7 +202,7 @@
     --page-margin-bottom: 15mm;
     --page-margin-left: 15mm;
     --page-margin-right: 15mm;
-    --page-gutter: 10mm;    /* same as  @ExtraSpaceForBinding in old bookLayout/common-mixins.less */
+    --page-gutter: 10mm; /* same as  @ExtraSpaceForBinding in old bookLayout/common-mixins.less */
     /* set cover to same as normal page top and bottom (unlike the MXBCommon-XMatter) */
     --cover-margin-top: 15mm;
     --cover-margin-bottom: 15mm;
