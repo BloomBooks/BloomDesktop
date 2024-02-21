@@ -59,7 +59,7 @@ namespace Bloom.Book
                     var checksums = match.Groups[1].Value.Split(',');
                     foreach (var checksum in checksums)
                     {
-                        _checksumsToSubstitute[checksum] = path;
+                        _checksumsToSubstitute[checksum.Trim()] = path;
                     }
                 }
             }
