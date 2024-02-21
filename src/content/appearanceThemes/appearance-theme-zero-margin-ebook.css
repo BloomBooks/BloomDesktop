@@ -51,3 +51,14 @@
     --pageNumber-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
     --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
 }
+
+/* With no margin, the text ends up too tight against the edge of the page. This adds a little padding. */
+.Device16x9Landscape[data-pagelineage*="7b192144-527c-417c-a2cb-1fb5e78bf38a"]
+    .bloom-editable {
+    padding-right: 2mm;
+    padding-left: 1mm; /* TODO: we need to address padding against image more generally */
+}
+.Device16x9Landscape.pictureOnRight .bloom-editable {
+    padding-left: 2mm;
+    padding-right: 1mm; /* TODO: we need to address padding against image more generally */
+}
