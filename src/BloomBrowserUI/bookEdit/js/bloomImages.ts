@@ -205,6 +205,9 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     if ($containerDiv.find(kPlaybackOrderContainerSelector).length > 0) {
         return; // Playback order controls are active, deactivate image container stuff.
     }
+    if ($containerDiv.find("button.imageOverlayButton").length > 0) {
+        return; // already have buttons
+    }
     const buttonModifier = GetButtonModifier($containerDiv);
 
     const addButtonHandler = (command: string) => {
@@ -418,8 +421,23 @@ function SetupImageContainer(containerDiv: HTMLElement) {
         .mouseenter(function() {
             addImageEditingButtons(this);
         })
-        .mouseleave(function() {
-            removeImageEditingButtons(this);
+        .mouseleave(function(e: JQueryMouseEventObject) {
+            // Page numbers displaying inside the image container can trigger the mouseleave
+            // event while the mouse is still inside the container, so we check for the mouse
+            // actually leaving the image container's boundaries.
+            const bounds = this.getBoundingClientRect();
+            // The mouseleave event can be triggered while the mouse is still barely
+            // inside the container according to the event object, so we adjust the
+            // bounds inward by a factor of 5 pixels.
+            const boundary = 5; // 5 pixels inside the container
+            if (
+                e.clientX < bounds.left + boundary ||
+                e.clientX > bounds.right - boundary ||
+                e.clientY < bounds.top + boundary ||
+                e.clientY > bounds.bottom - boundary
+            ) {
+                removeImageEditingButtons(this);
+            }
         });
 }
 
