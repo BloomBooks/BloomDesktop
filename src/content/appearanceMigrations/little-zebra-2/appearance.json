@@ -10,5 +10,5 @@
 // A replacement customBookStyles.css has been generated.
 {
   "cssThemeName": "default",
-  "pageNumber-show": "none",
+  "pageNumber-show": false,
 }
