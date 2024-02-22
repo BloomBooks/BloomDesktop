@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Web;
 
 namespace Bloom.web.controllers
 {
@@ -71,6 +72,11 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler("libraryPublish/upload", HandleUpload, true);
+            apiHandler.RegisterEndpointHandler(
+                "libraryPublish/uploadWithNewUploader",
+                HandleUploadWithNewUploader,
+                true
+            );
             apiHandler.RegisterEndpointHandler(
                 "libraryPublish/uploadCollection",
                 HandleUploadCollection,
@@ -157,8 +163,21 @@ namespace Bloom.web.controllers
 
         private void HandleUpload(ApiRequest request)
         {
+            HandleUpload(request, false);
+        }
+
+        private void HandleUploadWithNewUploader(ApiRequest request)
+        {
+            HandleUpload(request, true);
+        }
+
+        private bool _changeUploader = false;
+
+        private void HandleUpload(ApiRequest request, bool changeUploader)
+        {
             if (request.HttpMethod == HttpMethods.Get)
                 return;
+            _changeUploader = changeUploader;
 
             _progress.CancelRequested = false;
 
@@ -283,7 +302,8 @@ namespace Bloom.web.controllers
                 _progress,
                 _publishModel,
                 !includeBackgroundMusic,
-                _existingBookObjectIdOrNull
+                _existingBookObjectIdOrNull,
+                _changeUploader
             );
 
             e.Result = bookObjectId;
@@ -385,12 +405,15 @@ namespace Bloom.web.controllers
 
             _existingBookObjectIdOrNull = null;
 
+            var index = Int32.Parse(request.RequiredParam("index"));
+
             dynamic collisionDialogInfo;
             try
             {
                 collisionDialogInfo = Model.GetUploadCollisionDialogProps(
                     Model.TextLanguagesToAdvertiseOnBloomLibrary,
-                    ModelIndicatesSignLanguageChecked
+                    ModelIndicatesSignLanguageChecked,
+                    index
                 );
             }
             catch
@@ -419,7 +442,15 @@ namespace Bloom.web.controllers
 
         private void HandleUploadAfterChangingBookId(ApiRequest request)
         {
-            Model.ChangeBookId(_progress);
+            if (!Model.ChangeBookInstanceId(_progress))
+            {
+                request.Failed("Can't fix ID because in TC");
+                return;
+            }
+
+            // We're treating this upload as a new book; if we keep this around, it will
+            // attempt an overwrite.
+            _existingBookObjectIdOrNull = null;
             HandleUpload(request);
         }
 

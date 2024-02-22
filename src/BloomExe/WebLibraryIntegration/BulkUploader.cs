@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
@@ -372,7 +373,28 @@ namespace Bloom.WebLibraryIntegration
             uploadParams.Folder = book.FolderPath; // BringBookUpToDate can change the title and folder (see BL-10330)
             book.Storage.CleanupUnusedSupportFiles(isForPublish: false); // we are publishing, but this is the real folder not a copy, so play safe.
 
-            var existingBook = _singleBookUploader.GetBookOnServer(book.BookInfo.Id);
+            var existingBook = _singleBookUploader.GetBookOnServer(
+                book.BookInfo.Id,
+                out bool haveCollidingBooks
+            );
+            if (haveCollidingBooks)
+            {
+                // We will allow bulk upload to replace the (presumably only) book with this ID that has already been
+                // uploaded, even if there are colliding books. We already have the problem on Blorg, and are making it
+                // no worse. However, we won't allow a collision situation to be created or made worse by adding an
+                // additional book with the same ID.
+                if (existingBook == null)
+                {
+                    progress.WriteError(
+                        $"Did not upload '{Path.GetFileName(uploadParams.Folder)}' because there is already at least one book with the same ID ('{book.BookInfo.Id}') in BloomLibrary. You can get more information by uploading it individually."
+                    );
+                    return;
+                }
+                progress.WriteMessageWithColor(
+                    "orange",
+                    $"Warning: there are other books on BloomLibrary with the same id ('{book.BookInfo.Id}') as '{Path.GetFileName(uploadParams.Folder)}'. (Bloom replaced the one you uploaded anyway.)"
+                );
+            }
 
             // Compute the book hash file and compare it to the existing one for bulk upload.
             var currentHashes = BookUpload.HashBookFolder(uploadParams.Folder);
@@ -496,7 +518,7 @@ namespace Bloom.WebLibraryIntegration
                         progress,
                         publishModel,
                         uploadParams,
-                        existingBook?.objectId.Value
+                        existingBook?.id.Value
                     );
                 }
 
