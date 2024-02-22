@@ -314,6 +314,14 @@ namespace Bloom.Book
         public bool IsSaveable => IsInEditableCollection && _saveContext.CanSaveChanges(this);
 
         /// <summary>
+        /// Are we currently allowed to change the book ID?
+        /// Elsewhere in this class, this is referred to simply as "Id" but this is used in contexts
+        /// where it is important to distinguish it from the book's databaseId on our server.
+        /// </summary>
+        public bool CanChangeBookInstanceId =>
+            IsInEditableCollection && _saveContext.CanChangeBookInstanceId(this);
+
+        /// <summary>
         /// If true, use a device-specific xmatter pack.
         /// This will either be a pack associated with the collection's pack by adding "-Device",
         /// e.g. ABC-Device for ABC,

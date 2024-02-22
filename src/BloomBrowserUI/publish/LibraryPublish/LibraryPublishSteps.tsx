@@ -38,6 +38,7 @@ import {
 import { BloomSplitButton } from "../../react_components/bloomSplitButton";
 import { ErrorBox, WaitBox } from "../../react_components/boxes";
 import {
+    IUploadCollisionDlgData,
     IUploadCollisionDlgProps,
     showUploadCollisionDialog,
     UploadCollisionDlg
@@ -209,31 +210,48 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     }
 
     const [uploadCollisionInfo, setUploadCollisionInfo] = useState<
-        IUploadCollisionDlgProps
+        IUploadCollisionDlgData
     >({
         userEmail: "",
         newTitle: "",
         existingTitle: "",
         existingCreatedDate: "",
         existingUpdatedDate: "",
-        existingBookUrl: ""
+        existingBookUrl: "",
+        count: 0
     });
+
+    const [conflictIndex, setConflictIndex] = useState<number>(0);
 
     const [isUploading, setIsUploading] = useState<boolean>(false);
     function uploadOneBook() {
         setIsUploadComplete(false);
         setIsUploading(true);
-        get("libraryPublish/getUploadCollisionInfo", result => {
+        get(
+            "libraryPublish/getUploadCollisionInfo?index=" + conflictIndex,
+            result => {
+                if (result.data.error) {
+                    // The API already sent an error message
+                    return;
+                }
+                if (result.data.shouldShow) {
+                    setUploadCollisionInfo(result.data);
+                    showUploadCollisionDialog();
+                } else post("libraryPublish/upload");
+            }
+        );
+    }
+
+    const changeConflictIndex = (index: number) => {
+        get("libraryPublish/getUploadCollisionInfo?index=" + index, result => {
             if (result.data.error) {
                 // The API already sent an error message
                 return;
             }
-            if (result.data.shouldShow) {
-                setUploadCollisionInfo(result.data);
-                showUploadCollisionDialog();
-            } else post("libraryPublish/upload");
+            setUploadCollisionInfo(result.data);
+            setConflictIndex(index);
         });
-    }
+    };
 
     const [isCanceling, setIsCanceling] = useState<boolean>(false);
     useSubscribeToWebSocketForEvent(
@@ -685,6 +703,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 onCancel={() => {
                     setIsUploading(false);
                 }}
+                conflictIndex={conflictIndex}
+                setConflictIndex={changeConflictIndex}
             />
         </React.Fragment>
     );
