@@ -210,7 +210,9 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
 export const DialogTitle: FunctionComponent<{
     backgroundColor?: string;
     color?: string;
-    icon?: string;
+    // If this is a string, it is used as the source of an img.
+    // Otherwise it is used directly as a component.
+    icon?: React.ReactNode;
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
 }> = props => {
     const color = props.color || "black";
@@ -221,6 +223,29 @@ export const DialogTitle: FunctionComponent<{
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
     const titleTopPadding =
         background === "transparent" ? kDialogTopPadding : kDialogPadding;
+    let icon = props.icon;
+    if (typeof icon === "string") {
+        icon = (
+            <img
+                src={icon}
+                alt="Decorative Icon"
+                css={css`
+                    margin-right: ${kDialogPadding};
+                    color: ${color};
+                `}
+            />
+        );
+    } else {
+        icon = (
+            <div
+                css={css`
+                    margin-right: ${kDialogPadding};
+                `}
+            >
+                {icon}
+            </div>
+        );
+    }
 
     const context = React.useContext(BloomDialogContext);
     const cursor = context.disableDragging ? "unset" : "move";
@@ -245,16 +270,7 @@ export const DialogTitle: FunctionComponent<{
                 }
             `}
         >
-            {props.icon && (
-                <img
-                    src={props.icon}
-                    alt="Decorative Icon"
-                    css={css`
-                        margin-right: ${kDialogPadding};
-                        color: ${color};
-                    `}
-                />
-            )}
+            {icon}
             <h1
                 css={css`
                     margin-top: auto;

@@ -380,7 +380,7 @@ namespace BloomTests.WebLibraryIntegration
             var bookRecord = records[0];
             Assert.That(bookRecord.bookLineage.Value, Is.EqualTo("other"));
 
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookRecord.objectId.Value);
+            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookRecord.id.Value);
         }
 
         [Test]
@@ -414,7 +414,7 @@ namespace BloomTests.WebLibraryIntegration
                 Is.Not.EqualTo("BloomDesktop old"),
                 "updateSource should not equal 'BloomDesktop old' when uploaded from current Bloom"
             );
-            DateTime lastUploadedDateTime = bookRecord.lastUploaded.iso.Value;
+            DateTime lastUploadedDateTime = bookRecord.lastUploaded.Value;
             var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
             Assert.That(
                 differenceBetweenNowAndCreationOfJson,
@@ -427,7 +427,7 @@ namespace BloomTests.WebLibraryIntegration
                 Is.LessThan(TimeSpan.FromSeconds(20)),
                 "lastUploaded should be a valid date representing now-ish"
             );
-            var bookObjectId = bookRecord.objectId.Value;
+            var bookObjectId = bookRecord.id.Value;
             Assert.That(
                 string.IsNullOrEmpty(bookObjectId),
                 Is.False,
@@ -452,7 +452,8 @@ namespace BloomTests.WebLibraryIntegration
                         bookInstanceId,
                         updateSource = "not Bloom",
                         tags = new string[0],
-                        harvestState = "Done"
+                        harvestState = "Done",
+                        lastUploaded = (string)null
                     }
                 ),
                 bookObjectId
@@ -461,6 +462,7 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Done"));
             Assert.That(bookRecord.tags, Is.Empty);
             Assert.That(bookRecord.updateSource.Value, Is.EqualTo("not Bloom"));
+            // Odd, but we forced it to that in the TestOnly_UpdateBookRecord call above.
             Assert.That(bookRecord.lastUploaded.Value, Is.Null);
 
             _uploader.UploadBook_ForUnitTest(
@@ -487,7 +489,7 @@ namespace BloomTests.WebLibraryIntegration
                 Is.Not.EqualTo("BloomDesktop old"),
                 "updateSource should not equal 'BloomDesktop old' when uploaded from current Bloom"
             );
-            lastUploadedDateTime = bookRecord.lastUploaded.iso.Value;
+            lastUploadedDateTime = bookRecord.lastUploaded.Value;
             differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
             Assert.That(
                 differenceBetweenNowAndCreationOfJson,
@@ -501,7 +503,7 @@ namespace BloomTests.WebLibraryIntegration
                 "lastUploaded should be a valid date representing now-ish"
             );
 
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookRecord.objectId.Value);
+            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookRecord.id.Value);
         }
 
         [Test]

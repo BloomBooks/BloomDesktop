@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -25,6 +26,7 @@ using Microsoft.VisualBasic;
 using BloomTemp;
 using SIL.IO;
 using System.Security;
+using Bloom.Publish.BloomLibrary;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -327,6 +329,25 @@ namespace Bloom.WebLibraryIntegration
                     link.Title,
                     link.ForEdit
                 );
+                if (link.ForEdit && link.DatabaseId != null && LastBookDownloadedPath != null)
+                {
+                    // Write a collection-level file that is used when re-uploading the book
+                    // so we know exactly which book this collection was made for.
+                    var pathToForEditDataFile = Path.Combine(
+                        Path.GetDirectoryName(LastBookDownloadedPath),
+                        BloomLibraryPublishModel.kNameOfDownloadForEditFile
+                    );
+                    var id = BookMetaData.FromFolder(LastBookDownloadedPath).Id;
+                    var editData = new ExpandoObject() as IDictionary<string, object>;
+                    // When we look for a 'matching' book to re-upload, it has to match on all three of these.
+                    editData["databaseId"] = link.DatabaseId;
+                    editData["bookInstanceId"] = id;
+                    editData["bookFolder"] = LastBookDownloadedPath.Replace("\\", "/");
+                    RobustFile.WriteAllText(
+                        pathToForEditDataFile,
+                        Newtonsoft.Json.JsonConvert.SerializeObject(editData)
+                    );
+                }
             }
             else
             {

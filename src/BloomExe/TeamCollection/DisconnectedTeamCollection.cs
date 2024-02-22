@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Bloom.Book;
 using SIL.IO;
 
 namespace Bloom.TeamCollection
@@ -38,6 +39,12 @@ namespace Bloom.TeamCollection
                     "Parameterless constructor is only for mocking purposes"
                 );
             }
+        }
+
+        public override bool CanChangeId(BookInfo info)
+        {
+            // No way to know for sure, so play safe.
+            return false;
         }
 
         public override bool IsDisconnected => true;

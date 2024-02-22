@@ -15,6 +15,7 @@ namespace Bloom.Book
     public interface ISaveContext
     {
         bool CanSaveChanges(BookInfo info);
+        bool CanChangeId(BookInfo info);
     }
 
     /// <summary>
@@ -27,6 +28,11 @@ namespace Bloom.Book
         {
             return false;
         }
+
+        public bool CanChangeId(BookInfo info)
+        {
+            return false;
+        }
     }
 
     /// <summary>
@@ -36,6 +42,11 @@ namespace Bloom.Book
     class AlwaysEditSaveContext : ISaveContext
     {
         public bool CanSaveChanges(BookInfo info)
+        {
+            return true;
+        }
+
+        public bool CanChangeId(BookInfo info)
         {
             return true;
         }

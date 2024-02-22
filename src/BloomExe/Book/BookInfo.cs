@@ -313,6 +313,8 @@ namespace Bloom.Book
         /// </summary>
         public bool IsSaveable => IsInEditableCollection && _saveContext.CanSaveChanges(this);
 
+        public bool CanChangeId => IsInEditableCollection && _saveContext.CanChangeId(this);
+
         /// <summary>
         /// If true, use a device-specific xmatter pack.
         /// This will either be a pack associated with the collection's pack by adding "-Device",

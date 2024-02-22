@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
@@ -11,6 +12,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -204,7 +206,8 @@ namespace Bloom.WebLibraryIntegration
             CollectionSettings collectionSettings,
             string metadataLang1Code,
             string metadataLang2Code,
-            bool isForBulkUpload = false
+            bool isForBulkUpload = false,
+            bool changeUploader = false
         )
         {
             var htmlFile = BookStorage.FindBookHtmlInFolder(bookFolder);
@@ -350,7 +353,8 @@ namespace Bloom.WebLibraryIntegration
                         BloomLibraryBookApiClient.FinishBookUpload(
                             progress,
                             transactionId,
-                            metadata.WebDataJson
+                            metadata.WebDataJson,
+                            changeUploader
                         );
 
                         bookObjectId = transactionId;
@@ -678,13 +682,43 @@ namespace Bloom.WebLibraryIntegration
             return BloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id) != null;
         }
 
-        /// <returns>book record or null</returns>
-        public dynamic GetBookOnServer(string bookInstanceId, bool includeLanguageInfo = false)
+        /// <returns>book record of a book uploaded by the current user with the right ID, or null.
+        /// If there are other books with the same ID, haveColldingBooks is set true.</returns>
+        public dynamic GetBookOnServer(string bookInstanceId, out bool haveCollidingBooks)
         {
-            return BloomLibraryBookApiClient.GetSingleBookRecord(
-                bookInstanceId,
-                includeLanguageInfo: includeLanguageInfo
+            var matchingBooks = GetBooksOnServer(bookInstanceId);
+            var result = matchingBooks.FirstOrDefault(
+                b => b.uploader?.email == Settings.Default.WebUserId
             );
+            if (result != null)
+            {
+                haveCollidingBooks = matchingBooks.Count() > 1;
+                return result;
+            }
+            haveCollidingBooks = matchingBooks.Length > 0;
+            return null;
+        }
+
+        public dynamic GetBookPermissions(string bookObjectId)
+        {
+            return BloomLibraryBookApiClient.GetBookPermissions(bookObjectId);
+        }
+
+        public dynamic[] GetBooksOnServer(string bookInstanceId, bool includeLanguageInfo = false)
+        {
+            var json = BloomLibraryBookApiClient.GetBookRecords(
+                bookInstanceId,
+                includeLanguageInfo,
+                true
+            );
+            // The json is always an array. But it's a bit easier to work with if we convert it
+            // to a regular C# array, even leaving the individual objects as dynamic.
+            var result = new dynamic[json.Count];
+            for (int i = 0; i < json.Count; i++)
+            {
+                result[i] = json[i];
+            }
+            return result;
         }
 
         internal bool CheckAgainstHashFileOnS3(
@@ -776,7 +810,8 @@ namespace Bloom.WebLibraryIntegration
             IProgress progress,
             PublishModel publishModel,
             BookUploadParameters bookParams,
-            string existingBookObjectIdOrNull
+            string existingBookObjectIdOrNull,
+            bool changeUploader = false
         )
         {
             // this (isForPublish:true) is dangerous and the product of much discussion.
@@ -914,7 +949,8 @@ namespace Bloom.WebLibraryIntegration
                     book.CollectionSettings,
                     book.BookData.MetadataLanguage1Tag,
                     book.BookData.MetadataLanguage2Tag,
-                    bookParams.IsForBulkUpload
+                    bookParams.IsForBulkUpload,
+                    changeUploader
                 );
 
                 Debug.Assert(
