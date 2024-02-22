@@ -167,12 +167,12 @@ namespace Bloom.WebLibraryIntegration
 
             // We give the server a list of files and their hashes so it can be the controller of which files to upload.
             // body format is
-            // { title: "My title", files: [{ "path": "abc", "hash": "123" }, ...] }
+            // { name: "My title", files: [{ "path": "abc", "hash": "123" }, ...], ... }
             var obj = new Dictionary<string, object>
             {
                 // Because the title could change between uploads, we can't rely on the existing
                 // path on S3 (which includes the title). We have to provide it ourselves.
-                { "title", bookTitle },
+                { "name", bookTitle },
                 { "files", JsonConvert.SerializeObject(bookFiles) },
                 { "clientName", $"Bloom {ApplicationUpdateSupport.ChannelName}" },
                 { "clientVersion", Application.ProductVersion }
