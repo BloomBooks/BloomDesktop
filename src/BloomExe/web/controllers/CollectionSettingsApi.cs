@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -401,6 +403,11 @@ namespace Bloom.web.controllers
                 HandleLanguageDataRequest,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "languageNames",
+                HandleGetLanguageNames,
+                false
+            );
         }
 
         private void ResetBookshelf()
@@ -442,6 +449,19 @@ namespace Bloom.web.controllers
             var jsonString =
                 $"{{\"languageName\":\"{languageName}\",\"languageCode\":\"{langTag}\"}}";
             request.ReplyWithJson(jsonString);
+        }
+
+        // Used by BookSettingsDialog
+        private void HandleGetLanguageNames(ApiRequest request)
+        {
+            var x = new ExpandoObject() as IDictionary<string, object>;
+            // The values set here should correspond to the declaration of ILanguageNameValues
+            // in BookSettingsDialog.tsx.
+            x["language1Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Name;
+            x["language2Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Name;
+            if (!String.IsNullOrEmpty(_bookSelection.CurrentSelection.CollectionSettings.Language3?.Name))
+                x["language3Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language3.Name;
+            request.ReplyWithJson(JsonConvert.SerializeObject(x));
         }
 
         private void HandleGetCustomColorsRequest(ApiRequest request)
