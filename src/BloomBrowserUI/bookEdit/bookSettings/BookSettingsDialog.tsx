@@ -131,7 +131,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     );
     const themeLabel = useL10n("Page Theme", "BookSettings.PageThemeLabel", "");
     const themeDescription = useL10n(
-        "Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog].",
+        "", // will be translated or the English will come from the xliff
         "BookSettings.Theme.Description"
     );
     /* can't use this yet. See https://issues.bloomlibrary.org/youtrack/issue/BL-13094/Enable-links-in-Config-r-Descriptions
@@ -325,6 +325,10 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                         #groups {
                             margin-right: 10px; // make room for the scrollbar
                         }
+                    }
+
+                    a {
+                        color: ${kBloomBlue};
                     }
                 `}
             >
