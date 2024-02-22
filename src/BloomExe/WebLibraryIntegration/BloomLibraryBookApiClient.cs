@@ -220,7 +220,8 @@ namespace Bloom.WebLibraryIntegration
         public void FinishBookUpload(
             IProgress progress,
             string transactionId,
-            string metadataJsonAsString
+            string metadataJsonAsString,
+            bool becomeUploader
         )
         {
             if (!LoggedIn)
@@ -233,7 +234,14 @@ namespace Bloom.WebLibraryIntegration
             var request = MakePostRequest($"{bookId}:upload-finish");
 
             dynamic metadata = JsonConvert.DeserializeObject<ExpandoObject>(metadataJsonAsString);
-            request.AddJsonBody(new { transactionId, metadata });
+            request.AddJsonBody(
+                new
+                {
+                    transactionId,
+                    metadata,
+                    becomeUploader
+                }
+            );
 
             CallLongRunningAction(
                 request,
@@ -437,19 +445,6 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
-        // Setting param 'includeLanguageInfo' to true adds a param to the query that causes it to fold in
-        // useful language information instead of only having the arcane langPointers object.
-        private IRestResponse GetBookRecordsByQuery(string query, bool includeLanguageInfo)
-        {
-            var request = MakeParseGetRequest("classes/books");
-            request.AddParameter("where", query, ParameterType.QueryString);
-            if (includeLanguageInfo)
-            {
-                request.AddParameter("include", "langPointers", ParameterType.QueryString);
-            }
-            return ParseRestClient.Execute(request);
-        }
-
         // Will throw an exception if there is any reason we can't make a successful query, including if there is no internet.
         public dynamic GetSingleBookRecord(string id, bool includeLanguageInfo = false)
         {
@@ -474,7 +469,25 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
-        // Query parse for books.
+        public dynamic GetBookPermissions(string existingBookObjectId)
+        {
+            var request = MakeGetRequest($"{existingBookObjectId}:permissions");
+            var response = AzureRestClient.Execute(request);
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                LogApiError(request, response);
+                throw new ApplicationException("Unable to get permissions.");
+            }
+            dynamic json = JObject.Parse(response.Content);
+            if (json == null)
+            {
+                LogApiError(request, response);
+                throw new ApplicationException("Unable to parse book permission response.");
+            }
+            return json;
+        }
+
+        // Query the API for books matching a particular ID.
         // Will throw an exception if there is any reason we can't make a successful query, including if there is no internet.
         public dynamic GetBookRecords(
             string bookInstanceId,
@@ -496,35 +509,39 @@ namespace Bloom.WebLibraryIntegration
                 );
             }
 
-            var query = "{\"bookInstanceId\":\"" + bookInstanceId + "\"";
+            var request = MakePostRequest();
+            var requestBody = new { instanceIds = new[] { bookInstanceId } };
             if (!includeBooksFromOtherUploaders)
             {
-                query += "," + UploaderJsonString;
+                if (string.IsNullOrEmpty(Account))
+                {
+                    // An old test indicates that if no one is logged in and includeBooksFromOtherUploaders is true,
+                    // we should get no books. We don't know of any production case where that matters,
+                    // but the new API code treats an empty uploader as meaning that uploader is not specified,
+                    // so I put this in to preserve the old behavior.
+                    return (JObject.Parse(@"{""content"":[]}") as dynamic).content;
+                }
+                request.AddQueryParameter("uploader", Account);
             }
-            query += "}";
-            var response = GetBookRecordsByQuery(query, includeLanguageInfo);
+
+            // We can also ask to expand the uploader, but this just adds an id, and currently we don't need it
+            // for anything.
+            if (includeLanguageInfo)
+                request.AddQueryParameter("expand", "languages");
+            request.AddJsonBody(requestBody);
+            var response = AzureRestClient.Execute(request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                SIL.Reporting.Logger.WriteEvent(
-                    $"Unable to query book records on parse.\n"
-                        + $"query = {query}\n"
-                        + $"response.StatusCode = {response.StatusCode}\n"
-                        + $"response.Content = {response.Content}"
-                );
+                LogApiError(request, response);
                 throw new ApplicationException("Unable to look up book records.");
             }
-
-            dynamic json = JObject.Parse(response.Content);
-            if (json == null)
+            dynamic rawResult = JObject.Parse(response.Content);
+            if (rawResult == null)
             {
-                SIL.Reporting.Logger.WriteEvent(
-                    $"Unable to parse book records query result.\n"
-                        + $"response.Content = {response.Content}"
-                );
-                throw new ApplicationException("Unable to look up book records.");
+                LogApiError(request, response);
+                throw new ApplicationException("Unable to parse book records.");
             }
-
-            return json.results;
+            return rawResult.results;
         }
 
         public void Logout(bool includeFirebaseLogout = true)
@@ -595,7 +612,7 @@ namespace Bloom.WebLibraryIntegration
             for (int i = 0; i < bookRecords.Count; ++i)
             {
                 var bookRecord = bookRecords[i];
-                string bookInstanceId = bookRecord.bookInstanceId;
+                string bookInstanceId = bookRecord.instanceId;
                 if (bloomLibraryStatusesById.ContainsKey(bookInstanceId))
                 {
                     bloomLibraryStatusesById[bookInstanceId] = new BloomLibraryStatus(
