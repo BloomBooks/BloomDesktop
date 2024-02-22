@@ -382,7 +382,7 @@
         <note>BookSettings.PageThemeLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.Theme.Description" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog].</source>
+        <source xml:lang="en">Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog](https://docs.bloomlibrary.org/page-themes-catalog).</source>
         <note>BookSettings.Theme.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.CoverBackground" sil:dynamic="true" translate="no">
