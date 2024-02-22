@@ -56,6 +56,10 @@ namespace Bloom.Api
                 HandleDeleteCustomBookStyles,
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                "book/settings/languageNames",
+                HandleGetLanguageNames,
+                false);
         }
 
         private void HandleGetOverrides(ApiRequest request)
@@ -97,6 +101,19 @@ namespace Bloom.Api
                 )
             );
         }
+
+        private void HandleGetLanguageNames(ApiRequest request)
+        {
+            var x = new ExpandoObject() as IDictionary<string, object>;
+            // The values set here should correspond to the declaration of ILanguageNameValues
+            // in BookSettingsDialog.tsx.
+            x["language1Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Name;
+            x["language2Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Name;
+            if (!String.IsNullOrEmpty(_bookSelection.CurrentSelection.CollectionSettings.Language3?.Name))
+                x["language3Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language3.Name;
+            request.ReplyWithJson(JsonConvert.SerializeObject(x));
+        }
+
 
         /// <summary>
         /// Get a json of the book's settings.

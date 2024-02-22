@@ -394,12 +394,14 @@
         <note>BookSettings.WhatToShowOnCover</note>
       </trans-unit>
       <trans-unit id="BookSettings.ShowWrittenLanguage2Title" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Show Written Language 2 Title</source>
+        <source xml:lang="en">Show Written Language 2 Title ({0})</source>
         <note>BookSettings.ShowWrittenLanguage2Title</note>
+        <note>{0} is replaced by the name of the language</note>
       </trans-unit>
       <trans-unit id="BookSettings.ShowWrittenLanguage3Title" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Show Written Language 3 Title</source>
+        <source xml:lang="en">Show Written Language 3 Title ({0})</source>
         <note>BookSettings.ShowWrittenLanguage3Title</note>
+        <note>{0} is replaced by the name of the language</note>
       </trans-unit>
       <trans-unit id="BookSettings.ShowLanguageName" sil:dynamic="true" translate="no">
         <source xml:lang="en">Show Language Name</source>
