@@ -2758,6 +2758,11 @@ namespace Bloom.TeamCollection
             return !NeedCheckoutToEdit(info.FolderPath);
         }
 
+        public virtual bool CanChangeBookInstanceId(BookInfo info)
+        {
+            return !IsBookPresentInRepo(info.FolderName);
+        }
+
         /// <summary>
         /// Given the name (with or without preceding path) of a Team Collection folder,
         /// or at least the folder that contains the .JoinBloomTC file,

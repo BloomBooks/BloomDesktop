@@ -16,7 +16,10 @@ using Bloom.Book;
 using System.Globalization;
 using Bloom.ImageProcessing;
 using System.Drawing;
+using Bloom.Collection;
 using Bloom.ToPalaso;
+using Newtonsoft.Json.Linq;
+using SIL.Reporting;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -117,10 +120,133 @@ namespace Bloom.Publish.BloomLibrary
             _license?.Url != null
             && _license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/");
 
-        internal dynamic GetConflictingBookInfoFromServer()
+        public const string kNameOfDownloadForEditFile = "downloadForEdit.json";
+
+        internal dynamic GetConflictingBookInfoFromServer(int index)
         {
             // Include language information so we can get the names.
-            return _uploader.GetBookOnServer(Book.BookInfo.Id, includeLanguageInfo: true);
+            var books = _uploader.GetBooksOnServer(Book.BookInfo.Id, includeLanguageInfo: true);
+            books = SortConflictingBooksFromServer(
+                books,
+                Book.FolderPath,
+                Settings.Default.WebUserId,
+                Book.BookInfo.PHashOfFirstContentImage,
+                bookId => _uploader.GetBookPermissions(bookId).reupload
+            );
+            if (index >= books.Length)
+                return null;
+            var result = books[index] as JObject;
+            // set count of books as a field on result
+            result.Add("count", books.Length);
+            var databaseId = result["id"].ToString();
+            var permissions = _uploader.GetBookPermissions(databaseId);
+            result.Add("permissions", permissions);
+            return result;
+        }
+
+        /// <summary>
+        /// If we have multiple conflicting books, we want to sort them in a way that makes sense to the user.
+        /// If we're in a collection that was made for editing one particular book, and this is the book,
+        /// put that one first.
+        /// Then put books uploaded by the current user with the same phash as the book being uploaded next.
+        /// Then any other books uploaded by the current user.
+        /// Next, any other books this user has permission to reupload (again ones with the same phash first).
+        /// Finally, any other books, again ones with the same phash first.
+        /// This logic is pulled out as a static method to enable unit testing.
+        /// The function canUpload can be replaced for testing.
+        /// </summary>
+        /// <remarks>It's potentially quite inefficient that we retrieve the permissions of all the books
+        /// that don't have the right uploader (one at a time) to sort them, then retrieve the
+        /// permissions of the current book again to include in the next-level-up result, and do it all again if the
+        /// selected book index changes. We could cache the permission data somewhere and reuse it. Or we could change
+        /// the API so the whole sorted collection is sorted once and then passed to the UI side.
+        /// I was trying to avoid premature optimization and doing any more work than necessary
+        /// to handle the multiple-collision scenario, since we hope it is very rare.</remarks>
+        internal static dynamic[] SortConflictingBooksFromServer(
+            dynamic[] books,
+            string pathToBookFolder,
+            string userEmail,
+            string phash,
+            Func<string, bool> canUpload
+        )
+        {
+            if (books.Length < 2)
+                return books;
+            var remaining = books.ToList();
+            var bookList = new List<dynamic>();
+            var filePath = Path.Combine(
+                Path.GetDirectoryName(pathToBookFolder),
+                kNameOfDownloadForEditFile
+            );
+            if (File.Exists(filePath))
+            {
+                var bookOfCollectionData = JObject.Parse(RobustFile.ReadAllText(filePath));
+                var databaseId = bookOfCollectionData["databaseId"];
+                var instanceId = bookOfCollectionData["instanceId"];
+                var bookFolder = bookOfCollectionData["bookFolder"]?.ToString();
+                if (bookFolder == pathToBookFolder.Replace("\\", "/"))
+                {
+                    var matchingBook = books.FirstOrDefault(
+                        b => b["id"] == databaseId && b["instanceId"] == instanceId
+                    );
+                    if (matchingBook != null)
+                    {
+                        bookList.Add(matchingBook);
+                        remaining.Remove(matchingBook);
+                    }
+                }
+            }
+
+            var rightUploader = remaining.Where(b => b.uploader?.email == userEmail).ToList();
+            var rightUploaderAndPHash = rightUploader
+                .Where(b => b["phashOfFirstContentImage"]?.ToString() == phash)
+                .ToArray();
+            foreach (var book in rightUploaderAndPHash)
+            {
+                bookList.Add(book);
+                remaining.Remove(book);
+                rightUploader.Remove(book);
+            }
+            // Right uploader, but wrong phash
+            foreach (var book in rightUploader)
+            {
+                bookList.Add(book);
+                remaining.Remove(book);
+            }
+            // remaining are not the collection book and uploaded by someone else. Can we upload them?
+            var uploadable = remaining.Where(b => canUpload(b["id"]?.ToString())).ToList();
+            // Do any of those have the right hash?
+            var uploadableWithRightHash = uploadable
+                .Where(b => b["phashOfFirstContentImage"]?.ToString() == phash)
+                .ToArray();
+            foreach (var book in uploadableWithRightHash)
+            {
+                bookList.Add(book);
+                remaining.Remove(book);
+                uploadable.Remove(book);
+            }
+            // These are ones we can upload, but they have the wrong hash.
+            foreach (var book in uploadable)
+            {
+                bookList.Add(book);
+                remaining.Remove(book);
+            }
+            // The rest are not the collection book, uploaded by someone else, and we can't upload them.
+            var remainingWithRightHash = remaining
+                .Where(b => b["phashOfFirstContentImage"]?.ToString() == phash)
+                .ToArray();
+            foreach (var book in remainingWithRightHash)
+            {
+                bookList.Add(book);
+                remaining.Remove(book);
+            }
+            // and finally the ones with nothing to make them attractive except the instanceId
+            foreach (var book in remaining)
+            {
+                bookList.Add(book);
+            }
+
+            return bookList.ToArray();
         }
 
         internal bool IsTitleOKToPublish => OkToUploadWithNoLanguages || Book.HasL1Title();
@@ -175,7 +301,8 @@ namespace Bloom.Publish.BloomLibrary
             IProgress progress,
             PublishModel publishModel,
             bool excludeMusic,
-            string existingBookObjectIdOrNull
+            string existingBookObjectIdOrNull,
+            bool changeUploader
         )
         {
             using (
@@ -202,7 +329,8 @@ namespace Bloom.Publish.BloomLibrary
                     progress,
                     publishModel,
                     bookParams,
-                    existingBookObjectIdOrNull
+                    existingBookObjectIdOrNull,
+                    changeUploader
                 );
             }
         }
@@ -611,10 +739,11 @@ namespace Bloom.Publish.BloomLibrary
 
         public dynamic GetUploadCollisionDialogProps(
             IEnumerable<string> languagesToAdvertise,
-            bool signLanguageFeatureSelected
+            bool signLanguageFeatureSelected,
+            int index
         )
         {
-            var existingBookInfo = GetConflictingBookInfoFromServer();
+            var existingBookInfo = GetConflictingBookInfoFromServer(index);
 
             if (existingBookInfo == null)
             {
@@ -623,55 +752,38 @@ namespace Bloom.Publish.BloomLibrary
 
             var newThumbPath = ChooseBestUploadingThumbnailPath(Book).ToLocalhost();
             var newTitle = Book.TitleBestForUserDisplay;
-            var newLanguages = ConvertLanguageCodesToNames(languagesToAdvertise, Book.BookData);
-            if (signLanguageFeatureSelected && !string.IsNullOrEmpty(CurrentSignLanguageName))
-            {
-                var newLangs = newLanguages.ToList();
-                if (!newLangs.Contains(CurrentSignLanguageName))
-                    newLangs.Add(CurrentSignLanguageName);
-                newLanguages = newLangs;
-            }
+            ConvertLanguageListsToNames(
+                languagesToAdvertise,
+                Book.BookData,
+                existingBookInfo.languages,
+                signLanguageFeatureSelected ? Book.CollectionSettings.SignLanguage : null,
+                out string[] newLanguages,
+                out string[] existingLanguages
+            );
 
             var updatedDateTime = (DateTime)existingBookInfo.updatedAt;
             var createdDateTime = (DateTime)existingBookInfo.createdAt;
             // Find the best title available (BL-11027)
             // Users can click on this title to bring up the existing book's page.
-            var existingTitle = existingBookInfo.title?.Value;
+            var existingTitle = existingBookInfo.titleFromUpload?.Value;
             if (String.IsNullOrEmpty(existingTitle))
             {
                 // If title is undefined (which should not be the case), then use the first title from allTitles.
-                var allTitlesString = existingBookInfo.allTitles?.Value;
-                if (!String.IsNullOrEmpty(allTitlesString))
+                var allTitles = existingBookInfo.titles ?? Array.Empty<object>(); //?.Value;
+                if (allTitles.Length > 0)
                 {
-                    try
-                    {
-                        var allTitles = Newtonsoft.Json.Linq.JObject.Parse(allTitlesString);
-                        foreach (var title in allTitles)
-                        {
-                            // title.Value is dynamic language code / title string pair
-                            // title.Value.Value is the actual book title in the associated language
-                            if (title?.Value?.Value != null)
-                            {
-                                existingTitle = title.Value.Value;
-                                break;
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // ignore parse failure -- should never happen at this point.
-                    }
+                    // Earlier code attempted to find a non-empty one. I don't think it's worth it.
+                    // titleFromUpload should never be empty; Titles in allTitles should very rarely be empty;
+                    // and if the first one is, we replace it with "Unknown" below.
+                    existingTitle = allTitles[0].title.Value;
                 }
             }
             // If neither title nor allTitles are defined, just give a placeholder value.
             if (String.IsNullOrEmpty(existingTitle))
                 existingTitle = "Unknown";
-            var existingId = existingBookInfo.objectId.ToString();
+            var existingId = existingBookInfo.id.ToString();
             var existingBookUrl = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(existingId);
 
-            var existingLanguages = ConvertLanguagePointerObjectsToNames(
-                existingBookInfo.langPointers
-            );
             var createdDate = createdDateTime.ToString("d", CultureInfo.CurrentCulture);
             var updatedDate = updatedDateTime.ToString("d", CultureInfo.CurrentCulture);
             var existingThumbUrl = GetBloomLibraryThumbnailUrl(existingBookInfo);
@@ -690,7 +802,10 @@ namespace Bloom.Publish.BloomLibrary
                 existingCreatedDate = createdDate,
                 existingUpdatedDate = updatedDate,
                 existingBookUrl,
-                existingThumbUrl
+                existingThumbUrl,
+                uploader = existingBookInfo.uploader.email,
+                count = existingBookInfo.count,
+                permissions = existingBookInfo.permissions
             };
         }
 
@@ -790,32 +905,73 @@ namespace Bloom.Publish.BloomLibrary
             return url + "?version=" + lastUpdate;
         }
 
-        private IEnumerable<string> ConvertLanguageCodesToNames(
+        /// <summary>
+        /// Generate two lists of language names, one based on the language codes in the book (including its sign
+        /// language if passed in separately), and the other based on the language objects from the server.
+        /// If we get different names for the same language from the two sources, we'll combine them with a slash.
+        /// </summary>
+        internal static void ConvertLanguageListsToNames(
             IEnumerable<string> langCodes,
-            BookData bookData
+            BookData bookData,
+            IEnumerable<dynamic> databaseLangObjectsEnum,
+            WritingSystem signLanguage,
+            out string[] newLanguages,
+            out string[] existingLanguages
         )
         {
+            var mapCodeToName = new Dictionary<string, string>();
+            var databaseLangObjects = databaseLangObjectsEnum.ToList();
             foreach (var langCode in langCodes)
             {
-                yield return bookData.GetDisplayNameForLanguage(langCode);
+                mapCodeToName[langCode] = bookData.GetDisplayNameForLanguage(langCode);
             }
-        }
 
-        private IEnumerable<string> ConvertLanguagePointerObjectsToNames(
-            IEnumerable<dynamic> langPointers
-        )
-        {
-            foreach (var languageObject in langPointers)
+            if (signLanguage != null)
             {
-                yield return languageObject.name;
+                mapCodeToName[signLanguage.Tag] = signLanguage.Name;
             }
+
+            foreach (var languageObject in databaseLangObjects)
+            {
+                var name = languageObject.name.ToString();
+                var code = languageObject.tag.ToString();
+                if (mapCodeToName.TryGetValue(code, out string altName) && altName != name)
+                    mapCodeToName[code] = altName + "/" + name;
+                else
+                {
+                    mapCodeToName[code] = name;
+                }
+            }
+            var newLanguages1 = langCodes.Select(code => mapCodeToName[code]);
+            if (signLanguage != null)
+                newLanguages1 = newLanguages1.Append(mapCodeToName[signLanguage.Tag]);
+            newLanguages = newLanguages1.ToArray();
+
+            existingLanguages = databaseLangObjects
+                .Select<dynamic, string>(
+                    languageObject => mapCodeToName[languageObject.tag.ToString()]
+                )
+                .ToArray();
         }
 
-        internal void ChangeBookId(IProgress progress)
+        /// <summary>
+        /// Are we currently allowed to change the book ID?
+        /// In some places, this is referred to simply as "Id" but this is used in contexts
+        /// where it is important to distinguish it from the book's databaseId on our server.
+        /// </summary>
+        internal bool ChangeBookInstanceId(IProgress progress)
         {
+            if (!Book.BookInfo.CanChangeBookInstanceId)
+            {
+                ErrorReport.NotifyUserOfProblem(
+                    "Bloom cannot fix the ID of this book because that would cause problems syncing your Team Collection. You can work around this by making a duplicate of the book and uploading that."
+                );
+                return false;
+            }
             progress.WriteMessage("Setting new instance ID...");
             Book.BookInfo.Id = BookInfo.InstallFreshInstanceGuid(Book.FolderPath);
             progress.WriteMessage("ID is now " + Book.BookInfo.Id);
+            return true;
         }
 
         internal void UpdateLangDataCache()
