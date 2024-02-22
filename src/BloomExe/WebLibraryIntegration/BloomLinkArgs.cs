@@ -64,6 +64,8 @@ namespace Bloom.WebLibraryIntegration
 
         public bool ForEdit { get; }
 
+        public string DatabaseId { get; }
+
         public BloomLinkArgs(string url)
         {
             if (!url.StartsWith(kBloomUrlPrefix))
@@ -83,6 +85,10 @@ namespace Bloom.WebLibraryIntegration
                 Title = HttpUtility.UrlDecode(qparams[1].Substring("title=".Length));
             if (qparams.Any(x => x == "forEdit=true"))
                 ForEdit = true;
+            if (qparams.Any(x => x.StartsWith("database-id=")))
+                DatabaseId = qparams
+                    .First(x => x.StartsWith("database-id="))
+                    .Substring("database-id=".Length);
         }
     }
 }
