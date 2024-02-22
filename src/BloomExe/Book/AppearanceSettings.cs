@@ -823,9 +823,18 @@ public class AppearanceSettings
     // things that aren't settings but are used by the BookSettings UI
     public string AppearanceUIOptions(bool legacyThemeCanBeUsed)
     {
-        var names = GetAppearanceThemeNames();
-        if (!legacyThemeCanBeUsed)
-            names = names.Where(n => n != "legacy-5-6");
+        const string legacyTheme = "legacy-5-6";
+
+        var names = new List<string>(GetAppearanceThemeNames());
+        if (names.Contains(legacyTheme))
+        {
+            names.Remove(legacyTheme);
+            if (legacyThemeCanBeUsed)
+            {
+                names.Add("--");
+                names.Add(legacyTheme);
+            }
+        }
         var x = new ExpandoObject() as IDictionary<string, object>;
 
         x["themeNames"] =
