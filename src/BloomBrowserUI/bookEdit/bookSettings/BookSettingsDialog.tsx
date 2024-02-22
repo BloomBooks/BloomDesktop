@@ -470,6 +470,9 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                                     // main message
                                                     margin-top: 2px;
                                                     justify-content: flex-end;
+                                                    &:hover {
+                                                        cursor: pointer;
+                                                    }
                                                 `}
                                                 onClick={() =>
                                                     deleteCustomBookStyles()
