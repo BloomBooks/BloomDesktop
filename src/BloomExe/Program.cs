@@ -497,16 +497,16 @@ namespace Bloom
                             // No other instance is running. We own the token and should release it on quitting.
                             gotUniqueToken = true;
                         }
-                        else if ((Control.ModifierKeys & Keys.Control) != Keys.Control)
+                        else if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
                         {
-                            // bypass check if control key is held down; note that we're deliberately in this state
+                            // control key is held down so allow second instance to run; note that we're deliberately in this state
                             RunningSecondInstance = true;
                         }
                         else
                         {
                             // We're trying to run a second instance. This is not allowed except for a few special cases,
                             // such as (temporarily) when downloading a book from BloomLibrary, or when ctrl is held down. We'll just quit now.
-                            // (A message will pop up to tell the user about this situation if it happens.)
+                            // (UniqueToken.AcquireToken will have already notified the user of this situation.)
                             return 1;
                         }
                     }
