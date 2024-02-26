@@ -24,8 +24,13 @@
     --page-margin-bottom: 0mm;
     --page-margin-left: 0mm;
     --page-margin-right: 0mm;
-    --page-split-horizontal-gap: 1mm;
-    --page-split-vertical-gap: 1mm;
+
+    /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
+    --page-split-vertical-gap: 0; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
+    --page-split-horizontal-gap: 0;
+    --page-split-vertical-gap: 0;
+    --page-text-padding-left: 1em;
+    --page-text-padding-right: 1em;
 }
 
 /* The section below controls the pagenumber and the white circle around it.  */
@@ -59,13 +64,9 @@
     --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
 }
 
-/* With no margin, the text ends up too tight against the edge of the page. This adds a little padding. */
-.Device16x9Landscape[data-pagelineage*="7b192144-527c-417c-a2cb-1fb5e78bf38a"]
-    .bloom-editable {
-    padding-right: 2mm;
-    padding-left: 1mm; /* TODO: we need to address padding against image more generally */
-}
-.Device16x9Landscape.pictureOnRight .bloom-editable {
-    padding-left: 2mm;
-    padding-right: 1mm; /* TODO: we need to address padding against image more generally */
+.Device16x9Portrait.numberedPage {
+    --page-text-padding-top: 0.5em;
+    --page-text-padding-bottom: 0.5em;
+    --page-text-padding-left: 0.5em;
+    --page-text-padding-right: 0.5em;
 }
