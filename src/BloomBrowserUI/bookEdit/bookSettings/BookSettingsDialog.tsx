@@ -82,6 +82,12 @@ interface IOverrideInformation {
     xmatterName: string;
 }
 
+interface ILanguageNameValues {
+    language1Name: string;
+    language2Name: string;
+    language3Name?: string;
+}
+
 export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const {
         showDialog,
@@ -106,6 +112,14 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         xmatterName: "",
         brandingName: ""
     });
+
+    const languageNameValues: ILanguageNameValues = useApiObject<
+        ILanguageNameValues
+    >("settings/languageNames", {
+        language1Name: "",
+        language2Name: ""
+    });
+
     const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
         "BookSettings.LockedByXMatter",
@@ -193,7 +207,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const bloomPubLabel = useL10n("BloomPUB", "PublishTab.bloomPUBButton"); // reuse the same string localized for the Publish tab
 
     // This is a helper function to make it easier to pass the override information
-    function getAdditionalProps<T>(subPath: string) {
+    function getAdditionalProps<T>(subPath: string, disable?: boolean) {
         // some properties will be overridden by branding and/or xmatter
         const xmatterOverride: T | undefined =
             overrideInformation?.xmatter?.[subPath];
@@ -210,7 +224,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         // make a an object that can be spread as props in any of the Configr controls
         return {
             path: "appearance." + subPath,
-            disabled: appearanceDisabled,
+            disabled: appearanceDisabled || disable,
             overrideValue: override as T,
             // if we're disabling all appearance controls (e.g. because we're in legacy), don't list a second reason for this overload
             overrideDescription: appearanceDisabled ? "" : description
@@ -525,17 +539,28 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 path={`appearance`}
                             >
                                 <ConfigrBoolean
-                                    label={showWrittenLanguage2TitleLabel}
+                                    label={
+                                        showWrittenLanguage2TitleLabel +
+                                        ` (${languageNameValues.language2Name})`
+                                    }
                                     {...getAdditionalProps<boolean>(
                                         "cover-title-L2-show"
                                     )}
                                 />
+
                                 <ConfigrBoolean
-                                    label={showWrittenLanguage3TitleLabel}
+                                    label={
+                                        languageNameValues.language3Name
+                                            ? showWrittenLanguage3TitleLabel +
+                                              ` (${languageNameValues.language3Name})`
+                                            : showWrittenLanguage3TitleLabel
+                                    }
                                     {...getAdditionalProps<boolean>(
-                                        `cover-title-L3-show`
+                                        `cover-title-L3-show`,
+                                        !languageNameValues.language3Name
                                     )}
                                 />
+
                                 <ConfigrBoolean
                                     label={showLanguageNameLabel}
                                     {...getAdditionalProps<boolean>(
