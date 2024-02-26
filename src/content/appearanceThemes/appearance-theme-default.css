@@ -54,6 +54,12 @@
 
     /* background-color: value in .bloom-page */
     --page-background-color: white;
+
+    --page-text-padding-top: 0em;
+    --page-text-padding-bottom: 0em;
+    --page-text-padding-left: 0em;
+    --page-text-padding-right: 0em;
+
     /* padding-left: value in .split-pane.vertical-percent
      *  .split-pane-component.position-right .split-pane-component-inner > div */
     --page-split-vertical-gap: 2mm;
@@ -207,3 +213,11 @@
     --cover-margin-top: 15mm;
     --cover-margin-bottom: 15mm;
 }
+
+.numberedPage .bloom-editable {
+    padding-top: var(--page-text-padding-top);
+    padding-bottom: var(--page-text-padding-bottom);
+    padding-right: var(--page-text-padding-right);
+    padding-left: var(--page-text-padding-left);
+}
+/* TODO: don't apply these headings if we're in an overlay */

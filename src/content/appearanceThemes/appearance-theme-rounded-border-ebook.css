@@ -16,6 +16,9 @@
     --marginBox-border-radius: 15px;
     --marginBox-padding: 1.5mm;
     --marginBox-background-color: #ffffff; /* white */
+
+    --page-text-padding-left: 0.5em;
+    --page-text-padding-right: 0.5em;
 }
 
 /* The section below controls the pagenumber and the white circle around it.  */
