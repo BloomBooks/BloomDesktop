@@ -776,8 +776,16 @@ const AgreementCheckbox: React.FunctionComponent<{
     onChange: (v: boolean) => void;
 }> = props => {
     const [isChecked, setIsChecked] = useState(props.initiallyChecked);
+    const [checkChanged, setCheckChanged] = useState(false);
+    // If the initial render occurred before the parent component was ready to provide
+    // the correct initial value, fix the initial value of isChecked now.  But not if
+    // we've actually changed the value by clicking on the checkbox.  See BL-13117.
+    if (!checkChanged && isChecked !== props.initiallyChecked) {
+        setIsChecked(props.initiallyChecked);
+    }
     function handleCheckChanged(isChecked: boolean) {
         setIsChecked(isChecked);
+        setCheckChanged(true);
         props.onChange(isChecked);
     }
     return (
