@@ -775,7 +775,13 @@ const AgreementCheckbox: React.FunctionComponent<{
     disabled: boolean;
     onChange: (v: boolean) => void;
 }> = props => {
-    const [isChecked, setIsChecked] = useState(props.initiallyChecked);
+    // props.initiallyChecked doesn't always have the right value the first time,
+    // so we can't use it to initialize isChecked without the useEffect machinery.
+    // See BL-13117.
+    const [isChecked, setIsChecked] = useState(false);
+    useEffect(() => {
+        setIsChecked(props.initiallyChecked);
+    }, [props.initiallyChecked]);
     function handleCheckChanged(isChecked: boolean) {
         setIsChecked(isChecked);
         props.onChange(isChecked);
