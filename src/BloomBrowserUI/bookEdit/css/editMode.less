@@ -636,6 +636,13 @@ div.bloom-templateMode {
     }
 }
 
+// Make editing in an overflowed textbox that is supposed to be vertically centered more pleasant.
+// See BL-13081.
+.bloom-vertical-align-center:has(.overflow) {
+    display: block;
+    border-bottom: unset !important; // otherwise would get thick red line that travels up the textbox.
+}
+
 .childOverflowingThis {
     border-bottom: solid thick @OverflowColor !important;
     // no, that's really confusing when text far from the crime turns red color: red !important;
