@@ -29,7 +29,14 @@
 }
 
 /* The section below controls the pagenumber and the white circle around it.  */
-
+.Device16x9Landscape.numberedPage {
+    --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+}
+.Device16x9Portrait.numberedPage {
+    /* this rule will apply more generally than we'd prefer, but the common situation we're improving here
+    is picture on top, text on the bottom, we need to make room for the page number */
+    --pageNumber-extra-height: 12mm !important;
+}
 .Device16x9Landscape.numberedPage::after {
     --pageNumber-bottom: 0mm;
     --pageNumber-top: unset;

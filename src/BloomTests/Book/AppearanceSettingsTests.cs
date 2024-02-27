@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
@@ -285,6 +285,24 @@ namespace BloomTests.Book
                 Does.Contain("--cover-topic-show: doShow-css-will-ignore-this-and-use-default;")
             );
             Assert.That(fromSettings, Does.Contain("--cover-languageName-show: none;"));
+        }
+
+        [Test]
+        public void ToCss_EmitsSpecialPageMargin_property()
+        {
+            var settings = new AppearanceSettings();
+            settings.UpdateFromJson(
+                @"
+{
+  ""cssThemeName"": ""default"",
+  ""pageNumber-show"": false
+}"
+            );
+            var css = settings.ToCss();
+            Assert.That(css, Does.Contain("--pageNumber-show-multiplicand: 0;"));
+            settings.UpdateFromJson("{\"pageNumber-show\": true}");
+            css = settings.ToCss();
+            Assert.That(css, Does.Contain("--pageNumber-show-multiplicand: 1;"));
         }
     }
 

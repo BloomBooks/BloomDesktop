@@ -598,11 +598,23 @@ div[data-book*="branding"] {
 }
 
 // ------------------------------------------------------------------------
-// application of the left and right margins, and the gutter
+// application of margins, and the gutter
 // ------------------------------------------------------------------------
 .bloom-page {
     padding-top: var(--page-margin-top);
-    padding-bottom: var(--page-margin-bottom);
+
+    // at least until/if we put something in the HTML that tells us whether
+    // this book wants a page number, we use this --pageNumber-show-multiplicand
+    // property, which AppearanceSettings.cs sets to either 0 or 1.
+    // By multiplying that times the extra height the current theme says
+    // it needs for a page number (which may vary by page layout and such),
+    // we then in effect turn that extra on and off.
+    --padding-bottom-addition: calc(
+        var(--pageNumber-show-multiplicand) * var(--pageNumber-extra-height)
+    );
+    padding-bottom: calc(
+        var(--page-margin-bottom) + var(--padding-bottom-addition)
+    );
 
     &.side-left {
         padding-left: var(--page-margin-left);
