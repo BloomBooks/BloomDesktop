@@ -62,10 +62,10 @@
 
     /* padding-left: value in .split-pane.vertical-percent
      *  .split-pane-component.position-right .split-pane-component-inner > div */
-    --page-split-vertical-gap: 2mm;
+    --page-split-vertical-gap: 9mm; /* Note: 9 was the largest I could get with the current margins before a max a5 Portrait with txt-on-left would overflow.*/
     /* padding-top: value in .split-pane.horizontal-percent
      *  .split-pane-component.position-bottom .split-pane-component-inner > div */
-    --page-split-horizontal-gap: 1mm;
+    --page-split-horizontal-gap: 5mm; /* note that em units won't work as this is applied to a splitter that doesn't know the font size */
     /* gap: value for .bloom-translationGroup */
     /* When Bloom is configured to show each block of text in more than one language, this controls
        the space between the different language sections of each block. */
