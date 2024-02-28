@@ -665,6 +665,21 @@ public class AppearanceSettings
             }
         }
 
+        // This is a special case (for now) where we emit a special property designed to be used when setting the bottom margin.
+        // Search our less/css for --pageNumber-show-multiplicand to see how it is used.
+        // If we end up with other boolean properties that the user can set a more general solution will probably be needed.
+        // One idea is to preprocess the theme css, replacing things like `.bloomPage[pageNumber-show] {... }` with `bloom-page {....}` when true.
+        // The other idea is to add attributes like `pageNumber-show` or `pageNumber-show-true` to all the bloom-page divs
+        bool show;
+        if (bool.TryParse(props["pageNumber-show"].ToString(), out show) && show)
+        {
+            cssBuilder.AppendLine("	--pageNumber-show-multiplicand: 1;");
+        }
+        else
+        {
+            cssBuilder.AppendLine("	--pageNumber-show-multiplicand: 0;");
+        }
+
         cssBuilder.AppendLine("}");
         return cssBuilder.ToString();
     }
@@ -876,7 +891,9 @@ public class AppearanceSettings
         if (!String.IsNullOrEmpty(migrant))
         {
             var jsonString = RobustFile.ReadAllText(migrant);
-            var json = JsonConvert.DeserializeObject<ExpandoObject>(jsonString) as IDictionary<string,object>;
+            var json =
+                JsonConvert.DeserializeObject<ExpandoObject>(jsonString)
+                as IDictionary<string, object>;
             if (json != null && json.ContainsKey("cssThemeName") && json["cssThemeName"] != null)
             {
                 // We have a file that looks like it has been migrated, so we don't want to complain about it

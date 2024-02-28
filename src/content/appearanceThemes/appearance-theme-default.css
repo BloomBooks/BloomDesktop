@@ -22,6 +22,7 @@
 .bloom-page {
     /* display: value in .numberedPage:after to display the page number */
     --pageNumber-show: doShow-css-will-ignore-this-and-use-default; /* default is number displaying (the value is a self-documenting trick) */
+
     /* font-size: value in .numberedPage:after to display the page number */
     --pageNumber-font-size: 14pt;
     /* Either --pageNumber-top or --pageNumber-bottom should be set to a value, but not both. */
@@ -117,6 +118,7 @@
     --page-margin-top: 12mm;
     /* padding-bottom: value in .bloom-page: affects all pages except outside cover pages */
     --page-margin-bottom: 12mm;
+
     /* padding-right: value in .bloom-page.side-right */
     /* added to --page-gutter for padding-right: value in .bloom-page.side-left */
     --page-margin-right: 12mm;

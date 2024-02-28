@@ -2,6 +2,11 @@
 @OddPageNumberPosition: 57px;
 @EvenPageNumberPosition: 60px;
 
+.bloom-page {
+    // how much space to leave at the top and bottom of the page for the page number, if we're showing page numbers at all
+    // themes can override this as needed. If you have reasonable margins, you don't need to add anything to fit in a pageNumber
+    --pageNumber-extra-height: 0mm; // must have units
+}
 .numberedPage {
     &:after {
         content: attr(data-page-number);
@@ -10,7 +15,8 @@
         position: absolute;
         // If --pageNumber-background-width is not set, the width will be the width of the number instead of the whole page.
         width: var(
-            --pageNumber-background-width, fit-content
+            --pageNumber-background-width,
+            fit-content
         ); // for when we need to have a colored background, e.g. a circle.
         height: var(--pageNumber-background-width);
         bottom: var(
@@ -28,7 +34,7 @@
         text-align: center !important; // centers horizontally
     }
 
-    // This was very tricky to get right for ebooks. We usully want the page number in ebooks
+    // This was very tricky to get right for ebooks. We usually want the page number in ebooks
     // to be centered, which requires setting both left and right, typically to zero, and
     // then setting margin:0 auto. But we also want to be able to set the page number on
     // the left for the rounded themes that use picture-on-left. And all this has to be
