@@ -15,18 +15,13 @@ export function setupOrigami() {
     get("settings/enterpriseEnabled", result2 => {
         const isEnterpriseEnabled: boolean = result2.data;
         const customPages = document.getElementsByClassName("customPage");
+        let pageWidth = 0;
         if (customPages.length > 0) {
-            const width = customPages[0].clientWidth;
+            pageWidth = customPages[0].clientWidth;
             const origamiControl = getOrigamiControl()
                 .append(createTypeSelectors(isEnterpriseEnabled))
                 .append(createTextBoxIdentifier());
             $("#page-scaling-container").append(origamiControl);
-            // We want to say "right: 19px" in css, but that should be relative to the
-            // page; and it's now a child of the page-scaling-container which is
-            // a parent of the page and can't use the page width.
-            // So set the left based on the two widths and an extra 19px.
-            const origamiWidth = origamiControl.get(0).clientWidth;
-            origamiControl.get(0).style.left = `${width - origamiWidth - 19}px`;
         }
         // I'm not clear why the rest of this needs to wait until we have
         // the two results, but none of the controls shows up if we leave it all
@@ -40,7 +35,24 @@ export function setupOrigami() {
 
         $(".customPage, .origami-toggle")
             .find("*[data-i18n]")
-            .localize();
+            .localize(() => {
+                if (pageWidth > 0) {
+                    // We want to say "right: 19px" in css, but that should be relative to the
+                    // page; and it's now a child of the page-scaling-container which is
+                    // a parent of the page and can't use the page width.
+                    // So set the left based on the two widths and an extra 19px.
+                    // Note that these settings can't be done accurately until the text has been
+                    // localized.  If "right: 19px" worked, we could do it above or in the css
+                    // since it wouldn't be sensitive to the localization.
+                    const toggleElem = $(".origami-toggle").get(0);
+                    const toggleWidth = toggleElem.clientWidth;
+                    toggleElem.style.left = `${pageWidth - toggleWidth - 19}px`;
+                    // The clientWidth returned isn't always quite enough to contain both
+                    // the text and the switch.  (It appears to round a floating point value
+                    // down to an integer.)  See BL-13129.
+                    toggleElem.style.width = `${toggleWidth + 1}px`;
+                }
+            });
     });
 }
 
