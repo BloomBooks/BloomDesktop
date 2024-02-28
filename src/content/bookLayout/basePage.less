@@ -546,11 +546,18 @@ div[data-book*="branding"] {
 
 // See comments below about the horizontal version of this rule.
 .split-pane.vertical-percent
+    .split-pane-component.position-left
+    > .split-pane-component-inner:has(> .bloom-translationGroup) {
+    padding-right: var(--page-split-vertical-gap);
+    box-sizing: border-box;
+}
+.split-pane.vertical-percent
     .split-pane-component.position-right
-    > .split-pane-component-inner {
+    > .split-pane-component-inner:has(> .bloom-translationGroup) {
     padding-left: var(--page-split-vertical-gap);
     box-sizing: border-box;
 }
+
 // The standard structure of an origami split is
 // .split-pane.horizontal-percent
 //     .split-pane-component.position-top style="bottom: x%
@@ -572,7 +579,7 @@ div[data-book*="branding"] {
 // being put on the image container, and thus inside the border.
 .split-pane.horizontal-percent
     .split-pane-component.position-bottom
-    > .split-pane-component-inner {
+    > .split-pane-component-inner:has(> .bloom-translationGroup) {
     padding-top: var(--page-split-horizontal-gap);
     // I think this is redundant with a rule elsewhere, but it's VITAL
     // when we are adding padding to a 100% height element, so I'm repeating
