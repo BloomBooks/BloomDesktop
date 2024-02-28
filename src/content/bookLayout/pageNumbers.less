@@ -47,10 +47,14 @@
             --pageNumber-left-margin
         ) !important; // TODO: why is Bloom-player setting this at all? (wants to put in center)
     }
+    &.side-right:after {
+        right: var(
+            --pageNumber-right-margin
+        ) !important; // allow page number to be on the right
+    }
 
     &.Device16x9Landscape:after,
-    &.Device16x9Portrait:after,
-    &.side-right:after {
+    &.Device16x9Portrait:after {
         // note that here the property has "always"
         left: var(
             --pageNumber-always-left-margin
