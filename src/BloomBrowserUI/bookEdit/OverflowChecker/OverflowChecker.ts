@@ -414,8 +414,12 @@ export default class OverflowChecker {
         // not seem to be an element at all, but some sort of configuration object
         // for the qtip, so trying to retrieve it as an attribute (as the code below does)
         // does not work.
+        // Note that qtipContent.text can be an object or a string, so we need to check
+        // that the startsWith method exists before calling it.  (The check verifies that
+        // it's a string.)  See BL-13126.
         if (
             qtipContent.text &&
+            qtipContent.text.startsWith &&
             qtipContent.text.startsWith('<img data-overflow="true"')
         ) {
             return true;
