@@ -671,7 +671,11 @@ public class AppearanceSettings
         // One idea is to preprocess the theme css, replacing things like `.bloomPage[pageNumber-show] {... }` with `bloom-page {....}` when true.
         // The other idea is to add attributes like `pageNumber-show` or `pageNumber-show-true` to all the bloom-page divs
         bool show;
-        if (bool.TryParse(props["pageNumber-show"].ToString(), out show) && show)
+        if (
+            props.ContainsKey("pageNumber-show")
+            && bool.TryParse(props["pageNumber-show"].ToString(), out show)
+            && show
+        )
         {
             cssBuilder.AppendLine("	--pageNumber-show-multiplicand: 1;");
         }
