@@ -163,4 +163,8 @@ span.bloom-linebreak {
     &.Title-On-Title-Page-style {
         text-wrap: balance;
     }
+    &.Bubble-style {
+        // Ensure that the text wrapping in overlays is stable while editing.  See BL-13135.
+        text-wrap: stable;
+    }
 }
