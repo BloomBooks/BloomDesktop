@@ -1018,10 +1018,28 @@ function handleKeyboardInput(): void {
     }, 500);
 }
 
+function RemoveNonPTags(editableDivHtml: string): string {
+    return editableDivHtml.replace(/<[^p\/].*?>/g, "").replace(/<\/[^p].*?>/g, "");
+}
+
+// Check if the &nbsp; is at the start or end of a paragraph, regardless of any other tags in between (e.g. the empty talking book spans)
+function NbspIsOnEdgeOfParagraph(editableDivHtml: string, nbspIndex: number): boolean {
+    const beforeNbsp = editableDivHtml.substring(0, nbspIndex);
+    const afterNbsp = editableDivHtml.substring(nbspIndex + "&nbsp;".length);
+
+    const beforeNbspWithoutNonPTags = RemoveNonPTags(beforeNbsp).trim();
+    const afterNbspWithoutNonPTags = RemoveNonPTags(afterNbsp).trim();
+
+    return (
+        beforeNbspWithoutNonPTags.match(/<p[^>]*>$/) !== null ||
+        afterNbspWithoutNonPTags.substring(0, 4) === "</p>"
+    );
+}
+
 // Starting with webview2, we were getting scenarios where nbsps were could remain in the div when not wanted.
 // One way to cause this: type two spaces, not at the end of the text box. Then, delete one of them.
 // We want to remove nbsps unless
-// 1. they are at the start or end of the div
+// 1. they are at the start or end of the div or paragraph
 // 2. they are adjacent to a regular space (the browser collapses regular spaces but not other whitespace)
 // 3. they are possibly wanted for French-style punctuation
 // See BL-12391.
@@ -1072,6 +1090,9 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
             return;
         }
         if (j === 0 || j === editableDivText.length - 1) continue;
+        // If the nbsp is the first or last character in a paragraph, don't replace or the space will get lost in whitespace collapse
+        if (NbspIsOnEdgeOfParagraph(editableDivHtml, i)) continue;
+
         if (
             !preserveNbspAfter.includes(editableDivText[j - 1]) &&
             !preserveNbspBefore.includes(editableDivText[j + 1])
