@@ -582,7 +582,7 @@ namespace Bloom.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 dom.RawDom,
                 _bookData,
-                BookInfo.AppearanceSettings.UsingLegacy,
+                BookInfo.AppearanceSettings,
                 Language1Tag,
                 Language2Tag,
                 Language3Tag
@@ -3444,7 +3444,7 @@ namespace Bloom.Book
                 TranslationGroupManager.UpdateContentLanguageClasses(
                     newPageDiv,
                     _bookData,
-                    BookInfo.AppearanceSettings.UsingLegacy,
+                    BookInfo.AppearanceSettings,
                     Language1Tag,
                     Language2Tag,
                     Language3Tag
@@ -4338,7 +4338,7 @@ namespace Bloom.Book
                 TranslationGroupManager.UpdateContentLanguageClasses(
                     div,
                     _bookData,
-                    BookInfo.AppearanceSettings.UsingLegacy,
+                    BookInfo.AppearanceSettings,
                     language1Tag,
                     language2Tag,
                     language3Tag

@@ -72,7 +72,7 @@ namespace BloomTests.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
                 bookData,
-                false,
+                LegacyAppearanceSettings,
                 "xyz",
                 "222",
                 "333"
@@ -269,6 +269,10 @@ namespace BloomTests.Book
                 .HasNoMatchForXpath("//div[@lang='fr' and contains(., 'Mama i tok')]");
         }
 
+        // Currently a brand new AppearanceSettiings object is in legacy mode, and the code we're testing
+        // won't ask it anything once it determines we are in that mode.
+        private AppearanceSettings LegacyAppearanceSettings => new AppearanceSettings();
+
         /// <summary>
         /// The logic is tested below, directly on ShouldNormallyShowEditable().
         /// Here we just need to test the mechanics of adding/removing attributes.
@@ -296,7 +300,7 @@ namespace BloomTests.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
                 bookData,
-                false,
+                LegacyAppearanceSettings,
                 "xyz",
                 "222",
                 "333"
@@ -327,7 +331,7 @@ namespace BloomTests.Book
         {
             var contents =
                 @"<html><body><div class='bloom-page' >
-						<div class='bloom-translationGroup' data-default-languages-legacy='N1,N2'>
+						<div class='bloom-translationGroup' data-default-languages='N1,N2' data-visibility-variable='cover-title-LN-show'>
 							<div class='bloom-editable' lang='xyz'></div>
 							<div class='bloom-editable' lang='fr'></div>
 							<div class='bloom-editable' lang='es'></div>
@@ -345,7 +349,7 @@ namespace BloomTests.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
                 bookData,
-                true,
+                LegacyAppearanceSettings,
                 "xyz",
                 "222",
                 "333"
@@ -372,37 +376,114 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void UpdateContentLanguageClasses_LegacyDataDefault_NotLegacy_RemovesVisibilityOn()
+        public void UpdateContentLanguageClasses_LegacyDataDefault_NotLegacy_SetsVisibilityCodeFromSettings()
         {
-            var contents =
+            var contentsPattern =
                 @"<html><body><div class='bloom-page' >
-						<div class='bloom-translationGroup' data-default-languages-legacy='N1,N2'>
-							<div class='bloom-editable bloom-visibility-code-on' lang='xyz'></div>
-							<div class='bloom-editable bloom-visibility-code-on' lang='fr'></div>
-							<div class='bloom-editable bloom-visibility-code-on' lang='es'></div>
+						<div class='bloom-translationGroup' data-default-languages='{0}' data-visibility-variable='cover-title-LN-show'>
+							<div class='bloom-editable' lang='xyz'></div>
+							<div class='bloom-editable' lang='fr'></div>
+							<div class='bloom-editable' lang='es'></div>
+                            <div class='bloom-editable' lang='z'></div>
+                            <div class='bloom-editable' lang='qed'></div>
 							</div>
 						</div></body></html>";
+            var contents = string.Format(contentsPattern, "V,N1");
             var dom = new XmlDocument();
             dom.LoadXml(contents);
             var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            // Note that we deliberately don't do this: we leave bookData.Language2Tag and Language3Tag null.
+            // The appearance system variables called L2 and L3 refer to Metadata1Language and Metadata2Language.
+            //bookData.SetMultilingualContentLanguages("xyz", "fr", "es");
 
             var pageDiv = (XmlElement)
                 dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+
+            var settings = new AppearanceSettings();
+            settings.UpdateFromJson(
+                @"{
+  ""cssThemeName"": ""default"",
+  ""cover-title-L2-show"": false,
+  ""cover-title-L3-show"": true,
+  ""cover-topic-show"": true,
+  ""cover-languageName-show"": true,
+  ""pageNumber-show"": true
+}"
+            );
 
             // Here the arguments don't matter much. data-default-languages specifies N1, which means the Metadata1Language should
             // be visible, and N2, which currently turns on L3.
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
                 bookData,
-                false,
+                settings,
                 "xyz",
-                "222",
-                "333"
+                "fr",
+                "es"
             );
 
+            // The settings say that L3 should be visible, so it should be on
+            // The settings have nothing to say about L1, so it should be on based on V being in data-default-languages
             AssertThatXmlIn
                 .Dom(dom)
-                .HasNoMatchForXpath("//div[contains(@class, 'bloom-visibility-code')]");
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class, 'bloom-visibility-code-on')]",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(dom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@lang='es' and contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@lang='xyz' and contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
+
+            // Try it again with V turned off. This probably never happens, but it is the only way to test
+            // that the data-default-languages is used as a fall-back when the settings don't specify.
+            contents = string.Format(contentsPattern, "N1,N2");
+            dom.LoadXml(contents);
+            pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+            settings.UpdateFromJson(
+                @"{
+  ""cssThemeName"": ""default"",
+  ""cover-title-L2-show"": true,
+  ""cover-title-L3-show"": false,
+  ""cover-topic-show"": true,
+  ""cover-languageName-show"": true,
+  ""pageNumber-show"": true
+}"
+            );
+
+            // Here the arguments don't matter much. data-default-languages specifies N1, which means the Metadata1Language should
+            // be visible, and N2, which currently turns on L3.
+            TranslationGroupManager.UpdateContentLanguageClasses(
+                pageDiv,
+                bookData,
+                settings,
+                "xyz",
+                "fr",
+                "es"
+            );
+
+            // The settings say that L2 should be visible, so it should be on
+            // The settings have nothing to say about L1, so it should be off based on V not being in data-default-languages
+            AssertThatXmlIn
+                .Dom(dom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(dom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@lang='fr' and contains(@class, 'bloom-visibility-code-on')]",
+                    1
+                );
         }
 
         [Test]
@@ -425,7 +506,7 @@ namespace BloomTests.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
                 bookData,
-                false,
+                LegacyAppearanceSettings,
                 "xyz", /* make trilingual --> */
                 "fr",
                 "es"
@@ -476,7 +557,7 @@ namespace BloomTests.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
                 bookData,
-                false,
+                LegacyAppearanceSettings,
                 "xyz", /* makes bilingual --> */
                 "fr",
                 ""
@@ -518,7 +599,7 @@ namespace BloomTests.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
                 bookData,
-                false,
+                LegacyAppearanceSettings,
                 "xyz",
                 null,
                 null
@@ -554,7 +635,7 @@ namespace BloomTests.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
                 bookData,
-                false,
+                LegacyAppearanceSettings,
                 "xyz",
                 "222",
                 null
@@ -630,7 +711,7 @@ namespace BloomTests.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 bodyDiv,
                 bookData,
-                false,
+                LegacyAppearanceSettings,
                 "xyz",
                 "222",
                 null

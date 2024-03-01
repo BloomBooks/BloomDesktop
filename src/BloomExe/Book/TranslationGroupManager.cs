@@ -128,7 +128,7 @@ namespace Bloom.Book
             TranslationGroupManager.UpdateContentLanguageClasses(
                 wrapper,
                 currentBook.BookData,
-                currentBook.BookInfo.AppearanceSettings.UsingLegacy,
+                currentBook.BookInfo.AppearanceSettings,
                 currentBook.Language1Tag,
                 currentBook.Language2Tag,
                 currentBook.Language3Tag
@@ -231,7 +231,7 @@ namespace Bloom.Book
         public static void UpdateContentLanguageClasses(
             XmlNode elementOrDom,
             BookData bookData,
-            bool usingLegacy,
+            AppearanceSettings settings,
             string language1Tag,
             string language2Tag,
             string language3Tag
@@ -276,32 +276,9 @@ namespace Bloom.Book
             // This is the "code" part of the visibility system: https://goo.gl/EgnSJo
             foreach (XmlElement group in GetTranslationGroups(elementOrDom))
             {
+                // This controls visibility for fields not yet controlled by the Appearance system
+                // (or in legacy mode).
                 var defLangsAttr = HtmlDom.GetAttributeValue(group, "data-default-languages");
-                // We want bloom-visibility-code-on added (where appropriate) if
-                // - we found data-default-languages
-                // - we found data-default-languages-legacy and we're using legacy
-                // - we found neither (see below)
-                // If we found data-default-languages-legacy and we're not using legacy,
-                // we don't want visibility codes, because these fields have other visibility controls
-                // in the Appearance system.
-                // If we found neither data-default-languages attr, previous history requires that we treat the field
-                // as 'auto', that is, we DO want visibility codes, whether or not we're
-                // using legacy. This is slightly unfortunate, since if we ever add
-                // an Appearance setting for such a field, we'll have to add a
-                // data-default-languages-legacy="auto" just to PREVENT the visibility
-                // codes from being added when we're NOT using legacy. Maybe if that ever
-                // happens we'll come up with a better way.
-                // We should not find both, but if we do, the non-legacy one wins.
-                var wantVisibilityCode = !string.IsNullOrEmpty(defLangsAttr);
-                if (!wantVisibilityCode)
-                {
-                    defLangsAttr = HtmlDom.GetAttributeValue(
-                        group,
-                        "data-default-languages-legacy"
-                    );
-                    // The first test here achieves the "we want it if both attrs are missing" behavior described above.
-                    wantVisibilityCode = string.IsNullOrEmpty(defLangsAttr) || usingLegacy;
-                }
                 var dataDefaultLanguages = defLangsAttr.Split(
                     new char[] { ',', ' ' },
                     StringSplitOptions.RemoveEmptyEntries
@@ -314,7 +291,7 @@ namespace Bloom.Book
                         e,
                         contentLanguages,
                         bookData,
-                        wantVisibilityCode,
+                        settings,
                         language2Tag,
                         language3Tag,
                         dataDefaultLanguages
@@ -340,7 +317,7 @@ namespace Bloom.Book
                         contentLanguages,
                         bookData,
                         // The old behavior will do for now, since we don't have Appearance settings for these fields.
-                        true,
+                        settings,
                         language2Tag,
                         language3Tag,
                         dataDefaultLanguages
@@ -365,17 +342,17 @@ namespace Bloom.Book
         }
 
         private static void UpdateContentLanguageClassesOnElement(
-            XmlElement e,
+            XmlElement editable,
             Dictionary<string, string> contentLanguages,
             BookData bookData,
-            bool wantVisibilityCode,
+            AppearanceSettings settings,
             string contentLanguageTag2,
             string contentLanguageTag3,
             string[] dataDefaultLanguages
         )
         {
-            HtmlDom.RemoveClassesBeginingWith(e, "bloom-content");
-            var lang = e.GetAttribute("lang");
+            HtmlDom.RemoveClassesBeginingWith(editable, "bloom-content");
+            var lang = editable.GetAttribute("lang");
 
             //These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.
             //Enhance: this is too complex; the semantics of these overlap with each other and with bloom-visibility-code-on, and with data-language-order.
@@ -383,13 +360,13 @@ namespace Bloom.Book
             string orderClass;
             if (contentLanguages.TryGetValue(lang, out orderClass))
             {
-                HtmlDom.AddClass(e, orderClass); //bloom-content1, bloom-content2, bloom-content3
+                HtmlDom.AddClass(editable, orderClass); //bloom-content1, bloom-content2, bloom-content3
             }
 
             //Enhance: it's even more likely that we can get rid of these by replacing them with bloom-content2, bloom-content3
             if (lang == bookData.MetadataLanguage1Tag)
             {
-                HtmlDom.AddClass(e, "bloom-contentNational1");
+                HtmlDom.AddClass(editable, "bloom-contentNational1");
             }
 
             // It's not clear that this class should be applied to blocks where lang == bookData.Language3Tag.
@@ -400,13 +377,14 @@ namespace Bloom.Book
             // hopefully we can make this distinction clearer and remove Language3Tag here.
             if (lang == bookData.Language3Tag || lang == bookData.MetadataLanguage2Tag)
             {
-                HtmlDom.AddClass(e, "bloom-contentNational2");
+                HtmlDom.AddClass(editable, "bloom-contentNational2");
             }
 
-            HtmlDom.RemoveClassesBeginingWith(e, "bloom-visibility-code");
+            HtmlDom.RemoveClassesBeginingWith(editable, "bloom-visibility-code");
             if (
-                wantVisibilityCode
-                && ShouldNormallyShowEditable(
+                ShouldShowEditable(
+                    editable,
+                    settings,
                     lang,
                     dataDefaultLanguages,
                     contentLanguageTag2,
@@ -415,10 +393,104 @@ namespace Bloom.Book
                 )
             )
             {
-                HtmlDom.AddClass(e, "bloom-visibility-code-on");
+                // Managing the presence of this class is how we control visibility of the various language blocks.
+                // It would be more elegant in some ways in the appearance system to generate a CSS variable
+                // like --cover-title-L2-show and then have basePage.css apply that where appropriate, but
+                // it becomes almost impossible for C# code to know what elements are actually visible, and that
+                // is important in all kinds of ways. For example, we only export visible stuff (or sometimes stuff
+                // the user could make visible) to most publications. Source bubbles only show what is NOT
+                // already visible in the page content. And so on. So we decided to stick with a variable that
+                // controls visibility in a straightforward, unconditional way, which means C# code can just look
+                // to see whether the class is there or not.
+                HtmlDom.AddClass(editable, "bloom-visibility-code-on");
             }
 
-            UpdateRightToLeftSetting(bookData, e, lang);
+            UpdateRightToLeftSetting(bookData, editable, lang);
+        }
+
+        /// <summary>
+        /// The master routine that determines whether a given editable block should be visible.
+        /// Most of the arguments are unchanged from the list needed by the pre-existing ShouldNormallyShowEditable.
+        /// I think some of them are probably redundant and could be recomputed from the element and the bookData,
+        /// but it may be slightly more efficient to do so just once for the group.
+        /// </summary>
+        static bool ShouldShowEditable(
+            XmlElement e,
+            AppearanceSettings settings,
+            string lang,
+            string[] dataDefaultLanguages,
+            string contentLanguageTag2,
+            string contentLanguageTag3, // these are affected by the multilingual settings for this book
+            BookData bookData
+        )
+        {
+            if (settings.UsingLegacy)
+            {
+                // ignore appearance settings in legacy mode
+                return ShouldNormallyShowEditable(
+                    lang,
+                    dataDefaultLanguages,
+                    contentLanguageTag2,
+                    contentLanguageTag3,
+                    bookData
+                );
+            }
+
+            var visibilityVariable = (e.ParentNode as XmlElement).GetAttribute(
+                "data-visibility-variable"
+            );
+            if (string.IsNullOrEmpty(visibilityVariable))
+            {
+                // visibility of this element is not controlled by the Appearance system
+                return ShouldNormallyShowEditable(
+                    lang,
+                    dataDefaultLanguages,
+                    contentLanguageTag2,
+                    contentLanguageTag3,
+                    bookData
+                );
+            }
+
+            string whichLang;
+            if (lang == bookData.Language1Tag)
+            {
+                whichLang = "L1";
+            }
+            // It's surprising that e.g. conver-title-L2-show controls whether we show MetadataLanguage1Tag
+            // rather than Language2Tag. But we haven't fully surfaced the distinction in the UI. A typical
+            // user thinks of the book as having the three (or two, or one) languages defined in the
+            // collection, and that's what MetadataLanguage{1,2}Tag give. Language2Tag is only defined
+            // if the book has two or more languages "turned on" for content pages, and is not even
+            // necessarily the second language in the collection. So, for now, we'll keep using the
+            // MetadataLanguage1Tag and MetadataLanguage2Tag values here. This is consistent with
+            // the typical use of N1 and N2 (rather than L2 and L3) in data-default-languages.
+            else if (lang == bookData.MetadataLanguage1Tag)
+            {
+                whichLang = "L2";
+            }
+            else if (lang == bookData.MetadataLanguage2Tag)
+            {
+                whichLang = "L3";
+            }
+            else
+            {
+                return false;
+            }
+
+            var varName = visibilityVariable.Replace("LN", whichLang);
+            // If the variable is defined, that confirms that the appearance system is controlling
+            // the visibility of this element, so simply return the result it gives.
+            if (settings.TryGetBooleanPropertyValue(varName, out bool result))
+                return result;
+            // If we don't have a variable controlling this language (e.g., cover-title-L1-show
+            // does not exist), use the default behavior.
+            return ShouldNormallyShowEditable(
+                lang,
+                dataDefaultLanguages,
+                contentLanguageTag2,
+                contentLanguageTag3,
+                bookData
+            );
         }
 
         private static void UpdateRightToLeftSetting(BookData bookData, XmlElement e, string lang)
