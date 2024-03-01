@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
@@ -11,6 +12,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -204,7 +206,8 @@ namespace Bloom.WebLibraryIntegration
             CollectionSettings collectionSettings,
             string metadataLang1Code,
             string metadataLang2Code,
-            bool isForBulkUpload = false
+            bool isForBulkUpload = false,
+            bool changeUploader = false
         )
         {
             var htmlFile = BookStorage.FindBookHtmlInFolder(bookFolder);
@@ -350,7 +353,8 @@ namespace Bloom.WebLibraryIntegration
                         BloomLibraryBookApiClient.FinishBookUpload(
                             progress,
                             transactionId,
-                            metadata.WebDataJson
+                            metadata.WebDataJson,
+                            changeUploader
                         );
 
                         bookObjectId = transactionId;
@@ -670,21 +674,49 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
-        public bool IsBookOnServer(string bookPath)
+        /// <returns>book record of a book uploaded by the current user with the right ID, or null.
+        /// If there are other books with the same ID, haveCollidingBooks is set true.</returns>
+        public dynamic GetBookOnServer(string bookInstanceId, out bool haveCollidingBooks)
         {
-            var metadata = BookMetaData.FromFile(
-                bookPath.CombineForPath(BookInfo.MetaDataFileName)
+            var matchingBooks = GetBooksOnServer(bookInstanceId);
+            // We are counting on there not being more than one book uploaded by any given user
+            // with the same ID; we have prevented that from the earliest days of book uploading.
+            var result = matchingBooks.FirstOrDefault(
+                b => b.uploader?.email == Settings.Default.WebUserId
             );
-            return BloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id) != null;
+            if (result != null)
+            {
+                // If there is ANY book with the right ID and uploader, we return that as the
+                // one that this user should be able to update. That's not considered a collision,
+                // unless there are OTHER books with the same ID.
+                haveCollidingBooks = matchingBooks.Length > 1;
+                return result;
+            }
+            // If there is no book with the right ID and uploader, then ANY book with that ID is a collision.
+            haveCollidingBooks = matchingBooks.Length > 0;
+            return null;
         }
 
-        /// <returns>book record or null</returns>
-        public dynamic GetBookOnServer(string bookInstanceId, bool includeLanguageInfo = false)
+        public dynamic GetBookPermissions(string bookObjectId)
         {
-            return BloomLibraryBookApiClient.GetSingleBookRecord(
+            return BloomLibraryBookApiClient.GetBookPermissions(bookObjectId);
+        }
+
+        public dynamic[] GetBooksOnServer(string bookInstanceId, bool includeLanguageInfo = false)
+        {
+            var json = BloomLibraryBookApiClient.GetBookRecords(
                 bookInstanceId,
-                includeLanguageInfo: includeLanguageInfo
+                includeLanguageInfo,
+                true
             );
+            // The json is always an array. But it's a bit easier to work with if we convert it
+            // to a regular C# array, even leaving the individual objects as dynamic.
+            var result = new dynamic[json.Count];
+            for (int i = 0; i < json.Count; i++)
+            {
+                result[i] = json[i];
+            }
+            return result;
         }
 
         internal bool CheckAgainstHashFileOnS3(
@@ -776,7 +808,8 @@ namespace Bloom.WebLibraryIntegration
             IProgress progress,
             PublishModel publishModel,
             BookUploadParameters bookParams,
-            string existingBookObjectIdOrNull
+            string existingBookObjectIdOrNull,
+            bool changeUploader = false
         )
         {
             // this (isForPublish:true) is dangerous and the product of much discussion.
@@ -914,7 +947,8 @@ namespace Bloom.WebLibraryIntegration
                     book.CollectionSettings,
                     book.BookData.MetadataLanguage1Tag,
                     book.BookData.MetadataLanguage2Tag,
-                    bookParams.IsForBulkUpload
+                    bookParams.IsForBulkUpload,
+                    changeUploader
                 );
 
                 Debug.Assert(

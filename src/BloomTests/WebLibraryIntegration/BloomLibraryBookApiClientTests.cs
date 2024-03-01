@@ -89,7 +89,7 @@ namespace BloomTests.WebLibraryIntegration
             var id = CreateBookRecord();
             var bookjson = _client.GetSingleBookRecord(id);
 
-            Assert.AreEqual(id, bookjson.bookInstanceId.Value);
+            Assert.AreEqual(id, bookjson.instanceId.Value);
 
             // Partial matches are no good
             Assert.IsNull(_client.GetSingleBookRecord(new Guid().ToString()));

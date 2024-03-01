@@ -67,9 +67,7 @@ namespace Bloom.Book
             var inCirculation =
                 (bookState.inCirculation == null)
                 || bookState.inCirculation.ToString().ToLowerInvariant() == "true";
-            var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(
-                bookState.objectId.ToString()
-            );
+            var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(bookState.id.ToString());
             return new BloomLibraryStatus(draft, !inCirculation, harvesterState, url);
         }
 
