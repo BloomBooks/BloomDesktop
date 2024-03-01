@@ -24,7 +24,7 @@ mixin mxb-frontCover-scripture
 			+cover-branding-top
 
 		block cover-title
-			+field-prototypeDeclaredExplicity-legacy("V,N1").bookTitle
+			+field-prototypeDeclaredExplicity-appearance("V,N1", "cover-title-LN-show").bookTitle
 				label.bubble Book title in {lang}
 				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
 

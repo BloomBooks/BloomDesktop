@@ -543,10 +543,6 @@ public class AppearanceSettings
 
         if (RobustFile.Exists(jsonPath))
         {
-            // We can't actually be absolutely sure that appearance.css is up to date with the json file;
-            // we'll risk assuming it is.
-            _areSettingsConsistentWithFiles = true;
-
             var json = RobustFile.ReadAllText(jsonPath);
             // remove obsolete (renamed in alpha) properties. (They would mostly be ignored, but would
             // trigger warnings when writing the settings back out.)
@@ -575,6 +571,30 @@ public class AppearanceSettings
     public string GetCssOwnPropsDeclaration(AppearanceSettings parent = null)
     {
         return GetCssOwnPropsDeclaration(_properties, parent);
+    }
+
+    public bool TryGetBooleanPropertyValue(string propertyName, out bool value)
+    {
+        var props = ((IDictionary<string, object>)_properties);
+        if (!props.ContainsKey(propertyName))
+        {
+            value = false;
+            return false;
+        }
+
+        value = (bool)props[propertyName];
+
+        // This seems to be what we need instead if we update properties one at a time from the dynamic object
+        // passed to updateFromDynamic.
+        //var val = props[propertyName] as Newtonsoft.Json.Linq.JValue;
+        //if (val == null)
+        //{
+        //    value = false;
+        //    return false;
+        //}
+        //value = (bool)val.Value;
+
+        return true;
     }
 
     /// <summary>
@@ -804,6 +824,9 @@ public class AppearanceSettings
         {
             Properties[property.Key] = property.Value;
         }
+        // We can't actually be absolutely sure that appearance.css is up to date with the json file;
+        // we'll risk assuming it is.
+        _areSettingsConsistentWithFiles = true;
     }
 
     /// <summary>
@@ -811,10 +834,15 @@ public class AppearanceSettings
     /// </summary>
     internal void UpdateFromDynamic(Newtonsoft.Json.Linq.JObject replacement)
     {
-        foreach (var property in replacement)
-        {
-            ((IDictionary<string, object>)_properties)[property.Key] = property.Value;
-        }
+        UpdateFromJson(replacement.ToString());
+        // The following was previously used, but it produces a subtly different result from the above
+        // which is how we read the Json from the file. I think what's going on is that turning the
+        // dynamic object into KeyValuePairs requires the booleans to get boxed, and they stay that way.
+        // That causes problems when TryGetBooleanPropertyValue is trying to read them.
+        //foreach (var property in replacement)
+        //{
+        //    ((IDictionary<string, object>)_properties)[property.Key] = property.Value;
+        //}
     }
 
     public static IEnumerable<string> GetAppearanceThemeFileNames()

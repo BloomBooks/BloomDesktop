@@ -526,23 +526,6 @@ div[data-book*="branding"] {
 
 @import "langVisibility.less";
 
-/* these are all controlled by appearance.css (which are set by the user through settings) */
-.Title-On-Cover-style.bloom-contentNational1 {
-    display: var(--cover-title-L2-show);
-}
-
-.Title-On-Cover-style.bloom-contentNational2 {
-    display: var(--cover-title-L3-show);
-}
-
-// As of January 2024 we don't have anything that sets this variable, but we needed something to
-// MAKE the cover title show up in L1. An invalid variable value causes the default (block)
-// to be used, so it is effective, and if we ever allow control of the variable (or someone
-// wants to put it in a custom stylesheet), it will work.
-.Title-On-Cover-style.bloom-content1 {
-    display: var(--cover-title-L1-show);
-}
-
 .coverBottomBookTopic {
     display: var(--cover-topic-show);
 }
