@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
+using System.Linq;
 using Bloom.Book;
 using BloomTemp;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using SIL.Extensions;
 using SIL.IO;
 
 namespace BloomTests.Book
@@ -35,29 +37,29 @@ namespace BloomTests.Book
         [Test]
         public void GetCssOwnPropsDeclaration_HasCorrectTitleFieldsVariableValues()
         {
-            var appearance = new AppearanceSettings();
+            var appearance = new AppearanceSettingsTest();
             // This comes from a default in the propertyDefinitions. If we switch to making the
             // default unspecified, this test will need to change.
             Assert.That(
                 appearance.GetCssOwnPropsDeclaration(),
-                Does.Contain($"--cover-title-L2-show: doShow-css-will-ignore-this-and-use-default")
+                Does.Contain($"--boolean-test-L2-show: doShow-css-will-ignore-this-and-use-default")
             );
-            //appearance.Update(new { cover-title-L2-show = false, foo = "blah" });
-            appearance.UpdateFromJson("{\"cover-title-L2-show\":false}");
+            //appearance.Update(new { boolean-test-L2-show = false, foo = "blah" });
+            appearance.UpdateFromJson("{\"boolean-test-L2-show\":false}");
             Assert.That(
                 appearance.GetCssOwnPropsDeclaration(),
-                Does.Contain("--cover-title-L2-show: none;")
+                Does.Contain("--boolean-test-L2-show: none;")
             );
         }
 
         [Test]
         public void GetCssOwnPropsDeclaration_WithBrandingAndXmatter_ProducesCorrectCss()
         {
-            var appearance = new AppearanceSettings();
+            var appearance = new AppearanceSettingsTest();
             dynamic brandingSettings = JsonConvert.DeserializeObject<ExpandoObject>(
                 @"{
-  ""cover-title-L2-show"": false,
-  ""cover-title-L3-show"": true,
+  ""boolean-test-L2-show"": false,
+  ""boolean-test-L3-show"": true,
   ""cover-topic-show"": false,
   ""cover-languageName-show"": false
 }"
@@ -92,15 +94,15 @@ namespace BloomTests.Book
 
             Assert.That(
                 ownCss,
-                Does.Contain("--cover-title-L2-show: doShow-css-will-ignore-this-and-use-default;")
+                Does.Contain("--boolean-test-L2-show: doShow-css-will-ignore-this-and-use-default;")
             );
-            Assert.That(ownCss, Does.Contain($"--cover-title-L3-show: none"));
+            Assert.That(ownCss, Does.Contain($"--boolean-test-L3-show: none"));
 
-            Assert.That(brandingCss, Does.Contain($"--cover-title-L2-show: none"));
+            Assert.That(brandingCss, Does.Contain($"--boolean-test-L2-show: none"));
 
             Assert.That(
                 brandingCss,
-                Does.Contain("--cover-title-L3-show: doShow-css-will-ignore-this-and-use-default;")
+                Does.Contain("--boolean-test-L3-show: doShow-css-will-ignore-this-and-use-default;")
             );
             Assert.That(brandingCss, Does.Contain("--cover-topic-show: none;"));
 
@@ -113,27 +115,28 @@ namespace BloomTests.Book
         [Test]
         public void GetCssOwnPropsDeclaration_ItemVisibility_ChildOverrides_UsesChildValue()
         {
-            var collectionAppearance = new AppearanceSettings();
-            collectionAppearance.UpdateFromJson("{\"cover-title-L2-show\":false}");
-            var bookAppearance = new AppearanceSettings();
+            var collectionAppearance = new AppearanceSettingsTest();
+            collectionAppearance.UpdateFromJson("{\"boolean-test-L2-show\":false}");
+            var bookAppearance = new AppearanceSettingsTest();
             bookAppearance.UpdateFromJson(
-                "{\"groupsToOverrideFromParent\":[\"coverFields\"], \"cover-title-L2-show\":true}"
+                "{\"groupsToOverrideFromParent\":[\"coverFields\"], \"boolean-test-L2-show\":true}"
             );
             Assert.IsTrue(
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
-                    .IndexOf($"--cover-title-L2-show: {AppearanceSettings.kDoShowValueForDisplay};")
-                    > -1
+                    .IndexOf(
+                        $"--boolean-test-L2-show: {AppearanceSettings.kDoShowValueForDisplay};"
+                    ) > -1
             );
 
             bookAppearance.UpdateFromJson(
-                "{\"groupsToOverrideFromParent\":[\"coverFields\"],\"cover-title-L2-show\":false}"
+                "{\"groupsToOverrideFromParent\":[\"coverFields\"],\"boolean-test-L2-show\":false}"
             );
 
             Assert.IsTrue(
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
-                    .IndexOf($"--cover-title-L2-show: {AppearanceSettings.kHideValueForDisplay};")
+                    .IndexOf($"--boolean-test-L2-show: {AppearanceSettings.kHideValueForDisplay};")
                     > -1,
                 bookAppearance.GetCssOwnPropsDeclaration(collectionAppearance).ToString()
             );
@@ -142,29 +145,30 @@ namespace BloomTests.Book
         [Test]
         public void GetCssOwnPropsDeclaration_ItemVisibility_NoOverride_UsesParentValue()
         {
-            var collectionAppearance = new AppearanceSettings();
+            var collectionAppearance = new AppearanceSettingsTest();
 
-            var bookAppearance = new AppearanceSettings();
+            var bookAppearance = new AppearanceSettingsTest();
             bookAppearance.UpdateFromJson(
-                "{\"groupsToOverrideFromParent\":[], \"cover-title-L2-show\":true}"
+                "{\"groupsToOverrideFromParent\":[], \"boolean-test-L2-show\":true}"
             );
-            collectionAppearance.UpdateFromJson("{\"cover-title-L2-show\":false}");
+            collectionAppearance.UpdateFromJson("{\"boolean-test-L2-show\":false}");
             Assert.IsTrue(
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
-                    .IndexOf($"--cover-title-L2-show: {AppearanceSettings.kHideValueForDisplay};")
+                    .IndexOf($"--boolean-test-L2-show: {AppearanceSettings.kHideValueForDisplay};")
                     > -1
             );
 
-            collectionAppearance.UpdateFromJson("{\"cover-title-L2-show\":true}");
+            collectionAppearance.UpdateFromJson("{\"boolean-test-L2-show\":true}");
             bookAppearance.UpdateFromJson(
-                "{\"groupsToOverrideFromParent\":[\"some-randome-thing\"],\"cover-title-L2-show\":false}"
+                "{\"groupsToOverrideFromParent\":[\"some-randome-thing\"],\"boolean-test-L2-show\":false}"
             );
             Assert.IsTrue(
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
-                    .IndexOf($"--cover-title-L2-show: {AppearanceSettings.kDoShowValueForDisplay};")
-                    > -1,
+                    .IndexOf(
+                        $"--boolean-test-L2-show: {AppearanceSettings.kDoShowValueForDisplay};"
+                    ) > -1,
                 bookAppearance.GetCssOwnPropsDeclaration(collectionAppearance).ToString()
             );
         }
@@ -259,13 +263,13 @@ namespace BloomTests.Book
         [Test]
         public void ToCss_ContainsSettingsFromJson()
         {
-            var settings = new AppearanceSettings();
+            var settings = new AppearanceSettingsTest();
             settings.UpdateFromJson(
                 @"
 {
   ""cssThemeName"": ""default"",
-  ""cover-title-L2-show"": false,
-  ""cover-title-L3-show"": true,
+  ""boolean-test-L2-show"": false,
+  ""boolean-test-L3-show"": true,
   ""cover-topic-show"": true,
   ""cover-languageName-show"": false
 }"
@@ -275,10 +279,10 @@ namespace BloomTests.Book
                 new string[] { "/* From this book's appearance settings */" },
                 StringSplitOptions.None
             )[1];
-            Assert.That(fromSettings, Does.Contain("--cover-title-L2-show: none;"));
+            Assert.That(fromSettings, Does.Contain("--boolean-test-L2-show: none;"));
             Assert.That(
                 fromSettings,
-                Does.Contain("--cover-title-L3-show: doShow-css-will-ignore-this-and-use-default;")
+                Does.Contain("--boolean-test-L3-show: doShow-css-will-ignore-this-and-use-default;")
             );
             Assert.That(
                 fromSettings,
@@ -328,7 +332,7 @@ namespace BloomTests.Book
             _tempFolder = new TemporaryFolder("GetThemeAndSubstituteCssSuccessTests");
             _bookFolder = _tempFolder.Combine("book");
             Directory.CreateDirectory(_bookFolder);
-            _settings = new AppearanceSettings();
+            _settings = new AppearanceSettingsTest();
             var cssFilesToCheck = new[]
             {
                 Tuple.Create(
@@ -345,7 +349,7 @@ namespace BloomTests.Book
             _settings.UpdateFromJson(jsonSettings.ToString());
             _settings.WriteToFolder(_bookFolder);
             _settings.WriteCssToFolder(_bookFolder);
-            _resultingAppearance = new AppearanceSettings();
+            _resultingAppearance = new AppearanceSettingsTest();
             _resultingAppearance.UpdateFromFolder(_bookFolder);
             _resultingAppearance.Initialize(
                 new[]
@@ -506,12 +510,6 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void CssOfChosenTheme_DoesNotOverrideTitleVisibility()
-        {
-            Assert.That(_cssOfEbookZeroMarginTheme, Does.Not.Contain("--cover-title-L2-show:")); // not overridden in the efl-zero-margin-ebook theme
-        }
-
-        [Test]
         public void CssOfSettingsObject_OverridesMargin()
         {
             Assert.That(_cssOfSettingsObject, Does.Contain("--page-margin-top: 15mm;"));
@@ -524,8 +522,26 @@ namespace BloomTests.Book
             // If we decide to support a "not specified" value, we'll need to change this test.
             Assert.That(
                 _cssOfSettingsObject,
-                Does.Contain("--cover-title-L2-show: doShow-css-will-ignore-this-and-use-default")
+                Does.Contain("--boolean-test-L2-show: doShow-css-will-ignore-this-and-use-default")
             );
         }
+    }
+}
+
+/// <summary>
+/// A class for testing the AppearanceSettings class. It is a subclass of AppearanceSettings so that
+/// we can add a couple of spurious properties to it for testing. These properties replace the cover-title-LX-show
+/// properties, which we don't want to count on in testing CssDisplayVariableDef, since we are no longer counting
+/// on generated variables to control visibility of those fields, and may stop generating them altogether.
+/// </summary>
+public class AppearanceSettingsTest : AppearanceSettings
+{
+    public AppearanceSettingsTest()
+    {
+        var testDef1 = new CssDisplayVariableDef("boolean-test-L2-show", "coverFields", true);
+        var testDef2 = new CssDisplayVariableDef("boolean-test-L3-show", "coverFields", false);
+        propertyDefinitions = propertyDefinitions.Concat(new[] { testDef1, testDef2, }).ToArray();
+        testDef1.SetDefault(_properties);
+        testDef2.SetDefault(_properties);
     }
 }
