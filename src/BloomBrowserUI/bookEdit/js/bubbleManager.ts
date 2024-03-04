@@ -193,6 +193,17 @@ export class BubbleManager {
                     x => x.getAttribute("lang") === overlayLang
                 ).length > 0
             ) {
+                if (!wrapperBox.style.height.endsWith("px")) {
+                    // Some sort of legacy situation; for a while we had all the placements as percentages.
+                    // This will typically not move it, but will force it to the new system of placement
+                    // by pixel. Don't want to do this if we don't have to, because there could be rounding
+                    // errors that would move it very slightly.
+                    this.setTextboxPosition(
+                        $(wrapperBox as HTMLElement),
+                        wrapperBox.offsetLeft - container.offsetLeft,
+                        wrapperBox.offsetTop - container.offsetTop
+                    );
+                }
                 const oldHeight = this.pxToNumber(wrapperBox.style.height);
                 wrapperBox.style.height = oldHeight + 2 * delta + "px";
                 const oldWidth = this.pxToNumber(wrapperBox.style.width);
