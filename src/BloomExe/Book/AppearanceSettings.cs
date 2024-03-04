@@ -104,7 +104,7 @@ public class AppearanceSettings
     public bool IsInitialized { get; private set; }
 
     // create an array of properties and fill it in
-    private PropertyDef[] propertyDefinitions = new PropertyDef[]
+    protected PropertyDef[] propertyDefinitions = new PropertyDef[]
     {
         // this one is special because it doesn't correspond to a CSS variable. Instead, we will copy the contents of named file as rules at the end of the CSS file.
         // The default here is rarely if ever relevant. Usually a newly created instance will be initialized from a folder, and the default will be overwritten,
@@ -936,7 +936,7 @@ public class AppearanceSettings
     }
 }
 
-abstract class PropertyDef
+public abstract class PropertyDef
 {
     public string Name;
     public dynamic DefaultValue;
@@ -954,9 +954,9 @@ abstract class PropertyDef
     public abstract string GetCssVariableDeclaration(dynamic property);
 }
 
-abstract class CssPropertyDef : PropertyDef { }
+public abstract class CssPropertyDef : PropertyDef { }
 
-class StringPropertyDef : PropertyDef
+public class StringPropertyDef : PropertyDef
 {
     public StringPropertyDef(string name, string overrideGroup, string defaultValue)
     {
@@ -971,7 +971,7 @@ class StringPropertyDef : PropertyDef
     }
 }
 
-class CssStringVariableDef : CssPropertyDef
+public class CssStringVariableDef : CssPropertyDef
 {
     public CssStringVariableDef(string name, string overrideGroup, string defaultValue = null)
     {
@@ -991,7 +991,7 @@ class CssStringVariableDef : CssPropertyDef
 /// <summary>
 /// variables that can be used in rules like ` .something { display: var(--cover-topic-show) }`
 /// </summary>
-class CssDisplayVariableDef : CssPropertyDef
+public class CssDisplayVariableDef : CssPropertyDef
 {
     public string TrueValue;
     public string FalseValue;
