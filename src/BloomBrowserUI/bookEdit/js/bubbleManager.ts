@@ -194,7 +194,7 @@ export class BubbleManager {
                 ).length > 0
             ) {
                 if (!wrapperBox.style.height.endsWith("px")) {
-                    // Some sort of legacy situation; for a while we had all the placemnts as percentages.
+                    // Some sort of legacy situation; for a while we had all the placements as percentages.
                     // This will typically not move it, but will force it to the new system of placement
                     // by pixel. Don't want to do this if we don't have to, because there could be rounding
                     // errors that would move it very slightly.
