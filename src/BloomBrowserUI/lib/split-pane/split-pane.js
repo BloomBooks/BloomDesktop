@@ -15,6 +15,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 
 import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
+import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 
 (function($) {
     $.fn.splitPane = function() {
@@ -761,6 +762,9 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             return -1;
         }
         const horizontal = isPaneHorizontal(splitPane);
+        const splitPaneComponent = img.closest(".split-pane-component"); // the element that has the percent
+        const scale = EditableDivUtils.getPageScale();
+
         if (horizontal) {
             const width = splitPane.offsetWidth;
             const height = isForSquareSplit
@@ -773,7 +777,21 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             // if (isForFirstChildPane) {
             //     height += 3;
             // }
-            return (height * 100) / splitPane.offsetHeight;
+            // This compensates for any padding between the element on which we set the percent
+            // and the image container whose height we are setting.
+            // (Apart from the immediate child, it would also handle margin, but we're not
+            // currently using margin to space things.)
+            // (This assumes padding is set with some absolute unit, not a percentage. If the padding is a percentage,
+            // this won't work quite right, though repeated attempts may improve things. Unfortunately there's no
+            // obvious way even to detect percentage padding, let alone to handle it.)
+            let extraHeight = 0;
+            if (splitPaneComponent) {
+                extraHeight =
+                    (splitPaneComponent.offsetHeight -
+                        imageContainer.offsetHeight) /
+                    scale;
+            }
+            return ((height + extraHeight) * 100) / splitPane.offsetHeight;
         } else {
             const height = splitPane.offsetHeight;
             const width = isForSquareSplit
@@ -783,7 +801,16 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             // if (isForFirstChildPane) {
             //     width += 3;
             // }
-            return (width * 100) / splitPane.offsetWidth;
+            // This compensates for any padding between the element on which we set the percent
+            // and the image container whose width we are setting. See more detailed comment on the height version.
+            let extraWidth = 0;
+            if (splitPaneComponent) {
+                extraWidth =
+                    (splitPaneComponent.offsetWidth -
+                        imageContainer.offsetWidth) /
+                    scale;
+            }
+            return ((width + extraWidth) * 100) / splitPane.offsetWidth;
         }
     }
 
