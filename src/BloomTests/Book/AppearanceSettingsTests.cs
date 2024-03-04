@@ -483,11 +483,11 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void CssOfDefaultTheme_SetsDefaultTitleVisibility()
+        public void CssOfDefaultTheme_SetsDefaultTopicVisibility()
         {
             Assert.That(
                 _cssOfDefaultTheme,
-                Does.Contain("--cover-title-L2-show: doShow-css-will-ignore-this-and-use-default")
+                Does.Contain("--cover-topic-show: doShow-css-will-ignore-this-and-use-default")
             );
         }
 
