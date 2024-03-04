@@ -500,7 +500,7 @@ namespace Bloom.WebLibraryIntegration
             // So all paths which don't allow us to check need to throw.
             // Note that all this gets completely reworked in 5.7, so we don't have to live with this very long.
 
-            if (!UrlLookup.CheckGeneralInternetAvailability(false))
+            if (!UrlLookup.CheckGeneralInternetAvailability(true))
             {
                 SIL.Reporting.Logger.WriteEvent(
                     "Internet was unavailable when trying to get book records."
@@ -594,7 +594,7 @@ namespace Bloom.WebLibraryIntegration
                 $"DEBUG BloomParseClient.GetLibraryStatusForBooks(): {bookInfos.Count} books"
             );
             var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
-            if (!UrlLookup.CheckGeneralInternetAvailability(false))
+            if (!UrlLookup.CheckGeneralInternetAvailability(true))
                 return bloomLibraryStatusesById;
 
             List<string> bookInstanceIds = bookInfos.Select(book => book.Id).ToList();
