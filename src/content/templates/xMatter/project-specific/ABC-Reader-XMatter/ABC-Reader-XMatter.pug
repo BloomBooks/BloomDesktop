@@ -91,7 +91,7 @@ block append stylesheets
 block cover-title
 	.titleAndNumberCircle
 		//- show title in Vernacular only
-		+field-prototypeDeclaredExplicity-appearance("V", "cover-title-LN-show").bookTitle
+		+field-prototypeDeclaredExplicitly-appearance("V", "cover-title-LN-show").bookTitle
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
 			block cover-title
