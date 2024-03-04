@@ -696,7 +696,8 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
                 display: flex;
                 flex-direction: column;
                 width: 200px; // todo: what should this be?
-                padding: 0 10px; // allow space for tooltips
+                padding: 0 10px; // allow space for slider knob image
+                margin-right: 1.5em; // allow space for the slider knob tooltip (BL-13067)
             `}
         >
             <Typography
