@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -566,9 +567,38 @@ namespace Bloom.Publish.BloomPub
 
             AddDistributionFile(modifiedBookFolderPath, creator, settings);
 
+            CopyPreserveCoverColorMetadataToPages(modifiedBook);
+
             modifiedBook.Save();
 
             return modifiedBook;
+        }
+
+        /// <summary>
+        /// Copy the value of the meta tag "preserveCoverColor" to the data-preservecovercolor attribute of the
+        /// outside back cover page of the book.  This is used to adjust the color of the back cover in BloomReader
+        /// and other BloomPub viewers.  When preserveCoverColor is true, the back cover is usually black, but
+        /// some brandings may need to adjust this.  See BL-13138.
+        /// </summary>
+        private static void CopyPreserveCoverColorMetadataToPages(Book.Book book)
+        {
+            var metaNodes = book.RawDom.SafeSelectNodes("/html/head/meta[@name='preserveCoverColor']");
+            if (metaNodes.Count == 0)
+                return;
+            var preserveCoverColor = metaNodes[0].GetStringAttribute("content");
+            if (preserveCoverColor == "true")
+            {
+                foreach (var page in book.GetPageElements().Cast<XmlElement>())
+                {
+                    var classes = page.GetAttribute("class");
+                    if (String.IsNullOrEmpty(classes))
+                        continue;
+                    if (classes.Contains("coverColor") && classes.Contains("outsideBackCover"))
+                    {
+                        page.SetAttribute("data-preserveCoverColor", "true");
+                    }
+                }
+            }
         }
 
         /// <summary>
