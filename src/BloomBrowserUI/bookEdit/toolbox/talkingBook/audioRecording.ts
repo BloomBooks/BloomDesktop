@@ -509,6 +509,7 @@ export default class AudioRecording {
     // Called by TalkingBookModel.detachFromPage(), which is called when changing tools, hiding the toolbox,
     // or saving (leaving) pages.
     public removeRecordingSetup() {
+        this.removeAudioCurrentFromPageDocBody();
         const page = this.getPageDocBodyJQuery();
         page.find(kAudioCurrentClassSelector)
             .removeClass(kAudioCurrent)
@@ -1012,7 +1013,21 @@ export default class AudioRecording {
                 );
                 iconHolder.classList.add("bloom-ui-current-audio-marker");
                 iconHolder.classList.add("bloom-ui"); // makes sure it never becomes part of saved document.
-                newElement.parentElement?.insertBefore(iconHolder, newElement);
+                // If we're recording by text-box, we want the icon to be at the beginning of the text box,
+                // but we also want it inside the text-box div.  Otherwise, the appearance system introduced
+                // by Bloom 5.7 will cause a gap to appear between the invisible icon and the text, shifting
+                // the text down while it is being recorded.  See BL-13128.
+                // (The icon doesn't actually display for whole text box recording or for the first sentence
+                // of sentence-by-sentence recording, but that's a separate issue that makes the text shift
+                // even more mysterious.)
+                if (newElement.tagName === "DIV") {
+                    newElement.insertBefore(iconHolder, newElement.firstChild);
+                } else {
+                    newElement.parentElement?.insertBefore(
+                        iconHolder,
+                        newElement
+                    );
+                }
             }
         }
 
