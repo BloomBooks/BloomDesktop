@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -60,9 +61,61 @@ namespace Bloom.History
 				{
 					var events = db.Table<BookHistoryEvent>().ToList();
 					db.Close();
+					FixEventTypesForEnumerationChange(events);
 					return events;
 				}
 			}
+		}
+
+		/// <summary>
+		/// The BookHistoryEventType enumeration was changed in Bloom 5.6 by adding a new value at
+		/// the beginning instead of the end.  This broke all of the existing history event types.
+		/// This method attempts to repair that breakage while reading the data from the history
+		/// database.
+		/// </summary>
+		/// <remarks>
+		/// See BL-13140.  Better heuristics are welcome, if you can think of any.
+		/// </remarks>
+		public static void FixEventTypesForEnumerationChange(List<BookHistoryEvent> events)
+		{
+			events.ForEach(ev =>
+			{
+				if (String.IsNullOrEmpty(ev.BloomVersion) ||
+					Regex.IsMatch(ev.BloomVersion, "^5\\.[0-5]\\.", RegexOptions.CultureInvariant) ||
+					// Some events with the broken type may have crept in while Bloom 5.6 was in alpha before
+					// the change was made to the BookHistoryEventType enumeration.
+					(Regex.IsMatch(ev.BloomVersion, "^5\\.6\\.1[0-9][0-9][0-9]\\.", RegexOptions.CultureInvariant) &&
+						ev.BloomVersion.CompareTo("5.6.1055") < 0))
+				{
+					switch (ev.Type)
+					{
+						case BookHistoryEventType.CheckOut:
+							ev.Type = BookHistoryEventType.CheckIn;
+							break;
+						case BookHistoryEventType.CheckIn:
+							ev.Type = BookHistoryEventType.Created;
+							break;
+						case BookHistoryEventType.Created:
+							ev.Type = BookHistoryEventType.Renamed;
+							break;
+						case BookHistoryEventType.Renamed:
+							ev.Type = BookHistoryEventType.Uploaded;
+							break;
+						case BookHistoryEventType.Uploaded:
+							ev.Type = BookHistoryEventType.ForcedUnlock;
+							break;
+						case BookHistoryEventType.ForcedUnlock:
+							ev.Type = BookHistoryEventType.ImportSpreadsheet;
+							break;
+						case BookHistoryEventType.ImportSpreadsheet:
+							ev.Type = BookHistoryEventType.SyncProblem;
+							break;
+						case BookHistoryEventType.SyncProblem:
+							ev.Type = BookHistoryEventType.Deleted;
+							break;
+					}
+				}
+			});
 		}
 
 		public static void SetPendingCheckinMessage(Book.Book book, string message)
