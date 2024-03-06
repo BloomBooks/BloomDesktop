@@ -4634,6 +4634,10 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
         <note>This is the header for the book that is in bloomlibrary.org already.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeBranding" translate="no">
+        <source xml:lang="en">The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.ChangeBranding</note>
+      </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader" translate="no">
         <source xml:lang="en">Change the official uploader to {0}. (Bloom Library will hide part of your email address)</source>
         <note>ID: PublishTab.UploadCollisionDialog.ChangeUploader</note>

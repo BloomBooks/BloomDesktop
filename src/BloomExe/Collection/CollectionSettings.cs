@@ -10,11 +10,13 @@ using System.Xml.Serialization;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
+using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
@@ -384,6 +386,29 @@ namespace Bloom.Collection
             }
         }
 
+        /// <summary>
+        /// Get the branding that the settings file specifies, without checking the subscription code
+        /// as we would do if creating a settings object from the settings file. (This is useful when
+        /// displaying the Branding dialog, to remind the user which branding they might want to find
+        /// a code for. We also use it to record the original branding for a book downloaded for editing,
+        /// since books on Bloom library keep their branding but not the code that normally allows it
+        /// to be used, though we make an exception for that one book.)
+        /// </summary>
+        public static string LoadBranding(string pathToCollectionFile)
+        {
+            try
+            {
+                var settingsContent = RobustFile.ReadAllText(pathToCollectionFile, Encoding.UTF8);
+                var xml = XElement.Parse(settingsContent);
+                return ReadString(xml, "BrandingProjectName", "");
+            }
+            catch (Exception ex)
+            {
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+                return "";
+            }
+        }
+
         /// ------------------------------------------------------------------------------------
         public void Load()
         {
@@ -662,7 +687,79 @@ namespace Bloom.Collection
         }
 
         // e.g. "ABC2020" or "Kyrgyzstan2020[English]"
-        public string BrandingProjectKey { get; set; }
+        public string BrandingProjectKey
+        {
+            get => _overrideBrandingForEditDownload ?? _brandingProjectKey;
+            set
+            {
+                _brandingProjectKey = value;
+                _overrideBrandingForEditDownload = null;
+            }
+        }
+
+        private string _overrideBrandingForEditDownload;
+
+        /// <summary>
+        /// Tell the collection which book we are currently working on. If
+        /// (a) this collection was made using "download for editing" on bloom library, and
+        /// (b) the current book is the one whose download created the collection, and
+        /// (c) as a result, both the book and the collection record some branding, but don't have the associated code, and
+        /// (d) the user hasn't changed the branding since the download that created the collection (which would establish
+        /// a new branding with a known code for all books in the collection including the original),
+        /// then we will allow the branding to be used for this book, even though we don't have the code.
+        /// </summary>
+        public void SetCurrentBook(Book.Book book)
+        {
+            if (book == null)
+                return;
+            // We allow a previous override to stand until some other book is selected.
+            // One reason is that CollectionModel.BringBookUpToDate changes the selection to null during the update,
+            // but we would like it to get updated to the right branding.
+            _overrideBrandingForEditDownload = null;
+            var downloadEditPath = Path.Combine(
+                Path.GetDirectoryName(book.FolderPath),
+                BloomLibraryPublishModel.kNameOfDownloadForEditFile
+            );
+            if (!RobustFile.Exists(downloadEditPath))
+                return;
+            try
+            {
+                var bookOfCollectionData = JObject.Parse(RobustFile.ReadAllText(downloadEditPath));
+                //var databaseId = bookOfCollectionData["databaseId"];
+                var instanceId = bookOfCollectionData["instanceId"]?.ToString();
+                var bookFolder = bookOfCollectionData["bookFolder"]?.ToString();
+                var brandingOfOriginalDownload = bookOfCollectionData["branding"]?.ToString();
+                if (
+                    string.IsNullOrEmpty(brandingOfOriginalDownload)
+                    || instanceId != book.ID
+                    || bookFolder != book.FolderPath.Replace("\\", "/")
+                )
+                    return; // not validating as the one special book we can edit without the code (or it never had one)
+                // Now, are we actually in the situation where the collection specifies a branding but does not have
+                // a code for it? Initially, after a download-for-editing, the collection settingsfile (derived from the upload)
+                // may have a BrandingProjectName but never has a non-empty SubscriptionCode. This results in the
+                // CollectionSettings object having BrandingProjectKey set to Default (and InvalidBranding set to the
+                // one from the file). In that situation, we want to use that branding for the downloaded book.
+                // On the other hand, if the user later explicitly selected some branding, even Default, in the settings
+                // dialog, we don't want to use the downloaded one any more. When the user does that, the settings file gets saved, and we
+                // have a code if we need one, and there is no longer a discrepancy between the BrandingProjectName
+                // in the file and the BrandingProjectKey in the CollectionSettings object, and we no longer want
+                // an override, even for the original book. We might be able to determine this just from whether
+                // InvalidBranding is set, but I'm not sure that's always reliable. If the value stored in the file
+                // is different from the one in the CollectionSettings object, we want to override for this book.
+                // As a double-check, it should be the same branding we originally downloaded this book with.
+                var brandingInFile = LoadBranding(SettingsFilePath);
+                if (
+                    BrandingProjectKey != brandingInFile
+                    && brandingOfOriginalDownload == brandingInFile
+                )
+                    _overrideBrandingForEditDownload = brandingOfOriginalDownload;
+            }
+            catch (Exception)
+            {
+                // If we can't process the file, just treat it as not the special book.
+            }
+        }
 
         public string GetBrandingFlavor()
         {
@@ -680,17 +777,41 @@ namespace Bloom.Collection
             return folderName;
         }
 
-        public string SubscriptionCode { get; set; }
+        public string SubscriptionCode
+        {
+            get => _subscriptionCode;
+            set => _subscriptionCode = value;
+        }
 
-        public int OneTimeCheckVersionNumber { get; set; }
+        public int OneTimeCheckVersionNumber
+        {
+            get => _oneTimeCheckVersionNumber;
+            set => _oneTimeCheckVersionNumber = value;
+        }
 
-        public bool AllowNewBooks { get; set; }
+        public bool AllowNewBooks
+        {
+            get => _allowNewBooks;
+            set => _allowNewBooks = value;
+        }
 
-        public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
+        public TalkingBookApi.AudioRecordingMode AudioRecordingMode
+        {
+            get => _audioRecordingMode;
+            set => _audioRecordingMode = value;
+        }
 
-        public int AudioRecordingTrimEndMilliseconds { get; set; }
+        public int AudioRecordingTrimEndMilliseconds
+        {
+            get => _audioRecordingTrimEndMilliseconds;
+            set => _audioRecordingTrimEndMilliseconds = value;
+        }
 
-        public int BooksOnWebGoal { get; set; }
+        public int BooksOnWebGoal
+        {
+            get => _booksOnWebGoal;
+            set => _booksOnWebGoal = value;
+        }
 
         public BulkBloomPubPublishSettings BulkPublishBloomPubSettings =
             new BulkBloomPubPublishSettings
@@ -846,6 +967,14 @@ namespace Bloom.Collection
 
         private readonly Dictionary<string, string> ColorPalettes =
             new Dictionary<string, string>();
+
+        private string _brandingProjectKey;
+        private string _subscriptionCode;
+        private int _oneTimeCheckVersionNumber;
+        private bool _allowNewBooks;
+        private TalkingBookApi.AudioRecordingMode _audioRecordingMode;
+        private int _audioRecordingTrimEndMilliseconds;
+        private int _booksOnWebGoal;
 
         public string GetColorPaletteAsJson(string paletteTag)
         {
