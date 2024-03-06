@@ -343,6 +343,16 @@ namespace Bloom.Workspace
             var result = GetCurrentSelectedBookInfo();
             // Important for at least the TeamCollectionBookStatusPanel and the CollectionsTabBookPanel.
             _webSocketServer.SendString("book-selection", "changed", result);
+            // We might possibly be selecting a book that is not the "download for editing" book
+            // for the first time. But don't bring up the dialog about the problem in the middle of
+            // selecting the book.
+            Application.Idle += CheckForInvalidBrandingOnIdle;
+        }
+
+        private void CheckForInvalidBrandingOnIdle(object sender, EventArgs e)
+        {
+            Application.Idle -= CheckForInvalidBrandingOnIdle;
+            CheckForInvalidBranding();
         }
 
         string _tempBookInfoHtmlPath;
@@ -944,12 +954,17 @@ namespace Bloom.Workspace
                         BloomMessageBox.ShowInfo(MustBeAdminMessage);
                         return DialogResult.Cancel;
                     }
+                    CollectionSettingsApi.SetupLegacyBrandingForSettingsDiaog(
+                        _collectionSettings.InvalidBranding,
+                        _collectionSettings.SubscriptionCode
+                    );
                     using (var dlg = _settingsDialogFactory())
                     {
                         _currentlyOpenSettingsDialog = dlg;
                         dlg.SetDesiredTab(tab);
                         var temp = dlg.ShowDialog(this);
                         _currentlyOpenSettingsDialog = null;
+                        CollectionSettingsApi.EndFixEnterpriseBranding();
                         return temp;
                     }
                 });
@@ -960,10 +975,21 @@ namespace Bloom.Workspace
             }
         }
 
+        private bool _haveCheckedForInvalidBranding;
+
         public void CheckForInvalidBranding()
         {
-            if (_collectionSettings.InvalidBranding == null)
+            // We only do this once, only if we have recorded an invalid branding, and only if we haven't established
+            // some other branding (possibly just for the current book), and only if it's in the editable collection.
+            if (
+                _haveCheckedForInvalidBranding
+                || _collectionSettings.InvalidBranding == null
+                || _collectionSettings.BrandingProjectKey != "Default"
+                || _bookSelection.CurrentSelection == null
+                || !_bookSelection.CurrentSelection.IsInEditableCollection
+            )
                 return;
+            _haveCheckedForInvalidBranding = true;
             // I'm not very happy with this, but the only place I could find to detect that we're opening a new project
             // is too soon to bring up a dialog; it comes up before the main window is fully initialized, which can
             // leave the main window in the wrong place. Waiting until idle gives a much better effect.

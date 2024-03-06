@@ -10,11 +10,13 @@ using System.Xml.Serialization;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
+using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
@@ -384,6 +386,25 @@ namespace Bloom.Collection
             }
         }
 
+        /// <summary>
+        /// Get the branding that the settings file specifies, without checking the subscription code
+        /// as we would do if creating the object from the settings file.
+        /// </summary>
+        public static string LoadBranding(string pathToCollectionFile)
+        {
+            try
+            {
+                var settingsContent = RobustFile.ReadAllText(pathToCollectionFile, Encoding.UTF8);
+                var xml = XElement.Parse(settingsContent);
+                return ReadString(xml, "BrandingProjectName", "");
+            }
+            catch (Exception ex)
+            {
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+                return "";
+            }
+        }
+
         /// ------------------------------------------------------------------------------------
         public void Load()
         {
@@ -662,7 +683,55 @@ namespace Bloom.Collection
         }
 
         // e.g. "ABC2020" or "Kyrgyzstan2020[English]"
-        public string BrandingProjectKey { get; set; }
+        public string BrandingProjectKey
+        {
+            get => _overrideBrandingForEditDownload ?? _brandingProjectKey;
+            set
+            {
+                _brandingProjectKey = value;
+                _overrideBrandingForEditDownload = null;
+            }
+        }
+
+        private string _overrideBrandingForEditDownload;
+
+        public void SetCurrentBook(Book.Book book)
+        {
+            if (book == null)
+                return;
+            // We allow a previous override to stand until some other book is selected.
+            // One reason is that CollectionModel.BringBookUpToDate changes the selection to null during the update,
+            // but we would like it to get updated to the right branding.
+            _overrideBrandingForEditDownload = null;
+            var downloadEditPath = Path.Combine(
+                Path.GetDirectoryName(book.FolderPath),
+                BloomLibraryPublishModel.kNameOfDownloadForEditFile
+            );
+            if (!RobustFile.Exists(downloadEditPath))
+                return;
+            try
+            {
+                var bookOfCollectionData = JObject.Parse(RobustFile.ReadAllText(downloadEditPath));
+                //var databaseId = bookOfCollectionData["databaseId"];
+                var instanceId = bookOfCollectionData["instanceId"]?.ToString();
+                var bookFolder = bookOfCollectionData["bookFolder"]?.ToString();
+                var branding = bookOfCollectionData["branding"]?.ToString();
+                if (
+                    string.IsNullOrEmpty(branding)
+                    || instanceId != book.ID
+                    || bookFolder != book.FolderPath.Replace("\\", "/")
+                )
+                    return; // not validating as the one special book we can edit without the code (or it never had one)
+                // Now, the final question: has the user reset that branding? If not...if it's just Default in the
+                // variable because we don't have a code...then we'll do the override.
+                if (branding == LoadBranding(SettingsFilePath))
+                    _overrideBrandingForEditDownload = branding;
+            }
+            catch (Exception)
+            {
+                // If we can't process the file, just treat it as not the special book.
+            }
+        }
 
         public string GetBrandingFlavor()
         {
@@ -680,17 +749,41 @@ namespace Bloom.Collection
             return folderName;
         }
 
-        public string SubscriptionCode { get; set; }
+        public string SubscriptionCode
+        {
+            get => _subscriptionCode;
+            set => _subscriptionCode = value;
+        }
 
-        public int OneTimeCheckVersionNumber { get; set; }
+        public int OneTimeCheckVersionNumber
+        {
+            get => _oneTimeCheckVersionNumber;
+            set => _oneTimeCheckVersionNumber = value;
+        }
 
-        public bool AllowNewBooks { get; set; }
+        public bool AllowNewBooks
+        {
+            get => _allowNewBooks;
+            set => _allowNewBooks = value;
+        }
 
-        public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
+        public TalkingBookApi.AudioRecordingMode AudioRecordingMode
+        {
+            get => _audioRecordingMode;
+            set => _audioRecordingMode = value;
+        }
 
-        public int AudioRecordingTrimEndMilliseconds { get; set; }
+        public int AudioRecordingTrimEndMilliseconds
+        {
+            get => _audioRecordingTrimEndMilliseconds;
+            set => _audioRecordingTrimEndMilliseconds = value;
+        }
 
-        public int BooksOnWebGoal { get; set; }
+        public int BooksOnWebGoal
+        {
+            get => _booksOnWebGoal;
+            set => _booksOnWebGoal = value;
+        }
 
         public BulkBloomPubPublishSettings BulkPublishBloomPubSettings =
             new BulkBloomPubPublishSettings
@@ -846,6 +939,22 @@ namespace Bloom.Collection
 
         private readonly Dictionary<string, string> ColorPalettes =
             new Dictionary<string, string>();
+
+        private string _invalidBranding;
+        private bool _isSourceCollection;
+        private string _collectionName;
+        private string _settingsFilePath;
+        private string _country;
+        private string _province;
+        private string _district;
+        private string _pageNumberStyle;
+        private string _brandingProjectKey;
+        private string _subscriptionCode;
+        private int _oneTimeCheckVersionNumber;
+        private bool _allowNewBooks;
+        private TalkingBookApi.AudioRecordingMode _audioRecordingMode;
+        private int _audioRecordingTrimEndMilliseconds;
+        private int _booksOnWebGoal;
 
         public string GetColorPaletteAsJson(string paletteTag)
         {

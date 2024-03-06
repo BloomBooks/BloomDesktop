@@ -1310,8 +1310,6 @@ namespace Bloom
             // Sometimes after closing the splash screen the project window
             // looses focus, so do this.
             _projectContext.ProjectWindow.Activate();
-
-            (_projectContext.ProjectWindow as Shell).CheckForInvalidBranding();
         }
 
         /// ------------------------------------------------------------------------------------
