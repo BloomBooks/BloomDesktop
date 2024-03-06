@@ -144,6 +144,19 @@ namespace Bloom.Publish.BloomLibrary
             return result;
         }
 
+        public static JObject GetDownloadForEditData(string pathToBookFolder)
+        {
+            var filePath = Path.Combine(
+                Path.GetDirectoryName(pathToBookFolder),
+                kNameOfDownloadForEditFile
+            );
+            if (RobustFile.Exists(filePath))
+            {
+                return JObject.Parse(RobustFile.ReadAllText(filePath));
+            }
+            return null;
+        }
+
         /// <summary>
         /// If we have multiple conflicting books, we want to sort them in a way that makes sense to the user.
         /// If we're in a collection that was made for editing one particular book, and this is the book,
@@ -174,13 +187,9 @@ namespace Bloom.Publish.BloomLibrary
                 return books;
             var remaining = books.ToList();
             var bookList = new List<dynamic>();
-            var filePath = Path.Combine(
-                Path.GetDirectoryName(pathToBookFolder),
-                kNameOfDownloadForEditFile
-            );
-            if (File.Exists(filePath))
+            var bookOfCollectionData = GetDownloadForEditData(pathToBookFolder);
+            if (bookOfCollectionData != null)
             {
-                var bookOfCollectionData = JObject.Parse(RobustFile.ReadAllText(filePath));
                 var databaseId = bookOfCollectionData["databaseId"];
                 var instanceId = bookOfCollectionData["instanceId"];
                 var bookFolder = bookOfCollectionData["bookFolder"]?.ToString();
@@ -788,6 +797,11 @@ namespace Bloom.Publish.BloomLibrary
             var updatedDate = updatedDateTime.ToString("d", CultureInfo.CurrentCulture);
             var existingThumbUrl = GetBloomLibraryThumbnailUrl(existingBookInfo);
 
+            // We could get it from the data about the download-for-edit book, but why limit this to those books?
+            //var bookDownloadForEditData = GetDownloadForEditData(Book.FolderPath);
+            //var oldBranding = bookDownloadForEditData?["branding"]?.ToString();
+            var oldBranding = existingBookInfo.brandingProjectName?.ToString();
+
             // Must match IUploadCollisionDlgProps in uploadCollisionDlg.tsx.
             return new
             {
@@ -803,6 +817,8 @@ namespace Bloom.Publish.BloomLibrary
                 existingUpdatedDate = updatedDate,
                 existingBookUrl,
                 existingThumbUrl,
+                newBranding = Book.BookInfo.BrandingProjectKey,
+                oldBranding,
                 uploader = existingBookInfo.uploader.email,
                 count = existingBookInfo.count,
                 permissions = existingBookInfo.permissions

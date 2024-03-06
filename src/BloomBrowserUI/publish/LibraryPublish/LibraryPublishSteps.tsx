@@ -39,7 +39,6 @@ import { BloomSplitButton } from "../../react_components/bloomSplitButton";
 import { ErrorBox, WaitBox } from "../../react_components/boxes";
 import {
     IUploadCollisionDlgData,
-    IUploadCollisionDlgProps,
     showUploadCollisionDialog,
     UploadCollisionDlg
 } from "./uploadCollisionDlg";
