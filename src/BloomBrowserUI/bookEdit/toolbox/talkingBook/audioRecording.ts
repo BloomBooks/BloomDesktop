@@ -1199,6 +1199,7 @@ export default class AudioRecording {
                 .post("/bloom/api/audio/endRecord")
                 .then(this.finishNewRecordingOrImportAsync.bind(this));
         } catch (error) {
+            this.awaitingNewRecording = false;
             await this.changeStateAndSetExpectedAsync("record"); //record failed, so we expect them to try again
             if (error.response) {
                 toastr.error(error.response.statusText);
