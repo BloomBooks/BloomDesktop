@@ -21,12 +21,10 @@ export function setupOrigami() {
                 .append(createTypeSelectors(isEnterpriseEnabled))
                 .append(createTextBoxIdentifier());
             $("#page-scaling-container").append(origamiControl);
-            // We want to say "right: 19px" in css, but that should be relative to the
-            // page; and it's now a child of the page-scaling-container which is
-            // a parent of the page and can't use the page width.
-            // So set the left based on the two widths and an extra 19px.
-            const origamiWidth = origamiControl.get(0).clientWidth;
-            origamiControl.get(0).style.left = `${width - origamiWidth - 19}px`;
+            // The container width is set to 100% in the CSS, but we need to
+            // limit it to no more than the actual width of the page.
+            const toggleContainer = $(".origami-toggle-container").get(0);
+            toggleContainer.style.maxWidth = width + "px";
         }
         // I'm not clear why the rest of this needs to wait until we have
         // the two results, but none of the controls shows up if we leave it all
@@ -314,6 +312,7 @@ function getSplitPaneComponentInner() {
 function getOrigamiControl(): JQuery {
     return $(
         "\
+<div class='origami-toggle-container bloom-ui'> \
 <div class='origami-toggle bloom-ui'> \
     <div data-i18n='EditTab.CustomPage.ChangeLayout'>Change Layout</div> \
     <div class='onoffswitch'> \
@@ -323,6 +322,7 @@ function getOrigamiControl(): JQuery {
             <span class='onoffswitch-switch'></span> \
         </label> \
     </div> \
+</div> \
 </div>"
     );
 }
