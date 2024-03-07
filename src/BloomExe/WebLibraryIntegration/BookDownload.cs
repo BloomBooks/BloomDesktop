@@ -403,6 +403,12 @@ namespace Bloom.WebLibraryIntegration
                     string bookFolder = "";
 
                     var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPathTemp);
+                    if (string.IsNullOrEmpty(htmlPath))
+                    {
+                        throw new ApplicationException(
+                            "Downloaded book does not contain an html file"
+                        );
+                    }
                     if (!File.Exists(settingsPath))
                     {
                         var metadataPath = BookMetaData.MetaDataPath(bookFolderPathTemp);
