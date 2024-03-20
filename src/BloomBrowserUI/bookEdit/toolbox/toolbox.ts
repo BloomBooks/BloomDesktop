@@ -92,7 +92,8 @@ export class ToolBox {
                  In that bug, longpress.replacePreviousLetterWithText() would delete back
                  to the start of the current markup span (e.g. a sentence in
                  Talking Book, or a non-decodable word in Decodable Reader).
-                 The current fix is to trigger markup on keydown, rather than keyup or keypress.
+                 A past fix was to trigger markup on keydown, rather than keyup or keypress.
+                 Keeping the comment in case it recurs:
                  ****This is exactly the opposite of what we would expect****
 
                  If we trigger on keyup here, the sequence looks right but longpress will eat up the span.
@@ -125,11 +126,20 @@ export class ToolBox {
 
                     For now I'm just going to commit the fix and if someday we revisit this, maybe another piece of the
                     puzzle will emerge.
+                    ----end of BL-3900 comment
+                    Using Keydown had its own problems (BL-12889). If the user holds down a key (e.g., for longpress), it will
+                    fire repeatedly. I made various further attempts to get handleKeyboardInput to abort if longpress was
+                    doing something, but it was fragile and I never got it entirely right. Keyup is much better, though
+                    watch out for a keyup from the extra keystroke that is one way to select a key in longpress. And BL-3900
+                    does not seem to have recurred. Not sure whether this is because at some point we got a newer version of
+                    CkEditor, or because of improvements we've made to bookmark handling (including in the PR for BL-12889),
+                    or because of the switch to WebView2, or something else. But as far as I can tell, using keyup helps
+                    solve BL-12889 and does not cause BL-3900 to recur.
             */
 
             $(container)
                 .find(".bloom-editable")
-                .keydown(event => {
+                .keyup(event => {
                     //don't do markup on cursor keys
                     if (event.keyCode >= 37 && event.keyCode <= 40) {
                         // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
@@ -880,6 +890,19 @@ function handleKeyboardInput(): void {
     //}
     const counterValueThatIdentifiesThisKeyDown = ++keydownEventCounter;
     if (keypressTimer) clearTimeout(keypressTimer);
+    // Not sure we need this now the method is triggered by keyup. If it is triggered by keydown,
+    // we have a problem:
+    // If we don't do this check, then the last keydown from autorepeat during longpress will
+    // start the timer, and by the time the timer goes off, keyup has cleared the flag. Then we can
+    // get unexpected cursor movements that I haven't fully understood.
+    // On the other hand, if we DO this check, the flag gets set by the keydown handler in longpress
+    // even for ordinary keystrokes, and that handler seems to fire first, and so this NEVER executes.
+    // I'm leaving it in for now because the method might get called on a keyup connected with using
+    // a key in longpress to select one of the options, and in that case, we don't want to do the markup
+    // (until the keyup from the original key, of course).
+    if (window?.top?.[isLongPressEvaluating]) {
+        return;
+    }
     keypressTimer = setTimeout(async () => {
         // This happens 500ms after the user stops typing.
         const page: HTMLIFrameElement = <HTMLIFrameElement>(
@@ -907,6 +930,9 @@ function handleKeyboardInput(): void {
             return;
         }
 
+        // Now we're triggering this on keyup, I don't think we'll ever find this flag true.
+        // Just possibly it might be following a keyup from a choose-option keypress in longpress.
+        // I'm leaving the previous comment because it captures considerable history that might still be relevant.
         // If longpress is currently engaged trying to determine what, if anything, it needs
         // to do, we postpone the markup. Inexplicably, longpress and handleKeyboardInput (formerly handleKeydown)
         // started interfering again even after the fix for BL-3900 (see comments for
@@ -1019,11 +1045,16 @@ function handleKeyboardInput(): void {
 }
 
 function RemoveNonPTags(editableDivHtml: string): string {
-    return editableDivHtml.replace(/<[^p\/].*?>/g, "").replace(/<\/[^p].*?>/g, "");
+    return editableDivHtml
+        .replace(/<[^p\/].*?>/g, "")
+        .replace(/<\/[^p].*?>/g, "");
 }
 
 // Check if the &nbsp; is at the start or end of a paragraph, regardless of any other tags in between (e.g. the empty talking book spans)
-function NbspIsOnEdgeOfParagraph(editableDivHtml: string, nbspIndex: number): boolean {
+function NbspIsOnEdgeOfParagraph(
+    editableDivHtml: string,
+    nbspIndex: number
+): boolean {
     const beforeNbsp = editableDivHtml.substring(0, nbspIndex);
     const afterNbsp = editableDivHtml.substring(nbspIndex + "&nbsp;".length);
 
