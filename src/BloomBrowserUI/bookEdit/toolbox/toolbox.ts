@@ -129,7 +129,13 @@ export class ToolBox {
 
             $(container)
                 .find(".bloom-editable")
-                .keydown(event => {
+                // Earlier we used keydown. Not sure why because much of the point of the handleKeyboardInput function
+                // is to postpone doing anything until the user pauses typing, and keyup is closer to that than keydown.
+                // Moreover, keydown is problematic because if the user holds down a key (e.g., for longpress), it will
+                // fire repeatedly. I made various attempts to get handleKeyboardInput to abort if longpress was
+                // doing something, but it was fragile and I never got it entirely right. Keyup is much better, though
+                // wattch out for a keyup from the extra keystroke that is one way to select a key in longpress.
+                .keyup(event => {
                     //don't do markup on cursor keys
                     if (event.keyCode >= 37 && event.keyCode <= 40) {
                         // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
@@ -880,6 +886,19 @@ function handleKeyboardInput(): void {
     //}
     const counterValueThatIdentifiesThisKeyDown = ++keydownEventCounter;
     if (keypressTimer) clearTimeout(keypressTimer);
+    // Not sure we need this now the method is triggered by keyup. If it is triggered by keydown,
+    // we have a problem:
+    // If we don't do this check, then the last keydown from autorepeat during longpress will
+    // start the timer, and by the time the timer goes off, keyup has cleared the flag. Then we can
+    // get unexpected cursor movements that I haven't fully understood.
+    // On the other hand, if we DO this check, the flag gets set by the keydown handler in longpress
+    // even for ordinary keystrokes, and that handler seems to fire first, and so this NEVER executes.
+    // I'm leaving it in for now because the method might get called on a keyup connected with using
+    // a key in longpress to select one of the options, and in that case, we don't want to do the markup
+    // (until the keyup from the original key, of course).
+    if (window?.top?.[isLongPressEvaluating]) {
+        return;
+    }
     keypressTimer = setTimeout(async () => {
         // This happens 500ms after the user stops typing.
         const page: HTMLIFrameElement = <HTMLIFrameElement>(
@@ -907,6 +926,9 @@ function handleKeyboardInput(): void {
             return;
         }
 
+        // Now we're triggering this on keyup, I don't think we'll ever find this flag true.
+        // Just possibly it might be following a keyup from a choose-option keypress in longpress.
+        // I'm leaving the previous comment because it captures considerable history that might still be relevant.
         // If longpress is currently engaged trying to determine what, if anything, it needs
         // to do, we postpone the markup. Inexplicably, longpress and handleKeyboardInput (formerly handleKeydown)
         // started interfering again even after the fix for BL-3900 (see comments for

@@ -414,13 +414,18 @@ require("./jquery.mousewheel.js");
         } else {
             // If we make the selection before setting the focus, the selection
             // ends up in the wrong place (BL-2717).
-            if (activeElement && typeof activeElement.focus != "undefined") {
+            if (activeElement && typeof activeElement.focus !== "undefined") {
                 activeElement.focus();
                 EditableDivUtils.makeSelectionIn(
                     activeElement,
                     storedOffset,
-                    null,
-                    true
+                    -1, // no brs around that we need to skip
+                    // If we're at a paragraph boundary, we are at the end of the previous paragraph.
+                    // (We just inserted a character, so we can't possibly be at the start of a paragraph.
+                    // It's possible that we're at a boundary between two text nodes, especially since
+                    // longpress likes to insert the text as an extra node, but in that case it doesn't
+                    // matter which one we make the selection in.)
+                    false
                 );
             }
         }
