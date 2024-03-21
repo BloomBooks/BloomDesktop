@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Web;
 using System.Xml;
+using Bloom.ErrorReporter;
 using Bloom.ImageProcessing;
 using Bloom.Utils;
 using L10NSharp;
@@ -197,9 +198,15 @@ namespace Bloom.Book
             //could instead just be generated when we update the page. However, for backwards compatibility (prior to 3.6),
             //we localize it and place it in the datadiv.
             dom.RemoveBookSetting("licenseDescription");
+            var langPriorities = bookData.GetLanguagePrioritiesForLocalizedTextOnPage();
             var description = metadata.License.GetDescription(
-                bookData.GetLanguagePrioritiesForLocalizedTextOnPage(),
+                langPriorities,
                 out languageUsedForDescription
+            );
+            LocalizationHelper.CheckForMissingLocalization(
+                langPriorities.ToList(),
+                languageUsedForDescription,
+                "Palaso.xlf"
             );
             dom.SetBookSetting(
                 "licenseDescription",
