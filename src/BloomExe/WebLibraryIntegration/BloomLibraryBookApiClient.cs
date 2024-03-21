@@ -613,21 +613,25 @@ namespace Bloom.WebLibraryIntegration
             for (int i = 0; i < bookRecords.Count; ++i)
             {
                 var bookRecord = bookRecords[i];
-                string bookInstanceId = bookRecord.instanceId;
-                if (bloomLibraryStatusesById.ContainsKey(bookInstanceId))
+                string bookInstanceId = bookRecord.bookInstanceId;
+                if (bookInstanceId != null)
                 {
-                    bloomLibraryStatusesById[bookInstanceId] = new BloomLibraryStatus(
-                        false,
-                        false,
-                        HarvesterState.Multiple,
-                        BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(bookInstanceId)
-                    );
-                }
-                else
-                {
-                    bloomLibraryStatusesById[bookInstanceId] = BloomLibraryStatus.FromDynamicJson(
-                        bookRecord
-                    );
+                    if (bloomLibraryStatusesById.ContainsKey(bookInstanceId))
+                    {
+                        bloomLibraryStatusesById[bookInstanceId] = new BloomLibraryStatus(
+                            false,
+                            false,
+                            HarvesterState.Multiple,
+                            BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(
+                                bookInstanceId
+                            )
+                        );
+                    }
+                    else
+                    {
+                        bloomLibraryStatusesById[bookInstanceId] =
+                            BloomLibraryStatus.FromDynamicJson(bookRecord);
+                    }
                 }
             }
             return bloomLibraryStatusesById;
