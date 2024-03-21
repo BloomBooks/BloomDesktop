@@ -489,6 +489,10 @@
         <source xml:lang="en">Legacy (Bloom 5.6)</source>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
+      <trans-unit id="Localization.CannotReadFile" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Bloom was unable to read a localization file.</source>
+        <note>Localization.CannotReadFile</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
