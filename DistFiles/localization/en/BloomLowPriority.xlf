@@ -194,6 +194,10 @@
             <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
             <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
           </trans-unit>
+          <trans-unit id="Localization.CannotReadFile" sil:dynamic="true" translate="no">
+            <source xml:lang="en">Bloom was unable to read a localization file.</source>
+            <note>Localization.CannotReadFile</note>
+          </trans-unit>
         </body>
     </file>
 </xliff>
