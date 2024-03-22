@@ -581,9 +581,18 @@ div[data-book*="branding"] {
 // bloom-imageContainer, because the padding between it and a previous text block was
 // being put on the image container, and thus inside the border.
 .split-pane.horizontal-percent
+    .split-pane-component.position-top
+    > .split-pane-component-inner {
+    padding-bottom: calc(var(--page-horizontalSplit-height) / 2);
+    // I think this is redundant with a rule elsewhere, but it's VITAL
+    // when we are adding padding to a 100% height element, so I'm repeating
+    // it here.
+    box-sizing: border-box;
+}
+.split-pane.horizontal-percent
     .split-pane-component.position-bottom
-    > .split-pane-component-inner:has(> .bloom-translationGroup) {
-    padding-top: var(--page-horizontalSplit-height);
+    > .split-pane-component-inner {
+    padding-top: calc(var(--page-horizontalSplit-height) / 2);
     // I think this is redundant with a rule elsewhere, but it's VITAL
     // when we are adding padding to a 100% height element, so I'm repeating
     // it here.
