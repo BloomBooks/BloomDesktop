@@ -11,14 +11,14 @@
     --page-margin-left: 2mm;
     --page-margin-right: 2mm;
     --page-background-color: #2e2e2e; /* almost black */
-    --page-split-horizontal-gap: 1mm;
-    --page-split-vertical-gap: 1mm;
+    --page-horizontalSplit-height: 1mm;
+    --page-verticalSplit-width: 1mm;
     --marginBox-border-radius: 15px;
     --marginBox-padding: 1.5mm;
     --marginBox-background-color: #ffffff; /* white */
 
-    --page-text-padding-left: 0.5em;
-    --page-text-padding-right: 0.5em;
+    --text-padding-left: 0.5em;
+    --text-padding-right: 0.5em;
 }
 
 /* The section below controls the pagenumber and the white circle around it.  */

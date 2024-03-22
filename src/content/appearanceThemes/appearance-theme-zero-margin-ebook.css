@@ -26,11 +26,9 @@
     --page-margin-right: 0mm;
 
     /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
-    --page-split-vertical-gap: 0; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
-    --page-split-horizontal-gap: 0;
-    --page-split-vertical-gap: 0;
-    --page-text-padding-left: 1em;
-    --page-text-padding-right: 1em;
+    --page-verticalSplit-width: 0; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
+    --page-horizontalSplit-height: 0;
+    --page-verticalSplit-width: 0;
 }
 
 /* The section below controls the pagenumber and the white circle around it.  */
@@ -64,9 +62,9 @@
     --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
 }
 
-.Device16x9Portrait.numberedPage {
-    --page-text-padding-top: 0.5em;
-    --page-text-padding-bottom: 0.5em;
-    --page-text-padding-left: 0.5em;
-    --page-text-padding-right: 0.5em;
+[class*="Device"].numberedPage:not(.bloom-interactive-page) {
+    --text-padding-top: 0.5em;
+    --text-padding-bottom: 0.5em;
+    --text-padding-left: 0.5em;
+    --text-padding-right: 0.5em;
 }

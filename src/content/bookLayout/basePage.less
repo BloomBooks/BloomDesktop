@@ -547,14 +547,17 @@ div[data-book*="branding"] {
 // See comments below about the horizontal version of this rule.
 .split-pane.vertical-percent
     .split-pane-component.position-left
-    > .split-pane-component-inner:has(> .bloom-translationGroup) {
-    padding-right: var(--page-split-vertical-gap);
+    > .split-pane-component-inner {
+    // we're dividing this in 2 because we're putting half on the left and half on the right,
+    // and we're doing that so that when you snap something to 50%, both sides will be the same size.
+    // Related to BL-13073.
+    padding-right: calc(var(--page-verticalSplit-width) / 2);
     box-sizing: border-box;
 }
 .split-pane.vertical-percent
     .split-pane-component.position-right
-    > .split-pane-component-inner:has(> .bloom-translationGroup) {
-    padding-left: var(--page-split-vertical-gap);
+    > .split-pane-component-inner {
+    padding-left: calc(var(--page-verticalSplit-width) / 2);
     box-sizing: border-box;
 }
 
@@ -580,7 +583,7 @@ div[data-book*="branding"] {
 .split-pane.horizontal-percent
     .split-pane-component.position-bottom
     > .split-pane-component-inner:has(> .bloom-translationGroup) {
-    padding-top: var(--page-split-horizontal-gap);
+    padding-top: var(--page-horizontalSplit-height);
     // I think this is redundant with a rule elsewhere, but it's VITAL
     // when we are adding padding to a 100% height element, so I'm repeating
     // it here.
@@ -671,3 +674,11 @@ div[data-book*="branding"] {
         overflow: hidden;
     }
 }
+
+/*
+    This is nice when developing as it shows the padding as colored areas.
+.bloom-editable:focus {
+    background-image: linear-gradient(to bottom, white 0%, white 100%),
+        linear-gradient(to bottom, #d6f3e4 0%, #d6f3e4 100%);
+    background-clip: content-box, padding-box;
+} */

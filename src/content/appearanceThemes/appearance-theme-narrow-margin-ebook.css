@@ -12,7 +12,7 @@
     --cover-margin-bottom: 2.5mm;
     --page-margin-top: 2.5mm;
     --page-margin-bottom: 2.5mm;
-    --page-margin-left: 2.5mm ;
+    --page-margin-left: 2.5mm;
     --page-margin-right: 2.5mm;
 }
 
@@ -22,8 +22,8 @@
 :not(.bloom-interactive-page).numberedPage.Device16x9Portrait {
     --page-margin-top: 2.5mm;
     --page-margin-bottom: 2.5mm;
-    --page-margin-left: 2.5mm ;
+    --page-margin-left: 2.5mm;
     --page-margin-right: 2.5mm;
-    --page-split-horizontal-gap: 1mm;
-    --page-split-vertical-gap: 1mm;
+    --page-horizontalSplit-height: 1mm;
+    --page-verticalSplit-width: 1mm;
 }

@@ -56,21 +56,21 @@
     /* background-color: value in .bloom-page */
     --page-background-color: white;
 
-    --page-text-padding-top: 0em;
-    --page-text-padding-bottom: 0em;
-    --page-text-padding-left: 0em;
-    --page-text-padding-right: 0em;
+    --text-padding-top: 0em;
+    --text-padding-bottom: 0em;
+    --text-padding-left: 0em;
+    --text-padding-right: 0em;
 
     /* padding-left: value in .split-pane.vertical-percent
      *  .split-pane-component.position-right .split-pane-component-inner > div */
-    --page-split-vertical-gap: 9mm; /* Note: 9 was the largest I could get with the current margins before a max a5 Portrait with txt-on-left would overflow.*/
+    --page-verticalSplit-width: 3px; /* 3px is matching Bloom 5.6's right margin for vertical split */
     /* padding-top: value in .split-pane.horizontal-percent
      *  .split-pane-component.position-bottom .split-pane-component-inner > div */
-    --page-split-horizontal-gap: 5mm; /* note that em units won't work as this is applied to a splitter that doesn't know the font size */
+    --page-horizontalSplit-height: 0;
     /* gap: value for .bloom-translationGroup */
     /* When Bloom is configured to show each block of text in more than one language, this controls
        the space between the different language sections of each block. */
-    --multilingual-editable-vertical-gap: 10px;
+    --multilingual-editable-vertical-gap: 1em;
     /* border-radius: value in .bloom-imageContainer (picture added by user to front cover or content page) */
     --image-border-radius: 0px; /* 0px is the default, but we want to be explicit about square corners */
     /* added to --page-margin-right for padding-right: value in .bloom-page.side-left */
@@ -212,10 +212,10 @@
     --cover-margin-bottom: 15mm;
 }
 
-.numberedPage .bloom-editable {
-    padding-top: var(--page-text-padding-top);
-    padding-bottom: var(--page-text-padding-bottom);
-    padding-right: var(--page-text-padding-right);
-    padding-left: var(--page-text-padding-left);
+/* notice that we don't do this if the edit is inside an image (i.e. and overlay) */
+.numberedPage :not(.bloom-imageContainer) .bloom-editable {
+    padding-top: var(--text-padding-top);
+    padding-bottom: var(--text-padding-bottom);
+    padding-right: var(--text-padding-right);
+    padding-left: var(--text-padding-left);
 }
-/* TODO: don't apply these headings if we're in an overlay */
