@@ -20,6 +20,8 @@
  * - a way to override for certain themes (either for all page sizes or by page-size)
 */
 .bloom-page {
+    --text-padding-default: 1em;
+
     /* display: value in .numberedPage:after to display the page number */
     --pageNumber-show: doShow-css-will-ignore-this-and-use-default; /* default is number displaying (the value is a self-documenting trick) */
 
@@ -212,6 +214,19 @@
     --cover-margin-bottom: 15mm;
 }
 
+/* add padding between text an a neighboring box */
+.split-pane.horizontal-percent .split-pane-component.position-bottom {
+    --text-padding-top: var(--text-padding-default);
+}
+.split-pane.horizontal-percent .split-pane-component.position-top {
+    --text-padding-bottom: var(--text-padding-default);
+}
+.split-pane.vertical-percent .split-pane-component.position-left {
+    --text-padding-right: var(--text-padding-default);
+}
+.split-pane.vertical-percent .split-pane-component.position-right {
+    --text-padding-left: var(--text-padding-default);
+}
 /* notice that we don't do this if the edit is inside an image (i.e. and overlay) */
 .numberedPage :not(.bloom-imageContainer) .bloom-editable {
     padding-top: var(--text-padding-top);
