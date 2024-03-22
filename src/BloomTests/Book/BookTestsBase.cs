@@ -424,7 +424,7 @@ namespace BloomTests.Book
             );
             var starter = new BookStarter(
                 fileLocator,
-                (dir, fullyUpdateBookFiles) =>
+                (dir) =>
                     new BookStorage(dir, fileLocator, new BookRenamedEvent(), _collectionSettings),
                 _collectionSettings
             );
@@ -444,7 +444,7 @@ namespace BloomTests.Book
                     );
                 },
                 // storage factory
-                (info, fullyUpdateBookFiles) =>
+                (info) =>
                 {
                     var storage = new BookStorage(
                         info,

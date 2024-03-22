@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Bloom.Book;
 using Bloom.CLI;
+using Bloom.Collection;
+using BloomTemp;
 using NUnit.Framework;
 
 namespace BloomTests.CLI
@@ -34,6 +38,15 @@ namespace BloomTests.CLI
             var errors = CreateArtifactsCommand.GetErrorsFromExitCode(exitCode);
 
             CollectionAssert.AreEquivalent(new string[] { "BookHtmlNotFound" }, errors);
+        }
+
+        [Test]
+        public void CreateArtifactsExitCode_GetErrorsFromExitCode_LegacyBookCannotHarvest_Returns1Error()
+        {
+            int exitCode = 8;
+            var errors = CreateArtifactsCommand.GetErrorsFromExitCode(exitCode);
+
+            CollectionAssert.AreEquivalent(new string[] { "LegacyBookCannotHarvest" }, errors);
         }
 
         [Test]
@@ -81,6 +94,61 @@ namespace BloomTests.CLI
             var errors = CreateArtifactsCommand.GetErrorsFromExitCode(exitCode);
 
             Assert.That(errors.Contains("Unknown"), Is.True);
+        }
+
+        [Test]
+        public void CreateArtifacts_LegacyBookWithInvalidXmatter_ReportsLegacyBookCannotHarvest()
+        {
+            using (
+                var testFolder = new TemporaryFolder(
+                    "CreateArtifacts_LegacyBookWithInvalidXmatter_ReportsLegacyBookCannotHarvest"
+                )
+            )
+            {
+                var collectionFolderPath = testFolder.Combine("collection");
+
+                var bookFolderPath = Path.Combine(collectionFolderPath, "book");
+                System.IO.Directory.CreateDirectory(bookFolderPath);
+                var collectionFilePath = Path.Combine(
+                    collectionFolderPath,
+                    "collection.bloomCollection"
+                );
+                var settings = new CollectionSettings(collectionFilePath);
+                settings.XMatterPackName = "ABC-Reader";
+                settings.Save();
+                var metaData = new BookMetaData();
+                metaData.WriteToFolder(bookFolderPath);
+                var bookPath = System.IO.Path.Combine(bookFolderPath, "book.htm");
+                System.IO.File.WriteAllText(
+                    bookPath,
+                    @"<html>
+					<body>
+						<div class='bloom-page'>
+							<div class='marginBox'>
+								<div class='bloom-translationGroup normal-style'>
+									<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='en'>
+									</div>
+								</div>
+							</div>
+						</div>
+					</body>
+				</html>"
+                );
+                System.IO.File.WriteAllText(
+                    System.IO.Path.Combine(bookFolderPath, "book.xmatter"),
+                    "invalid"
+                );
+                var result = CreateArtifactsCommand.HandleInternal(
+                    new CreateArtifactsParameters()
+                    {
+                        BookPath = bookFolderPath,
+                        CollectionPath = collectionFilePath,
+                        BloomPubOutputPath = Path.Combine(testFolder.FolderPath, "output")
+                    }
+                );
+
+                Assert.That(result, Is.EqualTo(CreateArtifactsExitCode.LegacyBookCannotHarvest));
+            }
         }
     }
 }

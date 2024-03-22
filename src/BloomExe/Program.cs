@@ -1734,7 +1734,7 @@ namespace Bloom
             if (_errorHandlingHasBeenSetUp)
                 return;
 
-            if (!ApplicationUpdateSupport.IsDev)
+            if (!ApplicationUpdateSupport.IsDev && !Program.RunningUnitTests)
             {
                 try
                 {
@@ -1803,8 +1803,11 @@ Anyone looking specifically at our issue tracking system can read what you sent 
             SIL.Reporting.ErrorReport.AddStandardProperties();
             // with squirrel, the file's dates only reflect when they were installed, so we override this version thing which
             // normally would include a bogus "Apparently Built On" date:
+            var versionNumber = Program.RunningUnitTests
+                ? "Current build" // for some reason VersionNumberString throws when running unit tests, so just use this.
+                : ErrorReport.VersionNumberString;
             ErrorReport.Properties["Version"] =
-                ErrorReport.VersionNumberString + " " + ApplicationUpdateSupport.ChannelName;
+                versionNumber + " " + ApplicationUpdateSupport.ChannelName;
             SIL.Reporting.ExceptionHandler.Init(new FatalExceptionHandler());
 
             ExceptionHandler.AddDelegate(

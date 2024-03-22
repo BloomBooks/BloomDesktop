@@ -56,7 +56,7 @@ namespace BloomTests.Edit
 
             _starter = new BookStarter(
                 _fileLocator,
-                (dir, fullyUpdateBookFiles) =>
+                (dir) =>
                     new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings),
                 collection
             );

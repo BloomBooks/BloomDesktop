@@ -23,7 +23,7 @@ namespace Bloom.CollectionTab
 
 				try
 				{
-					var collections = _model?.GetBookCollections() ?? System.Linq.Enumerable.Empty<BookCollection>();
+					var collections = _model?.GetBookCollections(true) ?? System.Linq.Enumerable.Empty<BookCollection>();
 					foreach (var collection in collections)
 						collection?.StopWatchingDirectory();
 				}
