@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
 using Bloom.web;
+using L10NSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -81,6 +82,7 @@ namespace Bloom.WebLibraryIntegration
             // Poll the status URL until we get a terminal status
             string status = null;
             dynamic result = null;
+            dynamic responseContentError = null;
             var statusRequest = new RestRequest(operationLocation.Value.ToString(), Method.GET);
             while (!progress.CancelRequested && !IsStatusTerminal(status))
             {
@@ -96,6 +98,7 @@ namespace Bloom.WebLibraryIntegration
                     dynamic responseContent = JObject.Parse(response.Content);
                     status = responseContent.status;
                     result = responseContent.result;
+                    responseContentError = responseContent.error;
                 }
                 catch (Exception e)
                 {
@@ -110,7 +113,26 @@ namespace Bloom.WebLibraryIntegration
                 else if (status == "Failed" || status == "Cancelled")
                 {
                     LogApiError(request, response);
-                    throw new ApplicationException(messageToShowUserOnFailure);
+
+                    string errorMessage;
+                    if (responseContentError.code == "ClientOutOfDate")
+                    {
+                        errorMessage = LocalizationManager.GetString(
+                            "PublishTab.Upload.OldVersion",
+                            "Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."
+                        );
+                    }
+                    else
+                    {
+                        errorMessage = messageToShowUserOnFailure;
+                    }
+                    string messageIntendedForUser = responseContentError.messageIntendedForUser;
+                    if (!string.IsNullOrEmpty(messageIntendedForUser))
+                    {
+                        progress.WriteError(messageIntendedForUser);
+                    }
+
+                    throw new ApplicationException(errorMessage);
                 }
 
                 int retryMilliseconds = 1000;
@@ -553,24 +575,6 @@ namespace Bloom.WebLibraryIntegration
             _userId = "";
             if (includeFirebaseLogout)
                 BloomLibraryAuthentication.Logout();
-        }
-
-        internal bool IsThisVersionAllowedToUpload()
-        {
-            var request = MakeParseGetRequest("classes/version");
-            var response = ParseRestClient.Execute(request);
-            var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
-            var row = dy.results[0];
-            string versionString = row.minDesktopVersion;
-            var parts = versionString.Split('.');
-            var requiredMajorVersion = int.Parse(parts[0]);
-            var requiredMinorVersion = int.Parse(parts[1]);
-            parts = Application.ProductVersion.Split('.');
-            var ourMajorVersion = int.Parse(parts[0]);
-            var ourMinorVersion = int.Parse(parts[1]);
-            if (ourMajorVersion == requiredMajorVersion)
-                return ourMinorVersion >= requiredMinorVersion;
-            return ourMajorVersion >= requiredMajorVersion;
         }
 
         /// <summary>

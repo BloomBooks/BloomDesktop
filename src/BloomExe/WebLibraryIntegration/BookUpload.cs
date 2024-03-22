@@ -1007,11 +1007,6 @@ namespace Bloom.WebLibraryIntegration
             return Path.Combine(bookFolder, Path.GetFileName(bookFolder) + ".pdf");
         }
 
-        internal bool IsThisVersionAllowedToUpload()
-        {
-            return BloomLibraryBookApiClient.IsThisVersionAllowedToUpload();
-        }
-
         /// <summary>
         /// In the past we've had problems with users copying folders manually and creating derivative books with
         /// the same bookInstanceId guids. Then we try to bulk upload a folder structure with books like this and the
