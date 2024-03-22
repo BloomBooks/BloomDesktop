@@ -218,7 +218,7 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "selectAndEditBook",
                 request =>
                 {
-                    var book = GetBookObjectFromPost(request, true);
+                    var book = GetBookObjectFromPost(request);
                     if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
                     {
                         _collectionModel.SelectBook(book);
@@ -781,18 +781,15 @@ namespace Bloom.web.controllers
             return collection.GetBookInfos().FirstOrDefault(predicate);
         }
 
-        private Book.Book GetBookObjectFromPost(
-            ApiRequest request,
-            bool fullyUpdateBookFiles = false
-        )
+        private Book.Book GetBookObjectFromPost(ApiRequest request)
         {
             var info = GetBookInfoFromPost(request);
-            return _collectionModel.GetBookFromBookInfo(info, fullyUpdateBookFiles);
+            return _collectionModel.GetBookFromBookInfo(info);
         }
 
         private Book.Book GetUpdatedBookObjectFromBookInfo(BookInfo info)
         {
-            return _collectionModel.GetBookFromBookInfo(info, true);
+            return _collectionModel.GetBookFromBookInfo(info);
         }
     }
 }

@@ -58,7 +58,7 @@ namespace BloomTests.Book
 
             _starter = new BookStarter(
                 _fileLocator,
-                (dir, fullyUpdateBookFiles) =>
+                (dir) =>
                     new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings),
                 _defaultCollectionSettings
             );
@@ -233,8 +233,7 @@ namespace BloomTests.Book
                         new BookRefreshEvent()
                     );
                 },
-                (path, fullyUpdateBookFiles) =>
-                    new BookStorage(path, _fileLocator, null, collectionSettings),
+                (path) => new BookStorage(path, _fileLocator, null, collectionSettings),
                 () => _starter,
                 null
             );
@@ -697,7 +696,7 @@ namespace BloomTests.Book
                     1
                 );
         }
-        
+
         [Test]
         public void CreateBookOnDiskFromTemplate_ConflictingCss_UsesLegacy()
         {

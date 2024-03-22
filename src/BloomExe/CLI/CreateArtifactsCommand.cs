@@ -27,7 +27,8 @@ namespace Bloom.CLI
         Success = 0,
         UnhandledException = 1,
         BookHtmlNotFound = 2,
-        EpubException = 4
+        EpubException = 4,
+        LegacyBookCannotHarvest = 8
     }
 
     class CreateArtifactsCommand
@@ -61,6 +62,12 @@ namespace Bloom.CLI
                 exitCode &= ~(int)CreateArtifactsExitCode.EpubException;
             }
 
+            if ((exitCode & (int)CreateArtifactsExitCode.LegacyBookCannotHarvest) != 0)
+            {
+                errors.Add(CreateArtifactsExitCode.LegacyBookCannotHarvest.ToString());
+                exitCode &= ~(int)CreateArtifactsExitCode.LegacyBookCannotHarvest;
+            }
+
             // Check if:
             // 1) Some error code was found
             // 2) No unknown flags remain
@@ -71,6 +78,11 @@ namespace Bloom.CLI
         }
 
         public static Task<int> Handle(CreateArtifactsParameters options)
+        {
+            return Task.FromResult((int)HandleInternal(options));
+        }
+
+        internal static CreateArtifactsExitCode HandleInternal(CreateArtifactsParameters options)
         {
             try
             {
@@ -103,15 +115,18 @@ namespace Bloom.CLI
                         Bloom.Program.SetProjectContext(_projectContext);
 
                         // Make the .bloompub and /bloomdigital outputs
-                        var exitCode = CreateArtifacts(options);
-                        return Task.FromResult((int)exitCode);
+                        return CreateArtifacts(options);
                     }
                 }
+            }
+            catch (BookStorage.CannotHarvestException)
+            {
+                return CreateArtifactsExitCode.LegacyBookCannotHarvest;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                return Task.FromResult((int)CreateArtifactsExitCode.UnhandledException);
+                return CreateArtifactsExitCode.UnhandledException;
             }
         }
 

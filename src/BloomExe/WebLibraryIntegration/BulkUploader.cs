@@ -368,7 +368,7 @@ namespace Bloom.WebLibraryIntegration
                 context.TeamCollectionManager.CurrentCollectionEvenIfDisconnected
                     ?? new AlwaysEditSaveContext() as ISaveContext
             );
-            var book = server.GetBookFromBookInfo(bookInfo, fullyUpdateBookFiles: true);
+            var book = server.GetBookFromBookInfo(bookInfo);
             book.BringBookUpToDate(new NullProgress());
             uploadParams.Folder = book.FolderPath; // BringBookUpToDate can change the title and folder (see BL-10330)
             book.Storage.CleanupUnusedSupportFiles(isForPublish: false); // we are publishing, but this is the real folder not a copy, so play safe.

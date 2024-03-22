@@ -319,7 +319,7 @@ namespace Bloom.Workspace
                     //var info = new BookInfo(selBookPath, inCurrentCollection, _tcManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
                     // Fully updating book files ensures that the proper branding files are found for
                     // previewing when the collection settings change but the book selection does not.
-                    var book = _bookServer.GetBookFromBookInfo(info, fullyUpdateBookFiles: true);
+                    var book = _bookServer.GetBookFromBookInfo(info);
                     _bookSelection.SelectBook(book);
                 }
             }
