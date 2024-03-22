@@ -178,6 +178,20 @@ namespace Bloom.Api
                 if (!string.IsNullOrEmpty(settingsPath))
                 {
                     var content = RobustFile.ReadAllText(settingsPath);
+                    if (string.IsNullOrEmpty(content))
+                    {
+                        NonFatalProblem.Report(
+                            ModalIf.Beta,
+                            PassiveIf.All,
+#if DEBUG
+                            // note:  That's the only place I've seen this happen.
+                            $"The branding settings at '{settingsPath}' are empty. Sometimes the watch:branding:files command starts emitting empty files."
+#else
+                            $"The branding settings at '{settingsPath}' are empty. "
+#endif
+                        );
+                        return null;
+                    }
                     var settings = JsonConvert.DeserializeObject<Settings>(content);
                     if (settings == null)
                     {
