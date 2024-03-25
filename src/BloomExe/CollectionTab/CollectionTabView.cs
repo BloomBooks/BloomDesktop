@@ -206,7 +206,7 @@ namespace Bloom.CollectionTab
                             // One day we may enhance it so that we switch tabs and show it,
                             // but there are states where that would be dangerous.
                             var newBook = new BookInfo(eventArgs.Path, false);
-                            var book = _model.GetBookFromBookInfo(newBook, true);
+                            var book = _model.GetBookFromBookInfo(newBook);
                             if (string.IsNullOrEmpty(book.Storage.ErrorMessagesHtml))
                             {
                                 // Happy path. Usually we can make a book object out of a downloaded book folder.
@@ -223,7 +223,7 @@ namespace Bloom.CollectionTab
                                 t.Tick += (o, args1) =>
                                 {
                                     retries++;
-                                    book = _model.GetBookFromBookInfo(newBook, true);
+                                    book = _model.GetBookFromBookInfo(newBook);
                                     if (string.IsNullOrEmpty(book.Storage.ErrorMessagesHtml))
                                     {
                                         t.Stop();

@@ -124,7 +124,7 @@ namespace Bloom.Book
 
     public class BookStorage : IBookStorage
     {
-        public delegate BookStorage Factory(BookInfo bookInfo, bool fullyUpdateBookFiles = false); //autofac uses this
+        public delegate BookStorage Factory(BookInfo bookInfo); //autofac uses this
 
         /// <summary>
         /// History of these numbers:
@@ -3684,6 +3684,12 @@ namespace Bloom.Book
         /// </summary>
         public bool LinkToLocalCollectionStyles { get; set; }
 
+        public class CannotHarvestException : ApplicationException
+        {
+            public CannotHarvestException(string message)
+                : base(message) { }
+        }
+
         /// <summary>
         /// Migrate to the new appearance system if we haven't already tried to do so.
         /// </summary>
@@ -3695,6 +3701,13 @@ namespace Bloom.Book
             );
             if (GetMaintenanceLevel() >= 4)
                 return;
+
+            if (Program.RunningHarvesterMode && !LegacyThemeCanBeUsed)
+            {
+                throw new CannotHarvestException(
+                    "This book cannot currently be harvested, since it is not migrated to the appearance system and cannot use legacy theme."
+                );
+            }
 
             var cssFiles = GetCssFilesToCheckForAppearanceCompatibility(true);
             var substituteCssPath = BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(cssFiles);

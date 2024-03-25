@@ -30,10 +30,7 @@ namespace Bloom.Book
             _tcManager = tcManager;
         }
 
-        public virtual Book GetBookFromBookInfo(
-            BookInfo bookInfo,
-            bool fullyUpdateBookFiles = false
-        )
+        public virtual Book GetBookFromBookInfo(BookInfo bookInfo)
         {
             //Review: Note that this isn't doing any caching yet... worried that caching will just eat up memory, but if anybody is holding onto these, then the memory won't be freed anyhow
             if (bookInfo is ErrorBookInfo)
@@ -45,7 +42,7 @@ namespace Bloom.Book
                 );
             }
 
-            var book = _bookFactory(bookInfo, _storageFactory(bookInfo, fullyUpdateBookFiles));
+            var book = _bookFactory(bookInfo, _storageFactory(bookInfo));
             return book;
         }
 

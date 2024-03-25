@@ -294,6 +294,14 @@ public class AppearanceSettings
         // if we don't know of a substitute theme and its associated customBookStyles2.css file.
         CssThemeName = "default";
         string substituteAppearance = null;
+        if (Program.RunningHarvesterMode)
+        {
+            // We'll preserve the current appearance of older books we are harvesting.
+            // This should only apply to temporary copies on their way to becoming artifacts,
+            // so it doesn't interfere with getting books migrated when they are to be edited.
+            CssThemeName = "legacy-5-6";
+            return null;
+        }
 
         foreach (var css in cssFilesToCheck.Where(css => !string.IsNullOrWhiteSpace(css.Item2)))
         {

@@ -111,12 +111,17 @@ namespace Bloom.CollectionTab
 
         private object _bookCollectionLock = new object(); // Locks creation of _bookCollections
 
-        public IReadOnlyList<BookCollection> GetBookCollections()
+        public IReadOnlyList<BookCollection> GetBookCollections(bool disposing = false)
         {
             lock (_bookCollectionLock)
             {
                 if (_bookCollections == null)
                 {
+                    if (disposing)
+                    {
+                        // We don't want to create new collections when we're disposing of the model.
+                        return new List<BookCollection>();
+                    }
                     _bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
 
                     //we want the templates to be second (after the editable collection) regardless of alphabetical sorting
@@ -999,14 +1004,14 @@ namespace Bloom.CollectionTab
             return collection.GetBookInfoByFolderPath(path);
         }
 
-        public Book.Book GetBookFromBookInfo(BookInfo bookInfo, bool fullyUpdateBookFiles = false)
+        public Book.Book GetBookFromBookInfo(BookInfo bookInfo)
         {
             // If we're looking for the current book it's important to return the actual book object,
             // because it could end up modified in ways that make our one out-of-date if we modify another
             // instance based on the same folder. For example, Rename could make our FolderPath wrong.
             if (bookInfo.FolderPath == _bookSelection.CurrentSelection?.FolderPath)
                 return _bookSelection.CurrentSelection;
-            return _bookServer.GetBookFromBookInfo(bookInfo, fullyUpdateBookFiles);
+            return _bookServer.GetBookFromBookInfo(bookInfo);
         }
 
         /// <summary>
