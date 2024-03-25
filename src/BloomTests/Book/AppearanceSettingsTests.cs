@@ -446,15 +446,12 @@ namespace BloomTests.Book
         public void AppearanceCss_HasThemeSettings()
         {
             // from efl-zero-margin-ebook
-            Assert.That(_generatedAppearanceCss, Does.Contain("--cover-margin-top: 3mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin: 3mm;"));
             Assert.That(
                 _generatedAppearanceCss,
                 Does.Contain(":not(.bloom-interactive-page).numberedPage.Device16x9Landscape")
             );
-            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin-top: 0mm;"));
-            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin-bottom: 0mm;"));
-            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin-left: 0mm;"));
-            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin-right: 0mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin: 0mm;"));
         }
 
         [Test]
@@ -498,15 +495,12 @@ namespace BloomTests.Book
         [Test]
         public void CssOfChosenTheme_OverridesMargin()
         {
-            Assert.That(_generatedAppearanceCss, Does.Contain("--cover-margin-top: 3mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin: 12mm;"));
             Assert.That(
                 _generatedAppearanceCss,
                 Does.Contain(":not(.bloom-interactive-page).numberedPage.Device16x9Landscape")
             );
-            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin-top: 0mm;"));
-            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin-bottom: 0mm;"));
-            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin-left: 0mm;"));
-            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin-right: 0mm;"));
+            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin: 0mm;"));
         }
 
         [Test]
