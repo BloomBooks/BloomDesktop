@@ -732,7 +732,13 @@ namespace Bloom.Edit
                 _pageSelection.CurrentSelection.Book.BringPageUpToDate(
                     _pageSelection.CurrentSelection.GetDivNodeForThisPage()
                 );
-                RefreshDisplayOfCurrentPage();
+                if (Visible)
+                    RefreshDisplayOfCurrentPage();
+                else // prevent BL-13184 / BL-2634 (when changing tab too quickly)
+                    _domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(
+                        _pageSelection.CurrentSelection
+                    );
+
                 _duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
                 _deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 
