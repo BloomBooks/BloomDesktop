@@ -138,6 +138,7 @@ namespace Bloom.History
                     .Select(ch => BookHistoryEvent.FromCollectionBookHistoryEvent(ch))
                     .ToList();
                 db.Close();
+				BookHistory.FixEventTypesForEnumerationChange(events);
                 return events;
             }
         }

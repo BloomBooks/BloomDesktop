@@ -53,13 +53,14 @@ const TextCell: React.FunctionComponent<{
     );
 };
 
+// Keep this list in sync with the server-side enum in History\HistoryEvent.cs.
 const kEventTypes = [
     "Check Out",
     "Check In",
     "Created",
     "Renamed",
     "Uploaded",
-    "Force Unlock",
+    "Forced Unlock",
     "Import Spreadsheet",
     "Sync Problem",
     "Deleted"
