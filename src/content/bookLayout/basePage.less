@@ -621,6 +621,11 @@ div[data-book*="branding"] {
     &.side-left {
         padding-left: var(--page-margin-left);
         padding-right: calc(var(--page-margin-right) + var(--page-gutter));
+        // Some THINKING on gutters
+        // 1) If the book is constructed by folding pages into one or more signatures, it's hard to know if a signature is ever so big that a gutter is needed?
+        // 2) If an A4 book is printed on A4 paper and bound via staples or spiral, then you would need an inner gutter
+        // 3) If a signature did get really big such that you had to cut of the outer edge to make a flat/straight book,
+        // then an *outer* gutter would start to make sense, but that would vary from page to page.
     }
 
     &.side-right {
@@ -684,10 +689,75 @@ div[data-book*="branding"] {
     }
 }
 
-/*
-    This is nice when developing as it shows the padding as colored areas.
-.bloom-editable:focus {
-    background-image: linear-gradient(to bottom, white 0%, white 100%),
-        linear-gradient(to bottom, #d6f3e4 0%, #d6f3e4 100%);
-    background-clip: content-box, padding-box;
-} */
+// ----------------------------
+// Padding
+// We want to improve the padding for the 99% of simple books, but we don't want to break
+// the small number of books that use origami to break the page up into little boxes.
+// Therefore the rules here only apply to direct descendants of the marginBox.
+// ----------------------------
+.marginBox {
+    &
+        > .split-pane.vertical-percent
+        > .split-pane-component
+        > .split-pane-component-inner
+        > .bloom-translationGroup {
+        /* About the calc() here: depending on the margin, we may need to adjust the padding of the text to make it so that
+you get less padding on the side of the text that is next to edge of the page. */
+        padding-left: calc(
+            var(--topLevel-text-padding-left) - var(--page-margin-left)
+        );
+        padding-right: calc(
+            var(--topLevel-text-padding-right) - var(--page-margin-right)
+        );
+        padding-top: calc(
+            var(--topLevel-text-padding-top) - var(--page-margin-top)
+        );
+        padding-bottom: calc(
+            var(--topLevel-text-padding-bottom) - var(--page-margin-bottom)
+        );
+    }
+    /* on these "inner" edges, we don't need to consider the page margin */
+    &
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-bottom
+        > .split-pane-component-inner
+        > .bloom-translationGroup {
+        padding-top: var(--topLevel-text-padding-top);
+    }
+    &
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-top
+        > .split-pane-component-inner
+        > .bloom-translationGroup {
+        padding-bottom: var(--topLevel-text-padding-bottom);
+    }
+    &
+        > .split-pane.vertical-percent
+        > .split-pane-component.position-left
+        > .split-pane-component-inner
+        > .bloom-translationGroup {
+        padding-right: var(--topLevel-text-padding-right);
+    }
+    &
+        > .split-pane.vertical-percent
+        > .split-pane-component.position-right
+        > .split-pane-component-inner
+        > .bloom-translationGroup {
+        padding-left: var(--topLevel-text-padding-left);
+    }
+}
+
+.bloom-page {
+    /* All of these default to the general one, then can be overridden as needed */
+    --cover-margin-top: var(--page-margin);
+    --cover-margin-bottom: var(--page-margin);
+    --page-margin-top: var(--page-margin);
+    --page-margin-bottom: var(--page-margin);
+    --page-margin-left: var(--page-margin);
+    --page-margin-right: var(--page-margin);
+
+    --topLevel-text-padding-top: var(--topLevel-text-padding);
+    --topLevel-text-padding-bottom: var(--topLevel-text-padding);
+    --topLevel-text-padding-right: var(--topLevel-text-padding);
+    --topLevel-text-padding-left: var(--topLevel-text-padding);
+}

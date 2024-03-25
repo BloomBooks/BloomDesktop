@@ -20,13 +20,13 @@
  * - a way to override for certain themes (either for all page sizes or by page-size)
 */
 .bloom-page {
-    --text-padding-default: 1em;
+    --topLevel-text-padding: 1em;
 
     /* display: value in .numberedPage:after to display the page number */
     --pageNumber-show: doShow-css-will-ignore-this-and-use-default; /* default is number displaying (the value is a self-documenting trick) */
 
     /* font-size: value in .numberedPage:after to display the page number */
-    --pageNumber-font-size: 14pt;
+    --pageNumber-font-size: 11pt;
     /* Either --pageNumber-top or --pageNumber-bottom should be set to a value, but not both. */
     /* bottom: value in .numberedPage:after to display the page number */
     --pageNumber-bottom: 10px;
@@ -58,11 +58,6 @@
     /* background-color: value in .bloom-page */
     --page-background-color: white;
 
-    --text-padding-top: 0em;
-    --text-padding-bottom: 0em;
-    --text-padding-left: 0em;
-    --text-padding-right: 0em;
-
     /* padding-left: value in .split-pane.vertical-percent
      *  .split-pane-component.position-right .split-pane-component-inner > div */
     --page-verticalSplit-width: 3px; /* 3px is matching Bloom 5.6's right margin for vertical split */
@@ -75,8 +70,6 @@
     --multilingual-editable-vertical-gap: 1em;
     /* border-radius: value in .bloom-imageContainer (picture added by user to front cover or content page) */
     --image-border-radius: 0px; /* 0px is the default, but we want to be explicit about square corners */
-    /* added to --page-margin-right for padding-right: value in .bloom-page.side-left */
-    /* added to --page-margin-left for padding-left: value in .bloom-page.side-right */
     /* Most Bloom books are too small to need a gutter. NB: THIS MUST HAVE UNITS even when 0, else calc() fails */
     --page-gutter: 0mm;
 
@@ -106,31 +99,7 @@
     /* border-width: value in .numberedPage .marginBox */
     --marginBox-border-width: medium; /* must not be 0px/0mm/0in to have a border. 'medium' is a keyword. */
 
-    /* The margin values here (and in the page-size-specific rules below) come from recommendations from
-     * Little Zebra. We just looked at several versions of the books in different Bloom formats and we think
-     * that having the same margins, inside and outside on ALL pages is most useful.
-     * A4 books are big, so we used 15mm for the top and bottom (short sides).
-     * We also want to be sure that all the title pages and credit pages and inside cover pages have the same
-     * margins as the rest of the book.
-     */
-
-    /* these are just defaults in case we miss some. If you override, remember that the bottom margin needs
-     * to be big enough for the page number, unless you put it elsewhere.
-     */
-
-    /* padding-top: value in .bloom-page: affects all pages except outside cover pages */
-    --page-margin-top: 12mm;
-    /* padding-bottom: value in .bloom-page: affects all pages except outside cover pages */
-    --page-margin-bottom: 12mm;
-
-    /* padding-right: value in .bloom-page.side-right */
-    /* added to --page-gutter for padding-right: value in .bloom-page.side-left */
-    --page-margin-right: 12mm;
-    /* padding-left: value in .bloom-page.side-left */
-    /* added to --page-gutter for padding-left: value in .bloom-page.side-right */
-    /* padding-left: and padding-right: values for pages that are symmetrical left vs. right
-     *   (outside cover pages, calendar pages, Bloom Player pages, "Device16x9..." pages) */
-    --page-margin-left: 12mm;
+    --page-margin: 12mm;
 }
 
 /* Beware of making these rules more specific. We want them to be able to be overriden by .bloom-page rules
@@ -148,29 +117,21 @@
     --page-margin-right: 12mm;
     --page-margin-left: 12mm;
 }
+
+.HalfLetterPortrait,/* SIL Mexico says use same as A5 */
+.HalfLetterLandscape,
 .A5Landscape,
 .A5Portrait {
-    --page-margin-top: 12mm;
-    --page-margin-bottom: 12mm;
-    --page-margin-right: 12mm;
-    --page-margin-left: 12mm;
+    --page-margin: 10mm;
 }
 .A6Portrait,
 .A6Landscape {
-    --page-margin-top: 10mm;
-    --page-margin-bottom: 10mm;
-    --page-margin-right: 10mm;
-    --page-margin-left: 10mm;
+    --page-margin: 10mm;
 }
 
 .Device16x9Portrait,
 .Device16x9Landscape {
-    --page-margin-top: 10px;
-    --page-margin-bottom: 10px;
-    --page-margin-right: 10px;
-    --page-margin-left: 10px;
-    --cover-margin-top: 10px; /* page-margin-top does not affect cover */
-    --cover-margin-bottom: 10px; /* don't need room for page number on cover */
+    --page-margin: 10px;
     /* Deliberately set both of these, which combines with a special device rule
      * in basepage.less which sets both left and right margin to auto, and we get
      * centered as the default for device pages. (To override this, you need to
@@ -179,16 +140,20 @@
     --pageNumber-always-left-margin: 0;
 }
 
+.Device16x9Landscape.numberedPage {
+    --pageNumber-extra-height: 8mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+}
+
 /* We need a small margin (above) for xmatter pages (e.g., Robots Mali credits page,
- * expecially in landscape, comment in BL-13002).
+ * especially in landscape, comment in BL-13002).
  * But we need more on numbered pages, so we can fit the page number.
  * This unfortunately breaks our rule about keeping the specificity at one class so that
  * the settings dialog can override. But currently we don't expect to make page margins
  * a book setting, so for now we're OK.*/
-.numberedPage.Device16x9Portrait,
+/*.numberedPage.Device16x9Portrait,
 .numberedPage.Device16x9Landscape {
-    --page-margin-bottom: 45px; /* need room for page number, so not as small as others */
-}
+    --page-margin-bottom: 45px; /* need room for page number, so not as small as others
+}*/
 
 /* classes are doubled in this rule because it needs to beat the one above that sets the
  * bottom margin for numbered pages in Device page sizes. This makes it equally specific
@@ -200,37 +165,4 @@
     --page-margin-right: 0;
     --page-margin-left: 0;
     --pageNumber-font-size: 0; /* review will this work to hide it? */
-}
-
-/* copied from MXBCommon-XMatter.css since they actually use this page size */
-.HalfLetterPortrait {
-    --page-margin-top: 15mm;
-    --page-margin-bottom: 15mm;
-    --page-margin-left: 15mm;
-    --page-margin-right: 15mm;
-    --page-gutter: 10mm; /* same as  @ExtraSpaceForBinding in old bookLayout/common-mixins.less */
-    /* set cover to same as normal page top and bottom (unlike the MXBCommon-XMatter) */
-    --cover-margin-top: 15mm;
-    --cover-margin-bottom: 15mm;
-}
-
-/* add padding between text an a neighboring box */
-.split-pane.horizontal-percent .split-pane-component.position-bottom {
-    --text-padding-top: var(--text-padding-default);
-}
-.split-pane.horizontal-percent .split-pane-component.position-top {
-    --text-padding-bottom: var(--text-padding-default);
-}
-.split-pane.vertical-percent .split-pane-component.position-left {
-    --text-padding-right: var(--text-padding-default);
-}
-.split-pane.vertical-percent .split-pane-component.position-right {
-    --text-padding-left: var(--text-padding-default);
-}
-/* notice that we don't do this if the edit is inside an image (i.e. and overlay) */
-.numberedPage :not(.bloom-imageContainer) .bloom-editable {
-    padding-top: var(--text-padding-top);
-    padding-bottom: var(--text-padding-bottom);
-    padding-right: var(--text-padding-right);
-    padding-left: var(--text-padding-left);
 }

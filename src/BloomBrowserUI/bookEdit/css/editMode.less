@@ -1152,3 +1152,13 @@ body.hideAllCKEditors .cke_chrome {
     font-family: "SymChar";
     color: @bloom-purple;
 }
+
+.bloom-page:focus-within,
+.bloom-page:hover {
+    // Show the padding as colored areas.
+    .bloom-translationGroup {
+        background-image: linear-gradient(to bottom, white 0%, white 100%),
+            linear-gradient(to bottom, #f0ffff 0%, #f0ffff 100%);
+        background-clip: content-box, padding-box;
+    }
+}
