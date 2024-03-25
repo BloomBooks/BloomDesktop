@@ -1,34 +1,23 @@
-/* replace EFL Template 1 custom CSS: no margins, no page numbers */
+/* replaces the pre-v5.7 "EFL Template 1" custom CSS: which had no margins, no page numbers.
+Note that hiding the page numbers is done by a setting in appearance.json, not here. */
 
-/* Hiding the page numbers is done by a setting in appearance.json. */
-
-/* This statement sets the margins on the front-matter and back-matter pages */
-
-.bloom-frontMatter.Device16x9Landscape,
-.bloom-backMatter.Device16x9Landscape,
-.bloom-frontMatter.Device16x9Portrait,
-.bloom-backMatter.Device16x9Portrait {
-    --cover-margin-top: 3mm;
-    --cover-margin-bottom: 3mm;
-    --page-margin-top: 3mm;
-    --page-margin-bottom: 3mm;
-    --page-margin-left: 3mm;
-    --page-margin-right: 3mm;
+[class*="Device"].bloom-frontMatter,
+[class*="Device"].bloom-backMatter {
+    --page-margin: 3mm;
 }
 
 /* This statement sets the margins on the numbered content pages */
 
 :not(.bloom-interactive-page).numberedPage.Device16x9Landscape,
 :not(.bloom-interactive-page).numberedPage.Device16x9Portrait {
-    --page-margin-top: 0mm;
-    --page-margin-bottom: 0mm;
-    --page-margin-left: 0mm;
-    --page-margin-right: 0mm;
-    --page-split-horizontal-gap: 1mm;
-    --page-split-vertical-gap: 1mm;
+    --page-margin: 0mm;
+
+    /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
+    --page-verticalSplit-width: 0; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
+    --page-horizontalSplit-height: 0;
 }
 
-/* The section below controls the pagenumber and the white circle around it.  */
+/* The section below controls the page number and the white circle around it.  */
 .Device16x9Landscape.numberedPage {
     --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
 }
@@ -40,12 +29,9 @@
 .Device16x9Landscape.numberedPage::after {
     --pageNumber-bottom: 0mm;
     --pageNumber-top: unset;
-    --pageNumber-font-size: 10pt;
+    --pageNumber-font-size: 11pt;
 
-    border-top-right-radius: 50%;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    border-radius: 50%;
     --pageNumber-background-color: #ffffff;
     --pageNumber-background-width: 33px;
     --pageNumber-always-left-margin: var(--page-margin-left);
@@ -59,13 +45,6 @@
     --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
 }
 
-/* With no margin, the text ends up too tight against the edge of the page. This adds a little padding. */
-.Device16x9Landscape[data-pagelineage*="7b192144-527c-417c-a2cb-1fb5e78bf38a"]
-    .bloom-editable {
-    padding-right: 2mm;
-    padding-left: 1mm; /* TODO: we need to address padding against image more generally */
-}
-.Device16x9Landscape.pictureOnRight .bloom-editable {
-    padding-left: 2mm;
-    padding-right: 1mm; /* TODO: we need to address padding against image more generally */
+[class*="Device"].numberedPage:not(.bloom-interactive-page) {
+    --topLevel-text-padding: 0.5em;
 }
