@@ -1,6 +1,6 @@
 /* based on EFL's https://bloomlibrary.org/player/PbflFNDoRx */
 
-.bloom-page{
+.bloom-page {
     /* This appearance is usually used for a Device book, where this rule gets overridden by the Device rules below. */
     --image-border-radius: 9px;
 }
@@ -30,7 +30,7 @@
     --pageNumber-right-margin: deliberately-invalid; /* variable has no value at all (unset does not work). Prevent centering for this layout */
     --pageNumber-always-left-margin: var(--page-margin-left);
     --pageNumber-bottom: 22px;
-    --pageNumber-font-size: 14pt;
+    --pageNumber-font-size: 11pt;
     --pageNumber-background-color: white;
     --pageNumber-background-width: 44px; /* enhance... express in terms of --marginBox-border-radius */
     --pageNumber-border-radius: 50%;
