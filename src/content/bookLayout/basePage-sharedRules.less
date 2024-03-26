@@ -164,7 +164,8 @@ span.bloom-linebreak {
         text-wrap: balance;
     }
     &.Bubble-style {
-        // Ensure that the text wrapping in overlays is stable while editing.  See BL-13135.
-        text-wrap: stable;
+        // Ensure that the text wrapping in overlays is generally stable.  See BL-13135.
+        // We would use the "stable" keyword, but that isn't implemented in most browsers.
+        text-wrap: wrap;
     }
 }
