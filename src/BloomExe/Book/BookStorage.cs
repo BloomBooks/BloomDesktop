@@ -686,6 +686,16 @@ namespace Bloom.Book
         /// </summary>
         public void SaveForPageChanged(string pageId, XmlElement modifiedPage)
         {
+            // We've seen pages get emptied out, and we don't know why. This is a safety check.
+            // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
+            if (CheckForEmptyMarginBoxOnPage(modifiedPage))
+            {
+                Debug.Fail(
+                    "Debug Mode Only: Error in BookStorage.SaveForPageChanged -- the page has lost all content in the marginBox div!"
+                );
+                return;
+            }
+
             // Convert the one page to HTML
             string pageHtml = XmlHtmlConverter.ConvertElementToHtml5(modifiedPage);
 
@@ -3844,6 +3854,49 @@ namespace Bloom.Book
         public static string RelativePathToCollectionStyles(bool useLocalCollectionStyles)
         {
             return (useLocalCollectionStyles ? "" : "../") + "customCollectionStyles.css";
+        }
+
+        /// <summary>
+        /// Check for lack of content in the marginBox div on the page that would prevent saving the state.
+        /// </summary>
+        /// <returns>true if the marginBox content has disappeared, false otherwise</returns>
+        /// <remarks>
+        /// See BL-13078, BL-13120, BL-13123, and BL-13143 for reported instances of this occurring.
+        /// </remarks>
+        public static bool CheckForEmptyMarginBoxOnPage(XmlElement pageDocument)
+        {
+            // If the content of the marginBox has disappeared, we don't want to save that state.
+            var internalNodes = pageDocument
+                .SelectNodes("//body//div[contains(@class,'marginBox')]/div")
+                .Cast<XmlElement>();
+            if (internalNodes.Count() == 0)
+            {
+                LogEmptyMarginBox(pageDocument);
+                return true;
+            }
+            foreach (var node in internalNodes)
+            {
+                var classes = node.GetAttribute("class");
+                if (string.IsNullOrEmpty(classes))
+                    continue;
+                // If the marginBox has a pageLabel, the real content has disappeared and we don't want to save that state.
+                if (classes.Contains("pageLabel"))
+                {
+                    LogEmptyMarginBox(pageDocument);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static void LogEmptyMarginBox(XmlElement pageDocument)
+        {
+            // Enhance: try to get stack dump from all threads?
+            // See https://stackoverflow.com/questions/2057781/is-there-a-way-to-get-the-stacktraces-for-all-threads-in-c-like-java-lang-thre.
+            Logger.WriteEvent(
+                $"Empty marginBox found on page:{Environment.NewLine}{pageDocument.OuterXml}"
+            );
+            Logger.WriteEvent($"Empty marginBox stack:{Environment.NewLine}{new StackTrace(true)}");
         }
     }
 }

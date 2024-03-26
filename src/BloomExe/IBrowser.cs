@@ -350,6 +350,17 @@ namespace Bloom
                     );
                     return;
                 }
+
+                // We've seen pages get emptied out, and we don't know why. This is a safety check.
+                // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
+                if (BookStorage.CheckForEmptyMarginBoxOnPage(_pageEditDom.DocumentElement))
+                {
+                    Debug.Fail(
+                        "Debug Mode Only: Error in IBrowser.LoadPageDomFromBrowser -- the page has lost all content in the marginBox div!"
+                    );
+                    return;
+                }
+
                 _pageEditDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
                 SaveCustomizedCssRules(userCssContent);
