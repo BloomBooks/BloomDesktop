@@ -22,6 +22,8 @@ namespace Bloom.Utils
             string fileNameToCheck
         )
         {
+            if (Program.RunningUnitTests)
+                return; // We don't want to check for missing localizations during unit tests.
             var localizationFolder = FileLocationUtilities.GetDirectoryDistributedWithApplication(
                 true,
                 "localization"
