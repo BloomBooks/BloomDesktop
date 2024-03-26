@@ -1491,6 +1491,9 @@ namespace Bloom
                 applicationContainer = applicationContainerSource;
             var installedStringFileFolder =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication(true, "localization");
+            var productVersion = Application.ProductVersion;
+            if (Program.RunningUnitTests)
+                productVersion = "1.2.3"; // Prevent invalid product version from being used in unit tests.
             if (installedStringFileFolder == null)
             {
                 // nb do NOT try to localize this...it's a shame, but the problem we're reporting is that the localization data is missing!
@@ -1510,7 +1513,7 @@ namespace Bloom
                     "en",
                     "Bloom",
                     "Bloom",
-                    Application.ProductVersion,
+                    productVersion,
                     fakeLocalDir,
                     "SIL/Bloom",
                     Resources.BloomIcon,
@@ -1531,7 +1534,7 @@ namespace Bloom
                     desiredLanguage,
                     "Bloom",
                     "Bloom",
-                    Application.ProductVersion,
+                    productVersion,
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
@@ -1563,7 +1566,7 @@ namespace Bloom
                     uiLanguage,
                     "Palaso",
                     "Palaso", /*review: this is just bloom's version*/
-                    Application.ProductVersion,
+                    productVersion,
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
@@ -1576,7 +1579,7 @@ namespace Bloom
                     uiLanguage,
                     "BloomMediumPriority",
                     "BloomMediumPriority",
-                    Application.ProductVersion,
+                    productVersion,
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
@@ -1589,7 +1592,7 @@ namespace Bloom
                     uiLanguage,
                     "BloomLowPriority",
                     "BloomLowPriority",
-                    Application.ProductVersion,
+                    productVersion,
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
