@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Bloom;
 using Bloom.Book;
 using Bloom.CLI;
 using Bloom.Collection;
@@ -153,6 +154,9 @@ namespace BloomTests.CLI
                 );
 
                 Assert.That(result, Is.EqualTo(CreateArtifactsExitCode.LegacyBookCannotHarvest));
+                // Without this, other tests will fail because they think the harvester is still running.
+                // I'm not clear why it persists from one test to another, but it does.
+                Program.RunningHarvesterMode = false;
             }
         }
     }
