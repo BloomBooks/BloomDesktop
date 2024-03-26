@@ -667,6 +667,10 @@ div[data-book*="branding"] {
 
     background-color: var(--page-background-color) !important;
 
+    // editMode.less may change this when we're editing
+    .split-pane-component-inner > .bloom-translationGroup {
+        background-color: var(--page-background-color) !important;
+    }
     // We need this at least for comics, which typically have a black background everywhere,
     // but we need to go back to white for xmatter pages, where we want to see the black text.
     // A more specific rule, usually in the .htm file itself, controls the background color of
