@@ -153,7 +153,16 @@ namespace Bloom.Book
 			//could instead just be generated when we update the page. However, for backwards compatibility (prior to 3.6),
 			//we localize it and place it in the datadiv.
 			dom.RemoveBookSetting("licenseDescription");
-			var description = metadata.License.GetDescription(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(), out languageUsedForDescription);
+			var langPriorities = bookData.GetLanguagePrioritiesForLocalizedTextOnPage();
+			var description = metadata.License.GetDescription(
+				langPriorities,
+				out languageUsedForDescription
+			);
+			LocalizationHelper.CheckForMissingLocalization(
+				langPriorities.ToList(),
+				languageUsedForDescription,
+				"Palaso.xlf"
+			);
 			dom.SetBookSetting("licenseDescription", languageUsedForDescription, ConvertNewLinesToHtmlBreaks(description));
 
 			// Book may have old licenseNotes, typically in 'en'. This can certainly show up again if licenseNotes in '*' is removed,
