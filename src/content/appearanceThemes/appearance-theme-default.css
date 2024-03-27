@@ -92,7 +92,7 @@
     /* background-color: value in .numberedPage .marginBox */
     /* This is not just for text boxes, but for everything inside the page margins.
        (For example, the space between text boxes or the background of partly transparent images.) */
-    --marginBox-background-color: transparent;
+    --marginBox-background-color: white; /* it is not transparent because at edit time we set the parent (the translationGroup) color to show padding
     /* padding: value in .numberedPage .marginBox */
     --marginBox-padding: 0px;
     /* border-radius: value in .numberedPage .marginBox */
@@ -105,6 +105,10 @@
     --marginBox-border-width: medium; /* must not be 0px/0mm/0in to have a border. 'medium' is a keyword. */
 
     --page-margin: 12mm;
+
+    /* In some themes, at edit-
+    time, the format button lands under the page number. See BL-13206. The name is is intentionally vague about direction and what we do with it. */
+    --formatButton-pageNumber-dodge: 0;
 }
 
 /* Beware of making these rules more specific. We want them to be able to be overriden by .bloom-page rules

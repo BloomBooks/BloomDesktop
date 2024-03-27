@@ -47,4 +47,6 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
 
 [class*="Device"].numberedPage:not(.bloom-interactive-page) {
     --topLevel-text-padding: 0.5em;
+    /* move so that page number doesn't it hide it if the text box is in the lower left */
+    --formatButton-pageNumber-dodge: 20px;
 }

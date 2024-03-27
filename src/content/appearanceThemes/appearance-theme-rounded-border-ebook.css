@@ -24,6 +24,8 @@
 /* The section below controls the pagenumber and the white circle around it.  */
 .Device16x9Landscape.numberedPage {
     --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+    /* move so that page number doesn't it hide it if the text box is in the lower left */
+    --formatButton-pageNumber-dodge: 15px;
 }
 .Device16x9Landscape.numberedPage::after {
     --pageNumber-bottom: 2mm;

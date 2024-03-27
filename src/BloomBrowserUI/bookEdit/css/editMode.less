@@ -759,6 +759,18 @@ div.textWholePage ul {
         }
     }
 }
+// Now sometimes, the format button lands under the page number.
+// Changing the z-index did not help. So we allow themes to "dodge" it.
+// Kind of a hack, I know. See BL-13206.
+@container style(--pageNumber-show-multiplicand:1) {
+    .split-pane-component.position-left
+        > .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton {
+        // this "3px" is there from long ago, nothing to do with this nudging
+        margin-left: calc(3px + var(--formatButton-pageNumber-dodge));
+    }
+}
 
 /*Toolbox*/
 #pagedragtoolbox {
