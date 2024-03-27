@@ -194,6 +194,10 @@
             <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
             <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
           </trans-unit>
+          <trans-unit id="ProblemReport.PageStructureProblem" translate="no">
+            <source xml:lang="en">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</source>
+            <note>ID: ProblemReport.PageStructureProblem</note>
+          </trans-unit>
         </body>
     </file>
 </xliff>
