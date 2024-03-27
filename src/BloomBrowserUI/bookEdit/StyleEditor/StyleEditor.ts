@@ -15,7 +15,10 @@ import "../../node_modules/select2/dist/js/select2.js";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import { IsPageXMatter } from "../js/bloomEditing";
+import {
+    IsPageXMatter,
+    SetupThingsSensitiveToStyleChanges
+} from "../js/bloomEditing";
 import "../../lib/jquery.alphanum";
 import axios from "axios";
 import { get, wrapAxios } from "../../utils/bloomApi";
@@ -2379,6 +2382,10 @@ export default class StyleEditor {
         OverflowChecker.MarkOverflowInternal(target);
         this.updateLabelsWithStyleName();
         this.getParagraphTabDescription();
+
+        SetupThingsSensitiveToStyleChanges(
+            $(this.boxBeingEdited).closest(".bloom-page")[0]
+        );
     }
 
     // Remove any additions we made to the element for the purpose of UI alone

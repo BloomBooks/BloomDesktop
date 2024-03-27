@@ -366,6 +366,20 @@ interface IChangeImageEvent extends IBloomWebSocketEvent {
     license: string;
 }
 
+// this is also called by the StyleEditor
+export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
+    $(container)
+        .find(".bloom-translationGroup")
+        .each(function() {
+            // set our font size so that we can use em units when setting padding of the translation group
+            const fontSizeOfL1 = $(this)
+                .find(".bloom-content1")
+                .first()
+                .css("font-size");
+            $(this).css("font-size", fontSizeOfL1);
+        });
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
@@ -477,6 +491,7 @@ export function SetupElements(container: HTMLElement) {
                 $(this).attr("data-text", this.textContent);
             });
         });
+    SetupThingsSensitiveToStyleChanges(container);
 
     $(container)
         .find(".bloom-translationGroup")
