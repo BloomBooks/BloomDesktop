@@ -16,6 +16,9 @@
     --marginBox-background-color: #ffffff; /* white */
 
     --topLevel-text-padding: 0.5em;
+
+    /* set to 0 because our marginBox is white but background is dark. This has the effect of increasing the text padding on the edges. */
+    --page-and-marginBox-are-same-color-multiplicand: 0;
 }
 
 /* The section below controls the pagenumber and the white circle around it.  */

@@ -42,6 +42,11 @@
     /* left: value in .numberedPage.side-left:after to display the page number */
     --pageNumber-left-margin: auto;
 
+    /* Themes should set to 0 if the marginBox is a different color than the page background. This affects the text padding.
+      Note that we could eventually figure this out in code, and probably need to once we provide a UI for
+      setting the marginBox border or page background color. */
+    --page-and-marginBox-are-same-color-multiplicand: 1;
+
     /* right: value in .numberedPage.side-right:after to display the page number
      * If this is used, --pageNumber-always-left-margin should be set to unset (a keyword).
      * Note that if used, this should be set the same value as --page-margin-right, which is

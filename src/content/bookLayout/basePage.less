@@ -706,18 +706,37 @@ div[data-book*="branding"] {
         > .split-pane-component-inner
         > .bloom-translationGroup {
         /* About the calc() here: depending on the margin, we may need to adjust the padding of the text to make it so that
-you get less padding on the side of the text that is next to edge of the page. */
+you get less padding on the side of the text that is next to edge of the page.
+
+About the "multiplicand" value: We don't want to do the aforementioned adjustment if the page margin is not providing a visual buffer.
+The buffer would be absent if the marginBox had a border or the page has a background color that is different from the marginBox color.*/
         padding-left: calc(
-            var(--topLevel-text-padding-left) - var(--page-margin-left)
+            var(--topLevel-text-padding-left) -
+                (
+                    var(--page-margin-left) *
+                        var(--page-and-marginBox-are-same-color-multiplicand)
+                )
         );
         padding-right: calc(
-            var(--topLevel-text-padding-right) - var(--page-margin-right)
+            var(--topLevel-text-padding-right) -
+                (
+                    var(--page-margin-right) *
+                        var(--page-and-marginBox-are-same-color-multiplicand)
+                )
         );
         padding-top: calc(
-            var(--topLevel-text-padding-top) - var(--page-margin-top)
+            var(--topLevel-text-padding-top) -
+                (
+                    var(--page-margin-top) *
+                        var(--page-and-marginBox-are-same-color-multiplicand)
+                )
         );
         padding-bottom: calc(
-            var(--topLevel-text-padding-bottom) - var(--page-margin-bottom)
+            var(--topLevel-text-padding-bottom) -
+                (
+                    var(--page-margin-bottom) *
+                        var(--page-and-marginBox-are-same-color-multiplicand)
+                )
         );
     }
     /* on these "inner" edges, we don't need to consider the page margin */
