@@ -175,6 +175,7 @@ require("./jquery.mousewheel.js");
     var activeElement;
     var textAreaCaretPosition;
     var storedOffset;
+    var initialZWSPs;
     var shortcuts = [];
     var popup;
     var longpressPopupVisible = false;
@@ -405,6 +406,9 @@ require("./jquery.mousewheel.js");
             storedOffset = EditableDivUtils.getElementSelectionIndex(
                 activeElement
             );
+            // save the number of ZWSPs at the beginning of the text.
+            // If this changes between now and when we restore the selection, we need to remove the extras.
+            initialZWSPs = activeElement.innerText.match(/^\u200B*/)[0].length;
         }
     }
 
@@ -415,7 +419,55 @@ require("./jquery.mousewheel.js");
             // If we make the selection before setting the focus, the selection
             // ends up in the wrong place (BL-2717).
             if (activeElement && typeof activeElement.focus !== "undefined") {
+                // When the IP is at the start of a paragraph, sometimes there is a side effect of setting focus
+                // that inserts a zero-width space at the beginning of the paragraph. It probably has something
+                // to do with CkEditor bookmarks, but I have not been able to track it down
+                // beyond the fact that it happens exactly during this setfocus() call.
+                // It causes an immediate problem because it makes the offset we've remembered wrong.
+                // We could adjust the focus, but we don't want these extra zwsp's in the text anyway.
+                // And there is no legitimate reason for an extra one to appear between the keydown for
+                // a longpress and a mouse click. So we just remove them.
+                // This is a horrible kludge, but hopefully we can retire it when we retire CkEditor.
+                // Note: I tried setting the focus after restoring the selection, but the selection ends
+                // up in the wrong place and we still sometimes get spurious zwsp's. I don't fully
+                // understand what is happening. I suspect CkEditor has its own idea of where the selection
+                // should be and is moving it when its element gets focus. But I don't know how to stop it.
+                // Similar things happen if I don't set the focus here at all...guessing that focus
+                // automatically returns from the button to the edit box and the guilty focus handler still runs.
+                // Another possible approach, which I have not tried, would be to prevent
+                // the longpress buttons ever getting focus (using preventDefault on mousedown).
+                // The only reason for them to have it would
+                // be for keyboard accessibility, but we already have a way to select the character we
+                // want from the keyboard.
                 activeElement.focus();
+                const currentInitialZWSPs = activeElement.innerText.match(
+                    /^\u200B*/
+                )[0].length;
+
+                if (currentInitialZWSPs > initialZWSPs) {
+                    // Remove the extras (typically just one). (There is probably a pathological
+                    // case where they are not all in the same text node, or there's a comment node
+                    // before the text node, but this is a temporary kludge. If it fails, the IP may be out
+                    // of position slightly).
+                    try {
+                        let node = activeElement;
+                        while (node.firstChild) {
+                            node = node.firstChild;
+                        }
+                        const range = document.createRange();
+
+                        range.setStart(node, 0);
+                        range.setEnd(node, currentInitialZWSPs - initialZWSPs);
+                        range.deleteContents();
+                    } catch (e) {
+                        // This basically ignores any error as far as the end user is concerned. That's the intent.
+                        // We're just attempting some non-critical cleanup.
+                        console.error(
+                            "Error removing extra zero-width spaces: " + e
+                        );
+                    }
+                }
+
                 EditableDivUtils.makeSelectionIn(
                     activeElement,
                     storedOffset,
