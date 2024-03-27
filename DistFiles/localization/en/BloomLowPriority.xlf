@@ -185,6 +185,10 @@
             <source xml:lang="en">Bloom was not able to access a microphone.</source>
             <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
           </trans-unit>
+          <trans-unit id="ProblemReport.PageStructureProblem" translate="no">
+            <source xml:lang="en">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</source>
+            <note>ID: ProblemReport.PageStructureProblem</note>
+          </trans-unit>
         </body>
     </file>
 </xliff>
