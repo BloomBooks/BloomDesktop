@@ -1,6 +1,8 @@
 ﻿// Styles that are shared by both the regular book front matter css and the more minimalist epub front matter css.
 
 @MarginBetweenBlocks: 2em;
+@DefaultCoverTitle1FontSize: 22pt;
+@DefaultCoverTitle2FontSize: 12pt;
 
 .frontCover {
     @MarginBetweenMinorItems: 5px;
@@ -18,7 +20,7 @@
             min-height: auto; // elsewhere there is a min-height, that may or may not be a good idea, but for sure we don't want it here.
             &.bloom-contentNational1 {
                 //NB: we show the national language even if this is a monolingual book
-                font-size: 120%;
+                font-size: @DefaultCoverTitle2FontSize;
                 //I don't know why the line-height here has to be bigger than for
                 // the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnทไปทั่วพื้ ช้ต่างปู" as a test.
                 //no: big line-heights make normal scripts ugly. See BL-6402 : line-height: 1.7em;
@@ -26,8 +28,7 @@
             }
             &.bloom-content1 {
                 //main title
-                font-size: 250%;
-
+                font-size: @DefaultCoverTitle1FontSize;
                 margin-bottom: @MarginBetweenMinorItems;
             }
         }
