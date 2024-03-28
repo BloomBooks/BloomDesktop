@@ -51,6 +51,8 @@ export interface IUploadCollisionDlgData {
     existingBookUrl: string;
     existingThumbUrl?: string;
     uploader?: string;
+    // Note that this may be called some time after the dialog closes (in response to Upload failing,
+    // for example, because the user asked us to fix the Book ID but Team Collection said we can't).
     onCancel?: () => void;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
     permissions?: IPermissions;
@@ -559,8 +561,10 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                             `libraryPublish/${command}`,
                             // eslint-disable-next-line @typescript-eslint/no-empty-function
                             () => {},
-                            // eslint-disable-next-line @typescript-eslint/no-empty-function
-                            () => {}
+                            () => {
+                                // error indicates we could not change ID.
+                                props.onCancel?.();
+                            }
                         );
                         closeDialog();
                     }}
