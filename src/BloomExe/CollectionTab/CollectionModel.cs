@@ -125,9 +125,12 @@ namespace Bloom.CollectionTab
                     _bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
 
                     //we want the templates to be second (after the editable collection) regardless of alphabetical sorting
-                    var templates = _bookCollections.First(c => c.Name == "Templates");
-                    _bookCollections.Remove(templates);
-                    _bookCollections.Insert(1, templates);
+                    var templates = _bookCollections.FirstOrDefault(c => c.Name == "Templates");
+                    if (templates != null)
+                    {
+                        _bookCollections.Remove(templates);
+                        _bookCollections.Insert(1, templates);
+                    }
                 }
                 return _bookCollections;
             }
@@ -290,17 +293,20 @@ namespace Bloom.CollectionTab
 
             _currentEditableCollectionSelection.SelectCollection(editableCollection);
             yield return editableCollection;
-
-            foreach (var bookCollection in _sourceCollectionsList.GetSourceCollectionsFolders())
+            // If we're locked to one downloaded book, we don't need to show the source collections, or even to load them.
+            if (!_collectionSettings.LockedToOneDownloadedBook)
             {
-                var collection = _bookCollectionFactory(
-                    bookCollection,
-                    BookCollection.CollectionType.SourceCollection
-                );
-                // Apart from the editable collection, I think only the downloaded books needs this (because books
-                // can be deleted from it and possibly added by new downloads); but it seems safest to set up for all.
-                SetupChangeNotifications(collection);
-                yield return collection;
+                foreach (var bookCollection in _sourceCollectionsList.GetSourceCollectionsFolders())
+                {
+                    var collection = _bookCollectionFactory(
+                        bookCollection,
+                        BookCollection.CollectionType.SourceCollection
+                    );
+                    // Apart from the editable collection, I think only the downloaded books needs this (because books
+                    // can be deleted from it and possibly added by new downloads); but it seems safest to set up for all.
+                    SetupChangeNotifications(collection);
+                    yield return collection;
+                }
             }
         }
 

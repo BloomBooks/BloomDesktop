@@ -37,13 +37,17 @@ const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
  * @returns A boolean, which is true if Bloom Enterprise is enabled and false otherwise
  */
-export function useEnterpriseAvailable() {
+export function useEnterpriseAvailable(failIfLockedToOneBook?: boolean) {
     const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
 
     useEffect(() => {
-        get("settings/enterpriseEnabled", response => {
-            setEnterpriseAvailable(response.data);
-        });
+        get(
+            "settings/enterpriseEnabled?failIfLockedToOneBook=" +
+                !!failIfLockedToOneBook,
+            response => {
+                setEnterpriseAvailable(response.data);
+            }
+        );
     }, []);
 
     return enterpriseAvailable;
@@ -181,8 +185,12 @@ export const BloomEnterpriseIcon = props => {
 /**
  * Checks the Bloom Enterprise settings and overlays a RequiresBloomEnterprise notice over the children if enterprise is off.
  */
-export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = props => {
-    const enterpriseAvailable = useEnterpriseAvailable();
+export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent<{
+    failIfLockedToOneBook?: boolean;
+}> = props => {
+    const enterpriseAvailable = useEnterpriseAvailable(
+        props.failIfLockedToOneBook
+    );
     return (
         <div
             css={css`
@@ -217,7 +225,10 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
                             margin-right: auto;
                         `}
                     >
-                        <RequiresBloomEnterpriseNotice darkTheme={true} />
+                        <RequiresBloomEnterpriseNotice
+                            darkTheme={true}
+                            failIfLockedToOneBook={props.failIfLockedToOneBook}
+                        />
                     </div>
                 </div>
             )}
@@ -228,6 +239,7 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
 export interface IRequiresEnterpriseNoticeProps {
     darkTheme?: boolean;
     inSeparateDialog?: boolean;
+    failIfLockedToOneBook?: boolean;
 }
 
 // This element displays a notice saying that a certain feature requires a Bloom Enterprise subscription,
@@ -240,14 +252,19 @@ export interface IRequiresEnterpriseNoticeProps {
 // RequiresBloomEnterpriseWrapper, also defined in this file.
 export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequiresEnterpriseNoticeProps> = ({
     darkTheme,
-    inSeparateDialog
+    inSeparateDialog,
+    failIfLockedToOneBook
 }) => {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        get("settings/enterpriseEnabled", response => {
-            setVisible(!response.data);
-        });
+        get(
+            "settings/enterpriseEnabled?failIfLockedToOneBook=" +
+                !!failIfLockedToOneBook,
+            response => {
+                setVisible(!response.data);
+            }
+        );
     }, []);
 
     const kBloomEnterpriseNoticePadding = "15px;";

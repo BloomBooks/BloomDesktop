@@ -76,9 +76,11 @@ namespace Bloom.web.controllers
             );
         }
 
-        private bool IsEnterpriseEnabled
+        private bool IsEnterpriseEnabled(bool failIfLockedToOneBook)
         {
-            get { return _collectionSettings.HaveEnterpriseFeatures; }
+            if (failIfLockedToOneBook && _collectionSettings.LockedToOneDownloadedBook)
+                return false;
+            return _collectionSettings.HaveEnterpriseFeatures;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -108,7 +110,13 @@ namespace Bloom.web.controllers
                     {
                         lock (request)
                         {
-                            request.ReplyWithBoolean(IsEnterpriseEnabled);
+                            // Some things (currently only creating a Team Collection) are not allowed if we're only
+                            // in enterprise mode as a concession to allowing editing of a book that was downloaded
+                            // for direct editing.
+                            var failIfLockedToOneBook =
+                                (request.GetParamOrNull("failIfLockedToOneBook") ?? "false")
+                                == "true";
+                            request.ReplyWithBoolean(IsEnterpriseEnabled(failIfLockedToOneBook));
                         }
                     }
                     else // post
@@ -459,8 +467,16 @@ namespace Bloom.web.controllers
             // in BookSettingsDialog.tsx.
             x["language1Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Name;
             x["language2Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Name;
-            if (!String.IsNullOrEmpty(_bookSelection.CurrentSelection.CollectionSettings.Language3?.Name))
-                x["language3Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language3.Name;
+            if (
+                !String.IsNullOrEmpty(
+                    _bookSelection.CurrentSelection.CollectionSettings.Language3?.Name
+                )
+            )
+                x["language3Name"] = _bookSelection
+                    .CurrentSelection
+                    .CollectionSettings
+                    .Language3
+                    .Name;
             request.ReplyWithJson(JsonConvert.SerializeObject(x));
         }
 
@@ -637,8 +653,18 @@ namespace Bloom.web.controllers
         )
         {
             FixEnterpriseSubscriptionCodeMode = true;
+            SetUpLegacyBrandingForSettingsDialog(invalidBranding, subscriptionCode);
+        }
+
+        public static void SetUpLegacyBrandingForSettingsDialog(
+            string invalidBranding,
+            string subscriptionCode
+        )
+        {
             if (SubscriptionCodeLooksIncomplete(subscriptionCode))
                 LegacyBrandingName = invalidBranding; // otherwise we won't show the legacy branding message, just bring up the dialog and show whatever's wrong.
+            else
+                LegacyBrandingName = "";
         }
 
         public static void EndFixEnterpriseBranding()

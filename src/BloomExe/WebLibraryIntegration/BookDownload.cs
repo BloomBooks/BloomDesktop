@@ -334,7 +334,7 @@ namespace Bloom.WebLibraryIntegration
                     // Write a collection-level file that is used when re-uploading the book
                     // so we know exactly which book this collection was made for.
                     var pathToForEditDataFile = Path.Combine(
-                        Path.GetDirectoryName(LastBookDownloadedPath),
+                        Path.GetDirectoryName(LastBookDownloadedPath), // collection folder
                         BloomLibraryPublishModel.kNameOfDownloadForEditFile
                     );
                     var id = BookMetaData.FromFolder(LastBookDownloadedPath).Id;
@@ -343,6 +343,11 @@ namespace Bloom.WebLibraryIntegration
                     editData["databaseId"] = link.DatabaseId;
                     editData["instanceId"] = id;
                     editData["bookFolder"] = LastBookDownloadedPath.Replace("\\", "/");
+                    // We can't create an instance and read the branding, because load will wipe it out when it sees no code.
+                    var branding = CollectionSettings.LoadBranding(
+                        CollectionCreatedForLastDownload
+                    );
+                    editData["branding"] = branding;
                     RobustFile.WriteAllText(
                         pathToForEditDataFile,
                         Newtonsoft.Json.JsonConvert.SerializeObject(editData)

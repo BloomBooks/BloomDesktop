@@ -146,7 +146,9 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                             ${tabMargins.bottom};
                     `}
                 >
-                    <RequiresBloomEnterpriseOverlayWrapper>
+                    <RequiresBloomEnterpriseOverlayWrapper
+                        failIfLockedToOneBook={true}
+                    >
                         <React.Fragment>
                             {intro}
                             {repoFolderPath

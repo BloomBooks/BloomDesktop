@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
@@ -12,6 +13,8 @@ using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
 using Bloom.Api;
+using Bloom.Publish.BloomLibrary;
+using SIL.IO;
 using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.Collection
@@ -392,8 +395,20 @@ namespace Bloom.Collection
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
             var oldBrand = _collectionSettings.BrandingProjectKey;
-            _collectionSettings.BrandingProjectKey = _brand;
-            _collectionSettings.SubscriptionCode = _subscriptionCode;
+            if (oldBrand != _brand || _collectionSettings.LockedToOneDownloadedBook)
+            {
+                _collectionSettings.BrandingProjectKey = _brand;
+                _collectionSettings.SubscriptionCode = _subscriptionCode;
+                // We've definitely selected some branding, even if it's the default. So we no longer
+                // want to be in the special state of allowing a single book to be edited without
+                // knowing the branding code.
+                var downloadEditPath = Path.Combine(
+                    _collectionSettings.FolderPath,
+                    BloomLibraryPublishModel.kNameOfDownloadForEditFile
+                );
+                RobustFile.Delete(downloadEditPath);
+            }
+
             // We don't know which if any of the new branding's bookshelves we should upload to by default,
             // but it will certainly be wrong to upload to one that belongs to some previous branding.
             if (oldBrand != _brand)

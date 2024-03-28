@@ -10,11 +10,13 @@ using System.Xml.Serialization;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
+using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
@@ -384,6 +386,29 @@ namespace Bloom.Collection
             }
         }
 
+        /// <summary>
+        /// Get the branding that the settings file specifies, without checking the subscription code
+        /// as we would do if creating a settings object from the settings file. (This is useful when
+        /// displaying the Branding dialog, to remind the user which branding they might want to find
+        /// a code for. We also use it to record the original branding for a book downloaded for editing,
+        /// since books on Bloom library keep their branding but not the code that normally allows it
+        /// to be used, though we make an exception for that one book.)
+        /// </summary>
+        public static string LoadBranding(string pathToCollectionFile)
+        {
+            try
+            {
+                var settingsContent = RobustFile.ReadAllText(pathToCollectionFile, Encoding.UTF8);
+                var xml = XElement.Parse(settingsContent);
+                return ReadString(xml, "BrandingProjectName", "");
+            }
+            catch (Exception ex)
+            {
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+                return "";
+            }
+        }
+
         /// ------------------------------------------------------------------------------------
         public void Load()
         {
@@ -446,7 +471,21 @@ namespace Bloom.Collection
                     if (expirationDate < DateTime.Now) // no longer require branding files to exist yet
                     {
                         InvalidBranding = BrandingProjectKey;
-                        BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
+                        var downloadEditPath = Path.Combine(
+                            FolderPath,
+                            BloomLibraryPublishModel.kNameOfDownloadForEditFile
+                        );
+                        if (RobustFile.Exists(downloadEditPath))
+                        {
+                            // We make an exception when the collection is a single book downloaded for editing,
+                            // since we want to keep its branding. (The user can't add books to this collection without
+                            // first providing a valid branding.)
+                            _overrideBrandingForEditDownload = BrandingProjectKey;
+                        }
+                        else
+                        {
+                            BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
+                        }
                     }
                 }
                 Country = ReadString(xml, "Country", "");
@@ -536,6 +575,8 @@ namespace Bloom.Collection
 
             SetAnalyticsProperties();
         }
+
+        public bool LockedToOneDownloadedBook => _overrideBrandingForEditDownload != null;
 
         private void DoOneTimeCheck()
         {
@@ -662,7 +703,17 @@ namespace Bloom.Collection
         }
 
         // e.g. "ABC2020" or "Kyrgyzstan2020[English]"
-        public string BrandingProjectKey { get; set; }
+        public string BrandingProjectKey
+        {
+            get => _overrideBrandingForEditDownload ?? _brandingProjectKey;
+            set
+            {
+                _brandingProjectKey = value;
+                _overrideBrandingForEditDownload = null;
+            }
+        }
+
+        private string _overrideBrandingForEditDownload;
 
         public string GetBrandingFlavor()
         {
@@ -846,6 +897,8 @@ namespace Bloom.Collection
 
         private readonly Dictionary<string, string> ColorPalettes =
             new Dictionary<string, string>();
+
+        private string _brandingProjectKey;
 
         public string GetColorPaletteAsJson(string paletteTag)
         {
