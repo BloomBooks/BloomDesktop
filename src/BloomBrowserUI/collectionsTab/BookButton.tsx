@@ -36,6 +36,7 @@ export const BookButton: React.FunctionComponent<{
     //selected: boolean;
     manager: BookSelectionManager;
     isSpreadsheetFeatureActive: boolean;
+    lockedToOneDownloadedBook: boolean;
 }> = props => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
@@ -197,7 +198,8 @@ export const BookButton: React.FunctionComponent<{
             {
                 label: "Duplicate Book",
                 l10nId: "CollectionTab.BookMenu.DuplicateBook",
-                command: "collections/duplicateBook"
+                command: "collections/duplicateBook",
+                shouldShow: () => !props.lockedToOneDownloadedBook
             },
             {
                 label: "Show in File Explorer",

@@ -138,12 +138,11 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                 l10nParam1={this.codesUrl}
                                 className={"legacyBrandingName"}
                             >
-                                In an older version of Bloom, this project used
-                                **%0**. To continue to use this you will need to
-                                enter a current subscription code. Codes for SIL
-                                brandings can be found [here](%1). For other
-                                subscriptions, contact your project
-                                administrator.
+                                This project previously used **%0**. To continue
+                                to use this you will need to enter a current
+                                subscription code. Codes for SIL brandings can
+                                be found [here](%1). For other subscriptions,
+                                contact your project administrator.
                             </Markdown>
                         )}
                         <div

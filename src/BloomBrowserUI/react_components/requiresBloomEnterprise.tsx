@@ -35,15 +35,29 @@ const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
- * @returns A boolean, which is true if Bloom Enterprise is enabled and false otherwise
+ * @returns A boolean, which is true if Bloom Enterprise is enabled and false otherwise.
+ * We have a special case where a book was created with an enterprise code and is later downloaded
+ * by someone authorized to do further editing ("Download for editing" button on Blorg).
+ * This results in a single-book collection in a special state, and while editing that one book
+ * in that one collection, for most purposes (by default, when failIfLockedToOneBook is false),
+ * this function will indicate that enterprise IS available, even though the collection doesn't actually
+ * have an enterprise code.
+ * Passing this parameter true indicates that the caller does NOT want to treat such a collection as
+ * having enterprise enabled; true should be returned only for a collection that really has a known
+ * enterprise code. At the time of writing, the one example is that we do not allow a "download for editing"
+ * collection to be turned into a Team Collection without supplying a real code.
  */
-export function useEnterpriseAvailable() {
+export function useEnterpriseAvailable(failIfLockedToOneBook?: boolean) {
     const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
 
     useEffect(() => {
-        get("settings/enterpriseEnabled", response => {
-            setEnterpriseAvailable(response.data);
-        });
+        get(
+            "settings/enterpriseEnabled?failIfLockedToOneBook=" +
+                !!failIfLockedToOneBook,
+            response => {
+                setEnterpriseAvailable(response.data);
+            }
+        );
     }, []);
 
     return enterpriseAvailable;
@@ -180,9 +194,17 @@ export const BloomEnterpriseIcon = props => {
 
 /**
  * Checks the Bloom Enterprise settings and overlays a RequiresBloomEnterprise notice over the children if enterprise is off.
+ * If "showIfLockedToOneBook" is true, this will also show the overlay for a "Download for editing" collection that was
+ * created with an enterprise-enabled book.
+ * (currently used only to prevent turning such a collection into a Team Collection. See the longer explanations on
+ * useEnterpriseAvailable and in the TeamCollectionSettingsPanel where this is used.)
  */
-export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = props => {
-    const enterpriseAvailable = useEnterpriseAvailable();
+export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent<{
+    showIfLockedToOneBook?: boolean;
+}> = props => {
+    const enterpriseAvailable = useEnterpriseAvailable(
+        props.showIfLockedToOneBook
+    );
     return (
         <div
             css={css`
@@ -217,7 +239,10 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
                             margin-right: auto;
                         `}
                     >
-                        <RequiresBloomEnterpriseNotice darkTheme={true} />
+                        <RequiresBloomEnterpriseNotice
+                            darkTheme={true}
+                            failIfLockedToOneBook={props.showIfLockedToOneBook}
+                        />
                     </div>
                 </div>
             )}
@@ -228,6 +253,7 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
 export interface IRequiresEnterpriseNoticeProps {
     darkTheme?: boolean;
     inSeparateDialog?: boolean;
+    failIfLockedToOneBook?: boolean;
 }
 
 // This element displays a notice saying that a certain feature requires a Bloom Enterprise subscription,
@@ -240,14 +266,19 @@ export interface IRequiresEnterpriseNoticeProps {
 // RequiresBloomEnterpriseWrapper, also defined in this file.
 export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequiresEnterpriseNoticeProps> = ({
     darkTheme,
-    inSeparateDialog
+    inSeparateDialog,
+    failIfLockedToOneBook
 }) => {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        get("settings/enterpriseEnabled", response => {
-            setVisible(!response.data);
-        });
+        get(
+            "settings/enterpriseEnabled?failIfLockedToOneBook=" +
+                !!failIfLockedToOneBook,
+            response => {
+                setVisible(!response.data);
+            }
+        );
     }, []);
 
     const kBloomEnterpriseNoticePadding = "15px;";

@@ -944,12 +944,17 @@ namespace Bloom.Workspace
                         BloomMessageBox.ShowInfo(MustBeAdminMessage);
                         return DialogResult.Cancel;
                     }
+                    CollectionSettingsApi.SetUpLegacyBrandingForSettingsDialog(
+                        _collectionSettings.InvalidBranding,
+                        _collectionSettings.SubscriptionCode
+                    );
                     using (var dlg = _settingsDialogFactory())
                     {
                         _currentlyOpenSettingsDialog = dlg;
                         dlg.SetDesiredTab(tab);
                         var temp = dlg.ShowDialog(this);
                         _currentlyOpenSettingsDialog = null;
+                        CollectionSettingsApi.EndFixEnterpriseBranding();
                         return temp;
                     }
                 });
@@ -962,7 +967,10 @@ namespace Bloom.Workspace
 
         public void CheckForInvalidBranding()
         {
-            if (_collectionSettings.InvalidBranding == null)
+            if (
+                _collectionSettings.InvalidBranding == null
+                || _collectionSettings.LockedToOneDownloadedBook
+            )
                 return;
             // I'm not very happy with this, but the only place I could find to detect that we're opening a new project
             // is too soon to bring up a dialog; it comes up before the main window is fully initialized, which can

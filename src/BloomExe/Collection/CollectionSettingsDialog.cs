@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
@@ -12,6 +13,8 @@ using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
 using Bloom.Api;
+using Bloom.Publish.BloomLibrary;
+using SIL.IO;
 using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.Collection
@@ -392,8 +395,25 @@ namespace Bloom.Collection
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
             var oldBrand = _collectionSettings.BrandingProjectKey;
-            _collectionSettings.BrandingProjectKey = _brand;
-            _collectionSettings.SubscriptionCode = _subscriptionCode;
+            if (oldBrand != _brand || _collectionSettings.LockedToOneDownloadedBook)
+            {
+                _collectionSettings.BrandingProjectKey = _brand;
+                _collectionSettings.SubscriptionCode = _subscriptionCode;
+                // We've definitely selected some branding, even if it's the default. If necessary, we have a valid code
+                // for it. So if this collection was created using the "Download for editing" button on Blorg
+                // and has been getting special permission to use some branding because of that, it no longer needs
+                // that special permission. Nor does the rule that books can't be added to such a collection apply
+                // any longer. And in case the user has now selected a different branding, we no longer want the book to use the
+                // branding we downloaded it with. A simple way to achieve all this is to delete the file (if any) that
+                // constitutes our record that this is a collection made using "Download for editing".
+                // (Everything that depends on it gets cleaned up when we restart bloom with the new branding.)
+                var downloadEditPath = Path.Combine(
+                    _collectionSettings.FolderPath,
+                    BloomLibraryPublishModel.kNameOfDownloadForEditFile
+                );
+                RobustFile.Delete(downloadEditPath);
+            }
+
             // We don't know which if any of the new branding's bookshelves we should upload to by default,
             // but it will certainly be wrong to upload to one that belongs to some previous branding.
             if (oldBrand != _brand)

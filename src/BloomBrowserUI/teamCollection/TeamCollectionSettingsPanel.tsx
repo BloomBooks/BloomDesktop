@@ -146,7 +146,16 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                             ${tabMargins.bottom};
                     `}
                 >
-                    <RequiresBloomEnterpriseOverlayWrapper>
+                    <RequiresBloomEnterpriseOverlayWrapper
+                        showIfLockedToOneBook={
+                            // We don't allow a "Download for editing" collection to be turned into a team collection
+                            // without first supplying a real code and so turning it into a full enterprise collection.
+                            // Maybe we should, but a TC that only has one book doesn't seem very useful, and we'd
+                            // probably have to do extra work to enforce the "can't add books" rule
+                            // for other users.
+                            true
+                        }
+                    >
                         <React.Fragment>
                             {intro}
                             {repoFolderPath
