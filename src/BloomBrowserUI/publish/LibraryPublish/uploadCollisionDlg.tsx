@@ -561,7 +561,6 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                             `libraryPublish/${command}`,
                             // eslint-disable-next-line @typescript-eslint/no-empty-function
                             () => {},
-                            // eslint-disable-next-line @typescript-eslint/no-empty-function
                             () => {
                                 // error indicates we could not change ID.
                                 props.onCancel?.();
