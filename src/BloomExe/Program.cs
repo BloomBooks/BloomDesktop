@@ -492,15 +492,22 @@ namespace Bloom
                     }
                     else
                     {
-                        if (UniqueToken.AcquireToken(_mutexId, "Bloom"))
+                        if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
+                        {
+                            // control key is held down so allow second instance to run; note that we're deliberately in this state
+                            if (UniqueToken.AcquireTokenQuietly(_mutexId))
+                            {
+                                gotUniqueToken = true;
+                            }
+                            else
+                            {
+                                RunningSecondInstance = true;
+                            }
+                        }
+                        else if (UniqueToken.AcquireToken(_mutexId, "Bloom"))
                         {
                             // No other instance is running. We own the token and should release it on quitting.
                             gotUniqueToken = true;
-                        }
-                        else if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
-                        {
-                            // control key is held down so allow second instance to run; note that we're deliberately in this state
-                            RunningSecondInstance = true;
                         }
                         else
                         {
