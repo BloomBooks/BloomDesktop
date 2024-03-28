@@ -11,13 +11,39 @@ using Bloom.Collection;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using BloomTests.Book;
-using Newtonsoft.Json;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 using SIL.Extensions;
+
+// It would be nice to have some tests for the new FirebaseLogin code, too, but so far
+// we have not been able to get that code to run except after starting Bloom fully.
 
 namespace BloomTests.WebLibraryIntegration
 {
+    public class BloomLibraryBookApiClientTestDouble : BloomLibraryBookApiClient
+    {
+        // Fake log in so that the unit tests can upload, since we haven't been able to get the new firebase login to work
+        // except when Bloom is actually running.
+        public void TestOnly_SetUserAccountInfo()
+        {
+            Account = "unittest@example.com";
+            _authenticationToken = "fakeTokenForUnitTests"; //azure function will ignore auth token for unit tests
+        }
+
+        public void TestOnly_DeleteBook(string bookObjectId)
+        {
+            var request = MakeDeleteRequest(bookObjectId);
+            AzureRestClient.Execute(request);
+        }
+
+        // Will throw an exception if there is any reason we can't make a successful query, including if there is no internet.
+        public dynamic TestOnly_GetSingleBookRecord(string id, bool includeLanguageInfo = false)
+        {
+            var json = GetBookRecords(id, includeLanguageInfo);
+            Assert.That(json.Count, Is.EqualTo(1));
+            return json[0];
+        }
+    }
+
     [TestFixture]
     public class BookUploadAndDownloadTests
     {
@@ -120,15 +146,6 @@ namespace BloomTests.WebLibraryIntegration
             return f.FolderPath;
         }
 
-        private void Login()
-        {
-            Assert.That(
-                _bloomLibraryBookApiClient.TestOnly_LegacyLogIn("unittest@example.com", "unittest"),
-                Is.True,
-                "Could not log in using the unittest@example.com account"
-            );
-        }
-
         /// <summary>
         /// Review: this is fragile and expensive. We're doing real internet traffic and creating real objects on S3 and parse-server
         /// which (to a very small extent) costs us real money. This will be slow. Also, under S3 eventual consistency rules,
@@ -158,7 +175,7 @@ namespace BloomTests.WebLibraryIntegration
                     p => !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
                 );
             int fileCount = filesToUpload.Count();
-            Login();
+            _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
             //HashSet<string> notifications = new HashSet<string>();
 
             var progress = new SIL.Progress.StringBuilderProgress();
@@ -236,26 +253,30 @@ namespace BloomTests.WebLibraryIntegration
             var firstPair = UploadAndDownLoadNewBook("first", "book1", "Jack", "Jack's data");
             var secondPair = UploadAndDownLoadNewBook("second", "book1", "Jill", "Jill's data");
             var thirdPair = UploadAndDownLoadNewBook("third", "book2", "Jack", "Jack's other data");
-
-            // Data uploaded with the same id but a different uploader should form a distinct book; the Jill data
-            // should not overwrite the Jack data. Likewise, data uploaded with a distinct Id by the same uploader should be separate.
-            var jacksFirstData = File.ReadAllText(
-                firstPair.newBookFolder.CombineForPath("one.htm")
-            );
-            // We use stringContaining here because upload does make some changes.
-            Assert.That(jacksFirstData, Does.Contain("Jack's data"));
-            var jillsData = File.ReadAllText(secondPair.newBookFolder.CombineForPath("one.htm"));
-            Assert.That(jillsData, Does.Contain("Jill's data"));
-            var jacksSecondData = File.ReadAllText(
-                thirdPair.newBookFolder.CombineForPath("one.htm")
-            );
-            Assert.That(jacksSecondData, Does.Contain("Jack's other data"));
-
-            // Todo: verify that we got three distinct book records in parse.com
-
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(firstPair.bookObjectId);
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(secondPair.bookObjectId);
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(thirdPair.bookObjectId);
+            try
+            {
+                // Data uploaded with the same id but a different uploader should form a distinct book; the Jill data
+                // should not overwrite the Jack data. Likewise, data uploaded with a distinct Id by the same uploader should be separate.
+                var jacksFirstData = File.ReadAllText(
+                    firstPair.newBookFolder.CombineForPath("one.htm")
+                );
+                // We use stringContaining here because upload does make some changes.
+                Assert.That(jacksFirstData, Does.Contain("Jack's data"));
+                var jillsData = File.ReadAllText(
+                    secondPair.newBookFolder.CombineForPath("one.htm")
+                );
+                Assert.That(jillsData, Does.Contain("Jill's data"));
+                var jacksSecondData = File.ReadAllText(
+                    thirdPair.newBookFolder.CombineForPath("one.htm")
+                );
+                Assert.That(jacksSecondData, Does.Contain("Jack's other data"));
+            }
+            finally
+            {
+                _bloomLibraryBookApiClient.TestOnly_DeleteBook(firstPair.bookObjectId);
+                _bloomLibraryBookApiClient.TestOnly_DeleteBook(secondPair.bookObjectId);
+                _bloomLibraryBookApiClient.TestOnly_DeleteBook(thirdPair.bookObjectId);
+            }
         }
 
         [Test]
@@ -267,225 +288,226 @@ namespace BloomTests.WebLibraryIntegration
             var jsonStart = json.Substring(0, json.Length - 1);
             var newJson = jsonStart + ",\"bookLineage\":\"original\"}";
             File.WriteAllText(jsonPath, newJson);
-            Login();
+            _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
+
             var bookObjectId = _uploader.UploadBook_ForUnitTest(bookFolder);
-            Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
-            File.Delete(bookFolder.CombineForPath("one.css"));
-            File.Delete(bookFolder.CombineForPath("activities", "file-to-replace.txt"));
-            File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "something new");
-            File.WriteAllText(Path.Combine(bookFolder, "two.css"), @"test");
-            File.WriteAllText(
-                Path.Combine(bookFolder, "activities", "replacement-file.txt"),
-                "another fake activity file"
-            );
-            File.WriteAllText(
-                Path.Combine(bookFolder, "activities", "file-to-modify.txt"),
-                "modified file content"
-            );
+            try
+            {
+                Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
+                File.Delete(bookFolder.CombineForPath("one.css"));
+                File.Delete(bookFolder.CombineForPath("activities", "file-to-replace.txt"));
+                File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "something new");
+                File.WriteAllText(Path.Combine(bookFolder, "two.css"), @"test");
+                File.WriteAllText(
+                    Path.Combine(bookFolder, "activities", "replacement-file.txt"),
+                    "another fake activity file"
+                );
+                File.WriteAllText(
+                    Path.Combine(bookFolder, "activities", "file-to-modify.txt"),
+                    "modified file content"
+                );
 
-            // Tweak the json, but don't change the ID.
-            newJson = jsonStart + ",\"bookLineage\":\"other\"}";
-            File.WriteAllText(jsonPath, newJson);
+                // Tweak the json, but don't change the ID.
+                newJson = jsonStart + ",\"bookLineage\":\"other\"}";
+                File.WriteAllText(jsonPath, newJson);
 
-            _uploader.UploadBook_ForUnitTest(
-                bookFolder,
-                out var s3PrefixUploadedTo,
-                existingBookObjectId: bookObjectId
-            );
+                _uploader.UploadBook_ForUnitTest(
+                    bookFolder,
+                    out var s3PrefixUploadedTo,
+                    existingBookObjectId: bookObjectId
+                );
 
-            var s3PrefixParent = GetParentOfS3Prefix(s3PrefixUploadedTo);
+                var s3PrefixParent = GetParentOfS3Prefix(s3PrefixUploadedTo);
 
-            var dest = _workFolderPath.CombineForPath("output");
-            Directory.CreateDirectory(dest);
-            var newBookFolder = _downloader.DownloadBook(
-                BloomS3Client.UnitTestBucketName,
-                s3PrefixParent,
-                dest
-            );
+                var dest = _workFolderPath.CombineForPath("output");
+                Directory.CreateDirectory(dest);
+                var newBookFolder = _downloader.DownloadBook(
+                    BloomS3Client.UnitTestBucketName,
+                    s3PrefixParent,
+                    dest
+                );
 
-            var firstData = File.ReadAllText(newBookFolder.CombineForPath("one.htm"));
-            Assert.That(
-                firstData,
-                Does.Contain("something new"),
-                "We should have overwritten the changed file"
-            );
-            Assert.That(
-                File.Exists(newBookFolder.CombineForPath("unmodified.css")),
-                Is.True,
-                "We should have kept the unmodified file"
-            );
-            Assert.That(
-                File.Exists(newBookFolder.CombineForPath("activities", "unmodified.txt")),
-                Is.True,
-                "We should have kept the unmodified file in a subdirectory"
-            );
-            Assert.That(
-                File.Exists(newBookFolder.CombineForPath("two.css")),
-                Is.True,
-                "We should have added the new file"
-            );
-            Assert.That(
-                File.Exists(newBookFolder.CombineForPath("activities", "replacement-file.txt")),
-                Is.True,
-                "We should have added the new file in a subdirectory"
-            );
+                var firstData = File.ReadAllText(newBookFolder.CombineForPath("one.htm"));
+                Assert.That(
+                    firstData,
+                    Does.Contain("something new"),
+                    "We should have overwritten the changed file"
+                );
+                Assert.That(
+                    File.Exists(newBookFolder.CombineForPath("unmodified.css")),
+                    Is.True,
+                    "We should have kept the unmodified file"
+                );
+                Assert.That(
+                    File.Exists(newBookFolder.CombineForPath("activities", "unmodified.txt")),
+                    Is.True,
+                    "We should have kept the unmodified file in a subdirectory"
+                );
+                Assert.That(
+                    File.Exists(newBookFolder.CombineForPath("two.css")),
+                    Is.True,
+                    "We should have added the new file"
+                );
+                Assert.That(
+                    File.Exists(newBookFolder.CombineForPath("activities", "replacement-file.txt")),
+                    Is.True,
+                    "We should have added the new file in a subdirectory"
+                );
 
-            Assert.That(
-                File.Exists(newBookFolder.CombineForPath("activities", "file-to-modify.txt")),
-                Is.True,
-                "We should have kept the modified file in a subdirectory"
-            );
-            Assert.That(
-                File.ReadAllText(newBookFolder.CombineForPath("activities", "file-to-modify.txt")),
-                Is.EqualTo("modified file content"),
-                "We should have the new contents of the file in a subdirectory"
-            );
+                Assert.That(
+                    File.Exists(newBookFolder.CombineForPath("activities", "file-to-modify.txt")),
+                    Is.True,
+                    "We should have kept the modified file in a subdirectory"
+                );
+                Assert.That(
+                    File.ReadAllText(
+                        newBookFolder.CombineForPath("activities", "file-to-modify.txt")
+                    ),
+                    Is.EqualTo("modified file content"),
+                    "We should have the new contents of the file in a subdirectory"
+                );
 
-            Assert.That(
-                File.Exists(newBookFolder.CombineForPath("one.css")),
-                Is.False,
-                "We should have deleted the obsolete file"
-            );
-            Assert.That(
-                File.Exists(newBookFolder.CombineForPath("activities", "file-to-replace.txt")),
-                Is.False,
-                "We should have deleted the obsolete file in a subdirectory"
-            );
+                Assert.That(
+                    File.Exists(newBookFolder.CombineForPath("one.css")),
+                    Is.False,
+                    "We should have deleted the obsolete file"
+                );
+                Assert.That(
+                    File.Exists(newBookFolder.CombineForPath("activities", "file-to-replace.txt")),
+                    Is.False,
+                    "We should have deleted the obsolete file in a subdirectory"
+                );
 
-            // Verify that metadata was overwritten, new record not created.
-            var records = _bloomLibraryBookApiClient.GetBookRecords("myId" + _thisTestId, false);
-            Assert.That(
-                records.Count,
-                Is.EqualTo(1),
-                "Should have overwritten parse server record, not added or deleted"
-            );
-            var bookRecord = records[0];
-            Assert.That(bookRecord.bookLineage.Value, Is.EqualTo("other"));
-
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookRecord.id.Value);
+                // Verify that metadata was overwritten, new record not created.
+                var records = _bloomLibraryBookApiClient.GetBookRecords(
+                    "myId" + _thisTestId,
+                    false
+                );
+                Assert.That(
+                    records.Count,
+                    Is.EqualTo(1),
+                    "Should have overwritten parse server record, not added or deleted"
+                );
+                var bookRecord = records[0];
+                Assert.That(bookRecord.bookLineage.Value, Is.EqualTo("other"));
+            }
+            finally
+            {
+                _bloomLibraryBookApiClient.TestOnly_DeleteBook(bookObjectId);
+            }
         }
 
         [Test]
         public void UploadBook_SetsInterestingParseFieldsCorrectly()
         {
-            Login();
+            _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
+
             var bookFolder = MakeBook(
                 MethodBase.GetCurrentMethod().Name,
                 "myId",
                 "me",
                 "something"
             );
-            _uploader.UploadBook_ForUnitTest(bookFolder);
-            var bookInstanceId = "myId" + _thisTestId;
-            var bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
+            var initialBookObjectId = _uploader.UploadBook_ForUnitTest(bookFolder);
+            try
+            {
+                var bookInstanceId = "myId" + _thisTestId;
+                var bookRecord = _bloomLibraryBookApiClient.TestOnly_GetSingleBookRecord(
+                    bookInstanceId
+                );
 
-            // Verify new upload
-            Assert.That(bookRecord.harvestState.Value, Is.EqualTo("New"));
-            Assert.That(
-                bookRecord.tags[0].Value,
-                Is.EqualTo("system:Incoming"),
-                "New books should always get the system:Incoming tag."
-            );
-            Assert.That(
-                bookRecord.updateSource.Value.StartsWith("BloomDesktop "),
-                Is.True,
-                "updateSource should start with BloomDesktop when uploaded"
-            );
-            Assert.That(
-                bookRecord.updateSource.Value,
-                Is.Not.EqualTo("BloomDesktop old"),
-                "updateSource should not equal 'BloomDesktop old' when uploaded from current Bloom"
-            );
-            DateTime lastUploadedDateTime = bookRecord.lastUploaded.Value;
-            var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
-            Assert.That(
-                differenceBetweenNowAndCreationOfJson,
-                // Since this is actually set on the server, clocks could be off by several seconds.
-                Is.GreaterThan(TimeSpan.FromSeconds(-20)),
-                "lastUploaded should be a valid date representing now-ish"
-            );
-            Assert.That(
-                differenceBetweenNowAndCreationOfJson,
-                Is.LessThan(TimeSpan.FromSeconds(20)),
-                "lastUploaded should be a valid date representing now-ish"
-            );
-            var bookObjectId = bookRecord.id.Value;
-            Assert.That(
-                string.IsNullOrEmpty(bookObjectId),
-                Is.False,
-                "book objectId should be set"
-            );
-            Assert.That(
-                string.IsNullOrEmpty(bookRecord.uploadPendingTimestamp.Value),
-                Is.True,
-                "uploadPendingTimestamp should not be set for a successful upload"
-            );
-            Assert.That(
-                bookRecord.inCirculation.Value,
-                Is.True,
-                "new books should default to being in circulation"
-            );
+                // Verify new upload
+                Assert.That(bookRecord.harvestState.Value, Is.EqualTo("New"));
+                Assert.That(
+                    bookRecord.tags[0].Value,
+                    Is.EqualTo("system:Incoming"),
+                    "New books should always get the system:Incoming tag."
+                );
+                Assert.That(
+                    bookRecord.updateSource.Value.StartsWith("BloomDesktop "),
+                    Is.True,
+                    "updateSource should start with BloomDesktop when uploaded"
+                );
+                Assert.That(
+                    bookRecord.updateSource.Value,
+                    Is.Not.EqualTo("BloomDesktop old"),
+                    "updateSource should not equal 'BloomDesktop old' when uploaded from current Bloom"
+                );
+                DateTime lastUploadedDateTime = bookRecord.lastUploaded.Value;
+                var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
+                Assert.That(
+                    differenceBetweenNowAndCreationOfJson,
+                    // Since this is actually set on the server, clocks could be off by several seconds.
+                    Is.GreaterThan(TimeSpan.FromSeconds(-20)),
+                    "lastUploaded should be a valid date representing now-ish"
+                );
+                Assert.That(
+                    differenceBetweenNowAndCreationOfJson,
+                    Is.LessThan(TimeSpan.FromSeconds(20)),
+                    "lastUploaded should be a valid date representing now-ish"
+                );
+                var bookObjectId = bookRecord.id.Value;
+                Assert.That(
+                    string.IsNullOrEmpty(bookObjectId),
+                    Is.False,
+                    "book objectId should be set"
+                );
+                Assert.That(
+                    string.IsNullOrEmpty(bookRecord.uploadPendingTimestamp.Value),
+                    Is.True,
+                    "uploadPendingTimestamp should not be set for a successful upload"
+                );
+                Assert.That(
+                    bookRecord.inCirculation.Value,
+                    Is.True,
+                    "new books should default to being in circulation"
+                );
 
-            // Set up for re-upload
-            _bloomLibraryBookApiClient.TestOnly_UpdateBookRecord(
-                JsonConvert.SerializeObject(
-                    new
-                    {
-                        bookInstanceId,
-                        updateSource = "not Bloom",
-                        tags = new string[0],
-                        harvestState = "Done",
-                        lastUploaded = (string)null
-                    }
-                ),
-                bookObjectId
-            );
-            bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
-            Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Done"));
-            Assert.That(bookRecord.tags, Is.Empty);
-            Assert.That(bookRecord.updateSource.Value, Is.EqualTo("not Bloom"));
-            // Odd, but we forced it to that in the TestOnly_UpdateBookRecord call above.
-            Assert.That(bookRecord.lastUploaded.Value, Is.Null);
+                // re-upload the book
+                _uploader.UploadBook_ForUnitTest(
+                    bookFolder,
+                    out string _,
+                    existingBookObjectId: bookObjectId
+                );
+                bookRecord = _bloomLibraryBookApiClient.TestOnly_GetSingleBookRecord(
+                    bookInstanceId
+                );
 
-            _uploader.UploadBook_ForUnitTest(
-                bookFolder,
-                out string _,
-                existingBookObjectId: bookObjectId
-            );
-            bookRecord = _bloomLibraryBookApiClient.GetSingleBookRecord(bookInstanceId);
-
-            // Verify re-upload
-            Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Updated"));
-            Assert.That(
-                bookRecord.tags[0].Value,
-                Is.EqualTo("system:Incoming"),
-                "Re-uploaded books should always get the system:Incoming tag."
-            );
-            Assert.That(
-                bookRecord.updateSource.Value.StartsWith("BloomDesktop "),
-                Is.True,
-                "updateSource should start with BloomDesktop when re-uploaded"
-            );
-            Assert.That(
-                bookRecord.updateSource.Value,
-                Is.Not.EqualTo("BloomDesktop old"),
-                "updateSource should not equal 'BloomDesktop old' when uploaded from current Bloom"
-            );
-            lastUploadedDateTime = bookRecord.lastUploaded.Value;
-            differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
-            Assert.That(
-                differenceBetweenNowAndCreationOfJson,
-                // Since this is actually set on the server, clocks could be off by several seconds.
-                Is.GreaterThan(TimeSpan.FromSeconds(-20)),
-                "lastUploaded should be a valid date representing now-ish"
-            );
-            Assert.That(
-                differenceBetweenNowAndCreationOfJson,
-                Is.LessThan(TimeSpan.FromSeconds(20)),
-                "lastUploaded should be a valid date representing now-ish"
-            );
-
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookRecord.id.Value);
+                // Verify re-upload
+                Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Updated"));
+                Assert.That(
+                    bookRecord.tags[0].Value,
+                    Is.EqualTo("system:Incoming"),
+                    "Re-uploaded books should always get the system:Incoming tag."
+                );
+                Assert.That(
+                    bookRecord.updateSource.Value.StartsWith("BloomDesktop "),
+                    Is.True,
+                    "updateSource should start with BloomDesktop when re-uploaded"
+                );
+                Assert.That(
+                    bookRecord.updateSource.Value,
+                    Is.Not.EqualTo("BloomDesktop old"),
+                    "updateSource should not equal 'BloomDesktop old' when uploaded from current Bloom"
+                );
+                lastUploadedDateTime = bookRecord.lastUploaded.Value;
+                differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
+                Assert.That(
+                    differenceBetweenNowAndCreationOfJson,
+                    // Since this is actually set on the server, clocks could be off by several seconds.
+                    Is.GreaterThan(TimeSpan.FromSeconds(-20)),
+                    "lastUploaded should be a valid date representing now-ish"
+                );
+                Assert.That(
+                    differenceBetweenNowAndCreationOfJson,
+                    Is.LessThan(TimeSpan.FromSeconds(20)),
+                    "lastUploaded should be a valid date representing now-ish"
+                );
+            }
+            finally
+            {
+                _bloomLibraryBookApiClient.TestOnly_DeleteBook(initialBookObjectId);
+            }
         }
 
         [Test]
@@ -497,44 +519,50 @@ namespace BloomTests.WebLibraryIntegration
                 @"this should be a binary picture"
             );
 
-            Login();
+            _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
+
             var bookObjectId = _uploader.UploadBook_ForUnitTest(
                 bookFolder,
                 out var s3PrefixUploadedTo
             );
-            Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
-            Assert.That(bookObjectId == "quiet", Is.False);
-            Assert.That(string.IsNullOrEmpty(s3PrefixUploadedTo), Is.False);
-            WaitUntilS3DataIsOnServer(s3PrefixUploadedTo, bookFolder);
-            var dest = _workFolderPath.CombineForPath("output");
-            Directory.CreateDirectory(dest);
-            var newBookFolder = _downloader.DownloadBook(
-                BloomS3Client.UnitTestBucketName,
-                GetParentOfS3Prefix(s3PrefixUploadedTo),
-                dest
-            );
-            var metadata = BookMetaData.FromString(
-                File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName))
-            );
-            Assert.That(
-                string.IsNullOrEmpty(metadata.Id),
-                Is.False,
-                "should have filled in missing ID"
-            );
+            try
+            {
+                Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
+                Assert.That(bookObjectId == "quiet", Is.False);
+                Assert.That(string.IsNullOrEmpty(s3PrefixUploadedTo), Is.False);
+                WaitUntilS3DataIsOnServer(s3PrefixUploadedTo, bookFolder);
+                var dest = _workFolderPath.CombineForPath("output");
+                Directory.CreateDirectory(dest);
+                var newBookFolder = _downloader.DownloadBook(
+                    BloomS3Client.UnitTestBucketName,
+                    GetParentOfS3Prefix(s3PrefixUploadedTo),
+                    dest
+                );
+                var metadata = BookMetaData.FromString(
+                    File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName))
+                );
+                Assert.That(
+                    string.IsNullOrEmpty(metadata.Id),
+                    Is.False,
+                    "should have filled in missing ID"
+                );
 
-            var record = _bloomLibraryBookApiClient.GetSingleBookRecord(metadata.Id);
-            string baseUrl = record.baseUrl;
-            Assert.That(
-                baseUrl.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"),
-                "baseUrl should start with s3 prefix"
-            );
+                var record = _bloomLibraryBookApiClient.TestOnly_GetSingleBookRecord(metadata.Id);
+                string baseUrl = record.baseUrl;
+                Assert.That(
+                    baseUrl.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"),
+                    "baseUrl should start with s3 prefix"
+                );
 
-            Assert.IsFalse(
-                File.Exists(Path.Combine(newBookFolder, "My incomplete book.BloomBookOrder")),
-                "Should not have created, uploaded or downloaded a book order file; these are obsolete"
-            );
-
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookObjectId);
+                Assert.IsFalse(
+                    File.Exists(Path.Combine(newBookFolder, "My incomplete book.BloomBookOrder")),
+                    "Should not have created, uploaded or downloaded a book order file; these are obsolete"
+                );
+            }
+            finally
+            {
+                _bloomLibraryBookApiClient.TestOnly_DeleteBook(bookObjectId);
+            }
         }
 
         [Test]
@@ -543,7 +571,8 @@ namespace BloomTests.WebLibraryIntegration
             var id = Guid.NewGuid().ToString();
             var bookFolder = MakeBook("My Url Book", id, "someone", "My content");
             int fileCount = Directory.GetFiles(bookFolder).Length;
-            Login();
+            _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
+
             var settings = new CollectionSettings(
                 new NewCollectionSettings()
                 {
@@ -561,51 +590,56 @@ namespace BloomTests.WebLibraryIntegration
                 out var s3PrefixUploadedTo,
                 collectionSettings: settings
             );
-            Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
-            Assert.That(bookObjectId == "quiet", Is.False);
-            Assert.That(string.IsNullOrEmpty(s3PrefixUploadedTo), Is.False);
-            WaitUntilS3DataIsOnServer(s3PrefixUploadedTo, bookFolder);
-            var dest = _workFolderPath.CombineForPath("output");
-            Directory.CreateDirectory(dest);
+            try
+            {
+                Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
+                Assert.That(bookObjectId == "quiet", Is.False);
+                Assert.That(string.IsNullOrEmpty(s3PrefixUploadedTo), Is.False);
+                WaitUntilS3DataIsOnServer(s3PrefixUploadedTo, bookFolder);
+                var dest = _workFolderPath.CombineForPath("output");
+                Directory.CreateDirectory(dest);
 
-            var newBookFolder = _downloader.DownloadFromOrderUrl(
-                BloomLinkArgs.kBloomUrlPrefix
-                    + BloomLinkArgs.kOrderFile
-                    + "="
-                    + "BloomLibraryBooks-UnitTests/"
-                    + GetParentOfS3Prefix(s3PrefixUploadedTo),
-                dest,
-                "nonsense"
-            );
-            Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount));
+                var newBookFolder = _downloader.DownloadFromOrderUrl(
+                    BloomLinkArgs.kBloomUrlPrefix
+                        + BloomLinkArgs.kOrderFile
+                        + "="
+                        + "BloomLibraryBooks-UnitTests/"
+                        + GetParentOfS3Prefix(s3PrefixUploadedTo),
+                    dest,
+                    "nonsense"
+                );
+                Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount));
 
-            var newBookFolder2 = _downloader.DownloadFromOrderUrl(
-                BloomLinkArgs.kBloomUrlPrefix
-                    + BloomLinkArgs.kOrderFile
-                    + "="
-                    + "BloomLibraryBooks-UnitTests/"
-                    + GetParentOfS3Prefix(s3PrefixUploadedTo)
-                    + "&forEdit=true",
-                dest,
-                "nonsense",
-                true
-            );
-            var collectionPath = Path.GetDirectoryName(newBookFolder2);
-            var collectionName = Path.GetFileName(collectionPath);
-            Assert.That(collectionName, Is.EqualTo("From Bloom Library - one"));
-            var settings2 = new CollectionSettings(
-                Path.Combine(collectionPath, collectionName + ".bloomCollection")
-            );
-            Assert.That(settings2.Language1Tag, Is.EqualTo("dmx"));
-            Assert.That(settings2.Language2Tag, Is.EqualTo("en"));
-            Assert.That(settings2.Language3Tag, Is.EqualTo("fr"));
-            Assert.That(Directory.GetFiles(newBookFolder2).Length, Is.EqualTo(fileCount));
-            Assert.That(
-                Directory.Exists(Path.Combine(newBookFolder2, "collectionFiles")),
-                Is.False
-            );
-
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookObjectId);
+                var newBookFolder2 = _downloader.DownloadFromOrderUrl(
+                    BloomLinkArgs.kBloomUrlPrefix
+                        + BloomLinkArgs.kOrderFile
+                        + "="
+                        + "BloomLibraryBooks-UnitTests/"
+                        + GetParentOfS3Prefix(s3PrefixUploadedTo)
+                        + "&forEdit=true",
+                    dest,
+                    "nonsense",
+                    true
+                );
+                var collectionPath = Path.GetDirectoryName(newBookFolder2);
+                var collectionName = Path.GetFileName(collectionPath);
+                Assert.That(collectionName, Is.EqualTo("From Bloom Library - one"));
+                var settings2 = new CollectionSettings(
+                    Path.Combine(collectionPath, collectionName + ".bloomCollection")
+                );
+                Assert.That(settings2.Language1Tag, Is.EqualTo("dmx"));
+                Assert.That(settings2.Language2Tag, Is.EqualTo("en"));
+                Assert.That(settings2.Language3Tag, Is.EqualTo("fr"));
+                Assert.That(Directory.GetFiles(newBookFolder2).Length, Is.EqualTo(fileCount));
+                Assert.That(
+                    Directory.Exists(Path.Combine(newBookFolder2, "collectionFiles")),
+                    Is.False
+                );
+            }
+            finally
+            {
+                _bloomLibraryBookApiClient.TestOnly_DeleteBook(bookObjectId);
+            }
         }
 
         [Test]
@@ -620,51 +654,56 @@ namespace BloomTests.WebLibraryIntegration
                 htmName: "This ངའ་ཁས་འབབ needs encoding and is quite a bit too long.htm"
             );
             int fileCount = Directory.GetFiles(bookFolder).Length;
-            Login();
+            _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
             var bookObjectId = _uploader.UploadBook_ForUnitTest(
                 bookFolder,
                 out var s3PrefixUploadedTo
             );
-            Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
-            Assert.That(bookObjectId == "quiet", Is.False);
-            Assert.That(string.IsNullOrEmpty(s3PrefixUploadedTo), Is.False);
-            WaitUntilS3DataIsOnServer(s3PrefixUploadedTo, bookFolder);
-            var dest = _workFolderPath.CombineForPath("output");
-            Directory.CreateDirectory(dest);
+            try
+            {
+                Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
+                Assert.That(bookObjectId == "quiet", Is.False);
+                Assert.That(string.IsNullOrEmpty(s3PrefixUploadedTo), Is.False);
+                WaitUntilS3DataIsOnServer(s3PrefixUploadedTo, bookFolder);
+                var dest = _workFolderPath.CombineForPath("output");
+                Directory.CreateDirectory(dest);
 
-            var newBookFolder2 = _downloader.DownloadFromOrderUrl(
-                BloomLinkArgs.kBloomUrlPrefix
-                    + BloomLinkArgs.kOrderFile
-                    + "="
-                    + "BloomLibraryBooks-UnitTests/"
-                    + HttpUtility.UrlEncode(GetParentOfS3Prefix(s3PrefixUploadedTo))
-                    + "&forEdit=true",
-                dest,
-                "nonsense",
-                true
-            );
-            var collectionPath = Path.GetDirectoryName(newBookFolder2);
-            var collectionName = Path.GetFileName(collectionPath);
-            // xk is not a real language tag, so Bloom comes up with this as the language name.
-            // Another test tries the happy path where we actually know a likely name for the language.
-            Assert.That(
-                collectionName,
-                Does.StartWith("From Bloom Library - This ངའ་ཁས་འབབ needs")
-            );
-            var settings2 = new CollectionSettings(
-                Path.Combine(collectionPath, collectionName + ".bloomCollection")
-            );
-            Assert.That(settings2.Language1Tag, Is.EqualTo("xk"));
-            Assert.That(settings2.Language2Tag, Is.EqualTo("fr"));
-            Assert.That(settings2.Language3Tag, Is.EqualTo("de"));
-            Assert.That(Directory.GetFiles(newBookFolder2).Length, Is.EqualTo(fileCount));
-            Assert.That(
-                Directory.Exists(Path.Combine(newBookFolder2, "collectionFiles")),
-                Is.False
-            );
-
-            _bloomLibraryBookApiClient.TestOnly_DeleteBookRecord(bookObjectId);
+                var newBookFolder2 = _downloader.DownloadFromOrderUrl(
+                    BloomLinkArgs.kBloomUrlPrefix
+                        + BloomLinkArgs.kOrderFile
+                        + "="
+                        + "BloomLibraryBooks-UnitTests/"
+                        + HttpUtility.UrlEncode(GetParentOfS3Prefix(s3PrefixUploadedTo))
+                        + "&forEdit=true",
+                    dest,
+                    "nonsense",
+                    true
+                );
+                var collectionPath = Path.GetDirectoryName(newBookFolder2);
+                var collectionName = Path.GetFileName(collectionPath);
+                // xk is not a real language tag, so Bloom comes up with this as the language name.
+                // Another test tries the happy path where we actually know a likely name for the language.
+                Assert.That(
+                    collectionName,
+                    Does.StartWith("From Bloom Library - This ངའ་ཁས་འབབ needs")
+                );
+                var settings2 = new CollectionSettings(
+                    Path.Combine(collectionPath, collectionName + ".bloomCollection")
+                );
+                Assert.That(settings2.Language1Tag, Is.EqualTo("xk"));
+                Assert.That(settings2.Language2Tag, Is.EqualTo("fr"));
+                Assert.That(settings2.Language3Tag, Is.EqualTo("de"));
+                Assert.That(Directory.GetFiles(newBookFolder2).Length, Is.EqualTo(fileCount));
+                Assert.That(
+                    Directory.Exists(Path.Combine(newBookFolder2, "collectionFiles")),
+                    Is.False
+                );
+            }
+            finally
+            {
+                _bloomLibraryBookApiClient.TestOnly_DeleteBook(bookObjectId);
+            }
         }
 
         [Test]

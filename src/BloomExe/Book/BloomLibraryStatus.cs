@@ -6,7 +6,7 @@ namespace Bloom.Book
     public enum HarvesterState
     {
         Done,
-        InProgress, // includes New or Updated in parse status
+        InProgress, // includes New or Updated harvestStates in book record
         Failed,
         FailedIndefinitely, // marked by staff as not worth trying again
         Multiple // multiple books with this id, who knows what the harvester state of this is

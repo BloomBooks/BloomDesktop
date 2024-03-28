@@ -35,11 +35,7 @@ namespace Bloom.WebLibraryIntegration
         protected string _authenticationToken = String.Empty;
         protected string _userId;
 
-        public BloomLibraryBookApiClient()
-        {
-            var keys = AccessKeys.GetAccessKeys(BookUpload.UploadBucketNameForCurrentEnvironment);
-            _parseApplicationId = keys.ParseApplicationKey;
-        }
+        public BloomLibraryBookApiClient() { }
 
         private void LogApiError(IRestRequest request, IRestResponse response)
         {
@@ -115,7 +111,8 @@ namespace Bloom.WebLibraryIntegration
                     LogApiError(request, response);
 
                     string errorMessage;
-                    if (responseContentError.code == "ClientOutOfDate")
+                    string errorCode = responseContentError.code;
+                    if (errorCode == "ClientOutOfDate")
                     {
                         errorMessage = LocalizationManager.GetString(
                             "PublishTab.Upload.OldVersion",
@@ -126,6 +123,9 @@ namespace Bloom.WebLibraryIntegration
                     {
                         errorMessage = messageToShowUserOnFailure;
                     }
+                    // As of March 2024, this is not used, but we wanted to have a mechanism by which the API could give messages directly to the user.
+                    // For example, we might shut down uploads for alpha temporarily. This might be used with or without the ClientOutOfDate error code.
+                    // Note, we do not anticipate this message would be localized.
                     string messageIntendedForUser = responseContentError.messageIntendedForUser;
                     if (!string.IsNullOrEmpty(messageIntendedForUser))
                     {
@@ -161,10 +161,10 @@ namespace Bloom.WebLibraryIntegration
 
         // This calls an azure function which does the following:
         // New book:
-        //  - Creates an empty `books` record in parse-server with an uploadPendingTimestamp
+        //  - Creates an empty `books` record in database with an uploadPendingTimestamp
         // Existing book:
-        //  - Verifies the user has permission to update the book (using parse-server session)
-        //  - Sets uploadPendingTimestamp on the `books` record in parse-server
+        //  - Verifies the user has permission to update the book (using session object in the database)
+        //  - Sets uploadPendingTimestamp on the `books` record in the database
         //  - Using the provided file paths and hashes, determines which files need to be copied from the existing
         //     S3 location and which need to be uploaded by the client
         //  - Copies book files from existing S3 location to a new S3 location based on bookObjectId/timestamp;
@@ -235,9 +235,9 @@ namespace Bloom.WebLibraryIntegration
         }
 
         // This calls an azure function which does the following:
-        //  - Verifies the user has permission to update the book (using parse-server session)
+        //  - Verifies the user has permission to update the book (using session object in the database)
         //  - Verifies the baseUrl includes the expected S3 location
-        //  - Updates the `books` record in parse-server with all fields from the client,
+        //  - Updates the `books` record in the database with all fields from the client,
         //     including the new baseUrl which points to the new S3 location. Sets uploadPendingTimestamp to null.
         //  - Deletes the book files from the old S3 location
         public void FinishBookUpload(
@@ -295,6 +295,12 @@ namespace Bloom.WebLibraryIntegration
             return MakeRequest(endpoint, Method.POST);
         }
 
+        // used by unit tests to clean up
+        protected RestRequest MakeDeleteRequest(string endpoint = "")
+        {
+            return MakeRequest(endpoint, Method.DELETE);
+        }
+
         private RestRequest MakeRequest(string endpoint, Method requestType)
         {
             string path = kBookApiUrlPrefix + endpoint;
@@ -316,7 +322,7 @@ namespace Bloom.WebLibraryIntegration
 
         public void SetLoginData(
             string account,
-            string parseUserObjectId,
+            string userId,
             string sessionToken,
             string destination
         )
@@ -325,9 +331,9 @@ namespace Bloom.WebLibraryIntegration
             Settings.Default.WebUserId = account;
             Settings.Default.LastLoginSessionToken = sessionToken;
             Settings.Default.LastLoginDest = destination;
-            Settings.Default.LastLoginParseObjectId = parseUserObjectId;
+            Settings.Default.LastLoginUserId = userId;
             Settings.Default.Save();
-            _userId = parseUserObjectId;
+            _userId = userId;
             _authenticationToken = sessionToken;
         }
 
@@ -344,10 +350,10 @@ namespace Bloom.WebLibraryIntegration
                 );
                 return false;
             }
-            if (string.IsNullOrEmpty(Settings.Default.LastLoginParseObjectId))
+            if (string.IsNullOrEmpty(Settings.Default.LastLoginUserId))
             {
                 progress.WriteError(
-                    "Please first log in from Bloom:Publish:Web, then quit and try again. (LastLoginParseObjectId)"
+                    "Please first log in from Bloom:Publish:Web, then quit and try again. (LastLoginUserId)"
                 );
                 return false;
             }
@@ -371,25 +377,12 @@ namespace Bloom.WebLibraryIntegration
 
             SetLoginData(
                 Settings.Default.WebUserId,
-                Settings.Default.LastLoginParseObjectId,
+                Settings.Default.LastLoginUserId,
                 Settings.Default.LastLoginSessionToken,
                 destination
             );
 
             return true;
-        }
-
-        protected RestClient _parseRestClient;
-        protected RestClient ParseRestClient
-        {
-            get
-            {
-                if (_parseRestClient == null)
-                {
-                    _parseRestClient = new RestClient(GetRealUrl());
-                }
-                return _parseRestClient;
-            }
         }
 
         // Don't even THINK of making this mutable so each unit test uses a different class.
@@ -404,38 +397,6 @@ namespace Bloom.WebLibraryIntegration
         public string Account { get; protected set; }
 
         public bool LoggedIn => !string.IsNullOrEmpty(_authenticationToken);
-
-        public string GetRealUrl()
-        {
-            return UrlLookup.LookupUrl(UrlType.Parse, null, BookUpload.UseSandbox);
-        }
-
-        protected RestRequest MakeParseRequest(string path, Method requestType)
-        {
-            // client.Authenticator = new HttpBasicAuthenticator(username, password);
-            var request = new RestRequest(path, requestType);
-            SetParseCommonHeaders(request);
-            if (!string.IsNullOrEmpty(_authenticationToken))
-                request.AddHeader("X-Parse-Session-Token", _authenticationToken);
-            return request;
-        }
-
-        protected RestRequest MakeParseGetRequest(string path)
-        {
-            return MakeParseRequest(path, Method.GET);
-        }
-
-        private string _parseApplicationId;
-
-        private void SetParseCommonHeaders(RestRequest request)
-        {
-            request.AddHeader("X-Parse-Application-Id", _parseApplicationId);
-        }
-
-        protected RestRequest MakeParsePostRequest(string path)
-        {
-            return MakeParseRequest(path, Method.POST);
-        }
 
         /// <summary>
         /// Get the number of books on bloomlibrary.org that are in the given language.
@@ -466,16 +427,6 @@ namespace Bloom.WebLibraryIntegration
                 SIL.Reporting.Logger.WriteEvent("GetBookCountByLanguage failed: " + e.Message);
                 return -1;
             }
-        }
-
-        // Will throw an exception if there is any reason we can't make a successful query, including if there is no internet.
-        public dynamic GetSingleBookRecord(string id, bool includeLanguageInfo = false)
-        {
-            var json = GetBookRecords(id, includeLanguageInfo);
-            if (json == null || json.Count < 1)
-                return null;
-
-            return json[0];
         }
 
         /// <summary>
@@ -512,11 +463,7 @@ namespace Bloom.WebLibraryIntegration
 
         // Query the API for books matching a particular ID.
         // Will throw an exception if there is any reason we can't make a successful query, including if there is no internet.
-        public dynamic GetBookRecords(
-            string bookInstanceId,
-            bool includeLanguageInfo,
-            bool includeBooksFromOtherUploaders = false
-        )
+        public dynamic GetBookRecords(string bookInstanceId, bool includeLanguageInfo)
         {
             // For current usage of this method, we really need to know the difference between "no books found" and "we couldn't check".
             // So all paths which don't allow us to check need to throw.
@@ -534,18 +481,6 @@ namespace Bloom.WebLibraryIntegration
 
             var request = MakePostRequest();
             var requestBody = new { instanceIds = new[] { bookInstanceId } };
-            if (!includeBooksFromOtherUploaders)
-            {
-                if (string.IsNullOrEmpty(Account))
-                {
-                    // An old test indicates that if no one is logged in and includeBooksFromOtherUploaders is true,
-                    // we should get no books. We don't know of any production case where that matters,
-                    // but the new API code treats an empty uploader as meaning that uploader is not specified,
-                    // so I put this in to preserve the old behavior.
-                    return (JObject.Parse(@"{""content"":[]}") as dynamic).content;
-                }
-                request.AddQueryParameter("uploader", Account);
-            }
 
             // We can also ask to expand the uploader, but this just adds an id, and currently we don't need it
             // for anything.
@@ -595,7 +530,7 @@ namespace Bloom.WebLibraryIntegration
         )
         {
             System.Diagnostics.Debug.WriteLine(
-                $"DEBUG BloomParseClient.GetLibraryStatusForBooks(): {bookInfos.Count} books"
+                $"DEBUG BloomLibraryBookApiClient.GetLibraryStatusForBooks(): {bookInfos.Count} books"
             );
             var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
             if (!UrlLookup.CheckGeneralInternetAvailability(true))

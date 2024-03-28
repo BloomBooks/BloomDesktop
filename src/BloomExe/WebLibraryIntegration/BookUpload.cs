@@ -706,8 +706,7 @@ namespace Bloom.WebLibraryIntegration
         {
             var json = BloomLibraryBookApiClient.GetBookRecords(
                 bookInstanceId,
-                includeLanguageInfo,
-                true
+                includeLanguageInfo
             );
             // The json is always an array. But it's a bit easier to work with if we convert it
             // to a regular C# array, even leaving the individual objects as dynamic.
