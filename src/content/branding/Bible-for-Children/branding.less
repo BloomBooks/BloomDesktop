@@ -13,3 +13,12 @@ div.Device16x9Landscape {
         margin-bottom: 0.5cm;
     }
 }
+
+// The branding image has black text so we need to change the background color
+// of the back cover. See BL-13138.
+.bloom-page.coverColor.outsideBackCover.darkCoverColor {
+    background-color: white !important;
+    .bloom-editable.Outside-Back-Cover-style {
+        color: black !important;
+    }
+}

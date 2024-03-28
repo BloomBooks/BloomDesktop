@@ -1820,6 +1820,7 @@ namespace Bloom.Book
             BringXmatterHtmlUpToDate(OurHtmlDom);
             RepairBrokenSmallCoverCredits(OurHtmlDom);
             RepairCoverImageDescriptions(OurHtmlDom);
+            DetectAndMarkDarkCoverColor(OurHtmlDom);
 
             progress.WriteStatus("Repair page label localization");
             RepairPageLabelLocalization(OurHtmlDom);
@@ -2283,6 +2284,22 @@ namespace Bloom.Book
                 // back to 4.6 with the single lang="*" entry, then all of the entries got filled in with the same obsolete data,
                 // so all of them have to be removed.
                 dataDiv.RemoveChild(coverImageDescription);
+            }
+        }
+
+        internal static void DetectAndMarkDarkCoverColor(HtmlDom bookDOM)
+        {
+            var coverColor = GetCoverColorFromDom(bookDOM.RawDom);
+            if (coverColor != null)
+            {
+                var coverColorIsDark = ColorUtils.IsDark(coverColor);
+                foreach (var page in bookDOM.SafeSelectNodes("//div[contains(@class,'coverColor')]").Cast<XmlElement>())
+                {
+                    if (coverColorIsDark)
+                        HtmlDom.AddClass(page, "darkCoverColor");
+                    else
+                        HtmlDom.RemoveClass(page, "darkCoverColor");
+                }
             }
         }
 
@@ -3213,6 +3230,7 @@ namespace Bloom.Book
                     continue;
                 var newContent = regex.Replace(content, "$1" + color);
                 stylesheet.InnerXml = newContent;
+                DetectAndMarkDarkCoverColor(OurHtmlDom);
                 return true;
             }
 
