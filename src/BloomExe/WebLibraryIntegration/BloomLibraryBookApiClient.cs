@@ -35,11 +35,7 @@ namespace Bloom.WebLibraryIntegration
         protected string _authenticationToken = String.Empty;
         protected string _userId;
 
-        public BloomLibraryBookApiClient()
-        {
-            var keys = AccessKeys.GetAccessKeys(BookUpload.UploadBucketNameForCurrentEnvironment);
-            _parseApplicationId = keys.ParseApplicationKey;
-        }
+        public BloomLibraryBookApiClient() { }
 
         private void LogApiError(IRestRequest request, IRestResponse response)
         {
@@ -161,10 +157,10 @@ namespace Bloom.WebLibraryIntegration
 
         // This calls an azure function which does the following:
         // New book:
-        //  - Creates an empty `books` record in parse-server with an uploadPendingTimestamp
+        //  - Creates an empty `books` record in database with an uploadPendingTimestamp
         // Existing book:
-        //  - Verifies the user has permission to update the book (using parse-server session)
-        //  - Sets uploadPendingTimestamp on the `books` record in parse-server
+        //  - Verifies the user has permission to update the book (using session object in the database)
+        //  - Sets uploadPendingTimestamp on the `books` record in the database
         //  - Using the provided file paths and hashes, determines which files need to be copied from the existing
         //     S3 location and which need to be uploaded by the client
         //  - Copies book files from existing S3 location to a new S3 location based on bookObjectId/timestamp;
@@ -235,9 +231,9 @@ namespace Bloom.WebLibraryIntegration
         }
 
         // This calls an azure function which does the following:
-        //  - Verifies the user has permission to update the book (using parse-server session)
+        //  - Verifies the user has permission to update the book (using session object in the database)
         //  - Verifies the baseUrl includes the expected S3 location
-        //  - Updates the `books` record in parse-server with all fields from the client,
+        //  - Updates the `books` record in the database with all fields from the client,
         //     including the new baseUrl which points to the new S3 location. Sets uploadPendingTimestamp to null.
         //  - Deletes the book files from the old S3 location
         public void FinishBookUpload(
@@ -295,6 +291,12 @@ namespace Bloom.WebLibraryIntegration
             return MakeRequest(endpoint, Method.POST);
         }
 
+        // used by unit tests to clean up
+        protected RestRequest MakeDeleteRequest(string endpoint = "")
+        {
+            return MakeRequest(endpoint, Method.DELETE);
+        }
+
         private RestRequest MakeRequest(string endpoint, Method requestType)
         {
             string path = kBookApiUrlPrefix + endpoint;
@@ -316,7 +318,7 @@ namespace Bloom.WebLibraryIntegration
 
         public void SetLoginData(
             string account,
-            string parseUserObjectId,
+            string userObjectId,
             string sessionToken,
             string destination
         )
@@ -325,9 +327,9 @@ namespace Bloom.WebLibraryIntegration
             Settings.Default.WebUserId = account;
             Settings.Default.LastLoginSessionToken = sessionToken;
             Settings.Default.LastLoginDest = destination;
-            Settings.Default.LastLoginParseObjectId = parseUserObjectId;
+            Settings.Default.LastLoginDatabaseObjectId = userObjectId;
             Settings.Default.Save();
-            _userId = parseUserObjectId;
+            _userId = userObjectId;
             _authenticationToken = sessionToken;
         }
 
@@ -344,10 +346,10 @@ namespace Bloom.WebLibraryIntegration
                 );
                 return false;
             }
-            if (string.IsNullOrEmpty(Settings.Default.LastLoginParseObjectId))
+            if (string.IsNullOrEmpty(Settings.Default.LastLoginDatabaseObjectId))
             {
                 progress.WriteError(
-                    "Please first log in from Bloom:Publish:Web, then quit and try again. (LastLoginParseObjectId)"
+                    "Please first log in from Bloom:Publish:Web, then quit and try again. (LastLoginDatabaseObjectId)"
                 );
                 return false;
             }
@@ -371,25 +373,12 @@ namespace Bloom.WebLibraryIntegration
 
             SetLoginData(
                 Settings.Default.WebUserId,
-                Settings.Default.LastLoginParseObjectId,
+                Settings.Default.LastLoginDatabaseObjectId,
                 Settings.Default.LastLoginSessionToken,
                 destination
             );
 
             return true;
-        }
-
-        protected RestClient _parseRestClient;
-        protected RestClient ParseRestClient
-        {
-            get
-            {
-                if (_parseRestClient == null)
-                {
-                    _parseRestClient = new RestClient(GetRealUrl());
-                }
-                return _parseRestClient;
-            }
         }
 
         // Don't even THINK of making this mutable so each unit test uses a different class.
@@ -404,38 +393,6 @@ namespace Bloom.WebLibraryIntegration
         public string Account { get; protected set; }
 
         public bool LoggedIn => !string.IsNullOrEmpty(_authenticationToken);
-
-        public string GetRealUrl()
-        {
-            return UrlLookup.LookupUrl(UrlType.Parse, null, BookUpload.UseSandbox);
-        }
-
-        protected RestRequest MakeParseRequest(string path, Method requestType)
-        {
-            // client.Authenticator = new HttpBasicAuthenticator(username, password);
-            var request = new RestRequest(path, requestType);
-            SetParseCommonHeaders(request);
-            if (!string.IsNullOrEmpty(_authenticationToken))
-                request.AddHeader("X-Parse-Session-Token", _authenticationToken);
-            return request;
-        }
-
-        protected RestRequest MakeParseGetRequest(string path)
-        {
-            return MakeParseRequest(path, Method.GET);
-        }
-
-        private string _parseApplicationId;
-
-        private void SetParseCommonHeaders(RestRequest request)
-        {
-            request.AddHeader("X-Parse-Application-Id", _parseApplicationId);
-        }
-
-        protected RestRequest MakeParsePostRequest(string path)
-        {
-            return MakeParseRequest(path, Method.POST);
-        }
 
         /// <summary>
         /// Get the number of books on bloomlibrary.org that are in the given language.
@@ -595,7 +552,7 @@ namespace Bloom.WebLibraryIntegration
         )
         {
             System.Diagnostics.Debug.WriteLine(
-                $"DEBUG BloomParseClient.GetLibraryStatusForBooks(): {bookInfos.Count} books"
+                $"DEBUG BloomLibraryBookApiClient.GetLibraryStatusForBooks(): {bookInfos.Count} books"
             );
             var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
             if (!UrlLookup.CheckGeneralInternetAvailability(true))

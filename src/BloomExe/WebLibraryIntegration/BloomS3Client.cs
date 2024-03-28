@@ -230,7 +230,7 @@ namespace Bloom.WebLibraryIntegration
             foreach (var fileToUpload in filesToUpload)
             {
                 // If the user cancels at this point, we don't tell the API, but there is a cleanup function which runs each day.
-                // It will find the parse record which never finished uploading, reset it, and delete the copy of the book files on S3.
+                // It will find the database book record of the incomplete upload, reset it, and delete the copy of the book files on S3.
                 if (progress.CancelRequested)
                     return;
 
@@ -575,7 +575,7 @@ namespace Bloom.WebLibraryIntegration
             return match.Groups[1].Value;
         }
 
-        // baseUrl is a database field in parse which we use to point to various book resources.
+        // baseUrl is a database field which we use to point to various book resources.
         // It looks like
         // old style:
         // https://s3.amazonaws.com/BloomLibraryBooks/bob@example.com%2f8d0d9043-a1bb-422d-aa5b-29726cdcd96a%2fBook+Title%2f

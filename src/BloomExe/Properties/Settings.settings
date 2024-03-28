@@ -113,7 +113,7 @@
     <Setting Name="LastLoginSessionToken" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LastLoginParseObjectId" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+    <Setting Name="LastLoginDatabaseObjectId" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ExportImportFileFolder" Type="System.String" Scope="User">
