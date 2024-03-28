@@ -23,6 +23,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
 using Messir.Windows.Forms;
+using NDesk.DBus;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -343,6 +344,30 @@ namespace Bloom.Workspace
             var result = GetCurrentSelectedBookInfo();
             // Important for at least the TeamCollectionBookStatusPanel and the CollectionsTabBookPanel.
             _webSocketServer.SendString("book-selection", "changed", result);
+            // If the collection specifies a branding but not a code to validate it, we want to
+            // notify the user and let them provide the code. The best time to do this is not obvious.
+            // One of the common cases for needing this dialog is after making a collection with
+            // "download for editing", which often has a branding but initially never has a code.
+            // But in that case very often we don't need to do it immediately,
+            // since that book is probably selected and (by a special exception) we allow it to use
+            // its original branding without a code. But if some other book gets selected, it won't
+            // use the branding without a code, and we want to notify the user about that.
+            // So we settled on triggering the dialog when the book selection changes (this method DOES
+            // get called at startup for any automatically-initially-selected book). The logic in
+            // CheckForInvalidBranding makes sure we don't bring up the dialog more than once or if
+            // it's not needed for the current book.
+            // So, if a collection has a branding but no code, and the special exception book is
+            // selected, we'll wait until the user selects a different book to bring up the dialog.
+            // If some other book is initially selected, we'll bring up the dialog immediately.
+            // It can cause some problems if we try to bring up the dialog in the middle of selecting
+            // a book, so we do it on idle.
+            Application.Idle += CheckForInvalidBrandingOnIdle;
+        }
+
+        private void CheckForInvalidBrandingOnIdle(object sender, EventArgs e)
+        {
+            Application.Idle -= CheckForInvalidBrandingOnIdle;
+            CheckForInvalidBranding();
         }
 
         string _tempBookInfoHtmlPath;
@@ -944,12 +969,17 @@ namespace Bloom.Workspace
                         BloomMessageBox.ShowInfo(MustBeAdminMessage);
                         return DialogResult.Cancel;
                     }
+                    CollectionSettingsApi.SetUpLegacyBrandingForSettingsDialog(
+                        _collectionSettings.InvalidBranding,
+                        _collectionSettings.SubscriptionCode
+                    );
                     using (var dlg = _settingsDialogFactory())
                     {
                         _currentlyOpenSettingsDialog = dlg;
                         dlg.SetDesiredTab(tab);
                         var temp = dlg.ShowDialog(this);
                         _currentlyOpenSettingsDialog = null;
+                        CollectionSettingsApi.EndFixEnterpriseBranding();
                         return temp;
                     }
                 });
@@ -960,10 +990,23 @@ namespace Bloom.Workspace
             }
         }
 
+        private bool _haveCheckedForInvalidBranding;
+
         public void CheckForInvalidBranding()
         {
-            if (_collectionSettings.InvalidBranding == null)
+            // We only do this once, only if we have recorded an invalid branding, only if we haven't established
+            // some other branding, and only if we've selected a book in the editable collection. (And it must not
+            // be the original download book, if any, for this collection...if it was that book, we'd already
+            // be simulating its original branding, and the Default branding test would fail.)
+            if (
+                _haveCheckedForInvalidBranding
+                || _collectionSettings.InvalidBranding == null
+                || _collectionSettings.BrandingProjectKey != "Default"
+                || _bookSelection.CurrentSelection == null
+                || !_bookSelection.CurrentSelection.IsInEditableCollection
+            )
                 return;
+            _haveCheckedForInvalidBranding = true;
             // I'm not very happy with this, but the only place I could find to detect that we're opening a new project
             // is too soon to bring up a dialog; it comes up before the main window is fully initialized, which can
             // leave the main window in the wrong place. Waiting until idle gives a much better effect.

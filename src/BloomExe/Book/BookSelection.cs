@@ -43,6 +43,8 @@ namespace Bloom.Book
             // BringUpToDate, typically only in unit tests.
             if (book != null && book.BookData != null && book.IsSaveable)
             {
+                // Before we bring it up to date, so it updates to the right branding
+                book.CollectionSettings.SetCurrentBook(book);
                 book.EnsureUpToDate();
             }
 
