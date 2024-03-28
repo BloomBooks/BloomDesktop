@@ -500,7 +500,7 @@ namespace Bloom.Collection
         {
             if (bookInfos == null || bookInfos.Count == 0)
                 return;
-            // This queries Parse for the status of each book in bookInfos, adds (or clears)
+            // This queries the book record database for the status of each book in bookInfos, adds (or clears)
             // the status to each BookInfo, and signals the UI to update the thumbnail badge
             // (unless told not to).
             var bloomLibraryApiClient = new BloomLibraryBookApiClient();

@@ -4395,6 +4395,7 @@
       <trans-unit id="PublishTab.Upload.CheckingVersionEligibility">
         <source xml:lang="en">Checking Bloom version eligibility...</source>
         <note>ID: PublishTab.Upload.CheckingVersionEligibility</note>
+        <note>Obsolete as of Bloom 5.7</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckingExistingCopy">
         <source xml:lang="en">Checking for existing copy on server...</source>
