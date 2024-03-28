@@ -479,12 +479,12 @@ namespace Bloom.Properties {
         [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastLoginParseObjectId {
+        public string LastLoginDatabaseObjectId {
             get {
-                return ((string)(this["LastLoginParseObjectId"]));
+                return ((string)(this["LastLoginDatabaseObjectId"]));
             }
             set {
-                this["LastLoginParseObjectId"] = value;
+                this["LastLoginDatabaseObjectId"] = value;
             }
         }
         

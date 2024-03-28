@@ -293,8 +293,6 @@ namespace Bloom.Publish.BloomLibrary
         internal bool OkToUploadWithNoLanguages =>
             Book.BookInfo.IsSuitableForMakingShells || Book.HasOnlyPictureOnlyPages();
 
-        internal bool IsThisVersionAllowedToUpload => _uploader.IsThisVersionAllowedToUpload();
-
         /// <returns>On success, returns the book objectId; on failure, returns empty string</returns>
         internal string UploadOneBook(
             BookInstance book,

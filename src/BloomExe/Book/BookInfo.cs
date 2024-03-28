@@ -1129,7 +1129,7 @@ namespace Bloom.Book
         /// this reduced subset is just for the website itself.
         /// Note that if you add a property to the upload set here, you must manually add a corresponding field to
         /// the books table in the database. This is very important. Currently, the field will auto-add to
-        /// the parse-server databases used for unit testing and even (I think) the one for sandbox testing,
+        /// the databases used for unit testing and even (I think) the one for sandbox testing,
         /// but not to the live site; so if you forget to do this uploading will suddenly break.
         /// It is for this reason that we deliberately don't automatically add new fields to the upload set.
         /// Note that it is desirable that the name you give each property in the anonymous object which
@@ -1163,7 +1163,7 @@ namespace Bloom.Book
                     tags = Tags,
                     summary = Summary,
                     pageCount = PageCount,
-                    languageDescriptors = LanguageDescriptors, // the upload azure function converts this to language object pointers before saving to parse
+                    languageDescriptors = LanguageDescriptors, // the upload azure function converts this to language object pointers before saving to the database
                     leveledReaderLevel = LeveledReaderLevel,
                     country = CountryName,
                     province = ProvinceName,
@@ -1261,7 +1261,7 @@ namespace Bloom.Book
         [JsonProperty("originalTitle")]
         public string OriginalTitle { get; set; }
 
-        // This is filled in when we upload the book. It is not used locally, but becomes a field on parse server
+        // This is filled in when we upload the book. It is not used locally, but becomes a field in the book record database
         // containing the actual url where we can grab the thumbnails, pdfs, etc.
         public string BaseUrl { get; set; }
 
@@ -1319,7 +1319,7 @@ namespace Bloom.Book
         public string Summary { get; set; }
 
         // This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
-        // Currently we don't need this property in Parse.com, so we don't upload it.
+        // Currently we don't need this property in the book record database, so we don't upload it.
         [JsonProperty(
             "allowUploadingToBloomLibrary",
             DefaultValueHandling = DefaultValueHandling.Populate
@@ -1355,7 +1355,7 @@ namespace Bloom.Book
         // However, it is currently also in the toolstate, so we're leaving it out of the meta.json so as not to
         // duplicate that. We could reasonably decide in the future to instead make *this* the source of truth and
         // have the tool use this value.  Note too that there is code that takes the toolbox state for level and
-        // sends that to the PARSE database, so that is treating it as a top level property.
+        // sends that to the book record database, so that is treating it as a top level property.
         [JsonIgnore]
         public int LeveledReaderLevel
         {
@@ -1657,7 +1657,7 @@ namespace Bloom.Book
         public bool Feature_Quiz { get; set; }
 
         // Feature name is unchanged despite the toolbox tool rename to Overlay Tool, because they are stored
-        // in the parse database and used from there by Bloom Library, and because older versions of Bloom would not
+        // in the book record database and used from there by Bloom Library, and because older versions of Bloom would not
         // recognize a 'Feature_Overlay'.
         [JsonIgnore]
         public bool Feature_Comic { get; set; }
@@ -1678,7 +1678,7 @@ namespace Bloom.Book
         // example:
         // {"downloadShell":{"countryCode":"PG"}}
         // which would mean only users in Papua New Guinea can download this book for use as a shell.
-        // Currently, there is no UI for this. So, whatever the user enters in manually in meta.json gets passed to parse.
+        // Currently, there is no UI for this. So, whatever the user enters in manually in meta.json gets passed to the database.
         [JsonProperty("internetLimits")]
         public dynamic InternetLimits { get; set; }
 

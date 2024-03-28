@@ -16,8 +16,6 @@ namespace Bloom.web
     // These should all match the corresponding json properties except the capitalization of the first letter
     public enum UrlType
     {
-        Parse,
-        ParseSandbox,
         LibrarySite,
         LibrarySiteSandbox,
         CheckForUpdates,
@@ -97,9 +95,6 @@ namespace Bloom.web
             bool excludeProtocolPrefix = false
         )
         {
-            if (Program.RunningUnitTests && (urlType == UrlType.Parse))
-                return "https://bloom-parse-server-unittest.azurewebsites.net/parse"; //it's fine for the unit test url to be hard-coded, putting in the json buys us nothing.
-
             string fullUrl = LookupFullUrl(urlType, sandbox, acceptFinalUrl);
             if (excludeProtocolPrefix)
                 return StripProtocol(fullUrl);
@@ -170,9 +165,6 @@ namespace Bloom.web
         {
             switch (urlType)
             {
-                case UrlType.Parse:
-                case UrlType.ParseSandbox:
-                    return UrlType.ParseSandbox;
                 case UrlType.LibrarySite:
                 case UrlType.LibrarySiteSandbox:
                     return UrlType.LibrarySiteSandbox;

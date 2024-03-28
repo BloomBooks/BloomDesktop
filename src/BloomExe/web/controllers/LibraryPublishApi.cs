@@ -183,22 +183,6 @@ namespace Bloom.web.controllers
 
             try
             {
-                _webSocketProgress.Message(
-                    "CheckingVersionEligibility",
-                    "Checking Bloom version eligibility..."
-                );
-                if (!Model.IsThisVersionAllowedToUpload)
-                {
-                    _webSocketProgress.Message(
-                        "OldVersion",
-                        "Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.",
-                        ProgressKind.Error
-                    );
-                    _webSocketProgress.Message("Cancelled", "Upload was cancelled");
-                    request.PostSucceeded();
-                    return;
-                }
-
                 UploadBook();
             }
             catch (Exception)
