@@ -1,10 +1,10 @@
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
-  font-size: 120%;
+    .bloom-translationGroup.bookTitle
   line-height: 1.7em;
   margin-bottom: 5px;
 }
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
-  font-size: 250%;
+    font-size: @DefaultCoverTitle1FontSize;
   line-height: 1.4em;
   margin-bottom: 5px;
 }
