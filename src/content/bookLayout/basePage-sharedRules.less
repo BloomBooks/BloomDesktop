@@ -167,5 +167,6 @@ span.bloom-linebreak {
         // Ensure that the text wrapping in overlays is generally stable.  See BL-13135.
         // We would use the "stable" keyword, but that isn't implemented in most browsers.
         text-wrap: wrap;
+        box-sizing: content-box;    // keep the same space for the text when selected
     }
 }
