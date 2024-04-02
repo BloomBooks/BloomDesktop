@@ -1,12 +1,18 @@
-.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
+.frontCover
     .bloom-translationGroup.bookTitle
-  line-height: 1.7em;
-  margin-bottom: 5px;
+    .bloom-editable.bloom-contentNational1 {
+    /* this is css so we don't have this capability, but it isn't needed
+     since we'll get the right font size anyhow.
+        font-size: @DefaultCoverTitle2FontSize; */
+    line-height: 1.7em;
+    margin-bottom: 5px;
 }
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
-    font-size: @DefaultCoverTitle1FontSize;
-  line-height: 1.4em;
-  margin-bottom: 5px;
+    /* this is css so we don't have this capability, but it isn't needed
+     since we'll get the right font size anyhow.
+        font-size: @DefaultCoverTitle1FontSize; */
+    line-height: 1.4em;
+    margin-bottom: 5px;
 }
 .Title-On-Cover-style {
   text-align: center;

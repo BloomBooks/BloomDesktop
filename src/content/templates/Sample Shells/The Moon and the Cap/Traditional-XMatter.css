@@ -1,16 +1,17 @@
 /* This is for common styling on pages. It is not for UI */
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable {
   font-weight: bold;
-  line-height: 1.1;
-  min-height: auto;
+    line-height: 1.1;
+    min-height: auto;
 }
-.frontCover
-    .bloom-translationGroup.bookTitle
-  margin-bottom: 5px;
+.frontCover .bloom-translationGroup.bookTitle {
+    margin-bottom: 5px;
 }
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
-    font-size: @DefaultCoverTitle1FontSize;
-  margin-bottom: 5px;
+    /* this is css so we don't have this capability, but it isn't needed
+     since we'll get the right font size anyhow.
+        font-size: @DefaultCoverTitle1FontSize; */
+    margin-bottom: 5px;
 }
 .Title-On-Cover-style {
   text-align: center;
