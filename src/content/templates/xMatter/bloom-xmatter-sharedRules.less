@@ -3,6 +3,9 @@
 @MarginBetweenBlocks: 2em;
 @DefaultCoverTitle1FontSize: 22pt;
 @DefaultCoverTitle2FontSize: 12pt;
+// Same as our ordinary default, but we have to set it explicitly because of a trick that
+// copies the DefaultCoverTitle1FontSize to the translationGroup.
+@DefaultCoverTitle3FontSise: 10pt;
 
 .frontCover {
     @MarginBetweenMinorItems: 5px;
@@ -18,6 +21,20 @@
             // alphabet without descenders, and 1.1 is safe with descenders. See BL-6402
             line-height: 1.1;
             min-height: auto; // elsewhere there is a min-height, that may or may not be a good idea, but for sure we don't want it here.
+            // This group is tricky. Because it's in xmatter, and we don't have distinct xmatter rules for legacy, it needs
+            // to produce the expected behavior for both. The first two rules are the legacy behavior. When the theme applies,
+            // we still get the old classes, but also, any visible bloom-editable gets bloom-contentFirst/Second/Third.
+            // When the theme applies, if L1 is on, it gets contentFirst, and the contentFirst rule below will beat anything earlier that applies.
+            // L2 can get contentFirst or contentSecond, but not contentThird. We have explicit rules for both of these which
+            // will override any legacy rule that applies by position.
+            // L3 can get contentFirst, contentSecond, or contentThird. The first two are not a problem for the same reason.
+            // If L3 gets bloom-contentThird (because all three titles are on) and also bloom-content1 (because it's the only language
+            // turned on with the combo), the content1 rule below will take effect because we did not have an L3 rule before.
+            // It would be more elegant to have a bloom-contentThird rule to beat out the bloom-content1 rule, but while
+            // it's probably right to use font-size: 100% and margin-bottom: unset, I can't be certain. So I decided to
+            // deal with it by making the bloom-content1 rule explicitly rule out bloom-contentThird.
+            // Essentially, we're not doing any special styling for a language that is the third language on the cover
+            // (or in legacy, the second national language).
             &.bloom-contentNational1 {
                 //NB: we show the national language even if this is a monolingual book
                 font-size: @DefaultCoverTitle2FontSize;
@@ -26,11 +43,37 @@
                 //no: big line-heights make normal scripts ugly. See BL-6402 : line-height: 1.7em;
                 margin-bottom: @MarginBetweenMinorItems;
             }
-            &.bloom-content1 {
+            &.bloom-contentNational2 {
+                font-size: @DefaultCoverTitle3FontSise;
+            }
+            &.bloom-content1:where(:not(.bloom-contentThird)) {
                 //main title
                 font-size: @DefaultCoverTitle1FontSize;
                 margin-bottom: @MarginBetweenMinorItems;
             }
+            // These make the above obsolete, except in legacy mode, where we need them since there is no
+            // separate legacy CSS for xmatter. When relevant the new rules win by coming later.
+            &.bloom-contentFirst {
+                //main title
+                font-size: @DefaultCoverTitle1FontSize;
+
+                margin-bottom: @MarginBetweenMinorItems;
+            }
+            &.bloom-contentSecond {
+                font-size: @DefaultCoverTitle2FontSize;
+                //I don't know why the line-height here has to be bigger than for
+                // the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnทไปทั่วพื้ ช้ต่างปู" as a test.
+                //no: big line-heights make normal scripts ugly. See BL-6402 : line-height: 1.7em;
+                margin-bottom: @MarginBetweenMinorItems;
+            }
+            &.bloom-contentThird {
+                font-size: @DefaultCoverTitle3FontSise;
+            }
+
+            // review: it's definitely possible that the language that gets bloom-content1 also gets bloom-contentSecond
+            // (if the user selected collection L2 as book L1). If they do this and also turn on all three languages for
+            // the title, then the third language will get bloom-contentNational1 as well as bloom-contentThird.
+            // In this case, we don't want
         }
     }
 }

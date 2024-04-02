@@ -47,6 +47,7 @@ import { Div } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
+import { useMemo } from "react";
 
 let isOpenAlready = false;
 
@@ -174,13 +175,23 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         "What to Show on Cover",
         "BookSettings.WhatToShowOnCover"
     );
+    const showWrittenLanguage1TitleLabel = useL10n(
+        "Show Title in {0}",
+        "BookSettings.ShowWrittenLanguageTitle",
+        "",
+        languageNameValues.language1Name
+    );
     const showWrittenLanguage2TitleLabel = useL10n(
-        "Show Written Language 2 Title",
-        "BookSettings.ShowWrittenLanguage2Title"
+        "Show Title in {0}",
+        "BookSettings.ShowWrittenLanguageTitle",
+        "",
+        languageNameValues.language2Name
     );
     const showWrittenLanguage3TitleLabel = useL10n(
-        "Show Written Language 3 Title",
-        "BookSettings.ShowWrittenLanguage3Title"
+        "Show Title in {0}",
+        "BookSettings.ShowWrittenLanguageTitle",
+        undefined,
+        languageNameValues.language3Name
     );
     const showLanguageNameLabel = useL10n(
         "Show Language Name",
@@ -289,6 +300,31 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
             );
             setTheme((liveSettings as IBookSettings)?.appearance?.cssThemeName);
         }
+    }, [settings, settingsToReturnLater]);
+
+    // This is a bit of a hack to figure out which of the cover title languages are turned on,
+    // for use in possibly disabling one checkbox so they can't all be turned off.
+    // It would look marginally better if we created a type for the settings object,
+    // but that would introduce a lot of casting in communicating with Config-R.
+    // If we had more than three, we'd want to go to keeping a count of how many are on.
+    // But with just three the 'disable' boolean for each checkbox is manageable.
+    // We can drop this if we decide to allow all three to be turned off (e.g. to allow the
+    // user to embed the title in the image or make it an overlay).
+    const [coverTitleL1, coverTitleL2, coverTitleL3] = useMemo(() => {
+        let appearance = settings?.["appearance"];
+        if (settingsToReturnLater) {
+            // although we declared it a string, it appears the Config-R callback always gives us an object
+            appearance = settingsToReturnLater["appearance"];
+        }
+        if (!appearance) {
+            // This is a bit arbitrary. It should only apply during early renders. It's our usual default.
+            return [true, true, false];
+        }
+        return [
+            appearance["cover-title-L1-show"],
+            appearance["cover-title-L2-show"],
+            appearance["cover-title-L3-show"]
+        ];
     }, [settings, settingsToReturnLater]);
 
     const deleteCustomBookStyles = () => {
@@ -539,27 +575,46 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 path={`appearance`}
                             >
                                 <ConfigrBoolean
-                                    label={
-                                        showWrittenLanguage2TitleLabel +
-                                        ` (${languageNameValues.language2Name})`
-                                    }
+                                    label={showWrittenLanguage1TitleLabel}
                                     {...getAdditionalProps<boolean>(
-                                        "cover-title-L2-show"
+                                        "cover-title-L1-show",
+                                        coverTitleL1 &&
+                                            !coverTitleL2 &&
+                                            !coverTitleL3
                                     )}
                                 />
+                                {// Only makes sense to turn on L2 if it is different from L1
+                                languageNameValues.language1Name !==
+                                    languageNameValues.language2Name && (
+                                    <ConfigrBoolean
+                                        label={showWrittenLanguage2TitleLabel}
+                                        {...getAdditionalProps<boolean>(
+                                            "cover-title-L2-show",
+                                            coverTitleL2 &&
+                                                !coverTitleL1 &&
+                                                !coverTitleL3
+                                        )}
+                                    />
+                                )}
 
-                                <ConfigrBoolean
-                                    label={
-                                        languageNameValues.language3Name
-                                            ? showWrittenLanguage3TitleLabel +
-                                              ` (${languageNameValues.language3Name})`
-                                            : showWrittenLanguage3TitleLabel
-                                    }
-                                    {...getAdditionalProps<boolean>(
-                                        `cover-title-L3-show`,
-                                        !languageNameValues.language3Name
+                                {// Only show this one if it exists and is different from the others
+                                languageNameValues.language3Name &&
+                                    languageNameValues.language3Name !==
+                                        languageNameValues.language1Name &&
+                                    languageNameValues.language3Name !==
+                                        languageNameValues.language2Name && (
+                                        <ConfigrBoolean
+                                            label={
+                                                showWrittenLanguage3TitleLabel
+                                            }
+                                            {...getAdditionalProps<boolean>(
+                                                `cover-title-L3-show`,
+                                                coverTitleL3 &&
+                                                    !coverTitleL1 &&
+                                                    !coverTitleL2
+                                            )}
+                                        />
                                     )}
-                                />
 
                                 <ConfigrBoolean
                                     label={showLanguageNameLabel}

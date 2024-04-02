@@ -113,6 +113,7 @@ public class AppearanceSettings
         // Todo: when we implement this setting, we want to migrate the old record of color color.
         // See code commented out in BringBookUpToDateUnprotected.
         //new CssStringVariableDef("coverColor","colors","yellow"),
+        new CssDisplayVariableDef("cover-title-L1-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L2-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L3-show", "coverFields", false),
         new CssDisplayVariableDef("cover-topic-show", "coverFields", true),
@@ -601,6 +602,7 @@ public class AppearanceSettings
     /// <summary>
     /// Create something like this, with rules for whatever properties are set:
     /// ".bloom-page{
+    ///     --cover-title-L1-show: bogus-value-so-default-is-used;
     ///		--cover-title-L2-show: bogus-value-so-default-is-used;
     ///		--cover-title-L3-show: none;
     ///		--cover-topic-show: bogus-value-so-default-is-used;
