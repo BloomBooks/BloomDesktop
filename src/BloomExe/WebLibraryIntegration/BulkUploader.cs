@@ -61,16 +61,6 @@ namespace Bloom.WebLibraryIntegration
 
                 progress.Add(new FileLogProgress(logFilePath));
 
-                if (!_singleBookUploader.IsThisVersionAllowedToUpload())
-                {
-                    var oldVersionMsg = LocalizationManager.GetString(
-                        "PublishTab.Upload.OldVersion",
-                        "Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."
-                    );
-                    progress.WriteMessage(oldVersionMsg);
-                    return;
-                }
-
                 Debug.Assert(!String.IsNullOrWhiteSpace(options.UploadUser));
 
                 if (

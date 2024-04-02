@@ -16,13 +16,11 @@ namespace Bloom.WebLibraryIntegration
     {
         public string S3AccessKey { get; private set; }
         public string S3SecretAccessKey { get; private set; }
-        public string ParseApplicationKey { get; private set; }
 
-        private AccessKeys(string s3AccessKey, string s3Secret, string parseAppKey)
+        private AccessKeys(string s3AccessKey, string s3Secret)
         {
             S3AccessKey = s3AccessKey;
             S3SecretAccessKey = s3Secret;
-            ParseApplicationKey = parseAppKey;
         }
 
         //Factory
@@ -37,20 +35,19 @@ namespace Bloom.WebLibraryIntegration
                 case BloomS3Client.SandboxBucketName:
                     // S3 'uploaderDev' user, who has permission to use the BloomLibraryBooks-Sandbox bucket.
                     if (BookUpload.IsDryRun)
-                        return new AccessKeys(null, null, lines[7]);
-                    return new AccessKeys(lines[2], lines[3], lines[7]);
+                        return new AccessKeys(null, null);
+                    return new AccessKeys(lines[2], lines[3]);
                 case BloomS3Client.UnitTestBucketName:
-                    return new AccessKeys(lines[2], lines[3], lines[9]);
+                case BloomS3Client.ProblemBookUploadsBucketName:
+                    return new AccessKeys(lines[2], lines[3]);
                 case BloomS3Client.ProductionBucketName:
                     //S3 'uploader' user, who has permission to use the BloomLibraryBooks bucket
                     if (BookUpload.IsDryRun)
-                        return new AccessKeys(null, null, lines[5]);
-                    return new AccessKeys(lines[0], lines[1], lines[5]);
-                case BloomS3Client.ProblemBookUploadsBucketName:
-                    return new AccessKeys(lines[2], lines[3], null);
+                        return new AccessKeys(null, null);
+                    return new AccessKeys(lines[0], lines[1]);
                 case BloomS3Client.BloomDesktopFiles:
                     // For now, this is public read, and no one needs to write.
-                    return new AccessKeys(null, null, null);
+                    return new AccessKeys(null, null);
 
                 default:
                     throw new ApplicationException("Bucket name not recognized: " + bucket);

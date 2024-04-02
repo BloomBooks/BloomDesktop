@@ -706,8 +706,7 @@ namespace Bloom.WebLibraryIntegration
         {
             var json = BloomLibraryBookApiClient.GetBookRecords(
                 bookInstanceId,
-                includeLanguageInfo,
-                true
+                includeLanguageInfo
             );
             // The json is always an array. But it's a bit easier to work with if we convert it
             // to a regular C# array, even leaving the individual objects as dynamic.
@@ -1005,11 +1004,6 @@ namespace Bloom.WebLibraryIntegration
             // Do NOT use ChangeExtension here. If the folder name has a period (e.g.: "Look at the sky. What do you see")
             // ChangeExtension will strip of the last sentence, which is not what we want (and not what BloomLibrary expects).
             return Path.Combine(bookFolder, Path.GetFileName(bookFolder) + ".pdf");
-        }
-
-        internal bool IsThisVersionAllowedToUpload()
-        {
-            return BloomLibraryBookApiClient.IsThisVersionAllowedToUpload();
         }
 
         /// <summary>
