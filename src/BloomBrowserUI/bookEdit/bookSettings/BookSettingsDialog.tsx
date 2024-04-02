@@ -47,6 +47,8 @@ import { Div } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
+import { useMemo } from "react";
+import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 
 let isOpenAlready = false;
 
@@ -82,12 +84,6 @@ interface IOverrideInformation {
     xmatterName: string;
 }
 
-interface ILanguageNameValues {
-    language1Name: string;
-    language2Name: string;
-    language3Name?: string;
-}
-
 export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const {
         showDialog,
@@ -111,13 +107,6 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         branding: {},
         xmatterName: "",
         brandingName: ""
-    });
-
-    const languageNameValues: ILanguageNameValues = useApiObject<
-        ILanguageNameValues
-    >("settings/languageNames", {
-        language1Name: "",
-        language2Name: ""
     });
 
     const xmatterLockedBy = useL10n(
@@ -174,14 +163,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         "What to Show on Cover",
         "BookSettings.WhatToShowOnCover"
     );
-    const showWrittenLanguage2TitleLabel = useL10n(
-        "Show Written Language 2 Title",
-        "BookSettings.ShowWrittenLanguage2Title"
-    );
-    const showWrittenLanguage3TitleLabel = useL10n(
-        "Show Written Language 3 Title",
-        "BookSettings.ShowWrittenLanguage3Title"
-    );
+
     const showLanguageNameLabel = useL10n(
         "Show Language Name",
         "BookSettings.ShowLanguageName"
@@ -207,7 +189,15 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const bloomPubLabel = useL10n("BloomPUB", "PublishTab.bloomPUBButton"); // reuse the same string localized for the Publish tab
 
     // This is a helper function to make it easier to pass the override information
-    function getAdditionalProps<T>(subPath: string, disable?: boolean) {
+    function getAdditionalProps<T>(
+        subPath: string,
+        disable?: boolean
+    ): {
+        path: string;
+        disabled?: boolean;
+        overrideValue: T;
+        overrideDescription?: string;
+    } {
         // some properties will be overridden by branding and/or xmatter
         const xmatterOverride: T | undefined =
             overrideInformation?.xmatter?.[subPath];
@@ -538,27 +528,15 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 label={whatToShowOnCoverLabel}
                                 path={`appearance`}
                             >
-                                <ConfigrBoolean
-                                    label={
-                                        showWrittenLanguage2TitleLabel +
-                                        ` (${languageNameValues.language2Name})`
+                                <FieldVisibilityGroup
+                                    field="cover-title"
+                                    labelFrame="Show Title in {0}"
+                                    labelFrameL10nKey="BookSettings.ShowWrittenLanguageTitle"
+                                    settings={settings}
+                                    settingsToReturnLater={
+                                        settingsToReturnLater
                                     }
-                                    {...getAdditionalProps<boolean>(
-                                        "cover-title-L2-show"
-                                    )}
-                                />
-
-                                <ConfigrBoolean
-                                    label={
-                                        languageNameValues.language3Name
-                                            ? showWrittenLanguage3TitleLabel +
-                                              ` (${languageNameValues.language3Name})`
-                                            : showWrittenLanguage3TitleLabel
-                                    }
-                                    {...getAdditionalProps<boolean>(
-                                        `cover-title-L3-show`,
-                                        !languageNameValues.language3Name
-                                    )}
+                                    getAdditionalProps={getAdditionalProps}
                                 />
 
                                 <ConfigrBoolean
