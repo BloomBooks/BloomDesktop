@@ -770,6 +770,22 @@ div.textWholePage ul {
         // this "3px" is there from long ago, nothing to do with this nudging
         margin-left: calc(3px + var(--formatButton-pageNumber-dodge));
     }
+    // more complex page split vertically after horizontally
+    .split-pane-component.position-left
+        .split-pane-component.position-bottom
+        > .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton {
+        // this "3px" is there from long ago, nothing to do with this nudging
+        margin-left: calc(3px + var(--formatButton-pageNumber-dodge));
+    }
+    // whole page textbox
+    .marginBox
+        > .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton {
+        margin-left: calc(3px + var(--formatButton-pageNumber-dodge));
+    }
 }
 
 /*Toolbox*/
