@@ -1,8 +1,0 @@
-/* replace EFL Template 2 custom CSS: small margins, no page numbers */
-[class*="Device"].numberedPage:not(.bloom-interactive-page) {
-    --topLevel-text-padding: 0.5em;
-}
-
-[class*="Device"] {
-    --page-margin: 2.5mm;
-}
