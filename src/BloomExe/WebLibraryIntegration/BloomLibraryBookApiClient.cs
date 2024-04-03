@@ -552,7 +552,7 @@ namespace Bloom.WebLibraryIntegration
             for (int i = 0; i < bookRecords.Count; ++i)
             {
                 var bookRecord = bookRecords[i];
-                string bookInstanceId = bookRecord.bookInstanceId;
+                string bookInstanceId = bookRecord.instanceId;
                 if (bookInstanceId != null)
                 {
                     if (bloomLibraryStatusesById.ContainsKey(bookInstanceId))
