@@ -112,6 +112,12 @@
     --formatButton-pageNumber-dodge: 0;
 }
 
+/* this rule might not always be what we need for every kind of interactive page, but it's a good default.
+    E.g., it allows the blue of the Simple Choice to come through. */
+.bloom-page.bloom-interactive-page {
+    --marginBox-background-color: transparent;
+}
+
 /* Beware of making these rules more specific. We want them to be able to be overriden by .bloom-page rules
  * that come from other themes (and hence later in the generated appearance.css file).
  */
