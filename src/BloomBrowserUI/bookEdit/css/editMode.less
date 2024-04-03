@@ -766,6 +766,17 @@ div.textWholePage ul {
     .split-pane-component.position-left
         > .split-pane-component-inner
         > .bloom-translationGroup
+        > #formatButton,
+    // more complex page split vertically after horizontally
+    .split-pane-component.position-left
+        .split-pane-component.position-bottom
+        > .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton,
+    // text-only page
+    .marginBox
+        > .split-pane-component-inner
+        > .bloom-translationGroup
         > #formatButton {
         // this "3px" is there from long ago, nothing to do with this nudging
         margin-left: calc(3px + var(--formatButton-pageNumber-dodge));
