@@ -223,10 +223,9 @@ namespace Bloom.Api
                         // Note: If the user is still interacting with the application, openForms could change and become empty.
                         // We'd prefer the Bloom shell, if it's open, so we concat that list onto the list of any others and take
                         // the last.
-                        var formForSynchronizing = Application.OpenForms
-                            .Cast<Form>()
-                            .Concat(Application.OpenForms.Cast<Form>().Where(x => x is Bloom.Shell))
-                            .LastOrDefault();
+                        var forms = Application.OpenForms.Cast<Form>().ToList();
+                        var shells = forms.Where(x => x is Bloom.Shell);
+                        var formForSynchronizing = forms.Concat(shells).LastOrDefault();
                         if (
                             endpointRegistration.HandleOnUIThread
                             && formForSynchronizing != null

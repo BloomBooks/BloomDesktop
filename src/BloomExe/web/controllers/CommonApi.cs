@@ -185,6 +185,7 @@ namespace Bloom.web.controllers
                 {
                     request.ReplyWithText(ApplicationUpdateSupport.ChannelName);
                 },
+                false,
                 false
             );
             // This is useful for debugging TypeScript code, especially on Linux.  I wouldn't necessarily expect
