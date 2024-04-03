@@ -147,10 +147,7 @@
      * set the margin you don't want to something like "deliberately-invalid".)*/
     --pageNumber-right-margin: 0;
     --pageNumber-always-left-margin: 0;
-}
-
-.Device16x9Landscape.numberedPage {
-    --pageNumber-extra-height: 8mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+    --pageNumber-extra-height: 8mm !important;
 }
 
 /* We need a small margin (above) for xmatter pages (e.g., Robots Mali credits page,
