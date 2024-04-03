@@ -422,22 +422,12 @@ function SetupImageContainer(containerDiv: HTMLElement) {
             addImageEditingButtons(this);
         })
         .mouseleave(function(e: JQueryMouseEventObject) {
-            // Page numbers displaying inside the image container can trigger the mouseleave
-            // event while the mouse is still inside the container, so we check for the mouse
-            // actually leaving the image container's boundaries.
-            const bounds = this.getBoundingClientRect();
-            // The mouseleave event can be triggered while the mouse is still barely
-            // inside the container according to the event object, so we adjust the
-            // bounds inward by a factor of 5 pixels.
-            const boundary = 5; // 5 pixels inside the container
-            if (
-                e.clientX < bounds.left + boundary ||
-                e.clientX > bounds.right - boundary ||
-                e.clientY < bounds.top + boundary ||
-                e.clientY > bounds.bottom - boundary
-            ) {
-                removeImageEditingButtons(this);
-            }
+            // Page numbers displaying inside the image container must have their
+            // width and height constrained.  That way, hovering over the page number
+            // triggers the mouseleave event, and the image editing buttons are hidden
+            // before the mouse cursor actually leaves the image container, but hovering
+            // above or beside the page number does nothing.  See BL-13098 and BL-13221.
+            removeImageEditingButtons(this);
         });
 }
 
