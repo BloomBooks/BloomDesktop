@@ -3861,17 +3861,17 @@ namespace Bloom.Book
         /// <remarks>
         /// See BL-13078, BL-13120, BL-13123, and BL-13143 for reported instances of this occurring.
         /// </remarks>
-        public static bool CheckForEmptyMarginBoxOnPage(XmlElement pageDocument)
+        public static bool CheckForEmptyMarginBoxOnPage(XmlElement pageElement)
         {
             if (Program.RunningUnitTests)
                 return false; // unit tests might have incomplete data, so we don't want to report this as an error.
             // If the content of the marginBox has disappeared, we don't want to save that state.
-            var internalNodes = pageDocument
-                .SelectNodes("//body//div[contains(@class,'marginBox')]/div")
+            var internalNodes = pageElement
+                .SelectNodes(".//div[contains(@class,'marginBox')]/div")
                 .Cast<XmlElement>();
             if (internalNodes.Count() == 0)
             {
-                ReportEmptyMarginBox(pageDocument);
+                ReportEmptyMarginBox(pageElement);
                 return true;
             }
             foreach (var node in internalNodes)
@@ -3882,7 +3882,7 @@ namespace Bloom.Book
                 // If the marginBox has a div.pageLabel, the real content has disappeared and we don't want to save that state.
                 if (classes.Contains("pageLabel"))
                 {
-                    ReportEmptyMarginBox(pageDocument);
+                    ReportEmptyMarginBox(pageElement);
                     return true;
                 }
             }
