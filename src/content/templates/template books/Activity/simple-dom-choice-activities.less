@@ -268,11 +268,11 @@
     & {
         background-color: #539eff; // legacy-only, beaten by appearance system setting to var with !important
         --page-background-color: #539eff; // appearance system
-
-        // page number
-        &::after {
-            color: white;
-        }
+    }
+    // page number
+    &.numberedPage::after {
+        color: white;
+        --pageNumber-background-color: #539eff; // appearance system
     }
 
     .player-button {
