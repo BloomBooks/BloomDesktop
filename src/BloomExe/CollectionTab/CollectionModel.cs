@@ -177,6 +177,7 @@ namespace Bloom.CollectionTab
                     BookHistoryEventType.Created,
                     $"Duplicated from existing book \"{book.Title}\""
                 );
+                newBook.UserPrefs.UploadAgreementsAccepted = false;
             }
         }
 
