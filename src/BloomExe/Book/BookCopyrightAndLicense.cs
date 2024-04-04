@@ -158,11 +158,14 @@ namespace Bloom.Book
 				langPriorities,
 				out languageUsedForDescription
 			);
-			LocalizationHelper.CheckForMissingLocalization(
-				langPriorities.ToList(),
-				languageUsedForDescription,
-				"Palaso.xlf"
-			);
+			if (languageUsedForDescription != "und" || !(metadata.License is CustomLicense))
+			{
+				LocalizationHelper.CheckForMissingLocalization(
+					langPriorities.ToList(),
+					languageUsedForDescription,
+					"Palaso.xlf"
+				);
+			}
 			dom.SetBookSetting("licenseDescription", languageUsedForDescription, ConvertNewLinesToHtmlBreaks(description));
 
 			// Book may have old licenseNotes, typically in 'en'. This can certainly show up again if licenseNotes in '*' is removed,
