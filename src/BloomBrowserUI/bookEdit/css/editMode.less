@@ -1183,6 +1183,11 @@ body.hideAllCKEditors .cke_chrome {
 .qtip {
     visibility: hidden;
 }
+// but keep them visible when the user is interacting with them (BL-13224)
+.qtip:hover,
+.qtip:focus {
+    visibility: visible;
+}
 body :has(.bloom-page:focus-within, .bloom-page:hover) {
     .qtip {
         visibility: visible;
