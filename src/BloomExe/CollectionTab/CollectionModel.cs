@@ -167,6 +167,7 @@ namespace Bloom.CollectionTab
 				var newBook = GetBookFromBookInfo(dupInfo);
 				SelectBook(newBook);
 				BookHistory.AddEvent(newBook, BookHistoryEventType.Created, $"Duplicated from existing book \"{book.Title}\"");
+				newBook.UserPrefs.UploadAgreementsAccepted = false;
 			}
 		}
 
