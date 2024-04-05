@@ -1,3 +1,4 @@
+import { css } from "@emotion/react";
 import { ConfigrBoolean } from "@sillsdev/config-r";
 import React = require("react");
 import { useApiObject } from "../../utils/bloomApi";
@@ -20,17 +21,18 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     labelFrameL10nKey: string;
     settings: object | undefined;
     settingsToReturnLater: string;
+    disabled: boolean;
+    L1MustBeTurnedOn?: boolean;
+
     // I wish this function just lived here, or could be imported, but it is used for other
     // booleans in the parent dialog, so we can't just move it, and it uses React state from the dialog,
     // so we can't just import it. And it does complex and important work, especially to
     // support allowing xmatter and branding to lock certain settings. So the only way I could
     // make it work and let that functionality be shared was to pass it in.
     getAdditionalProps: (
-        subPath: string,
-        disable?: boolean
+        subPath: string
     ) => {
         path: string;
-        disabled?: boolean;
         overrideValue: boolean;
         overrideDescription?: string;
     };
@@ -88,23 +90,27 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     }, [props.settings, props.settingsToReturnLater]);
 
     return (
-        <>
+        <div>
             <ConfigrBoolean
                 label={showWrittenLanguage1TitleLabel}
-                {...props.getAdditionalProps(
-                    L1Field,
-                    showL1 && !showL2 && !showL3
-                )}
+                // 'locked' will leave the label readable while making the checkbox disabled
+                locked={
+                    props.disabled ||
+                    (showL1 && !showL2 && !showL3) ||
+                    props.L1MustBeTurnedOn
+                }
+                {...props.getAdditionalProps(L1Field)}
             />
             {// Only makes sense to show a control for L2 if it is different from L1
             languageNameValues.language1Name !==
                 languageNameValues.language2Name && (
                 <ConfigrBoolean
                     label={showWrittenLanguage2TitleLabel}
-                    {...props.getAdditionalProps(
-                        L2Field,
-                        showL2 && !showL1 && !showL3
-                    )}
+                    // The second expression should never be false if L1 must be turned on;
+                    // but we need it when that is false, and it's harmless when L1 must be on
+                    // because showL1 will be true.
+                    locked={props.disabled || (showL2 && !showL1 && !showL3)}
+                    {...props.getAdditionalProps(L2Field)}
                 />
             )}
 
@@ -116,12 +122,12 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
                     languageNameValues.language2Name && (
                     <ConfigrBoolean
                         label={showWrittenLanguage3TitleLabel}
-                        {...props.getAdditionalProps(
-                            L3Field,
-                            showL3 && !showL1 && !showL2
-                        )}
+                        locked={
+                            props.disabled || (showL3 && !showL1 && !showL2)
+                        }
+                        {...props.getAdditionalProps(L3Field)}
                     />
                 )}
-        </>
+        </div>
     );
 };
