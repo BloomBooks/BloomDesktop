@@ -175,7 +175,6 @@ require("./jquery.mousewheel.js");
     var activeElement;
     var textAreaCaretPosition;
     var storedOffset;
-    var initialZWSPs;
     var shortcuts = [];
     var popup;
     var longpressPopupVisible = false;
@@ -406,9 +405,6 @@ require("./jquery.mousewheel.js");
             storedOffset = EditableDivUtils.getElementSelectionIndex(
                 activeElement
             );
-            // save the number of ZWSPs at the beginning of the text.
-            // If this changes between now and when we restore the selection, we need to remove the extras.
-            initialZWSPs = activeElement.innerText.match(/^\u200B*/)[0].length;
         }
     }
 
@@ -440,45 +436,40 @@ require("./jquery.mousewheel.js");
                 // be for keyboard accessibility, but we already have a way to select the character we
                 // want from the keyboard.
                 activeElement.focus();
-                const currentInitialZWSPs = activeElement.innerText.match(
-                    /^\u200B*/
-                )[0].length;
-
-                if (currentInitialZWSPs > initialZWSPs) {
-                    // Remove the extras (typically just one). (There is probably a pathological
-                    // case where they are not all in the same text node, or there's a comment node
-                    // before the text node, but this is a temporary kludge. If it fails, the IP may be out
-                    // of position slightly).
-                    try {
-                        let node = activeElement;
-                        while (node.firstChild) {
-                            node = node.firstChild;
-                        }
-                        const range = document.createRange();
-
-                        range.setStart(node, 0);
-                        range.setEnd(node, currentInitialZWSPs - initialZWSPs);
-                        range.deleteContents();
-                    } catch (e) {
-                        // This basically ignores any error as far as the end user is concerned. That's the intent.
-                        // We're just attempting some non-critical cleanup.
-                        console.error(
-                            "Error removing extra zero-width spaces: " + e
-                        );
+                // loop until we don't find a spurious zwsp, see comments below
+                for (;;) {
+                    EditableDivUtils.makeSelectionIn(
+                        activeElement,
+                        storedOffset,
+                        -1, // no brs around that we need to skip
+                        // If we're at a paragraph boundary, we are at the end of the previous paragraph.
+                        // (We just inserted a character, so we can't possibly be at the start of a paragraph.
+                        // It's possible that we're at a boundary between two text nodes, especially since
+                        // longpress likes to insert the text as an extra node, but in that case it doesn't
+                        // matter which one we make the selection in.)
+                        false
+                    );
+                    // Check for a problem where something, probably CkEditor, inserts a zero-width space before the
+                    // special character we just inserted.
+                    const selection = window.getSelection();
+                    const range = selection.getRangeAt(0).cloneRange();
+                    range.setStart(range.startContainer, range.startOffset - 1);
+                    // Is the character before the caret a zero-width space?
+                    if (range.toString() !== "\u200B") {
+                        // It's not; we no longer have the problem (or never did)
+                        break;
                     }
+                    // We definitely don't expect that the character we just inserted is a zwsp.
+                    // If that's what we find right before the restored selection, we remove it.
+                    // (This will have to be fixed some other way if we ever want to support inserting
+                    // zwsp's using longpress. Hopefully by then we've replaced CkEditor and can retire this fix.)
+                    range.deleteContents();
+                    // The caret was left BEFORE the character we intended to insert by the makeSelectionIn: call
+                    // above, because of the unexpected zwsp. So loop around and make the selection again.
+                    // I'm not sure it ever happens that we find yet another zwsp, though I think it happened
+                    // once. In any case, we don't want one where we inserted something else, so if we do
+                    // find more, we'll keep deleting them.
                 }
-
-                EditableDivUtils.makeSelectionIn(
-                    activeElement,
-                    storedOffset,
-                    -1, // no brs around that we need to skip
-                    // If we're at a paragraph boundary, we are at the end of the previous paragraph.
-                    // (We just inserted a character, so we can't possibly be at the start of a paragraph.
-                    // It's possible that we're at a boundary between two text nodes, especially since
-                    // longpress likes to insert the text as an extra node, but in that case it doesn't
-                    // matter which one we make the selection in.)
-                    false
-                );
             }
         }
     }
