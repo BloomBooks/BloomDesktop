@@ -119,7 +119,7 @@ namespace Bloom.Api
                             .CurrentSelection
                             .BookInfo
                             .AppearanceSettings
-                            .ChangeableSettingsForUI
+                            .GetCopyOfProperties
                     };
                     // The book settings dialog wants to edit the content language visibility as if it was just another
                     // appearance setting. But we have another control that manipulates it, and a long-standing place to
@@ -142,13 +142,13 @@ namespace Bloom.Api
                         bookLangs.Add(_bookSelection.CurrentSelection.Language3Tag);
                     }
 
-                    appearance["mlcontent-L1-show"] = bookLangs.Contains(
+                    appearance["autoTextBox-L1-show"] = bookLangs.Contains(
                         _bookSelection.CurrentSelection.CollectionSettings.Language1Tag
                     );
-                    appearance["mlcontent-L2-show"] = bookLangs.Contains(
+                    appearance["autoTextBox-L2-show"] = bookLangs.Contains(
                         _bookSelection.CurrentSelection.CollectionSettings.Language2Tag
                     );
-                    appearance["mlcontent-L3-show"] = bookLangs.Contains(
+                    appearance["autoTextBox-L3-show"] = bookLangs.Contains(
                         _bookSelection.CurrentSelection.CollectionSettings.Language3Tag
                     );
                     var jsonData = JsonConvert.SerializeObject(settings);
@@ -172,12 +172,12 @@ namespace Bloom.Api
                     // Now we need to extract the content language visibility settings and remove them from what gets saved
                     // as the appearance settings.
                     var newAppearance = newSettings.appearance;
-                    var showL1 = newAppearance["mlcontent-L1-show"].Value;
-                    newAppearance.Remove("mlcontent-L1-show");
-                    var showL2 = newAppearance["mlcontent-L2-show"].Value;
-                    newAppearance.Remove("mlcontent-L2-show");
-                    var showL3 = newAppearance["mlcontent-L3-show"].Value;
-                    newAppearance.Remove("mlcontent-L3-show");
+                    var showL1 = newAppearance["autoTextBox-L1-show"].Value;
+                    newAppearance.Remove("autoTextBox-L1-show");
+                    var showL2 = newAppearance["autoTextBox-L2-show"].Value;
+                    newAppearance.Remove("autoTextBox-L2-show");
+                    var showL3 = newAppearance["autoTextBox-L3-show"].Value;
+                    newAppearance.Remove("autoTextBox-L3-show");
                     _editingView.SetActiveLanguages(showL1, showL2, showL3);
                     // Todo: save the content languages
                     _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.UpdateFromDynamic(
