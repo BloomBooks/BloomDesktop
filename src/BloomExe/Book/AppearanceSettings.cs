@@ -940,7 +940,7 @@ public class AppearanceSettings
         return null;
     }
 
-    public ExpandoObject ChangeableSettingsForUI
+    public ExpandoObject GetCopyOfProperties
     {
         // The client may modify the object, and it should not affect the original.
         // A shallow copy is enough for now, since none of our properties are modifiable objects.
