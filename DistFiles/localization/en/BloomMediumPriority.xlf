@@ -393,6 +393,10 @@
         <source xml:lang="en">What to Show on Cover</source>
         <note>BookSettings.WhatToShowOnCover</note>
       </trans-unit>
+      <trans-unit id="BookSettings.ShowContentLanguage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Show {0}</source>
+        <note>BookSettings.ShowContentLanguage</note>
+      </trans-unit>
       <trans-unit id="BookSettings.ShowWrittenLanguageTitle" sil:dynamic="true" translate="no">
         <source xml:lang="en">Show Title in {0}</source>
         <note>BookSettings.ShowWrittenLanguageTitle</note>

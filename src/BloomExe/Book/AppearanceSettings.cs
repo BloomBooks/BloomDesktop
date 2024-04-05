@@ -940,9 +940,24 @@ public class AppearanceSettings
         return null;
     }
 
-    public object ChangeableSettingsForUI
+    public ExpandoObject ChangeableSettingsForUI
     {
-        get { return _properties; }
+        // The client may modify the object, and it should not affect the original.
+        // A shallow copy is enough for now, since none of our properties are modifiable objects.
+        get { return ShallowCopy(_properties); }
+    }
+
+    static ExpandoObject ShallowCopy(ExpandoObject original)
+    {
+        var clone = new ExpandoObject();
+
+        var _original = (IDictionary<string, object>)original;
+        var _clone = (IDictionary<string, object>)clone;
+
+        foreach (var kvp in _original)
+            _clone.Add(kvp);
+
+        return clone;
     }
 }
 

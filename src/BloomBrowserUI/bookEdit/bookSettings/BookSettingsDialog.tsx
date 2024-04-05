@@ -389,6 +389,16 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                         `pageNumber-show`
                                     )}
                                 />
+                                <FieldVisibilityGroup
+                                    field="mlcontent"
+                                    labelFrame="Show {0}"
+                                    labelFrameL10nKey="BookSettings.ShowContentLanguage"
+                                    settings={settings}
+                                    settingsToReturnLater={
+                                        settingsToReturnLater
+                                    }
+                                    getAdditionalProps={getAdditionalProps}
+                                />
                             </ConfigrSubgroup>
                             {
                                 // This group of three possible messages...sometimes none of them shows, so there are four options...
