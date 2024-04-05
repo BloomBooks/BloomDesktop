@@ -175,7 +175,6 @@ require("./jquery.mousewheel.js");
     var activeElement;
     var textAreaCaretPosition;
     var storedOffset;
-    var initialZWSPs;
     var shortcuts = [];
     var popup;
     var longpressPopupVisible = false;
@@ -406,9 +405,6 @@ require("./jquery.mousewheel.js");
             storedOffset = EditableDivUtils.getElementSelectionIndex(
                 activeElement
             );
-            // save the number of ZWSPs at the beginning of the text.
-            // If this changes between now and when we restore the selection, we need to remove the extras.
-            initialZWSPs = activeElement.innerText.match(/^\u200B*/)[0].length;
         }
     }
 
@@ -440,33 +436,6 @@ require("./jquery.mousewheel.js");
                 // be for keyboard accessibility, but we already have a way to select the character we
                 // want from the keyboard.
                 activeElement.focus();
-                const currentInitialZWSPs = activeElement.innerText.match(
-                    /^\u200B*/
-                )[0].length;
-
-                if (currentInitialZWSPs > initialZWSPs) {
-                    // Remove the extras (typically just one). (There is probably a pathological
-                    // case where they are not all in the same text node, or there's a comment node
-                    // before the text node, but this is a temporary kludge. If it fails, the IP may be out
-                    // of position slightly).
-                    try {
-                        let node = activeElement;
-                        while (node.firstChild) {
-                            node = node.firstChild;
-                        }
-                        const range = document.createRange();
-
-                        range.setStart(node, 0);
-                        range.setEnd(node, currentInitialZWSPs - initialZWSPs);
-                        range.deleteContents();
-                    } catch (e) {
-                        // This basically ignores any error as far as the end user is concerned. That's the intent.
-                        // We're just attempting some non-critical cleanup.
-                        console.error(
-                            "Error removing extra zero-width spaces: " + e
-                        );
-                    }
-                }
 
                 EditableDivUtils.makeSelectionIn(
                     activeElement,
@@ -479,6 +448,25 @@ require("./jquery.mousewheel.js");
                     // matter which one we make the selection in.)
                     false
                 );
+                while (
+                    activeElement.innerText
+                        .replace(/\n/g, "")
+                        .charCodeAt(storedOffset - 1) === 0x200b
+                ) {
+                    // We definitely don't expect that the character we just inserted is a zwsp.
+                    // If that's what we find right before the restored selection, we remove it.
+                    const selection = window.getSelection();
+                    const range = selection.getRangeAt(0).cloneRange();
+                    range.setStart(range.startContainer, range.startOffset - 1);
+                    range.deleteContents();
+                    // Then try to restore the seleciton again
+                    EditableDivUtils.makeSelectionIn(
+                        activeElement,
+                        storedOffset,
+                        -1,
+                        false
+                    );
+                }
             }
         }
     }
