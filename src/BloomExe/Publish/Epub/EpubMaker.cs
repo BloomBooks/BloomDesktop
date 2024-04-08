@@ -1676,32 +1676,20 @@ namespace Bloom.Publish.Epub
                 // Do not add any stylesheets that are not originally written specifically for ePUB use.
                 // See https://issues.bloomlibrary.org/youtrack/issue/BL-5495.
                 RemoveRegularStylesheets(pageDom);
-                pageDom.AddStyleSheet(
-                    Storage.GetFileLocator().LocateFileWithThrow(@"baseEPUB.css").ToLocalhost()
-                );
-                var brandingPath = Path.Combine(Storage.FolderPath, "branding.css"); // should always exist in local folder.
-                pageDom.AddStyleSheet(brandingPath.ToLocalhost());
+                pageDom.EnsureStylesheetLinks("baseEPUB.css", "branding.css");
             }
             else
             {
                 // Not sure why we need to add any of these things, but reluctant to change things we presumably
                 // once needed. Possibly previewMode.css adds some stuff that is helpful when editing is not allowed.
                 // Adding basePage.css is definitely a bad idea, because it's now possible we want basePageLegacy instead.
-                // The DOM should already have whichever one we need. (It should already have origami.css, though, too.)
-                //pageDom.AddStyleSheet(
-                //    Storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost()
-                //);
-                pageDom.AddStyleSheet(
-                    Storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css")
-                );
-                pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
+                pageDom.EnsureStylesheetLinks("previewMode.css", "origami.css");
             }
 
             // Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
             _publishHelper.RemoveUnwantedContent(pageDom, this.Book, true, warningMessages, this);
             _fontsUsedInBook.UnionWith(_publishHelper.FontsUsed); // filled in as side-effect of removing unwanted content
 
-            pageDom.SortStyleSheetLinks();
             pageDom.AddPublishClassToBody("epub");
 
             // add things like data-bookshelfurlkey="Kyrgyzstan-grade3", which can be used by stylesheets to vary appearance
@@ -1766,8 +1754,7 @@ namespace Bloom.Publish.Epub
                 var name = Path.GetFileName(link.GetAttribute("href"));
                 link.SetAttribute("href", kCssFolder + "/" + name);
             }
-            pageDom.AddStyleSheet(kCssFolder + "/" + "fonts.css"); // enhance: could omit if we don't embed any
-
+            pageDom.EnsureStylesheetLinks(kCssFolder + "/" + "fonts.css"); // enhance: could omit if we don't embed any
             // EPUB doesn't like direction: settings in CSS, so we need to explicitly set dir= attributes.
             if (_directionSettings.Count > 0)
                 SetDirAttributes(pageDom);
