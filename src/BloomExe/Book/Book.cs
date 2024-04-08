@@ -650,9 +650,8 @@ namespace Bloom.Book
             //foreach (XmlNode child in inputHead.ChildNodes)
             //	importNode.AppendChild(child);
             //inputHead.ParentNode.ReplaceChild(importNode, inputHead);
-            var result = Storage.MakeDomRelocatable(inputDom);
-            Storage.EnsureHasLinkToStyleSheet(result, "previewMode.css");
-            return result;
+            Storage.EnsureHasLinkToStyleSheet(inputDom, "previewMode.css");
+            return Storage.MakeDomRelocatable(inputDom);
         }
 
         public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
@@ -2293,7 +2292,11 @@ namespace Bloom.Book
             if (coverColor != null)
             {
                 var coverColorIsDark = ColorUtils.IsDark(coverColor);
-                foreach (var page in bookDOM.SafeSelectNodes("//div[contains(@class,'coverColor')]").Cast<XmlElement>())
+                foreach (
+                    var page in bookDOM
+                        .SafeSelectNodes("//div[contains(@class,'coverColor')]")
+                        .Cast<XmlElement>()
+                )
                 {
                     if (coverColorIsDark)
                         HtmlDom.AddClass(page, "darkCoverColor");

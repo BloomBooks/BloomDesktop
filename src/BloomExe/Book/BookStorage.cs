@@ -3824,15 +3824,19 @@ namespace Bloom.Book
             "editTranslationMode.css"
         };
 
-        public static readonly string[] KnownCssFilePrefixesInOrder =
+        // These go before "unknown" stylesheets in the sort order
+        public static readonly string[] AutomaticallyAddedCssPrefixesPart1 =
         {
-            // list in the order that you want their <link> to appear
             "basePage", // we leave off ".css" so that this can match version ones, like "basePage-legacy-5-6.css"
             "baseEPUB.css",
             "editMode.css",
             "previewMode.css",
             "origami.css",
-            "UNKNOWN_STYLESHEETS_HERE",
+        };
+
+        // These go after "unknown" stylesheets in the sort order
+        public static readonly string[] AutomaticallyAddedCssPrefixesPart2 =
+        {
             "branding.css",
             "defaultLangStyles.css",
             "customCollectionStyles.css",
@@ -3843,6 +3847,12 @@ namespace Bloom.Book
             "customBookStyles2.css",
             "customBookStyles.css"
         };
+
+        // MakeDomRelocatable adds these and uses this list to get rid of old ones before addding new ones.
+        public static readonly string[] AutomaticallyAddedCssFilePrefixes =
+            AutomaticallyAddedCssPrefixesPart1.Concat(AutomaticallyAddedCssPrefixesPart2).ToArray();
+
+        // These are split up for the sake of the StyleSheetLinkSorter
 
         /// <summary>
         /// Relative to the book folder, where should we find the customCollectionStyles.css file?
