@@ -251,25 +251,53 @@ namespace Bloom.Book
         /// </summary>
         internal bool UseOriginalImages { get; set; }
 
-        public void AddStyleSheet(string path)
+        /// <summary>
+        /// Make sure the DOM has a link to each of the stylesheets passed, and that all stylesheet links are in the right order.
+        /// Return true if any stylesheets were added
+        /// </summary>
+        public bool EnsureStylesheetLinks(params string[] paths)
+        {
+            bool anyAdded = AddStyleSheetsWithoutSorting(paths);
+            SortStyleSheetLinks();
+            return anyAdded;
+        }
+
+        /// <summary>
+        /// Add a reference if we don't already have it for each of the specified stylesheets in the list of paths.
+        /// Return true if any stylesheets were added
+        /// </summary>
+        public bool AddStyleSheetsWithoutSorting(params string[] paths)
+        {
+            var anyAdded = false;
+            foreach (string path in paths)
+            {
+                anyAdded |= AddStyleSheetWithoutSorting(path);
+            }
+            return anyAdded;
+        }
+
+        private bool AddStyleSheetWithoutSorting(string path)
         {
             // This version is in libpalaso, and it does weird things that are file:/// oriented, like looking for the file and giving it file path
             // RawDom.AddStyleSheet(path);
 
+
+            // Remember, Linux filenames are case sensitive.
+            var pathToCheck = path;
+            pathToCheck = pathToCheck.Replace('\\', '/');
+
             // We don't need any link to be there twice. If we're already linked to this stylesheet, don't add it again.
-            // Review: the libpalaso code instead removes the old link before adding the new one.
-            // The code here is more efficient, but it means that if the stylesheet is in the wrong order, or even if the old
-            // link looked for it in the wrong folder, we don't fix it.
-            // Generally we sort the links after adding all of them, so order doesn't matter.
-            // I'm fairly sure we're not depending on this code to fix links to moved stylesheets.
-            // Most of our stylesheets live directly in the book folder.
             foreach (XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
             {
-                var href = linkNode.GetAttribute("href");
-                if (Path.GetFileName(href) == Path.GetFileName(path))
-                {
-                    return;
-                }
+                var filename = linkNode.GetAttribute("href");
+
+                filename = filename.Replace('\\', '/');
+                if (filename == pathToCheck)
+                    return false;
+                Debug.Assert(
+                    filename.ToLowerInvariant() != pathToCheck.ToLowerInvariant(),
+                    "passing a filename with wrong case: " + filename
+                );
             }
 
             var head = XmlUtils.GetOrCreateElement(RawDom, "//html", "head");
@@ -278,6 +306,7 @@ namespace Bloom.Book
             link.SetAttribute("href", path);
             link.SetAttribute("type", "text/css");
             head.AppendChild(link);
+            return true;
         }
 
         public XmlNodeList SafeSelectNodes(string xpath)
@@ -660,32 +689,6 @@ namespace Bloom.Book
         );
 
         /// <summary>
-        /// Add a reference to the specified stylesheet if we don't already have it.
-        /// Return true if added, and if it's not a known stylesheet that is automatically
-        /// present in a page being edited.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public bool AddStyleSheetIfMissing(string path)
-        {
-            // Remember, Linux filenames are case sensitive.
-            var pathToCheck = path;
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-                pathToCheck = pathToCheck.ToLowerInvariant();
-            foreach (XmlElement link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
-            {
-                var fileName = link.GetStringAttribute("href");
-                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-                    fileName = fileName.ToLowerInvariant();
-                if (fileName == pathToCheck)
-                    return false;
-            }
-            //_dom.AddStyleSheet(path.Replace("file://", "")); this used the libpalaso version which is slow and looks for the file and such
-            AddStyleSheet(path);
-            return !stylesheetsToIgnoreAdding.Contains(path);
-        }
-
-        /// <summary>
         /// We're trying to get names of style sheets that need to be copied from one book to another.
         /// So not the standard ones that every book has, but things like one specific to the particular
         /// template the source was made from, or that got added becuase we used an Activity page that
@@ -805,7 +808,7 @@ namespace Bloom.Book
                     var name = Path.GetFileName(href).ToLowerInvariant();
                     if (
                         name.EndsWith("xmatter.css")
-                        || BookStorage.KnownCssFilePrefixesInOrder.Any(
+                        || BookStorage.AutomaticallyAddedCssFilePrefixes.Any(
                             prefix => name.StartsWith(prefix.ToLowerInvariant())
                         )
                     )
@@ -2942,23 +2945,12 @@ namespace Bloom.Book
             HtmlDom targetBookDom
         )
         {
-            var addedModifiedStyleSheets = new List<string>();
             //This was refactored from book, where there was these notes:
             //     NB: at this point this code can't handle the "userModifiedStyles" from children, it'll ignore them (they would conflict with each other)
             //     NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
-            bool anyAdded = false;
-
-            //At this point, this addedModifiedStyleSheets is just used as a place to track which stylesheets we already have
-            foreach (string sheetName in sourceBookDom.GetTemplateStyleSheets())
-            {
-                if (!addedModifiedStyleSheets.Contains(sheetName))
-                //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
-                {
-                    addedModifiedStyleSheets.Add(sheetName);
-                    anyAdded |= targetBookDom.AddStyleSheetIfMissing(sheetName);
-                }
-            }
-            return anyAdded;
+            return targetBookDom.EnsureStylesheetLinks(
+                sourceBookDom.GetTemplateStyleSheets().ToArray()
+            );
         }
 
         public static string ConvertHtmlBreaksToNewLines(string html)
