@@ -763,13 +763,22 @@ div.textWholePage ul {
 // Changing the z-index did not help. So we allow themes to "dodge" it.
 // Kind of a hack, I know. See BL-13206.
 @container style(--pageNumber-show-multiplicand:1) {
+    .split-pane-component.position-right
+        .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton,
+    .split-pane-component.position-top
+        .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton {
+        // don't need this dodge if the page number can't be in this text area
+        --formatButton-pageNumber-dodge: 0px;
+    }
     .split-pane-component.position-left
         > .split-pane-component-inner
         > .bloom-translationGroup
         > #formatButton,
-    // more complex page split vertically after horizontally
-    .split-pane-component.position-left
-        .split-pane-component.position-bottom
+    .split-pane-component.position-bottom
         > .split-pane-component-inner
         > .bloom-translationGroup
         > #formatButton,
