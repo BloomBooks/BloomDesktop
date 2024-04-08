@@ -41,7 +41,7 @@
     --pageNumber-border-radius: 0px;
     /* left: value in .numberedPage.side-left:after to display the page number */
     --pageNumber-left-margin: auto;
-    --pageNumber-extra-height: 0;
+    --pageNumber-extra-height: 0mm;
 
     /* Themes should set to 0 if the marginBox is a different color than the page background. This affects the text padding.
       Note that we could eventually figure this out in code, and probably need to once we provide a UI for
