@@ -3841,6 +3841,24 @@ namespace Bloom.Book
             // the other. But the order should be consistent, and if both are there, typically customBookStyles2.css
             // came from our system, while the other was added by the user. So allow the user one to win.
             "customBookStyles2.css",
+            "customBookStyles.css",
+            "pageControls.css",
+            "pageThumbnailList.css",
+        };
+
+        // MakeDomRelocatable adds these and uses this list to get rid of old ones before addding new ones.
+        public static readonly string[] AutomaticallyAddedCssFilePrefixes =
+        {
+            "basePage", // we leave off ".css" so that this can match version ones, like "basePage-legacy-5-6.css"
+            "baseEPUB.css",
+            "editMode.css",
+            "previewMode.css",
+            "origami.css",
+            "branding.css",
+            "defaultLangStyles.css",
+            "customCollectionStyles.css",
+            "appearance.css",
+            "customBookStyles2.css",
             "customBookStyles.css"
         };
 

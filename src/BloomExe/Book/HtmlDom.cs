@@ -805,7 +805,7 @@ namespace Bloom.Book
                     var name = Path.GetFileName(href).ToLowerInvariant();
                     if (
                         name.EndsWith("xmatter.css")
-                        || BookStorage.KnownCssFilePrefixesInOrder.Any(
+                        || BookStorage.AutomaticallyAddedCssFilePrefixes.Any(
                             prefix => name.StartsWith(prefix.ToLowerInvariant())
                         )
                     )
