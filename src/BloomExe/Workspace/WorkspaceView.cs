@@ -71,6 +71,7 @@ namespace Bloom.Workspace
         private WorkspaceTabSelection _tabSelection;
         private CollectionApi _collectionApi;
         private AudioRecording _audioRecording;
+        private CollectionSettingsApi _collectionSettingsApi;
 
         //autofac uses this
 
@@ -96,7 +97,8 @@ namespace Bloom.Workspace
             CollectionApi collectionApi,
             WorkspaceApi workspaceApi,
             WorkspaceTabSelection tabSelection,
-            AudioRecording audioRecording
+            AudioRecording audioRecording,
+            CollectionSettingsApi collectionSettingsApi
         )
         {
             _model = model;
@@ -114,6 +116,7 @@ namespace Bloom.Workspace
             _collectionApi = collectionApi;
             appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
             workspaceApi.WorkspaceView = this; // and yet one more
+            _collectionSettingsApi = collectionSettingsApi;
 
             _collectionSettings = collectionSettings;
             // This provides the common API with a hook it can use to reload
@@ -944,12 +947,14 @@ namespace Bloom.Workspace
                         BloomMessageBox.ShowInfo(MustBeAdminMessage);
                         return DialogResult.Cancel;
                     }
+                    _collectionSettingsApi.PrepareToShowDialog();
                     using (var dlg = _settingsDialogFactory())
                     {
                         _currentlyOpenSettingsDialog = dlg;
                         dlg.SetDesiredTab(tab);
                         var temp = dlg.ShowDialog(this);
                         _currentlyOpenSettingsDialog = null;
+                        CollectionSettingsApi.DialogClosed();
                         return temp;
                     }
                 });
@@ -962,7 +967,10 @@ namespace Bloom.Workspace
 
         public void CheckForInvalidBranding()
         {
-            if (_collectionSettings.InvalidBranding == null)
+            if (
+                _collectionSettings.InvalidBranding == null
+                || _collectionSettings.LockedToOneDownloadedBook
+            )
                 return;
             // I'm not very happy with this, but the only place I could find to detect that we're opening a new project
             // is too soon to bring up a dialog; it comes up before the main window is fully initialized, which can
@@ -970,21 +978,11 @@ namespace Bloom.Workspace
             StartupScreenManager.AddStartupAction(
                 () =>
                 {
-                    BringUpEnterpriseSettings();
+                    OpenLegacySettingsDialog("enterprise");
                 },
                 shouldHideSplashScreen: true,
                 lowPriority: true
             );
-        }
-
-        private void BringUpEnterpriseSettings()
-        {
-            CollectionSettingsApi.PrepareForFixEnterpriseBranding(
-                _collectionSettings.InvalidBranding,
-                _collectionSettings.SubscriptionCode
-            );
-            OnLegacySettingsButton_Click(this, new EventArgs());
-            CollectionSettingsApi.EndFixEnterpriseBranding();
         }
 
         private void SelectPage(Control view)

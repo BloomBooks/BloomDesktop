@@ -4635,6 +4635,10 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
         <note>This is the header for the book that is in bloomlibrary.org already.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeBranding" translate="no">
+        <source xml:lang="en">The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.ChangeBranding</note>
+      </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader" translate="no">
         <source xml:lang="en">Change the official uploader to {0}. (Bloom Library will hide part of your email address)</source>
         <note>ID: PublishTab.UploadCollisionDialog.ChangeUploader</note>
@@ -5274,6 +5278,11 @@ Do you want to go ahead?</note>
       <trans-unit id="Settings.Enterprise.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
         <note>ID: Settings.Enterprise.LearnMore</note>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true">
+        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
+        <note>ID: Settings.Enterprise.NeedsCode</note>
+        <note>**%0** should be kept. It will become the branding name. Keep something like [here](%1), but replace the word "here" as appropriate. This will become a hyperlink that launches a web page in a browser.</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" sil:dynamic="true">
         <source xml:lang="en">None. Bloom will not show Enterprise features.</source>

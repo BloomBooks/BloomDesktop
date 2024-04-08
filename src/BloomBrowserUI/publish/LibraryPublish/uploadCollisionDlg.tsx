@@ -51,6 +51,8 @@ export interface IUploadCollisionDlgData {
     existingBookUrl: string;
     existingThumbUrl?: string;
     uploader?: string;
+    oldBranding?: string;
+    newBranding?: string;
     // Note that this may be called some time after the dialog closes (in response to Upload failing,
     // for example, because the user asked us to fix the Book ID but Team Collection said we can't).
     onCancel?: () => void;
@@ -90,6 +92,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
     );
 
     const [doChangeUploader, setDoChangeUploader] = useState(false);
+    const [doChangeBranding, setDoChangeBranding] = useState(false);
 
     const kAskForHelpColor = "#D65649";
     const kDarkerSecondaryTextColor = "#555555";
@@ -137,6 +140,14 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         "Bloom will fix the ID of your book and upload it as a new book. The old book on Bloom Library will stay the same.",
         "PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2",
         "This is explanatory commentary on a radio button."
+    );
+
+    const changeBrandingMessage = useL10n(
+        'The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.',
+        "PublishTab.UploadCollisionDialog.ChangeBranding",
+        "",
+        props.oldBranding,
+        props.newBranding
     );
 
     const sameBookRadioLabel = useL10n(
@@ -249,6 +260,9 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         </div>
     );
 
+    const needChangeBranding =
+        props.oldBranding && props.oldBranding !== props.newBranding;
+
     const differentBooksRadioCommentary = (): JSX.Element => (
         <div
             css={css`
@@ -287,6 +301,15 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         props.onCancel?.();
         closeDialog();
     }
+
+    const cssForCheckboxes = css`
+        margin-left: 37px;
+        .MuiFormControlLabel-root {
+            // The default 10px margin seems to me to visually break the connection between the checkboxes and
+            // their parent radio button.
+            padding-top: 2px !important;
+        }
+    `;
 
     return (
         <BloomDialog
@@ -484,15 +507,49 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                             ariaLabel="Same book radio button"
                             commentaryChildren={sameBookRadioCommentary()}
                         />
+                        {canUpload && needChangeBranding && (
+                            <div css={cssForCheckboxes}>
+                                {/* The checkbox has an icon prop we could use instead of making it part of
+                                the label, but the mockup has it wrapping as part of the first line of the
+                                label, whereas our BloomCheckbox class puts it out to the left of all the lines
+                                of label, and does something funny with positioning so that neither the icon nor
+                                the text aligns with the text of the other checkbox when both are present. */}
+                                <BloomCheckbox
+                                    label={
+                                        <p>
+                                            <WarningIcon
+                                                color="warning"
+                                                css={css`
+                                                    // Aligns it with the text baseline
+                                                    position: relative;
+                                                    top: 2px;
+                                                    // Makes it a little smaller than using 'small' as the fontSize prop.
+                                                    // more in line with the mockup.
+                                                    font-size: 1em;
+                                                    margin-right: 5px;
+                                                `}
+                                            />
+                                            {changeBrandingMessage}
+                                        </p>
+                                    }
+                                    alreadyLocalized={true}
+                                    l10nKey="ignored"
+                                    checked={doChangeBranding}
+                                    onCheckChanged={() => {
+                                        // Enhance: it would probably be nice to select the appropriate radio button
+                                        // if it isn't already, but this is a rare special case (branding is rarely
+                                        // changed), we're trying to discourage doing it by accident, and it's not
+                                        // easy to actually take control of the radio button embedded in the
+                                        // RadioWithLabelAndCommentary from here. So for now, the user must do both.)
+                                        setDoChangeBranding(!doChangeBranding);
+                                    }}
+                                ></BloomCheckbox>
+                            </div>
+                        )}
                         {canUpload &&
                             canBecomeUploader &&
                             props.uploader !== props.userEmail && (
-                                <div
-                                    css={css`
-                                        margin-left: 37px;
-                                        margin-top: -12px;
-                                    `}
-                                >
+                                <div css={cssForCheckboxes}>
                                     <BloomCheckbox
                                         label={changeTheUploader}
                                         alreadyLocalized={true}
@@ -540,7 +597,8 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                     enabled={
                         // If we don't have permission to overwrite, we can only upload using a new ID
                         buttonState !== RadioState.Indeterminate &&
-                        (canUpload || buttonState === RadioState.Different)
+                        (canUpload || buttonState === RadioState.Different) &&
+                        (doChangeBranding || !needChangeBranding)
                     }
                     size="large"
                     onClick={() => {
