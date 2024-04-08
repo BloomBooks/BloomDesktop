@@ -81,8 +81,6 @@ namespace Bloom.Book
         void CleanupUnusedVideoFiles();
         void CleanupUnusedActivities();
 
-        void EnsureHasLinkToStyleSheet(HtmlDom dom, string path);
-
         ExpandoObject XmatterAppearanceSettings { get; }
         ExpandoObject BrandingAppearanceSettings { get; }
 
@@ -2968,26 +2966,14 @@ namespace Bloom.Book
         {
             //clear out any old ones
             dom.RemoveNormalStyleSheetsLinks();
-            EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
-
-            CssFilesThatAreAlwaysWanted.ForEach(x =>
-            {
-                EnsureHasLinkToStyleSheet(dom, x);
-            });
+            //Stylesheets will all get sorted at the end by EnsureStylesheetLinks
+            dom.AddStyleSheetsWithoutSorting(Path.GetFileName(PathToXMatterStylesheet));
+            dom.AddStyleSheetsWithoutSorting(CssFilesThatAreAlwaysWanted);
             var appearanceRelatedCssFiles = BookInfo.AppearanceSettings.AppearanceRelatedCssFiles(
                 LinkToLocalCollectionStyles
             );
-            appearanceRelatedCssFiles.ForEach(x =>
-            {
-                EnsureHasLinkToStyleSheet(dom, x);
-            });
 
-            // If we're not supposed to have these links, make sure we don't.
-            AppearanceSettings.PossibleAppearanceRelatedCssFiles
-                .Except(appearanceRelatedCssFiles)
-                .ForEach(file => EnsureDoesNotHaveLinkToStyleSheet(dom, file));
-
-            dom.SortStyleSheetLinks();
+            dom.EnsureStylesheetLinks(appearanceRelatedCssFiles.ToArray());
         }
 
         public string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack)
@@ -2998,7 +2984,7 @@ namespace Bloom.Book
             {
                 const string xmatterSuffix = "-XMatter.css";
                 EnsureDoesNotHaveLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
-                EnsureHasLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
+                dom.EnsureStylesheetLinks(nameOfXMatterPack + xmatterSuffix);
                 // Since HtmlDom.GetMetaValue() is always called with the collection's xmatter pack as default,
                 // we can just remove this wrong meta element.
                 dom.RemoveMetaElement("xmatter");
@@ -3014,24 +3000,6 @@ namespace Bloom.Book
                 if (fileName == path)
                     dom.RemoveStyleSheetIfFound(path);
             }
-        }
-
-        public void EnsureHasLinkToStyleSheet(HtmlDom dom, string path)
-        {
-            foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
-            {
-                var fileName = link.GetStringAttribute("href");
-                if (fileName == path)
-                    return;
-                // We may also have an obsolete link with a Windows-specific path.
-                if (fileName.Replace('\\', '/') == path)
-                {
-                    // We want a link that will work on both platforms, so correct it.
-                    link.SetAttribute("href", path);
-                    return;
-                }
-            }
-            dom.AddStyleSheetIfMissing(path);
         }
 
         public string[] CssFilesThatAreAlwaysWanted
@@ -3064,8 +3032,7 @@ namespace Bloom.Book
         {
             EnsureHasLinksToStylesheets(dom);
             dom.RemoveModeStyleSheets(); // nb must be before we add previewMode, which it removes
-            dom.AddStyleSheetIfMissing("previewMode.css");
-            dom.SortStyleSheetLinks();
+            dom.EnsureStylesheetLinks("previewMode.css");
             dom.RemoveFileProtocolFromStyleSheetLinks();
         }
 
@@ -3824,18 +3791,23 @@ namespace Bloom.Book
             "editTranslationMode.css"
         };
 
-        public static readonly string[] KnownCssFilePrefixesInOrder =
+        // These go before "unknown" stylesheets in the sort order
+        public static readonly string[] OrderedPrefixesOfCssFilesToSortBeforeUnknownStylesheets =
         {
-            // list in the order that you want their <link> to appear
             "basePage", // we leave off ".css" so that this can match version ones, like "basePage-legacy-5-6.css"
             "baseEPUB.css",
             "editMode.css",
             "previewMode.css",
             "origami.css",
-            "UNKNOWN_STYLESHEETS_HERE",
+        };
+
+        // These go after "unknown" stylesheets in the sort order
+        public static readonly string[] OrderedPrefixesOfCssFilesToSortAfterUnknownStylesheets =
+        {
             "branding.css",
             "defaultLangStyles.css",
             "customCollectionStyles.css",
+            "../customCollectionStyles.css",
             "appearance.css",
             // We don't usually have both of these, and I don't have a clear idea why one should come before
             // the other. But the order should be consistent, and if both are there, typically customBookStyles2.css
@@ -3843,6 +3815,15 @@ namespace Bloom.Book
             "customBookStyles2.css",
             "customBookStyles.css"
         };
+
+        // RemoveNormalStyleSheetsLinks uses this list to get rid of old css files before we add new ones.
+        // This list must include all the CSS files that AppearanceRelatedCssFiles might ever return so we can
+        // delete the ones we don't want
+        public static readonly string[] AutomaticallyAddedCssFilePrefixes =
+        // These are split up for the sake of the StyleSheetLinkSorter
+        OrderedPrefixesOfCssFilesToSortBeforeUnknownStylesheets
+            .Concat(OrderedPrefixesOfCssFilesToSortAfterUnknownStylesheets)
+            .ToArray();
 
         /// <summary>
         /// Relative to the book folder, where should we find the customCollectionStyles.css file?

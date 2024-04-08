@@ -513,11 +513,11 @@ namespace Bloom.Book
 
             var pageDom = GetHtmlDomWithJustOnePage(page);
             pageDom.RemoveModeStyleSheets();
-            pageDom.AddStyleSheet(this.BookInfo.AppearanceSettings.BasePageCssName);
-            pageDom.AddStyleSheet("editMode.css");
-            pageDom.AddStyleSheet("editPaneGlobal.css");
-            pageDom.AddStyleSheet("");
-            pageDom.SortStyleSheetLinks();
+            pageDom.EnsureStylesheetLinks(
+                this.BookInfo.AppearanceSettings.BasePageCssName,
+                "editMode.css",
+                "editPaneGlobal.css"
+            );
             AddJavaScriptForEditing(pageDom);
             RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _bookData, BookInfo);
             RuntimeInformationInjector.AddUISettingsToDom(
@@ -651,7 +651,7 @@ namespace Bloom.Book
             //	importNode.AppendChild(child);
             //inputHead.ParentNode.ReplaceChild(importNode, inputHead);
             var result = Storage.MakeDomRelocatable(inputDom);
-            Storage.EnsureHasLinkToStyleSheet(result, "previewMode.css");
+            result.EnsureStylesheetLinks("previewMode.css");
             return result;
         }
 
@@ -663,15 +663,9 @@ namespace Bloom.Book
             }
             var pageDom = GetHtmlDomWithJustOnePage(page);
             pageDom.RemoveModeStyleSheets();
-            foreach (var cssFileName in this.Storage.GetCssFilesToLinkForPreview())
-            {
-                pageDom.AddStyleSheet(cssFileName);
-            }
+            pageDom.EnsureStylesheetLinks(this.Storage.GetCssFilesToLinkForPreview());
             // Note: it would be a fine enhancement here to first check for "branding-{flavor}.css",
             // but we'll leave that until we need it.
-
-            pageDom.SortStyleSheetLinks();
-
             AddPreviewJavascript(pageDom); //review: this is just for thumbnails... should we be having the javascript run?
             return pageDom;
         }
@@ -689,7 +683,6 @@ namespace Bloom.Book
                 return GetErrorDom();
             }
             var pageDom = GetHtmlDomWithJustOnePage(page);
-            pageDom.SortStyleSheetLinks();
             AddPreviewJavascript(pageDom);
             HtmlDom.AddClass(pageDom.Body, "bloom-templateThumbnail");
             return pageDom;
@@ -770,11 +763,7 @@ namespace Bloom.Book
         {
             var dom = Storage.GetRelocatableCopyOfDom();
             dom.RemoveModeStyleSheets();
-            foreach (var cssFileName in cssFileNames)
-            {
-                dom.AddStyleSheet(cssFileName);
-            }
-            dom.SortStyleSheetLinks();
+            dom.EnsureStylesheetLinks(cssFileNames);
 
             return dom;
         }
@@ -945,7 +934,7 @@ namespace Bloom.Book
             // Earlier code also added origami.css, but I don't know any reason to add it now
             // in the unlikely event it isn't already loaded. We want the preview to look just
             // like the HTML would look if we opened the file.
-            previewDom.AddStyleSheet("previewMode.css");
+            previewDom.EnsureStylesheetLinks("previewMode.css");
 
             // Older code (pre-5.7) called UpdateContentLanguageClasses() here with code that chose the
             // collection L1 language if the book has it, otherwise, the book's own L1. That now results
@@ -2293,7 +2282,11 @@ namespace Bloom.Book
             if (coverColor != null)
             {
                 var coverColorIsDark = ColorUtils.IsDark(coverColor);
-                foreach (var page in bookDOM.SafeSelectNodes("//div[contains(@class,'coverColor')]").Cast<XmlElement>())
+                foreach (
+                    var page in bookDOM
+                        .SafeSelectNodes("//div[contains(@class,'coverColor')]")
+                        .Cast<XmlElement>()
+                )
                 {
                     if (coverColorIsDark)
                         HtmlDom.AddClass(page, "darkCoverColor");
@@ -4127,7 +4120,6 @@ namespace Bloom.Book
             if (IsFolio)
             {
                 AddChildBookContentsToFolio(printingDom, currentBookCollection, bookServer);
-                printingDom.SortStyleSheetLinks();
             }
 
             //we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
@@ -4218,7 +4210,6 @@ namespace Bloom.Book
                 //add links to the template css needed by the children.
 
                 HtmlDom.AddStylesheetFromAnotherBook(childBook.OurHtmlDom, printingDom);
-                printingDom.SortStyleSheetLinks();
 
                 foreach (
                     XmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes(

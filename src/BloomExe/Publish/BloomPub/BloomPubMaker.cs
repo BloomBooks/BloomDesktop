@@ -860,7 +860,7 @@ namespace Bloom.Publish.BloomPub
             }
             RobustFile.WriteAllText(Path.Combine(book.FolderPath, "fonts.css"), sb.ToString());
             // Tell the document to use the new stylesheet.
-            book.OurHtmlDom.AddStyleSheet("fonts.css");
+            book.OurHtmlDom.EnsureStylesheetLinks("fonts.css");
             // Repair defaultLangStyles.css and other places in the output book if needed.
             if (badFonts.Any())
             {
