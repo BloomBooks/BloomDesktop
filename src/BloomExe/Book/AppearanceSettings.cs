@@ -245,6 +245,8 @@ public class AppearanceSettings
     /// </summary>
     public bool ShouldUseAppearanceCss => !UsingLegacy;
 
+    // All the possible files this might return must be included in BookStorage.AutomaticallyAddedCssFilePrefixes
+    // so that we can delete the ones we don't want
     public List<string> AppearanceRelatedCssFiles(bool useLocalCollectionStyles)
     {
         var result = new List<string>();
@@ -258,27 +260,6 @@ public class AppearanceSettings
             result.Add(BookStorage.RelativePathToCollectionStyles(useLocalCollectionStyles));
         result.Add(BasePageCssName);
         return result;
-    }
-
-    /// <summary>
-    /// List all the CSS files that AppearanceRelatedCssFiles might ever return
-    /// (for use in deleting the ones that it does not currently return).
-    /// </summary>
-    public static string[] PossibleAppearanceRelatedCssFiles
-    {
-        get
-        {
-            return new[]
-            {
-                "appearance.css",
-                "customBookStyles.css",
-                "customBookStyles2.css",
-                "customCollectionStyles.css",
-                "../customCollectionStyles.cs",
-                "basePage.css",
-                "basePage-legacy-5-6.css"
-            };
-        }
     }
 
     /// <summary>

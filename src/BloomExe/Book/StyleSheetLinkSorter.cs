@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using SIL.Linq;
 using SIL.Xml;
@@ -12,6 +13,14 @@ namespace Bloom.Book
     /// </summary>
     public class StyleSheetLinkSorter : IComparer<XmlElement>
     {
+        public static readonly string[] KnownCssFilePrefixesInOrder =
+            BookStorage.AutomaticallyAddedCssPrefixesPart1
+                .Append("UNKNOWN_STYLESHEETS_HERE")
+                .Concat(BookStorage.AutomaticallyAddedCssPrefixesPart2)
+                .Append("pageControls.css")
+                .Append("pageThumbnailList.css")
+                .ToArray();
+
         const int kDefaultValueForStyleSheetsThatShouldListInTheMiddle = 100;
 
         // This is set up as a dictionary, but it's really just a list of pairs.
@@ -29,7 +38,7 @@ namespace Bloom.Book
             {
                 _values = new Dictionary<string, int>();
                 var weight = 0;
-                BookStorage.KnownCssFilePrefixesInOrder.ForEach(x =>
+                KnownCssFilePrefixesInOrder.ForEach(x =>
                 {
                     if (x == "UNKNOWN_STYLESHEETS_HERE")
                         weight = kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1000;
