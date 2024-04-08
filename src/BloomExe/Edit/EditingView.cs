@@ -528,7 +528,6 @@ namespace Bloom.Edit
                 }
                 _model.CheckForBL2634("navigated to page");
                 SetModalState(false); // ensure _pageListView is enabled (BL-9712).
-                _pageListView.Focus();
             }
 #if MEMORYCHECK
             // Check memory for the benefit of developers.
