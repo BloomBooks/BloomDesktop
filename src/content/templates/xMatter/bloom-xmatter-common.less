@@ -65,6 +65,20 @@
                 // If so it should come after the vernacular title and possibly the national language.
                 order: 2;
             }
+            // These three make the above obsolete for fields when title visibility is managed by the
+            // appearance system. Since we don't have distinct xmatter CSS for legacy, we keep the
+            // old rules, but allow the new ones to win by coming later in the file.
+            // (The contentFirst rule is required because it's possible that contentFirst also
+            // has contentNational1 or contentNational2, and we want the contentFirst rule to win.)
+            &.bloom-contentFirst {
+                order: 0;
+            }
+            &.bloom-contentSecond {
+                order: 1;
+            }
+            &.bloom-contentThird {
+                order: 2;
+            }
 
             // //NB: THe order here is important. bloom-content1 should be last so that if a box is *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections), we want the  bloom-content1 rule to win.
             // &.bloom-contentNational1 {

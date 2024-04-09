@@ -443,8 +443,10 @@ namespace BloomTests.Book
                     1
                 );
 
-            // Try it again with V turned off. This probably never happens, but it is the only way to test
+            // Try it again with V turned off. This was originally a way to test
             // that the data-default-languages is used as a fall-back when the settings don't specify.
+            // Now we have settings for all three languages so that fall-back is never used.
+            // I just updated the test to the new behavior.
             contents = string.Format(contentsPattern, "N1,N2");
             dom.LoadXml(contents);
             pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
@@ -470,13 +472,13 @@ namespace BloomTests.Book
                 "es"
             );
 
-            // The settings say that L2 should be visible, so it should be on
-            // The settings have nothing to say about L1, so it should be off based on V not being in data-default-languages
+            // The settings say that L2 should be visible, so it should be on.
+            // By default they also say L1 should be.
             AssertThatXmlIn
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-visibility-code-on')]",
-                    1
+                    2
                 );
             AssertThatXmlIn
                 .Dom(dom)
@@ -1716,6 +1718,199 @@ namespace BloomTests.Book
             Assert.That(output[4].Equals(input[0]));
             Assert.That(output[5].Equals(input[2]));
             Assert.That(output[6].Equals(input[4]));
+        }
+
+        [Test]
+        public void AddThemeVisibleOrderClass_NoSiblings_AddsContentFirst()
+        {
+            var doc = new XmlDocument();
+            var tg = doc.CreateElement("div");
+            tg.SetAttribute("class", "bloom-translationGroup");
+            doc.AppendChild(tg);
+            var editableIrrelevant = doc.CreateElement("div");
+            editableIrrelevant.SetAttribute("class", "bloom-editable");
+            tg.AppendChild(editableIrrelevant);
+            editableIrrelevant.SetAttribute("lang", "qaa");
+            tg.SetAttribute("data-visibility-variable", "cover-title-LN-show");
+            var editable = doc.CreateElement("div");
+            editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            tg.AppendChild(editable);
+
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                false,
+                "fr",
+                "fr",
+                "en",
+                "tpi"
+            );
+            Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-contentFirst"));
+
+            editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                false,
+                "en",
+                "fr",
+                "en",
+                "tpi"
+            );
+            Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-contentFirst"));
+
+            editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                false,
+                "tpi",
+                "fr",
+                "en",
+                "tpi"
+            );
+            Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-contentFirst"));
+        }
+
+        [Test]
+        public void AddThemeVisibleOrderClass_SiblingL1_AddsContentSecond()
+        {
+            var doc = new XmlDocument();
+            var tg = doc.CreateElement("div");
+            tg.SetAttribute("class", "bloom-translationGroup");
+            doc.AppendChild(tg);
+            tg.SetAttribute("data-visibility-variable", "cover-title-LN-show");
+            var editable = doc.CreateElement("div");
+            editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            tg.AppendChild(editable);
+            tg.AppendChild(doc.CreateWhitespace("  "));
+            var editableFirst = doc.CreateElement("div");
+            editableFirst.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            tg.AppendChild(editableFirst);
+            editableFirst.SetAttribute("lang", "fr");
+            // No fair trying "fr" since that occurs on sibling
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                false,
+                "en",
+                "fr",
+                "en",
+                "tpi"
+            );
+            Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-contentSecond"));
+
+            editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                false,
+                "tpi",
+                "fr",
+                "en",
+                "tpi"
+            );
+            Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-contentSecond"));
+        }
+
+        [Test]
+        public void AddThemeVisibleOrderClass_SiblingL1AndL2_AddsContentThird()
+        {
+            var doc = new XmlDocument();
+            var tg = doc.CreateElement("div");
+            tg.SetAttribute("class", "bloom-translationGroup");
+            doc.AppendChild(tg);
+            tg.SetAttribute("data-visibility-variable", "cover-title-LN-show");
+            var editable = doc.CreateElement("div");
+            editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            tg.AppendChild(editable);
+            tg.AppendChild(doc.CreateWhitespace("  "));
+            var editableFirst = doc.CreateElement("div");
+            editableFirst.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            tg.AppendChild(editableFirst);
+            editableFirst.SetAttribute("lang", "fr");
+            var editableSecond = doc.CreateElement("div");
+            editableSecond.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            tg.AppendChild(editableSecond);
+            editableSecond.SetAttribute("lang", "en");
+
+            // No fair trying "fr" or "en" since those occurs on siblings
+
+            editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                false,
+                "tpi",
+                "fr",
+                "en",
+                "tpi"
+            );
+            Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-contentThird"));
+        }
+
+        [Test]
+        public void AddThemeVisibleOrderClass_NotVisible_Or_Irrelevant_AddsNothing()
+        {
+            var doc = new XmlDocument();
+            var tg = doc.CreateElement("div");
+            tg.SetAttribute("class", "bloom-translationGroup");
+            doc.AppendChild(tg);
+            tg.SetAttribute("data-visibility-variable", "cover-title-LN-show");
+            var editable = doc.CreateElement("div");
+            editable.SetAttribute("class", "bloom-editable");
+            tg.AppendChild(editable);
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                false,
+                "fr",
+                "fr",
+                "en",
+                "tpi"
+            );
+            Assert.That(editable.GetAttribute("class"), Is.EqualTo("bloom-editable"));
+
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                false,
+                "en",
+                "fr",
+                "en",
+                "tpi"
+            );
+
+            Assert.That(editable.GetAttribute("class"), Is.EqualTo("bloom-editable"));
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                false,
+                "tpi",
+                "fr",
+                "en",
+                "tpi"
+            );
+            Assert.That(editable.GetAttribute("class"), Is.EqualTo("bloom-editable"));
+
+            editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                true, // will do nothing in legacy mode
+                "fr",
+                "fr",
+                "en",
+                "tpi"
+            );
+            Assert.That(
+                editable.GetAttribute("class"),
+                Is.EqualTo("bloom-editable bloom-visibility-code-on")
+            );
+
+            tg.RemoveAttribute("data-visibility-variable"); // will do nothing without this (not in appearance system)
+            TranslationGroupManager.AddThemeVisibleOrderClass(
+                editable,
+                false,
+                "fr",
+                "fr",
+                "en",
+                "tpi"
+            );
+            Assert.That(
+                editable.GetAttribute("class"),
+                Is.EqualTo("bloom-editable bloom-visibility-code-on")
+            );
         }
     }
 }

@@ -47,6 +47,8 @@ import { Div } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
+import { useMemo } from "react";
+import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 
 let isOpenAlready = false;
 
@@ -82,12 +84,6 @@ interface IOverrideInformation {
     xmatterName: string;
 }
 
-interface ILanguageNameValues {
-    language1Name: string;
-    language2Name: string;
-    language3Name?: string;
-}
-
 export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const {
         showDialog,
@@ -113,13 +109,6 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         brandingName: ""
     });
 
-    const languageNameValues: ILanguageNameValues = useApiObject<
-        ILanguageNameValues
-    >("settings/languageNames", {
-        language1Name: "",
-        language2Name: ""
-    });
-
     const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
         "BookSettings.LockedByXMatter",
@@ -134,13 +123,14 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         overrideInformation?.brandingName
     );
 
-    const appearanceLabel = useL10n(
-        "Appearance",
-        "BookSettings.AppearanceGroupLabel"
+    const coverLabel = useL10n("Cover", "BookSettings.CoverGroupLabel");
+    const contentPagesLabel = useL10n(
+        "Content Pages",
+        "BookSettings.ContentPagesGroupLabel"
     );
-    const insidePagesSubgroupLabel = useL10n(
-        "Inside Pages",
-        "BookSettings.InsidePagesGroupLabel",
+    const languagesToShowNormalSubgroupLabel = useL10n(
+        "Languages to show in normal text boxes",
+        "BookSettings.NormalTextBoxLangsLabel",
         ""
     );
     const themeLabel = useL10n("Page Theme", "BookSettings.PageThemeLabel", "");
@@ -171,17 +161,10 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     );
     */
     const whatToShowOnCoverLabel = useL10n(
-        "What to Show on Cover",
+        "Front Cover",
         "BookSettings.WhatToShowOnCover"
     );
-    const showWrittenLanguage2TitleLabel = useL10n(
-        "Show Written Language 2 Title",
-        "BookSettings.ShowWrittenLanguage2Title"
-    );
-    const showWrittenLanguage3TitleLabel = useL10n(
-        "Show Written Language 3 Title",
-        "BookSettings.ShowWrittenLanguage3Title"
-    );
+
     const showLanguageNameLabel = useL10n(
         "Show Language Name",
         "BookSettings.ShowLanguageName"
@@ -204,10 +187,16 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         "BookSettings.FrontAndBackMatter.Description"
     );
     const resolutionLabel = useL10n("Resolution", "BookSettings.Resolution");
-    const bloomPubLabel = useL10n("BloomPUB", "PublishTab.bloomPUBButton"); // reuse the same string localized for the Publish tab
+    const bloomPubLabel = useL10n("eBooks", "PublishTab.bloomPUBButton"); // reuse the same string localized for the Publish tab
 
     // This is a helper function to make it easier to pass the override information
-    function getAdditionalProps<T>(subPath: string, disable?: boolean) {
+    function getAdditionalProps<T>(
+        subPath: string
+    ): {
+        path: string;
+        overrideValue: T;
+        overrideDescription?: string;
+    } {
         // some properties will be overridden by branding and/or xmatter
         const xmatterOverride: T | undefined =
             overrideInformation?.xmatter?.[subPath];
@@ -224,7 +213,6 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         // make a an object that can be spread as props in any of the Configr controls
         return {
             path: "appearance." + subPath,
-            disabled: appearanceDisabled || disable,
             overrideValue: override as T,
             // if we're disabling all appearance controls (e.g. because we're in legacy), don't list a second reason for this overload
             overrideDescription: appearanceDisabled ? "" : description
@@ -365,41 +353,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             //setSettings(s);
                         }}
                     >
-                        <ConfigrGroup label={appearanceLabel} level={1}>
-                            {appearanceDisabled && (
-                                <NoteBox>
-                                    <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
-                                        The selected page theme does not support
-                                        Appearance settings. They have been
-                                        disabled.
-                                    </Div>
-                                </NoteBox>
-                            )}
-                            <ConfigrSubgroup
-                                label={insidePagesSubgroupLabel}
-                                path={`appearance`}
-                            >
-                                <ConfigrSelect
-                                    label={themeLabel}
-                                    disabled={false}
-                                    path={`appearance.cssThemeName`}
-                                    options={appearanceUIOptions.themeNames.map(
-                                        x => {
-                                            return {
-                                                label: x.label,
-                                                value: x.value
-                                            };
-                                        }
-                                    )}
-                                    description={themeDescription}
-                                />
-                                <ConfigrBoolean
-                                    label={showPageNumbersLabel}
-                                    {...getAdditionalProps<boolean>(
-                                        `pageNumber-show`
-                                    )}
-                                />
-                            </ConfigrSubgroup>
+                        <ConfigrGroup label={coverLabel} level={1}>
                             {
                                 // This group of three possible messages...sometimes none of them shows, so there are four options...
                                 // is very similar to the one in BookInfoIndicator.tsx. If you change one, you may need to change the other.
@@ -538,37 +492,41 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 label={whatToShowOnCoverLabel}
                                 path={`appearance`}
                             >
-                                <ConfigrBoolean
-                                    label={
-                                        showWrittenLanguage2TitleLabel +
-                                        ` (${languageNameValues.language2Name})`
+                                {appearanceDisabled && (
+                                    <NoteBox
+                                        css={css`
+                                            margin-left: 20px;
+                                        `}
+                                    >
+                                        <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
+                                            The selected page theme does not
+                                            support the following settings.
+                                        </Div>
+                                    </NoteBox>
+                                )}
+                                <FieldVisibilityGroup
+                                    field="cover-title"
+                                    labelFrame="Show Title in {0}"
+                                    labelFrameL10nKey="BookSettings.ShowWrittenLanguageTitle"
+                                    settings={settings}
+                                    settingsToReturnLater={
+                                        settingsToReturnLater
                                     }
-                                    {...getAdditionalProps<boolean>(
-                                        "cover-title-L2-show"
-                                    )}
-                                />
-
-                                <ConfigrBoolean
-                                    label={
-                                        languageNameValues.language3Name
-                                            ? showWrittenLanguage3TitleLabel +
-                                              ` (${languageNameValues.language3Name})`
-                                            : showWrittenLanguage3TitleLabel
-                                    }
-                                    {...getAdditionalProps<boolean>(
-                                        `cover-title-L3-show`,
-                                        !languageNameValues.language3Name
-                                    )}
+                                    disabled={appearanceDisabled}
+                                    L1MustBeTurnedOn={true}
+                                    getAdditionalProps={getAdditionalProps}
                                 />
 
                                 <ConfigrBoolean
                                     label={showLanguageNameLabel}
+                                    disabled={appearanceDisabled}
                                     {...getAdditionalProps<boolean>(
                                         `cover-languageName-show`
                                     )}
                                 />
                                 <ConfigrBoolean
                                     label={showTopicLabel}
+                                    disabled={appearanceDisabled}
                                     {...getAdditionalProps<boolean>(
                                         `cover-topic-show`
                                     )}
@@ -608,6 +566,62 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                     description={frontAndBackMatterDescription}
                                 />
                             </ConfigrSubgroup> */}
+                        </ConfigrGroup>
+                        <ConfigrGroup label={contentPagesLabel} level={1}>
+                            <ConfigrSubgroup label="" path={`appearance`}>
+                                {/* Wrapping these two in a div prevents Config-R from sticking a divider between them */}
+                                <div>
+                                    <ConfigrSelect
+                                        label={themeLabel}
+                                        disabled={false}
+                                        path={`appearance.cssThemeName`}
+                                        options={appearanceUIOptions.themeNames.map(
+                                            x => {
+                                                return {
+                                                    label: x.label,
+                                                    value: x.value
+                                                };
+                                            }
+                                        )}
+                                        description={themeDescription}
+                                    />
+                                    {appearanceDisabled && (
+                                        <NoteBox
+                                            css={css`
+                                                margin-left: 20px;
+                                            `}
+                                        >
+                                            <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
+                                                The selected page theme does not
+                                                support the following settings.
+                                            </Div>
+                                        </NoteBox>
+                                    )}
+                                </div>
+                                <ConfigrBoolean
+                                    label={showPageNumbersLabel}
+                                    disabled={appearanceDisabled}
+                                    {...getAdditionalProps<boolean>(
+                                        `pageNumber-show`
+                                    )}
+                                />
+                            </ConfigrSubgroup>
+                            <ConfigrSubgroup
+                                label={languagesToShowNormalSubgroupLabel}
+                                path={`appearance`}
+                            >
+                                <FieldVisibilityGroup
+                                    field="autoTextBox"
+                                    labelFrame="Show {0}"
+                                    labelFrameL10nKey="BookSettings.ShowContentLanguage"
+                                    settings={settings}
+                                    settingsToReturnLater={
+                                        settingsToReturnLater
+                                    }
+                                    disabled={false}
+                                    getAdditionalProps={getAdditionalProps}
+                                />
+                            </ConfigrSubgroup>
                         </ConfigrGroup>
                         <ConfigrGroup label={bloomPubLabel} level={1}>
                             {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}

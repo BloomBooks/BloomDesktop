@@ -147,6 +147,7 @@ namespace Bloom
                                     typeof(ControlKeyEvent),
                                     typeof(BookStatusChangeEvent),
                                     typeof(EditingModel),
+                                    typeof(EditingView),
                                     typeof(PublishModel),
                                     typeof(AudioRecording),
                                     typeof(BookSettingsApi),

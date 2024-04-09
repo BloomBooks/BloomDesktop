@@ -405,7 +405,86 @@ namespace Bloom.Book
                 HtmlDom.AddClass(editable, "bloom-visibility-code-on");
             }
 
+            // At the time of this writing (5.7) this class only affects cover page titles.
+            AddThemeVisibleOrderClass(
+                editable,
+                settings.UsingLegacy,
+                lang,
+                bookData.CollectionSettings.Language1Tag,
+                bookData.CollectionSettings.Language2Tag,
+                bookData.CollectionSettings.Language3Tag
+            );
+
             UpdateRightToLeftSetting(bookData, editable, lang);
+        }
+
+        static bool IsVisible(XmlElement editable)
+        {
+            return editable.HasAttribute("class")
+                && editable.GetAttribute("class").Contains("bloom-visibility-code-on");
+        }
+
+        /// <summary>
+        /// If this field's visibility is controlled by the appearance system (introduced in 5.7, though as of 5.7 only applying
+        /// to the cover title), add a class indicating its order within the collection languages that are visible for this field.
+        /// Unlike in legacy theme (or pre-5.7), the order, like the visibility choice, does not depend on what languages are
+        /// chosen to appear in content pages.
+        /// Must be called after setting bloom-visibility-code-on for all appropriate fields in the same group.
+        /// </summary>
+        /// <remarks>We could obtain lang from the element, but the one real caller already has it, and passing
+        /// it separately makes testing easier.</remarks>
+        public static void AddThemeVisibleOrderClass(
+            XmlElement editable,
+            bool legacy,
+            string lang,
+            string l1,
+            string l2,
+            string l3
+        )
+        {
+            if (legacy)
+                return; // not in theme mode
+            var visibilityVariable = (editable.ParentNode as XmlElement).GetAttribute(
+                "data-visibility-variable"
+            );
+            if (string.IsNullOrEmpty(visibilityVariable))
+                return; // visibility of this element is not controlled by the Appearance system
+            if (!IsVisible(editable))
+                return; // the element is not visible at all, don't mark it.
+            if (lang == l1)
+            {
+                // L1 comes first, so if it's visible, it gets class 1.
+                HtmlDom.AddClass(editable, "bloom-contentFirst");
+                return;
+            }
+            var visibleSiblingLangs = (editable.ParentNode as XmlElement).ChildNodes
+                .Cast<XmlNode>()
+                .Where(ed => ed is XmlElement)
+                .Cast<XmlElement>()
+                .Where(
+                    ed =>
+                        ed != editable
+                        && ed.GetAttribute("class").Contains("bloom-visibility-code-on")
+                )
+                .Select(e => e.GetAttribute("lang"))
+                .ToList();
+            if (lang == l2)
+            {
+                if (visibleSiblingLangs.Contains(l1))
+                    HtmlDom.AddClass(editable, "bloom-contentSecond");
+                else
+                    HtmlDom.AddClass(editable, "bloom-contentFirst");
+                return;
+            }
+            if (lang == l3)
+            {
+                if (visibleSiblingLangs.Contains(l1) && visibleSiblingLangs.Contains(l2))
+                    HtmlDom.AddClass(editable, "bloom-contentThird");
+                else if (visibleSiblingLangs.Contains(l1) || visibleSiblingLangs.Contains(l2))
+                    HtmlDom.AddClass(editable, "bloom-contentSecond");
+                else
+                    HtmlDom.AddClass(editable, "bloom-contentFirst");
+            }
         }
 
         /// <summary>
@@ -452,7 +531,7 @@ namespace Bloom.Book
             }
 
             string whichLang;
-            if (lang == bookData.Language1Tag)
+            if (lang == bookData.CollectionSettings.Language1Tag)
             {
                 whichLang = "L1";
             }
@@ -464,11 +543,11 @@ namespace Bloom.Book
             // necessarily the second language in the collection. So, for now, we'll keep using the
             // MetadataLanguage1Tag and MetadataLanguage2Tag values here. This is consistent with
             // the typical use of N1 and N2 (rather than L2 and L3) in data-default-languages.
-            else if (lang == bookData.MetadataLanguage1Tag)
+            else if (lang == bookData.CollectionSettings.Language2Tag)
             {
                 whichLang = "L2";
             }
-            else if (lang == bookData.MetadataLanguage2Tag)
+            else if (lang == bookData.CollectionSettings.Language3Tag)
             {
                 whichLang = "L3";
             }

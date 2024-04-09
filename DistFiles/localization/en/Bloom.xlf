@@ -3719,7 +3719,7 @@
         <note>ID: PublishTab.BodyOnly-description</note>
       </trans-unit>
       <trans-unit id="PublishTab.bloomPUBButton">
-        <source xml:lang="en">BloomPUB</source>
+        <source xml:lang="en">eBooks</source>
         <note>ID: PublishTab.bloomPUBButton</note>
         <note>This is the label under the BloomPUB icon on the left side of the Publish screen.</note>
       </trans-unit>

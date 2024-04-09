@@ -372,10 +372,18 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
         .find(".bloom-translationGroup")
         .each(function() {
             // set our font size so that we can use em units when setting padding of the translation group
-            const fontSizeOfL1 = $(this)
-                .find(".bloom-content1")
-                .first()
-                .css("font-size");
+            // If visibility is under the control of the appearance system for this field the child we
+            // want has bloom-contentFirst, otherwise, bloom-content1.
+            // At the time of this writing (5.7) this is only used for cover page titles.
+            let mainChild = $(this)
+                .find(".bloom-contentFirst")
+                .first();
+            if (mainChild.length === 0) {
+                mainChild = $(this)
+                    .find(".bloom-content1")
+                    .first();
+            }
+            const fontSizeOfL1 = mainChild.css("font-size");
             $(this).css("font-size", fontSizeOfL1);
         });
 }

@@ -369,13 +369,17 @@
         <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
         <note>displayed below the slider that is used to set the image resolution</note>
       </trans-unit>
-      <trans-unit id="BookSettings.AppearanceGroupLabel" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Appearance</source>
-        <note>BookSettings.AppearanceGroupLabel</note>
+      <trans-unit id="BookSettings.CoverGroupLabel" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Cover</source>
+        <note>BookSettings.CoverGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.InsidePagesGroupLabel" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Inside Pages</source>
-        <note>BookSettings.InsidePagesGroupLabel</note>
+      <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Content Pages</source>
+        <note>BookSettings.ContentPagesGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Languages to show in normal text boxes</source>
+        <note>BookSettings.NormalTextBoxLangsLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageThemeLabel" sil:dynamic="true" translate="no">
         <source xml:lang="en">Page Theme</source>
@@ -390,16 +394,16 @@
         <note>BookSettings.CoverBackground</note>
       </trans-unit>
       <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true" translate="no">
-        <source xml:lang="en">What to Show on Cover</source>
+        <source xml:lang="en">Front Cover</source>
         <note>BookSettings.WhatToShowOnCover</note>
       </trans-unit>
-      <trans-unit id="BookSettings.ShowWrittenLanguage2Title" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Show Written Language 2 Title</source>
-        <note>BookSettings.ShowWrittenLanguage2Title</note>
+      <trans-unit id="BookSettings.ShowContentLanguage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Show {0}</source>
+        <note>BookSettings.ShowContentLanguage</note>
       </trans-unit>
-      <trans-unit id="BookSettings.ShowWrittenLanguage3Title" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Show Written Language 3 Title</source>
-        <note>BookSettings.ShowWrittenLanguage3Title</note>
+      <trans-unit id="BookSettings.ShowWrittenLanguageTitle" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Show Title in {0}</source>
+        <note>BookSettings.ShowWrittenLanguageTitle</note>
       </trans-unit>
       <trans-unit id="BookSettings.ShowLanguageName" sil:dynamic="true" translate="no">
         <source xml:lang="en">Show Language Name</source>
@@ -462,7 +466,7 @@
         <note>{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website.</note>
       </trans-unit>
       <trans-unit id="BookSettings.ThemeDisablesOptionsNotice" sil:dynamic="true" translate="no">
-        <source xml:lang="en">The selected page theme does not support Appearance settings.</source>
+        <source xml:lang="en">The selected page theme does not support the following settings.</source>
         <note>BookSettings.ThemeDisablesOptionsNotice</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.default" sil:dynamic="true" translate="no">
