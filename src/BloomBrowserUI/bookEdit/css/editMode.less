@@ -1182,6 +1182,10 @@ body.hideAllCKEditors .cke_chrome {
 // hide tips when the user clicks out of the page
 .qtip {
     visibility: hidden;
+    // When the page isn't focused, the tips will go away when you move off the page.
+    // This keeps them around long enough to reach with the mouse.
+    transition-property: visibility;
+    transition-delay: 1s;
 }
 // but keep them visible when the user is interacting with them (BL-13224)
 .qtip:hover,
