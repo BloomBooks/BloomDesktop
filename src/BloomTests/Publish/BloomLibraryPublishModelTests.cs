@@ -177,8 +177,11 @@ namespace BloomTests.Publish
             )
             {
                 var book2FolderPath = Path.Combine(tempFolder.FolderPath, "hello world");
-                var downloadForEditPath = Path.Combine(tempFolder.FolderPath);
-                File.WriteAllText(
+                var downloadForEditPath = Path.Combine(
+                    tempFolder.FolderPath,
+                    BloomLibraryPublishModel.kNameOfDownloadForEditFile
+                );
+                RobustFile.WriteAllText(
                     downloadForEditPath,
                     @"{""databaseId"": ""matchesCollection"", ""instanceId"": ""c2e3212c-ee59-4e75-bd98-41e4784e24ca"",""bookFolder"":"""
                         + book2FolderPath.Replace("\\", "/")

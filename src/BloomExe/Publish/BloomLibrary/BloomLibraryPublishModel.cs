@@ -146,10 +146,7 @@ namespace Bloom.Publish.BloomLibrary
 
         public static JObject GetDownloadForEditData(string pathToCollectionFolder)
         {
-            var filePath = Path.Combine(
-                Path.GetDirectoryName(pathToCollectionFolder),
-                kNameOfDownloadForEditFile
-            );
+            var filePath = Path.Combine(pathToCollectionFolder, kNameOfDownloadForEditFile);
             if (RobustFile.Exists(filePath))
             {
                 return JObject.Parse(RobustFile.ReadAllText(filePath));
