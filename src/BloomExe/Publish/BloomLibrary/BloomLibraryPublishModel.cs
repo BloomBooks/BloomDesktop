@@ -756,7 +756,9 @@ namespace Bloom.Publish.BloomLibrary
                 return new { shouldShow = false };
             }
 
-            var newThumbPath = ChooseBestUploadingThumbnailPath(Book).ToLocalhost();
+            // Earlier code tried to find an existing thumbnail file, but it wasn't always up to date by the time it was needed.
+            // This api builds it on the fly from the cover image so it is always current.
+            var newThumbPath = "/bloom/api/publish/thumbnail";
             var newTitle = Book.TitleBestForUserDisplay;
             ConvertLanguageListsToNames(
                 languagesToAdvertise,
@@ -817,32 +819,6 @@ namespace Bloom.Publish.BloomLibrary
                 count = existingBookInfo.count,
                 permissions = existingBookInfo.permissions
             };
-        }
-
-        // We are trying our best to end up with a thumbnail whose height/width ratio
-        // is the same as the original image. This allows the Uploading and Already in Bloom Library
-        // thumbs to top-align.
-        private string ChooseBestUploadingThumbnailPath(Book.Book book)
-        {
-            // If this exists, it will have the original image's ratio of height to width.
-            var thumb70Path = Path.Combine(book.FolderPath, "thumbnail-70.png");
-            if (RobustFile.Exists(thumb70Path))
-                return thumb70Path;
-            var coverImagePath = book.GetCoverImagePath();
-            if (coverImagePath == null)
-            {
-                return book.ThumbnailPath;
-            }
-            else
-            {
-                RuntimeImageProcessor.GenerateThumbnail(
-                    book.GetCoverImagePath(),
-                    book.NonPaddedThumbnailPath,
-                    70,
-                    ColorTranslator.FromHtml(book.GetCoverColor())
-                );
-                return book.NonPaddedThumbnailPath;
-            }
         }
 
         private static readonly string kThumbnailFileName = "thumbnail-256.png";
