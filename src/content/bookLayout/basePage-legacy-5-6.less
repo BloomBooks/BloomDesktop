@@ -10,6 +10,18 @@
     --marginBox-background-color: white;
 }
 
+// The initial implementation of the appearance system replaced a couple margin values in origami.less with these variables.
+// But
+// 1. In the end, we didn't end up using them in the appearance system or even defining the variables anywhere.
+// 2. We still need these values set to 3px for legacy books.
+// One potential solution to this was to get rid of the variables and move the relevant rules to basePage.less and here.
+// But there is too much entanglement with the multiple less and css files involved, including split-pane.css to make
+// it simple to do. So for now, we just define the variables here.
+.bloom-page{
+    --side-by-side-gap: 3px;
+    --top-bottom-gap: 3px;
+}
+
 body {
     line-height: 1.5;
     font-family: Andika, "Andika New Basic", "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulos SIL", Sans-Serif;
