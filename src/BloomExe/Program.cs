@@ -535,6 +535,7 @@ namespace Bloom
                         BookDownloadSupport.EnsureDownloadFolderExists();
 
                         SetUpLocalization();
+                        HtmlErrorReporter.Instance.LocalizeDefaultReportLabel();
 
                         if (
                             args.Length == 1
