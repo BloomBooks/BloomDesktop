@@ -2999,6 +2999,7 @@ namespace Bloom.Book
                 const string xmatterSuffix = "-XMatter.css";
                 EnsureDoesNotHaveLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
                 EnsureHasLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
+                dom.SortStyleSheetLinks();
                 // Since HtmlDom.GetMetaValue() is always called with the collection's xmatter pack as default,
                 // we can just remove this wrong meta element.
                 dom.RemoveMetaElement("xmatter");
