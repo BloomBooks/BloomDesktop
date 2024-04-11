@@ -871,6 +871,7 @@ namespace Bloom.Publish.BloomPub
                     badFonts
                 );
             }
+            book.OurHtmlDom.SortStyleSheetLinks();
         }
 
         /// <summary>
