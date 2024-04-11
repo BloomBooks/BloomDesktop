@@ -230,7 +230,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addSourceCollection", HandleAddSourceCollection, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceFolder", HandleRemoveSourceFolder, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getBookOnBloomBadgeInfo", GetBookOnBloomBadgeInfo, false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getBookCountByLanguage", HandleGetBookCountByLanguage, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getBookCountByLanguage", HandleGetBookCountByLanguage, false, false);
 		}
 
 		private void HandleRemoveSourceCollection(ApiRequest request)
