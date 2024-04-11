@@ -81,5 +81,10 @@ namespace Bloom.Edit
         {
             get { return false; }
         }
+
+        public bool IsCoverPage
+        {
+            get { return false; }
+        }
     }
 }

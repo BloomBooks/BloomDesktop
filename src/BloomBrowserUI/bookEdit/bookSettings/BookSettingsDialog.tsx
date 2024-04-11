@@ -84,7 +84,9 @@ interface IOverrideInformation {
     xmatterName: string;
 }
 
-export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
+export const BookSettingsDialog: React.FunctionComponent<{
+    initiallySelectedGroupIndex?: number;
+}> = props => {
     const {
         showDialog,
         closeDialog,
@@ -352,6 +354,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             setSettingsToReturnLater(s);
                             //setSettings(s);
                         }}
+                        selectedGroupIndex={props.initiallySelectedGroupIndex}
                     >
                         <ConfigrGroup label={coverLabel} level={1}>
                             {
@@ -742,13 +745,17 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
     );
 };
 
-export function showBookSettingsDialog() {
+export function showBookSettingsDialog(initiallySelectedGroupIndex?: number) {
     // once Bloom's tab bar is also in react, it won't be possible
     // to open another copy of this without closing it first, but
     // for now, we need to prevent that.
     if (!isOpenAlready) {
         isOpenAlready = true;
-        ShowEditViewDialog(<BookSettingsDialog />);
+        ShowEditViewDialog(
+            <BookSettingsDialog
+                initiallySelectedGroupIndex={initiallySelectedGroupIndex}
+            />
+        );
     }
 }
 

@@ -413,6 +413,8 @@ namespace Bloom.Edit
             get { return _bookSelection.CurrentSelection; }
         }
 
+        public IPage CurrentPage => _pageSelection.CurrentSelection;
+
         public bool CanAddPages => !CurrentBook.IsCalendar;
 
         public bool CanDuplicatePage
