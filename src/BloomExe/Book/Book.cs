@@ -945,6 +945,7 @@ namespace Bloom.Book
             // in the unlikely event it isn't already loaded. We want the preview to look just
             // like the HTML would look if we opened the file.
             previewDom.AddStyleSheet("previewMode.css");
+            previewDom.SortStyleSheetLinks();
 
             // Older code (pre-5.7) called UpdateContentLanguageClasses() here with code that chose the
             // collection L1 language if the book has it, otherwise, the book's own L1. That now results
@@ -3453,7 +3454,8 @@ namespace Bloom.Book
             // styles from that book. Do this before we set up the new page, which will get a copy of this
             // book's (possibly updated) stylesheet.
             stylesChanged |= AddMissingStylesFromTemplatePage(templatePage);
-
+            if (stylesChanged)
+                OurHtmlDom.SortStyleSheetLinks();
             XmlDocument dom = OurHtmlDom.RawDom;
             var templatePageDiv = templatePage.GetDivNodeForThisPage();
             var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;

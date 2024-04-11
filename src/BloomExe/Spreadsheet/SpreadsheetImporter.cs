@@ -541,6 +541,7 @@ namespace Bloom.Spreadsheet
                     XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceBook, false)
                 );
                 HtmlDom.AddStylesheetFromAnotherBook(sourceDom, _destinationDom);
+                _destinationDom.SortStyleSheetLinks();
                 HtmlDom.CopyMissingStylesheetFiles(
                     sourceDom,
                     Path.GetDirectoryName(sourceBook),
