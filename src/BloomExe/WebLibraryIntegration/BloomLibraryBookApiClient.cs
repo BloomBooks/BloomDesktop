@@ -16,6 +16,13 @@ using SIL.Progress;
 
 namespace Bloom.WebLibraryIntegration
 {
+    // To bubble up the fact that the exception was caused by the client being out of date.
+    public class VersionCannotUploadException : ApplicationException
+    {
+        public VersionCannotUploadException(string message)
+            : base(message) { }
+    }
+
     // This class began its life as BloomParseClient, and it encapsulated all the interactions with parse server.
     // But we are trying to move away from any direct interaction with parse server to favor our own bloomlibrary.org/api calls.
     // This will help facilitate moving away from parse server altogether in the future.
@@ -110,28 +117,29 @@ namespace Bloom.WebLibraryIntegration
                 {
                     LogApiError(request, response);
 
+                    // As of March 2024, this is not used, but we wanted to have a mechanism by which the API could give messages directly to the user.
+                    // For example, we might shut down uploads for alpha temporarily. This might be used with or without the ClientOutOfDate error code.
+                    // Note, we do not anticipate this message would be localized.
+                    string messageIntendedForUser = responseContentError?.messageIntendedForUser;
+                    if (!string.IsNullOrEmpty(messageIntendedForUser))
+                    {
+                        progress.WriteError(messageIntendedForUser);
+                    }
+
                     string errorMessage;
-                    string errorCode = responseContentError.code;
+                    string errorCode = responseContentError?.code;
                     if (errorCode == "ClientOutOfDate")
                     {
                         errorMessage = LocalizationManager.GetString(
                             "PublishTab.Upload.OldVersion",
                             "Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."
                         );
+                        throw new VersionCannotUploadException(errorMessage);
                     }
                     else
                     {
                         errorMessage = messageToShowUserOnFailure;
                     }
-                    // As of March 2024, this is not used, but we wanted to have a mechanism by which the API could give messages directly to the user.
-                    // For example, we might shut down uploads for alpha temporarily. This might be used with or without the ClientOutOfDate error code.
-                    // Note, we do not anticipate this message would be localized.
-                    string messageIntendedForUser = responseContentError.messageIntendedForUser;
-                    if (!string.IsNullOrEmpty(messageIntendedForUser))
-                    {
-                        progress.WriteError(messageIntendedForUser);
-                    }
-
                     throw new ApplicationException(errorMessage);
                 }
 
