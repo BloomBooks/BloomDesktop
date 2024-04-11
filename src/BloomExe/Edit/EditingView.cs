@@ -1655,34 +1655,52 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
             var item = (ToolStripMenuItem)sender;
             ((EditingModel.ContentLanguage)item.Tag).Selected = item.Checked;
 
-            _model.ContentLanguagesSelectionChanged();
+            if (_sendingContentLanguagesSelectionChanged)
+                _model.ContentLanguagesSelectionChanged();
         }
+
+        private bool _sendingContentLanguagesSelectionChanged = true;
 
         public void SetActiveLanguages(bool L1, bool L2, bool L3)
         {
             var contentLanguages = _model.ContentLanguages.ToList();
             bool changed = false;
-            var items = _contentLanguagesDropdown.DropDownItems.Cast<ToolStripMenuItem>().ToList();
-            if (contentLanguages[0].Selected != L1)
+            try
             {
-                contentLanguages[0].Selected = L1;
-                items[0].Checked = L1;
-                changed = true;
+                // Send it once at the end. This reduces flicker and avoids problems where temporarily
+                // all are off, since using the new book settings dialog it is possible to change more
+                // than one in a single call to this method.
+                _sendingContentLanguagesSelectionChanged = false;
+
+                var items = _contentLanguagesDropdown.DropDownItems
+                    .Cast<ToolStripMenuItem>()
+                    .ToList();
+                if (contentLanguages[0].Selected != L1)
+                {
+                    contentLanguages[0].Selected = L1;
+                    items[0].Checked = L1;
+                    changed = true;
+                }
+
+                if (contentLanguages.Count > 1 && contentLanguages[1].Selected != L2)
+                {
+                    contentLanguages[1].Selected = L2;
+                    items[1].Checked = L2;
+                    changed = true;
+                }
+
+                if (contentLanguages.Count > 2 && contentLanguages[2].Selected != L3)
+                {
+                    contentLanguages[2].Selected = L3;
+                    items[2].Checked = L3;
+                    changed = true;
+                }
+            }
+            finally
+            {
+                _sendingContentLanguagesSelectionChanged = false;
             }
 
-            if (contentLanguages.Count > 1 && contentLanguages[1].Selected != L2)
-            {
-                contentLanguages[1].Selected = L2;
-                items[1].Checked = L2;
-                changed = true;
-            }
-
-            if (contentLanguages.Count > 2 && contentLanguages[2].Selected != L3)
-            {
-                contentLanguages[2].Selected = L3;
-                items[2].Checked = L3;
-                changed = true;
-            }
             if (changed)
                 _model.ContentLanguagesSelectionChanged();
         }

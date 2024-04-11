@@ -68,6 +68,13 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     const L2Field = `${props.field}-L2-show`;
     const L3Field = `${props.field}-L3-show`;
 
+    const showL2Control =
+        languageNameValues.language1Name !== languageNameValues.language2Name;
+    const showL3Control =
+        languageNameValues.language3Name &&
+        languageNameValues.language3Name !== languageNameValues.language1Name &&
+        languageNameValues.language3Name !== languageNameValues.language2Name;
+
     // This is a bit of a hack to figure out which of the cover title languages are turned on,
     // for use in possibly disabling one checkbox so they can't all be turned off.
     // It would look marginally better if we created a type for the settings object,
@@ -76,18 +83,36 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     // But with just three the 'disable' boolean for each checkbox is manageable.
     // We can drop this if we decide to allow all three to be turned off (e.g. to allow the
     // user to embed the title in the image or make it an overlay).
-    const [showL1, showL2, showL3] = useMemo(() => {
+    const [showL1, showL2, showL3, numberShowing] = useMemo(() => {
         let appearance = props.settings?.["appearance"];
         if (props.settingsToReturnLater) {
             // although we declared it a string, it appears the Config-R callback always gives us an object
             appearance = props.settingsToReturnLater["appearance"];
         }
         if (!appearance) {
-            // This is a bit arbitrary. It should only apply during early renders. It's our usual default.
-            return [true, true, false];
+            // This is a bit arbitrary. It should only apply during early renders.
+            return [true, false, false, 1];
         }
-        return [appearance[L1Field], appearance[L2Field], appearance[L3Field]];
-    }, [props.settings, props.settingsToReturnLater]);
+        let count = 0;
+        if (appearance[L1Field]) count++;
+        if (showL2Control && appearance[L2Field]) count++;
+        if (showL3Control && appearance[L3Field]) count++;
+
+        return [
+            appearance[L1Field],
+            appearance[L2Field],
+            appearance[L3Field],
+            count
+        ];
+    }, [
+        L1Field,
+        L2Field,
+        L3Field,
+        props.settings,
+        props.settingsToReturnLater,
+        showL2Control,
+        showL3Control
+    ]);
 
     return (
         <div>
@@ -99,37 +124,32 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
                 // the full disabled look.
                 locked={
                     !props.disabled &&
-                    ((showL1 && !showL2 && !showL3) || props.L1MustBeTurnedOn)
+                    ((numberShowing <= 1 && showL1) || props.L1MustBeTurnedOn)
                 }
                 {...props.getAdditionalProps(L1Field)}
             />
             {// Only makes sense to show a control for L2 if it is different from L1
-            languageNameValues.language1Name !==
-                languageNameValues.language2Name && (
+            showL2Control && (
                 <ConfigrBoolean
                     label={showWrittenLanguage2TitleLabel}
                     disabled={props.disabled}
                     // The second expression should never be false if L1 must be turned on;
                     // but we need it when that is false, and it's harmless when L1 must be on
                     // because showL1 will be true.
-                    locked={!props.disabled && showL2 && !showL1 && !showL3}
+                    locked={!props.disabled && numberShowing <= 1 && showL2}
                     {...props.getAdditionalProps(L2Field)}
                 />
             )}
 
             {// Only show this one if it exists and is different from the others
-            languageNameValues.language3Name &&
-                languageNameValues.language3Name !==
-                    languageNameValues.language1Name &&
-                languageNameValues.language3Name !==
-                    languageNameValues.language2Name && (
-                    <ConfigrBoolean
-                        label={showWrittenLanguage3TitleLabel}
-                        disabled={props.disabled}
-                        locked={!props.disabled && showL3 && !showL1 && !showL2}
-                        {...props.getAdditionalProps(L3Field)}
-                    />
-                )}
+            showL3Control && (
+                <ConfigrBoolean
+                    label={showWrittenLanguage3TitleLabel}
+                    disabled={props.disabled}
+                    locked={!props.disabled && numberShowing <= 1 && showL3}
+                    {...props.getAdditionalProps(L3Field)}
+                />
+            )}
         </div>
     );
 };

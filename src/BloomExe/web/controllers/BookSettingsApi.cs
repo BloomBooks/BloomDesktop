@@ -178,7 +178,22 @@ namespace Bloom.Api
                     newAppearance.Remove("autoTextBox-L2-show");
                     var showL3 = newAppearance["autoTextBox-L3-show"].Value;
                     newAppearance.Remove("autoTextBox-L3-show");
-                    _editingView.SetActiveLanguages(showL1, showL2, showL3);
+                    // Things get a little complex here. The three values we just computed indicate the desired visibility
+                    // of the three collection languages. But L2 may well be the same as L1, and conceivably L3 might be the
+                    // the same as L1 or L2 or both. If so, the controls that would be for duplicate languages are not shown,
+                    // and their values are not updated. Worse, we are about to call SetActiveLanguages, and its arguments
+                    // control the visibility of items in a de-duplicated list of languages.
+                    // This seems as though it would have a more complicated effect than it actually does. We always show
+                    // the control for L1, so showL1 is always valid. The third argument is only relevant if there are
+                    // three distinct languages, so we can always pass showL3. The second argument is the tricky one:
+                    // if L2 is the same as L1, then arg2 controls the visibility of L3, so we must pass showL3 (and ignore
+                    // showL2, which is meaningless). If they are different, then showL2 controls the visibility of L2.
+                    // (If all three are the same, the second and third arguments are irrelevant.
+                    // If L3 is the same as L1 or L2, but L1 and L2 are different, then showL3 is meaningless, but also ignored,
+                    // since there are only two languages and showL1 and showL2 are the only relevant arguments.)
+                    var tag1 = _bookSelection.CurrentSelection.CollectionSettings.Language1Tag;
+                    var tag2 = _bookSelection.CurrentSelection.CollectionSettings.Language2Tag;
+                    _editingView.SetActiveLanguages(showL1, tag1 == tag2 ? showL3 : showL2, showL3);
                     // Todo: save the content languages
                     _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.UpdateFromDynamic(
                         newAppearance
