@@ -437,6 +437,17 @@ namespace Bloom.WebLibraryIntegration
                     );
                 return "";
             }
+            catch (OldVersionException e)
+            {
+                var errorMessage = e.Message.Replace("{", "{{").Replace("}", "}}");
+                progress.WriteError(errorMessage);
+                string cancelledMessage = LocalizationManager.GetString(
+                    "PublishTab.Upload.Cancelled",
+                    "Upload was cancelled"
+                );
+                progress.WriteMessage(cancelledMessage);
+                return "quiet";
+            }
             catch (Exception e)
             {
                 var msg1 = LocalizationManager.GetString(
