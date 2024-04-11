@@ -19,6 +19,9 @@
 
     /* set to 0 because our marginBox is white but background is dark. This has the effect of increasing the text padding on the edges. */
     --page-and-marginBox-are-same-color-multiplicand: 0;
+
+    /* move so that page number doesn't it hide it if the text box is in the lower left */
+    --formatButton-pageNumber-dodge: 20px;
 }
 
 [class*="Device"].numberedPage {
