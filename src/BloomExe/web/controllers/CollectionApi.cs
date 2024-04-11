@@ -340,7 +340,7 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "getBookCountByLanguage",
                 HandleGetBookCountByLanguage,
-                true,
+                false,
                 false
             );
         }
