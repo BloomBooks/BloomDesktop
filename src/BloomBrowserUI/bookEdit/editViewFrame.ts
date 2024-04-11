@@ -213,6 +213,8 @@ export function showCopyrightAndLicenseDialog(imageUrl?: string) {
 export function showEditViewTopicChooserDialog() {
     showTopicChooserDialog();
 }
-export function showEditViewBookSettingsDialog() {
-    showBookSettingsDialog();
+export function showEditViewBookSettingsDialog(
+    initiallySelectedGroupIndex?: number
+) {
+    showBookSettingsDialog(initiallySelectedGroupIndex);
 }

@@ -2088,7 +2088,10 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
         private void _bookSettingsButton_Click(object sender, EventArgs e)
         {
             _model.SaveNow();
-            RunJavascriptAsync("editTabBundle.showEditViewBookSettingsDialog();");
+
+            // Open the book settings dialog to the context-specific group.
+            var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
+            RunJavascriptAsync($"editTabBundle.showEditViewBookSettingsDialog({groupIndex});");
         }
     }
 }
