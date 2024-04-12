@@ -31,8 +31,6 @@ namespace Bloom
 
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
-
-				builder.Register(c => LocalizationManager).SingleInstance();
 				
 				if (Settings.Default.MruProjects==null)
 				{
@@ -59,8 +57,6 @@ namespace Bloom
 			{
 				return _container.Resolve<OpenAndCreateCollectionDialog>();
 			}
-
-			public ILocalizationManager LocalizationManager;
 
 			public HtmlThumbNailer HtmlThumbnailer => _container.Resolve<HtmlThumbNailer>();
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Bloom.Properties;
@@ -23,7 +23,6 @@ namespace Bloom.CLI
 			{
 				using (var applicationContainer = new ApplicationContainer())
 				{
-					Program.SetUpLocalization(applicationContainer);
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 					var downloader = new BookDownload(ProjectContext.CreateBloomS3Client());
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt

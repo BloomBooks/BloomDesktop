@@ -57,7 +57,6 @@ namespace Bloom.Workspace
 		private CollectionTabView _collectionTabView;
 		private Control _previouslySelectedControl;
 		public event EventHandler ReopenCurrentProject;
-		private readonly ILocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
 		private ZoomControl _zoomControl;
 
@@ -83,7 +82,6 @@ namespace Bloom.Workspace
 							SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							LocalizationChangedEvent localizationChangedEvent,
-							ILocalizationManager localizationManager,
 							CollectionSettings collectionSettings,
 							CommonApi commonApi,
 							BookSelection bookSelection,
@@ -123,7 +121,6 @@ namespace Bloom.Workspace
 			commonApi.ReloadProjectAction = () => { Invoke(ReopenCurrentProject); };
 
 			//_chorusSystem = chorusSystem;
-			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new EventHandler(OnUpdateDisplay);
 
 			// By this point, BloomServer is up and listening and our web controllers are registered,
