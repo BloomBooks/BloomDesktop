@@ -704,8 +704,12 @@ namespace Bloom.web.controllers
             {
                 apiRequest.ReplyWithJson(new { bookUrl = "", });
             }
-            else if (infos.Count == 1)
+            else
             {
+                // There should only ever be one or zero, since we go to great trouble in CollectionTabView.CheckForDuplicatesAndRepair
+                // to make sure the main editable collection does NOT have duplicate book IDs.
+                // If by any chance there is more than one book with the same ID in the collection, we'll just take the first one.
+                // Since the data is derived from the ID, it should be the same for all of them anyway.
                 var info = infos[0];
                 apiRequest.ReplyWithJson(
                     new
@@ -716,24 +720,6 @@ namespace Bloom.web.controllers
                         harvestState = info.BloomLibraryStatus.HarvesterState
                             .ToString()
                             .ToLowerInvariant()
-                    }
-                );
-            }
-            else
-            {
-                // This may duplicate the action in BloomLibraryBookApiCLient.GetLibraryStatusForBooks, but it doesn't
-                // hurt to generate the url and harvest status twice.  The operation in BloomParseClient can
-                // handle duplicate book ids in different collections while this one looks only at the current
-                // collection.
-                apiRequest.ReplyWithJson(
-                    new
-                    {
-                        bookUrl = BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(
-                            bookId
-                        ),
-                        draft = false,
-                        inCirculation = true,
-                        harvestState = HarvesterState.Multiple.ToString().ToLowerInvariant()
                     }
                 );
             }

@@ -39,29 +39,39 @@ namespace Bloom.web
 
     public static class BloomLibraryUrls
     {
-        public static string BloomLibraryUrlPrefix
+        public static string BloomLibraryUrlPrefix => GetBloomLibraryUrlPrefix(false);
+
+        public static string GetBloomLibraryUrlPrefix(bool forceUseProductionData)
         {
-            get { return UrlLookup.LookupUrl(UrlType.LibrarySite, null, BookUpload.UseSandbox); }
+            return UrlLookup.LookupUrl(
+                UrlType.LibrarySite,
+                null,
+                BookUpload.UseSandbox && !forceUseProductionData
+            );
         }
 
         public static string BloomLibraryDetailPageUrlFromBookId(
             string bookId,
-            bool myBooksBreadCrumb = false
+            bool myBooksBreadCrumb = false,
+            bool forceUseProductionData = false
         )
         {
-            return BloomLibraryUrlPrefix
+            return GetBloomLibraryUrlPrefix(forceUseProductionData)
                 + (myBooksBreadCrumb ? "/my-books" : "")
                 + "/book/"
                 + bookId;
         }
 
-        public static string BloomLibraryBooksWithMatchingIdListingUrl(string bookInstanceId)
+        public static string BloomLibraryBooksWithMatchingIdListingUrl(
+            string bookInstanceId,
+            bool forceUseProductionData = false
+        )
         {
             // Yep, this is ugly. We need to send "%3a" (an encoded colon) to the site because that's what it expects to make the search work.
             // But when we process this url in ExternalLinkController.HandleLink(), it will decode the url.
             // So we have to double encode it here.
             var doubleEncodedColon = "%253A";
-            return $"{BloomLibraryUrlPrefix}/:search:bookInstanceId{doubleEncodedColon}{bookInstanceId}";
+            return $"{GetBloomLibraryUrlPrefix(forceUseProductionData)}/:search:bookInstanceId{doubleEncodedColon}{bookInstanceId}";
         }
     }
 
