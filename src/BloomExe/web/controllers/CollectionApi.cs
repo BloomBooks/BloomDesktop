@@ -721,18 +721,19 @@ namespace Bloom.web.controllers
             }
             else
             {
-                // This may duplicate the action in BloomLibraryBookApiCLient.GetLibraryStatusForBooks, but it doesn't
-                // hurt to generate the url and harvest status twice.  The operation in BloomParseClient can
-                // handle duplicate book ids in different collections while this one looks only at the current
-                // collection.
+                // This shouldn't happen. We go to great trouble in CollectionTabView.CheckForDuplicatesAndRepair
+                // to make sure the main editable collection does NOT have duplicate book IDs.
+                // Just in case, we'll take most of the information from the first matching BookInfo,
+                // but force the Multiple HarvestState.
+                // (An earlier version of this rebuilt the data from scratch, but now that won't work,
+                // because we need to know whether to make a Sandbox or Production URL.)
+                // (Because I don't know any way to make this happen, the following code has not been tested.)
                 apiRequest.ReplyWithJson(
                     new
                     {
-                        bookUrl = BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(
-                            bookId
-                        ),
-                        draft = false,
-                        inCirculation = true,
+                        bookUrl = infos[0].BloomLibraryStatus.BloomLibraryBookUrl,
+                        draft = infos[0].BloomLibraryStatus.Draft,
+                        inCirculation = !infos[0].BloomLibraryStatus.NotInCirculation,
                         harvestState = HarvesterState.Multiple.ToString().ToLowerInvariant()
                     }
                 );

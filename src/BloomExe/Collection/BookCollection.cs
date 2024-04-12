@@ -505,13 +505,30 @@ namespace Bloom.Collection
             // (unless told not to).
             var bloomLibraryApiClient = new BloomLibraryBookApiClient();
             var bloomLibraryStatusesById = bloomLibraryApiClient.GetLibraryStatusForBooks(
-                bookInfos
+                bookInfos,
+                ignoreSandbox: true
             );
+            var sandboxBloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
+            if (BookUpload.UseSandbox)
+            {
+                sandboxBloomLibraryStatusesById = bloomLibraryApiClient.GetLibraryStatusForBooks(
+                    bookInfos,
+                    ignoreSandbox: false
+                );
+            }
             // Now to store the data into the BookInfos and signal the UI to update.
             foreach (var bookInfo in bookInfos)
             {
                 bool updateThumbnailBadge = false;
-                if (bloomLibraryStatusesById.TryGetValue(bookInfo.Id, out var status))
+                if (
+                    // This gives precedence to th production status, if the book is in both places.
+                    // Review: should we switch the status to multiple if it is in fact in both places?
+                    // I think not: it's not a problem to have an extra upload in the sandbox,
+                    // since it won't create any ambiguity about which one to overwrite,
+                    // so the warning is inappropriate.
+                    bloomLibraryStatusesById.TryGetValue(bookInfo.Id, out var status)
+                    || sandboxBloomLibraryStatusesById.TryGetValue(bookInfo.Id, out status)
+                )
                 {
                     if (
                         bookInfo.BloomLibraryStatus == null || bookInfo.BloomLibraryStatus != status

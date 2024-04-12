@@ -35,7 +35,7 @@ namespace Bloom.Book
             BloomLibraryBookUrl = bloomLibraryBookUrl;
         }
 
-        public static BloomLibraryStatus FromDynamicJson(dynamic bookState)
+        public static BloomLibraryStatus FromDynamicJson(dynamic bookState, bool ignoreSandbox)
         {
             //Debug.WriteLine($"DEBUG draft={bookState.draft}, inCirculation={bookState.inCirculation}, harvestState={bookState.harvestState}, objectId={bookState.objectId}");
             HarvesterState harvesterState = HarvesterState.Failed;
@@ -67,7 +67,10 @@ namespace Bloom.Book
             var inCirculation =
                 (bookState.inCirculation == null)
                 || bookState.inCirculation.ToString().ToLowerInvariant() == "true";
-            var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(bookState.id.ToString());
+            var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(
+                bookState.id.ToString(),
+                ignoreSandbox: ignoreSandbox
+            );
             return new BloomLibraryStatus(draft, !inCirculation, harvesterState, url);
         }
 

@@ -298,9 +298,9 @@ namespace Bloom.WebLibraryIntegration
             return MakeRequest(endpoint, Method.GET);
         }
 
-        private RestRequest MakePostRequest(string endpoint = "")
+        private RestRequest MakePostRequest(string endpoint = "", bool ignoreSandbox = false)
         {
-            return MakeRequest(endpoint, Method.POST);
+            return MakeRequest(endpoint, Method.POST, ignoreSandbox);
         }
 
         // used by unit tests to clean up
@@ -309,22 +309,26 @@ namespace Bloom.WebLibraryIntegration
             return MakeRequest(endpoint, Method.DELETE);
         }
 
-        private RestRequest MakeRequest(string endpoint, Method requestType)
+        private RestRequest MakeRequest(
+            string endpoint,
+            Method requestType,
+            bool ignoreSandbox = false
+        )
         {
             string path = kBookApiUrlPrefix + endpoint;
             var request = new RestRequest(path, requestType);
-            SetCommonHeadersAndParameters(request);
+            SetCommonHeadersAndParameters(request, ignoreSandbox);
             return request;
         }
 
-        private void SetCommonHeadersAndParameters(RestRequest request)
+        private void SetCommonHeadersAndParameters(RestRequest request, bool ignoreSandbox = false)
         {
             if (!string.IsNullOrEmpty(_authenticationToken))
                 request.AddHeader("Authentication-Token", _authenticationToken);
 
             if (Program.RunningUnitTests)
                 request.AddQueryParameter("env", "unit-test");
-            else if (BookUpload.UseSandbox)
+            else if (BookUpload.UseSandbox && !ignoreSandbox)
                 request.AddQueryParameter("env", "dev");
         }
 
@@ -534,7 +538,8 @@ namespace Bloom.WebLibraryIntegration
         /// ids as much as possible.
         /// </remarks>
         public Dictionary<string, BloomLibraryStatus> GetLibraryStatusForBooks(
-            List<BookInfo> bookInfos
+            List<BookInfo> bookInfos,
+            bool ignoreSandbox = false
         )
         {
             System.Diagnostics.Debug.WriteLine(
@@ -545,7 +550,7 @@ namespace Bloom.WebLibraryIntegration
                 return bloomLibraryStatusesById;
 
             List<string> bookInstanceIds = bookInfos.Select(book => book.Id).ToList();
-            var request = MakePostRequest();
+            var request = MakePostRequest("", ignoreSandbox);
             var requestBody = new { instanceIds = bookInstanceIds };
             request.AddJsonBody(requestBody);
             var response = AzureRestClient.Execute(request);
@@ -570,14 +575,15 @@ namespace Bloom.WebLibraryIntegration
                             false,
                             HarvesterState.Multiple,
                             BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(
-                                bookInstanceId
+                                bookInstanceId,
+                                ignoreSandbox
                             )
                         );
                     }
                     else
                     {
                         bloomLibraryStatusesById[bookInstanceId] =
-                            BloomLibraryStatus.FromDynamicJson(bookRecord);
+                            BloomLibraryStatus.FromDynamicJson(bookRecord, ignoreSandbox);
                     }
                 }
             }
