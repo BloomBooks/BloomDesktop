@@ -1767,7 +1767,7 @@ namespace Bloom.Publish.Epub
                 link.SetAttribute("href", kCssFolder + "/" + name);
             }
             pageDom.AddStyleSheet(kCssFolder + "/" + "fonts.css"); // enhance: could omit if we don't embed any
-
+            pageDom.SortStyleSheetLinks();
             // EPUB doesn't like direction: settings in CSS, so we need to explicitly set dir= attributes.
             if (_directionSettings.Count > 0)
                 SetDirAttributes(pageDom);
