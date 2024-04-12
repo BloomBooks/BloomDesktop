@@ -23,7 +23,6 @@ namespace Bloom.CLI
             {
                 using (var applicationContainer = new ApplicationContainer())
                 {
-                    Program.SetUpLocalization(applicationContainer);
                     LocalizationManager.SetUILanguage(
                         Settings.Default.UserInterfaceLanguage,
                         false

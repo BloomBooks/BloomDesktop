@@ -36,8 +36,6 @@ namespace Bloom
                 .Where(t => t.GetInterfaces().Contains(typeof(ICommand)))
                 .InstancePerLifetimeScope();
 
-            builder.Register(c => LocalizationManager).SingleInstance();
-
             if (Settings.Default.MruProjects == null)
             {
                 Settings.Default.MruProjects = new MostRecentPathsList();
@@ -65,8 +63,6 @@ namespace Bloom
         {
             return _container.Resolve<OpenAndCreateCollectionDialog>();
         }
-
-        public ILocalizationManager LocalizationManager;
 
         public HtmlThumbNailer HtmlThumbnailer => _container.Resolve<HtmlThumbNailer>();
 
