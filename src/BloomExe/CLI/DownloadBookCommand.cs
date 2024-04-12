@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Bloom.Properties;
@@ -23,7 +23,6 @@ namespace Bloom.CLI
             {
                 using (var applicationContainer = new ApplicationContainer())
                 {
-                    Program.SetUpLocalization(applicationContainer);
                     LocalizationManager.SetUILanguage(
                         Settings.Default.UserInterfaceLanguage,
                         false
