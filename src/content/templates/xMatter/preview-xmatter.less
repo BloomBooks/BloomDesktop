@@ -4,6 +4,18 @@
 
 @XMatterPackName: "preview";
 
+// these are wanted only for previewing templates, not real books
+.preview:not([data-l1]) {
+    .frontCover {
+        .bloom-translationGroup.bookTitle {
+            min-height: 12%;
+        }
+        .bottomBlock {
+            min-height: 12%;
+        }
+    }
+
+}
 .preview {
     .bloom-frontMatter {
         .pageLabel:before {
@@ -19,7 +31,6 @@
             flex-direction: column;
         }
         .bloom-translationGroup.bookTitle {
-            min-height: 12%;
             order: 0; // top of the page
         }
         .placeholder,
@@ -30,7 +41,6 @@
             margin-bottom: @MarginBetweenMajorItems;
         }
         .bottomBlock {
-            min-height: 12%;
             order: 2; // third part of the page, after title and main picture
         }
     }
