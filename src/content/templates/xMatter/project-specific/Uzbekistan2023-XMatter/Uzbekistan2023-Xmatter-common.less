@@ -5,6 +5,13 @@
     --bleed-tolerance: 3mm;
 }
 
+// with a default gray background-color, these values need a bit of contrast to be visible
+.bloom-page.cover {
+    --page-structure-color: rgba(196, 196, 196, 0.268);
+    --language-tag-color: rgba(196, 196, 196, 0.9);
+    --selectedEdit-color: rgba(196, 196, 196, 0.9);
+}
+
 // These rule are common to regular Uzbekistan2023-Xmatter and the epub version.
 // Some of these rules, especially for the front cover, may not work on all readers,
 // but by experiment they seem to produce reasonable results. They were originally
@@ -57,13 +64,14 @@ div.bloom-page {
 }
 
 // This affects the size of the marginBox, but it must be applied to the bloom-page, because the marginBox
-// size is now controlled by padding on the page. This is currently untested beccause the enterprise codes
+// size is now controlled by padding on the page. This is largely untested because the enterprise codes
 // for the UEEP brandings which use this are expired.
 .outsideFrontCover,
 .outsideBackCover {
     &.bloom-page {
         --cover-margin-top: @bleed;
         --cover-margin-bottom: @bleed;
+        --cover-margin-side: @bleed;
         --page-margin-right: @bleed;
         --page-margin-left: @bleed;
     }

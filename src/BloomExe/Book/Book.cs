@@ -962,6 +962,9 @@ namespace Bloom.Book
             PreventVideoAutoLoad(previewDom);
             RemoveImageResolutionMessageAndAddMissingImageMessage(previewDom);
 
+            // Preview may need fullBleed markup to show pages correctly.
+            InsertFullBleedMarkup(previewDom.Body);
+
             _previewDom = previewDom;
             return previewDom;
         }
@@ -1697,6 +1700,11 @@ namespace Bloom.Book
             }
 
             VerifyLayout(OurHtmlDom); // make sure we have something recognizable for layout
+
+            // Ensure that the appearance settings are up to date with the current branding (if any).
+            BookInfo.AppearanceSettings.UpdateFromBranding(Storage.BrandingAppearanceSettings);
+            BookInfo.AppearanceSettings.UpdateFromBranding(Storage.XmatterAppearanceSettings);
+
             // Restore possibly messed up multilingual settings.
             UpdateMultilingualSettings(OurHtmlDom);
 
@@ -1714,11 +1722,11 @@ namespace Bloom.Book
             // a pre-4.9 book when we can't Save().
             OurHtmlDom.FixDivOrdering();
 
-            // Make sure the appearance settings are initialized for the current state of things.
-            // This should be done before UpdateSupportFiles, because those settings affect
-            // what files are copied to the book folder.
+            // Make sure the appearance settings have checked the current state of the css files.
+            // This should be done before UpdateSupportFiles, because this can affect what files
+            // are copied to the book folder.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
-            BookInfo.AppearanceSettings.Initialize(cssFiles, Storage.LegacyThemeCanBeUsed);
+            BookInfo.AppearanceSettings.CheckCssFilesForCompatibility(cssFiles, Storage.LegacyThemeCanBeUsed);
             UpdateSupportFiles();
         }
 
@@ -5588,7 +5596,7 @@ namespace Bloom.Book
             // or deleted customBookStyles.css. We need to update things to reflect the new state of things.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
             // This might produce different results if customBookStyles.css has been deleted.
-            BookInfo.AppearanceSettings.Initialize(cssFiles, Storage.LegacyThemeCanBeUsed);
+            BookInfo.AppearanceSettings.CheckCssFilesForCompatibility(cssFiles, Storage.LegacyThemeCanBeUsed);
             // At one point the line commented out here was all this function did.
             // It needs to be done at some point at least if the theme has changed, to generate the updated
             // Appearance.css. But usually the caller does a full Save() after calling this, so
