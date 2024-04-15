@@ -962,6 +962,9 @@ namespace Bloom.Book
             PreventVideoAutoLoad(previewDom);
             RemoveImageResolutionMessageAndAddMissingImageMessage(previewDom);
 
+            // Preview may need fullBleed markup to show pages correctly.
+            InsertFullBleedMarkup(previewDom.Body);
+
             _previewDom = previewDom;
             return previewDom;
         }
