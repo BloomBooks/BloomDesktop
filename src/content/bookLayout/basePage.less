@@ -633,6 +633,15 @@ div[data-book*="branding"] {
         padding-right: var(--page-margin-right);
     }
 
+    // These need to be more specific than following block's selectors because the most
+    // recent selector with the same specificity wins.  (var(--cover-margin-side) might
+    // not be equal to var(--page-margin-left).)  Doubling one of the classes use in the
+    // selector is a simple way to increase the specificity of a selector.
+    &.outsideBackCover.side-left.side-left,
+    &.outsideFrontCover.side-right.side-right {
+        padding-left: var(--cover-margin-side);
+        padding-right: var(--cover-margin-side);
+    }
     &.outsideFrontCover,
     &.outsideBackCover {
         padding-top: var(--cover-margin-top);
@@ -643,8 +652,6 @@ div[data-book*="branding"] {
 // --------------------------------------------------------------------------------------
 // pages that are symmetrical left vs. right, so that we only use --page-margin-left
 // --------------------------------------------------------------------------------------
-.outsideFrontCover,
-.outsideBackCover,
 // if the page is set to a Device one
 .bloom-page[class*="Device"],
 .calendarFold,
@@ -774,6 +781,7 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     /* All of these default to the general one, then can be overridden as needed */
     --cover-margin-top: var(--page-margin);
     --cover-margin-bottom: var(--page-margin);
+    --cover-margin-side: var(--page-margin);
     --page-margin-top: var(--page-margin);
     --page-margin-bottom: var(--page-margin);
     --page-margin-left: var(--page-margin);
