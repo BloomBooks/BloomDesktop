@@ -182,7 +182,7 @@ p {
     //especially since in the Edit Page (but not in Publish to Reader preview, bloom-player, etc),
     //CKEditor will insert a <br> element (making it take up the line-height) whereas without the <br>,
     //it would take up the min-height
-    min-height: @defaultLineHeight;
+    min-height: @defaultLineHeight * 1em;
 }
 
 textarea,
@@ -192,7 +192,7 @@ textarea,
     overflow: visible;
     // this is just... bogus! removing it will cause some problems, but.. but... font-size: 143%;
     line-height: @defaultLineHeight;
-    min-height: @defaultLineHeight + 0.3em;
+    min-height: @defaultLineHeight * 1em + 0.3em;
     width: 100%;
     // We want the bloom-editables to fill the containing bloom-translationGroup,
     // so that the boxes around them give an idea of how much space is available
@@ -217,7 +217,7 @@ td {
     overflow: visible;
     font-size: 143%;
     line-height: @defaultLineHeight;
-    min-height: @defaultLineHeight + 0.3em;
+    min-height: @defaultLineHeight * 1em + 0.3em;
     width: 100%;
 }
 
@@ -352,7 +352,7 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
     .split-pane-component {
         //Enhance: this doesn't buy us much... it would be more helpful if the minimum was
         // the min-height of the child
-        min-height: @defaultLineHeight;
+        min-height: @defaultLineHeight * 1em;
     }
 
     //&.A5Portrait.bloom-monolingual .bloom-translationGroup {
