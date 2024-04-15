@@ -298,9 +298,12 @@ namespace Bloom.WebLibraryIntegration
             return MakeRequest(endpoint, Method.GET);
         }
 
-        private RestRequest MakePostRequest(string endpoint = "")
+        private RestRequest MakePostRequest(
+            string endpoint = "",
+            bool forceUseProductionData = false
+        )
         {
-            return MakeRequest(endpoint, Method.POST);
+            return MakeRequest(endpoint, Method.POST, forceUseProductionData);
         }
 
         // used by unit tests to clean up
@@ -309,22 +312,29 @@ namespace Bloom.WebLibraryIntegration
             return MakeRequest(endpoint, Method.DELETE);
         }
 
-        private RestRequest MakeRequest(string endpoint, Method requestType)
+        private RestRequest MakeRequest(
+            string endpoint,
+            Method requestType,
+            bool forceUseProductionData = false
+        )
         {
             string path = kBookApiUrlPrefix + endpoint;
             var request = new RestRequest(path, requestType);
-            SetCommonHeadersAndParameters(request);
+            SetCommonHeadersAndParameters(request, forceUseProductionData);
             return request;
         }
 
-        private void SetCommonHeadersAndParameters(RestRequest request)
+        private void SetCommonHeadersAndParameters(
+            RestRequest request,
+            bool forceUseProductionData = false
+        )
         {
             if (!string.IsNullOrEmpty(_authenticationToken))
                 request.AddHeader("Authentication-Token", _authenticationToken);
 
             if (Program.RunningUnitTests)
                 request.AddQueryParameter("env", "unit-test");
-            else if (BookUpload.UseSandbox)
+            else if (BookUpload.UseSandbox && !forceUseProductionData)
                 request.AddQueryParameter("env", "dev");
         }
 
@@ -534,7 +544,8 @@ namespace Bloom.WebLibraryIntegration
         /// ids as much as possible.
         /// </remarks>
         public Dictionary<string, BloomLibraryStatus> GetLibraryStatusForBooks(
-            List<BookInfo> bookInfos
+            List<BookInfo> bookInfos,
+            bool forceUseProductionData = false
         )
         {
             System.Diagnostics.Debug.WriteLine(
@@ -545,7 +556,7 @@ namespace Bloom.WebLibraryIntegration
                 return bloomLibraryStatusesById;
 
             List<string> bookInstanceIds = bookInfos.Select(book => book.Id).ToList();
-            var request = MakePostRequest();
+            var request = MakePostRequest("", forceUseProductionData);
             var requestBody = new { instanceIds = bookInstanceIds };
             request.AddJsonBody(requestBody);
             var response = AzureRestClient.Execute(request);
@@ -570,14 +581,15 @@ namespace Bloom.WebLibraryIntegration
                             false,
                             HarvesterState.Multiple,
                             BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(
-                                bookInstanceId
+                                bookInstanceId,
+                                forceUseProductionData
                             )
                         );
                     }
                     else
                     {
                         bloomLibraryStatusesById[bookInstanceId] =
-                            BloomLibraryStatus.FromDynamicJson(bookRecord);
+                            BloomLibraryStatus.FromDynamicJson(bookRecord, forceUseProductionData);
                     }
                 }
             }
