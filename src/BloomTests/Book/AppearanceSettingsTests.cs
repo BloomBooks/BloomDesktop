@@ -351,7 +351,7 @@ namespace BloomTests.Book
             _settings.WriteCssToFolder(_bookFolder);
             _resultingAppearance = new AppearanceSettingsTest();
             _resultingAppearance.UpdateFromFolder(_bookFolder);
-            _resultingAppearance.Initialize(
+            _resultingAppearance.CheckCssFilesForCompatibility(
                 new[]
                 {
                     cssFilesToCheck[0],

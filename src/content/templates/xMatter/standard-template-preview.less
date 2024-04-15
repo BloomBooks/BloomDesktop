@@ -2,9 +2,11 @@
 @import "../../bookLayout/paperDimensions.less";
 @import "../../appearanceThemes/appearance-theme-default.css";
 
-@XMatterPackName: "preview";
+@XMatterPackName: "template-preview";
 
-.preview {
+// These are wanted only for previewing templates, not real books.
+// Real books always have a data-l1 attribute added.
+.preview:not([data-l1]) {
     .bloom-frontMatter {
         .pageLabel:before {
             content: "@{XMatterPackName}";
@@ -13,6 +15,10 @@
     }
     .frontCover {
         @MarginBetweenMajorItems: 15px;
+        padding-top: var(--cover-margin-top);
+        padding-bottom: var(--cover-margin-bottom);
+        padding-left: var(--cover-margin-side);
+        padding-right: var(--cover-margin-side);
 
         .marginBox {
             display: flex;

@@ -40,7 +40,7 @@ namespace Bloom.web.controllers
                     {
                         var firstPossiblyOffendingCssFile = "";
                         var migratedTheme = "";
-                        if (bookInfo.AppearanceSettings.IsInitialized)
+                        if (bookInfo.AppearanceSettings.CssFilesChecked)
                         {
                             firstPossiblyOffendingCssFile = bookInfo
                                 .AppearanceSettings

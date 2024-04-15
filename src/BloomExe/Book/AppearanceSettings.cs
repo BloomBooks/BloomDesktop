@@ -76,8 +76,8 @@ public class AppearanceSettings
         get
         {
             Debug.Assert(
-                IsInitialized,
-                "Trying to get property of AppearanceSettings that requires Initialize, but it has not been called."
+                CssFilesChecked,
+                "Trying to get property of AppearanceSettings that requires CheckCssFilesForCompatibility, but it has not been called."
             );
             return _firstPossiblyOffendingCssFile;
         }
@@ -101,7 +101,7 @@ public class AppearanceSettings
     // if we are loading a legacy book in a folder we can't write.
     private bool _areSettingsConsistentWithFiles;
 
-    public bool IsInitialized { get; private set; }
+    public bool CssFilesChecked { get; private set; }
 
     // create an array of properties and fill it in
     protected PropertyDef[] propertyDefinitions = new PropertyDef[]
@@ -375,7 +375,7 @@ public class AppearanceSettings
     /// Currently we also pass Css files from branding and xmatter, but we will report a problem if one of them isn't compatible.
     /// When we get more confidence that we have migrated all the brandings and xmatters, we can stop passing them in.
     /// </summary>
-    public bool Initialize(Tuple<string, string>[] cssFilesToCheck, bool legacyThemeCanBeUsed)
+    public bool CheckCssFilesForCompatibility(Tuple<string, string>[] cssFilesToCheck, bool legacyThemeCanBeUsed)
     {
         var result = false;
         ChangeThemeIfCurrentOneNotAllowed(legacyThemeCanBeUsed);
@@ -386,7 +386,7 @@ public class AppearanceSettings
         _customBookStylesAreIncompatibleWithNewSystem = false;
         _customCollectionStylesAreIncompatibleWithNewSystem = false;
         _customCollectionStylesExists = false;
-        IsInitialized = true;
+        CssFilesChecked = true;
         // We have to slog through all the css files that might be incompatible with the new system.
         // Even if the legacy theme is active, we still need to know if there are any incompatible files,
         // because it affects the bookSettingsDialog UI
@@ -557,6 +557,9 @@ public class AppearanceSettings
             // trigger warnings when writing the settings back out.)
             json = new Regex(@"""coverShow.*?"": (true|false),?").Replace(json, "");
             UpdateFromJson(json);
+            // We can't actually be absolutely sure that appearance.css is up to date with the json file;
+            // we'll risk assuming it is.
+            _areSettingsConsistentWithFiles = true;
             Debug.WriteLine(
                 $"Found existing appearance json. CssThemeName is currently {CssThemeName}"
             );
@@ -827,9 +830,6 @@ public class AppearanceSettings
         {
             Properties[property.Key] = property.Value;
         }
-        // We can't actually be absolutely sure that appearance.css is up to date with the json file;
-        // we'll risk assuming it is.
-        _areSettingsConsistentWithFiles = true;
     }
 
     /// <summary>
@@ -958,6 +958,12 @@ public class AppearanceSettings
             _clone.Add(kvp);
 
         return clone;
+    }
+
+    public void UpdateFromOverrides(ExpandoObject brandingAppearanceSettings)
+    {
+        if (brandingAppearanceSettings != null)
+            UpdateFromJson(JsonConvert.SerializeObject(brandingAppearanceSettings));
     }
 }
 
