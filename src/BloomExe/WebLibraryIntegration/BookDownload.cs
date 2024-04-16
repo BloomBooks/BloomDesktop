@@ -426,9 +426,6 @@ namespace Bloom.WebLibraryIntegration
                         Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
                         RobustFile.WriteAllText(settingsPath, settingsContent);
                     }
-
-                    var settings = new CollectionSettings(settingsPath);
-                    var langName = settings.Language1.Name;
                     //var collectionName = NewCollectionWizard.GetNewCollectionName(langName);
                     var bookName = Path.GetFileNameWithoutExtension(htmlPath);
                     var nameTemplate = LocalizationManager.GetString(
