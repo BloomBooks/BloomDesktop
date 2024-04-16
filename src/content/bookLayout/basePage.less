@@ -696,6 +696,43 @@ div[data-book*="branding"] {
     }
 }
 
+.mixinLeftTgPadding {
+    padding-left: calc(
+        var(--topLevel-text-padding-left) -
+            (
+                var(--page-margin-left) *
+                    var(--page-and-marginBox-are-same-color-multiplicand)
+            )
+    );
+}
+.mixinRightTgPadding {
+    padding-right: calc(
+            var(--topLevel-text-padding-right) -
+                (
+                    var(--page-margin-right) *
+                        var(--page-and-marginBox-are-same-color-multiplicand)
+                )
+        );
+}
+.mixinTopTgPadding {
+    padding-top: calc(
+            var(--topLevel-text-padding-top) -
+                (
+                    var(--page-margin-top) *
+                        var(--page-and-marginBox-are-same-color-multiplicand)
+                )
+        );
+}
+.mixinBottomTgPadding {
+    padding-bottom: calc(
+            var(--topLevel-text-padding-bottom) -
+                (
+                    (var(--page-margin-bottom) + var(--pageNumber-extra-height)) *
+                        var(--page-and-marginBox-are-same-color-multiplicand)
+                )
+        );
+}
+
 // ----------------------------
 // Padding
 // We want to improve the padding for the 99% of simple books, but we don't want to break
@@ -704,7 +741,7 @@ div[data-book*="branding"] {
 // ----------------------------
 .marginBox {
     &
-        > .split-pane.vertical-percent
+        > .split-pane
         > .split-pane-component
         > .split-pane-component-inner
         > .bloom-translationGroup {
@@ -713,34 +750,10 @@ you get less padding on the side of the text that is next to edge of the page.
 
 About the "multiplicand" value: We don't want to do the aforementioned adjustment if the page margin is not providing a visual buffer.
 The buffer would be absent if the marginBox had a border or the page has a background color that is different from the marginBox color.*/
-        padding-left: calc(
-            var(--topLevel-text-padding-left) -
-                (
-                    var(--page-margin-left) *
-                        var(--page-and-marginBox-are-same-color-multiplicand)
-                )
-        );
-        padding-right: calc(
-            var(--topLevel-text-padding-right) -
-                (
-                    var(--page-margin-right) *
-                        var(--page-and-marginBox-are-same-color-multiplicand)
-                )
-        );
-        padding-top: calc(
-            var(--topLevel-text-padding-top) -
-                (
-                    var(--page-margin-top) *
-                        var(--page-and-marginBox-are-same-color-multiplicand)
-                )
-        );
-        padding-bottom: calc(
-            var(--topLevel-text-padding-bottom) -
-                (
-                    var(--page-margin-bottom) *
-                        var(--page-and-marginBox-are-same-color-multiplicand)
-                )
-        );
+        .mixinLeftTgPadding;
+        .mixinRightTgPadding;
+        .mixinTopTgPadding;
+        .mixinBottomTgPadding;
     }
     /* on these "inner" edges, we don't need to consider the page margin */
     &
@@ -770,6 +783,68 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane-component-inner
         > .bloom-translationGroup {
         padding-left: var(--topLevel-text-padding-left);
+    }
+    // And now some special cases where we DO want it on blocks that are more deeply nested.
+
+    // This one handles the a text box at the bottom of a picture-in-middle page or similar layout
+    // (including Big Text Diglot).
+    &
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-bottom
+        > .split-pane-component-inner
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-bottom
+        > .split-pane-component-inner
+        > .bloom-translationGroup {
+        padding-top: var(--topLevel-text-padding-top);
+        .mixinLeftTgPadding;
+        .mixinRightTgPadding;
+        .mixinBottomTgPadding;
+    }
+    // This one handles the text box at the bottom left of a Big Video Diglot.
+    // Review: it's not obvious what to do about the outer edges here. In the simpler cases,
+    // we DO have outer-edge padding when there is no other margin and the top-level split is vertical.
+    // But we do NOT have it when the text is above or below a picture.
+    &
+        > .split-pane.vertical-percent
+        > .split-pane-component.position-left
+        > .split-pane-component-inner
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-bottom
+        > .split-pane-component-inner
+        > .bloom-translationGroup {
+        padding-top: var(--topLevel-text-padding-top);
+        padding-right: var(--topLevel-text-padding-right);
+        .mixinLeftTgPadding;
+        .mixinBottomTgPadding;
+    }
+    // This one handles the text box at the bottom right of a Big Picture Diglot.
+    &
+        > .split-pane.vertical-percent
+        > .split-pane-component.position-right
+        > .split-pane-component-inner
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-bottom
+        > .split-pane-component-inner
+        > .bloom-translationGroup {
+        padding-top: var(--topLevel-text-padding-top);
+        padding-left: var(--topLevel-text-padding-left);
+        .mixinRightTgPadding;
+        .mixinBottomTgPadding;
+    }
+    // This one handles the text box at the top right of a Big Picture Diglot Text Over Video.
+    &
+        > .split-pane.vertical-percent
+        > .split-pane-component.position-right
+        > .split-pane-component-inner
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-top
+        > .split-pane-component-inner
+        > .bloom-translationGroup {
+        padding-bottom: var(--topLevel-text-padding-bottom);
+        padding-left: var(--topLevel-text-padding-left);
+        .mixinRightTgPadding;
+        .mixinTopTgPadding;
     }
 }
 
