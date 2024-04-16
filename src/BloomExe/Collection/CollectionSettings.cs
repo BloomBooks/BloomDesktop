@@ -459,6 +459,14 @@ namespace Bloom.Collection
                     ? style
                     : "Decimal";
                 OneTimeCheckVersionNumber = ReadInteger(xml, "OneTimeCheckVersionNumber", 0);
+
+                var downloadEditPath = Path.Combine(
+                    FolderPath,
+                    BloomLibraryPublishModel.kNameOfDownloadForEditFile
+                );
+                // Various things are disabled if this collection was made by downloading a book for editing.
+                LockedToOneDownloadedBook = RobustFile.Exists(downloadEditPath);
+
                 BrandingProjectKey = ReadString(xml, "BrandingProjectName", "Default");
                 SubscriptionCode = ReadString(xml, "SubscriptionCode", null);
                 if (
@@ -472,24 +480,27 @@ namespace Bloom.Collection
                     if (expirationDate < DateTime.Now) // no longer require branding files to exist yet
                     {
                         InvalidBranding = BrandingProjectKey;
-                        var downloadEditPath = Path.Combine(
-                            FolderPath,
-                            BloomLibraryPublishModel.kNameOfDownloadForEditFile
-                        );
-                        if (RobustFile.Exists(downloadEditPath))
+                        BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
+
+                        if (LockedToOneDownloadedBook)
                         {
-                            // We make an exception when the collection is a single book obtained using "downloaded for
-                            // editing",since we want to keep its branding. (The original uploader had a valid subscription
-                            // when first uploaded, and we want to allow re-uploading after editing even if this
-                            // user doesn't know that code or the subscription is expired. This doesn't provide
-                            // much of a workaround for unknown and expired codes, since the user can't add books
-                            // to this collection without first providing a valid branding, so it only allows
-                            // editing the one book previously uploaded with this branding.)
-                            _brandingProjectKeyOverrideForDownloadForEditing = BrandingProjectKey;
-                        }
-                        else
-                        {
-                            BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
+                            var editSettings = JObject.Parse(
+                                RobustFile.ReadAllText(downloadEditPath)
+                            );
+                            if (
+                                editSettings.TryGetValue("branding", out JToken branding)
+                                && branding.Value<string>() == InvalidBranding
+                            )
+                            {
+                                // We make an exception when the collection is a single book obtained using "downloaded for
+                                // editing", since we want to keep its branding. (The original uploader had a valid subscription
+                                // when first uploaded, and we want to allow re-uploading after editing even if this
+                                // user doesn't know that code or the subscription is expired. This doesn't provide
+                                // much of a workaround for unknown and expired codes, since the user can't add books
+                                // to this collection, so it only allows editing the one book previously uploaded with this branding.)
+                                _brandingProjectKeyOverrideForDownloadForEditing =
+                                    BrandingProjectKey = InvalidBranding;
+                            }
                         }
                     }
                 }
@@ -581,8 +592,7 @@ namespace Bloom.Collection
             SetAnalyticsProperties();
         }
 
-        public bool LockedToOneDownloadedBook =>
-            _brandingProjectKeyOverrideForDownloadForEditing != null;
+        public bool LockedToOneDownloadedBook { get; set; }
 
         private void DoOneTimeCheck()
         {

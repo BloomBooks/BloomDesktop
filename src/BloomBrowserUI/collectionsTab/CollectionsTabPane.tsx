@@ -214,6 +214,15 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             }
         });
     }, []);
+    const haveNoSources = collections && collections.length === 1;
+    useEffect(() => {
+        // If we've got the list of collections and there are no source collections,
+        // we want to set the splitter to hide the bottom pane.
+        if (haveNoSources) {
+            setSplitHeights([1, 0]);
+            setGeneration(old => old + 1);
+        }
+    }, [haveNoSources]);
 
     if (!collections) {
         return <div />;
