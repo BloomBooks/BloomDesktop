@@ -1698,7 +1698,7 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
             }
             finally
             {
-                _sendingContentLanguagesSelectionChanged = false;
+                _sendingContentLanguagesSelectionChanged = true;
             }
 
             if (changed)
