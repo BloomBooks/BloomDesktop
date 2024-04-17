@@ -1214,6 +1214,10 @@
         <note>ID: Download.GenericNetworkProblemNotice</note>
         <note xml:lang="en">OLD TEXT (before 3.9): There was a problem downloading your book.</note>
       </trans-unit>
+      <trans-unit id="Download.OldVersion">
+        <source xml:lang="en">The download you started needs version {0} or later of Bloom. Please install that version if you haven't already, and run it. Then try the download again.</source>
+        <note>ID: Download.OldVersion</note>
+      </trans-unit>
       <trans-unit id="Download.ProblemNotice">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: Download.ProblemNotice</note>
