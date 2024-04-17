@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -1792,8 +1793,18 @@ namespace Bloom.Edit
                     FileLocationUtilities.GetDirectoryDistributedWithApplication(
                         BloomFileLocator.BrowserRoot
                     );
+                // we don't want _developerFileWatcher to fire initially, onlye when there's a change
+                _developerFileWatcher.NotifyFilter = NotifyFilters.LastWrite;
+
+                var waitingForInitialLoad = true;
                 _developerFileWatcher.Changed += async (sender, args) =>
                 {
+                    // oddly, there is no way to tell the file watcher that we don't want to consider the original state of the files as "changes"
+                    // so we ignore events for the first 5 seconds
+                    if (waitingForInitialLoad)
+                    {
+                        return;
+                    }
                     _weHaveSeenAJsonChange |= args.Name.ToLowerInvariant().EndsWith(".json");
                     if (CurrentBook == null)
                         return;
@@ -1831,6 +1842,11 @@ namespace Bloom.Edit
                     }
                 };
                 _developerFileWatcher.EnableRaisingEvents = true;
+                Task.Delay(5000)
+                    .ContinueWith(_ =>
+                    {
+                        waitingForInitialLoad = false;
+                    });
             }
         }
 
