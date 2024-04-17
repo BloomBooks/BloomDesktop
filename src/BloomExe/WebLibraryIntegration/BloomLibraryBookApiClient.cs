@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
@@ -44,19 +45,40 @@ namespace Bloom.WebLibraryIntegration
 
         public BloomLibraryBookApiClient() { }
 
-        private void LogApiError(IRestRequest request, IRestResponse response)
+        private void LogApiError(
+            IRestRequest request,
+            IRestResponse response,
+            IRestRequest originalRequest = null
+        )
         {
-            SIL.Reporting.Logger.WriteEvent(
-                $@"BloomLibraryBookApiClient call to {request.Resource} failed
-  RequestBody: {request.Body} // Beware of logging the whole request, it could contain sensitive data (API keys)
-  StatusCode: {response.StatusCode}
-  Content: {response.Content}
-  ResponseStatus: {response.ResponseStatus}
-  StatusDescription: {response.StatusDescription}
-  ErrorMessage: {response.ErrorMessage}
-  ErrorException: {response.ErrorException}
-  Headers:{response.Headers}"
+            // Beware of logging the whole request, it could contain sensitive data (API keys)
+            var logMessage = new StringBuilder();
+            logMessage.AppendLine(
+                $@"BloomLibraryBookApiClient call failed:
+  Request:
+    Resource: {request.Resource}
+    Body: {request.Body?.Value}
+  Response:
+    StatusCode: {response.StatusCode}
+    Content: {response.Content}
+    ResponseStatus: {response.ResponseStatus}
+    StatusDescription: {response.StatusDescription}
+    ErrorMessage: {response.ErrorMessage}
+    ErrorException: {response.ErrorException}
+    Headers: "
             );
+            foreach (var header in response.Headers)
+                logMessage.AppendLine($"      {header.Name}: {header.Value}");
+
+            if (originalRequest != null)
+            {
+                logMessage.AppendLine(
+                    $@"  Original Request:
+    Resource: {originalRequest.Resource}
+    Body: {originalRequest.Body?.Value}"
+                );
+            }
+            SIL.Reporting.Logger.WriteEvent(logMessage.ToString());
         }
 
         public dynamic CallLongRunningAction(
@@ -65,6 +87,8 @@ namespace Bloom.WebLibraryIntegration
             string messageToShowUserOnFailure
         )
         {
+            var originalEndpoint = request.Resource;
+
             // Make the initial call. If all goes well, we get an Accepted (202) response with a URL to poll.
             var response = AzureRestClient.Execute(request);
             if (response.StatusCode != HttpStatusCode.Accepted)
@@ -87,12 +111,15 @@ namespace Bloom.WebLibraryIntegration
             dynamic result = null;
             dynamic responseContentError = null;
             var statusRequest = new RestRequest(operationLocation.Value.ToString(), Method.GET);
+            SIL.Reporting.Logger.WriteEvent(
+                $@"BloomLibraryBookApiClient is beginning to poll for long-running {originalEndpoint}."
+            );
             while (!progress.CancelRequested && !IsStatusTerminal(status))
             {
                 response = AzureRestClient.Execute(statusRequest);
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    LogApiError(request, response);
+                    LogApiError(statusRequest, response, originalRequest: request);
                     throw new ApplicationException(messageToShowUserOnFailure);
                 }
 
@@ -105,17 +132,22 @@ namespace Bloom.WebLibraryIntegration
                 }
                 catch (Exception e)
                 {
-                    LogApiError(request, response);
+                    LogApiError(statusRequest, response, originalRequest: request);
                     SIL.Reporting.Logger.WriteEvent("Failed to parse response content.");
                     SIL.Reporting.Logger.WriteError(e);
                     throw new ApplicationException(messageToShowUserOnFailure);
                 }
 
                 if (status == "Succeeded")
+                {
+                    SIL.Reporting.Logger.WriteEvent(
+                        $@"BloomLibraryBookApiClient call to {originalEndpoint} succeeded."
+                    );
                     return result;
+                }
                 else if (status == "Failed" || status == "Cancelled")
                 {
-                    LogApiError(request, response);
+                    LogApiError(statusRequest, response, originalRequest: request);
 
                     // As of March 2024, this is not used, but we wanted to have a mechanism by which the API could give messages directly to the user.
                     // For example, we might shut down uploads for alpha temporarily. This might be used with or without the ClientOutOfDate error code.
