@@ -299,8 +299,11 @@ export default class OverflowChecker {
                                 overflowText,
                             show: { event: "mouseenter" },
                             hide: { event: "mouseleave" },
-                            position: { my: "top right", at: "right bottom" },
-                            container: bloomQtipUtils.qtipZoomContainer()
+                            position: {
+                                my: "top right",
+                                at: "right bottom",
+                                container: bloomQtipUtils.qtipZoomContainer()
+                            }
                         });
                     });
             }
@@ -360,8 +363,11 @@ export default class OverflowChecker {
                                 overflowText,
                             show: { event: "enterBorder" }, // nonstandard events triggered by mouse move in code below
                             hide: { event: "leaveBorder" },
-                            position: { my: "top right", at: "right bottom" },
-                            container: bloomQtipUtils.qtipZoomContainer()
+                            position: {
+                                my: "top right",
+                                at: "right bottom",
+                                container: bloomQtipUtils.qtipZoomContainer()
+                            }
                         });
                     });
                 let showing = false;
