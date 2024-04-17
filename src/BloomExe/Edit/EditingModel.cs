@@ -70,6 +70,17 @@ namespace Bloom.Edit
 
         internal const string PageScalingDivId = "page-scaling-container";
 
+        /// <summary>
+        /// Currently this is only valid in EditingView, since it depends on the Javascript code being
+        /// configured to send appropriate messages to the editView/setIsSelectionRange API.
+        /// </summary>
+        public static bool IsTextSelected;
+
+        // these 3 are used as part of automatically re-rerendering a page when a developer changes something in the supporting files
+        private FileSystemWatcher _developerFileWatcher;
+        private DateTime _lastTimeWeReloadedBecauseOfDeveloperChange;
+        private bool _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles;
+
         //public event EventHandler UpdatePageList;
 
         public delegate EditingModel Factory(); //autofac uses this
@@ -167,6 +178,22 @@ namespace Bloom.Edit
                 }
             });
             _contentLanguages = new List<ContentLanguage>();
+
+            if (Debugger.IsAttached)
+            {
+                StartWatchingDeveloperChanges();
+            }
+        }
+
+        ~EditingModel()
+        {
+            // Note, as far as I can tell, EditingModels are never disposed of, so this is never called.
+            // New ones are created each time you open a new collection.
+            if (_developerFileWatcher != null)
+            {
+                _developerFileWatcher.Dispose();
+                _developerFileWatcher = null;
+            }
         }
 
         private Form _oldActiveForm;
@@ -691,7 +718,12 @@ namespace Bloom.Edit
         private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
         {
             CheckForBL2634("start of page selection changing--should have old IDs");
-            if (_view != null && !_inProcessOfDeleting && !_inProcessOfLoading)
+            if (
+                _view != null
+                && !_inProcessOfDeleting
+                && !_inProcessOfLoading
+                && !_skipNextSaveBecauseDeveloperIsTweakingSupportingFiles
+            )
             {
                 _view.ChangingPages = true;
                 _view.RunJavascriptWithStringResult_Sync_Dangerous(
@@ -702,6 +734,7 @@ namespace Bloom.Edit
                     "if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {editTabBundle.getEditablePageBundleExports().disconnectForGarbageCollection();}"
                 );
             }
+            _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = false;
         }
 
         void OnPageSelectionChanged(object sender, EventArgs e)
@@ -1194,6 +1227,8 @@ namespace Bloom.Edit
         // page and when it is loaded. This prevents trying to save when things are in an unstable state
         // (e.g., BL-2634, BL-6296). It may also prevent some wasted Saves and thus improve performance.
         public bool NavigatingSoSuspendSaving = false;
+        private System.Windows.Forms.Timer _developerFileWatcherQuietTimer;
+        private bool _weHaveSeenAJsonChange;
 
         public void SaveNow(bool forceFullSave = false)
         {
@@ -1745,10 +1780,105 @@ namespace Bloom.Edit
             EditPagePainted?.Invoke(sender, args);
         }
 
-        /// <summary>
-        /// Currently this is only valid in EditingView, since it depends on the Javascript code being
-        /// configured to send appropriate messages to the editView/setIsSelectionRange API.
-        /// </summary>
-        public static bool IsTextSelected;
+        // This speeds up developing brandings. It may speed up other things, but I haven't tested those.
+        // Currently, branding.json changes won't be visible until you change pages (or click on the current page thumbnail)
+        private void StartWatchingDeveloperChanges()
+        {
+            // This speeds up the process of tweaking branding files
+            if (Debugger.IsAttached)
+            {
+                _developerFileWatcher = new FileSystemWatcher { IncludeSubdirectories = true, };
+                _developerFileWatcher.Path =
+                    FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                        BloomFileLocator.BrowserRoot
+                    );
+                _developerFileWatcher.Changed += async (sender, args) =>
+                {
+                    _weHaveSeenAJsonChange |= args.Name.ToLowerInvariant().EndsWith(".json");
+                    if (CurrentBook == null)
+                        return;
+                    // if we've been called already in the past 5 seconds, don't do it again
+                    if (
+                        DateTime.Now
+                            .Subtract(_lastTimeWeReloadedBecauseOfDeveloperChange)
+                            .TotalSeconds >= 2
+                    )
+                    {
+                        // so it's been a long time, it's safe to do a reload as fast as possible, even if more  changes come in momentarily
+                        doReload();
+                        return;
+                    }
+                    else
+                    {
+                        // it's been too soon, let's reload after a bit of quiet. use a timer to call doReload()
+                        // after a bit of quiet.
+                        if (_developerFileWatcherQuietTimer == null)
+                        {
+                            _developerFileWatcherQuietTimer = new Timer();
+                            _developerFileWatcherQuietTimer.Interval = 2000;
+                            _developerFileWatcherQuietTimer.Tick += (sender, timerArgs) =>
+                            {
+                                _developerFileWatcherQuietTimer.Stop();
+                                _developerFileWatcherQuietTimer = null;
+                                doReload();
+                            };
+                            _developerFileWatcherQuietTimer.Start();
+                        }
+                        else
+                        {
+                            // we're already waiting for a quiet period, so just keep waiting. We've updated _weHaveSeenAJsonChange as needed with this latest change.
+                        }
+                    }
+                };
+                _developerFileWatcher.EnableRaisingEvents = true;
+            }
+        }
+
+        private void doReload()
+        {
+            _lastTimeWeReloadedBecauseOfDeveloperChange = DateTime.Now;
+
+            // About this doing one thing for json and another for css; at the moment, I can't only
+            // figure out how to do EITHER a BringBookUpToDate (make use of new json presets from branding)
+            // OR actually refresh the page (make use of new css).
+            //
+            // Enhance: I suspect all the problems here are related to us changing the page id's each time we load, which I don't understand.
+            // It may just be a mistake.
+            if (_weHaveSeenAJsonChange)
+            {
+                var pageIndex = _pageSelection.CurrentSelection.GetIndex();
+                CurrentBook.BringBookUpToDate(new NullProgress());
+                _view.Invoke(
+                    (MethodInvoker)(
+                        () =>
+                        {
+                            // Because BringBookUpToDate will have changed page id's, we need to rebuild the page
+                            // list else the next time you click on one, that page won't be found.
+                            _view.UpdatePageList(true);
+                            // And also, when you click on another page, if we try to save the current page, it won't be found.
+                            _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = true;
+                            _view.Refresh();
+
+                            _pageSelection.SelectPage(
+                                _currentlyDisplayedBook.GetPageByIndex(pageIndex),
+                                true /* don't do anything else */
+                            );
+                        }
+                    )
+                );
+            }
+            else // css, png, svg, js, etc.
+            {
+                CurrentBook.Storage.UpdateSupportFiles();
+                _view.Invoke(
+                    (MethodInvoker)
+                        delegate
+                        {
+                            RefreshDisplayOfCurrentPage(false);
+                        }
+                );
+            }
+            _weHaveSeenAJsonChange = false;
+        }
     }
 }
