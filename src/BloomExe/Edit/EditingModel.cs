@@ -1886,13 +1886,16 @@ namespace Bloom.Edit
             else // css, png, svg, js, etc.
             {
                 CurrentBook.Storage.UpdateSupportFiles();
-                _view.Invoke(
-                    (MethodInvoker)
-                        delegate
-                        {
-                            RefreshDisplayOfCurrentPage(false);
-                        }
-                );
+                if (!_view.IsDisposed)
+                {
+                    _view.Invoke(
+                        (MethodInvoker)
+                            delegate
+                            {
+                                RefreshDisplayOfCurrentPage(false);
+                            }
+                    );
+                }
             }
             _weHaveSeenAJsonChange = false;
         }
