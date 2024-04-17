@@ -17,6 +17,7 @@ using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
 using Bloom.web.controllers;
+using Bloom.ToPalaso;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -153,6 +154,18 @@ namespace Bloom.WebLibraryIntegration
 		internal void HandleBloomBookOrder(string order)
 		{
 			_downloadRequest = order;
+			if (!IsThisVersionAllowedToDownload(order))
+			{
+				// We can't use a browser here; we haven't gotten that far in the setup.
+				MessageBox.Show(
+					LocalizationManager.GetString(
+						"PublishTab.Upload.OldVersion",
+						"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."
+					)
+				);
+				ProcessExtra.SafeStartInFront("https://bloomlibrary.org/download");
+				return;
+			}
 			using (var progressDialog = new ProgressDialog())
 			{
 				_progressDialog = new ProgressDialogWrapper(progressDialog);
@@ -182,6 +195,48 @@ namespace Bloom.WebLibraryIntegration
 					ProblemReportApi.ShowProblemDialog(null, exc, "", "fatal");
 				}
 			}
+		}
+
+		private static bool IsThisVersionAllowedToDownload(string bookOrderUrl)
+		{
+			// This awkwardness is so we can unit test the main logic without getting messed up by a "real" Application.ProductVersion.
+			return IsThisVersionAllowedToDownloadInner(bookOrderUrl, Application.ProductVersion);
+		}
+
+		internal static bool IsThisVersionAllowedToDownloadInner(
+			string bookOrderUrl,
+			string appVersion
+		)
+		{
+			int requiredMajorVersion;
+			int requiredMinorVersion;
+			try
+			{
+				var minVersionStr = HttpUtility.ParseQueryString(new Uri(bookOrderUrl).Query)[
+					"minVersion"
+				];
+				Version requiredVersion = Version.Parse(minVersionStr);
+				requiredMajorVersion = requiredVersion.Major;
+				requiredMinorVersion = requiredVersion.Minor;
+			}
+			catch
+			{
+				// Three possibilities:
+				// 1. minVersion is missing.
+				//    Allow download.
+				// 2. minVersion is invalid.
+				//    Allow download. (This could be argued either way, but this is easier. Since we control the other end, we don't expect this to happen.)
+				// 3. Something is wrong with the url itself.
+				//    Likely, something else will go wrong, but we don't want to put up a message about the version needing to be updated.
+				return true;
+			}
+			var ourVersion = Version.Parse(appVersion);
+			var ourMajorVersion = ourVersion.Major;
+			var ourMinorVersion = ourVersion.Minor;
+
+			if (ourMajorVersion == requiredMajorVersion)
+				return ourMinorVersion >= requiredMinorVersion;
+			return ourMajorVersion >= requiredMajorVersion;
 		}
 
 		/// <summary>
