@@ -99,7 +99,7 @@ public class AppearanceSettings
     // It can also be set when WriteToFolder() updates the appearance files to be consistent with the current settings.
     // This only gets called if Bloom is allowed to make changes to the folder, so it remains false
     // if we are loading a legacy book in a folder we can't write.
-    private bool _areSettingsConsistentWithFiles;
+    internal bool _areSettingsConsistentWithFiles;  // internal for test access
 
     public bool CssFilesChecked { get; private set; }
 

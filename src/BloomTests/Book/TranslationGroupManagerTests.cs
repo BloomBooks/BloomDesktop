@@ -410,6 +410,7 @@ namespace BloomTests.Book
   ""pageNumber-show"": true
 }"
             );
+            settings._areSettingsConsistentWithFiles = true;    // needs to be set to allow the default theme to be used
 
             // Here the arguments don't matter much. data-default-languages specifies N1, which means the Metadata1Language should
             // be visible, and N2, which currently turns on L3.

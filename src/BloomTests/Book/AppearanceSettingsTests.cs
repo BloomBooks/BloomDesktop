@@ -432,8 +432,8 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasDefaultSettings()
         {
-            // One that is not overridden in efl-zero-margin-ebook
-            Assert.That(_generatedAppearanceCss, Does.Contain("--cover-margin-top: 12mm;"));
+            // One that is not overridden in zero-margin-ebook
+            Assert.That(_generatedAppearanceCss, Does.Contain("--cover-margin-top: var(--page-margin);"));
         }
 
         [Test]
@@ -477,10 +477,21 @@ namespace BloomTests.Book
         /// default theme, then chosen theme, then settings object.
         /// </summary>
         [Test]
-        public void CssOfDefaultTheme_HasExpectedMargin()
+        public void CssOfDefaultTheme_HasExpectedMargins()
         {
             // we expect the default settings before the theme ones
-            Assert.That(_cssOfDefaultTheme, Does.Contain("--page-margin-top: 12mm;"));
+            Assert.That(_cssOfDefaultTheme, Does.Contain("--page-margin: 12mm;"));
+            Assert.That(_cssOfDefaultTheme, Does.Contain("--cover-margin-top: var(--page-margin);"));
+            Assert.That(_cssOfDefaultTheme, Does.Contain(@".LegalLandscape {
+    --page-margin: 15mm;"));
+            Assert.That(_cssOfDefaultTheme, Does.Contain(@".A6Landscape {
+    --page-margin: 10mm;"));
+            Assert.That(_cssOfDefaultTheme, Does.Contain(@".Device16x9Landscape {
+    --page-margin: 10px;"));
+            Assert.That(_cssOfDefaultTheme, Does.Contain(@".Cm13Landscape {
+    --page-margin: 5mm;"));
+            Assert.That(_cssOfDefaultTheme, Does.Contain(@".USComicPortrait {
+    --page-margin: 0mm;"));
         }
 
         [Test]

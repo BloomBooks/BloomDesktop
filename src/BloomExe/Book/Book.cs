@@ -1710,11 +1710,6 @@ namespace Bloom.Book
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
 
-            // Enhance: there's probably some case where this will get unnecessarily repeated,
-            // but I think it would only be in the very rare case of repeatedly needing to update
-            // a pre-4.9 book when we can't Save().
-            OurHtmlDom.FixDivOrdering();
-
             // Make sure the appearance settings have checked the current state of the css files.
             // This should be done before UpdateSupportFiles, because this can affect what files
             // are copied to the book folder.
@@ -1728,6 +1723,13 @@ namespace Bloom.Book
             // Restore possibly messed up multilingual settings.  Also apply appearance settings
             // related to visibility of the multilingual variants.
             UpdateMultilingualSettings(OurHtmlDom);
+            // Note that OurHtmlDom.FixDivOrdering must be done after UpdateMultilingualSettings,
+            // because the latter method adds classes to the editable divs that are used for sorting.
+
+            // Enhance: there's probably some case where this will get unnecessarily repeated,
+            // but I think it would only be in the very rare case of repeatedly needing to update
+            // a pre-4.9 book when we can't Save().
+            OurHtmlDom.FixDivOrdering();
 
             UpdateSupportFiles();
         }

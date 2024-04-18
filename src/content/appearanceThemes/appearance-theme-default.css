@@ -149,6 +149,12 @@
 .A6Landscape {
     --page-margin: 10mm;
 }
+.Cm13Landscape {
+    --page-margin: 5mm;
+}
+.USComicPortrait {
+    --page-margin: 0mm;
+}
 
 .Device16x9Portrait,
 .Device16x9Landscape {
