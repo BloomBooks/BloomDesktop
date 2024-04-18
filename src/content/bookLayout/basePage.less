@@ -209,6 +209,14 @@ textarea,
     // overflow its parent.
     box-sizing: border-box;
 }
+.bloom-page {
+    textarea,
+    div.bloom-editable,
+    div.pageLabel[contenteditable="true"] {
+        padding: 1px; // equal to outline's width when being edited
+        // See src/BloomBrowserUI/bookEdit/css/editMode.less for outline rule
+    }
+}
 
 /* The following has been split out from the above rule because it should probably be removed,
     but at this point we are about to go release candidate with 3.1 so it will have to wait.
