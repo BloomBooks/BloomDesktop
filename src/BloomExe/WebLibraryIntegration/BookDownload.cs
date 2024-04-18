@@ -27,6 +27,7 @@ using BloomTemp;
 using SIL.IO;
 using System.Security;
 using Bloom.Publish.BloomLibrary;
+using Bloom.ToPalaso;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -196,20 +197,25 @@ namespace Bloom.WebLibraryIntegration
         internal void HandleBloomBookOrder(string bookOrderUrl)
         {
             _bookOrderUrl = bookOrderUrl;
-
             if (!IsThisVersionAllowedToDownload(bookOrderUrl))
             {
+                // We don't need exception handling here because the test above only returns true if it was able to parse the version.
+                var minVersionStr = HttpUtility.ParseQueryString(new Uri(bookOrderUrl).Query)[
+                    "minVersion"
+                ];
                 // We can't use a browser here; we haven't gotten that far in the setup.
                 MessageBox.Show(
-                    LocalizationManager.GetString(
-                        "PublishTab.Upload.OldVersion",
-                        "Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."
+                    string.Format(
+                        LocalizationManager.GetString(
+                            "Download.OldVersion",
+                            "The download you started needs version {0} or later of Bloom. Please install that version if you haven't already, and run it. Then try the download again."
+                        ),
+                        minVersionStr
                     )
                 );
                 ProcessExtra.SafeStartInFront("https://bloomlibrary.org/download");
                 return;
             }
-
             using (var progressDialog = new ProgressDialog())
             {
                 _progressDialog = new ProgressDialogWrapper(progressDialog);
