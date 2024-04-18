@@ -5275,6 +5275,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
       </trans-unit>
+      <trans-unit id="Settings.Enterprise.DownloadForEdit" sil:dynamic="true">
+        <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same Bloom Enterprise branding as when it was last uploaded.</source>
+        <note>ID: Settings.Enterprise.DownloadForEdit</note>
+      </trans-unit>
       <trans-unit id="Settings.Enterprise.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
         <note>ID: Settings.Enterprise.LearnMore</note>

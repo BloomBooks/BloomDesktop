@@ -1148,9 +1148,11 @@ namespace Bloom.Collection
                 || CollectionSettingsApi.GetExpirationDate(SubscriptionCode) != DateTime.MinValue;
         }
 
-        public CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus()
+        public CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus(
+            bool forFixSubscriptionCode
+        )
         {
-            if (CollectionSettingsApi.FixEnterpriseSubscriptionCodeMode)
+            if (forFixSubscriptionCode)
             {
                 // We're displaying the dialog to fix a branding code...select that option
                 return CollectionSettingsApi.EnterpriseStatus.Subscription;
