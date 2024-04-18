@@ -918,7 +918,10 @@ namespace Bloom.Workspace
 
         private CollectionSettingsDialog _currentlyOpenSettingsDialog;
 
-        public void OpenLegacySettingsDialog(string tab = null)
+        public void OpenLegacySettingsDialog(
+            string tab = null,
+            bool forFixingEnterpriseSubscription = false
+        )
         {
             if (InvokeRequired)
             {
@@ -937,6 +940,7 @@ namespace Bloom.Workspace
                     _currentlyOpenSettingsDialog.SetDesiredTab(tab);
                     return;
                 }
+
                 DialogResult result = _settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
                 {
                     if (!_tcManager.OkToEditCollectionSettings)
@@ -947,6 +951,7 @@ namespace Bloom.Workspace
                     _collectionSettingsApi.PrepareToShowDialog();
                     using (var dlg = _settingsDialogFactory())
                     {
+                        dlg.FixingEnterpriseSubscriptionCode = forFixingEnterpriseSubscription;
                         _currentlyOpenSettingsDialog = dlg;
                         dlg.SetDesiredTab(tab);
                         var temp = dlg.ShowDialog(this);
@@ -975,7 +980,7 @@ namespace Bloom.Workspace
             StartupScreenManager.AddStartupAction(
                 () =>
                 {
-                    OpenLegacySettingsDialog("enterprise");
+                    OpenLegacySettingsDialog("enterprise", forFixingEnterpriseSubscription: true);
                 },
                 shouldHideSplashScreen: true,
                 lowPriority: true

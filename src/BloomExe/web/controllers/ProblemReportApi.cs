@@ -1363,7 +1363,7 @@ namespace Bloom.web.controllers
             AppendWritingSystem(book.BookData.Language3, "Language3", bldr);
             AppendWritingSystem(book.BookData.SignLanguage, "SignLanguage", bldr);
             AppendWritingSystem(book.BookData.MetadataLanguage1, "MetadataLanguage1", bldr);
-            var enterpriseStatus = settings.GetEnterpriseStatus().ToString();
+            var enterpriseStatus = settings.GetEnterpriseStatus(false).ToString();
             var branding = settings.BrandingProjectKey;
             bldr.AppendLine();
             bldr.AppendLine("Enterprise status: " + enterpriseStatus);
