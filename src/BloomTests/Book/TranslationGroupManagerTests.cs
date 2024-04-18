@@ -408,7 +408,7 @@ namespace BloomTests.Book
   ""cover-topic-show"": true,
   ""cover-languageName-show"": true,
   ""pageNumber-show"": true
-}"
+}", updateConsistentFilesFlag: true
             );
 
             // Here the arguments don't matter much. data-default-languages specifies N1, which means the Metadata1Language should

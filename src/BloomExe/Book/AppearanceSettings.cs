@@ -556,10 +556,7 @@ public class AppearanceSettings
             // remove obsolete (renamed in alpha) properties. (They would mostly be ignored, but would
             // trigger warnings when writing the settings back out.)
             json = new Regex(@"""coverShow.*?"": (true|false),?").Replace(json, "");
-            UpdateFromJson(json);
-            // We can't actually be absolutely sure that appearance.css is up to date with the json file;
-            // we'll risk assuming it is.
-            _areSettingsConsistentWithFiles = true;
+            UpdateFromJson(json, updateConsistentFilesFlag: true);
             Debug.WriteLine(
                 $"Found existing appearance json. CssThemeName is currently {CssThemeName}"
             );
@@ -819,7 +816,7 @@ public class AppearanceSettings
     /// <summary>
     /// Read in our settings from JSON (typically from appearance.json in the book folder)
     /// </summary>
-    internal void UpdateFromJson(string json)
+    internal void UpdateFromJson(string json, bool updateConsistentFilesFlag = false)
     {
         // parse the json into an object
         var x = JsonConvert.DeserializeObject<ExpandoObject>(json);
@@ -829,6 +826,12 @@ public class AppearanceSettings
         foreach (var property in (IDictionary<string, object>)x)
         {
             Properties[property.Key] = property.Value;
+        }
+        if (updateConsistentFilesFlag)
+        {
+            // We can't actually be absolutely sure that appearance.css is up to date with the json file;
+            // we'll risk assuming it is.
+            _areSettingsConsistentWithFiles = true;
         }
     }
 
