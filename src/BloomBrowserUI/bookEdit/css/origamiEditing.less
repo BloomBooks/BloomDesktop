@@ -139,11 +139,17 @@
  * Layout Mode (origami) switch (from proto.io)
  *
  */
+.origami-toggle-container {
+    position: absolute;
+    left: 0;
+    top: @ToggleVerticalOffset;
+    width: 100%;
+}
 .origami-toggle {
     cursor: pointer;
     position: absolute;
-    // horizontal position is set in code, see setupOrigami()
-    top: @ToggleVerticalOffset;
+    right: 19px;
+    top: 0;
     line-height: 1em;
     color: @DisabledColor;
     div {

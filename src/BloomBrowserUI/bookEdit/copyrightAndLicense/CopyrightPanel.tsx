@@ -231,7 +231,6 @@ export const CopyrightPanel: React.FunctionComponent<{
                                 css={css`
                                     font-size: 10px;
                                     color: ${kMutedTextGray};
-                                    margin-top: -9px;
                                 `}
                             >
                                 <Div l10nKey={"Copyright.UseOriginalCopyright"}>

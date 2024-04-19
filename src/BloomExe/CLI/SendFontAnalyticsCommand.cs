@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -33,7 +33,6 @@ namespace Bloom.CLI
 			{
 				using (var applicationContainer = new ApplicationContainer())
 				{
-					Program.SetUpLocalization(applicationContainer);
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);   // Unclear if this line is needed or not.
 					Program.RunningHarvesterMode = true;
 					using (_projectContext = applicationContainer.CreateProjectContext(options.CollectionPath))
