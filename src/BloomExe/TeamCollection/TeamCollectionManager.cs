@@ -452,7 +452,6 @@ namespace Bloom.TeamCollection
             var repoFolderPath = PlannedRepoFolderPath(repoFolderParentPath);
             Directory.CreateDirectory(repoFolderPath);
             // The creator of a TC is its first and, for now, usually only administrator.
-            // (Currently there is no way to change this except to hand-edit the file.)
             Settings.Administrators = new[] { CurrentUser };
             Settings.Save();
             var newTc = new FolderTeamCollection(

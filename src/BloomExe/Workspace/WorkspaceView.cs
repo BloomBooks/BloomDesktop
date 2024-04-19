@@ -390,11 +390,20 @@ namespace Bloom.Workspace
             return result;
         }
 
-        public static string MustBeAdminMessage =>
-            LocalizationManager.GetString(
-                "TeamCollection.MustBeAdmin",
-                "You must be an administrator to change collection settings"
-            );
+        public static string MustBeAdminMessage(CollectionSettings collectionSettings)
+        {
+            return LocalizationManager.GetString(
+                    "TeamCollection.MustBeAdmin",
+                    "You must be an administrator to change collection settings"
+                )
+                + "<br><br>"
+                + LocalizationManager.GetString(
+                    "TeamCollection.AdministratorEmails",
+                    "Administrator Emails:"
+                )
+                + " "
+                + collectionSettings.AdministratorString.Replace(",", ", ");
+        }
 
         private void HandleBookStatusChange(BookStatusChangeEventArgs args)
         {
@@ -945,7 +954,7 @@ namespace Bloom.Workspace
                 {
                     if (!_tcManager.OkToEditCollectionSettings)
                     {
-                        BloomMessageBox.ShowInfo(MustBeAdminMessage);
+                        BloomMessageBox.ShowInfo(MustBeAdminMessage(_collectionSettings));
                         return DialogResult.Cancel;
                     }
                     _collectionSettingsApi.PrepareToShowDialog();

@@ -415,6 +415,22 @@ namespace Bloom.web.controllers
                 HandleGetLanguageNames,
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "administrators",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                    {
+                        request.ReplyWithText(_collectionSettings.AdministratorString);
+                    }
+                    else if (request.HttpMethod == HttpMethods.Post)
+                    {
+                        UpdatePendingAdministratorEmails(request.GetPostStringOrNull());
+                        request.PostSucceeded();
+                    }
+                },
+                false
+            );
         }
 
         private void ResetBookshelf()
@@ -632,6 +648,14 @@ namespace Bloom.web.controllers
                 DialogBeingEdited.PendingXmatter = xMatterChoice;
                 if (xMatterChoice != _collectionSettings.XMatterPackName)
                     DialogBeingEdited.ChangeThatRequiresRestart();
+            }
+        }
+
+        private void UpdatePendingAdministratorEmails(string emails)
+        {
+            if (DialogBeingEdited != null)
+            {
+                DialogBeingEdited.PendingAdministrators = emails;
             }
         }
 

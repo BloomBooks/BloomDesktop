@@ -47,6 +47,9 @@ namespace Bloom.Collection
         // Email addresses of users authorized to change collection settings if this is a TeamCollection.
         public string[] Administrators;
 
+        public string AdministratorString =>
+            Administrators == null ? "" : string.Join(",", Administrators);
+
         public WritingSystem SignLanguage;
 
         private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
@@ -301,7 +304,7 @@ namespace Bloom.Collection
             );
             xml.Add(new XElement("BooksOnWebGoal", BooksOnWebGoal));
             if (Administrators != null && Administrators.Length > 0)
-                xml.Add(new XElement("Administrators", string.Join(",", Administrators)));
+                xml.Add(new XElement("Administrators", AdministratorString));
             if (!string.IsNullOrEmpty(DefaultBookshelf))
             {
                 xml.Add(new XElement("DefaultBookTags", "bookshelf:" + DefaultBookshelf));
@@ -1162,6 +1165,23 @@ namespace Bloom.Collection
             else if (BrandingProjectKey == "Local-Community")
                 return CollectionSettingsApi.EnterpriseStatus.Community;
             return CollectionSettingsApi.EnterpriseStatus.Subscription;
+        }
+
+        public static string[] ParseAdministratorString(string newAdminString)
+        {
+            return newAdminString.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public static bool ValidateAdministrators(string newAdminString)
+        {
+            string[] administratorList = ParseAdministratorString(newAdminString);
+            return administratorList.Length > 0 && administratorList.All(MiscUtils.IsValidEmail);
+        }
+
+        public void ModifyAdministrators(string newAdminString)
+        {
+            Administrators = ParseAdministratorString(newAdminString);
+            Save();
         }
     }
 }

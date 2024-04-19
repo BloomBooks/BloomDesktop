@@ -52,6 +52,7 @@ namespace Bloom.Collection
         internal readonly string[] PendingFontSelections = new[] { "", "", "" };
         internal string PendingNumberingStyle { get; set; }
         internal string PendingXmatter { get; set; }
+        internal string PendingAdministrators { get; set; }
 
         internal WritingSystem PendingLanguage1;
         internal WritingSystem PendingLanguage2;
@@ -99,6 +100,7 @@ namespace Bloom.Collection
                 : "";
             PendingNumberingStyle = _collectionSettings.PageNumberStyle;
             PendingXmatter = _collectionSettings.XMatterPackName;
+            PendingAdministrators = _collectionSettings.AdministratorString;
             CollectionSettingsApi.DialogBeingEdited = this;
 
             _showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(
@@ -373,6 +375,21 @@ namespace Bloom.Collection
         private void _okButton_Click(object sender, EventArgs e)
         {
             Logger.WriteMinorEvent("Settings Dialog OK Clicked");
+
+            // Validate before we save the settings
+            if (!CollectionSettings.ValidateAdministrators(PendingAdministrators))
+            {
+                // The user has entered invalid email address(es)
+                BloomMessageBox.ShowWarning(
+                    LocalizationManager.GetString(
+                        "TeamCollection.InvalidAdminEmails",
+                        "Administrator Emails must be a list of one or more valid emails separated by commas and/or spaces"
+                    )
+                );
+                return;
+            }
+
+            _collectionSettings.ModifyAdministrators(PendingAdministrators);
 
             CollectionSettingsApi.DialogBeingEdited = null;
 
