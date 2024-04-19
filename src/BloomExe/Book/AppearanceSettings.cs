@@ -668,7 +668,7 @@ public class AppearanceSettings
             {
                 var setting = ((PropertyDef)definition).GetCssVariableDeclaration(keyValuePair);
                 if (!string.IsNullOrEmpty(setting))
-                    cssBuilder.AppendLine(setting);
+                    cssBuilder.AppendLine("\t" + setting);
             }
         }
 
@@ -676,21 +676,15 @@ public class AppearanceSettings
         // Search our less/css for --pageNumber-show-multiplicand to see how it is used.
         // If we end up with other boolean properties that the user can set a more general solution will probably be needed.
         // One idea is to preprocess the theme css, replacing things like `.bloomPage[pageNumber-show] {... }` with `bloom-page {....}` when true.
-        // The other idea is to add attributes like `pageNumber-show` or `pageNumber-show-true` to all the bloom-page divs
+        // The other idea is to add attributes like `pageNumber-show` or `pageNumber-show-true` to all the bloom-page divs.
         bool show;
         if (
             props.ContainsKey("pageNumber-show")
             && bool.TryParse(props["pageNumber-show"].ToString(), out show)
-            && show
         )
         {
-            cssBuilder.AppendLine("	--pageNumber-show-multiplicand: 1;");
+            cssBuilder.AppendLine($"\t--pageNumber-show-multiplicand: {(show ? 1 : 0)};");
         }
-        else
-        {
-            cssBuilder.AppendLine("	--pageNumber-show-multiplicand: 0;");
-        }
-
         cssBuilder.AppendLine("}");
         return cssBuilder.ToString();
     }
