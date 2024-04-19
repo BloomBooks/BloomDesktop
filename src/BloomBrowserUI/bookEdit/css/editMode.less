@@ -1218,11 +1218,16 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
     // Show the padding, multilingual gap, etc as colored areas.
     // The ".split-pane-component-inner >"  disables this for overlays, where it's common to have backgrounds like transparent
     .split-pane-component-inner > .bloom-translationGroup {
-        border: solid thin var(--page-structure-color);
-        box-sizing: border-box;
+        // no: a border here will take up space, wrecking WYSIWYG
+        // border: solid thin var(--page-structure-color);
+        // box-sizing: border-box;
+        // Also, you'd think you could use outline instead, but it doesn't show on the side; the
+        // children over it up because they are the full width of this parent.
 
         background-color: var(--page-structure-color) !important;
         .bloom-editable {
+            outline: 1px solid var(--page-structure-color);
+            outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
             background-color: var(--marginBox-background-color) !important;
         }
     }
