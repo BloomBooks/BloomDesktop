@@ -166,7 +166,8 @@ namespace Bloom.WebLibraryIntegration
 					LocalizationManager.GetString(
 						"Download.OldVersion",
 						"The download you started needs version {0} or later of Bloom. Please install that version if you haven't already, and run it. Then try the download again."
-					), minVersionStr)
+					), minVersionStr),
+					"Bloom " + Application.ProductVersion + " " + ApplicationUpdateSupport.ChannelName
 				);
 				ProcessExtra.SafeStartInFront("https://bloomlibrary.org/download");
 				return;
