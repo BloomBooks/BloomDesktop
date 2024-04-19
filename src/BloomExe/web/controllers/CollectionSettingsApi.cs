@@ -43,13 +43,6 @@ namespace Bloom.web.controllers
         // we keep a reference to it here so pending settings can be updated there.
         public static CollectionSettingsDialog DialogBeingEdited;
 
-        // This is set when we are running the collection settings dialog in a special mode  where it is
-        // brought up automatically to inform the user that a previously used branding name is invalid.
-        // (It might be a legacy branding from an earlier Bloom that did not require a validation code,
-        // or one whose code has expired, or conceivably an invalid code, though I think that can only
-        // happen by hand-editing the .bloomCollection file.)
-        public static bool FixEnterpriseSubscriptionCodeMode;
-
         // When in FixEnterpriseSubscriptionCodeMode, and we think it is a legacy branding problem
         // (because the subscription code is missing or incomplete rather than wrong or expired or unknown),
         // this keeps track of the branding the collection file specified but which was not validated by a current code.
@@ -72,7 +65,7 @@ namespace Bloom.web.controllers
             SetSubscriptionCode(
                 _collectionSettings.SubscriptionCode,
                 _collectionSettings.IsSubscriptionCodeKnown(),
-                _collectionSettings.GetEnterpriseStatus()
+                _collectionSettings.GetEnterpriseStatus(false)
             );
         }
 
@@ -100,6 +93,12 @@ namespace Bloom.web.controllers
                     }
                 },
                 true
+            );
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "lockedToOneDownloadedBook",
+                request => _collectionSettings.LockedToOneDownloadedBook,
+                null,
+                false
             );
 
             apiHandler.RegisterEndpointHandler(
@@ -657,7 +656,6 @@ namespace Bloom.web.controllers
 
         public static void DialogClosed()
         {
-            FixEnterpriseSubscriptionCodeMode = false;
             LegacyBrandingName = "";
         }
 

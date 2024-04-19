@@ -155,7 +155,7 @@ namespace Bloom.Collection
 
             UpdateDisplay();
 
-            if (CollectionSettingsApi.FixEnterpriseSubscriptionCodeMode)
+            if (FixingEnterpriseSubscriptionCode)
             {
                 _tab.SelectedTab = _enterpriseTab;
             }
@@ -499,6 +499,13 @@ namespace Bloom.Collection
             return _restartRequired || XMatterChangePending;
         }
 
+        /// <summary>
+        /// Client that is launching dialog sets this if we are running the dialog for the purpose of
+        /// fixing a subscription code. It forces the Enterprise tab and shows the branding that
+        /// the code is needed for.
+        /// </summary>
+        public bool FixingEnterpriseSubscriptionCode;
+
         private void OnLoad(object sender, EventArgs e)
         {
             _countryText.Text = _collectionSettings.Country;
@@ -518,7 +525,7 @@ namespace Bloom.Collection
             CollectionSettingsApi.SetSubscriptionCode(
                 _subscriptionCode,
                 _collectionSettings.IsSubscriptionCodeKnown(),
-                _collectionSettings.GetEnterpriseStatus()
+                _collectionSettings.GetEnterpriseStatus(FixingEnterpriseSubscriptionCode)
             );
             _loaded = true;
             Logger.WriteEvent("Entered Settings Dialog");
