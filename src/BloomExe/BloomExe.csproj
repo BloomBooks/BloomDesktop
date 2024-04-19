@@ -184,7 +184,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <PackageReference Include="EPPlus" Version="6.2.4" />
     <PackageReference Include="Fleck" Version="1.1.0" />
     <PackageReference Include="Glob" Version="1.1.8" />
-    <PackageReference Include="L10NSharp" Version="6.0.0" />
+    <PackageReference Include="L10NSharp" Version="8.0.0-beta0003" />
     <PackageReference Include="LargeAddressAware" Version="1.0.5" />
     <PackageReference Include="Markdig.Signed" Version="0.30.4" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />

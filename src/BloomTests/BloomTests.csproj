@@ -84,7 +84,7 @@
   </Target>
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="6.2.4" />
-    <PackageReference Include="L10NSharp" Version="6.0.0" />
+    <PackageReference Include="L10NSharp" Version="8.0.0-beta0003" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
     <PackageReference Include="Moq" Version="4.14.7" />
