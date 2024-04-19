@@ -406,7 +406,7 @@ export class LocalizedString extends LocalizableElement<
 }
 
 interface ILabelProps {
-    htmlFor: string;
+    htmlFor?: string;
 }
 
 export class Label extends LocalizableElement<
