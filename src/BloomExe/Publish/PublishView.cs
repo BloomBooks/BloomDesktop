@@ -18,8 +18,6 @@ namespace Bloom.Publish
         private BookUpload _bookTransferrer;
         private PublishAudioVideoAPI _publishToVideoApi;
         private PublishEpubApi _publishEpubApi;
-        private System.ComponentModel.IContainer components = null;
-        private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
         private BloomWebSocketServer _webSocketServer;
 
         private web.ReactControl _reactControl;
@@ -47,7 +45,6 @@ namespace Bloom.Publish
             _reactControl.JavascriptBundleName = "publishTabPaneBundle";
             _reactControl.BackColor = Palette.GeneralBackground;
             _reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            components = new System.ComponentModel.Container();
             _reactControl.Location = new System.Drawing.Point(0, 0);
             _reactControl.Name = "_reactControl";
             _reactControl.Size = new System.Drawing.Size(773, 518);

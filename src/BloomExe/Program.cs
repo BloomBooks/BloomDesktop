@@ -1511,7 +1511,6 @@ namespace Bloom
                 // so I'm not very worried.
                 var fakeLocalDir = new TemporaryFolder("Bloom fake localization").FolderPath;
                 lm = LocalizationManager.Create(
-                    TranslationMemory.XLiff,
                     "en",
                     "Bloom",
                     "Bloom",
@@ -1521,7 +1520,7 @@ namespace Bloom
                     Resources.BloomIcon,
                     "issues@bloomlibrary.org",
                     //the parameters that follow are namespace beginnings:
-                    "Bloom"
+                    new string[] { "Bloom" }
                 );
                 return;
             }
@@ -1532,7 +1531,6 @@ namespace Bloom
                 // (See http://issues.bloomlibrary.org/youtrack/issue/BL-4393.)
                 var desiredLanguage = GetDesiredUiLanguage(installedStringFileFolder);
                 lm = LocalizationManager.Create(
-                    TranslationMemory.XLiff,
                     desiredLanguage,
                     "Bloom",
                     "Bloom",
@@ -1542,7 +1540,7 @@ namespace Bloom
                     Resources.BloomIcon,
                     "issues@bloomlibrary.org",
                     //the parameters that follow are namespace beginnings:
-                    "Bloom"
+                    new string[] { "Bloom" }
                 );
 
                 //We had a case where someone translated stuff into another language, and sent in their tmx. But their tmx had soaked up a bunch of string
@@ -1562,7 +1560,6 @@ namespace Bloom
                     Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 
                 LocalizationManager.Create(
-                    TranslationMemory.XLiff,
                     uiLanguage,
                     "Palaso",
                     "Palaso", /*review: this is just bloom's version*/
@@ -1571,11 +1568,10 @@ namespace Bloom
                     "SIL/Bloom",
                     Resources.BloomIcon,
                     "issues@bloomlibrary.org",
-                    "SIL"
+                    new string[] { "SIL" }
                 );
 
                 LocalizationManager.Create(
-                    TranslationMemory.XLiff,
                     uiLanguage,
                     "BloomMediumPriority",
                     "BloomMediumPriority",
@@ -1584,11 +1580,10 @@ namespace Bloom
                     "SIL/Bloom",
                     Resources.BloomIcon,
                     "issues@bloomlibrary.org",
-                    "Bloom"
+                    new string[] { "Bloom" }
                 );
 
                 LocalizationManager.Create(
-                    TranslationMemory.XLiff,
                     uiLanguage,
                     "BloomLowPriority",
                     "BloomLowPriority",
@@ -1597,7 +1592,7 @@ namespace Bloom
                     "SIL/Bloom",
                     Resources.BloomIcon,
                     "issues@bloomlibrary.org",
-                    "Bloom"
+                    new string[] { "Bloom" }
                 );
 
                 Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
