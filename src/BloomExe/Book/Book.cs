@@ -3336,6 +3336,13 @@ namespace Bloom.Book
 					}
 					else
 					{
+						// We've seen pages get emptied out, and we don't know why. This is a safety check.
+						// See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
+						if (BookStorage.CheckForEmptyMarginBoxOnPage(pageFromStorage))
+						{
+							// This has been logged and reported to the user. We don't want to save the empty page.
+							return;
+						}
 						Save();
 					}
 				}

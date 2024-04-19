@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -20,7 +21,7 @@ namespace Bloom.ErrorReporter
 		private HtmlErrorReporter()
 		{
 			ResetToDefaults();
-			DefaultReportLabel = L10NSharp.LocalizationManager.GetString("ErrorReportDialog.Report", "Report");
+            DefaultReportLabel = "Report";
 		}
 
 		private static HtmlErrorReporter _instance;
@@ -37,6 +38,19 @@ namespace Bloom.ErrorReporter
 		}
 
 		internal string DefaultReportLabel { get; private set; }
+
+        /// <summary>
+        /// Set the label for the "Report" button to the localized value.
+        /// </summary>
+        /// <remarks>
+        /// This call needs to wait until localization has been set up.  See BL-13245.
+        /// </remarks>
+        internal void LocalizeDefaultReportLabel()
+        {
+            DefaultReportLabel = L10NSharp.LocalizationManager.GetString(
+                "ErrorReportDialog.Report",
+                "Report");
+        }
 
 		static object _lock = new object();
 
@@ -215,11 +229,15 @@ namespace Bloom.ErrorReporter
 			var message = String.Format(messageFormat, args);
 			var shortMsg = error?.Data["ProblemReportShortMessage"] as string;
 			var imageFilepath = error?.Data["ProblemImagePath"] as string;
-			string[] extraFilepaths = null;
+			var extraFilepath = error?.Data["ExtraFilePath"] as string;
+			var extraPaths = new List<string>();
+			if (!String.IsNullOrEmpty(extraFilepath) && RobustFile.Exists(extraFilepath))
+				extraPaths.Add(extraFilepath);
 			if (!String.IsNullOrEmpty(imageFilepath) && RobustFile.Exists(imageFilepath))
-			{
-				extraFilepaths = new string[] { imageFilepath };
-			}
+				extraPaths.Add(imageFilepath);
+			string[] extraFilepaths = null;
+			if (extraPaths.Count > 0)
+				extraFilepaths = extraPaths.ToArray();
 			ProblemReportApi.ShowProblemDialog(GetControlToUse(), error, message , ProblemLevel.kNonFatal,
 				shortMsg, additionalPathsToInclude: extraFilepaths);
 		}

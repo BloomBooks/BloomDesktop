@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -34,7 +34,6 @@ namespace Bloom.CLI
 			{
 				using (var applicationContainer = new ApplicationContainer())
 				{
-					Program.SetUpLocalization(applicationContainer);
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 					ChangeLayoutForAllContentPagesInAllBooks(options.CollectionPath, options.BookPath, options.PageGuid);
 				}

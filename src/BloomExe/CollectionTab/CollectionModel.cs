@@ -167,6 +167,7 @@ namespace Bloom.CollectionTab
 				var newBook = GetBookFromBookInfo(dupInfo);
 				SelectBook(newBook);
 				BookHistory.AddEvent(newBook, BookHistoryEventType.Created, $"Duplicated from existing book \"{book.Title}\"");
+				newBook.UserPrefs.UploadAgreementsAccepted = false;
 			}
 		}
 
@@ -828,7 +829,7 @@ namespace Bloom.CollectionTab
 		/// <param name="exception">any exception which occurs when trying to save the file</param>
 		/// <returns>true if file was saved successfully; false otherwise</returns>
 		/// <remarks>if return value is false, exception is non-null and vice versa</remarks>
-		public static bool SaveAsBloomSourceFile(string srcFolderName, string destFileName, out Exception exception)
+		public static bool SaveAsBloomSourceFile(string srcFolderName, string destFileName, out Exception exception, string[] extraFilesToInclude = null)
 		{
 			exception = null;
 			try
@@ -839,6 +840,10 @@ namespace Bloom.CollectionTab
 				Logger.WriteEvent("Zipping up {0} ...", destFileName);
 				var zipFile = new BloomZipFile(destFileName);
 				zipFile.AddDirectoryContents(srcFolderName, excludedExtensions);
+                foreach (var path in extraFilesToInclude ?? new string[0])
+                {
+                    zipFile.AddTopLevelFile(path);
+                }
 
 				Logger.WriteEvent("Saving {0} ...", destFileName);
 				zipFile.Save();

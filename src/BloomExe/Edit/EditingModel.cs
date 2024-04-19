@@ -1081,6 +1081,7 @@ namespace Bloom.Edit
 		{
 			if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
 			{
+				Logger.WriteMinorEvent("EditingModel.SaveNow() starting");
 #if MEMORYCHECK
 				// Check memory for the benefit of developers.
 				MemoryManagement.CheckMemory(false, "before EditingModel.SaveNow()", false);
@@ -1096,6 +1097,9 @@ namespace Bloom.Edit
 					{
 						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, "SaveNow called on wrong thread", null);
 						_view.Invoke((Action)(() => SaveNow(forceFullSave)));
+						Logger.WriteMinorEvent(
+							"EditingModel.SaveNow() finished after Invoke to get on UI thread"
+						);
 						return;
 					}
 					CheckForBL2634("beginning SaveNow");
@@ -1140,21 +1144,28 @@ namespace Bloom.Edit
 					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage, forceFullSave || NeedToDoFullSave(newPageData));
 					_pageHasUnsavedDataDerivedChange = false;
 					CheckForBL2634("finished save");
+					while (_tasksToDoAfterSaving.Count > 0)
+					{
+						var task = _tasksToDoAfterSaving[0];
+						_tasksToDoAfterSaving.RemoveAt(0);
+						task();
+					}
 				}
 				finally
 				{
 					_inProcessOfSaving = false;
 				}
-				while (_tasksToDoAfterSaving.Count > 0)
-				{
-					var task = _tasksToDoAfterSaving[0];
-					_tasksToDoAfterSaving.RemoveAt(0);
-					task();
-				}
 #if MEMORYCHECK
 				// Check memory for the benefit of developers.
 				MemoryManagement.CheckMemory(false, "after EditingModel.SaveNow()", false);
 #endif
+				Logger.WriteMinorEvent("EditingModel.SaveNow() finished");
+			}
+			else
+			{
+				Logger.WriteMinorEvent(
+					$"EditingModel.SaveNow() called when _inProcessOfSaving={_inProcessOfDeleting}, NavigatingSoSuspendSaving={NavigatingSoSuspendSaving}, _domForCurrentPage={_domForCurrentPage}"
+				);
 			}
 		}
 

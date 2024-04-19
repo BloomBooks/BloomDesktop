@@ -115,13 +115,18 @@ namespace Bloom
 			// our singletons.
 			RegistrationDialog.UpgradeRegistrationIfNeeded();
 			// We use crowdin for localizing, and they require a directory per language setup.
-			LocalizationManager.UseLanguageCodeFolders = true;
-			// We want only good localizations in Bloom.
-			// REVIEW: should the setting be used only for alpha and beta?
-			LocalizationManager.ReturnOnlyApprovedStrings = !Settings.Default.ShowUnapprovedLocalizations;
+            LocalizationManager.UseLanguageCodeFolders = true;
+            // We want only good localizations in Bloom.
+            // REVIEW: should the setting be used only for alpha and beta?
+            LocalizationManager.ReturnOnlyApprovedStrings = !Settings.Default.ShowUnapprovedLocalizations;
+            // We want to do this very early. It needs to happen before anything tries to get localized strings.
+            // For example, it should be before we try to get the unique token (BL-13268).
+            // Another goal is for it to happen before this method breaks off into various paths, so that
+            // every startup path calls it.
+            SetUpLocalization();
 
-			// Old comment: Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
-			// Aug 2023, we've moved away from GeckoFx/Firefox to wv2, but I don't know if this is still needed or not...
+            // Old comment: Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
+            // Aug 2023, we've moved away from GeckoFx/Firefox to wv2, but I don't know if this is still needed or not...
 			// Steve says he thinks Gtk3 is still better but that it likely only matters for Linux,
 			// which for now is not supported in 5.5+.
 			GraphicsManager.GtkVersionInUse = GraphicsManager.GtkVersion.Gtk3;
@@ -220,7 +225,6 @@ namespace Bloom
 				{
 					using (_applicationContainer = new ApplicationContainer())
 					{
-						SetUpLocalization();
 						var msg = LocalizationManager.GetString("Errors.Pre10WindowsNotSupported", "We are sorry, but your version of Windows is no longer supported by Microsoft. This version of Bloom requires Windows 10 or greater. As a result, you will need to install Bloom version 5.4. Bloom will now open a web page where you can download Bloom 5.4.");
 						MessageBox.Show(msg, "Bloom");
 						SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LastVersionForPreWindows10, null));
@@ -284,14 +288,12 @@ namespace Bloom
 
 					if (args.Length == 1 && args[0].ToLowerInvariant().EndsWith(".bloompack"))
 					{
-						SetUpErrorHandling();
-						using (_applicationContainer = new ApplicationContainer())
-						{
-							SetUpLocalization();
-
-							var path = args[0];
-							// This allows local links to bloom packs.
-							if (path.ToLowerInvariant().StartsWith("bloom://"))
+                        SetUpErrorHandling();
+                        using (_applicationContainer = new ApplicationContainer())
+                        {
+                            var path = args[0];
+                            // This allows local links to bloom packs.
+                            if (path.ToLowerInvariant().StartsWith("bloom://"))
 							{
 								path = path.Substring("bloom://".Length);
 								if (!RobustFile.Exists(path))
@@ -330,7 +332,6 @@ namespace Bloom
 						// least some of the unnecessary objects by passing justEnoughForHtmlDialog true.
 						using (_applicationContainer = new ApplicationContainer())
 						{
-							SetUpLocalization();
 							using (var fakeProjectFolder = new TemporaryFolder("projectName"))
 							{
 								var fakeCollectionPath = FolderTeamCollection.SetupMinimumLocalCollectionFilesForRepo(
@@ -439,9 +440,6 @@ namespace Bloom
 					{
 						InstallerSupport.MakeBloomRegistryEntries(args);
 						BookDownloadSupport.EnsureDownloadFolderExists();
-
-						SetUpLocalization();
-
 
 						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args)) {
 							// Handle an old-style download request which comes as an order URL from BloomLibrary for path length check.
@@ -560,7 +558,6 @@ namespace Bloom
 			{
 				using (_applicationContainer = new ApplicationContainer())
 				{
-					SetUpLocalization();
 					var msgBldr = new StringBuilder();
 					var msgFmt1 = LocalizationManager.GetString("Webview.MissingOrTooOld", "Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.");
 					msgBldr.AppendFormat(msgFmt1, WebView2Browser.kMinimumWebView2Version);
@@ -705,7 +702,6 @@ namespace Bloom
 			SetUpErrorHandling();
 			using(_applicationContainer = new ApplicationContainer())
 			{
-				SetUpLocalization();
 				//JT please review: is this needed? InstallerSupport.MakeBloomRegistryEntries(args);
 				BookDownloadSupport.EnsureDownloadFolderExists();
 				LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
@@ -1250,11 +1246,9 @@ namespace Bloom
 			OpenCollection(Settings.Default.MruProjects.Latest);
 		}
 
-		public static void SetUpLocalization(ApplicationContainer applicationContainerSource = null)
+        public static void SetUpLocalization()
 		{
-			var applicationContainer = _applicationContainer;
-			if (applicationContainerSource != null)
-				applicationContainer = applicationContainerSource;
+            ILocalizationManager lm;
 			var installedStringFileFolder = FileLocationUtilities.GetDirectoryDistributedWithApplication(true,"localization");
 			if (installedStringFileFolder == null)
 			{
@@ -1267,7 +1261,7 @@ namespace Bloom
 				// Ideally we would dispose this at some point, but I don't know when we safely can. Normally this should never happen,
 				// so I'm not very worried.
 				var fakeLocalDir = new TemporaryFolder("Bloom fake localization").FolderPath;
-				applicationContainer.LocalizationManager = LocalizationManager.Create(
+				lm = LocalizationManager.Create(
 					TranslationMemory.XLiff, "en",
 					"Bloom", "Bloom", Application.ProductVersion, fakeLocalDir, "SIL/Bloom",
 					Resources.BloomIcon, "issues@bloomlibrary.org",
@@ -1281,7 +1275,7 @@ namespace Bloom
 				// If the user has not set the interface language, try to use the system language if we can.
 				// (See http://issues.bloomlibrary.org/youtrack/issue/BL-4393.)
 				var desiredLanguage = GetDesiredUiLanguage(installedStringFileFolder);
-				applicationContainer.LocalizationManager = LocalizationManager.Create(
+				lm = LocalizationManager.Create(
 					TranslationMemory.XLiff, desiredLanguage,
 					"Bloom", "Bloom", Application.ProductVersion,
 					installedStringFileFolder,
@@ -1297,9 +1291,9 @@ namespace Bloom
 				//don't want to check that stuff in".
 
 #if DEBUG
-				applicationContainer.LocalizationManager.CollectUpNewStringsDiscoveredDynamically = true;
+				lm.CollectUpNewStringsDiscoveredDynamically = true;
 #else
-				applicationContainer.LocalizationManager.CollectUpNewStringsDiscoveredDynamically = false;
+				lm.CollectUpNewStringsDiscoveredDynamically = false;
 #endif
 
 				var uiLanguage =   LocalizationManager.UILanguageId;//just feeding this into subsequent creates prevents asking the user twice if the language of their os isn't one we have a tmx for
@@ -1336,6 +1330,9 @@ namespace Bloom
 
 				// If this is removed, change code in WorkspaceView.OnSettingsProtectionChanged
 				LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = false; // BL-5111
+
+                // It's now safe to read the localized strings.  See BL-13245.
+                HtmlErrorReporter.Instance.LocalizeDefaultReportLabel();
 			}
 			catch (Exception error)
 			{

@@ -216,7 +216,7 @@ namespace Bloom.WebLibraryIntegration
 			// So all paths which don't allow us to check need to throw.
 			// Note that all this gets completely reworked in 5.7, so we don't have to live with this very long.
 
-			if (!UrlLookup.CheckGeneralInternetAvailability(false)) {
+			if (!UrlLookup.CheckGeneralInternetAvailability(true)) {
 				SIL.Reporting.Logger.WriteEvent("Internet was unavailable when trying to get book records.");
 				throw new ApplicationException("Unable to look up book records because there is no internet connection.");
 			}
