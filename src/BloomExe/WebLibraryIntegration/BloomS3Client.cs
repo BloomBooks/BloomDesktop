@@ -405,6 +405,11 @@ namespace Bloom.WebLibraryIntegration
                     forEdit,
                     tempDestination.FolderPath
                 );
+                if (bookFolderName == null)
+                {
+                    // cancelled
+                    return null;
+                }
                 var tempDirectory = Path.Combine(tempDestination.FolderPath, bookFolderName);
 
                 var destinationPath = Path.Combine(
@@ -495,6 +500,10 @@ namespace Bloom.WebLibraryIntegration
                         FilePath = Path.Combine(tempDestPath, filepath)
                     };
                     transferUtility.Download(req);
+                    // This implements the cancellation as well as guarding against sending progress
+                    // updates to a disposed progress dialog.
+                    if (downloadProgress.CancellationPending())
+                        return null;
                     if (downloadProgress != null)
                         downloadProgress.Invoke(
                             (Action)(

@@ -18,6 +18,8 @@ namespace Bloom.WebLibraryIntegration
 
         // Note: the ConsoleProgress implementation just runs the delegate on the current thread.
         object Invoke(Delegate method);
+
+        bool CancellationPending();
     }
 
     // For a real progress dialog we pass this.
@@ -46,6 +48,15 @@ namespace Bloom.WebLibraryIntegration
         {
             return _dialog.Invoke(method);
         }
+
+        public Func<bool> CancellationTest;
+
+        public bool CancellationPending()
+        {
+            if (CancellationTest != null)
+                return CancellationTest();
+            return false;
+        }
     }
 
     // If we're running from a console we pass this.
@@ -70,6 +81,11 @@ namespace Bloom.WebLibraryIntegration
         public object Invoke(Delegate method)
         {
             return method.Method.Invoke(method.Target, new object[0]);
+        }
+
+        public bool CancellationPending()
+        {
+            return false;
         }
     }
 }
