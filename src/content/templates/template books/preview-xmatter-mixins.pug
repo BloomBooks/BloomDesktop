@@ -1,0 +1,33 @@
+//- -------------------------------------------------------------------------------
+//-	This provides the preview-outsideFrontCover page mixin for factory templates.
+//- -------------------------------------------------------------------------------
+
+mixin preview-page-xmatter(label)
+	+page(label)(data-page="required singleton")&attributes(attributes)
+		block
+
+mixin preview-page-cover(label)
+	- requireOneArgument('page-cover',arguments)
+	+preview-page-xmatter(label).cover.coverColor.bloom-frontMatter&attributes(attributes)
+		block
+
+mixin preview-cover-contents
+	block cover-title
+		+field-prototypeDeclaredExplicitly-appearance("V,N1", "cover-title-LN-show").bookTitle
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+
+	block front-cover-image
+		+preview-cover-image
+
+	.bottomBlock
+
+mixin preview-cover-image
+	.bloom-imageContainer
+		img(data-book="coverImage", src="placeHolder.png")
+
+mixin preview-outsideFrontCover
+	// FRONT COVER
+	+preview-page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
+		+preview-cover-contents
+		block front-cover-footer

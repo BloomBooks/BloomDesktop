@@ -4,8 +4,8 @@
 
 @XMatterPackName: "Kyrgyz";
 @bleed: 3mm;
-// :root {
-//   Normally, we would put the defaults in a :root psuedo-element like this.
+// .bloom-page {
+//   Normally, we would put the defaults in a .bloom-page psuedo-element like this.
 //   But something about the way scoped styles work in bloom-player causes this not to work.
 //   So instead, we set the defaults on the .bloom-page class and override on the specific
 //   layouts as necessary.
@@ -35,11 +35,30 @@
     }
 }
 
+.bloom-page.outsideBackCover {
+    --cover-margin-top: 0mm;
+    --cover-margin-bottom: 15mm;
+}
+:not(.numberedPage).bloom-page {
+    --page-margin-bottom: 10px;
+}
+.bloom-page:not(.outsideFrontCover):not(.outsideBackCover):not(.Device16x9Portrait):not(.Device16x9Landscape) {
+    --page-margin-top: 15mm;
+    --page-margin-bottom: 15mm;
+    --page-margin-left: 15mm;
+    --page-margin-right: 15mm;
+    --page-gutter: 10mm;
+    --pageNumber-bottom: 20px;
+}
+.bloom-page.numberedPage {
+    &.Device16x9Portrait::after, &.Device16x9Landscape::after {
+        --pageNumber-right-margin: unset;
+        --pageNumber-left-margin: calc((100% - var(--pageNumber-width, 20px)) / 2);
+        --pageNumber-always-left-margin: calc((100% - var(--pageNumber-width, 20px)) / 2);
+        text-align: unset;  // text-align: right leaves the number at the right edge, not the center.
+    }
+}
 .outsideBackCover .marginBox {
-    top: 0;
-    height: calc(100% - 15mm) !important;
-    // width: calc(100% - 15mm) !important;
-
     [data-book="outside-back-cover-branding-bottom-html"] {
         display: none;
     }
@@ -101,8 +120,7 @@
                 // But since the user can't get to the control for that in xmatter anyway,
                 // this seems just as good for now (and allows the difference for orientation).
                 justify-content: center;
-                .bloom-editable.bloom-visibility-code-on,
-                .bloom-editable.bloom-visibility-user-on {
+                .bloom-editable.bloom-visibility-code-on {
                     justify-content: center;
                     display: flex;
                 }
@@ -255,10 +273,17 @@
 // NOTE. The existence of this selector tells XMatterHelper that we can handle device layout, so don't revert to a specialized one.
 .Device16x9Portrait,
 .Device16x9Landscape {
+    &.bloom-page.outsideBackCover {
+        --cover-margin-top: 0mm;
+        --cover-margin-bottom: 8mm;
+        --page-margin-left: 5.5mm;
+        --page-margin-right: 5.5mm;
+    }
+}
+.Device16x9Portrait,
+.Device16x9Landscape {
     &.outsideBackCover {
         .marginBox {
-            left: 19px !important;
-            height: calc(100% - 8mm) !important;
             .outside-back-cover-branding-top-block {
                 height: var(--HeaderHeight);
                 padding-top: unset;
@@ -284,10 +309,6 @@
 }
 .Device16x9Portrait {
     &.outsideBackCover {
-        .marginBox {
-            width: 89mm;
-        }
-
         .bottomHalfGrid {
             height: 600px;
             grid-template-rows: 250px 30px auto;
@@ -303,9 +324,6 @@
 }
 .Device16x9Landscape {
     &.outsideBackCover {
-        .marginBox {
-            width: calc(100% - 11mm);
-        }
         .bottomHalfGrid {
             grid-template-columns: 310px auto;
             .bloom-translationGroup {

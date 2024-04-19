@@ -166,6 +166,66 @@ export class BubbleManager {
         return true;
     }
 
+    // When the format dialog changes the amount of padding for overlays, adjust their sizes
+    // and positions (keeping the text in the same place).
+    // This function assumes that the postion and size of overlays are determined by the
+    // top, left, width, and height properties of the .bloom-textOverPicture elements,
+    // and that they are measured in pixels.
+    public static adjustOverlaysForPaddingChange(
+        container: HTMLElement,
+        style: string,
+        oldPaddingStr: string, // number+px
+        newPaddingStr: string // number+px
+    ) {
+        const wrapperBoxes = Array.from(
+            container.getElementsByClassName(kTextOverPictureClass)
+        ) as HTMLElement[];
+        const oldPadding = BubbleManager.pxToNumber(oldPaddingStr);
+        const newPadding = BubbleManager.pxToNumber(newPaddingStr);
+        const delta = newPadding - oldPadding;
+        const overlayLang = GetSettings().languageForNewTextBoxes;
+        wrapperBoxes.forEach(wrapperBox => {
+            // The language check is a belt-and-braces thing. At the time I did this PR, we had a bug where
+            // the bloom-editables in a TG did not necessarily all have the same style.
+            // We could possibly enconuter books where this is still true.
+            if (
+                Array.from(wrapperBox.getElementsByClassName(style)).filter(
+                    x => x.getAttribute("lang") === overlayLang
+                ).length > 0
+            ) {
+                if (!wrapperBox.style.height.endsWith("px")) {
+                    // Some sort of legacy situation; for a while we had all the placements as percentages.
+                    // This will typically not move it, but will force it to the new system of placement
+                    // by pixel. Don't want to do this if we don't have to, because there could be rounding
+                    // errors that would move it very slightly.
+                    this.setTextboxPosition(
+                        $(wrapperBox as HTMLElement),
+                        wrapperBox.offsetLeft - container.offsetLeft,
+                        wrapperBox.offsetTop - container.offsetTop
+                    );
+                }
+                const oldHeight = this.pxToNumber(wrapperBox.style.height);
+                wrapperBox.style.height = oldHeight + 2 * delta + "px";
+                const oldWidth = this.pxToNumber(wrapperBox.style.width);
+                wrapperBox.style.width = oldWidth + 2 * delta + "px";
+                const oldTop = this.pxToNumber(wrapperBox.style.top);
+                wrapperBox.style.top = oldTop - delta + "px";
+                const oldLeft = this.pxToNumber(wrapperBox.style.left);
+                wrapperBox.style.left = oldLeft - delta + "px";
+
+                BubbleManager.convertTextboxPositionToAbsolute(
+                    wrapperBox,
+                    this.getTopLevelImageContainerElement(wrapperBox)!
+                );
+            }
+        });
+    }
+
+    // Convert string ending in pixels to a number
+    private static pxToNumber(px: string): number {
+        return parseInt(px.replace("px", ""));
+    }
+
     // Now that we have the possibility of "nested" imageContainer elements,
     // we need to limit the img tags we look at to those that are immediate children.
     public static hideImageButtonsIfNotPlaceHolderOrHasOverlays(

@@ -20,7 +20,10 @@
 }
 
 .comic {
-    background-color: @dark !important;
+    background-color: @dark !important; // legacy still uses this
+    .marginBox {
+        --marginBox-background-color: @dark; // BL-13256
+    }
 
     // because of the @dark background, we need a different color in various places where we insert a border
     // in edit mode so it will contrast.

@@ -1,0 +1,94 @@
+/* migrated from customBookStyles.css distributed by Little Zebra */
+
+.A4Portrait.outsideFrontCover  {
+  /* The Little Zebra chart shows 15mm for both --cover-margin-top and --cover-margin-bottom */
+  /* But these values are both set to 10mm in the customBookStyles.css file */
+  /* What should the migrated value be?  I stuck to the actual data values. */
+  --cover-margin-top: 10mm;
+  --cover-margin-bottom: 10mm;
+  --page-margin-left: 12mm;
+  --page-margin-right: 12mm;
+}
+.A4Portrait.outsideBackCover {
+  /* These values all match the Little Zebra chart */
+  --cover-margin-top: 15mm;
+  --cover-margin-bottom: 15mm;
+  --page-margin-left: 12mm;
+  --page-margin-right: 12mm;
+}
+.A4Portrait {
+  /* These values all match the Little Zebra chart */
+  --page-margin-top: 15mm;
+  --page-margin-bottom: 15mm;
+  --page-margin-left: 12mm;
+  --page-margin-right: 12mm;
+}
+.A4Landscape {
+  /* These values all match the Little Zebra chart */
+  --cover-margin-top: 12mm;
+  --cover-margin-bottom: 12mm;
+  --page-margin-top: 12mm;
+  --page-margin-bottom: 12mm;
+  --page-margin-left: 15mm;
+  --page-margin-right: 15mm;
+}
+
+.A5Portrait.outsideFrontCover {
+  /* The Little Zebra chart shows 12mm for both --cover-margin-top and --cover-margin-bottom */
+  /* But these values are set as follows in the customBookStyles.css file */
+  --cover-margin-top: 10mm;
+  --cover-margin-bottom: 10mm;
+  --page-margin-left: 12mm;
+  --page-margin-right: 12mm;
+}
+.A5Portrait.outsideBackCover {
+  /* The Little Zebra chart shows 12mm for both --cover-margin-top and --cover-margin-bottom */
+  /* But these values are set as follows in the customBookStyles.css file */
+  --cover-margin-top: 10mm;
+  --cover-margin-bottom: 15mm;
+  --page-margin-left: 12mm;
+  --page-margin-right: 12mm;
+}
+.A5Portrait {
+  /* These values all match the Little Zebra chart */
+  --page-margin-top: 12mm;
+  --page-margin-bottom: 12mm;
+  --page-margin-left: 12mm;
+  --page-margin-right: 12mm;
+}
+.A5Landscape {
+  /* These values all match the Little Zebra chart */
+  --cover-margin-top: 12mm;
+  --cover-margin-bottom: 12mm;
+  --page-margin-top: 12mm;
+  --page-margin-bottom: 12mm;
+  --page-margin-left: 12mm ;
+  --page-margin-right: 12mm;
+}
+
+.A6Portrait.outsideFrontCover,
+.A6Portrait.outsideBackCover {
+  /* These values all match the Little Zebra chart */
+  --cover-margin-top: 10mm;
+  --cover-margin-bottom: 10mm;
+  --page-margin-left: 10mm;
+  --page-margin-right: 10mm;
+}
+.A6Portrait {
+  /* The Little Zebra chart shows 10mm for both --page-margin-top and --page-margin-bottom */
+  /* But these values are set as follows in the customBookStyles.css file */
+  --page-margin-top: 12mm;
+  --page-margin-bottom: 12mm;
+  --page-margin-left: 10mm;
+  --page-margin-right: 10mm;
+}
+.A6Landscape {
+  /* The Little Zebra chart shows 10mm for all of the following margins. */
+  /* But these values are set as follows in the customBookStyles.css file */
+  --cover-margin-top: 12mm;
+  --cover-margin-bottom: 8mm;
+  --page-margin-top: 12mm;
+  --page-margin-bottom: 8mm;
+  --page-margin-left: 10mm;
+  --page-margin-right: 14mm;
+}

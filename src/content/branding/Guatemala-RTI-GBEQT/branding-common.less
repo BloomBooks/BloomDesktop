@@ -55,9 +55,9 @@ p {
 .Device16x9Portrait,
 .Device16x9Landscape {
     &.credits {
+        --page-margin-left: 10px !important;
+        --page-margin-bottom: 20.236px !important;  // 8mm - 10px
         .marginBox {
-            left: 10px !important;
-            height: calc(100% - 8mm) !important;
             .credits-page-branding-top-block {
                 padding-top: unset;
                 font-size: 8pt; // otherwise we'll never fit in all the text.

@@ -14,7 +14,8 @@ import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
 import WaitIcon from "@mui/icons-material/HourglassEmpty";
 import { kBloomDarkTextOverWarning, kBloomWarning } from "../utils/colorUtils";
-import { Box } from "@mui/material";
+import { Box, SvgIconPropsSizeOverrides } from "@mui/material";
+import { OverridableStringUnion } from "@mui/types";
 
 export const kErrorBoxColor = "#eb3941";
 const kLightBlueBackground = "#F0FDFE";
@@ -89,11 +90,20 @@ export const NoteBoxSansBorder: React.FunctionComponent<IBoxProps> = props => {
 interface IBoxProps {
     l10Msg?: string;
     l10nKey?: string;
+    // The bizarre type below is chosen to match the fontSize property of the SvgIconProps interface.
+    iconSize?: OverridableStringUnion<
+        "inherit" | "large" | "medium" | "small",
+        SvgIconPropsSizeOverrides
+    >;
 }
 export const NoteBox: React.FunctionComponent<IBoxProps> = props => {
     const localizedMessage = useL10n(props.l10Msg || "", props.l10nKey || null);
     return (
-        <BoxWithIconAndText hasBorder={true} {...props}>
+        <BoxWithIconAndText
+            hasBorder={true}
+            icon={<InfoIcon fontSize={props.iconSize} />}
+            {...props}
+        >
             {localizedMessage || props.children}
         </BoxWithIconAndText>
     );
@@ -105,7 +115,7 @@ export const WaitBox: React.FunctionComponent<IBoxProps> = props => {
         <BoxWithIconAndText
             color="white"
             backgroundColor="#96668F"
-            icon={<WaitIcon />}
+            icon={<WaitIcon fontSize={props.iconSize} />}
             {...props}
         >
             {localizedMessage || props.children}
@@ -119,7 +129,7 @@ export const WarningBox: React.FunctionComponent<IBoxProps> = props => {
         <BoxWithIconAndText
             color={kBloomDarkTextOverWarning}
             backgroundColor={kBloomWarning}
-            icon={<WarningIcon />}
+            icon={<WarningIcon fontSize={props.iconSize} />}
             css={css`
                 font-weight: 500;
             `}
@@ -136,7 +146,7 @@ export const ErrorBox: React.FunctionComponent<IBoxProps> = props => {
         <BoxWithIconAndText
             color="white"
             backgroundColor={kErrorBoxColor}
-            icon={<ErrorIcon />}
+            icon={<ErrorIcon fontSize={props.iconSize} />}
             {...props}
         >
             {localizedMessage || props.children}

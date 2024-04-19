@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Bloom.Utils
 {
-	/// <summary>
-	/// This class just exists to mark that a Fatal exception has occurred.
-	/// </summary>
-	public class FatalException: ApplicationException
-	{
-		public FatalException(string msg) : base(msg)
-		{}
-	}
+    /// <summary>
+    /// This class just exists to mark that a Fatal exception has occurred.
+    /// </summary>
+    public class FatalException : ApplicationException
+    {
+        public FatalException(string msg)
+            : base(msg) { }
+    }
 }

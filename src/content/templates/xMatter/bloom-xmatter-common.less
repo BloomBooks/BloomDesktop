@@ -1,5 +1,5 @@
-@import "../../bookLayout/common-mixins.less";
 @import "bloom-xmatter-sharedRules.less";
+@import "../../bookLayout/paperDimensions.less";
 
 @XMatterPackName: "unknown";
 
@@ -17,94 +17,6 @@
     }
 }
 
-@BottomMargin-SmallerForCover: 10mm;
-//normally the marginBox sizing is done by the basePage, but for the front and back cover, we want to cheat to have
-//a smaller bottom margin, since there is no page number
-.outsideFrontCover .marginBox,
-.outsideBackCover .marginBox {
-    .SetMarginBoxCover(@PageHeight, @PageWidth) {
-        /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
-        height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
-        //Just center the margin box, (for now, we're ignoring the binding)
-        left: @MarginOuter;
-        width: @PageWidth - (2 * @MarginOuter);
-    }
-    .A3Landscape& {
-        .SetMarginBoxCover(@A3Landscape-Height, @A3Landscape-Width);
-    }
-    .A3Portrait& {
-        .SetMarginBoxCover(@A3Portrait-Height, @A3Portrait-Width);
-    }
-    .A4Portrait& {
-        .SetMarginBoxCover(@A4Portrait-Height, @A4Portrait-Width);
-    }
-    .A4Landscape& {
-        .SetMarginBoxCover(@A4Landscape-Height, @A4Landscape-Width);
-    }
-    .A5Portrait& {
-        .SetMarginBoxCover(@A5Portrait-Height, @A5Portrait-Width);
-    }
-    .A5Landscape& {
-        .SetMarginBoxCover(@A5Landscape-Height, @A5Landscape-Width);
-    }
-    .A6Portrait& {
-        .SetMarginBoxCover(@A6Portrait-Height, @A6Portrait-Width);
-    }
-    .A6Landscape& {
-        .SetMarginBoxCover(@A6Landscape-Height, @A6Landscape-Width);
-    }
-    .B5Portrait& {
-        .SetMarginBoxCover(@B5Portrait-Height, @B5Portrait-Width);
-    }
-    .LegalPortrait& {
-        .SetMarginBoxCover(@LegalPortrait-Height, @LegalPortrait-Width);
-    }
-    .LegalLandscape& {
-        .SetMarginBoxCover(@LegalLandscape-Height, @LegalLandscape-Width);
-    }
-    .LetterPortrait& {
-        .SetMarginBoxCover(@LetterPortrait-Height, @LetterPortrait-Width);
-    }
-    .LetterLandscape& {
-        .SetMarginBoxCover(@LetterLandscape-Height, @LetterLandscape-Width);
-    }
-    .HalfLetterPortrait& {
-        .SetMarginBoxCover(
-            @HalfLetterPortrait-Height,
-            @HalfLetterPortrait-Width
-        );
-    }
-    .HalfLetterLandscape& {
-        .SetMarginBoxCover(
-            @HalfLetterLandscape-Height,
-            @HalfLetterLandscape-Width
-        );
-    }
-    .QuarterLetterPortrait& {
-        .SetMarginBoxCover(
-            @QuarterLetterPortrait-Height,
-            @QuarterLetterPortrait-Width
-        );
-    }
-    .QuarterLetterLandscape& {
-        .SetMarginBoxCover(
-            @QuarterLetterLandscape-Height,
-            @QuarterLetterLandscape-Width
-        );
-    }
-    .Cm13Landscape& {
-        .SetMarginBoxCover(@Cm13Square-Side, @Cm13Square-Side);
-    }
-    .USComicPortrait& {
-        .SetMarginBoxCover(@USComicPortrait-Height, @USComicPortrait-Width);
-    }
-    .Size6x9Portrait& {
-        .SetMarginBoxCover(@Size6x9Portrait-Height, @Size6x9Portrait-Width);
-    }
-    .Size6x9Landscape& {
-        .SetMarginBoxCover(@Size6x9Landscape-Height, @Size6x9Landscape-Width);
-    }
-}
 
 .insideFrontCover {
     .bloom-translationGroup {
@@ -136,6 +48,7 @@
         //independently of their appearance order in the html
         display: flex;
         flex-direction: column;
+        row-gap: 10px;   // extra space between title items (less than default --page-gutter value which would otherwise apply)
 
         .bloom-editable {
             order: 0;
@@ -144,8 +57,28 @@
             justify-content: center;
 
             &.bloom-contentNational1 {
-                //NB: we show the national language even if this is a monolingual book
+                // NB: we usually show the national language even if this is a monolingual book.
+                // It should come after the vernacular title
                 order: 1;
+            }
+            &.bloom-contentNational2 {
+                // We can possibly show the L3 language if the user turns it on in Book Settings.
+                // If so it should come after the vernacular title and possibly the national language.
+                order: 2;
+            }
+            // These three make the above obsolete for fields when title visibility is managed by the
+            // appearance system. Since we don't have distinct xmatter CSS for legacy, we keep the
+            // old rules, but allow the new ones to win by coming later in the file.
+            // (The contentFirst rule is required because it's possible that contentFirst also
+            // has contentNational1 or contentNational2, and we want the contentFirst rule to win.)
+            &.bloom-contentFirst {
+                order: 0;
+            }
+            &.bloom-contentSecond {
+                order: 1;
+            }
+            &.bloom-contentThird {
+                order: 2;
             }
 
             // //NB: THe order here is important. bloom-content1 should be last so that if a box is *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections), we want the  bloom-content1 rule to win.
@@ -369,7 +302,6 @@
     }
 }
 
-
 .titlePage {
     #originalContributions {
         .bloom-editable {
@@ -382,7 +314,6 @@
         }
     }
 }
-
 
 .titlePage {
     @MarginBetweenMinorItems: 0.5em;

@@ -4,84 +4,138 @@ using NUnit.Framework;
 
 namespace BloomTests.web
 {
-	[TestFixture]
-	public class YouTrackIssueSubmitterTests
-	{
-		[Test]
-		public void CanSubmitToYouTrack()
-		{
-			var tempfile1 = Path.GetTempFileName();
-			string tempfile2 = null;
-			try
-			{
-				var submitter = new YouTrackIssueSubmitter("AUT");
+    [TestFixture]
+    public class YouTrackIssueSubmitterTests
+    {
+        [Test]
+        public void CanSubmitToYouTrack()
+        {
+            var tempfile1 = Path.GetTempFileName();
+            string tempfile2 = null;
+            try
+            {
+                var submitter = new YouTrackIssueSubmitter("AUT");
 
-				// Create a file to be attached to the issue as it it created.
-				File.WriteAllLines(tempfile1, new[] { @"This is a test.  This is only a test." });
-				var filename1 = Path.GetFileName(tempfile1);
-				var info1 = new FileInfo(tempfile1);
-				submitter.AddAttachmentWhenWeHaveAnIssue(tempfile1);
+                // Create a file to be attached to the issue as it it created.
+                File.WriteAllLines(tempfile1, new[] { @"This is a test.  This is only a test." });
+                var filename1 = Path.GetFileName(tempfile1);
+                var info1 = new FileInfo(tempfile1);
+                submitter.AddAttachmentWhenWeHaveAnIssue(tempfile1);
 
-				var issueId = submitter.SubmitToYouTrack("Test submission to YouTrack", kLongDescription);
-				Assert.That(issueId, Does.StartWith("AUT-"));
+                var issueId = submitter.SubmitToYouTrack(
+                    "Test submission to YouTrack",
+                    kLongDescription
+                );
+                Assert.That(issueId, Does.StartWith("AUT-"));
 
-				var initialFiles = submitter.GetAttachmentDataForIssue(issueId);
-				Assert.That(initialFiles, Is.Not.Null, "attachment data successfully fetched after creation");
-				Assert.That(initialFiles.Count, Is.EqualTo(1), "unit test issue starts up with one file attached");
-				Assert.That(initialFiles.ContainsKey(filename1), Is.True, "Initial file is attached");
-				Assert.That(initialFiles[filename1], Is.EqualTo(info1.Length), "first attached file has right size to begin");
+                var initialFiles = submitter.GetAttachmentDataForIssue(issueId);
+                Assert.That(
+                    initialFiles,
+                    Is.Not.Null,
+                    "attachment data successfully fetched after creation"
+                );
+                Assert.That(
+                    initialFiles.Count,
+                    Is.EqualTo(1),
+                    "unit test issue starts up with one file attached"
+                );
+                Assert.That(
+                    initialFiles.ContainsKey(filename1),
+                    Is.True,
+                    "Initial file is attached"
+                );
+                Assert.That(
+                    initialFiles[filename1],
+                    Is.EqualTo(info1.Length),
+                    "first attached file has right size to begin"
+                );
 
-				// Create file named after the issue and attach it to the issue.
-				var filename2 = issueId + ".tmp";
-				tempfile2 = Path.Combine(Path.GetTempPath(), filename2);
-				File.WriteAllLines(tempfile2, new[] { @"This is the second test file, named after the issue.", issueId });
-				var info2 = new FileInfo(tempfile2);
-				var added = submitter.AttachFileToExistingIssue(issueId, tempfile2);
-				Assert.That(added, Is.True, "file added to issue");
+                // Create file named after the issue and attach it to the issue.
+                var filename2 = issueId + ".tmp";
+                tempfile2 = Path.Combine(Path.GetTempPath(), filename2);
+                File.WriteAllLines(
+                    tempfile2,
+                    new[] { @"This is the second test file, named after the issue.", issueId }
+                );
+                var info2 = new FileInfo(tempfile2);
+                var added = submitter.AttachFileToExistingIssue(issueId, tempfile2);
+                Assert.That(added, Is.True, "file added to issue");
 
-				var finalFiles = submitter.GetAttachmentDataForIssue(issueId);
-				Assert.That(finalFiles, Is.Not.Null, "attachment data successfully fetched at the end");
-				Assert.That(finalFiles.Count, Is.EqualTo(2), "unit test issue ends up with two files attached");
-				Assert.That(finalFiles.ContainsKey(filename1), Is.True, "Initial file is still attached");
-				Assert.That(finalFiles[filename1], Is.EqualTo(info1.Length), "first attached file has right size at end");
-				Assert.That(finalFiles.ContainsKey(filename2), Is.True, "Second file was attached");
-				Assert.That(finalFiles[filename2], Is.EqualTo(info2.Length), "second attached file has right size at end");
+                var finalFiles = submitter.GetAttachmentDataForIssue(issueId);
+                Assert.That(
+                    finalFiles,
+                    Is.Not.Null,
+                    "attachment data successfully fetched at the end"
+                );
+                Assert.That(
+                    finalFiles.Count,
+                    Is.EqualTo(2),
+                    "unit test issue ends up with two files attached"
+                );
+                Assert.That(
+                    finalFiles.ContainsKey(filename1),
+                    Is.True,
+                    "Initial file is still attached"
+                );
+                Assert.That(
+                    finalFiles[filename1],
+                    Is.EqualTo(info1.Length),
+                    "first attached file has right size at end"
+                );
+                Assert.That(finalFiles.ContainsKey(filename2), Is.True, "Second file was attached");
+                Assert.That(
+                    finalFiles[filename2],
+                    Is.EqualTo(info2.Length),
+                    "second attached file has right size at end"
+                );
 
-				// no need to keep adding test issues indefinitely: clean up after ourselves by deleting the new issue.
-				var deleted = submitter.DeleteIssue(issueId);
-				Assert.That(deleted, Is.True, "unit test issue deleted");
-			}
-			finally
-			{
-				// clean up the disk after ourselves.
-				File.Delete(tempfile1);
-				if (tempfile2 != null)
-					File.Delete(tempfile2);
-			}
-		}
+                // no need to keep adding test issues indefinitely: clean up after ourselves by deleting the new issue.
+                var deleted = submitter.DeleteIssue(issueId);
+                Assert.That(deleted, Is.True, "unit test issue deleted");
+            }
+            finally
+            {
+                // clean up the disk after ourselves.
+                File.Delete(tempfile1);
+                if (tempfile2 != null)
+                    File.Delete(tempfile2);
+            }
+        }
 
-		[Test]
-		public void CanSubmitToYouTrackASecondTime()
-		{
-			// This test is much simpler: we just want to verify that the static HttpClient works for the
-			// second submission.
-			var submitter = new YouTrackIssueSubmitter("AUT");
-			var issueId = submitter.SubmitToYouTrack("Another test submission to YouTrack", kLongDescription);
-			Assert.That(issueId, Does.StartWith("AUT-"));
+        [Test]
+        public void CanSubmitToYouTrackASecondTime()
+        {
+            // This test is much simpler: we just want to verify that the static HttpClient works for the
+            // second submission.
+            var submitter = new YouTrackIssueSubmitter("AUT");
+            var issueId = submitter.SubmitToYouTrack(
+                "Another test submission to YouTrack",
+                kLongDescription
+            );
+            Assert.That(issueId, Does.StartWith("AUT-"));
 
-			var initialFiles = submitter.GetAttachmentDataForIssue(issueId);
-			Assert.That(initialFiles, Is.Not.Null, "attachment data successfully fetched after creation");
-			Assert.That(initialFiles.Count, Is.EqualTo(0), "unit test issue starts up with one file attached");
+            var initialFiles = submitter.GetAttachmentDataForIssue(issueId);
+            Assert.That(
+                initialFiles,
+                Is.Not.Null,
+                "attachment data successfully fetched after creation"
+            );
+            Assert.That(
+                initialFiles.Count,
+                Is.EqualTo(0),
+                "unit test issue starts up with one file attached"
+            );
 
-			// no need to keep adding test issues indefinitely: clean up after ourselves by deleting the new issue.
-			var deleted = submitter.DeleteIssue(issueId);
-			Assert.That(deleted, Is.True, "unit test issue deleted");
-		}
+            // no need to keep adding test issues indefinitely: clean up after ourselves by deleting the new issue.
+            var deleted = submitter.DeleteIssue(issueId);
+            Assert.That(deleted, Is.True, "unit test issue deleted");
+        }
 
-		// A real description, minus most of the log file.  User and machine name changed to protect the innocent.
-		// Removing the last line of this description allows BloomTrackSharp 2020.1 to succeed, but it fails with
-		// the description as it is.
-		private const string kLongDescription = @"### Problem Description
+        // A real description, minus most of the log file.  User and machine name changed to protect the innocent.
+        // Removing the last line of this description allows BloomTrackSharp 2020.1 to succeed, but it fails with
+        // the description as it is.
+        private const string kLongDescription =
+            @"### Problem Description
 I tried to import a picture and it gave me an error.
 
 How much: 1 (It happens sometimes)
@@ -162,5 +216,5 @@ Tuesday, April 21, 2020
 2:43:01 PM    Created image copy: C:\Users\Admin\Documents\Bloom\COVID-19\Fight the Virus!\FTV_p21_Fam_Doc1.png
 2:43:02 PM
 ";
-	}
+    }
 }

@@ -9,15 +9,16 @@ using SIL.Windows.Forms.Progress;
 
 namespace Bloom.Publish
 {
-	public partial class BulkUploadProgressDlg : Form
-	{
-		public LogBox Progress;
-		public BulkUploadProgressDlg()
-		{
-			InitializeComponent();
-			Progress = new LogBox();
-			Progress.Dock = DockStyle.Fill;
-			Controls.Add(Progress);
-		}
-	}
+    public partial class BulkUploadProgressDlg : Form
+    {
+        public LogBox Progress;
+
+        public BulkUploadProgressDlg()
+        {
+            InitializeComponent();
+            Progress = new LogBox();
+            Progress.Dock = DockStyle.Fill;
+            Controls.Add(Progress);
+        }
+    }
 }

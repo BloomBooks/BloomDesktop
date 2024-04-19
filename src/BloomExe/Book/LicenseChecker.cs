@@ -11,7 +11,6 @@ using SIL.IO;
 using SIL.WritingSystems;
 using SIL.Xml;
 
-
 namespace Bloom.Book
 {
     // LicenseChecker implements a strategy for keeping users from breaking the rules about books for which we
@@ -26,36 +25,47 @@ namespace Bloom.Book
     {
         private static string _offlineFolderPath = ProjectContext.GetBloomAppDataFolder(); // normally stays here except in unit tests
         private static bool _allowInternetAccess = true;
-        public static string kUnlicenseLanguageMessage = "The copyright holder of this book has not licensed it for publishing in {0}. Please contact the copyright holder to learn more about licensing.";
-        public static string kCannotReachLicenseServerMessage = "To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.";
+        public static string kUnlicenseLanguageMessage =
+            "The copyright holder of this book has not licensed it for publishing in {0}. Please contact the copyright holder to learn more about licensing.";
+        public static string kCannotReachLicenseServerMessage =
+            "To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.";
 
         /// <summary>
-		/// Return that subset of inputLangs that are allowed to be published for the specified book. Usually all of them.
-		/// </summary>
-		/// <remarks>
-		/// If the book has a restricted license and we cannot contact the server and have not previously cached
-		/// information about licensing this book, the method will return an empty list. Currently this works
-		/// because we will try to build a preview with all the languages, and the check that is done during
-		/// that process will report that it can't confirm which ones are publishable.
-		/// </remarks>
-		public IEnumerable<string> AllowedLanguages(string[] inputLangs, Book book)
+        /// Return that subset of inputLangs that are allowed to be published for the specified book. Usually all of them.
+        /// </summary>
+        /// <remarks>
+        /// If the book has a restricted license and we cannot contact the server and have not previously cached
+        /// information about licensing this book, the method will return an empty list. Currently this works
+        /// because we will try to build a preview with all the languages, and the check that is done during
+        /// that process will report that it can't confirm which ones are publishable.
+        /// </remarks>
+        public IEnumerable<string> AllowedLanguages(string[] inputLangs, Book book)
         {
-	        var meta = book.OurHtmlDom.SelectSingleNode("//meta[@name='bloom-licensed-content-id' and @content]");
-	        if (meta == null)
-		        return inputLangs;
-	        var key = meta.GetStringAttribute("content");
-			// For this method we can ignore didCheck. See remarks above.
-	        var problems = GetProblemLanguages(inputLangs, key, out bool didCheck);
-	        return inputLangs.Except(problems);
+            var meta = book.OurHtmlDom.SelectSingleNode(
+                "//meta[@name='bloom-licensed-content-id' and @content]"
+            );
+            if (meta == null)
+                return inputLangs;
+            var key = meta.GetStringAttribute("content");
+            // For this method we can ignore didCheck. See remarks above.
+            var problems = GetProblemLanguages(inputLangs, key, out bool didCheck);
+            return inputLangs.Except(problems);
         }
-        public IEnumerable<string> GetProblemLanguages(string[] inputLangs, string key, out bool didCheck)
+
+        public IEnumerable<string> GetProblemLanguages(
+            string[] inputLangs,
+            string key,
+            out bool didCheck
+        )
         {
             string permissionsJson;
             if (_allowInternetAccess)
             {
                 try
                 {
-                    permissionsJson = new WebClient().DownloadString("https://content-licenses.bloomlibrary.org");
+                    permissionsJson = new WebClient().DownloadString(
+                        "https://content-licenses.bloomlibrary.org"
+                    );
                     if (!string.IsNullOrEmpty(_offlineFolderPath))
                     {
                         try
@@ -66,13 +76,13 @@ namespace Bloom.Book
                         catch (IOException e)
                         {
                             // just ignore if we can't cache
-							Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+                            Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
                         }
                     }
                 }
                 catch (WebException w)
                 {
-					Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(w);
+                    Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(w);
                     if (!TryGetOfflineCache(out permissionsJson))
                     {
                         didCheck = false;
@@ -89,58 +99,63 @@ namespace Bloom.Book
                 }
             }
 
-			HashSet<string> allowed = GetAllowedLanguageCodes(permissionsJson, key);
+            HashSet<string> allowed = GetAllowedLanguageCodes(permissionsJson, key);
 
-			didCheck = true;
+            didCheck = true;
             return inputLangs.Where(c => !allowed.Contains(c));
         }
 
-		// Parses the permissions JSON and returns the set of language codes that match the given contentId key
-		private static HashSet<string> GetAllowedLanguageCodes(string permissionsJson, string key)
-		{
-			var allowed = new HashSet<string>();
+        // Parses the permissions JSON and returns the set of language codes that match the given contentId key
+        private static HashSet<string> GetAllowedLanguageCodes(string permissionsJson, string key)
+        {
+            var allowed = new HashSet<string>();
 
-			dynamic permissions;
-			dynamic values;
-			try
-			{
-				permissions = DynamicJson.Parse(permissionsJson);
-				values = permissions.values;
-			}
-			catch
-			{
-				return allowed;
-			}
+            dynamic permissions;
+            dynamic values;
+            try
+            {
+                permissions = DynamicJson.Parse(permissionsJson);
+                values = permissions.values;
+            }
+            catch
+            {
+                return allowed;
+            }
 
-			foreach (var val in values)
-			{
-				string contentId, languageCode;
-				try
-				{
-					contentId = val[0];
-					languageCode = val[1];
-				}
-				catch
-				{
-					continue;
-				}
+            foreach (var val in values)
+            {
+                string contentId,
+                    languageCode;
+                try
+                {
+                    contentId = val[0];
+                    languageCode = val[1];
+                }
+                catch
+                {
+                    continue;
+                }
 
-				// empty strings are not considered valid
-				// no need to process header rows either
-				if (string.IsNullOrWhiteSpace(contentId) || string.IsNullOrWhiteSpace(languageCode) ||
-				    contentId == "content-id" || languageCode == "language-code")
-				{
-					continue;
-				}
+                // empty strings are not considered valid
+                // no need to process header rows either
+                if (
+                    string.IsNullOrWhiteSpace(contentId)
+                    || string.IsNullOrWhiteSpace(languageCode)
+                    || contentId == "content-id"
+                    || languageCode == "language-code"
+                )
+                {
+                    continue;
+                }
 
-				if (MatchingKey(contentId.Trim(), key))
-				{
-					allowed.Add(languageCode.Trim());
-				}
-			}
+                if (MatchingKey(contentId.Trim(), key))
+                {
+                    allowed.Add(languageCode.Trim());
+                }
+            }
 
-			return allowed;
-		}
+            return allowed;
+        }
 
         private bool TryGetOfflineCache(out string permissionsJson)
         {
@@ -151,7 +166,7 @@ namespace Bloom.Book
             }
 
             var path = getCacheFile();
-			if (!RobustFile.Exists(path))
+            if (!RobustFile.Exists(path))
             {
                 return false;
             }
@@ -162,7 +177,7 @@ namespace Bloom.Book
             }
             catch (IOException ex)
             {
-				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
                 return false;
             }
 
@@ -198,12 +213,17 @@ namespace Bloom.Book
 
         internal static void WriteObfuscatedFile(string path, string content)
         {
-			RobustFile.WriteAllText(path, System.Convert.ToBase64String(Encoding.UTF8.GetBytes(content)));
+            RobustFile.WriteAllText(
+                path,
+                System.Convert.ToBase64String(Encoding.UTF8.GetBytes(content))
+            );
         }
 
         internal static string ReadObfuscatedFile(string path)
         {
-			return Encoding.UTF8.GetString(System.Convert.FromBase64String(RobustFile.ReadAllText(path)));
+            return Encoding.UTF8.GetString(
+                System.Convert.FromBase64String(RobustFile.ReadAllText(path))
+            );
         }
 
         /// <summary>
@@ -222,26 +242,41 @@ namespace Bloom.Book
         // This overload is much more convenient for testing.
         public string CheckBook(HtmlDom dom, string[] languages, Book book = null)
         {
-            var meta = dom.SelectSingleNode("//meta[@name='bloom-licensed-content-id' and @content]");
+            var meta = dom.SelectSingleNode(
+                "//meta[@name='bloom-licensed-content-id' and @content]"
+            );
             if (meta == null)
                 return null;
             bool didCheck;
-            var problems = GetProblemLanguages(languages, meta.GetStringAttribute("content"), out didCheck);
+            var problems = GetProblemLanguages(
+                languages,
+                meta.GetStringAttribute("content"),
+                out didCheck
+            );
             if (problems.Count() == 0)
                 return null;
             if (!didCheck)
             {
-                return LocalizationManager.GetString("PublishTab.Android.CantGetLicenseInfo",
-                    kCannotReachLicenseServerMessage);
+                return LocalizationManager.GetString(
+                    "PublishTab.Android.CantGetLicenseInfo",
+                    kCannotReachLicenseServerMessage
+                );
             }
-            var template = LocalizationManager.GetString("PublishTab.Android.UnlicensedLanguages",
-                    kUnlicenseLanguageMessage,
-                    "{0} will be a language name or a list of them");
+            var template = LocalizationManager.GetString(
+                "PublishTab.Android.UnlicensedLanguages",
+                kUnlicenseLanguageMessage,
+                "{0} will be a language name or a list of them"
+            );
             // In real life we always have a book and can get nicer names. I put the fallback in for testing.
-            var langs = string.Join(CultureInfo.CurrentCulture.TextInfo.ListSeparator + " ",
-                problems.Select(x => book == null
-                        ? IetfLanguageTag.GetLocalizedLanguageName(x, "")
-                        : book.PrettyPrintLanguage(x)));
+            var langs = string.Join(
+                CultureInfo.CurrentCulture.TextInfo.ListSeparator + " ",
+                problems.Select(
+                    x =>
+                        book == null
+                            ? IetfLanguageTag.GetLocalizedLanguageName(x, "")
+                            : book.PrettyPrintLanguage(x)
+                )
+            );
             return string.Format(template, langs);
         }
     }

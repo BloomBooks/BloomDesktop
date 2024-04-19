@@ -1,0 +1,83 @@
+//Enhance: I think these could be computed, based on the current margin
+@OddPageNumberPosition: 57px;
+@EvenPageNumberPosition: 60px;
+
+.bloom-page {
+    // how much space to leave at the top and bottom of the page for the page number, if we're showing page numbers at all
+    // themes can override this as needed. If you have reasonable margins, you don't need to add anything to fit in a pageNumber
+    --pageNumber-extra-height: 0mm; // must have units
+}
+.numberedPage {
+    &:after {
+        content: attr(data-page-number);
+        display: var(--pageNumber-show);
+        font-size: var(--pageNumber-font-size);
+        position: absolute;
+        // If --pageNumber-background-width is not set, the width will be the width of the number instead of the whole page.
+        width: var(
+            --pageNumber-background-width,
+            fit-content
+        ); // for when we need to have a colored background, e.g. a circle.
+        height: var(--pageNumber-background-width);
+        bottom: var(
+            --pageNumber-bottom
+        ) !important; // override the bloom-player (as of Bloom 5.5)
+        top: var(
+            --pageNumber-top
+        ) !important; // override the bloom-player (as of Bloom 5.5)
+        background-color: var(--pageNumber-background-color);
+        border-radius: var(--pageNumber-border-radius);
+        z-index: 1000;
+        // These are needed to get the number centered in a circle.  They have
+        // no effect if --pageNumber-background-width is not set.
+        line-height: var(--pageNumber-background-width); // centers vertically
+        text-align: center !important; // centers horizontally
+    }
+
+    // This was very tricky to get right for ebooks. We usually want the page number in ebooks
+    // to be centered, which requires setting both left and right, typically to zero, and
+    // then setting margin:0 auto. But we also want to be able to set the page number on
+    // the left for the rounded themes that use picture-on-left. And all this has to be
+    // controlled with theme variables, which are very tricky to get back to "no value"
+    // once some rule sets them. (The only way I've found is to set them to something
+    // that is not a valid value, like "deliiberately-invalid".)
+    // Most of the time, this rule doesn't do anything for Device page sizes, because
+    // the following rule sets left to a different variable. But since we don't want
+    // special behaviors for side-left for device page sizes, I decideed to let this
+    // rule go ahead and set left for them, too, just in case we encouter a case where
+    // --pageNumber-always-left-margin has no value.
+    &.Device16x9Landscape:after,
+    &.Device16x9Portrait:after,
+    &.side-left:after {
+        left: var(
+            --pageNumber-left-margin
+        ) !important; // TODO: why is Bloom-player setting this at all? (wants to put in center)
+    }
+    &.side-right:after {
+        right: var(
+            --pageNumber-right-margin
+        ) !important; // allow page number to be on the right
+    }
+
+    &.Device16x9Landscape:after,
+    &.Device16x9Portrait:after {
+        // note that here the property has "always"
+        left: var(
+            --pageNumber-always-left-margin
+        ) !important; // allow page number to always be on the left, regardless of page side. If this is used, --pageNumber-right-margin should be set to unset
+    }
+
+    /* if pageNumber-always-left-margin and --pageNumber-right-margin are both set to zero,
+     * as we usually do for device page sizes, we get centering of the page number.
+     * To defeat that, either right: or left: must not be set, which I've only managed
+     * to achieve (since the default theme sets them both) by setting to something
+     * deliberately invalid. */
+    &.Device16x9Landscape:after,
+    &.Device16x9Portrait:after {
+        // in the default theme, we always center the page number; both right and left will be 0 for that
+        // if a theme wants to set the page number on the left, it should set --pageNumber-right-margin to deliberately-invalid
+        // if a theme wants to set the page number on the right, it should set --pageNumber-always-left-margin to deliberately-invalid
+        right: var(--pageNumber-right-margin) !important;
+        margin: 0 auto;
+    }
+}

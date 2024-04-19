@@ -81,7 +81,7 @@ export const CollectionSettingsDialog: React.FunctionComponent<{}> = () => {
                                 primary: { main: kBloomBlue }
                             }
                         }}
-                        setValueOnRender={s => {
+                        onChange={s => {
                             setSettingsToReturnLater(s);
                         }}
                     >

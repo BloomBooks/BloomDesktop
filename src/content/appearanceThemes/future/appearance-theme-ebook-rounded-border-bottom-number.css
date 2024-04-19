@@ -1,0 +1,43 @@
+/* based on EFL's https://bloomlibrary.org/player/PbflFNDoRx */
+
+.bloom-page {
+    /* This appearance is usually used for a Device book, where this rule gets overridden by the Device rules below. */
+    --image-border-radius: 9px;
+}
+[class*="Device"] {
+    --page-margin-top: 5.5mm;
+    --page-margin-bottom: 5.5mm;
+    --page-margin-right: 2.5mm;
+    --page-margin-left: 2.5mm;
+    --page-background-color: rgb(78, 78, 78);
+
+    --marginBox-border-radius: 25px;
+    --marginBox-border-color: white;
+    --marginBox-border-style: solid;
+    --marginBox-border-width: 1.5mm;
+    --marginBox-background-color: white;
+    --marginBox-padding: 2mm;
+    --image-border-radius: 14px;
+
+    --bloom-editMode-custom-image-border: none;
+
+    .bloom-imageContainer img {
+        object-fit: cover; /* let the rounded edges of the parent clip the img */
+    }
+
+    /* page number circle */
+    --pageNumber-always-left: 10px;
+    --pageNumber-right-margin: deliberately-invalid; /* variable has no value at all (unset does not work). Prevent centering for this layout */
+    --pageNumber-always-left-margin: var(--page-margin-left);
+    --pageNumber-bottom: 22px;
+    --pageNumber-font-size: 11pt;
+    --pageNumber-background-color: white;
+    --pageNumber-background-width: 44px; /* enhance... express in terms of --marginBox-border-radius */
+    --pageNumber-border-radius: 50%;
+    &.numberedPage::after {
+        display: inline-grid;
+        align-content: space-around;
+        justify-content: space-around;
+        border-radius: 50%;
+    }
+}

@@ -12,102 +12,113 @@ using Bloom.Api;
 
 namespace Bloom.Publish
 {
-	public partial class PublishView : UserControl, IBloomTabArea 
-	{
-	
+    public partial class PublishView : UserControl, IBloomTabArea
+    {
+        public readonly PublishModel _model;
+        private BookUpload _bookTransferrer;
+        private PublishAudioVideoAPI _publishToVideoApi;
+        private PublishEpubApi _publishEpubApi;
+        private System.ComponentModel.IContainer components = null;
+        private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+        private BloomWebSocketServer _webSocketServer;
 
-		public readonly PublishModel _model;
-		private BookUpload _bookTransferrer;
-		private PublishAudioVideoAPI _publishToVideoApi;
-		private PublishEpubApi _publishEpubApi;
-		private System.ComponentModel.IContainer components = null;
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private BloomWebSocketServer _webSocketServer;
+        private web.ReactControl _reactControl;
 
+        public delegate PublishView Factory(); //autofac uses this
 
+        public PublishView(
+            PublishModel model,
+            SelectedTabChangedEvent selectedTabChangedEvent,
+            LocalizationChangedEvent localizationChangedEvent,
+            BookUpload bookTransferrer,
+            PublishEpubApi publishEpubApi,
+            PublishAudioVideoAPI publishToVideoApi,
+            BloomWebSocketServer webSocketServer
+        )
+        {
+            _bookTransferrer = bookTransferrer;
+            _publishEpubApi = publishEpubApi;
+            _publishToVideoApi = publishToVideoApi;
+            _model = model;
+            _model.View = this;
+            _webSocketServer = webSocketServer;
 
-		private web.ReactControl _reactControl;
-
-		public delegate PublishView Factory();//autofac uses this
-
-		public PublishView(PublishModel model, 
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookUpload bookTransferrer, 
-			PublishEpubApi publishEpubApi, PublishAudioVideoAPI publishToVideoApi, BloomWebSocketServer webSocketServer)
-		{
-			_bookTransferrer = bookTransferrer;
-			_publishEpubApi = publishEpubApi;
-			_publishToVideoApi = publishToVideoApi;
-			_model = model;
-			_model.View = this;
-			_webSocketServer = webSocketServer;
-
-			_reactControl = new ReactControl();
-			_reactControl.JavascriptBundleName = "publishTabPaneBundle";
-			_reactControl.BackColor = Palette.GeneralBackground;
-			_reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            _reactControl = new ReactControl();
+            _reactControl.JavascriptBundleName = "publishTabPaneBundle";
+            _reactControl.BackColor = Palette.GeneralBackground;
+            _reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
             components = new System.ComponentModel.Container();
-			_reactControl.Location = new System.Drawing.Point(0, 0);
-			_reactControl.Name = "_reactControl";
-			_reactControl.Size = new System.Drawing.Size(773, 518);
-			_reactControl.TabIndex = 16;
-			Controls.Add(_reactControl);
-			_reactControl.SetLocalizationChangedEvent(localizationChangedEvent); 
-			
-			//NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
-			//off the tab itself changing, either to us or away from us.
-			selectedTabChangedEvent.Subscribe(c =>
-												{
-													if (c.To == this)
-													{
-														Activate();
-													}
-													else if (c.To != this)
-													{
-														Deactivate();
-													}
-												});
+            _reactControl.Location = new System.Drawing.Point(0, 0);
+            _reactControl.Name = "_reactControl";
+            _reactControl.Size = new System.Drawing.Size(773, 518);
+            _reactControl.TabIndex = 16;
+            Controls.Add(_reactControl);
+            _reactControl.SetLocalizationChangedEvent(localizationChangedEvent);
 
-			//TODO: find a way to call this just once, at the right time:
+            //NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
+            //off the tab itself changing, either to us or away from us.
+            selectedTabChangedEvent.Subscribe(c =>
+            {
+                if (c.To == this)
+                {
+                    Activate();
+                }
+                else if (c.To != this)
+                {
+                    Deactivate();
+                }
+            });
 
-			//			DeskAnalytics.Track("Publish");
-		}
+            //TODO: find a way to call this just once, at the right time:
 
-		private void Deactivate()
-		{
-			if (_model.IsMakingPdf)
-				_model.CancelMakingPdf();
-			_publishEpubApi?.AbortMakingEpub();
-			_publishToVideoApi.AbortMakingVideo();
-			// TODO-WV2: Can we clear the cache for WV2? Do we need to?
-			PublishHelper.Cancel();
-			PublishHelper.InPublishTab = false;
-			_webSocketServer.SendEvent("publish", "switchOutOfPublishTab");
-		}
+            //			DeskAnalytics.Track("Publish");
+        }
 
-		private void Activate()
-		{
-			PublishHelper.InPublishTab = true;
-			BloomPubMaker.ControlForInvoke = ParentForm;
-			PublishEpubApi.ControlForInvoke = ParentForm;
-			LibraryPublishApi.Model = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
-			PublishApi.Model = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
-			_webSocketServer.SendEvent("publish", "switchToPublishTab");
-		}
+        private void Deactivate()
+        {
+            if (_model.IsMakingPdf)
+                _model.CancelMakingPdf();
+            _publishEpubApi?.AbortMakingEpub();
+            _publishToVideoApi.AbortMakingVideo();
+            // TODO-WV2: Can we clear the cache for WV2? Do we need to?
+            PublishHelper.Cancel();
+            PublishHelper.InPublishTab = false;
+            _webSocketServer.SendEvent("publish", "switchOutOfPublishTab");
+        }
 
-		public Control TopBarControl => new Control(); 
+        private void Activate()
+        {
+            PublishHelper.InPublishTab = true;
+            BloomPubMaker.ControlForInvoke = ParentForm;
+            PublishEpubApi.ControlForInvoke = ParentForm;
+            LibraryPublishApi.Model = new BloomLibraryPublishModel(
+                _bookTransferrer,
+                _model.BookSelection.CurrentSelection,
+                _model
+            );
+            PublishApi.Model = new BloomLibraryPublishModel(
+                _bookTransferrer,
+                _model.BookSelection.CurrentSelection,
+                _model
+            );
+            _webSocketServer.SendEvent("publish", "switchToPublishTab");
+        }
 
-		public int WidthToReserveForTopBarControl => 0;
-		public void PlaceTopBarControl(){}
+        public Control TopBarControl => new Control();
 
-		public Bitmap ToolStripBackground { get; set; }
+        public int WidthToReserveForTopBarControl => 0;
 
-		// This property is invoked in WorkspaceView as "CurrentTabView.HelpTopicUrl".  Until the
-		// tab view mechanism and overall WorkspaceView is converted to typescript, carrying the
-		// help menu with it, this property needs to stay in C#.
+        public void PlaceTopBarControl() { }
 
-		public string HelpTopicUrl
-		{
-			get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
-		}
-	}
+        public Bitmap ToolStripBackground { get; set; }
+
+        // This property is invoked in WorkspaceView as "CurrentTabView.HelpTopicUrl".  Until the
+        // tab view mechanism and overall WorkspaceView is converted to typescript, carrying the
+        // help menu with it, this property needs to stay in C#.
+
+        public string HelpTopicUrl
+        {
+            get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
+        }
+    }
 }

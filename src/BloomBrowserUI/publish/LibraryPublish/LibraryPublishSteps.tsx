@@ -38,7 +38,7 @@ import {
 import { BloomSplitButton } from "../../react_components/bloomSplitButton";
 import { ErrorBox, WaitBox } from "../../react_components/boxes";
 import {
-    IUploadCollisionDlgProps,
+    IUploadCollisionDlgData,
     showUploadCollisionDialog,
     UploadCollisionDlg
 } from "./uploadCollisionDlg";
@@ -55,6 +55,7 @@ interface IReadonlyBookInfo {
     licenseToken: string;
     licenseRights: string;
     isTemplate: boolean;
+    isTitleOKToPublish: boolean; // This will be false if there is no L1 title, unless we don't need languages.
 }
 
 const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";
@@ -208,31 +209,48 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     }
 
     const [uploadCollisionInfo, setUploadCollisionInfo] = useState<
-        IUploadCollisionDlgProps
+        IUploadCollisionDlgData
     >({
         userEmail: "",
         newTitle: "",
         existingTitle: "",
         existingCreatedDate: "",
         existingUpdatedDate: "",
-        existingBookUrl: ""
+        existingBookUrl: "",
+        count: 0
     });
+
+    const [conflictIndex, setConflictIndex] = useState<number>(0);
 
     const [isUploading, setIsUploading] = useState<boolean>(false);
     function uploadOneBook() {
         setIsUploadComplete(false);
         setIsUploading(true);
-        get("libraryPublish/getUploadCollisionInfo", result => {
+        get(
+            "libraryPublish/getUploadCollisionInfo?index=" + conflictIndex,
+            result => {
+                if (result.data.error) {
+                    // The API already sent an error message
+                    return;
+                }
+                if (result.data.shouldShow) {
+                    setUploadCollisionInfo(result.data);
+                    showUploadCollisionDialog();
+                } else post("libraryPublish/upload");
+            }
+        );
+    }
+
+    const changeConflictIndex = (index: number) => {
+        get("libraryPublish/getUploadCollisionInfo?index=" + index, result => {
             if (result.data.error) {
                 // The API already sent an error message
                 return;
             }
-            if (result.data.shouldShow) {
-                setUploadCollisionInfo(result.data);
-                showUploadCollisionDialog();
-            } else post("libraryPublish/upload");
+            setUploadCollisionInfo(result.data);
+            setConflictIndex(index);
         });
-    }
+    };
 
     const [isCanceling, setIsCanceling] = useState<boolean>(false);
     useSubscribeToWebSocketForEvent(
@@ -251,10 +269,10 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         // or the user canceling. This is because the "result" comes back
         // via a websocket that sets the new result (just below). This approach is needed because otherwise
         // the browser would time out while waiting for the user to finish using the system folder-choosing dialog.
-        post("common/chooseFolder");
+        post("fileIO/chooseFolder");
     }
     useSubscribeToWebSocketForObject<{ success: boolean; path: string }>(
-        "common",
+        "fileIO",
         "chooseFolder-results",
         results => {
             if (results.success) {
@@ -404,6 +422,30 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         ></BloomSplitButton>
     );
 
+    const getTitleBlock = () => {
+        if (isLoading || !bookInfo) {
+            return <React.Fragment />;
+        }
+        if (!bookInfo.isTitleOKToPublish) {
+            return (
+                <MissingInfo
+                    text="Missing Title"
+                    l10nKey={"PublishTab.Upload.Missing.Title"}
+                    onClick={() => post("libraryPublish/goToEditBookCover")}
+                />
+            );
+        }
+        return (
+            <div
+                css={css`
+                    font-weight: bold;
+                `}
+            >
+                {bookInfo?.title}
+            </div>
+        );
+    };
+
     return (
         <React.Fragment>
             <BloomStepper orientation="vertical">
@@ -425,27 +467,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                     font-size: larger;
                                 `}
                             >
-                                {bookInfo?.title ? (
-                                    <div
-                                        css={css`
-                                            font-weight: bold;
-                                        `}
-                                    >
-                                        {bookInfo?.title}
-                                    </div>
-                                ) : (
-                                    <MissingInfo
-                                        text="Missing Title"
-                                        l10nKey={
-                                            "PublishTab.Upload.Missing.Title"
-                                        }
-                                        onClick={() =>
-                                            post(
-                                                "libraryPublish/goToEditBookCover"
-                                            )
-                                        }
-                                    />
-                                )}
+                                {getTitleBlock()}
                                 {bookInfo?.isTemplate ||
                                     (bookInfo?.copyright ? (
                                         <div>{bookInfo?.copyright}</div>
@@ -680,6 +702,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 onCancel={() => {
                     setIsUploading(false);
                 }}
+                conflictIndex={conflictIndex}
+                setConflictIndex={changeConflictIndex}
             />
         </React.Fragment>
     );
@@ -770,7 +794,13 @@ const AgreementCheckbox: React.FunctionComponent<{
     disabled: boolean;
     onChange: (v: boolean) => void;
 }> = props => {
-    const [isChecked, setIsChecked] = useState(props.initiallyChecked);
+    // props.initiallyChecked doesn't always have the right value the first time,
+    // so we can't use it to initialize isChecked without the useEffect machinery.
+    // See BL-13117.
+    const [isChecked, setIsChecked] = useState(false);
+    useEffect(() => {
+        setIsChecked(props.initiallyChecked);
+    }, [props.initiallyChecked]);
     function handleCheckChanged(isChecked: boolean) {
         setIsChecked(isChecked);
         props.onChange(isChecked);

@@ -366,6 +366,28 @@ interface IChangeImageEvent extends IBloomWebSocketEvent {
     license: string;
 }
 
+// this is also called by the StyleEditor
+export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
+    $(container)
+        .find(".bloom-translationGroup")
+        .each(function() {
+            // set our font size so that we can use em units when setting padding of the translation group
+            // If visibility is under the control of the appearance system for this field the child we
+            // want has bloom-contentFirst, otherwise, bloom-content1.
+            // At the time of this writing (5.7) this is only used for cover page titles.
+            let mainChild = $(this)
+                .find(".bloom-contentFirst")
+                .first();
+            if (mainChild.length === 0) {
+                mainChild = $(this)
+                    .find(".bloom-content1")
+                    .first();
+            }
+            const fontSizeOfL1 = mainChild.css("font-size");
+            $(this).css("font-size", fontSizeOfL1);
+        });
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
@@ -477,6 +499,7 @@ export function SetupElements(container: HTMLElement) {
                 $(this).attr("data-text", this.textContent);
             });
         });
+    SetupThingsSensitiveToStyleChanges(container);
 
     $(container)
         .find(".bloom-translationGroup")

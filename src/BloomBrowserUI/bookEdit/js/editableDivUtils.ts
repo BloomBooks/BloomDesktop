@@ -96,7 +96,8 @@ export class EditableDivUtils {
             // whether we end up before or after some <br>s
             if (
                 offset < len ||
-                (offset == len && (i == node.childNodes.length - 1 || !atStart))
+                (offset === len &&
+                    (i === node.childNodes.length - 1 || !atStart))
             ) {
                 if (
                     EditableDivUtils.makeSelectionIn(

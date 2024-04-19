@@ -205,6 +205,9 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     if ($containerDiv.find(kPlaybackOrderContainerSelector).length > 0) {
         return; // Playback order controls are active, deactivate image container stuff.
     }
+    if ($containerDiv.find("button.imageOverlayButton").length > 0) {
+        return; // already have buttons
+    }
     const buttonModifier = GetButtonModifier($containerDiv);
 
     const addButtonHandler = (command: string) => {
@@ -418,7 +421,12 @@ function SetupImageContainer(containerDiv: HTMLElement) {
         .mouseenter(function() {
             addImageEditingButtons(this);
         })
-        .mouseleave(function() {
+        .mouseleave(function(e: JQueryMouseEventObject) {
+            // Page numbers displaying inside the image container must have their
+            // width and height constrained.  That way, hovering over the page number
+            // triggers the mouseleave event, and the image editing buttons are hidden
+            // before the mouse cursor actually leaves the image container, but hovering
+            // above or beside the page number does nothing.  See BL-13098 and BL-13221.
             removeImageEditingButtons(this);
         });
 }

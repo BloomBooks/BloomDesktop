@@ -12,8 +12,5 @@ using SIL.IO;
 
 namespace BloomTests.TeamCollection
 {
-	public class TeamCollectionManagerTests
-	{
-		
-	}
+    public class TeamCollectionManagerTests { }
 }

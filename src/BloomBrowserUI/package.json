@@ -14,6 +14,7 @@
         "// COMMENTS: make the action a space rather than empty string so `yarn run` can list the scripts": " ",
         "test": "karma start --browsers Chrome_allow_autoplay  --single-run",
         "testWatch": "karma start --browsers Chrome_allow_autoplay",
+        "check-that-node-modules-exists-in-content-dir": "cd ../content && node checkForNodeModules.js && cd ../BloomBrowserUI",
         "// 'build': 'does a nice new clean build of the output/browser folder.'": " ",
         "build": "gulp && npm run build:content",
         "build:pug": "gulp pug",
@@ -23,15 +24,16 @@
         "// 'build:l10n': is needed when markdown/html content changes or when testing l10n.": " ",
         "// 'build:l10n': should be run after build.  (build-prod includes this functionality.)": " ",
         "build:l10n": "gulp build-l10n",
-        "build:content": "cd ../content && npm run build",
+        "build:content": "npm run check-that-node-modules-exists-in-content-dir && cd ../content && npm run build",
         "watchCode": "set NODE_ENV=debug&& webpack watch --mode=development --progress ",
         "// You can use yarn link to symlink bloom-player. But also, bloom needs a copy in output/!": " ",
         "// note that ls -l node_modules | grep ^l will tell you what packages you are currently linking to": " ",
         "// note that this wants to be 'watch', but on windows cpx doesn't actually notice changes from a BP build, symlinked by yarn link": " ",
         "bp-to-output": "cpx \"./node_modules/bloom-player/dist/*.*\" ../../output/browser/bloom-player/dist -v --clean",
+        "watchBookLayoutLess": "less-watch-compiler bookLayout ../../output/browser/bookLayout",
         "watchBookEditLess": "less-watch-compiler bookEdit ../../output/browser/bookEdit",
         "watchProblemDialogLess": "less-watch-compiler problemDialog ../../output/browser/problemDialog",
-        "watch": "npm-run-all --parallel watchBookEditLess watchProblemDialogLess watchCode",
+        "watch": "npm-run-all --parallel watchBookEditLess watchBookLayoutLess watchProblemDialogLess watchCode",
         "gitSemiClean": "git clean -X --dry-run --exclude='!node_modules'",
         "gitSemiCleanForReal": "git clean -fX --exclude='!node_modules'",
         "lint": "eslint \"./**/!(*.d).ts{,x}\"",
@@ -59,7 +61,7 @@
         "@mui/styles": "^5.11.7",
         "@nivo/core": "^0.80.0",
         "@nivo/scatterplot": "^0.80.0",
-        "@sillsdev/config-r": "^1.0.0-alpha.4",
+        "@sillsdev/config-r": "^1.0.0-alpha.15",
         "@types/filesize": "^5.0.0",
         "@types/react-transition-group": "^4.4.1",
         "@use-it/event-listener": "^0.1.6",
@@ -183,7 +185,6 @@
         "path": "^0.12.7",
         "postinstall-postinstall": "^2.1.0",
         "prettier": "^1.19.0",
-        "pretty-quick": "^1.10.0",
         "replace-ext": "^2.0.0",
         "run-sequence": "^2.2.1",
         "semver": "^7.3.4",
@@ -199,11 +200,11 @@
         "yarn": "^1.22.19"
     },
     "lint-staged": {
-        "!(*.d).{ts,tsx}": "eslint"
+        "!(*.d).{ts,tsx}": "eslint",
+        "NONO this conflicts with the no-stash thing since it does a write. For now, lets just rely on vscode *.{css,less}": "prettier --write"
     },
     "husky": {
         "hooks": {
-            "pre-commit": "pretty-quick --staged && lint-staged --no-stash && ../../build/check-csharp-files.sh",
             "pre-commit-comments": "// The '--no-stash' option makes linting much faster and is safe since our lint-staged doesn't currently modify any files. If it did modify files, you could still use --no-stash but there are some corner cases where you'd need to manually resolve conflicts."
         }
     },

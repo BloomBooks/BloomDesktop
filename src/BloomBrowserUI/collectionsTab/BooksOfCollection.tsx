@@ -40,6 +40,7 @@ export const BooksOfCollection: React.FunctionComponent<{
     // If true, the collection will be wrapped in a LazyLoad so that most of its rendering
     // isn't done until it is visible on screen.
     lazyLoadCollection?: boolean;
+    lockedToOneDownloadedBook: boolean;
 }> = props => {
     if (!props.collectionId) {
         window.alert("null collectionId");
@@ -73,13 +74,12 @@ export const BooksOfCollection: React.FunctionComponent<{
     );
 
     useEffect(() => {
-        if (books.length > 0)
-        {
+        if (books.length > 0) {
             // once the books variable has been updated with the book-on-blorg statuses,
             // unset the reloadParameter so we don't keep reloading the book-on-blorg statuses
-            setReloadParameter(""); 
+            setReloadParameter("");
         }
-    }, [books])
+    }, [books]);
 
     //const selectedBookInfo = useMonitorBookSelection();
     const collection: ICollection = useApiData(
@@ -161,6 +161,9 @@ export const BooksOfCollection: React.FunctionComponent<{
                                         manager={props.manager}
                                         isSpreadsheetFeatureActive={
                                             props.isSpreadsheetFeatureActive
+                                        }
+                                        lockedToOneDownloadedBook={
+                                            props.lockedToOneDownloadedBook
                                         }
                                     />
                                 </LazyLoad>

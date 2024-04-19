@@ -4,69 +4,76 @@ using SIL.Program;
 
 namespace Bloom.Publish.AccessibilityChecker
 {
-	/// <summary>
-	/// This is a separate window that the AccessibilityApi opens. In contains a web browser
-	/// that loads up some html that then shows some tabs related to ensuring that the epub is accessible.
-	/// </summary>
-	public partial class AccessibilityCheckWindow : Form
-	{
-		private readonly Action _onWindowActivated;
+    /// <summary>
+    /// This is a separate window that the AccessibilityApi opens. In contains a web browser
+    /// that loads up some html that then shows some tabs related to ensuring that the epub is accessible.
+    /// </summary>
+    public partial class AccessibilityCheckWindow : Form
+    {
+        private readonly Action _onWindowActivated;
 
-		private static AccessibilityCheckWindow _sTheOneAccessibilityCheckerWindow;
-		private bool _disposed = false;
+        private static AccessibilityCheckWindow _sTheOneAccessibilityCheckerWindow;
+        private bool _disposed = false;
 
-		public static void StaticShow(Action onWindowActivated)
-		{
-			if (_sTheOneAccessibilityCheckerWindow == null)
-			{
-				_sTheOneAccessibilityCheckerWindow = new AccessibilityCheckWindow(onWindowActivated);
-				_sTheOneAccessibilityCheckerWindow.Show();
-			}
-			else
-			{
-				_sTheOneAccessibilityCheckerWindow.BringToFront();
-			}
-		}
+        public static void StaticShow(Action onWindowActivated)
+        {
+            if (_sTheOneAccessibilityCheckerWindow == null)
+            {
+                _sTheOneAccessibilityCheckerWindow = new AccessibilityCheckWindow(
+                    onWindowActivated
+                );
+                _sTheOneAccessibilityCheckerWindow.Show();
+            }
+            else
+            {
+                _sTheOneAccessibilityCheckerWindow.BringToFront();
+            }
+        }
 
-		public static void StaticClose()
-		{
-			if (_sTheOneAccessibilityCheckerWindow != null)
-			{
-				_sTheOneAccessibilityCheckerWindow.Close();
-				_sTheOneAccessibilityCheckerWindow = null;
-			}
-		}
+        public static void StaticClose()
+        {
+            if (_sTheOneAccessibilityCheckerWindow != null)
+            {
+                _sTheOneAccessibilityCheckerWindow.Close();
+                _sTheOneAccessibilityCheckerWindow = null;
+            }
+        }
 
-		public AccessibilityCheckWindow(Action onWindowActivated)
-		{
-			_onWindowActivated = onWindowActivated;
-			InitializeComponent();
+        public AccessibilityCheckWindow(Action onWindowActivated)
+        {
+            _onWindowActivated = onWindowActivated;
+            InitializeComponent();
 
-			var path = BloomFileLocator.GetBrowserFile(false, "publish", "accessibilityCheck", "accessibilityCheckScreen.html");
-			_browser.Navigate(path.ToLocalhost(),false);
-		}
+            var path = BloomFileLocator.GetBrowserFile(
+                false,
+                "publish",
+                "accessibilityCheck",
+                "accessibilityCheckScreen.html"
+            );
+            _browser.Navigate(path.ToLocalhost(), false);
+        }
 
-		private void AccessibilityCheckWindow_FormClosed(object sender, FormClosedEventArgs e)
-		{
-			_sTheOneAccessibilityCheckerWindow = null;
-		}
+        private void AccessibilityCheckWindow_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            _sTheOneAccessibilityCheckerWindow = null;
+        }
 
-		protected override void Dispose(bool disposing)
-		{
-			if (!_disposed)
-			{
-				if (disposing)
-				{
-					components?.Dispose();
-				}
-				_disposed = true;
-			}
-			base.Dispose(disposing);			
-		}
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    components?.Dispose();
+                }
+                _disposed = true;
+            }
+            base.Dispose(disposing);
+        }
 
-		private void AccessibilityCheckWindow_Activated(object sender, System.EventArgs e)
-		{
-			_onWindowActivated();
-		}
-	}
+        private void AccessibilityCheckWindow_Activated(object sender, System.EventArgs e)
+        {
+            _onWindowActivated();
+        }
+    }
 }

@@ -1,5 +1,12 @@
 doctype html
-include ../../bloom-foundation-mixins.pug
+include ../standard-page-mixins.pug
+
+//- This is an 'override' from bloom-foundation-mixins.pug
+//- that allows us to use its mixins that would otherwise
+//- put in a5portrait
+mixin pageWithJustPageSize
+	.A5Landscape&attributes(attributes)
+		block
 
 //- generates a translationGroup with any classes on the internal div
 mixin field-classOnChild(internalClass)
@@ -31,6 +38,7 @@ html
 			+bookVariable-title('en', 'Wall Calendar')
 			+bookVariable-title('tpi', 'Kalenda')
 			+bookVariable-title('id', 'Kalender')
+		+preview-outsideFrontCover
 		.bloom-page.calendarMonthTop.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#3e049bff-797f-4a17-9c06-064955ae73cc(data-page='required spread-start')
 			.marginBox
 				+image-largePage

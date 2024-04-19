@@ -15,6 +15,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 
 import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
+import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 
 (function($) {
     $.fn.splitPane = function() {
@@ -761,26 +762,55 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             return -1;
         }
         const horizontal = isPaneHorizontal(splitPane);
+        const splitPaneComponent = img.closest(".split-pane-component"); // the element that has the percent
+        const scale = EditableDivUtils.getPageScale();
+
         if (horizontal) {
             const width = splitPane.offsetWidth;
-            let height = isForSquareSplit
+            const height = isForSquareSplit
                 ? width
                 : (width * img.naturalHeight) / img.naturalWidth;
-            if (isForFirstChildPane) {
-                // 3px of margin on top pane in split that we need to leave room for
-                height += 3;
+            // At some point we apparently had 3px of margin on the top pane, possibly something to do
+            // with the splitter control. Somewhere about 5.7 we lost it, so this correction is no longer needed.
+            // I'm leaving it here commented out in case losing that margin was a mistake and we also need
+            // to add it back here. (Also below).
+            // if (isForFirstChildPane) {
+            //     height += 3;
+            // }
+            // This compensates for any padding between the element on which we set the percent
+            // and the image container whose height we are setting.
+            // (Apart from the immediate child, it would also handle margin, but we're not
+            // currently using margin to space things.)
+            // (This assumes padding is set with some absolute unit, not a percentage. If the padding is a percentage,
+            // this won't work quite right, though repeated attempts may improve things. Unfortunately there's no
+            // obvious way even to detect percentage padding, let alone to handle it.)
+            let extraHeight = 0;
+            if (splitPaneComponent) {
+                extraHeight =
+                    (splitPaneComponent.offsetHeight -
+                        imageContainer.offsetHeight) /
+                    scale;
             }
-            return (height * 100) / splitPane.offsetHeight;
+            return ((height + extraHeight) * 100) / splitPane.offsetHeight;
         } else {
             const height = splitPane.offsetHeight;
-            let width = isForSquareSplit
+            const width = isForSquareSplit
                 ? height
                 : (height * img.naturalWidth) / img.naturalHeight;
-            if (isForFirstChildPane) {
-                // 3px of margin on top pane in split that we need to leave room for
-                width += 3;
+            // See comment above in horizontal block.
+            // if (isForFirstChildPane) {
+            //     width += 3;
+            // }
+            // This compensates for any padding between the element on which we set the percent
+            // and the image container whose width we are setting. See more detailed comment on the height version.
+            let extraWidth = 0;
+            if (splitPaneComponent) {
+                extraWidth =
+                    (splitPaneComponent.offsetWidth -
+                        imageContainer.offsetWidth) /
+                    scale;
             }
-            return (width * 100) / splitPane.offsetWidth;
+            return ((width + extraWidth) * 100) / splitPane.offsetWidth;
         }
     }
 

@@ -414,14 +414,62 @@ require("./jquery.mousewheel.js");
         } else {
             // If we make the selection before setting the focus, the selection
             // ends up in the wrong place (BL-2717).
-            if (activeElement && typeof activeElement.focus != "undefined") {
+            if (activeElement && typeof activeElement.focus !== "undefined") {
+                // When the IP is at the start of a paragraph, sometimes there is a side effect of setting focus
+                // that inserts a zero-width space at the beginning of the paragraph. It probably has something
+                // to do with CkEditor bookmarks, but I have not been able to track it down
+                // beyond the fact that it happens exactly during this setfocus() call.
+                // It causes an immediate problem because it makes the offset we've remembered wrong.
+                // We could adjust the focus, but we don't want these extra zwsp's in the text anyway.
+                // And there is no legitimate reason for an extra one to appear between the keydown for
+                // a longpress and a mouse click. So we just remove them.
+                // This is a horrible kludge, but hopefully we can retire it when we retire CkEditor.
+                // Note: I tried setting the focus after restoring the selection, but the selection ends
+                // up in the wrong place and we still sometimes get spurious zwsp's. I don't fully
+                // understand what is happening. I suspect CkEditor has its own idea of where the selection
+                // should be and is moving it when its element gets focus. But I don't know how to stop it.
+                // Similar things happen if I don't set the focus here at all...guessing that focus
+                // automatically returns from the button to the edit box and the guilty focus handler still runs.
+                // Another possible approach, which I have not tried, would be to prevent
+                // the longpress buttons ever getting focus (using preventDefault on mousedown).
+                // The only reason for them to have it would
+                // be for keyboard accessibility, but we already have a way to select the character we
+                // want from the keyboard.
                 activeElement.focus();
-                EditableDivUtils.makeSelectionIn(
-                    activeElement,
-                    storedOffset,
-                    null,
-                    true
-                );
+                // loop until we don't find a spurious zwsp, see comments below
+                for (;;) {
+                    EditableDivUtils.makeSelectionIn(
+                        activeElement,
+                        storedOffset,
+                        -1, // no brs around that we need to skip
+                        // If we're at a paragraph boundary, we are at the end of the previous paragraph.
+                        // (We just inserted a character, so we can't possibly be at the start of a paragraph.
+                        // It's possible that we're at a boundary between two text nodes, especially since
+                        // longpress likes to insert the text as an extra node, but in that case it doesn't
+                        // matter which one we make the selection in.)
+                        false
+                    );
+                    // Check for a problem where something, probably CkEditor, inserts a zero-width space before the
+                    // special character we just inserted.
+                    const selection = window.getSelection();
+                    const range = selection.getRangeAt(0).cloneRange();
+                    range.setStart(range.startContainer, range.startOffset - 1);
+                    // Is the character before the caret a zero-width space?
+                    if (range.toString() !== "\u200B") {
+                        // It's not; we no longer have the problem (or never did)
+                        break;
+                    }
+                    // We definitely don't expect that the character we just inserted is a zwsp.
+                    // If that's what we find right before the restored selection, we remove it.
+                    // (This will have to be fixed some other way if we ever want to support inserting
+                    // zwsp's using longpress. Hopefully by then we've replaced CkEditor and can retire this fix.)
+                    range.deleteContents();
+                    // The caret was left BEFORE the character we intended to insert by the makeSelectionIn: call
+                    // above, because of the unexpected zwsp. So loop around and make the selection again.
+                    // I'm not sure it ever happens that we find yet another zwsp, though I think it happened
+                    // once. In any case, we don't want one where we inserted something else, so if we do
+                    // find more, we'll keep deleting them.
+                }
             }
         }
     }
