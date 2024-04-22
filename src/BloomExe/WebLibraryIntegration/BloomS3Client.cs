@@ -500,11 +500,12 @@ namespace Bloom.WebLibraryIntegration
                         FilePath = Path.Combine(tempDestPath, filepath)
                     };
                     transferUtility.Download(req);
-                    // This implements the cancellation as well as guarding against sending progress
-                    // updates to a disposed progress dialog.
-                    if (downloadProgress.CancellationPending())
-                        return null;
                     if (downloadProgress != null)
+                    {
+                        // This implements the cancellation as well as guarding against sending progress
+                        // updates to a disposed progress dialog.
+                        if (downloadProgress.CancellationPending())
+                            return null;
                         downloadProgress.Invoke(
                             (Action)(
                                 () =>
@@ -514,6 +515,7 @@ namespace Bloom.WebLibraryIntegration
                                 }
                             )
                         );
+                    }
                 }
             }
 
