@@ -34,6 +34,7 @@ namespace Bloom.Collection
         private string _brand;
         private bool _settingsProtectionRequirePassword;
         private bool _settingsProtectionNormallyHidden;
+        private bool _currentCollectionIsTeamCollection;
 
         // Pending values edited through the CollectionSettingsApi
         private string _pendingBookshelf;
@@ -102,6 +103,8 @@ namespace Bloom.Collection
             PendingXmatter = _collectionSettings.XMatterPackName;
             PendingAdministrators = _collectionSettings.AdministratorString;
             CollectionSettingsApi.DialogBeingEdited = this;
+            _currentCollectionIsTeamCollection = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections) &&
+                tcManager.CurrentCollectionEvenIfDisconnected != null;
 
             _showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kExperimentalSourceBooks
@@ -377,19 +380,22 @@ namespace Bloom.Collection
             Logger.WriteMinorEvent("Settings Dialog OK Clicked");
 
             // Validate before we save the settings
-            if (!CollectionSettings.ValidateAdministrators(PendingAdministrators))
+            if (_currentCollectionIsTeamCollection)
             {
-                // The user has entered invalid email address(es)
-                BloomMessageBox.ShowWarning(
-                    LocalizationManager.GetString(
-                        "TeamCollection.InvalidAdminEmails",
-                        "Administrator Emails must be a list of one or more valid emails separated by commas and/or spaces"
-                    )
-                );
-                return;
-            }
+                if (!CollectionSettings.ValidateAdministrators(PendingAdministrators))
+                {
+                    // The user has entered invalid email address(es)
+                    BloomMessageBox.ShowWarning(
+                        LocalizationManager.GetString(
+                            "TeamCollection.InvalidAdminEmails",
+                            "Administrator Emails must be a list of one or more valid emails separated by commas and/or spaces"
+                        )
+                    );
+                    return;
+                }
 
-            _collectionSettings.ModifyAdministrators(PendingAdministrators);
+                _collectionSettings.ModifyAdministrators(PendingAdministrators);
+            }
 
             CollectionSettingsApi.DialogBeingEdited = null;
 
