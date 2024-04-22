@@ -1886,7 +1886,7 @@ namespace Bloom.Edit
             else // css, png, svg, js, etc.
             {
                 CurrentBook.Storage.UpdateSupportFiles();
-                if (!_view.IsDisposed)
+                if (!_view.IsDisposed && _view.IsHandleCreated)
                 {
                     _view.Invoke(
                         (MethodInvoker)
