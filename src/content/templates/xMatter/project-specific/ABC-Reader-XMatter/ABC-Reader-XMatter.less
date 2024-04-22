@@ -77,6 +77,7 @@ div.bloomPlayer-page {
                 // makes reader template styles unchangeable.
                 .Title-On-Cover-style[data-book="bookTitle"] {
                     font-size: 26pt;
+                    line-height: 1.1;
                 }
             }
         }
@@ -87,10 +88,6 @@ div.bloomPlayer-page {
 
         [data-book="cover-branding-bottom-html"] {
             margin-top: 1em;
-
-            img {
-                margin-right: 0;
-            }
         }
 
         .descriptionAndTopicRow {
@@ -103,6 +100,7 @@ div.bloomPlayer-page {
                 min-width: 50%;
                 text-align: start;
                 font-size: 14pt;
+                line-height: 1.1;
             }
         }
 
@@ -257,6 +255,14 @@ div.bloomPlayer-page {
     text-align: center;
     font-weight: bold;
     font-size: 14pt;
+    // Tight line spacing closely approximates the effective line height in Bloom 5.6.
+    line-height: 1.07;
+}
+.Device16x9Portrait .originalAcknowledgments .bloom-editable p {
+    // Tighten up the spacing a bit to allow for slightly longer and possibly fewer lines
+    // This allows the cover of https://bloomlibrary.org/book/7GoLbrW02S to look close to
+    // the same in 5.7 as 5.6.
+    word-spacing: -0.03ch;
 }
 
 /* -----------------------------------------------------------------------------
