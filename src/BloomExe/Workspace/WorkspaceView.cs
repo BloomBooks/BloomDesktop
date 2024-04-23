@@ -402,7 +402,7 @@ namespace Bloom.Workspace
                     "Administrator Emails:"
                 )
                 + " "
-                + collectionSettings.AdministratorString.Replace(",", ", ");
+                + collectionSettings.AdministratorsDisplayString;
         }
 
         private void HandleBookStatusChange(BookStatusChangeEventArgs args)
