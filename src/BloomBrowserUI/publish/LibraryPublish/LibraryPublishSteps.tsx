@@ -55,7 +55,7 @@ interface IReadonlyBookInfo {
     licenseToken: string;
     licenseRights: string;
     isTemplate: boolean;
-    isTitleOKToPublish: boolean; // This will be false if there is no L1 title, unless we don't need languages.
+    isTitleOKToPublish: boolean; // This will be false if there is no L1 title.
 }
 
 const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";

@@ -257,7 +257,7 @@ namespace Bloom.Publish.BloomLibrary
             return bookList.ToArray();
         }
 
-        internal bool IsTitleOKToPublish => OkToUploadWithNoLanguages || Book.HasL1Title();
+        internal bool IsTitleOKToPublish => Book.HasL1Title();  // Even picture books need a title (and templates have a title).
 
         /// <summary>
         /// The model alone cannot determine whether a book is OK to upload, because the language requirements
