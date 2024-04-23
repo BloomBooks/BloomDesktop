@@ -206,6 +206,18 @@
             <source xml:lang="en">Administrator Emails must be a list of one or more valid emails separated by commas and/or spaces</source>
             <note>ID: TeamCollection.InvalidAdminEmails</note>
           </trans-unit>
+          <trans-unit id="Common.Preparing" translate="no">
+            <source xml:lang="en">Preparing...</source>
+            <note>Common.Preparing</note>
+          </trans-unit>
+          <trans-unit id="Common.Finishing" translate="no">
+            <source xml:lang="en">Finishing...</source>
+            <note>Common.Finishing</note>
+          </trans-unit>
+          <trans-unit id="Common.Finished" translate="no">
+            <source xml:lang="en">Finished</source>
+            <note>Common.Finished</note>
+          </trans-unit>
         </body>
     </file>
 </xliff>
