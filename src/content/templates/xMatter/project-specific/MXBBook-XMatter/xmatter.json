@@ -1,3 +1,4 @@
 {
-    "legacyThemeCanBeUsed": false
+    "legacyThemeCanBeUsed": false,
+    "harvesterMayConvertToDefaultTheme": true
 }

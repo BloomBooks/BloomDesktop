@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -16,7 +15,6 @@ using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
 using Bloom.ImageProcessing;
-using Bloom.MiscUI;
 using Bloom.Publish;
 using Bloom.ToPalaso;
 using Bloom.Utils;
@@ -27,7 +25,6 @@ using Newtonsoft.Json;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
-using SIL.Linq;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
@@ -85,6 +82,8 @@ namespace Bloom.Book
         ExpandoObject BrandingAppearanceSettings { get; }
 
         bool LegacyThemeCanBeUsed { get; }
+
+        bool HarvesterMayConvertToDefaultTheme { get; }
 
         BookInfo BookInfo { get; set; }
         string NormalBaseForRelativepaths { get; }
@@ -2608,6 +2607,14 @@ namespace Bloom.Book
                 .GetSettingsOrNull(XMatterHelper.PathToXMatterSettings)
                 ?.LegacyThemeCanBeUsed ?? true;
 
+        // Typically, harvester will not change the theme of a book so as not to potentially break things.
+        // But for certain cases, such as books which cannot use legacy but are uploaded before the appearance
+        // system, we have determined it is better to harvest them as default than refuse to harvest them at all.
+        public bool HarvesterMayConvertToDefaultTheme =>
+            XMatterSettings
+                .GetSettingsOrNull(XMatterHelper.PathToXMatterSettings)
+                ?.HarvesterMayConvertToDefaultTheme ?? false;
+
         public ExpandoObject BrandingAppearanceSettings =>
             Api.BrandingSettings
                 .GetSettingsOrNull(CollectionSettings.BrandingProjectKey)
@@ -3677,7 +3684,11 @@ namespace Bloom.Book
             if (GetMaintenanceLevel() >= 4)
                 return;
 
-            if (Program.RunningHarvesterMode && !LegacyThemeCanBeUsed)
+            if (
+                Program.RunningHarvesterMode
+                && !LegacyThemeCanBeUsed
+                && !HarvesterMayConvertToDefaultTheme
+            )
             {
                 throw new CannotHarvestException(
                     "This book cannot currently be harvested, since it is not migrated to the appearance system and cannot use legacy theme."
