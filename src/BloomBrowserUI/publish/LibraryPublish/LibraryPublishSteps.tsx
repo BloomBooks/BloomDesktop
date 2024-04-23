@@ -168,7 +168,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
 
     function isReadyForAgreements(): boolean {
         return (
-            !!bookInfo?.title && (!!bookInfo?.copyright || bookInfo?.isTemplate)
+            !!bookInfo?.isTitleOKToPublish &&
+            (!!bookInfo?.copyright || bookInfo?.isTemplate)
         );
     }
     const [agreedPreviously, setAgreedPreviously] = useState<boolean>(false);
