@@ -101,10 +101,11 @@ namespace Bloom.Collection
                 : "";
             PendingNumberingStyle = _collectionSettings.PageNumberStyle;
             PendingXmatter = _collectionSettings.XMatterPackName;
-            PendingAdministrators = _collectionSettings.AdministratorString;
+            PendingAdministrators = _collectionSettings.AdministratorsDisplayString;
             CollectionSettingsApi.DialogBeingEdited = this;
-            _currentCollectionIsTeamCollection = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections) &&
-                tcManager.CurrentCollectionEvenIfDisconnected != null;
+            _currentCollectionIsTeamCollection =
+                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
+                && tcManager.CurrentCollectionEvenIfDisconnected != null;
 
             _showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kExperimentalSourceBooks
@@ -388,7 +389,7 @@ namespace Bloom.Collection
                     BloomMessageBox.ShowWarning(
                         LocalizationManager.GetString(
                             "TeamCollection.InvalidAdminEmails",
-                            "Administrator Emails must be a list of one or more valid emails separated by commas and/or spaces"
+                            "Please enter one or more valid administrator email addresses, separated by commas or spaces."
                         )
                     );
                     return;

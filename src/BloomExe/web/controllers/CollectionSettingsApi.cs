@@ -421,7 +421,7 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        request.ReplyWithText(_collectionSettings.AdministratorString);
+                        request.ReplyWithText(_collectionSettings.AdministratorsDisplayString);
                     }
                     else if (request.HttpMethod == HttpMethods.Post)
                     {

@@ -203,7 +203,7 @@
             <note>ID: TeamCollection.AdministratorEmails</note>
           </trans-unit>
           <trans-unit id="TeamCollection.InvalidAdminEmails" translate="no">
-            <source xml:lang="en">Administrator Emails must be a list of one or more valid emails separated by commas and/or spaces</source>
+            <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
             <note>ID: TeamCollection.InvalidAdminEmails</note>
           </trans-unit>
           <trans-unit id="Common.Preparing" translate="no">

@@ -47,8 +47,8 @@ namespace Bloom.Collection
         // Email addresses of users authorized to change collection settings if this is a TeamCollection.
         public string[] Administrators;
 
-        public string AdministratorString =>
-            Administrators == null ? "" : string.Join(",", Administrators);
+        public string AdministratorsDisplayString =>
+            Administrators == null ? "" : string.Join(", ", Administrators);
 
         public WritingSystem SignLanguage;
 
@@ -304,7 +304,7 @@ namespace Bloom.Collection
             );
             xml.Add(new XElement("BooksOnWebGoal", BooksOnWebGoal));
             if (Administrators != null && Administrators.Length > 0)
-                xml.Add(new XElement("Administrators", AdministratorString));
+                xml.Add(new XElement("Administrators", string.Join(",", Administrators)));
             if (!string.IsNullOrEmpty(DefaultBookshelf))
             {
                 xml.Add(new XElement("DefaultBookTags", "bookshelf:" + DefaultBookshelf));
