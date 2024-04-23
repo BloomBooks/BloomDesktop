@@ -1170,7 +1170,7 @@
         <source xml:lang="en">Downloading book</source>
         <note>ID: Download.DownloadingDialogTitle</note>
       </trans-unit>
-      <trans-unit id="Download.FromBloomLibrary" translate="no">
+      <trans-unit id="Download.FromBloomLibrary">
         <source xml:lang="en">From Bloom Library</source>
         <note>ID: Download.FromBloomLibrary</note>
         <note>Will be followed by hyphen, space, and (possibly partial) book title and used as a folder name for a collection containing that one book. Don't include illegal path characters like colon.</note>
@@ -1602,12 +1602,12 @@
         <source xml:lang="en">New style</source>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Overlay" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.FormatDialog.Overlay" sil:dynamic="true">
         <source xml:lang="en">Overlay</source>
         <note>ID: EditTab.FormatDialog.Overlay</note>
         <note>Heading of a tab in the format dialog which has special formatting controls for overlays</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true">
         <source xml:lang="en">Padding: space between the text and its border</source>
         <note>ID: EditTab.FormatDialog.Padding</note>
       </trans-unit>
@@ -1639,7 +1639,7 @@
         <source xml:lang="en">Text Color</source>
         <note>ID: EditTab.FormatDialog.TextColor</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.VisitEachPage" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.FormatDialog.VisitEachPage" sil:dynamic="true">
         <source xml:lang="en">After making changes to a style, please visit each page that uses it. This allows Bloom to fully apply your changes.</source>
         <note>ID: EditTab.FormatDialog.VisitEachPage</note>
       </trans-unit>
@@ -4639,20 +4639,20 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
         <note>This is the header for the book that is in bloomlibrary.org already.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeBranding" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeBranding">
         <source xml:lang="en">The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
         <note>ID: PublishTab.UploadCollisionDialog.ChangeBranding</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader">
         <source xml:lang="en">Change the official uploader to {0}. (Bloom Library will hide part of your email address)</source>
         <note>ID: PublishTab.UploadCollisionDialog.ChangeUploader</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.FirstUploadedOn" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.FirstUploadedOn">
         <source xml:lang="en">Originally uploaded {0}</source>
         <note>ID: PublishTab.UploadCollisionDialog.FirstUploadedOn</note>
         <note>Leave {} in the translation, it is a placeholder for a date</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.HaveMany" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.HaveMany">
         <source xml:lang="en">BloomLibrary.org already has {0} books that have the same ID as this one.</source>
         <note>ID: PublishTab.UploadCollisionDialog.HaveMany</note>
         <note>{0} is the number of additional languages the book has that we don't have room to show</note>
@@ -4663,22 +4663,22 @@ Do you want to go ahead?</note>
         <note>This is the dialog subtitle. The {0} will be replaced with the uploader's email address.</note>
         <note>Obsolete as of Bloom 5.7 (replaced by similar PublishTab.UploadCollisionDialog.HaveOne2)</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne2" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne2">
         <source xml:lang="en">BloomLibrary.org already has a book with this ID.</source>
         <note>ID: PublishTab.UploadCollisionDialog.HaveOne2</note>
         <note>This is the dialog subtitle. Slightly modified from previous PublishTab.UploadCollisionDialog.HaveOne.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.LastUploadedOn" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.LastUploadedOn">
         <source xml:lang="en">Last updated {0}</source>
         <note>ID: PublishTab.UploadCollisionDialog.LastUploadedOn</note>
         <note>Leave {} in the translation, it is a placeholder for a date</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.MoreLanguages" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.MoreLanguages">
         <source xml:lang="en">{0} more</source>
         <note>ID: PublishTab.UploadCollisionDialog.MoreLanguages</note>
         <note>This is the dialog subtitle.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.CancelUpload"  translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.CancelUpload" >
         <source xml:lang="en">Yes, these are the same book -- Cancel upload for now</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.CancelUpload</note>
         <note>This is the label on a radio button.</note>
@@ -4694,7 +4694,7 @@ Do you want to go ahead?</note>
         <note>This is explanatory commentary on a radio button.</note>
         <note>Obsolete as of Bloom 5.7 (replaced by similar PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2)</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2">
         <source xml:lang="en">Bloom will fix the ID of your book and upload it as a new book. The old book on Bloom Library will stay the same.</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2</note>
         <note>This is explanatory commentary on a radio button. Slightly modified from previous PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
@@ -4705,7 +4705,7 @@ Do you want to go ahead?</note>
         <note>This is the label on a radio button.</note>
         <note>Obsolete as of Bloom 5.7 (replaced by similar PublishTab.UploadCollisionDialog.Radio.SameBook2)</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2"  translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2" >
         <source xml:lang="en">Yes, I want to update this book</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook2</note>
         <note>This is the label on a radio button. Slightly modified from previous PublishTab.UploadCollisionDialog.Radio.SameBook.</note>
@@ -4716,13 +4716,13 @@ Do you want to go ahead?</note>
         <note>This is explanatory commentary on a radio button. Don't translate the website reference in brackets ([bloomlibrary.org]). It will be replaced by a link to bloomlibrary.org.</note>
         <note>Obsolete as of Bloom 5.7 (replaced by similar PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary)</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary">
         <source xml:lang="en">Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary</note>
         <note>This is explanatory commentary on a radio button. Don't translate the website reference in brackets ([bloomlibrary.org]). It will be replaced by a link to bloomlibrary.org.</note>
         <note>Slightly modified from previous PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBookCancel.Commentary" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBookCancel.Commentary">
         <source xml:lang="en">If your organization has an Enterprise Subscription, you may ask [librarian@bloomlibrary.org] to connect your account to your organization's bookshelves. Then you will be able to update books on those bookshelves.
         </source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBookCancel.Commentary</note>
@@ -4733,16 +4733,16 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
         <note>This is the dialog title</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.SameBookNotMine" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.SameBookNotMine">
         <source xml:lang="en">Is this an update of an existing book?</source>
         <note>ID: PublishTab.UploadCollisionDialog.SameBookNotMine</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.UploadedBy" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.UploadedBy">
         <source xml:lang="en">Uploaded by {0}</source>
         <note>ID: PublishTab.UploadCollisionDialog.UploadedBy</note>
         <note>{0} is the email of the person who uploaded the book</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.YouHavePermissionToModify" translate="no">
+      <trans-unit id="PublishTab.UploadCollisionDialog.YouHavePermissionToModify">
         <source xml:lang="en">You have permission to modify this book</source>
         <note>ID: PublishTab.UploadCollisionDialog.YouHavePermissionToModify</note>
       </trans-unit>
@@ -5239,7 +5239,7 @@ Do you want to go ahead?</note>
         <note>ID: ReportProblemDialog.WhatDoing</note>
         <note>This is the label for the text field where the user enters what they were doing at the time of the problem.</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.SearchOnline" translate="no">
+      <trans-unit id="ReportProblemDialog.SearchOnline">
         <source xml:lang="en">Search online</source>
         <note>ID: ReportProblemDialog.SearchOnline</note>
       </trans-unit>
@@ -5279,7 +5279,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.DownloadForEdit" sil:dynamic="true" translate="no">
+      <trans-unit id="Settings.Enterprise.DownloadForEdit" sil:dynamic="true">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same Bloom Enterprise branding as when it was last uploaded.</source>
         <note>ID: Settings.Enterprise.DownloadForEdit</note>
       </trans-unit>
@@ -5386,7 +5386,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.</source>
         <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.CheckoutRequired" sil:dynamic="true" translate="no">
+      <trans-unit id="TeamCollection.CheckoutRequired" sil:dynamic="true">
         <source xml:lang="en">CheckoutRequired</source>
         <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
@@ -5482,7 +5482,7 @@ Do you want to go ahead?</note>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.CheckoutRequiredExplanation" sil:dynamic="true" translate="no">
+      <trans-unit id="TeamCollection.CheckoutRequiredExplanation" sil:dynamic="true">
         <source xml:lang="en">Please check out this book from the Team Collection before publishing it.</source>
         <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
