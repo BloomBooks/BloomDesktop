@@ -242,6 +242,7 @@ namespace Bloom.WebLibraryIntegration
             };
             request.AddJsonBody(obj);
 
+            progress.WriteStatus(LocalizationManager.GetString("Common.Preparing", "Preparing..."));
             var result = CallLongRunningAction(
                 request,
                 progress,
@@ -306,11 +307,13 @@ namespace Bloom.WebLibraryIntegration
                 }
             );
 
+            progress.WriteStatus(LocalizationManager.GetString("Common.Finishing", "Finishing..."));
             CallLongRunningAction(
                 request,
                 progress,
                 messageToShowUserOnFailure: "Unable to finalize book upload on the server."
             );
+            progress.WriteStatus(LocalizationManager.GetString("Common.Finished", "Finished"));
         }
 
         protected RestClient AzureRestClient
