@@ -16,6 +16,7 @@ import { BloomSwitch } from "../../../react_components/BloomSwitch";
 import { RecordingMode } from "./audioRecording";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { LocalizedString } from "../../../react_components/l10nComponents";
+import { useL10n } from "../../../react_components/l10nHooks";
 
 export const TalkingBookAdvancedSection: React.FunctionComponent<{
     hasAudio: boolean;
@@ -54,6 +55,12 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
         placement: "top-start" as TooltipProps["placement"]
     };
 
+    // Originally, this string was just the first part without the final sentence. When we added the final sentence,
+    // we decided among the various unpleasant options that we would just add a new l10n string. 
+    //Some day we may have to revisit if a translator says this is unfeasible for a particular language.
+    const insertSegmentMarkerTooltipText = useL10n(`Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`, 
+        "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip") + " " + useL10n(`Bloom will hide these when you publish.`, "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition");
+
     return (
         <ThemeProvider theme={toolboxTheme}>
             <TriangleCollapse
@@ -63,10 +70,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                 `}
             >
                 <BloomTooltip
-                    tip={{
-                        l10nKey:
-                            "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip"
-                    }}
+                    tip={insertSegmentMarkerTooltipText}
                     showDisabled={!props.hasRecordableDivs}
                     tipWhenDisabled={{
                         l10nKey:
