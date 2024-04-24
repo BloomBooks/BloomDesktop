@@ -68,6 +68,11 @@
         <source xml:lang="en">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition" sil:dynamic="true">
+        <source xml:lang="en">Bloom will hide these when you publish.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
+        <note>This will be appended to the end of EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip. "these" refers to the "|" characters that mark audio segments, described in EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true">
         <source xml:lang="en">First, put the cursor in a box which has something to record.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip</note>
