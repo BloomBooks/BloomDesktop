@@ -257,7 +257,7 @@ namespace Bloom.Publish.BloomLibrary
             return bookList.ToArray();
         }
 
-        internal bool IsTitleOKToPublish => Book.HasL1Title();  // Even picture books need a title (and templates have a title).
+        internal bool IsTitleOKToPublish => Book.HasL1Title(); // Even picture books need a title (and templates have a title).
 
         /// <summary>
         /// The model alone cannot determine whether a book is OK to upload, because the language requirements
@@ -430,7 +430,13 @@ namespace Bloom.Publish.BloomLibrary
         public static void InitializeLanguages(BookInstance book)
         {
             var allLanguages = book.AllPublishableLanguages(
-                includeLangsOccurringOnlyInXmatter: true
+                // True up to 5.6. Things are a bit tricky if xmatter contains L2 and possibly L3 data.
+                // We always include that xmatter data if it is needed for the book to be complete.
+                // But if nothing in the book content is in those languages, we don't list them as
+                // book languages, either in Blorg or in Bloom Player. To be consistent, we don't
+                // even want to have check boxes for them (they would not have any effect, since there
+                // is nothing in the book in those languages that is optional to include).
+                includeLangsOccurringOnlyInXmatter: false
             );
 
             var bookInfo = book.BookInfo;
