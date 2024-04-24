@@ -103,9 +103,12 @@ namespace Bloom.Collection
             PendingXmatter = _collectionSettings.XMatterPackName;
             PendingAdministrators = _collectionSettings.AdministratorsDisplayString;
             CollectionSettingsApi.DialogBeingEdited = this;
+            // Currently, ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
+            // can be false when we're in a team collection, as the user can open a preexisting TC
+            // (and then access the TC tab in Collection Settings) without checking/enabling
+            // Team Collections under Experimental Features
             _currentCollectionIsTeamCollection =
-                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
-                && tcManager.CurrentCollectionEvenIfDisconnected != null;
+                tcManager.CurrentCollectionEvenIfDisconnected != null;
 
             _showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kExperimentalSourceBooks
