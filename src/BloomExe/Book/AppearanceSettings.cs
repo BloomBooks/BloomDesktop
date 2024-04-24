@@ -99,7 +99,7 @@ public class AppearanceSettings
     // It can also be set when WriteToFolder() updates the appearance files to be consistent with the current settings.
     // This only gets called if Bloom is allowed to make changes to the folder, so it remains false
     // if we are loading a legacy book in a folder we can't write.
-    internal bool _areSettingsConsistentWithFiles;  // internal for test access
+    internal bool _areSettingsConsistentWithFiles; // internal for test access
 
     public bool CssFilesChecked { get; private set; }
 
@@ -356,7 +356,10 @@ public class AppearanceSettings
     /// Currently we also pass Css files from branding and xmatter, but we will report a problem if one of them isn't compatible.
     /// When we get more confidence that we have migrated all the brandings and xmatters, we can stop passing them in.
     /// </summary>
-    public bool CheckCssFilesForCompatibility(Tuple<string, string>[] cssFilesToCheck, bool legacyThemeCanBeUsed)
+    public bool CheckCssFilesForCompatibility(
+        Tuple<string, string>[] cssFilesToCheck,
+        bool legacyThemeCanBeUsed
+    )
     {
         var result = false;
         ChangeThemeIfCurrentOneNotAllowed(legacyThemeCanBeUsed);
@@ -805,6 +808,14 @@ public class AppearanceSettings
         {
             Properties[property.Key] = property.Value;
         }
+    }
+
+    /// <summary>
+    /// For unit tests
+    /// </summary>
+    internal void SetConsistentWithFiles()
+    {
+        _areSettingsConsistentWithFiles = true;
     }
 
     /// <summary>
