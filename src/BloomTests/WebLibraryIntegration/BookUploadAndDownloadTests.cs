@@ -191,7 +191,7 @@ namespace BloomTests.WebLibraryIntegration
                 StringSplitOptions.RemoveEmptyEntries
             );
 
-            var expectedFileCount = fileCount;
+            var expectedFileCount = fileCount + 3; // "Preparing...", "Finishing...", and "Finished"
 #if DEBUG
             ++expectedFileCount; // and if in debug mode, then plus one for S3 key message
 #endif
