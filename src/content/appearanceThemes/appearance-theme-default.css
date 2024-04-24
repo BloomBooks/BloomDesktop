@@ -156,19 +156,22 @@
     --page-margin: 0mm;
 }
 
-.Device16x9Portrait,
-.Device16x9Landscape {
+.bloom-page[class*="Device"] {
     --page-margin: 10px;
+}
+
+.bloom-page[class*="Device"],
+.bloomPlayer-page .bloom-page {
     /* Deliberately set both of these, which combines with a special device rule
-     * in basepage.less which sets both left and right margin to auto, and we get
+     * in basePage.less which sets both left and right margin to auto, and we get
      * centered as the default for device pages. (To override this, you need to
      * set the margin you don't want to something like "deliberately-invalid".)*/
     --pageNumber-right-margin: 0;
     --pageNumber-always-left-margin: 0;
 }
 
-.Device16x9Landscape.numberedPage,
-.Device16x9Portrait.numberedPage {
+.numberedPage[class*="Device"]
+{
     /* These page sizes have small margins, so we need extra height on numbered ones.
     (Note that this disappears if page numbers are turned off, because --pageNumber-show-multiplicand is 0.) */
     --pageNumber-extra-height: 8mm !important;
