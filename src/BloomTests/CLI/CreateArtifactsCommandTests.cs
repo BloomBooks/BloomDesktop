@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Bloom;
 using Bloom.Book;
 using Bloom.CLI;
@@ -14,6 +11,13 @@ namespace BloomTests.CLI
     [TestFixture]
     public class CreateArtifactsCommandTests
     {
+        [TearDown]
+        public void TearDown()
+        {
+            // Without this, subsequent tests will fail because they think the harvester is still running.
+            Program.RunningHarvesterMode = false;
+        }
+
         [Test]
         public void CreateArtifactsExitCode_GetErrorsFromExitCode_ExitCode0_ReturnsSuccess()
         {
@@ -97,12 +101,92 @@ namespace BloomTests.CLI
             Assert.That(errors.Contains("Unknown"), Is.True);
         }
 
+        // Validate that if an xmatter is not allowed to use legacy theme, we can still successfully convert
+        // to default theme if that is allowed.
+        [Test]
+        public void CreateArtifacts_LegacyBookWithInvalidXmatter_HarvesterAllowedToConvert_ConvertsToDefaultTheme()
+        {
+            using (
+                var testFolder = new TemporaryFolder(
+                    "CreateArtifacts_LegacyBookWithInvalidXmatter_HarvesterAllowedToConvert_ConvertsToDefaultTheme"
+                )
+            )
+            {
+                var collectionFolderPath = testFolder.Combine("collection");
+
+                var bookFolderPath = Path.Combine(collectionFolderPath, "book");
+                System.IO.Directory.CreateDirectory(bookFolderPath);
+                var collectionFilePath = Path.Combine(
+                    collectionFolderPath,
+                    "collection.bloomCollection"
+                );
+                var settings = new CollectionSettings(collectionFilePath);
+                settings.XMatterPackName = "ABC-Reader";
+                settings.Save();
+                var metaData = new BookMetaData();
+                metaData.WriteToFolder(bookFolderPath);
+                var bookPath = System.IO.Path.Combine(bookFolderPath, "book.htm");
+                System.IO.File.WriteAllText(
+                    bookPath,
+                    @"<html>
+                    <body>
+						<div class='bloom-page'>
+							<div class='marginBox'>
+								<div class='bloom-translationGroup normal-style'>
+									<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='en'>
+									</div>
+								</div>
+							</div>
+						</div>
+					</body>
+				</html>"
+                );
+                System.IO.File.WriteAllText(
+                    System.IO.Path.Combine(bookFolderPath, "book.xmatter"),
+                    "invalid"
+                );
+                var result = CreateArtifactsCommand.HandleInternal(
+                    new CreateArtifactsParameters()
+                    {
+                        BookPath = bookFolderPath,
+                        CollectionPath = collectionFilePath,
+                        BloomDigitalOutputPath = Path.Combine(testFolder.FolderPath, "output")
+                    }
+                );
+
+                Assert.That(result, Is.EqualTo(CreateArtifactsExitCode.Success));
+
+                var appearanceJson = System.IO.File.ReadAllText(
+                    System.IO.Path.Combine(testFolder.FolderPath, "output", "appearance.json")
+                );
+                Assert.That(appearanceJson, Does.Contain("\"cssThemeName\": \"default\""));
+
+                Assert.IsTrue(
+                    SIL.IO.RobustFile.Exists(
+                        Path.Combine(testFolder.FolderPath, "output", "basePage.css")
+                    )
+                );
+                Assert.IsFalse(
+                    SIL.IO.RobustFile.Exists(
+                        Path.Combine(testFolder.FolderPath, "output", "basePage-legacy-5-6.css")
+                    )
+                );
+            }
+        }
+
         // The idea here is to make the simplest possible book that will get far enough into the
         // CreateArtifactsCommand code to attempt to migrate a book for publication which can't be
-        // legacy, because the ABC Xmatter does not support legacy. We want to validate the exception.
+        // legacy, because the Xmatter does not support legacy (and also does not allow conversion to Default).
+        // We want to validate the exception.
+        //
+        // Note, as of Apr 2024, there are no user xmatters which both don't support legacy and don't support conversion to default.
+        //
         // Of course, it would also be nice to have some tests where artifact creation succeeds, but that's
         // too big a job for today.
-        [Test, Ignore("just temporary while I figure out how to fix this test")]
+        [Ignore(
+            "By Hand until I can figure out how to make this and the previous test both run in the same run without stomping on each other"
+        )]
+        [Test]
         public void CreateArtifacts_LegacyBookWithInvalidXmatter_ReportsLegacyBookCannotHarvest()
         {
             using (
@@ -120,7 +204,7 @@ namespace BloomTests.CLI
                     "collection.bloomCollection"
                 );
                 var settings = new CollectionSettings(collectionFilePath);
-                settings.XMatterPackName = "ABC-Reader";
+                settings.XMatterPackName = "unit-test-project-specific";
                 settings.Save();
                 var metaData = new BookMetaData();
                 metaData.WriteToFolder(bookFolderPath);
@@ -154,9 +238,6 @@ namespace BloomTests.CLI
                 );
 
                 Assert.That(result, Is.EqualTo(CreateArtifactsExitCode.LegacyBookCannotHarvest));
-                // Without this, other tests will fail because they think the harvester is still running.
-                // I'm not clear why it persists from one test to another, but it does.
-                Program.RunningHarvesterMode = false;
             }
         }
     }

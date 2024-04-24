@@ -99,7 +99,7 @@ public class AppearanceSettings
     // It can also be set when WriteToFolder() updates the appearance files to be consistent with the current settings.
     // This only gets called if Bloom is allowed to make changes to the folder, so it remains false
     // if we are loading a legacy book in a folder we can't write.
-    internal bool _areSettingsConsistentWithFiles;  // internal for test access
+    internal bool _areSettingsConsistentWithFiles; // internal for test access
 
     public bool CssFilesChecked { get; private set; }
 
@@ -272,7 +272,7 @@ public class AppearanceSettings
     public string GetThemeAndSubstituteCss(Tuple<string, string>[] cssFilesToCheck)
     {
         // cssThemeName will already be set to "legacy-5-6" by UpdateFromFolder, but for new books we want to
-        // try to use the default or some substitute them, and only switch back to the legacy theme,
+        // try to use the default or some substitute theme, and only switch back to the legacy theme,
         // if we don't know of a substitute theme and its associated customBookStyles2.css file.
         CssThemeName = "default";
         string substituteAppearance = null;
@@ -356,7 +356,10 @@ public class AppearanceSettings
     /// Currently we also pass Css files from branding and xmatter, but we will report a problem if one of them isn't compatible.
     /// When we get more confidence that we have migrated all the brandings and xmatters, we can stop passing them in.
     /// </summary>
-    public bool CheckCssFilesForCompatibility(Tuple<string, string>[] cssFilesToCheck, bool legacyThemeCanBeUsed)
+    public bool CheckCssFilesForCompatibility(
+        Tuple<string, string>[] cssFilesToCheck,
+        bool legacyThemeCanBeUsed
+    )
     {
         var result = false;
         ChangeThemeIfCurrentOneNotAllowed(legacyThemeCanBeUsed);
@@ -695,13 +698,6 @@ public class AppearanceSettings
     public void WriteToFolder(string folder)
     {
         var jsonPath = AppearanceJsonPath(folder);
-        if (Program.RunningHarvesterMode && RobustFile.Exists(jsonPath))
-        {
-            // Would overwrite, but overwrite not allowed in Harvester mode.
-            // Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
-            return;
-        }
-
         var settings = new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Ignore,
@@ -724,14 +720,6 @@ public class AppearanceSettings
     )
     {
         var cssPath = AppearanceCssPath(folder);
-
-        if (Program.RunningHarvesterMode && RobustFile.Exists(cssPath))
-        {
-            // Would overwrite, but overwrite not allowed in Harvester mode.
-            // Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
-            return;
-        }
-
         RobustFile.WriteAllText(cssPath, ToCss(brandingJson, xmatterJson));
     }
 
