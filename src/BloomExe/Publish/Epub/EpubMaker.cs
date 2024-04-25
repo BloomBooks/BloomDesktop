@@ -2157,7 +2157,7 @@ namespace Bloom.Publish.Epub
                     var dstPath = CopyFileToEpub(
                         srcPath,
                         limitImageDimensions: true,
-                        needTransparentBackground: isCoverImage,
+                        forUseOnColoredBackground: isCoverImage,
                         subfolder: kImagesFolder,
                         imageSettings: imageSettings
                     );
@@ -3181,7 +3181,7 @@ namespace Bloom.Publish.Epub
         private string CopyFileToEpub(
             string srcPath,
             bool limitImageDimensions = false,
-            bool needTransparentBackground = false,
+            bool forUseOnColoredBackground = false,
             string subfolder = "",
             ImagePublishSettings imageSettings = null
         )
@@ -3221,7 +3221,7 @@ namespace Bloom.Publish.Epub
                 dstPath,
                 imageSettings,
                 limitImageDimensions,
-                needTransparentBackground
+                forUseOnColoredBackground
             );
             _manifestItems.Add(SubfolderAdjustedName(subfolder, fileName));
             _mapSrcPathToDestFileName[srcPath] = dstPath;
@@ -3298,7 +3298,7 @@ namespace Bloom.Publish.Epub
             string dstPath,
             ImagePublishSettings imagePublishSettings,
             bool limitImageDimensions = false,
-            bool needTransparentBackground = false
+            bool forUseOnColoredBackground = false
         )
         {
             if (
@@ -3312,7 +3312,7 @@ namespace Bloom.Publish.Epub
                     srcPath,
                     dstPath,
                     imagePublishSettings,
-                    needTransparentBackground
+                    forUseOnColoredBackground
                 );
                 return;
             }

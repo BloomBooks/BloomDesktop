@@ -194,7 +194,7 @@ namespace Bloom.Publish.BloomPub
         )
         {
             List<string> imagesToPreserveResolution;
-            List<string> imagesToGiveTransparentBackgrounds;
+            List<string> coverImages;
 
             var fullScreenAttr = dom.GetElementsByTagName("body")
                 .Cast<XmlElement>()
@@ -209,11 +209,11 @@ namespace Bloom.Publish.BloomPub
                 // due to a rule in bookFeatures.less.
                 // Making white pixels transparent on an all-black background makes line-art disappear,
                 // which is bad (BL-6564), so just make an empty list in this case.
-                imagesToGiveTransparentBackgrounds = new List<string>();
+                coverImages = new List<string>();
             }
             else
             {
-                imagesToGiveTransparentBackgrounds = FindCoverImages(dom);
+                coverImages = FindCoverImages(dom);
             }
             imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
 
@@ -229,10 +229,8 @@ namespace Bloom.Publish.BloomPub
                     if (imagesToPreserveResolution.Contains(fileName))
                         continue; // don't compress these
                     // Cover images should be transparent if possible.  Others don't need to be.
-                    var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(
-                        fileName
-                    );
-                    GetNewImageIfNeeded(filePath, imagePublishSettings, makeBackgroundTransparent);
+                    var forUseOnColoredBackground = coverImages.Contains(fileName);
+                    GetNewImageIfNeeded(filePath, imagePublishSettings, forUseOnColoredBackground);
                 }
             }
         }
@@ -240,7 +238,7 @@ namespace Bloom.Publish.BloomPub
         private static void GetNewImageIfNeeded(
             string filePath,
             ImagePublishSettings imagePublishSettings,
-            bool makeBackgroundTransparent
+            bool forUseOnColoredBackground
         )
         {
             using (var tagFile = RobustFileIO.CreateTaglibFile(filePath))
@@ -259,7 +257,7 @@ namespace Bloom.Publish.BloomPub
                         && imagePublishSettings.MaxHeight >= currentWidth
                 )
                 {
-                    if (!makeBackgroundTransparent)
+                    if (!forUseOnColoredBackground)
                         return; // current file is okay as is: small enough and no need to make transparent.
                 }
             }
@@ -267,7 +265,7 @@ namespace Bloom.Publish.BloomPub
                 filePath,
                 filePath,
                 imagePublishSettings,
-                makeBackgroundTransparent
+                forUseOnColoredBackground
             );
         }
 
