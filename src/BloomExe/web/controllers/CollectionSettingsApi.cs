@@ -429,7 +429,7 @@ namespace Bloom.web.controllers
                         request.PostSucceeded();
                     }
                 },
-                false
+                true
             );
         }
 
@@ -656,6 +656,8 @@ namespace Bloom.web.controllers
             if (DialogBeingEdited != null)
             {
                 DialogBeingEdited.PendingAdministrators = emails;
+                if (emails != _collectionSettings.AdministratorsDisplayString)
+                    DialogBeingEdited.ChangeThatRequiresRestart();
             }
         }
 
