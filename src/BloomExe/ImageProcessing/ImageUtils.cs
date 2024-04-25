@@ -964,7 +964,7 @@ namespace Bloom.ImageProcessing
             string path,
             Size size,
             bool makeOpaque,
-            bool makeTransparent,
+            bool makeTransparentifAppropriate,
             TagLib.File oldMetaData,
             IProgress progress = null
         )
@@ -983,13 +983,22 @@ namespace Bloom.ImageProcessing
             if (!RobustFile.Exists(exeGraphicsMagick))
                 return false;
             var tempCopy = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(path));
+
+            bool suitableToMakeTransparent = false;
+            if (makeTransparentifAppropriate)
+            {
+                using (var originalImage = PalasoImage.FromFileRobustly(path))
+                {
+                    suitableToMakeTransparent = ShouldMakeBackgroundTransparent(originalImage);
+                }
+            }
             try
             {
                 var options = new GraphicsMagickOptions
                 {
                     Size = size,
                     MakeOpaque = makeOpaque,
-                    MakeTransparent = makeTransparent,
+                    MakeTransparent = makeTransparentifAppropriate && suitableToMakeTransparent,
                     JpegQuality = 0,
                     ProfilesToStrip = null
                 };

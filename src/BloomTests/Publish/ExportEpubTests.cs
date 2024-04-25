@@ -603,7 +603,11 @@ namespace BloomTests.Publish
                         CheckPageBreakMarker(currentPage, "pgCreditsPage", "Credits Page");
                         break;
                     case 5:
-                        CheckPageBreakMarker(currentPage, "pgOutsideBackCover", "Outside Back Cover");
+                        CheckPageBreakMarker(
+                            currentPage,
+                            "pgOutsideBackCover",
+                            "Outside Back Cover"
+                        );
                         CheckEpubTypeAttributes(currentPage, null);
                         break;
                     default:
@@ -620,7 +624,10 @@ namespace BloomTests.Publish
             Assert.AreEqual(5, pageCount);
             AssertThatXmlIn
                 .String(currentPage)
-                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'outsideBackCover')]", 1);
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class, 'outsideBackCover')]",
+                    1
+                );
             AssertThatXmlIn
                 .String(currentPage)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'theEndPage')]", 0);
@@ -2812,7 +2819,7 @@ namespace BloomTests.Publish
             string dstPath,
             ImagePublishSettings imagePublishSettings,
             bool reduceImageIfPossible = false,
-            bool needsTransparentBackground = false
+            bool makeTransparentifAppropriate = false
         )
         {
             if (srcPath.Contains("notareallocation"))
@@ -2825,7 +2832,7 @@ namespace BloomTests.Publish
                 dstPath,
                 imagePublishSettings,
                 reduceImageIfPossible,
-                needsTransparentBackground
+                makeTransparentifAppropriate
             );
         }
     }
