@@ -1988,5 +1988,122 @@ namespace BloomTests.Book
                 Is.EqualTo("bloom-editable bloom-visibility-code-on")
             );
         }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasNoTextBlock_False()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml("<html><body><div class='bloom-page'></div></body></html>");
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(
+                TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithNoDataDefaultLangs_True()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false), Is.True);
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithN1_False()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' data-default-languages='N1'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(
+                TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_True()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' data-default-languages='V,N1'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false), Is.True);
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_AndDataVisibilityVariable_False()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' data-default-languages='V,N1' data-visibility-variable='cover-title-LN-show'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(
+                TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_AndDataVisibilityVariable_Legacy_True()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' data-default-languages='V,N1' data-visibility-variable='cover-title-LN-show'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, true), Is.True);
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithN1_AndOneWithAuto_True()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' data-default-languages='N1'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+   <div class='bloom-translationGroup' data-default-languages='auto'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false), Is.True);
+        }
     }
 }

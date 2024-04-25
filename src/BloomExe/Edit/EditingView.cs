@@ -1538,6 +1538,8 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
             return (ToolStripMenuItem)button.DropDownItems.Add(text);
         }
 
+        private string _contentLanguagesDropdownOriginalTooltip;
+
         public void UpdateDisplay()
         {
             try
@@ -1568,6 +1570,21 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
                         OnContentLanguageDropdownItem_CheckedChanged
                     );
                 }
+                _contentLanguagesDropdown.Enabled =
+                    TranslationGroupManager.IsPageAffectedByLanguageMenu(
+                        _model.CurrentPage.GetDivNodeForThisPage(),
+                        _model.CurrentBook.BookInfo.AppearanceSettings.UsingLegacy
+                    );
+                if (_contentLanguagesDropdownOriginalTooltip == null)
+                    _contentLanguagesDropdownOriginalTooltip =
+                        _contentLanguagesDropdown.ToolTipText;
+                _contentLanguagesDropdown.ToolTipText = _contentLanguagesDropdown.Enabled
+                    ? _contentLanguagesDropdownOriginalTooltip
+                    : LocalizationManager.GetString(
+                        "EditTab.ContentLanguagesDropdown.DisabledTooltip",
+                        "This is disabled because it won't change anything on this page.",
+                        "Shown in edit tab language chooser when it is disabled"
+                    );
 
                 _layoutChoices.DropDownItems.Clear();
                 var layout = _model.GetCurrentLayout();
