@@ -716,7 +716,29 @@ namespace Bloom.Edit
         // Thus, the whole sequence of steps above behaves like a series of nested function calls,
         // and SelectPage does not proceed with actually changing the current page until after FinishSavingPage has
         // completed saving it.
+        int _selChangeCount = 0;
+        object _selChangeLock = new object();
         private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
+        {
+            try
+            {
+                lock (_selChangeLock)
+                {
+                    Debug.Assert(_selChangeCount == 0,
+                        $"Multiple active OnPageSelectionChanging calls, possible  empty marginBox cause? (count={_selChangeLock})");
+                    _selChangeCount++;
+                }
+                OnPageSelectionChangingInternal(sender, eventArgs);
+            }
+            finally
+            {
+                lock (_selChangeLock)
+                {
+                    _selChangeCount--;
+                }
+            }
+        }
+        private void OnPageSelectionChangingInternal(object sender, EventArgs eventArgs)
         {
             CheckForBL2634("start of page selection changing--should have old IDs");
             if (
