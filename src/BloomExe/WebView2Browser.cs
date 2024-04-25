@@ -395,6 +395,8 @@ namespace Bloom
             if (!string.IsNullOrEmpty(_uiLanguageOfThisRun))
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
+                // turn off CORS for experiment with DeepL translation
+                additionalBrowserArgs += " --disable-web-security";
             }
             if (RemoteDebuggingPort.HasValue)
             {
