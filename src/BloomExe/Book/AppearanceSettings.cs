@@ -272,7 +272,7 @@ public class AppearanceSettings
     public string GetThemeAndSubstituteCss(Tuple<string, string>[] cssFilesToCheck)
     {
         // cssThemeName will already be set to "legacy-5-6" by UpdateFromFolder, but for new books we want to
-        // try to use the default or some substitute them, and only switch back to the legacy theme,
+        // try to use the default or some substitute theme, and only switch back to the legacy theme,
         // if we don't know of a substitute theme and its associated customBookStyles2.css file.
         CssThemeName = "default";
         string substituteAppearance = null;
@@ -698,13 +698,6 @@ public class AppearanceSettings
     public void WriteToFolder(string folder)
     {
         var jsonPath = AppearanceJsonPath(folder);
-        if (Program.RunningHarvesterMode && RobustFile.Exists(jsonPath))
-        {
-            // Would overwrite, but overwrite not allowed in Harvester mode.
-            // Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
-            return;
-        }
-
         var settings = new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Ignore,
@@ -727,14 +720,6 @@ public class AppearanceSettings
     )
     {
         var cssPath = AppearanceCssPath(folder);
-
-        if (Program.RunningHarvesterMode && RobustFile.Exists(cssPath))
-        {
-            // Would overwrite, but overwrite not allowed in Harvester mode.
-            // Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
-            return;
-        }
-
         RobustFile.WriteAllText(cssPath, ToCss(brandingJson, xmatterJson));
     }
 
