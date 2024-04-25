@@ -17,6 +17,7 @@ import "../../lib/jquery.easytabs.js"; //load into global space
 import BloomHintBubbles from "../js/BloomHintBubbles";
 import { postJson, postString } from "../../utils/bloomApi";
 import CopyContentButton from "../../react_components/CopyContentButton";
+import axios from "axios";
 
 export default class BloomSourceBubbles {
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph
@@ -85,6 +86,40 @@ export default class BloomSourceBubbles {
             $(element).remove();
         });
 
+        // get the first div that has a lang attribute of either "en" or "es"
+        const sourceDiv = divForBubble.find("div[lang='en']").first();
+        if (sourceDiv.length > 0 && sourceDiv.text().length > 0) {
+            const targetDiv = document.createElement("div");
+            targetDiv.setAttribute("lang", "fr-x-ai");
+            targetDiv.className = "bloom-editable source-text";
+            targetDiv.innerText = "waiting";
+            divForBubble.append(targetDiv);
+            // Now make a call to deepl api to translate that into French. When the call returns, set the text of that div to the French translation.
+            axios
+                .post(
+                    "https://api-free.deepl.com/v2/translate",
+                    {
+                        text: [sourceDiv.text()],
+                        source_lang: sourceDiv.attr("lang"),
+                        target_lang: "FR"
+                    },
+                    {
+                        headers: {
+                            Authorization:
+                                "DeepL-Auth-Key <key removed, this was just a test>",
+                            "Content-Type": "application/json"
+                        }
+                    }
+                )
+                .then(response => {
+                    targetDiv.innerText = response.data.translations[0].text;
+                })
+                .catch(error => {
+                    targetDiv.innerText = "error " + error;
+                });
+        }
+
+        // make a call to deepl api to translate "bonjour le monde" into English. Then
         //make the source texts in the bubble read-only and remove any user font size adjustments
         divForBubble.find("textarea, div").each(function(): boolean {
             //don't want empty items in the bubble
@@ -473,7 +508,10 @@ export default class BloomSourceBubbles {
         let shouldShowAlways = true;
 
         const $group = $(group);
-        if (bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group) || !$group.is(':visible')) {
+        if (
+            bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group) ||
+            !$group.is(":visible")
+        ) {
             showEvents = true;
             showEventsStr = "focusin";
             hideEvents = true;
