@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -1703,7 +1704,10 @@ namespace Bloom.Book
             // This should be done before UpdateSupportFiles, because this can affect what files
             // are copied to the book folder.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
-            BookInfo.AppearanceSettings.CheckCssFilesForCompatibility(cssFiles, Storage.LegacyThemeCanBeUsed);
+            BookInfo.AppearanceSettings.CheckCssFilesForCompatibility(
+                cssFiles,
+                Storage.LegacyThemeCanBeUsed
+            );
 
             // Ensure that the appearance settings are up to date with the current branding (if any).
             BookInfo.AppearanceSettings.UpdateFromOverrides(Storage.BrandingAppearanceSettings);
@@ -5591,7 +5595,10 @@ namespace Bloom.Book
             // or deleted customBookStyles.css. We need to update things to reflect the new state of things.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
             // This might produce different results if customBookStyles.css has been deleted.
-            BookInfo.AppearanceSettings.CheckCssFilesForCompatibility(cssFiles, Storage.LegacyThemeCanBeUsed);
+            BookInfo.AppearanceSettings.CheckCssFilesForCompatibility(
+                cssFiles,
+                Storage.LegacyThemeCanBeUsed
+            );
             // At one point the line commented out here was all this function did.
             // It needs to be done at some point at least if the theme has changed, to generate the updated
             // Appearance.css. But usually the caller does a full Save() after calling this, so
@@ -5606,6 +5613,77 @@ namespace Bloom.Book
             // temporary while we're in transition between storing cover color in the HTML and in the bookInfo
             //SetCoverColor(BookInfo.AppearanceSettings.CoverColor);
             _pageListChangedEvent.Raise(true);
+        }
+
+        public void AITranslate()
+        {
+            var groups = this.Storage.Dom.RawDom.SelectNodes(
+                "//div[contains(@class, 'bloom-translationGroup')]"
+            );
+            var sourceLang = "en";
+            var targetLang = "es";
+            foreach (XmlNode group in groups)
+            {
+                var node = group.SelectSingleNode($"div[@lang = '{targetLang}-x-ai']");
+                if (node != null)
+                {
+                    // for now, delete it
+                    group.RemoveChild(node);
+                }
+                var sourceEditable = group.SelectSingleNode($"div[@lang = '{sourceLang}']");
+                if (sourceEditable != null)
+                {
+                    var sourceText = sourceEditable.InnerText;
+                    var editable = this.Storage.Dom.RawDom.CreateElement("div");
+                    editable.SetAttribute("class", "bloom-editable");
+                    editable.SetAttribute("lang", $"{targetLang}-x-ai");
+                    group.AppendChild(editable);
+                    Translate(
+                        sourceText,
+                        sourceLang,
+                        targetLang,
+                        result => editable.InnerText = result
+                    );
+                }
+            }
+        }
+
+        private void Translate(
+            string sourceText,
+            string sourceLang,
+            string targetLang,
+            Action<string> setValue
+        )
+        {
+            var client = new HttpClient();
+
+            //try
+            //{
+            //    var airequest = new
+            //    {
+            //        text = new[] { sourceText },
+            //        source_lang = sourceLang,
+            //        target_lang = targetLang
+            //    };
+            //    // make a request to the DeepL API using post
+            //    var request = new HttpRequestMessage(HttpMethod.Post, "https://api-free.deepl.com/v2/translate");
+            //    // set content type to json
+            //    request.Content = new StringContent(JsonConvert.SerializeObject(airequest), Encoding.UTF8, "application/json");
+            //    request.Headers.Add("Authorization", "DeepL-Auth-Key 8e7a9639-542f-ee8a-d204-a99415a4755c:fx");
+
+            //    var response = client.SendAsync(request).Result;
+            //    // wait for the response
+
+
+            //    response.EnsureSuccessStatusCode();
+
+            //    var responseContent = await airequest.Content.ReadAsStringAsync();
+            //    dynamic responseData = Newtonsoft.Json.JsonConvert.DeserializeObject(responseContent);
+            //    string translatedText = responseData.translations[0].text;
+
+            //    return translatedText;
+            //}
+            // }
         }
     }
 }

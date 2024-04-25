@@ -663,6 +663,10 @@ namespace Bloom.Edit
                 var contentLanguages = GetMultilingualContentLanguages();
                 CurrentBook.SetMultilingualContentLanguages(contentLanguages);
                 CurrentBook.PrepareForEditing();
+
+                // kick off a task to call Translate() on the book
+                //new Task(() => CurrentBook.AITranslate()).Start();
+                //CurrentBook.AITranslate();
             }
 
             _currentlyDisplayedBook = CurrentBook;
