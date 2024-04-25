@@ -317,6 +317,29 @@ namespace Bloom.Book
             }
         }
 
+        public static bool IsPageAffectedByLanguageMenu(XmlElement page, bool legacy)
+        {
+            var groups = GetTranslationGroups(page);
+            foreach (var g in groups)
+            {
+                var defLangs = HtmlDom.GetAttributeValue(g, "data-default-languages");
+
+                // missing attribute or empty is treated as "auto", and this menu definitely affects those.
+                if (string.IsNullOrEmpty(defLangs) || defLangs.StartsWith("auto"))
+                    return true;
+
+                var visVariable = HtmlDom.GetAttributeValue(g, "data-visibility-variable");
+                // If the group is controlled by the Appearance system, it's not affected by the language menu.
+                if (!String.IsNullOrEmpty(visVariable) && !legacy)
+                    continue;
+
+                // The menu can change the primary Vernacular language, so it's applicable to any block that shows that.
+                if (defLangs.Split(',').Contains("V"))
+                    return true;
+            }
+            return false;
+        }
+
         private static void UpdateGeneratedClassesOnChildren(
             XmlNodeList editables,
             BookData bookData,
