@@ -3861,6 +3861,7 @@ namespace Bloom.Book
             var internalNodes = pageElement
                 .SelectNodes(".//div[contains(@class,'marginBox')]/div")
                 .Cast<XmlElement>();
+            Debug.Assert(internalNodes.Count() > 0, "marginBox is totally empty!");
             if (internalNodes.Count() == 0)
             {
                 ReportEmptyMarginBox(pageElement);
@@ -3872,6 +3873,7 @@ namespace Bloom.Book
                 if (string.IsNullOrEmpty(classes))
                     continue;
                 // If the marginBox has a div.pageLabel, the real content has disappeared and we don't want to save that state.
+                Debug.Assert(!classes.Contains("pageLabel"), "marginBox has emptied out, with the div.pageLabel moved inside!");
                 if (classes.Contains("pageLabel"))
                 {
                     ReportEmptyMarginBox(pageElement);

@@ -1231,7 +1231,29 @@ namespace Bloom.Edit
         private System.Windows.Forms.Timer _developerFileWatcherQuietTimer;
         private bool _weHaveSeenAJsonChange;
 
+        int _saveCount = 0;
+        object _saveCountLock = new object();
         public void SaveNow(bool forceFullSave = false)
+        {
+            try
+            {
+                lock (_saveCountLock)
+                {
+                    Debug.Assert(_saveCount == 0,
+                        $"Trying to save while already saving: possible empty marginBox cause? (save count={_saveCount})");
+                    _saveCount++;
+                }
+                SaveNowInternal(forceFullSave);
+            }
+            finally
+            {
+                lock (_saveCountLock)
+                {
+                    _saveCount--;
+                }
+            }
+        }
+        private void SaveNowInternal(bool forceFullSave = false)
         {
             if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
             {
@@ -1255,7 +1277,7 @@ namespace Bloom.Edit
                             "SaveNow called on wrong thread",
                             null
                         );
-                        _view.Invoke((Action)(() => SaveNow(forceFullSave)));
+                        _view.Invoke((Action)(() => SaveNowInternal(forceFullSave)));
                         Logger.WriteMinorEvent(
                             "EditingModel.SaveNow() finished after Invoke to get on UI thread"
                         );
