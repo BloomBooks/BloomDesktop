@@ -10,22 +10,22 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
+using SIL.Code;
+using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
+using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using SIL.Code;
 using TagLib;
 using TagLib.Png;
 using TagLib.Xmp;
 using Encoder = System.Drawing.Imaging.Encoder;
 using Logger = SIL.Reporting.Logger;
 using TempFile = SIL.IO.TempFile;
-using Bloom.ToPalaso;
-using SIL.CommandLineProcessing;
-using SIL.Windows.Forms.ClearShare;
 
 namespace Bloom.ImageProcessing
 {
@@ -208,8 +208,8 @@ namespace Bloom.ImageProcessing
             var rand = new Random(seed);
             var adjustments = new int[10, 10];
             for (var i = 0; i < 10; ++i)
-                for (var j = 0; j < 10; ++j)
-                    adjustments[i, j] = rand.Next(range) - (range / 2);
+            for (var j = 0; j < 10; ++j)
+                adjustments[i, j] = rand.Next(range) - (range / 2);
             return adjustments;
         }
 
@@ -717,10 +717,9 @@ namespace Bloom.ImageProcessing
                     .Where(path => path.ToLowerInvariant().EndsWith(".png"))
                     .ToArray();
                 var jpgFiles = filePaths
-                    .Where(
-                        path =>
-                            path.ToLowerInvariant().EndsWith(".jpg")
-                            || path.ToLowerInvariant().EndsWith(".jpeg")
+                    .Where(path =>
+                        path.ToLowerInvariant().EndsWith(".jpg")
+                        || path.ToLowerInvariant().EndsWith(".jpeg")
                     )
                     .ToArray();
                 foreach (string path in pngFiles)
@@ -843,10 +842,9 @@ namespace Bloom.ImageProcessing
                 .Where(path => path.ToLowerInvariant().EndsWith(".png"))
                 .ToArray();
             var jpgFiles = filePaths
-                .Where(
-                    path =>
-                        path.ToLowerInvariant().EndsWith(".jpg")
-                        || path.ToLowerInvariant().EndsWith(".jpeg")
+                .Where(path =>
+                    path.ToLowerInvariant().EndsWith(".jpg")
+                    || path.ToLowerInvariant().EndsWith(".jpeg")
                 )
                 .ToArray();
             int completed = 0;
@@ -964,7 +962,7 @@ namespace Bloom.ImageProcessing
             string path,
             Size size,
             bool makeOpaque,
-            bool makeTransparent,
+            bool makeTransparentifAppropriate,
             TagLib.File oldMetaData,
             IProgress progress = null
         )
@@ -983,13 +981,22 @@ namespace Bloom.ImageProcessing
             if (!RobustFile.Exists(exeGraphicsMagick))
                 return false;
             var tempCopy = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(path));
+
+            bool suitableToMakeTransparent = false;
+            if (makeTransparentifAppropriate)
+            {
+                using (var originalImage = PalasoImage.FromFileRobustly(path))
+                {
+                    suitableToMakeTransparent = ShouldMakeBackgroundTransparent(originalImage);
+                }
+            }
             try
             {
                 var options = new GraphicsMagickOptions
                 {
                     Size = size,
                     MakeOpaque = makeOpaque,
-                    MakeTransparent = makeTransparent,
+                    MakeTransparent = makeTransparentifAppropriate && suitableToMakeTransparent,
                     JpegQuality = 0,
                     ProfilesToStrip = null
                 };
@@ -1138,9 +1145,9 @@ namespace Bloom.ImageProcessing
                 // Leave a little fudge for a non-transparent border.
                 int maxPixelsFromCorner = 15;
                 for (int y = 0; y < bitmapImage.Height && y < maxPixelsFromCorner; ++y)
-                    for (int x = 0; x < bitmapImage.Width && x < maxPixelsFromCorner; ++x)
-                        if (bitmapImage.GetPixel(x, y).A != 255)
-                            return true;
+                for (int x = 0; x < bitmapImage.Width && x < maxPixelsFromCorner; ++x)
+                    if (bitmapImage.GetPixel(x, y).A != 255)
+                        return true;
 
                 return false;
             }
