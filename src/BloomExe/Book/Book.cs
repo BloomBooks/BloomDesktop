@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -6139,6 +6140,77 @@ namespace Bloom.Book
                 return BookInfo.BookLineage?.Contains("aeb176bc-76fa-44e2-bb9d-6350698fce47")
                     ?? false;
             }
+        }
+
+        public void AITranslate()
+        {
+            var groups = this.Storage.Dom.RawDom.SelectNodes(
+                "//div[contains(@class, 'bloom-translationGroup')]"
+            );
+            var sourceLang = "en";
+            var targetLang = "es";
+            foreach (XmlNode group in groups)
+            {
+                var node = group.SelectSingleNode($"div[@lang = '{targetLang}-x-ai']");
+                if (node != null)
+                {
+                    // for now, delete it
+                    group.RemoveChild(node);
+                }
+                var sourceEditable = group.SelectSingleNode($"div[@lang = '{sourceLang}']");
+                if (sourceEditable != null)
+                {
+                    var sourceText = sourceEditable.InnerText;
+                    var editable = this.Storage.Dom.RawDom.CreateElement("div");
+                    editable.SetAttribute("class", "bloom-editable");
+                    editable.SetAttribute("lang", $"{targetLang}-x-ai");
+                    group.AppendChild(editable);
+                    Translate(
+                        sourceText,
+                        sourceLang,
+                        targetLang,
+                        result => editable.InnerText = result
+                    );
+                }
+            }
+        }
+
+        private void Translate(
+            string sourceText,
+            string sourceLang,
+            string targetLang,
+            Action<string> setValue
+        )
+        {
+            var client = new HttpClient();
+
+            //try
+            //{
+            //    var airequest = new
+            //    {
+            //        text = new[] { sourceText },
+            //        source_lang = sourceLang,
+            //        target_lang = targetLang
+            //    };
+            //    // make a request to the DeepL API using post
+            //    var request = new HttpRequestMessage(HttpMethod.Post, "https://api-free.deepl.com/v2/translate");
+            //    // set content type to json
+            //    request.Content = new StringContent(JsonConvert.SerializeObject(airequest), Encoding.UTF8, "application/json");
+            //    request.Headers.Add("Authorization", "DeepL-Auth-Key 8e7a9639-542f-ee8a-d204-a99415a4755c:fx");
+
+            //    var response = client.SendAsync(request).Result;
+            //    // wait for the response
+
+
+            //    response.EnsureSuccessStatusCode();
+
+            //    var responseContent = await airequest.Content.ReadAsStringAsync();
+            //    dynamic responseData = Newtonsoft.Json.JsonConvert.DeserializeObject(responseContent);
+            //    string translatedText = responseData.translations[0].text;
+
+            //    return translatedText;
+            //}
+            // }
         }
     }
 }
