@@ -29,7 +29,8 @@
 		<dotChannel>.$(channel)</dotChannel>
 		<dotChannel Condition="'$(channel)'==''"></dotChannel>
 		<ApplicationName>Bloom$(channel)</ApplicationName>
-		<Configuration>Release</Configuration>
+		<!-- normally Release, but we want Debug for testing 6.0 Alpha -->
+		<Configuration>Debug</Configuration>
 		<BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
 		<useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
 		<useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
