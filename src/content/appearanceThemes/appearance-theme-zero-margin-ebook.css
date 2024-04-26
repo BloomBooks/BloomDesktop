@@ -1,4 +1,4 @@
-/* replaces the pre-v5.7 "EFL Template 1" custom CSS: which had no margins, no page numbers.
+/* replaces the pre-v6.0 "EFL Template 1" custom CSS: which had no margins, no page numbers.
 Note that hiding the page numbers is done by a setting in appearance.json, not here. */
 
 [class*="Device"].bloom-frontMatter,

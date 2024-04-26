@@ -3716,7 +3716,7 @@
         <source xml:lang="en">Some audio elements are missing ids</source>
         <note>ID: PublishTab.Audio.ElementsMissingId</note>
         <note>Message briefly displayed to the user in a toast</note>
-        <note>Obsolete as of Bloom 5.7</note>
+        <note>Obsolete as of Bloom 6.0</note>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio">
         <source xml:lang="en">Booklet Insides</source>
@@ -4403,7 +4403,7 @@
       <trans-unit id="PublishTab.Upload.CheckingVersionEligibility">
         <source xml:lang="en">Checking Bloom version eligibility...</source>
         <note>ID: PublishTab.Upload.CheckingVersionEligibility</note>
-        <note>Obsolete as of Bloom 5.7</note>
+        <note>Obsolete as of Bloom 6.0</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckingExistingCopy">
         <source xml:lang="en">Checking for existing copy on server...</source>
@@ -4665,7 +4665,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">BloomLibrary.org already has a book with this ID from you ({0}).</source>
         <note>ID: PublishTab.UploadCollisionDialog.HaveOne</note>
         <note>This is the dialog subtitle. The {0} will be replaced with the uploader's email address.</note>
-        <note>Obsolete as of Bloom 5.7 (replaced by similar PublishTab.UploadCollisionDialog.HaveOne2)</note>
+        <note>Obsolete as of Bloom 6.0 (replaced by similar PublishTab.UploadCollisionDialog.HaveOne2)</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne2">
         <source xml:lang="en">BloomLibrary.org already has a book with this ID.</source>
@@ -4696,7 +4696,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
         <note>This is explanatory commentary on a radio button.</note>
-        <note>Obsolete as of Bloom 5.7 (replaced by similar PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2)</note>
+        <note>Obsolete as of Bloom 6.0 (replaced by similar PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2)</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2">
         <source xml:lang="en">Bloom will fix the ID of your book and upload it as a new book. The old book on Bloom Library will stay the same.</source>
@@ -4707,7 +4707,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Yes, this is an update of my book</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
         <note>This is the label on a radio button.</note>
-        <note>Obsolete as of Bloom 5.7 (replaced by similar PublishTab.UploadCollisionDialog.Radio.SameBook2)</note>
+        <note>Obsolete as of Bloom 6.0 (replaced by similar PublishTab.UploadCollisionDialog.Radio.SameBook2)</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2" >
         <source xml:lang="en">Yes, I want to update this book</source>
@@ -4718,7 +4718,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary</note>
         <note>This is explanatory commentary on a radio button. Don't translate the website reference in brackets ([bloomlibrary.org]). It will be replaced by a link to bloomlibrary.org.</note>
-        <note>Obsolete as of Bloom 5.7 (replaced by similar PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary)</note>
+        <note>Obsolete as of Bloom 6.0 (replaced by similar PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary)</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary">
         <source xml:lang="en">Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>

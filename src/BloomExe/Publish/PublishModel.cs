@@ -276,7 +276,7 @@ namespace Bloom.Publish
         }
 
         /// <summary>
-        /// // As of 5.7, we have a problem if we can't bring the book up to date because we're not allowed to save it.
+        /// // As of 6.0, we have a problem if we can't bring the book up to date because we're not allowed to save it.
         /// Enhance: We could fairly easily allow publishing a book which was previously checked out
         /// and brought up to date and checked in and is still selected, since the Book object knows it
         /// is already up-to-date.

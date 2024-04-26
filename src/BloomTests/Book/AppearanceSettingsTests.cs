@@ -255,7 +255,7 @@ namespace BloomTests.Book
         {
             Assert.IsFalse(
                 MayBeIncompatible(
-                    "/*{label: \"some test\";\r\n compatibleWithAppearanceVersion: 5.7;\r\n}*/ .marginBox{ left: 2mm}"
+                    "/*{label: \"some test\";\r\n compatibleWithAppearanceVersion: 6.0;\r\n}*/ .marginBox{ left: 2mm}"
                 )
             );
         }
@@ -433,7 +433,10 @@ namespace BloomTests.Book
         public void AppearanceCss_HasDefaultSettings()
         {
             // One that is not overridden in zero-margin-ebook
-            Assert.That(_generatedAppearanceCss, Does.Contain("--cover-margin-top: var(--page-margin);"));
+            Assert.That(
+                _generatedAppearanceCss,
+                Does.Contain("--cover-margin-top: var(--page-margin);")
+            );
         }
 
         [Test]
@@ -481,17 +484,45 @@ namespace BloomTests.Book
         {
             // we expect the default settings before the theme ones
             Assert.That(_cssOfDefaultTheme, Does.Contain("--page-margin: 12mm;"));
-            Assert.That(_cssOfDefaultTheme, Does.Contain("--cover-margin-top: var(--page-margin);"));
-            Assert.That(_cssOfDefaultTheme, Does.Contain(@".LegalLandscape {
-    --page-margin: 15mm;"));
-            Assert.That(_cssOfDefaultTheme, Does.Contain(@".A6Landscape {
-    --page-margin: 10mm;"));
-            Assert.That(_cssOfDefaultTheme, Does.Contain(@".Device16x9Landscape {
-    --page-margin: 10px;"));
-            Assert.That(_cssOfDefaultTheme, Does.Contain(@".Cm13Landscape {
-    --page-margin: 5mm;"));
-            Assert.That(_cssOfDefaultTheme, Does.Contain(@".USComicPortrait {
-    --page-margin: 0mm;"));
+            Assert.That(
+                _cssOfDefaultTheme,
+                Does.Contain("--cover-margin-top: var(--page-margin);")
+            );
+            Assert.That(
+                _cssOfDefaultTheme,
+                Does.Contain(
+                    @".LegalLandscape {
+    --page-margin: 15mm;"
+                )
+            );
+            Assert.That(
+                _cssOfDefaultTheme,
+                Does.Contain(
+                    @".A6Landscape {
+    --page-margin: 10mm;"
+                )
+            );
+            Assert.That(
+                _cssOfDefaultTheme,
+                Does.Contain(
+                    @".Device16x9Landscape {
+    --page-margin: 10px;"
+                )
+            );
+            Assert.That(
+                _cssOfDefaultTheme,
+                Does.Contain(
+                    @".Cm13Landscape {
+    --page-margin: 5mm;"
+                )
+            );
+            Assert.That(
+                _cssOfDefaultTheme,
+                Does.Contain(
+                    @".USComicPortrait {
+    --page-margin: 0mm;"
+                )
+            );
         }
 
         [Test]
