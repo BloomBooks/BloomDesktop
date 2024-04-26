@@ -58,7 +58,10 @@ namespace Bloom.CollectionTab
 
             InitializeComponent();
             _reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
-            _settingsButton.Visible = false; // Hide for now. We'll bring it back in 5.7.
+            // JohnT: when changing 5.7 to 6.0, I changed this instead to 6.1. I believe it is a button
+            // to launch the new settings dialog, which we are not yet ready to release.
+            // The current settings dialog is the thing code calls the "LegacySettingsDialog" though a lot of its tabs are React.
+            _settingsButton.Visible = false; // Hide for now. We'll bring it back in 6.1.
             BackColor = _reactControl.BackColor = Palette.GeneralBackground;
             _toolStrip.Renderer = new NoBorderToolStripRenderer();
             _toolStripLeft.Renderer = new NoBorderToolStripRenderer();
@@ -310,7 +313,7 @@ namespace Bloom.CollectionTab
         {
             //we have a couple of buttons which don't make sense for the remote (therefore vulnerable) low-end user
             settingsLauncherHelper.ManageComponent(_legacySettingsButton);
-            //comment out until 5.7 settingsLauncherHelper.ManageComponent(_settingsButton);
+            //comment out until 6.1 settingsLauncherHelper.ManageComponent(_settingsButton);
 
             //NB: this isn't really a setting, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
             settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);

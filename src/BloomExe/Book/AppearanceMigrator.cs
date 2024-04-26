@@ -13,7 +13,7 @@ using System.Diagnostics;
 namespace Bloom.Book
 {
     /// <summary>
-    /// This class handles cases where we know how to migrate a 5.6 or before custom CSS file to a 5.7 theme.
+    /// This class handles cases where we know how to migrate a 5.6 or before custom CSS file to a 6.0 theme.
     /// </summary>
     public class AppearanceMigrator
     {

@@ -724,23 +724,23 @@ namespace BloomTests.WebLibraryIntegration
 
         [TestCase("bloom://localhost/order?orderFile=blah&minVersion=1.0")]
         [TestCase("bloom://localhost/order?orderFile=blah&minVersion=5.6")]
-        [TestCase("bloom://localhost/order?orderFile=blah&minVersion=5.7")]
+        [TestCase("bloom://localhost/order?orderFile=blah&minVersion=6.0")]
         [TestCase(
-            "bloom://localhost/order?orderFile=BloomLibraryBooks/test%40gmail.com%2f6dfa6c12-ae0c-433c-a384-35792e946eb8%2f&title=%D0%AD%D0%BC%D0%BD%D0%B5%20%D0%BA%D0%B0%D0%BD%D0%B0%D1%82%D1%8B%20%D0%B6%D0%BE%D0%BA%20%D1%83%D1%87%D0%B0%20%D0%B0%D0%BB%D0%B0%D1%82%3F&minVersion=5.7"
+            "bloom://localhost/order?orderFile=BloomLibraryBooks/test%40gmail.com%2f6dfa6c12-ae0c-433c-a384-35792e946eb8%2f&title=%D0%AD%D0%BC%D0%BD%D0%B5%20%D0%BA%D0%B0%D0%BD%D0%B0%D1%82%D1%8B%20%D0%B6%D0%BE%D0%BA%20%D1%83%D1%87%D0%B0%20%D0%B0%D0%BB%D0%B0%D1%82%3F&minVersion=6.0"
         )]
         public void IsThisVersionAllowedToDownload_IsAllowed_ReturnsTrue(string url)
         {
-            Assert.True(BookDownload.IsThisVersionAllowedToDownloadInner(url, "5.7"));
+            Assert.True(BookDownload.IsThisVersionAllowedToDownloadInner(url, "6.0"));
         }
 
-        [TestCase("bloom://localhost/order?orderFile=blah&minVersion=5.8")]
         [TestCase("bloom://localhost/order?orderFile=blah&minVersion=6.1")]
+        [TestCase("bloom://localhost/order?orderFile=blah&minVersion=7.0")]
         [TestCase(
-            "bloom://localhost/order?orderFile=BloomLibraryBooks/test%40gmail.com%2f6dfa6c12-ae0c-433c-a384-35792e946eb8%2f&title=%D0%AD%D0%BC%D0%BD%D0%B5%20%D0%BA%D0%B0%D0%BD%D0%B0%D1%82%D1%8B%20%D0%B6%D0%BE%D0%BA%20%D1%83%D1%87%D0%B0%20%D0%B0%D0%BB%D0%B0%D1%82%3F&minVersion=5.8"
+            "bloom://localhost/order?orderFile=BloomLibraryBooks/test%40gmail.com%2f6dfa6c12-ae0c-433c-a384-35792e946eb8%2f&title=%D0%AD%D0%BC%D0%BD%D0%B5%20%D0%BA%D0%B0%D0%BD%D0%B0%D1%82%D1%8B%20%D0%B6%D0%BE%D0%BA%20%D1%83%D1%87%D0%B0%20%D0%B0%D0%BB%D0%B0%D1%82%3F&minVersion=6.1"
         )]
         public void IsThisVersionAllowedToDownload_IsNotAllowed_ReturnsFalse(string url)
         {
-            Assert.False(BookDownload.IsThisVersionAllowedToDownloadInner(url, "5.7"));
+            Assert.False(BookDownload.IsThisVersionAllowedToDownloadInner(url, "6.0"));
         }
 
         [TestCase("bloom://localhost/order?orderFile=blah")]
@@ -750,7 +750,7 @@ namespace BloomTests.WebLibraryIntegration
         )]
         public void IsThisVersionAllowedToDownload_MissingParam_ReturnsTrue(string url)
         {
-            Assert.True(BookDownload.IsThisVersionAllowedToDownloadInner(url, "5.7"));
+            Assert.True(BookDownload.IsThisVersionAllowedToDownloadInner(url, "6.0"));
         }
 
         [TestCase("bloom://localhost/order?orderFile=blah&minVersion=5")]
@@ -759,7 +759,7 @@ namespace BloomTests.WebLibraryIntegration
         {
             // One could argue this either way.
             // Since we control both ends, we don't expect this to happen.
-            Assert.True(BookDownload.IsThisVersionAllowedToDownloadInner(url, "5.7"));
+            Assert.True(BookDownload.IsThisVersionAllowedToDownloadInner(url, "6.0"));
         }
 
         [TestCase("")]
@@ -770,7 +770,7 @@ namespace BloomTests.WebLibraryIntegration
             // The method is coded to return true for this case so we don't display a message
             // indicating the user needs a new version if the problem is actually something else.
             // They should get other indicators when other things go badly.
-            Assert.True(BookDownload.IsThisVersionAllowedToDownloadInner(url, "5.7"));
+            Assert.True(BookDownload.IsThisVersionAllowedToDownloadInner(url, "6.0"));
         }
 
         // Wait (up to three seconds) for data uploaded to become available.

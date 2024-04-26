@@ -520,7 +520,7 @@ namespace Bloom.WebLibraryIntegration
         {
             // For current usage of this method, we really need to know the difference between "no books found" and "we couldn't check".
             // So all paths which don't allow us to check need to throw.
-            // Note that all this gets completely reworked in 5.7, so we don't have to live with this very long.
+            // Note that all this gets completely reworked in 6.0, so we don't have to live with this very long.
 
             if (!UrlLookup.CheckGeneralInternetAvailability(true))
             {

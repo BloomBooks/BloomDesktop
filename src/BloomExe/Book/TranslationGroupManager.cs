@@ -39,7 +39,7 @@ namespace Bloom.Book
         {
             GenerateEditableDivsWithPreTranslatedContent(pageOrDocumentNode);
 
-            // Earlier (pre-5.7) versions of Bloom were selective about creating editable divs for
+            // Earlier (pre-6.0) versions of Bloom were selective about creating editable divs for
             // languages that were not being used for this field, based on data-default-languages.
             // But the logic for this was already complex in 5.6, and had caused bugs, and the Appearance
             // system made it almost impossible, since the visibility of the L3 bloom-editable
@@ -470,7 +470,7 @@ namespace Bloom.Book
                 HtmlDom.AddClass(editable, "bloom-contentNational2");
             }
 
-            // At the time of this writing (5.7) this class only affects cover page titles.
+            // At the time of this writing (6.0) this class only affects cover page titles.
             AddThemeVisibleOrderClass(
                 editable,
                 settings.UsingLegacy,
@@ -490,9 +490,9 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// If this field's visibility is controlled by the appearance system (introduced in 5.7, though as of 5.7 only applying
+        /// If this field's visibility is controlled by the appearance system (introduced in 6.0, though as of 6.0 only applying
         /// to the cover title), add a class indicating its order within the collection languages that are visible for this field.
-        /// Unlike in legacy theme (or pre-5.7), the order, like the visibility choice, does not depend on what languages are
+        /// Unlike in legacy theme (or pre-6.0), the order, like the visibility choice, does not depend on what languages are
         /// chosen to appear in content pages.
         /// Must be called after setting bloom-visibility-code-on for all appropriate fields in the same group.
         /// </summary>
