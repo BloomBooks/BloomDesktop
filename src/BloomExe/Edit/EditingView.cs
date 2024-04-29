@@ -1485,7 +1485,7 @@ namespace Bloom.Edit
         /// this started as an experiment, where our textareas were not being read when we saved because of the need
         /// to change the picture
         /// </summary>
-        public void CleanHtmlAndCopyToPageDom()
+        public async Task GetHtmlFromBrowserAndCopyToPageDom()
         {
             // NOTE: these calls to may lead to API calls from the JS. These are async, so the actions
             // that JS might perform may not actually happen until well after this method. We ran into a problem in
@@ -1510,7 +1510,7 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
                     userCssContent = combinedData.Substring(endHtml + "<SPLIT-DATA>".Length);
                 }
             }
-            _browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
+            _browser1.ReadEditedHtmlNow(bodyHtml, userCssContent); // TODO this makes no sense being in browser. Has nothing to do with the browser.
         }
 
         private void _copyButton_Click(object sender, EventArgs e)

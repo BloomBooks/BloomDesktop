@@ -288,11 +288,11 @@ namespace Bloom
             // intentionally letting any errors just escape, give us an error
         }
 
-        public void ReadEditableAreasNow(string bodyHtml, string userCssContent)
+        public void ReadEditedHtmlNow(string bodyHtml, string userCssContent)
         {
             if (Url != "about:blank")
             {
-                LoadPageDomFromBrowser(bodyHtml, userCssContent);
+                LoadPageDomFromHtml(bodyHtml, userCssContent);
             }
         }
 
@@ -302,7 +302,7 @@ namespace Bloom
         /// We're now obtaining the new content another way, so this code doesn't have any reason
         /// to be in this class...but we're aiming for a minimal change, maximal safety fix for 4.9
         /// </summary>
-        private void LoadPageDomFromBrowser(string bodyHtml, string userCssContent)
+        private void LoadPageDomFromHtml(string bodyHtml, string userCssContent)
         {
             Debug.Assert(!InvokeRequired);
             if (_pageEditDom == null)
