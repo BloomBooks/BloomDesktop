@@ -1276,7 +1276,7 @@
         <source xml:lang="en">Multilingual Settings</source>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
       </trans-unit>
-      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip" translate="no">
+      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
         <note>ID: EditTab.ContentLanguagesDropdown.DisabledTooltip</note>
       </trans-unit>

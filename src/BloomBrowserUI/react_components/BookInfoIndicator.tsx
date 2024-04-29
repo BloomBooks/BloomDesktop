@@ -8,6 +8,8 @@ import WarningIcon from "@mui/icons-material/Warning";
 import InfoIcon from "@mui/icons-material/Info";
 import { BloomTooltip } from "./BloomToolTip";
 import { postJson, useApiObject, useWatchApiData } from "../utils/bloomApi";
+import { Span } from "./l10nComponents";
+import { PWithLink } from "./pWithLink";
 
 export const BookInfoIndicator: React.FunctionComponent<{
     bookId: string;
@@ -76,10 +78,17 @@ export const BookInfoIndicator: React.FunctionComponent<{
                         color="warning"
                         fontSize="small"
                     />
-                    <span>
-                        {`The ${firstPossiblyConflictingCss} stylesheet of this book is incompatible with
-                                    modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click (TODO) for more information.`}
-                    </span>
+                    <PWithLink
+                        href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+                        l10nKey="BookSettings.UsingLegacyThemeWithIncompatibleCss"
+                        l10nParam0={firstPossiblyConflictingCss}
+                        l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+                    >
+                        The {0} stylesheet of this book is incompatible with
+                        modern themes. Bloom is using it because the book is
+                        using the Legacy-5-6 theme. Click [here] for more
+                        information.
+                    </PWithLink>
                 </div>
             )}
             {firstPossiblyConflictingCss === "customBookStyles.css" &&
@@ -94,13 +103,33 @@ export const BookInfoIndicator: React.FunctionComponent<{
                                 `}
                                 fontSize="small"
                             />
-                            {migratedTheme
-                                ? `Bloom found a known version of ${firstPossiblyConflictingCss} in this
-                                    book and replaced it with a modern theme. You can delete it unless you still need to
-                                    publish the book from an earlier version of Bloom.`
-                                : `The ${firstPossiblyConflictingCss} stylesheet of this book is incompatible with
-                                    modern themes. Bloom is currently ignoring it. If you don't need those
-                                    customizations any more, you can delete your ${firstPossiblyConflictingCss}. Click (TODO) for more information.`}
+                            {migratedTheme ? (
+                                <Span
+                                    l10nKey="BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss"
+                                    l10nParam0={firstPossiblyConflictingCss}
+                                    l10nComment="{0} is a placeholder for a filename."
+                                >
+                                    Bloom found a known version of {0}
+                                    in this book and replaced it with a modern
+                                    theme. You can delete it unless you still
+                                    need to publish the book from an earlier
+                                    version of Bloom.
+                                </Span>
+                            ) : (
+                                <PWithLink
+                                    href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+                                    l10nKey="BookSettings.IgnoringIncompatibleCssCanDelete"
+                                    l10nParam0={firstPossiblyConflictingCss}
+                                >
+                                    The
+                                    {0}
+                                    stylesheet of this book is incompatible with
+                                    modern themes. Bloom is currently ignoring
+                                    it. If you don't need those customizations
+                                    any more, you can delete your
+                                    {0}. Click [here] for more information.
+                                </PWithLink>
+                            )}
                         </span>
                     </div>
                 )}
@@ -116,8 +145,17 @@ export const BookInfoIndicator: React.FunctionComponent<{
                             `}
                             fontSize="small"
                         />
-                        {`The ${firstPossiblyConflictingCss} stylesheet of this book is incompatible with
--                                    modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`}
+                        <PWithLink
+                            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+                            l10nKey="BookSettings.IgnoringIncompatibleCss"
+                            l10nParam0={firstPossiblyConflictingCss}
+                            l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+                        >
+                            The {0}
+                            stylesheet of this book is incompatible with modern
+                            themes. Bloom is currently ignoring it. Click [here]
+                            for more information.
+                        </PWithLink>
                     </span>
                 )}
         </div>
