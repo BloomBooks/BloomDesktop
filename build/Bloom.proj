@@ -1,14 +1,14 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<!-- This makes defaults for various properties unless they are set from the command line or TeamCity parameter settings.
+  <!-- This makes defaults for various properties unless they are set from the command line or TeamCity parameter settings.
 	Typically command line includes /p:BUILD_NUMBER=3.1.22.0 (all 4 digits required).
 	May include something like /p:channel=Alpha.-->
-	<PropertyGroup>
-		<isOnTeamCity Condition="'$(teamcity_version)' == ''">false</isOnTeamCity>
-		<isOnTeamCity Condition="'$(teamcity_version)' != ''">true</isOnTeamCity>
-		<RootDir Condition="$(isOnTeamCity) == false Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)\..</RootDir>
-		<RootDir Condition="$(isOnTeamCity) == true And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
-		<Solution>Bloom.sln</Solution>
-		<!-- This controls the following things; the some of them pretty much have to match for Squirrel:
+  <PropertyGroup>
+    <isOnTeamCity Condition="'$(teamcity_version)' == ''">false</isOnTeamCity>
+    <isOnTeamCity Condition="'$(teamcity_version)' != ''">true</isOnTeamCity>
+    <RootDir Condition="$(isOnTeamCity) == false Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)\..</RootDir>
+    <RootDir Condition="$(isOnTeamCity) == true And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
+    <Solution>Bloom.sln</Solution>
+    <!-- This controls the following things; the some of them pretty much have to match for Squirrel:
 			- the nupkg ID (Bloom<channel>)
 			- the name that occurs in the (Uninstall) Programs and Features control panel (Bloom <version> <channel>)
 			- the folder in appdata/local in which Bloom (and subsequent versions in the same channel) will be installed (Bloom<channel>)
@@ -21,150 +21,133 @@
 			It is an empty string for plain Bloom, which is intended to be the stable release.
 			(The line below leaves it empty, and thus does nothing except to let an editor know this is
 			a valid, known property group.)-->
-		<channel Condition="'$(channel)'==''"></channel>
-		<!-- channelRelease is 'Release' if channel is empty, otherwise same as channel-->
-		<channelRelease>$(channel)</channelRelease>
-		<channelRelease Condition="'$(channel)'==''">Release</channelRelease>
-		<!-- dotChannel is empty if channel is empty, otherwise dot before channel-->
-		<dotChannel>.$(channel)</dotChannel>
-		<dotChannel Condition="'$(channel)'==''"></dotChannel>
-		<ApplicationName>Bloom$(channel)</ApplicationName>
-		<!-- normally Release, but we want Debug for testing 6.0 Alpha -->
-		<Configuration>Debug</Configuration>
-		<BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
-		<useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
-		<useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
-		<TestProcessType Condition="'$(useNUnit-x86)'=='true'">Separate</TestProcessType>
-		<TestProcessType Condition="'$(useNUnit-x86)'!='true'">Single</TestProcessType>
-		<MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
-		<teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
-		<BuildTasksDll>$(RootDir)/packages/SIL.BuildTasks/tools/SIL.BuildTasks.dll</BuildTasksDll>
-		<BuildTasksAwsDll>$(RootDir)/packages/SIL.BuildTasks.AWS/tools/SIL.BuildTasks.AWS.dll</BuildTasksAwsDll>
-		<SharedBuildDir>Z:</SharedBuildDir>
-		<SquirrelLogPath>$(RootDir)\lib\dotnet\Squirrel-Releasify.log</SquirrelLogPath>
-
-		<NuGetPackageDir Condition="'$(OS)'=='Windows_NT'">$(UserProfile)/.nuget/packages</NuGetPackageDir>
-		<NuGetPackageDir Condition="'$(OS)'!='Windows_NT'">$(Home)/.nuget/packages</NuGetPackageDir>
-
-		<RestartBuild Condition="!Exists('$(BuildTasksDll)') Or !Exists('$(BuildTasksAwsDll)')">true</RestartBuild>
-		<RestartBuild Condition="Exists('$(BuildTasksDll)') And Exists('$(BuildTasksAwsDll)')">false</RestartBuild>
-
-		<OkIfSigningFails>false</OkIfSigningFails>
-	</PropertyGroup>
-
-	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
-	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
-	<UsingTask TaskName="Split" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
-	<UsingTask TaskName="FileUpdate" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
-	<UsingTask TaskName="NUnit3" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
-	<UsingTask TaskName="S3BuildPublisher" AssemblyFile="$(BuildTasksAwsDll)" Condition="Exists('$(BuildTasksAwsDll)')" />
-	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
-	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
-
-	<PropertyGroup>
-		<ProfileName>BloomLibrary</ProfileName>
-		<Bucket>bloomlibrary.org</Bucket> <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
-	</PropertyGroup>
-
-	<Import Project="../.nuget/NuGet.targets" />
-
-	<Target Name="RestoreBuildTasks" DependsOnTargets="CheckPrerequisites">
-		<Message Text="RestartBuild=$(RestartBuild)"/>
-		<Exec Command='$(NuGetCommand) install SIL.BuildTasks -excludeVersion -version 2.5.0 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
-		<Exec Command='$(NuGetCommand) install SIL.BuildTasks.AWS -excludeVersion -version 2.5.0 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
-		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BuildInternal"
+    <channel Condition="'$(channel)'==''"></channel>
+    <!-- channelRelease is 'Release' if channel is empty, otherwise same as channel-->
+    <channelRelease>$(channel)</channelRelease>
+    <channelRelease Condition="'$(channel)'==''">Release</channelRelease>
+    <!-- dotChannel is empty if channel is empty, otherwise dot before channel-->
+    <dotChannel>.$(channel)</dotChannel>
+    <dotChannel Condition="'$(channel)'==''"></dotChannel>
+    <ApplicationName>Bloom$(channel)</ApplicationName>
+    <!-- normally Release, but we want Debug for testing 6.0 Alpha -->
+    <Configuration>Debug</Configuration>
+    <BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
+    <useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
+    <useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
+    <TestProcessType Condition="'$(useNUnit-x86)'=='true'">Separate</TestProcessType>
+    <TestProcessType Condition="'$(useNUnit-x86)'!='true'">Single</TestProcessType>
+    <MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
+    <teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
+    <BuildTasksDll>$(RootDir)/packages/SIL.BuildTasks/tools/SIL.BuildTasks.dll</BuildTasksDll>
+    <BuildTasksAwsDll>$(RootDir)/packages/SIL.BuildTasks.AWS/tools/SIL.BuildTasks.AWS.dll</BuildTasksAwsDll>
+    <SharedBuildDir>Z:</SharedBuildDir>
+    <SquirrelLogPath>$(RootDir)\lib\dotnet\Squirrel-Releasify.log</SquirrelLogPath>
+    <NuGetPackageDir Condition="'$(OS)'=='Windows_NT'">$(UserProfile)/.nuget/packages</NuGetPackageDir>
+    <NuGetPackageDir Condition="'$(OS)'!='Windows_NT'">$(Home)/.nuget/packages</NuGetPackageDir>
+    <RestartBuild Condition="!Exists('$(BuildTasksDll)') Or !Exists('$(BuildTasksAwsDll)')">true</RestartBuild>
+    <RestartBuild Condition="Exists('$(BuildTasksDll)') And Exists('$(BuildTasksAwsDll)')">false</RestartBuild>
+    <OkIfSigningFails>false</OkIfSigningFails>
+  </PropertyGroup>
+  <UsingTask TaskName="StampAssemblies" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
+  <UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
+  <UsingTask TaskName="Split" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
+  <UsingTask TaskName="FileUpdate" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
+  <UsingTask TaskName="NUnit3" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
+  <UsingTask TaskName="S3BuildPublisher" AssemblyFile="$(BuildTasksAwsDll)" Condition="Exists('$(BuildTasksAwsDll)')" />
+  <Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
+  <UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
+  <PropertyGroup>
+    <ProfileName>BloomLibrary</ProfileName>
+    <Bucket>bloomlibrary.org</Bucket>
+    <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
+  </PropertyGroup>
+  <Import Project="../.nuget/NuGet.targets" />
+  <Target Name="RestoreBuildTasks" DependsOnTargets="CheckPrerequisites">
+    <Message Text="RestartBuild=$(RestartBuild)"/>
+    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -excludeVersion -version 2.5.0 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
+    <Exec Command='$(NuGetCommand) install SIL.BuildTasks.AWS -excludeVersion -version 2.5.0 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BuildInternal"
 			Properties="Configuration=$(Configuration)" Condition="$(RestartBuild)" />
-	</Target>
-
-	<Target Name="VersionNumbers">
-		<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
-
-		<Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="2">
-			<Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
-		</Split>
-		<Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="3">
-			<Output TaskParameter="ReturnValue" PropertyName="BuildHash" />
-		</Split>
-
-		<Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
-		<Message Text="BuildHash: $(BuildHash)" Importance="high"/>
-
-		<!-- Note, after some thought, we've decided this is the best place to keep the version number
+  </Target>
+  <Target Name="VersionNumbers">
+    <Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
+    <Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="2">
+      <Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
+    </Split>
+    <Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="3">
+      <Output TaskParameter="ReturnValue" PropertyName="BuildHash" />
+    </Split>
+    <Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
+    <Message Text="BuildHash: $(BuildHash)" Importance="high"/>
+    <!-- Note, after some thought, we've decided this is the best place to keep the version number
 			(not on TeamCity, not in the projects). -->
-		<CreateProperty Value="5.7.$(BuildCounter)">
-			<Output PropertyName="Version" TaskParameter="Value"/>
-		</CreateProperty>
-		<CreateProperty Value="$(Version).$(BuildHash)">
-			<Output PropertyName="FullVersion" TaskParameter="Value"/>
-		</CreateProperty>
-		<CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).msi">
-			<Output PropertyName="InstallerFileName" TaskParameter="Value"/>
-		</CreateProperty>
-		<CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).exe">
-			<Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
-		</CreateProperty>
-		<CreateProperty Value="Bloom$(channel)-$(Version)-full.nupkg">
-			<Output PropertyName="SquirrelFullPkg" TaskParameter="Value"/>
-		</CreateProperty>
-		<CreateProperty Value="Bloom$(channel)-$(Version)-delta.nupkg">
-			<Output PropertyName="SquirrelDeltaPkg" TaskParameter="Value"/>
-		</CreateProperty>
-		<!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
+    <CreateProperty Value="6.0.$(BuildCounter)">
+      <Output PropertyName="Version" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="$(Version).$(BuildHash)">
+      <Output PropertyName="FullVersion" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).msi">
+      <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).exe">
+      <Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="Bloom$(channel)-$(Version)-full.nupkg">
+      <Output PropertyName="SquirrelFullPkg" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="Bloom$(channel)-$(Version)-delta.nupkg">
+      <Output PropertyName="SquirrelDeltaPkg" TaskParameter="Value"/>
+    </CreateProperty>
+    <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
 		you should set your preferred release folder from the command line, usually /p:SquirrelReleaseFolder=<root>/output/installer-->
-		<CreateProperty Value="$(SharedBuildDir)\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
-			<Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
-		</CreateProperty>
-		<Message Text="Version: $(Version)" Importance="high"/>
-		<Message Text="FullVersion: $(FullVersion)" Importance="high"/>
-	</Target>
-
-	<Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
-		<Message Text="Updating version in csproj files" Importance="high"/>
-		<!-- Version is the only variable needed.  AssemblyVersion and AssemblyFileVersion are both set from
+    <CreateProperty Value="$(SharedBuildDir)\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
+      <Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
+    </CreateProperty>
+    <Message Text="Version: $(Version)" Importance="high"/>
+    <Message Text="FullVersion: $(FullVersion)" Importance="high"/>
+  </Target>
+  <Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
+    <Message Text="Updating version in csproj files" Importance="high"/>
+    <!-- Version is the only variable needed.  AssemblyVersion and AssemblyFileVersion are both set from
 			Version if they are otherwise undefined. -->
-		<!-- it might be nice to use some subsection of BuildHash for the fourth field, but the hash itself is invalid -->
-		<FileUpdate File="$(RootDir)\src\BloomExe\BloomExe.csproj"
+    <!-- it might be nice to use some subsection of BuildHash for the fourth field, but the hash itself is invalid -->
+    <FileUpdate File="$(RootDir)\src\BloomExe\BloomExe.csproj"
 			Regex="&lt;Version&gt;[0-9]+.[0-9]+.[0-9]+.[0-9]+&lt;/Version&gt;"
 			ReplacementText="&lt;Version&gt;$(Version).0&lt;/Version&gt;" />
-		<FileUpdate File="$(RootDir)\src\BloomTests\BloomTests.csproj"
+    <FileUpdate File="$(RootDir)\src\BloomTests\BloomTests.csproj"
 			Regex="&lt;Version&gt;[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+&lt;/Version&gt;"
 			ReplacementText="&lt;Version&gt;$(Version).0&lt;/Version&gt;" />
-		<FileUpdate File="$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj"
+    <FileUpdate File="$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj"
 			Regex="&lt;Version&gt;[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+&lt;/Version&gt;"
 			ReplacementText="&lt;Version&gt;$(Version).0&lt;/Version&gt;" />
-		<!-- the product name also needs to have the channel in it. This controls (at least) the name used
+    <!-- the product name also needs to have the channel in it. This controls (at least) the name used
 			for the desktop icon.-->
-		<Message Text="Updating Bloom product channel in csproj file" Importance="high"/>
-		<FileUpdate File="$(RootDir)\src\BloomExe\BloomExe.csproj"
+    <Message Text="Updating Bloom product channel in csproj file" Importance="high"/>
+    <FileUpdate File="$(RootDir)\src\BloomExe\BloomExe.csproj"
 			DatePlaceholder='RELEASE_DATE'
 			Regex='&lt;Product&gt;Bloom.*&lt;/Product&gt;'
 			ReplacementText ='&lt;Product&gt;Bloom$(channel)&lt;/Product&gt;' />
-	</Target>
-
-	<Target Name="Build">
-		<CallTarget Targets="RestoreBuildTasks"/>
-		<CallTarget Targets="BuildInternal" Condition="!$(RestartBuild)" />
-	</Target>
-
-	<Target Name="BuildInternal" DependsOnTargets="SetAssemblyVersion">
-	<Error Text="Set Channel to empty string for Release build" Condition="'$(channel)'=='Release'"/>
-	<MSBuild Projects="$(RootDir)/$(Solution)"
+  </Target>
+  <Target Name="Build">
+    <CallTarget Targets="RestoreBuildTasks"/>
+    <CallTarget Targets="BuildInternal" Condition="!$(RestartBuild)" />
+  </Target>
+  <Target Name="BuildInternal" DependsOnTargets="SetAssemblyVersion">
+    <Error Text="Set Channel to empty string for Release build" Condition="'$(channel)'=='Release'"/>
+    <MSBuild Projects="$(RootDir)/$(Solution)"
 			 Targets="Rebuild"
 			 Properties="Configuration=$(Configuration)" />
-	</Target>
-
-	<ItemGroup>
-		<TestAssemblies Include="$(RootDir)/output/$(Configuration)/BloomTests.dll"/>
-	</ItemGroup>
-
-	<Target Name="Test" DependsOnTargets="Build">
-		<CallTarget Targets="TestOnly"/>
-	</Target>
-
-	<Target Name="TestOnly" DependsOnTargets="RunNUnit"/>
-
-	<Target Name="RunNUnit">
-		<NUnit3
+  </Target>
+  <ItemGroup>
+    <TestAssemblies Include="$(RootDir)/output/$(Configuration)/BloomTests.dll"/>
+  </ItemGroup>
+  <Target Name="Test" DependsOnTargets="Build">
+    <CallTarget Targets="TestOnly"/>
+  </Target>
+  <Target Name="TestOnly" DependsOnTargets="RunNUnit"/>
+  <Target Name="RunNUnit">
+    <NUnit3
 			Condition="$(isOnTeamCity) == false"
 			Assemblies="@(TestAssemblies)"
 			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.16.2/tools"
@@ -178,7 +161,7 @@
 			Verbose="true"
 			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
 			TeamCity="false"/>
-		<NUnit3
+    <NUnit3
 			Condition="$(isOnTeamCity) == true"
 			Assemblies="@(TestAssemblies)"
 			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.16.2/tools"
@@ -191,206 +174,175 @@
 			Workers="1"
 			Verbose="true"
 			TeamCity="true"/>
-	</Target>
-
-	<Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
+  </Target>
+  <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
 		Condition="'$(OS)'=='Windows_NT'">
-		<!-- USES THESE PROPERTIES: channel, Version, BuildConfigurationID -->
-
-
-		<!-- we customize and upload a version of DownloadPointers, named after our channel (RELEASE or BETA), and upload it.
+    <!-- USES THESE PROPERTIES: channel, Version, BuildConfigurationID -->
+    <!-- we customize and upload a version of DownloadPointers, named after our channel (RELEASE or BETA), and upload it.
 			That file is then iframe'd in to a download page somewhere.	-->
-
-		<!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
-		<Copy SourceFiles ="$(RootDir)\src\SquirrelInstaller\DownloadPointers.htm"
+    <!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
+    <Copy SourceFiles ="$(RootDir)\src\SquirrelInstaller\DownloadPointers.htm"
 				 DestinationFolder ="$(RootDir)\output\installer"/>
-
-		<!-- replace some parts of the file with the version number & date & channel info -->
-		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+    <!-- replace some parts of the file with the version number & date & channel info -->
+    <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 					 DatePlaceholder='RELEASE_DATE'
 					Regex='INSTALLERS_FOLDER'
 					 ReplacementText ="installers$(channel)" />
-
-		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+    <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 					 DatePlaceholder='RELEASE_DATE'
 					Regex='VERSION_DOT_CHANNEL'
 					 ReplacementText ="$(Version)$(dotChannel)" />
-
-		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+    <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 					 DatePlaceholder='RELEASE_DATE'
 					Regex='CHANNEL_LABEL'
 					 ReplacementText ="$(channelRelease)" />
-
-		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+    <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 					DatePlaceholder='RELEASE_DATE'
 					 Regex='VERSION_NUMBER'
 					ReplacementText ="$(Version)" />
-
-		<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
-
-		<Message Text="Attempting rsync of DownloadPointers_$(channelRelease).htm" Importance="high"/>
-
-		<!-- Note, this copy appends the "channel" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
+    <!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
+    <Message Text="Attempting rsync of DownloadPointers_$(channelRelease).htm" Importance="high"/>
+    <!-- Note, this copy appends the "channel" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
 		It is up to the target web site to include or not include the beta. E.g., after you release, there is normally a period of time before the next beta.
 		We have to make this copy because the S3BuildPublisher task does not support renaming.
 		Note that, again, we need to change the DestinationFolder or the web site when we want to go live.
 		-->
-		<Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(channelRelease).htm"/>
-		<S3BuildPublisher
+    <Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(channelRelease).htm"/>
+    <S3BuildPublisher
 		  CredentialStoreProfileName ="$(ProfileName)"
 		  SourceFiles="../output/installer/DownloadPointers_$(channelRelease).htm"
 			DestinationBucket="$(Bucket)"
 			DestinationFolder="channels"
 			IsPublicRead="true" />
-	</Target>
-
-	<Target Name="Installer" DependsOnTargets="VersionNumbers; Build ">
-		<!-- set the version number in the script that configures squirrel.  Perhaps there's a way to just send in the variables rather than this brute-force
+  </Target>
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build ">
+    <!-- set the version number in the script that configures squirrel.  Perhaps there's a way to just send in the variables rather than this brute-force
 		changing of the script, but I haven't figured that out. -->
-		<FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;version&gt;[^&lt;]*&lt;"
+    <FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;version&gt;[^&lt;]*&lt;"
 					ReplacementText ="&lt;version&gt;$(Version)&lt;" />
-		<!-- insert the version number in the description also (for Windows uninstaller UI, ultimately)-->
-		<FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;description&gt;[^&lt;]*&lt;"
+    <!-- insert the version number in the description also (for Windows uninstaller UI, ultimately)-->
+    <FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;description&gt;[^&lt;]*&lt;"
 					ReplacementText ="&lt;description&gt;Bloom $(Version) $(channel)&lt;" />
-		<!-- insert the Label into the product ID, which also controls the folder where Squirrel installs.-->
-		<FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;id&gt;[^&lt;]*&lt;"
+    <!-- insert the Label into the product ID, which also controls the folder where Squirrel installs.-->
+    <FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;id&gt;[^&lt;]*&lt;"
 					ReplacementText ="&lt;id&gt;Bloom$(channel)&lt;" />
-		<CallTarget Targets="SignExesIfPossible"/>
-		<!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
+    <CallTarget Targets="SignExesIfPossible"/>
+    <!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
 		already exists from a previous build. -->
-		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe $(RootDir)\output\$(Configuration)\Bloom$(channel).exe"/>
-		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe.config $(RootDir)\output\$(Configuration)\Bloom$(channel).exe.config"/>
-		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.pdb $(RootDir)\output\$(Configuration)\Bloom.pdb"/>
-		<Message Text="Making Nuget package: $(Version)" Importance="high"  />
-
-		<!-- Bloom expects an icon with a name corresponding to the EXE, which gets used for the desktop shortcut.
+    <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe $(RootDir)\output\$(Configuration)\Bloom$(channel).exe"/>
+    <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe.config $(RootDir)\output\$(Configuration)\Bloom$(channel).exe.config"/>
+    <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.pdb $(RootDir)\output\$(Configuration)\Bloom.pdb"/>
+    <Message Text="Making Nuget package: $(Version)" Importance="high"  />
+    <!-- Bloom expects an icon with a name corresponding to the EXE, which gets used for the desktop shortcut.
 		If we one day make distinct icons for the channels, we'll need to revise this to get the right channel-specific icon.-->
-		<Copy SourceFiles="$(RootDir)\src\SquirrelInstaller\Bloom.ico"  DestinationFiles="$(RootDir)\output\Release\Bloom$(channelRelease).ico"/>
-		<!-- The same is true for an initial splash image.  Right now, all channels use the same splash image for the instant splash. -->
-		<Copy SourceFiles="$(RootDir)\src\BloomSplash.png"  DestinationFiles="$(RootDir)\output\$(Configuration)\Bloom$(channel)Splash.png"/>
-
-		<Exec Command="$(RootDir)\.nuget\NuGet pack $(RootDir)\src\SquirrelInstaller\Bloom.nuspec"/>
-
-		<!-- This is the command that actually runs Squirrel. Usually the exe invoked here is called Squirrel. However, we're building our own
+    <Copy SourceFiles="$(RootDir)\src\SquirrelInstaller\Bloom.ico"  DestinationFiles="$(RootDir)\output\Release\Bloom$(channelRelease).ico"/>
+    <!-- The same is true for an initial splash image.  Right now, all channels use the same splash image for the instant splash. -->
+    <Copy SourceFiles="$(RootDir)\src\BloomSplash.png"  DestinationFiles="$(RootDir)\output\$(Configuration)\Bloom$(channel)Splash.png"/>
+    <Exec Command="$(RootDir)\.nuget\NuGet pack $(RootDir)\src\SquirrelInstaller\Bloom.nuspec"/>
+    <!-- This is the command that actually runs Squirrel. Usually the exe invoked here is called Squirrel. However, we're building our own
 			version, and it's easiest to go with the exe name that the Squirrel build process actually produces.
 			The releaseDir here is a shared drive for all the build agents (though for now we only use one, because only it has the signing data).
 			We continue on error so we can output the log contents. -->
-		<Exec
+    <Exec
 			ContinueOnError="true"
 			Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu'">
-			<Output TaskParameter="ExitCode" PropertyName="SquirrelReleasifyExitCode"/>
-		</Exec>
-
-		<CallTarget Targets="HandleSquirrelReleasifyError" Condition="$(SquirrelReleasifyExitCode)!=0" />
-
-		<Copy SourceFiles="$(SquirrelReleaseFolder)\Setup.exe"
+      <Output TaskParameter="ExitCode" PropertyName="SquirrelReleasifyExitCode"/>
+    </Exec>
+    <CallTarget Targets="HandleSquirrelReleasifyError" Condition="$(SquirrelReleasifyExitCode)!=0" />
+    <Copy SourceFiles="$(SquirrelReleaseFolder)\Setup.exe"
 				DestinationFiles="$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"
 			/>
-		<Message Text="Copied installer to $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
-
-	</Target>
-
-	<Target Name="HandleSquirrelReleasifyError">
-		<CallTarget Condition="Exists($(SquirrelLogPath))" Targets="SquirrelLogExists" />
-		<CallTarget Condition="!Exists($(SquirrelLogPath))" Targets="SquirrelLogDoesNotExist" />
-		<Error Text="Squirrel releasify failed. See log contents above." />
-	</Target>
-	<Target Name="SquirrelLogExists">
-		<Message Text="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" Importance="high"	/>
-		<Message Text="Contents of $(SquirrelLogPath):" Importance="high"	/>
-		<Exec Command="type $(SquirrelLogPath)" />
-		<Message Text="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" Importance="high"	/>
-	</Target>
-	<Target Name="SquirrelLogDoesNotExist">
-		<Message Text="Squirrel log does not exist at expected location ($(SquirrelLogPath))." Importance="high" />
-	</Target>
-
-	<Target Name="SignExesIfPossible">
-		<PropertyGroup>
-			<ContinueOnExeSignError Condition="$(isOnTeamCity) == true AND $(OkIfSigningFails) == false">false</ContinueOnExeSignError>
-			<ContinueOnExeSignError Condition="$(isOnTeamCity) == false OR $(OkIfSigningFails) == true">true</ContinueOnExeSignError>
-		</PropertyGroup>
-		<Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-		<!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
-		<Exec Command='sign "$(RootDir)\output\$(Configuration)\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-		<Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-	</Target>
-
-	<!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: squirrel itself
+    <Message Text="Copied installer to $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
+  </Target>
+  <Target Name="HandleSquirrelReleasifyError">
+    <CallTarget Condition="Exists($(SquirrelLogPath))" Targets="SquirrelLogExists" />
+    <CallTarget Condition="!Exists($(SquirrelLogPath))" Targets="SquirrelLogDoesNotExist" />
+    <Error Text="Squirrel releasify failed. See log contents above." />
+  </Target>
+  <Target Name="SquirrelLogExists">
+    <Message Text="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" Importance="high"	/>
+    <Message Text="Contents of $(SquirrelLogPath):" Importance="high"	/>
+    <Exec Command="type $(SquirrelLogPath)" />
+    <Message Text="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" Importance="high"	/>
+  </Target>
+  <Target Name="SquirrelLogDoesNotExist">
+    <Message Text="Squirrel log does not exist at expected location ($(SquirrelLogPath))." Importance="high" />
+  </Target>
+  <Target Name="SignExesIfPossible">
+    <PropertyGroup>
+      <ContinueOnExeSignError Condition="$(isOnTeamCity) == true AND $(OkIfSigningFails) == false">false</ContinueOnExeSignError>
+      <ContinueOnExeSignError Condition="$(isOnTeamCity) == false OR $(OkIfSigningFails) == true">true</ContinueOnExeSignError>
+    </PropertyGroup>
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+  </Target>
+  <!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: squirrel itself
 	can sign things if passed the right command line arguments. Is that a better thing to do? -->
-	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
-		<Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"'></Exec>
-		<Message Text="Signed squirrel installer at $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
-	</Target>
-
-	<Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
-		<CallTarget Targets="UploadCore"/>
-	</Target>
-	<!--Same as upload, except that if it is run on an agent that can't sign things, it just quietly
+  <Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
+    <Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"'></Exec>
+    <Message Text="Signed squirrel installer at $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
+  </Target>
+  <Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
+    <CallTarget Targets="UploadCore"/>
+  </Target>
+  <!--Same as upload, except that if it is run on an agent that can't sign things, it just quietly
 	doesn't sign the installer. Intended for continuous builds whose output will not be made public.-->
-	<Target Name="UploadSignIfPossible" DependsOnTargets="VersionNumbers; SignIfPossible" >
-		<CallTarget Targets="UploadCore"/>
-	</Target>
-	<Target Name="UploadCore">
-		<Message Text="Attempting rsync of $(SquirrelInstallerFileName)" Importance="high"/>
-
-		<!-- The way the web site generates the list of old installers requires that they be the only files in the
+  <Target Name="UploadSignIfPossible" DependsOnTargets="VersionNumbers; SignIfPossible" >
+    <CallTarget Targets="UploadCore"/>
+  </Target>
+  <Target Name="UploadCore">
+    <Message Text="Attempting rsync of $(SquirrelInstallerFileName)" Importance="high"/>
+    <!-- The way the web site generates the list of old installers requires that they be the only files in the
 		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.
 		When we're ready to go live with squirrel we can change this target folder or the web site.-->
-		<!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
-		<S3BuildPublisher
+    <!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
+    <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelInstallerFileName)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="installers$(channel)"
 		IsPublicRead="true" />
-
-		<!-- The delta, full, and RELEASES files must all be in the same directory, the one indicated by Program.SquirrelUpdateUrl.
+    <!-- The delta, full, and RELEASES files must all be in the same directory, the one indicated by Program.SquirrelUpdateUrl.
 		This MUST NOT CHANGE once we start shipping squirrel installers, because it's where all the old versions will look for
 		newer ones.-->
-		<S3BuildPublisher
+    <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelDeltaPkg)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
-
-		<S3BuildPublisher
+    <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
-
-		<S3BuildPublisher
+    <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/RELEASES"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
-
-		<CallTarget Targets ='MakeDownloadPointers'/>
-
-		<CallTarget Targets="CleanUpObsoleteInstallerFiles"/>
-	</Target>
-
-	<!-- Now that we've uploaded for this run, we can delete any obsolete files still in our Squirrel Release Folder. -->
-	<!-- We don't need any installers (BloomInstaller.*.exe) or any full nuget packages (*.-full.nupkg) besides the one for this run. -->
-	<!-- We keep the full nuget package for this run so the next one can create a delta. -->
-	<Target Name="CleanUpObsoleteInstallerFiles" DependsOnTargets="VersionNumbers">
-		<ItemGroup>
-			<FilesToDelete Include="$(SquirrelReleaseFolder)\BloomInstaller.*.exe;$(SquirrelReleaseFolder)\*-full.nupkg" Exclude="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)" />
-		</ItemGroup>
-		<Delete Files="@(FilesToDelete)" />
-	</Target>
-
-	<Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
-		<Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"' ContinueOnError="true"></Exec>
-	</Target>
-
-	<Target Name="DownloadDistFiles">
-		<Message Text="Downloading Bloom.chm help file" Importance="high"  />
-		<!-- NB: some configurations on TeamCity may also get a version of this from
+    <CallTarget Targets ='MakeDownloadPointers'/>
+    <CallTarget Targets="CleanUpObsoleteInstallerFiles"/>
+  </Target>
+  <!-- Now that we've uploaded for this run, we can delete any obsolete files still in our Squirrel Release Folder. -->
+  <!-- We don't need any installers (BloomInstaller.*.exe) or any full nuget packages (*.-full.nupkg) besides the one for this run. -->
+  <!-- We keep the full nuget package for this run so the next one can create a delta. -->
+  <Target Name="CleanUpObsoleteInstallerFiles" DependsOnTargets="VersionNumbers">
+    <ItemGroup>
+      <FilesToDelete Include="$(SquirrelReleaseFolder)\BloomInstaller.*.exe;$(SquirrelReleaseFolder)\*-full.nupkg" Exclude="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)" />
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" />
+  </Target>
+  <Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
+    <Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"' ContinueOnError="true"></Exec>
+  </Target>
+  <Target Name="DownloadDistFiles">
+    <Message Text="Downloading Bloom.chm help file" Importance="high"  />
+    <!-- NB: some configurations on TeamCity may also get a version of this from
 		the static dependencies configuration, for use with getDependencies.sh.
 		These are not necessarily redundant, since the static dependencies configuration
 		does not know when a new version of the help file is available, so it can get stale,
@@ -399,6 +351,6 @@
 		Note, the original name for this on Dropbox may differ (e.g. "Bloom2.1.chm") but we
 		are renaming it here to just Bloom.chm.
 		-->
-		<WebDownload FileUri="https://www.dropbox.com/s/4mgbc5xhmhndia2/Bloom3.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
-	</Target>
+    <WebDownload FileUri="https://www.dropbox.com/s/4mgbc5xhmhndia2/Bloom3.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
+  </Target>
 </Project>
