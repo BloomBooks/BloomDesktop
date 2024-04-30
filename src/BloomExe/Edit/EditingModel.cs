@@ -158,7 +158,7 @@ namespace Bloom.Edit
             collectionClosingEvent.Subscribe(o =>
             {
                 if (Visible)
-                    SaveNow();
+                    RequestSave();
             });
             localizationChangedEvent.Subscribe(o =>
             {
@@ -166,7 +166,7 @@ namespace Bloom.Edit
                 //shown so the view has never been full constructed, so we're not in a good state to do a refresh
                 if (Visible)
                 {
-                    SaveNow();
+                    RequestSave();
                     _view.UpdateButtonLocalizations();
                     RefreshDisplayOfCurrentPage(true);
                     //_view.UpdateDisplay();
@@ -214,7 +214,7 @@ namespace Bloom.Edit
         {
             if (details.From == _view)
             {
-                SaveNow();
+                RequestSave();
                 _view.RunJavascriptAsync(
                     "if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {editTabBundle.getEditablePageBundleExports().disconnectForGarbageCollection();}"
                 );
@@ -310,7 +310,7 @@ namespace Bloom.Edit
             {
                 try
                 {
-                    SaveNow(); //ensure current page is saved first
+                    RequestSave(); //ensure current page is saved first
                     _domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
                     _currentlyDisplayedBook.DuplicatePage(page, numberOfTimesToDuplicate);
                     // Book.DuplicatePage() updates the page list so we don't need to do it here.
@@ -354,7 +354,7 @@ namespace Bloom.Edit
                 try
                 {
                     // BL-4035 Save any style changes to the book before deleting the page.
-                    SaveNow();
+                    RequestSave();
                 }
                 catch (Exception saveError)
                 {
@@ -551,7 +551,7 @@ namespace Bloom.Edit
 
         public void SetLayout(Layout layout)
         {
-            SaveNow();
+            RequestSave();
             var changedOrientation =
                 CurrentBook.GetLayout().SizeAndOrientation.IsLandScape
                 != layout.SizeAndOrientation.IsLandScape;
@@ -590,7 +590,7 @@ namespace Bloom.Edit
             CurrentBook.SetMultilingualContentLanguages(contentLanguages); // set langs before saving page
             // The language choice is saved in the data-div, so we must do a full save even if this
             // page doesn't contain anything else that has non-local effects.
-            SaveNow(true);
+            RequestSave(true);
             CurrentBook.PrepareForEditing();
             RefreshDisplayOfCurrentPage();
             _view.UpdatePageList(true); //counting on this to redo the thumbnails
@@ -1146,7 +1146,7 @@ namespace Bloom.Edit
                 _currentlyDisplayedBook.BookInfo.MetaData.LeveledReaderLevel.ToString();
             if (correctLevel != currentLevel)
             {
-                SaveNow();
+                RequestSave();
                 _currentlyDisplayedBook.OurHtmlDom.Body.SetAttribute(
                     "data-leveledreaderlevel",
                     correctLevel
@@ -1231,7 +1231,7 @@ namespace Bloom.Edit
                 return;
 
             var stopwatch = Stopwatch.StartNew();
-            SaveNow(forceFullSave);
+            RequestSave(forceFullSave);
             stopwatch.Stop();
             Debug.WriteLine("Save Now Elapsed Time: {0} ms", stopwatch.ElapsedMilliseconds);
         }
@@ -1260,124 +1260,104 @@ namespace Bloom.Edit
         int _saveCount = 0;
         object _saveCountLock = new object();
 
-        public void SaveNow(bool forceFullSave = false)
+        public void SavePageHtml(string bodyHtml, string userCssContent)
         {
-            try
+            var dom = XmlHtmlConverter.GetXmlDomFromHtml(bodyHtml, false);
+            var bodyDom = dom.SelectSingleNode("//body");
+            var browserDomPage = bodyDom.SelectSingleNode(
+                "//body//div[contains(@class,'bloom-page')]"
+            );
+            var htmlDom = HtmlDom.FromXmlNodeNoClone(browserDomPage);
+
+            var styles = HtmlDom.CreateUserModifiedStyles(userCssContent);
+
+            var head = htmlDom.RawDom.SelectSingleNode("//head");
+            head.InnerXml = HtmlDom.CreateUserModifiedStyles(userCssContent);
+
+            _pageSelection.CurrentSelection.Book.SavePage(
+                htmlDom,
+                true /*todo forceFullSave*/
+            );
+            _pageHasUnsavedDataDerivedChange = false;
+            CheckForBL2634("finished save");
+            while (_tasksToDoAfterSaving.Count > 0)
             {
-                lock (_saveCountLock)
-                {
-                    Debug.Assert(
-                        _saveCount == 0,
-                        $"Trying to save while already saving: possible empty marginBox cause? (save count={_saveCount})"
-                    );
-                    _saveCount++;
-                }
-                SaveNowInternal(forceFullSave);
-            }
-            finally
-            {
-                lock (_saveCountLock)
-                {
-                    _saveCount--;
-                }
+                var task = _tasksToDoAfterSaving[0];
+                _tasksToDoAfterSaving.RemoveAt(0);
+                task();
             }
         }
 
-        private void SaveNowInternal(bool forceFullSave = false)
+        public void RequestSave(bool forceFullSave = false)
         {
             if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
             {
-                Logger.WriteMinorEvent("EditingModel.SaveNow() starting");
-#if MEMORYCHECK
-                // Check memory for the benefit of developers.
-                MemoryManagement.CheckMemory(false, "before EditingModel.SaveNow()", false);
-#endif
-                try
-                {
-                    _webSocketServer.SendString("pageThumbnailList", "saving", "");
+                Logger.WriteMinorEvent("EditingModel.RequestSave() starting");
+                _webSocketServer.SendString("pageThumbnailList", "saving", "");
+                _tasksToDoAfterSaving.Clear(); // review
+                // review do we really need to be checking to see if things are loaded? If they are not, then there is nothing to save, and this doesn't thow.
+                var script =
+                    @"console.log('saving'); editTabBundle.getToolboxBundleExports().removeToolboxMarkup();editTabBundle.getEditablePageBundleExports().saveRequested();";
+                _view.Browser.RunJavascriptAsync(script);
 
-                    // CleanHtml already requires that we are on UI thread. But it's worth asserting here too in case that changes.
-                    // If we weren't sure of that we would need locking for access to _tasksToDoAfterSaving and _inProcessOfSaving,
-                    // and would need to be careful about whether any delayed tasks needed to be on the UI thread.
-                    if (_view.InvokeRequired)
-                    {
-                        NonFatalProblem.Report(
-                            ModalIf.Beta,
-                            PassiveIf.Beta,
-                            "SaveNow called on wrong thread",
-                            null
-                        );
-                        _view.Invoke((Action)(() => SaveNowInternal(forceFullSave)));
-                        Logger.WriteMinorEvent(
-                            "EditingModel.SaveNow() finished after Invoke to get on UI thread"
-                        );
-                        return;
-                    }
-                    CheckForBL2634("beginning SaveNow");
-                    _inProcessOfSaving = true;
-                    _tasksToDoAfterSaving.Clear();
-                    _view.GetHtmlFromBrowserAndCopyToPageDom();
+                // _view.GetHtmlFromBrowserAndCopyToPageDom();
 
-                    //BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
-                    //this old code:
-                    //	CurrentBook.SavePage(_domForCurrentPage);
-                    //would some times ask book X to save a page from book Y.
-                    //We could never reproduce it at will, so this is to help with that...
-                    if (this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
-                    {
-                        Debug.Fail("This is the BL-1064 Situation");
-                        Logger.WriteEvent(
-                            "Warning: SaveNow() with a page that is not the current book. That should be ok, but it is the BL-1064 situation (though we now work around it)."
-                        );
-                    }
-                    //but meanwhile, the page knows its book, so we can see if it looks like a valid book and give a helpful
-                    //error if, for example, it was deleted:
-                    try
-                    {
-                        if (!_pageSelection.CurrentSelection.Book.IsSaveable)
-                        {
-                            Logger.WriteEvent(
-                                "Error: SaveNow() found that this book had IsSaveable=='false'"
-                            );
-                            Logger.WriteEvent(
-                                "Book path was {0}",
-                                _pageSelection.CurrentSelection.Book.FolderPath
-                            );
-                            throw new ApplicationException(
-                                "Bloom tried to save a page to a book that was not in a position to be updated."
-                            );
-                        }
-                    }
-                    catch (ObjectDisposedException err) // in case even calling CanUpdate gave an error
-                    {
-                        Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
-                        throw err;
-                    }
-                    catch (Exception err) // in case even calling CanUpdate gave an error
-                    {
-                        Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
-                        throw err;
-                    }
-                    CheckForBL2634("save");
-                    //OK, looks safe, time to save.
-                    var newPageData = GetPageData(_domForCurrentPage.RawDom);
-                    _pageSelection.CurrentSelection.Book.SavePage(
-                        _domForCurrentPage,
-                        forceFullSave || NeedToDoFullSave(newPageData)
-                    );
-                    _pageHasUnsavedDataDerivedChange = false;
-                    CheckForBL2634("finished save");
-                    while (_tasksToDoAfterSaving.Count > 0)
-                    {
-                        var task = _tasksToDoAfterSaving[0];
-                        _tasksToDoAfterSaving.RemoveAt(0);
-                        task();
-                    }
-                }
-                finally
-                {
-                    _inProcessOfSaving = false;
-                }
+                // //BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
+                // //this old code:
+                // //	CurrentBook.SavePage(_domForCurrentPage);
+                // //would some times ask book X to save a page from book Y.
+                // //We could never reproduce it at will, so this is to help with that...
+                // if (this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
+                // {
+                //     Debug.Fail("This is the BL-1064 Situation");
+                //     Logger.WriteEvent(
+                //         "Warning: SaveNow() with a page that is not the current book. That should be ok, but it is the BL-1064 situation (though we now work around it)."
+                //     );
+                // }
+                // //but meanwhile, the page knows its book, so we can see if it looks like a valid book and give a helpful
+                // //error if, for example, it was deleted:
+                // try
+                // {
+                //     if (!_pageSelection.CurrentSelection.Book.IsSaveable)
+                //     {
+                //         Logger.WriteEvent(
+                //             "Error: SaveNow() found that this book had IsSaveable=='false'"
+                //         );
+                //         Logger.WriteEvent(
+                //             "Book path was {0}",
+                //             _pageSelection.CurrentSelection.Book.FolderPath
+                //         );
+                //         throw new ApplicationException(
+                //             "Bloom tried to save a page to a book that was not in a position to be updated."
+                //         );
+                //     }
+                // }
+                // catch (ObjectDisposedException err) // in case even calling CanUpdate gave an error
+                // {
+                //     Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
+                //     throw err;
+                // }
+                // catch (Exception err) // in case even calling CanUpdate gave an error
+                // {
+                //     Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
+                //     throw err;
+                // }
+                // CheckForBL2634("save");
+                // //OK, looks safe, time to save.
+                // var newPageData = GetPageData(_domForCurrentPage.RawDom);
+                // _pageSelection.CurrentSelection.Book.SavePage(
+                //     _domForCurrentPage,
+                //     forceFullSave || NeedToDoFullSave(newPageData)
+                // );
+                // _pageHasUnsavedDataDerivedChange = false;
+                // CheckForBL2634("finished save");
+                // while (_tasksToDoAfterSaving.Count > 0)
+                // {
+                //     var task = _tasksToDoAfterSaving[0];
+                //     _tasksToDoAfterSaving.RemoveAt(0);
+                //     task();
+                // }
+
 #if MEMORYCHECK
                 // Check memory for the benefit of developers.
                 MemoryManagement.CheckMemory(false, "after EditingModel.SaveNow()", false);
@@ -1498,7 +1478,7 @@ namespace Bloom.Edit
                 );
 
                 // We need to save so that when asked by the thumbnailer, the book will give the proper image
-                SaveNow();
+                RequestSave();
 
                 // BL-3717: if we cleanup unused image files whenever we change a picture then Cut can lose
                 // all of an image's metadata (because the actual file is missing from the book folder when we go to
@@ -1689,14 +1669,14 @@ namespace Bloom.Edit
 
         public void ShowAddPageDialog()
         {
-            SaveNow(); // At least in template mode, the current page shows in the Add Page dialog, and should be current.
+            RequestSave(); // At least in template mode, the current page shows in the Add Page dialog, and should be current.
             _view.ShowAddPageDialog();
         }
 
         internal void ChangePageLayout(IPage page)
         {
             PageChangingLayout = page;
-            SaveNow(); // need to preserve any typing they've done but not yet saved
+            RequestSave(); // need to preserve any typing they've done but not yet saved
             _view.ShowChangeLayoutDialog();
         }
 
@@ -1751,7 +1731,7 @@ namespace Bloom.Edit
 
         public void CopyPage(IPage page)
         {
-            SaveNow(); // need to preserve any typing they've done but not yet saved (BL-4512)
+            RequestSave(); // need to preserve any typing they've done but not yet saved (BL-4512)
             // We have to clone this so that if the user changes the page after doing the copy,
             // when they paste they get the page as it was, not as it is now.
             _pageDivFromCopyPage = (XmlElement)page.GetDivNodeForThisPage().CloneNode(true);

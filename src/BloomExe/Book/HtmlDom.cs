@@ -58,6 +58,13 @@ namespace Bloom.Book
             _dom = (XmlDocument)domToClone.Clone();
         }
 
+        public static HtmlDom FromXmlNodeNoClone(XmlNode domToOwn)
+        {
+            var h = new HtmlDom();
+            h.RawDom.DocumentElement.AppendChild(h.RawDom.ImportNode(domToOwn, true));
+            return h;
+        }
+
         /// <summary>
         /// Make a DOM out of the input
         /// </summary>

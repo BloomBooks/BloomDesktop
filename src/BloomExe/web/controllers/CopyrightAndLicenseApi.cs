@@ -68,7 +68,7 @@ namespace Bloom.web.controllers
             {
                 case HttpMethods.Get:
                     //in case we were in this dialog already and made changes which haven't found their way out to the book yet
-                    Model.SaveNow();
+                    Model.RequestSave();
 
                     var intellectualPropertyData = GetJsonFromMetadata(
                         Model.CurrentBook.GetLicenseMetadata(),
@@ -115,7 +115,7 @@ namespace Bloom.web.controllers
                     request.ReplyWithJson(intellectualPropertyData);
                     break;
                 case HttpMethods.Post:
-                    View.Model.SaveNow(); // Saved DOM must be up to date with possibly new imageUrl
+                    View.Model.RequestSave(); // Saved DOM must be up to date with possibly new imageUrl
                     metadata = GetMetadataFromJson(request, forBook: false);
                     bool askUserToCopyToAllImages = View.SaveImageMetadata(metadata);
 

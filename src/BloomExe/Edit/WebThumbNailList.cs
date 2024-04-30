@@ -348,7 +348,7 @@ namespace Bloom.Edit
                 WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
                 return;
             }
-            Model.SaveNow();
+            Model.RequestSave();
             var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
             RelocatePageEvent.Raise(relocatePageInfo);
             UpdateItems(movedPage.Book.GetPages());
