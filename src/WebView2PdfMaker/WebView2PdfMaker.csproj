@@ -11,8 +11,8 @@
     <AssemblyTitle>BloomPdfMaker</AssemblyTitle>
     <Company>SIL</Company>
     <Product>BloomPdfMaker</Product>
-    <Copyright>© SIL International 2023</Copyright>
-    <Version>5.7.0.0</Version>
+    <Copyright>© SIL International 2023-2024</Copyright>
+    <Version>6.0.0.0</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <PlatformTarget>AnyCPU</PlatformTarget>
