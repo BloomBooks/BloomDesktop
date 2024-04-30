@@ -28,7 +28,10 @@ namespace Bloom.Edit
 #endif
             //enhance... make pre-change event cancellable
             if (!prepareAlreadyDone)
+            {
+                // this leads to the saving of the current page
                 PrepareToSelectPage();
+            }
             _currentSelection = page;
 
             InvokeSelectionChanged();

@@ -753,7 +753,7 @@ namespace Bloom.Edit
             )
             {
                 _view.ChangingPages = true;
-                FinishSavingPage();
+                RequestSavePage();
                 _view.RunJavascriptAsync(
                     "if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {editTabBundle.getEditablePageBundleExports().disconnectForGarbageCollection();}"
                 );
@@ -1210,19 +1210,14 @@ namespace Bloom.Edit
         {
             if (CannotSavePage())
                 return;
-            FinishSavingPage(forceFullSave);
+            RequestSavePage(forceFullSave);
             RefreshDisplayOfCurrentPage();
         }
 
         /// <summary>
-        /// Called from a JavaScript event after it has done everything appropriate in JS land towards saving a page,
-        /// in the process of wrapping up this page before moving to another.
-        /// The main point is that any changes on this page get saved back to the main document.
-        /// In case it is an origami page, there is some special stuff to do as commented below.
-        /// (Argument is required for JS callback, not used).
+        /// Called as a result of page selection changing or other event that requests a save and reload.
         /// </summary>
-        /// <returns>true if it was aborted (nothing to save or refresh)</returns>
-        private void FinishSavingPage(bool forceFullSave = false)
+        private void RequestSavePage(bool forceFullSave = false)
         {
             if (CannotSavePage())
                 return;
