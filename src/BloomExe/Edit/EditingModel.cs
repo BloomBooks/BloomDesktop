@@ -753,9 +753,6 @@ namespace Bloom.Edit
             )
             {
                 _view.ChangingPages = true;
-                _view.RunJavascriptWithStringResult_Sync_Dangerous(
-                    "if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {editTabBundle.getEditablePageBundleExports().pageSelectionChanging();}"
-                );
                 FinishSavingPage();
                 _view.RunJavascriptAsync(
                     "if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {editTabBundle.getEditablePageBundleExports().disconnectForGarbageCollection();}"
@@ -1294,6 +1291,7 @@ namespace Bloom.Edit
             if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
             {
                 Logger.WriteMinorEvent("EditingModel.RequestSave() starting");
+                // show the saving message to the user
                 _webSocketServer.SendString("pageThumbnailList", "saving", "");
                 _tasksToDoAfterSaving.Clear(); // review
                 // review do we really need to be checking to see if things are loaded? If they are not, then there is nothing to save, and this doesn't thow.

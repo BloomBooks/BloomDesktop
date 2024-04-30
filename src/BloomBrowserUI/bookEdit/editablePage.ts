@@ -11,7 +11,6 @@ import { theOneBubbleManager, BubbleManager } from "./js/bubbleManager";
 
 // This allows strong typing to be done for exported functions
 export interface IPageFrameExports {
-    pageSelectionChanging(): void;
     pageUnloading(): void;
     disconnectForGarbageCollection(): void;
     copySelection(): void;
@@ -38,9 +37,8 @@ export interface IPageFrameExports {
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, editTabBundle.getEditablePageBundleExports().pageSelectionChanging() can be called.
+// For example, editTabBundle.getEditablePageBundleExports().saveRequested() can be called.
 import {
-    pageSelectionChanging,
     saveRequested,
     userStylesheetContent,
     pageUnloading,
@@ -53,7 +51,6 @@ import {
     attachToCkEditor
 } from "./js/bloomEditing";
 export {
-    pageSelectionChanging,
     saveRequested,
     userStylesheetContent,
     pageUnloading,
