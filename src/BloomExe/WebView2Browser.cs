@@ -20,6 +20,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SIL.Windows.Forms.ClearShare;
 
 namespace Bloom
 {
@@ -98,6 +99,20 @@ namespace Bloom
                     // hard exit
                     Environment.Exit(1);
                 }
+                // Prevent the browser from opening external links in iframes by intercepting FrameNavigationStarting events.
+                // See https://issues.bloomlibrary.org/youtrack/issue/BL-13316.  Old versions of Bloom would open a new browser
+                // window for external links the same as this does.
+                _webview.CoreWebView2.FrameNavigationStarting += (
+                    object sender,
+                    CoreWebView2NavigationStartingEventArgs args
+                ) =>
+                {
+                    if (args.Uri.StartsWith("http") && !args.Uri.StartsWith("http://localhost"))
+                    {
+                        args.Cancel = true;
+                        ToPalaso.ProcessExtra.SafeStartInFront(args.Uri);
+                    }
+                };
                 _webview.CoreWebView2.FrameNavigationCompleted += (o, eventArgs) =>
                 {
                     RaiseDocumentCompleted(o, eventArgs);
@@ -513,6 +528,41 @@ namespace Bloom
             RobustFile.WriteAllText(path, html, Encoding.UTF8);
         }
 
+        // This filter suppresses the windows messages that are most likely to cause unexpected reentrancy
+        // while running DoEvents in the RunJavascriptWithStringResult_Sync_Dangerous method.
+        // Might be useful in other contexts where we use DoEvents
+        class AsyncMessageFilter : IMessageFilter
+        {
+            private const int WM_KEYFIRST = 0x0100;
+            private const int WM_KEYLAST = 0x0109;
+            private const int WM_GESTURE = 0x0119; // copilot
+            private const int WM_MOUSEFIRST = 0x0200;
+            private const int WM_MOUSELAST = 0x020E;
+            private const int WM_TOUCH = 0x0240; // copilot
+
+            public bool PreFilterMessage(ref Message m)
+            {
+                // https://stackoverflow.com/questions/78028901/does-async-await-use-windows-messages-to-return-control-to-the-ui-thread
+                // suggests that it might be OK to filter out all messages below 0xc000, since Windows registers some message higher than
+                // that to indicate the completion of an async task. But it produced deadlock. I think this is enough to make it
+                // pretty hard for the user to initiate something that will interfere with Save().
+                if (
+                    m.Msg == WM_TOUCH
+                    || m.Msg == WM_GESTURE
+                    || m.Msg >= WM_KEYFIRST && m.Msg <= WM_KEYLAST
+                    // WM_MOUSEFIRST is also WM_MOUSEMOVE. I don't think we need to suppress that,
+                    // and not doing so makes it easier to catch a significant event being suppressed.
+                    || m.Msg >= WM_MOUSEFIRST + 1 && m.Msg <= WM_MOUSELAST
+                )
+                {
+                    Debug.Fail($"Filtered out message {m.Msg}");
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         [Obsolete(
             "This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred."
         )]
@@ -521,10 +571,29 @@ namespace Bloom
             Task<string> task = GetStringFromJavascriptAsync(script);
             // This is dangerous. E.g. it caused this bug: https://issues.bloomlibrary.org/youtrack/issue/BL-12614
             // Came from an answer in https://stackoverflow.com/questions/65327263/how-to-get-sync-return-from-executescriptasync-in-webview2'
-            while (!task.IsCompleted)
+            // The message filter makes it less dangerous, but we still need to be aware that (e.g.) while running javascript
+            // to get the content of a page to save it, any windows event not suppressed by the filter could run.
+            // Without the filter, it's quite possible for the user to initiate a new command while we are trying to run the
+            // code to save the page before completing the last thing the user requested.
+            // Note: at one point, I thought making our code async all the way would solve this, but now I'm not so sure.
+            // A click event handler can be async, but it is "void" async (no task to await), so I think it can still
+            // return control to the main message loop before all the async stuff it started has completed.
+            // The sad thing about this approach is that the filtered events are lost, not postponed. We could even lose
+            // a mousedown but still see the corresponding mouseup, which might do something unexpected.
+            // But it's better than reentrant event handling, which is probably the cause of BL-13120 and friends.
+            var filter = new AsyncMessageFilter();
+            Application.AddMessageFilter(filter);
+            try
             {
-                Application.DoEvents();
-                Thread.Sleep(10);
+                while (!task.IsCompleted)
+                {
+                    Application.DoEvents();
+                    Thread.Sleep(10);
+                }
+            }
+            finally
+            {
+                Application.RemoveMessageFilter(filter);
             }
 
             return task.Result;

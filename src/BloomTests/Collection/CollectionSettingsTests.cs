@@ -511,5 +511,25 @@ namespace BloomTests.Collection
             jsonResult = settings.GetColorPaletteAsJson("test-empty-text");
             Assert.That(jsonResult, Is.EqualTo("[]"));
         }
+
+        [TestCase("")]
+        [TestCase("abc")]
+        [TestCase("test>@example.com")]
+        [TestCase("test @example.com")]
+        [TestCase("test@example.com,notAnEmailAddress")]
+        public void ValidateAdministrators_InvalidEmails_ReturnsFalse(string input)
+        {
+            Assert.That(CollectionSettings.ValidateAdministrators(input), Is.False);
+        }
+
+        [TestCase("test@example.com")]
+        [TestCase("test@example.com test2@example.com")]
+        [TestCase("test@example.com,test2@example.com")]
+        [TestCase("test@example.com, test2@example.com")]
+        [TestCase("  test@example.org, ,,,     test2@example.com, test3@example.com  ")]
+        public void ValidateAdministrators_ValidEmails_ReturnsTrue(string input)
+        {
+            Assert.That(CollectionSettings.ValidateAdministrators(input), Is.True);
+        }
     }
 }

@@ -39,7 +39,7 @@ namespace Bloom.Book
         {
             GenerateEditableDivsWithPreTranslatedContent(pageOrDocumentNode);
 
-            // Earlier (pre-5.7) versions of Bloom were selective about creating editable divs for
+            // Earlier (pre-6.0) versions of Bloom were selective about creating editable divs for
             // languages that were not being used for this field, based on data-default-languages.
             // But the logic for this was already complex in 5.6, and had caused bugs, and the Appearance
             // system made it almost impossible, since the visibility of the L3 bloom-editable
@@ -285,18 +285,15 @@ namespace Bloom.Book
                 );
 
                 //nb: we don't necessarily care that a div is editable or not
-                foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div"))
-                {
-                    UpdateContentLanguageClassesOnElement(
-                        e,
-                        contentLanguages,
-                        bookData,
-                        settings,
-                        language2Tag,
-                        language3Tag,
-                        dataDefaultLanguages
-                    );
-                }
+                UpdateGeneratedClassesOnChildren(
+                    group.SafeSelectNodes(".//textarea | .//div"),
+                    bookData,
+                    settings,
+                    language2Tag,
+                    language3Tag,
+                    contentLanguages,
+                    dataDefaultLanguages
+                );
             }
 
             // Also correct bloom-contentX fields in the bloomDataDiv, which are not listed under translation groups
@@ -308,21 +305,77 @@ namespace Bloom.Book
             {
                 string[] dataDefaultLanguages = new string[] { " auto" }; // bloomDataDiv contents don't have dataDefaultLanguages on them, so just go with "auto"
                 //nb: we don't necessarily care that a div is editable or not
-                foreach (
-                    XmlElement e in coverImageDescription.SafeSelectNodes(".//textarea | .//div")
-                )
-                {
-                    UpdateContentLanguageClassesOnElement(
-                        e,
-                        contentLanguages,
-                        bookData,
-                        // The old behavior will do for now, since we don't have Appearance settings for these fields.
-                        settings,
-                        language2Tag,
-                        language3Tag,
-                        dataDefaultLanguages
-                    );
-                }
+                UpdateGeneratedClassesOnChildren(
+                    coverImageDescription.SafeSelectNodes(".//textarea | .//div"),
+                    bookData,
+                    settings,
+                    language2Tag,
+                    language3Tag,
+                    contentLanguages,
+                    dataDefaultLanguages
+                );
+            }
+        }
+
+        public static bool IsPageAffectedByLanguageMenu(XmlElement page, bool legacy)
+        {
+            var groups = GetTranslationGroups(page);
+            foreach (var g in groups)
+            {
+                var defLangs = HtmlDom.GetAttributeValue(g, "data-default-languages");
+
+                // missing attribute or empty is treated as "auto", and this menu definitely affects those.
+                if (string.IsNullOrEmpty(defLangs) || defLangs.StartsWith("auto"))
+                    return true;
+
+                var visVariable = HtmlDom.GetAttributeValue(g, "data-visibility-variable");
+                // If the group is controlled by the Appearance system, it's not affected by the language menu.
+                if (!String.IsNullOrEmpty(visVariable) && !legacy)
+                    continue;
+
+                // The menu can change the primary Vernacular language, so it's applicable to any block that shows that.
+                if (defLangs.Split(',').Contains("V"))
+                    return true;
+            }
+            return false;
+        }
+
+        private static void UpdateGeneratedClassesOnChildren(
+            XmlNodeList editables,
+            BookData bookData,
+            AppearanceSettings settings,
+            string language2Tag,
+            string language3Tag,
+            Dictionary<string, string> contentLanguages,
+            string[] dataDefaultLanguages
+        )
+        {
+            // Must do this first, content class generation depends on ALL elements in the group
+            // having the visibility class set.
+            foreach (XmlElement e in editables)
+            {
+                UpdateVisibilityClassOnElement(
+                    e,
+                    contentLanguages,
+                    bookData,
+                    settings,
+                    language2Tag,
+                    language3Tag,
+                    dataDefaultLanguages
+                );
+            }
+
+            foreach (XmlElement e in editables)
+            {
+                UpdateContentLanguageClassesOnElement(
+                    e,
+                    contentLanguages,
+                    bookData,
+                    settings,
+                    language2Tag,
+                    language3Tag,
+                    dataDefaultLanguages
+                );
             }
         }
 
@@ -339,6 +392,43 @@ namespace Bloom.Book
                 groups = groups.Where(g => !g.Attributes["class"].Value.Contains("box-header-off"));
             }
             return groups.ToArray();
+        }
+
+        private static void UpdateVisibilityClassOnElement(
+            XmlElement editable,
+            Dictionary<string, string> contentLanguages,
+            BookData bookData,
+            AppearanceSettings settings,
+            string contentLanguageTag2,
+            string contentLanguageTag3,
+            string[] dataDefaultLanguages
+        )
+        {
+            HtmlDom.RemoveClassesBeginingWith(editable, "bloom-visibility-code");
+            var lang = editable.GetAttribute("lang");
+            if (
+                ShouldShowEditable(
+                    editable,
+                    settings,
+                    lang,
+                    dataDefaultLanguages,
+                    contentLanguageTag2,
+                    contentLanguageTag3,
+                    bookData
+                )
+            )
+            {
+                // Managing the presence of this class is how we control visibility of the various language blocks.
+                // It would be more elegant in some ways in the appearance system to generate a CSS variable
+                // like --cover-title-L2-show and then have basePage.css apply that where appropriate, but
+                // it becomes almost impossible for C# code to know what elements are actually visible, and that
+                // is important in all kinds of ways. For example, we only export visible stuff (or sometimes stuff
+                // the user could make visible) to most publications. Source bubbles only show what is NOT
+                // already visible in the page content. And so on. So we decided to stick with a variable that
+                // controls visibility in a straightforward, unconditional way, which means C# code can just look
+                // to see whether the class is there or not.
+                HtmlDom.AddClass(editable, "bloom-visibility-code-on");
+            }
         }
 
         private static void UpdateContentLanguageClassesOnElement(
@@ -380,32 +470,7 @@ namespace Bloom.Book
                 HtmlDom.AddClass(editable, "bloom-contentNational2");
             }
 
-            HtmlDom.RemoveClassesBeginingWith(editable, "bloom-visibility-code");
-            if (
-                ShouldShowEditable(
-                    editable,
-                    settings,
-                    lang,
-                    dataDefaultLanguages,
-                    contentLanguageTag2,
-                    contentLanguageTag3,
-                    bookData
-                )
-            )
-            {
-                // Managing the presence of this class is how we control visibility of the various language blocks.
-                // It would be more elegant in some ways in the appearance system to generate a CSS variable
-                // like --cover-title-L2-show and then have basePage.css apply that where appropriate, but
-                // it becomes almost impossible for C# code to know what elements are actually visible, and that
-                // is important in all kinds of ways. For example, we only export visible stuff (or sometimes stuff
-                // the user could make visible) to most publications. Source bubbles only show what is NOT
-                // already visible in the page content. And so on. So we decided to stick with a variable that
-                // controls visibility in a straightforward, unconditional way, which means C# code can just look
-                // to see whether the class is there or not.
-                HtmlDom.AddClass(editable, "bloom-visibility-code-on");
-            }
-
-            // At the time of this writing (5.7) this class only affects cover page titles.
+            // At the time of this writing (6.0) this class only affects cover page titles.
             AddThemeVisibleOrderClass(
                 editable,
                 settings.UsingLegacy,
@@ -425,9 +490,9 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// If this field's visibility is controlled by the appearance system (introduced in 5.7, though as of 5.7 only applying
+        /// If this field's visibility is controlled by the appearance system (introduced in 6.0, though as of 6.0 only applying
         /// to the cover title), add a class indicating its order within the collection languages that are visible for this field.
-        /// Unlike in legacy theme (or pre-5.7), the order, like the visibility choice, does not depend on what languages are
+        /// Unlike in legacy theme (or pre-6.0), the order, like the visibility choice, does not depend on what languages are
         /// chosen to appear in content pages.
         /// Must be called after setting bloom-visibility-code-on for all appropriate fields in the same group.
         /// </summary>

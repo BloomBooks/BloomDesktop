@@ -99,7 +99,7 @@ public class AppearanceSettings
     // It can also be set when WriteToFolder() updates the appearance files to be consistent with the current settings.
     // This only gets called if Bloom is allowed to make changes to the folder, so it remains false
     // if we are loading a legacy book in a folder we can't write.
-    internal bool _areSettingsConsistentWithFiles;  // internal for test access
+    internal bool _areSettingsConsistentWithFiles; // internal for test access
 
     public bool CssFilesChecked { get; private set; }
 
@@ -184,7 +184,7 @@ public class AppearanceSettings
     /// Otherwise, it generally depends on whether the user selected it, though when we first see a book we may decide to force it.
     /// Review: an alternative is to put the appropriate CSS for the chosen theme into the Book supporting files cache.
     /// But for now we decided on simple: migration to the new theme system only really happens when the user makes a new
-    /// book in Bloom 5.7 or later.
+    /// book in Bloom 6.0 or later.
     /// </summary>
     public bool UsingLegacy => CssThemeName == "legacy-5-6" || !_areSettingsConsistentWithFiles;
     public string BasePageCssName => UsingLegacy ? "basePage-legacy-5-6.css" : "basePage.css";
@@ -264,7 +264,7 @@ public class AppearanceSettings
     }
 
     /// <summary>
-    /// Given a list of CSS files from pre-5.7 book, typically customBookStyles.css and customCollectionStyles.css,
+    /// Given a list of CSS files from pre-6.0 book, typically customBookStyles.css and customCollectionStyles.css,
     /// decide what theme the book should use, and if we need a specialized customBookStyles2.css file,
     /// return a path to the file that should be copied there.
     /// Also leaves this object in a state where it represents the settings that should be written to appearance.json.
@@ -272,7 +272,7 @@ public class AppearanceSettings
     public string GetThemeAndSubstituteCss(Tuple<string, string>[] cssFilesToCheck)
     {
         // cssThemeName will already be set to "legacy-5-6" by UpdateFromFolder, but for new books we want to
-        // try to use the default or some substitute them, and only switch back to the legacy theme,
+        // try to use the default or some substitute theme, and only switch back to the legacy theme,
         // if we don't know of a substitute theme and its associated customBookStyles2.css file.
         CssThemeName = "default";
         string substituteAppearance = null;
@@ -348,7 +348,7 @@ public class AppearanceSettings
     }
 
     /// <summary>
-    /// In version 5.7, we greatly simplified and modernized our basePage css. However, existing books that had custom css could rely on the old approach,
+    /// In version 6.0, we greatly simplified and modernized our basePage css. However, existing books that had custom css could rely on the old approach,
     /// specifically for using margins (and possible other things like page nubmer size/location). Therefore we provide a CSS theme that
     /// effectively just gives you the basePage.css that came with 5.6, now named "basePage-legacy-5-6.css".
     /// As part of setting up a book, we initialize this settings object with a list of CSS files that might be in the book folder.
@@ -356,7 +356,10 @@ public class AppearanceSettings
     /// Currently we also pass Css files from branding and xmatter, but we will report a problem if one of them isn't compatible.
     /// When we get more confidence that we have migrated all the brandings and xmatters, we can stop passing them in.
     /// </summary>
-    public bool CheckCssFilesForCompatibility(Tuple<string, string>[] cssFilesToCheck, bool legacyThemeCanBeUsed)
+    public bool CheckCssFilesForCompatibility(
+        Tuple<string, string>[] cssFilesToCheck,
+        bool legacyThemeCanBeUsed
+    )
     {
         var result = false;
         ChangeThemeIfCurrentOneNotAllowed(legacyThemeCanBeUsed);
@@ -452,15 +455,15 @@ public class AppearanceSettings
             return false;
 
         // note: "AppearanceVersion" uses the version number of Bloom, but isn't intended to increment with each new release of Bloom.
-        // E.g., we do not expect to break CSS files very often. So initially we will have the a.v. = 5.7, and maybe the next one
+        // E.g., we do not expect to break CSS files very often. So initially we will have the a.v. = 6.0, and maybe the next one
         // will be 6.2.  Note that there is current some discussion of jumping from 5.6 to 6.0 to make it easier to remember which
         // Bloom version changed to the new css system.
         var v =
             Regex.Match(css, @"compatibleWithAppearanceVersion:\s*(\d+(\.\d+)?)")?.Groups[1]?.Value
             ?? "0";
 
-        if (double.TryParse(v, out var appearanceVersion) && appearanceVersion >= 5.7)
-            return false; // this is a 5.7+ theme, so it's fine
+        if (double.TryParse(v, out var appearanceVersion) && appearanceVersion >= 6.0)
+            return false; // this is a 6.0+ theme, so it's fine
 
         // See if the css contains rules that nowadays should be using css variables, and would likely interfere with 5.6 and up
         const string kProbablyWillInterfere =
@@ -548,7 +551,7 @@ public class AppearanceSettings
         else
         {
             // if we don't have a json file, we'll switch to legacy. This means we're in a book that has never been in
-            // the appearance system (never migrated to 5.7). We switch new books to the default theme if it's safe,
+            // the appearance system (never migrated to 6.0). We switch new books to the default theme if it's safe,
             // but we don't think it's safe to switch existing books. If we decide to allow that after all, note
             // that there are complications if we do so for a book where we can't write out appearance.css.
             // It should be possible in such a case to push it into the BookStorage's _supportingFiles cache.
@@ -668,7 +671,7 @@ public class AppearanceSettings
             {
                 var setting = ((PropertyDef)definition).GetCssVariableDeclaration(keyValuePair);
                 if (!string.IsNullOrEmpty(setting))
-                    cssBuilder.AppendLine(setting);
+                    cssBuilder.AppendLine("\t" + setting);
             }
         }
 
@@ -676,21 +679,15 @@ public class AppearanceSettings
         // Search our less/css for --pageNumber-show-multiplicand to see how it is used.
         // If we end up with other boolean properties that the user can set a more general solution will probably be needed.
         // One idea is to preprocess the theme css, replacing things like `.bloomPage[pageNumber-show] {... }` with `bloom-page {....}` when true.
-        // The other idea is to add attributes like `pageNumber-show` or `pageNumber-show-true` to all the bloom-page divs
+        // The other idea is to add attributes like `pageNumber-show` or `pageNumber-show-true` to all the bloom-page divs.
         bool show;
         if (
             props.ContainsKey("pageNumber-show")
             && bool.TryParse(props["pageNumber-show"].ToString(), out show)
-            && show
         )
         {
-            cssBuilder.AppendLine("	--pageNumber-show-multiplicand: 1;");
+            cssBuilder.AppendLine($"\t--pageNumber-show-multiplicand: {(show ? 1 : 0)};");
         }
-        else
-        {
-            cssBuilder.AppendLine("	--pageNumber-show-multiplicand: 0;");
-        }
-
         cssBuilder.AppendLine("}");
         return cssBuilder.ToString();
     }
@@ -701,13 +698,6 @@ public class AppearanceSettings
     public void WriteToFolder(string folder)
     {
         var jsonPath = AppearanceJsonPath(folder);
-        if (Program.RunningHarvesterMode && RobustFile.Exists(jsonPath))
-        {
-            // Would overwrite, but overwrite not allowed in Harvester mode.
-            // Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
-            return;
-        }
-
         var settings = new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Ignore,
@@ -730,14 +720,6 @@ public class AppearanceSettings
     )
     {
         var cssPath = AppearanceCssPath(folder);
-
-        if (Program.RunningHarvesterMode && RobustFile.Exists(cssPath))
-        {
-            // Would overwrite, but overwrite not allowed in Harvester mode.
-            // Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
-            return;
-        }
-
         RobustFile.WriteAllText(cssPath, ToCss(brandingJson, xmatterJson));
     }
 
@@ -811,6 +793,14 @@ public class AppearanceSettings
         {
             Properties[property.Key] = property.Value;
         }
+    }
+
+    /// <summary>
+    /// For unit tests
+    /// </summary>
+    internal void SetConsistentWithFiles()
+    {
+        _areSettingsConsistentWithFiles = true;
     }
 
     /// <summary>

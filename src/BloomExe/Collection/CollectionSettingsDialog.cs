@@ -34,6 +34,7 @@ namespace Bloom.Collection
         private string _brand;
         private bool _settingsProtectionRequirePassword;
         private bool _settingsProtectionNormallyHidden;
+        private bool _currentCollectionIsTeamCollection;
 
         // Pending values edited through the CollectionSettingsApi
         private string _pendingBookshelf;
@@ -52,6 +53,7 @@ namespace Bloom.Collection
         internal readonly string[] PendingFontSelections = new[] { "", "", "" };
         internal string PendingNumberingStyle { get; set; }
         internal string PendingXmatter { get; set; }
+        internal string PendingAdministrators { get; set; }
 
         internal WritingSystem PendingLanguage1;
         internal WritingSystem PendingLanguage2;
@@ -99,7 +101,14 @@ namespace Bloom.Collection
                 : "";
             PendingNumberingStyle = _collectionSettings.PageNumberStyle;
             PendingXmatter = _collectionSettings.XMatterPackName;
+            PendingAdministrators = _collectionSettings.AdministratorsDisplayString;
             CollectionSettingsApi.DialogBeingEdited = this;
+            // Currently, ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
+            // can be false when we're in a team collection, as the user can open a preexisting TC
+            // (and then access the TC tab in Collection Settings) without checking/enabling
+            // Team Collections under Experimental Features
+            _currentCollectionIsTeamCollection =
+                tcManager.CurrentCollectionEvenIfDisconnected != null;
 
             _showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kExperimentalSourceBooks
@@ -373,6 +382,24 @@ namespace Bloom.Collection
         private void _okButton_Click(object sender, EventArgs e)
         {
             Logger.WriteMinorEvent("Settings Dialog OK Clicked");
+
+            // Validate before we save the settings
+            if (_currentCollectionIsTeamCollection)
+            {
+                if (!CollectionSettings.ValidateAdministrators(PendingAdministrators))
+                {
+                    // The user has entered invalid email address(es)
+                    BloomMessageBox.ShowWarning(
+                        LocalizationManager.GetString(
+                            "TeamCollection.InvalidAdminEmails",
+                            "Please enter one or more valid administrator email addresses, separated by commas or spaces."
+                        )
+                    );
+                    return;
+                }
+
+                _collectionSettings.ModifyAdministrators(PendingAdministrators);
+            }
 
             CollectionSettingsApi.DialogBeingEdited = null;
 

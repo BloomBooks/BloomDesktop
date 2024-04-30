@@ -526,7 +526,13 @@ namespace Bloom.web.controllers
             lock (_lockForLanguages)
             {
                 _allLanguages = request.CurrentBook.AllPublishableLanguages(
-                    includeLangsOccurringOnlyInXmatter: true
+                    // True up to 5.6. Things are a bit tricky if xmatter contains L2 and possibly L3 data.
+                    // We always include that xmatter data if it is needed for the book to be complete.
+                    // But if nothing in the book content is in those languages, we don't list them as
+                    // book languages, either in Blorg or in Bloom Player. To be consistent, we don't
+                    // even want to have check boxes for them (they would not have any effect, since there
+                    // is nothing in the book in those languages that is optional to include).
+                    includeLangsOccurringOnlyInXmatter: false
                 );
 
                 // Note that at one point, we had a check that would bypass most of this function if the book hadn't changed.

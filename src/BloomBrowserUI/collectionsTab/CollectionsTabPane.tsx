@@ -445,8 +445,6 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 css={css`
                                     // Use && to get enough specificity to beat out .MuiButtonRoot. Alternatively, you can slap !important on inline-style them
                                     && {
-                                        background-color: inherit;
-
                                         // Triangle positioning.
 
                                         // Match historical 15-16 px of padding between the text and left edge of triangle
@@ -461,6 +459,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 `}
                                 onClick={handleCollectionMenuClick}
                                 size="large"
+                                disableRipple
                             >
                                 <GreyTriangleMenuIcon
                                     css={css`

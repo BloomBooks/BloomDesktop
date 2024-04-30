@@ -63,15 +63,16 @@ namespace Bloom.WebLibraryIntegration
         {
             get
             {
-#if DEBUG
-                return true;
-#else
+// For testing Bloom 6.0 Alpha, we want to use a debug build but not be locked into dev.blorg
+//#if DEBUG
+//                return true;
+//#else
                 var temp = Environment.GetEnvironmentVariable("BloomSandbox");
                 if (string.IsNullOrWhiteSpace(temp))
                     return false;
                 temp = temp.ToLowerInvariant();
                 return temp == "yes" || temp == "true" || temp == "y" || temp == "t";
-#endif
+//#endif
             }
         }
 

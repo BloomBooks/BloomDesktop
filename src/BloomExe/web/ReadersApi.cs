@@ -122,7 +122,7 @@ namespace Bloom.Api
                     request.ReplyWithText(
                         _tcManager.OkToEditCollectionSettings
                             ? ""
-                            : WorkspaceView.MustBeAdminMessage
+                            : WorkspaceView.MustBeAdminMessage(request.CurrentCollectionSettings)
                     );
                     break;
 

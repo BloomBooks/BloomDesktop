@@ -358,6 +358,89 @@ export const BookSettingsDialog: React.FunctionComponent<{
                     >
                         <ConfigrGroup label={coverLabel} level={1}>
                             {
+                                // This is not part of the group of four mutually exclusive messages above
+                            }
+                            <ConfigrSubgroup
+                                label={whatToShowOnCoverLabel}
+                                path={`appearance`}
+                            >
+                                {appearanceDisabled && (
+                                    <NoteBox
+                                        css={css`
+                                            margin-left: 20px;
+                                        `}
+                                    >
+                                        <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
+                                            The selected page theme does not
+                                            support the following settings.
+                                        </Div>
+                                    </NoteBox>
+                                )}
+                                <FieldVisibilityGroup
+                                    field="cover-title"
+                                    labelFrame="Show Title in {0}"
+                                    labelFrameL10nKey="BookSettings.ShowWrittenLanguageTitle"
+                                    settings={settings}
+                                    settingsToReturnLater={
+                                        settingsToReturnLater
+                                    }
+                                    disabled={appearanceDisabled}
+                                    L1MustBeTurnedOn={true}
+                                    getAdditionalProps={getAdditionalProps}
+                                />
+
+                                <ConfigrBoolean
+                                    label={showLanguageNameLabel}
+                                    disabled={appearanceDisabled}
+                                    {...getAdditionalProps<boolean>(
+                                        `cover-languageName-show`
+                                    )}
+                                />
+                                <ConfigrBoolean
+                                    label={showTopicLabel}
+                                    disabled={appearanceDisabled}
+                                    {...getAdditionalProps<boolean>(
+                                        `cover-topic-show`
+                                    )}
+                                />
+                            </ConfigrSubgroup>
+                            {/* <ConfigrSubgroup
+                                label={
+                                    coverBackgroundLabel +
+                                    "  (Not implemented yet)"
+                                }
+                                path={`appearance`}
+                            >
+                                <ConfigrCustomStringInput
+                                    path={`appearance.coverColor`}
+                                    disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
+                                    //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
+                                    label={coverColorLabel}
+                                    control={ColorPickerForConfigr}
+                                />
+                            </ConfigrSubgroup> */}
+                            {/*
+
+                            <ConfigrSubgroup
+                                label={
+                                    frontAndBackMatterLabel +
+                                    "  (Not implemented yet)"
+                                }
+                                path={`appearance`}
+                            >
+                                <ConfigrSelect
+                                    disabled={true}
+                                    label={frontAndBackMatterLabel}
+                                    path={`appearance.TODO`}
+                                    options={[
+                                        { label: "Page Saver", value: "TODO" }
+                                    ]}
+                                    description={frontAndBackMatterDescription}
+                                />
+                            </ConfigrSubgroup> */}
+                        </ConfigrGroup>
+                        <ConfigrGroup label={contentPagesLabel} level={1}>
+                            {
                                 // This group of three possible messages...sometimes none of them shows, so there are four options...
                                 // is very similar to the one in BookInfoIndicator.tsx. If you change one, you may need to change the other.
                                 // In particular, the logic for which to show and the text of the messages should be kept in sync.
@@ -468,7 +551,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                             </div>
                                         </div>
                                     </NoteBox>
-                                )}
+                                )
+                            }
                             {firstPossiblyLegacyCss &&
                                 firstPossiblyLegacyCss !==
                                     "customBookStyles.css" &&
@@ -487,90 +571,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                             Click [here] for more information.
                                         </PWithLink>
                                     </NoteBox>
-                                )}
-                            {
-                                // This is not part of the group of four mutually exclusive messages above
+                                )
                             }
-                            <ConfigrSubgroup
-                                label={whatToShowOnCoverLabel}
-                                path={`appearance`}
-                            >
-                                {appearanceDisabled && (
-                                    <NoteBox
-                                        css={css`
-                                            margin-left: 20px;
-                                        `}
-                                    >
-                                        <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
-                                            The selected page theme does not
-                                            support the following settings.
-                                        </Div>
-                                    </NoteBox>
-                                )}
-                                <FieldVisibilityGroup
-                                    field="cover-title"
-                                    labelFrame="Show Title in {0}"
-                                    labelFrameL10nKey="BookSettings.ShowWrittenLanguageTitle"
-                                    settings={settings}
-                                    settingsToReturnLater={
-                                        settingsToReturnLater
-                                    }
-                                    disabled={appearanceDisabled}
-                                    L1MustBeTurnedOn={true}
-                                    getAdditionalProps={getAdditionalProps}
-                                />
-
-                                <ConfigrBoolean
-                                    label={showLanguageNameLabel}
-                                    disabled={appearanceDisabled}
-                                    {...getAdditionalProps<boolean>(
-                                        `cover-languageName-show`
-                                    )}
-                                />
-                                <ConfigrBoolean
-                                    label={showTopicLabel}
-                                    disabled={appearanceDisabled}
-                                    {...getAdditionalProps<boolean>(
-                                        `cover-topic-show`
-                                    )}
-                                />
-                            </ConfigrSubgroup>
-                            {/* <ConfigrSubgroup
-                                label={
-                                    coverBackgroundLabel +
-                                    "  (Not implemented yet)"
-                                }
-                                path={`appearance`}
-                            >
-                                <ConfigrCustomStringInput
-                                    path={`appearance.coverColor`}
-                                    disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
-                                    //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
-                                    label={coverColorLabel}
-                                    control={ColorPickerForConfigr}
-                                />
-                            </ConfigrSubgroup> */}
-                            {/*
-
-                            <ConfigrSubgroup
-                                label={
-                                    frontAndBackMatterLabel +
-                                    "  (Not implemented yet)"
-                                }
-                                path={`appearance`}
-                            >
-                                <ConfigrSelect
-                                    disabled={true}
-                                    label={frontAndBackMatterLabel}
-                                    path={`appearance.TODO`}
-                                    options={[
-                                        { label: "Page Saver", value: "TODO" }
-                                    ]}
-                                    description={frontAndBackMatterDescription}
-                                />
-                            </ConfigrSubgroup> */}
-                        </ConfigrGroup>
-                        <ConfigrGroup label={contentPagesLabel} level={1}>
                             <ConfigrSubgroup label="" path={`appearance`}>
                                 {/* Wrapping these two in a div prevents Config-R from sticking a divider between them */}
                                 <div>

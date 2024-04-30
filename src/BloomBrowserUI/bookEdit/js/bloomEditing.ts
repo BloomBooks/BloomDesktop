@@ -374,7 +374,7 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
             // set our font size so that we can use em units when setting padding of the translation group
             // If visibility is under the control of the appearance system for this field the child we
             // want has bloom-contentFirst, otherwise, bloom-content1.
-            // At the time of this writing (5.7) this is only used for cover page titles.
+            // At the time of this writing (6.0) this is only used for cover page titles.
             let mainChild = $(this)
                 .find(".bloom-contentFirst")
                 .first();

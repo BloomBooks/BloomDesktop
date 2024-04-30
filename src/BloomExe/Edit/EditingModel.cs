@@ -716,7 +716,29 @@ namespace Bloom.Edit
         // Thus, the whole sequence of steps above behaves like a series of nested function calls,
         // and SelectPage does not proceed with actually changing the current page until after FinishSavingPage has
         // completed saving it.
+        int _selChangeCount = 0;
+        object _selChangeLock = new object();
         private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
+        {
+            try
+            {
+                lock (_selChangeLock)
+                {
+                    Debug.Assert(_selChangeCount == 0,
+                        $"Multiple active OnPageSelectionChanging calls, possible  empty marginBox cause? (count={_selChangeLock})");
+                    _selChangeCount++;
+                }
+                OnPageSelectionChangingInternal(sender, eventArgs);
+            }
+            finally
+            {
+                lock (_selChangeLock)
+                {
+                    _selChangeCount--;
+                }
+            }
+        }
+        private void OnPageSelectionChangingInternal(object sender, EventArgs eventArgs)
         {
             CheckForBL2634("start of page selection changing--should have old IDs");
             if (
@@ -1231,7 +1253,29 @@ namespace Bloom.Edit
         private System.Windows.Forms.Timer _developerFileWatcherQuietTimer;
         private bool _weHaveSeenAJsonChange;
 
+        int _saveCount = 0;
+        object _saveCountLock = new object();
         public void SaveNow(bool forceFullSave = false)
+        {
+            try
+            {
+                lock (_saveCountLock)
+                {
+                    Debug.Assert(_saveCount == 0,
+                        $"Trying to save while already saving: possible empty marginBox cause? (save count={_saveCount})");
+                    _saveCount++;
+                }
+                SaveNowInternal(forceFullSave);
+            }
+            finally
+            {
+                lock (_saveCountLock)
+                {
+                    _saveCount--;
+                }
+            }
+        }
+        private void SaveNowInternal(bool forceFullSave = false)
         {
             if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
             {
@@ -1255,7 +1299,7 @@ namespace Bloom.Edit
                             "SaveNow called on wrong thread",
                             null
                         );
-                        _view.Invoke((Action)(() => SaveNow(forceFullSave)));
+                        _view.Invoke((Action)(() => SaveNowInternal(forceFullSave)));
                         Logger.WriteMinorEvent(
                             "EditingModel.SaveNow() finished after Invoke to get on UI thread"
                         );
@@ -1886,7 +1930,7 @@ namespace Bloom.Edit
             else // css, png, svg, js, etc.
             {
                 CurrentBook.Storage.UpdateSupportFiles();
-                if (!_view.IsDisposed)
+                if (!_view.IsDisposed && _view.IsHandleCreated)
                 {
                     _view.Invoke(
                         (MethodInvoker)

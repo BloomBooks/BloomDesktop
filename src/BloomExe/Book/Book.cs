@@ -936,7 +936,7 @@ namespace Bloom.Book
             // like the HTML would look if we opened the file.
             previewDom.EnsureStylesheetLinks("previewMode.css");
 
-            // Older code (pre-5.7) called UpdateContentLanguageClasses() here with code that chose the
+            // Older code (pre-6.0) called UpdateContentLanguageClasses() here with code that chose the
             // collection L1 language if the book has it, otherwise, the book's own L1. That now results
             // in a preview that may lack a title. Not really sure why, it may
             // be something to do with our previously bringing the selected book partly up to date.
@@ -1703,7 +1703,10 @@ namespace Bloom.Book
             // This should be done before UpdateSupportFiles, because this can affect what files
             // are copied to the book folder.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
-            BookInfo.AppearanceSettings.CheckCssFilesForCompatibility(cssFiles, Storage.LegacyThemeCanBeUsed);
+            BookInfo.AppearanceSettings.CheckCssFilesForCompatibility(
+                cssFiles,
+                Storage.LegacyThemeCanBeUsed
+            );
 
             // Ensure that the appearance settings are up to date with the current branding (if any).
             BookInfo.AppearanceSettings.UpdateFromOverrides(Storage.BrandingAppearanceSettings);
@@ -5591,7 +5594,10 @@ namespace Bloom.Book
             // or deleted customBookStyles.css. We need to update things to reflect the new state of things.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
             // This might produce different results if customBookStyles.css has been deleted.
-            BookInfo.AppearanceSettings.CheckCssFilesForCompatibility(cssFiles, Storage.LegacyThemeCanBeUsed);
+            BookInfo.AppearanceSettings.CheckCssFilesForCompatibility(
+                cssFiles,
+                Storage.LegacyThemeCanBeUsed
+            );
             // At one point the line commented out here was all this function did.
             // It needs to be done at some point at least if the theme has changed, to generate the updated
             // Appearance.css. But usually the caller does a full Save() after calling this, so

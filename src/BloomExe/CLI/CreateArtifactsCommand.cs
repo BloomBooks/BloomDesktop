@@ -491,13 +491,19 @@ namespace Bloom.CLI
         )]
         public string ThumbnailOutputInfoPath { get; set; }
 
+        private string _creator;
+
         [Option(
             "creator",
             Required = false,
             Default = BloomPubMaker.kCreatorHarvester,
             HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital."
         )]
-        public string Creator { get; set; }
+        public string Creator
+        {
+            get => _creator ?? BloomPubMaker.kCreatorHarvester;
+            set => _creator = value;
+        }
 
         [Option(
             "testing",

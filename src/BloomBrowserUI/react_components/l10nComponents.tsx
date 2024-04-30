@@ -405,13 +405,18 @@ export class LocalizedString extends LocalizableElement<
     }
 }
 
+interface ILabelProps {
+    htmlFor?: string;
+}
+
 export class Label extends LocalizableElement<
-    ILocalizationProps,
+    ILocalizationProps & ILabelProps,
     ILocalizationState
 > {
     public render() {
         return (
             <label
+                htmlFor={this.props.htmlFor}
                 className={this.getClassName()}
                 onClick={() => {
                     if (this.props.onClick) {

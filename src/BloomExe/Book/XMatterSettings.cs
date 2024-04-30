@@ -26,6 +26,13 @@ namespace Bloom.Book
             )]
             [DefaultValue(true)]
             public bool LegacyThemeCanBeUsed;
+
+            [JsonProperty(
+                "harvesterMayConvertToDefaultTheme",
+                DefaultValueHandling = DefaultValueHandling.Populate
+            )]
+            [DefaultValue(false)]
+            public bool HarvesterMayConvertToDefaultTheme;
         }
 
         public static Settings GetSettingsOrNull(string settingsPath)

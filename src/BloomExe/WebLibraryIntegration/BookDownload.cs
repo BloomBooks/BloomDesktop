@@ -91,6 +91,8 @@ namespace Bloom.WebLibraryIntegration
                     destPath,
                     forEdit
                 );
+                if (string.IsNullOrEmpty(destinationPath))
+                    return ""; // user cancelled
                 LastBookDownloadedPath = destinationPath;
 
                 Analytics.Track(
@@ -222,7 +224,8 @@ namespace Bloom.WebLibraryIntegration
             }
             using (var progressDialog = new ProgressDialog())
             {
-                _progressDialog = new ProgressDialogWrapper(progressDialog);
+                var progressDialogWrapper = new ProgressDialogWrapper(progressDialog);
+                _progressDialog = progressDialogWrapper;
                 progressDialog.CanCancel = true;
                 progressDialog.Overview = LocalizationManager.GetString(
                     "Download.DownloadingDialogTitle",
@@ -242,8 +245,10 @@ namespace Bloom.WebLibraryIntegration
                 // We must do the download in a background thread, even though the whole process is doing nothing else,
                 // so we can invoke stuff on the main thread to (e.g.) update the progress bar.
                 BackgroundWorker worker = new BackgroundWorker();
+                worker.WorkerSupportsCancellation = true;
                 worker.DoWork += OnDoDownload;
                 progressDialog.BackgroundWorker = worker;
+                progressDialogWrapper.CancellationTest = () => worker.CancellationPending;
                 progressDialog.ShowDialog(); // hidden automatically when task completes
                 if (
                     progressDialog.ProgressStateResult != null
@@ -490,6 +495,9 @@ namespace Bloom.WebLibraryIntegration
                     forEdit
                 );
             }
+
+            if (destinationPath == null)
+                return null; // user cancelled
 
             if (BookDownLoaded != null)
             {

@@ -771,7 +771,7 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
                 ? width
                 : (width * img.naturalHeight) / img.naturalWidth;
             // At some point we apparently had 3px of margin on the top pane, possibly something to do
-            // with the splitter control. Somewhere about 5.7 we lost it, so this correction is no longer needed.
+            // with the splitter control. Somewhere about 6.0 we lost it, so this correction is no longer needed.
             // I'm leaving it here commented out in case losing that margin was a mistake and we also need
             // to add it back here. (Also below).
             // if (isForFirstChildPane) {

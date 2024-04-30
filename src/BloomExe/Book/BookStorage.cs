@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -16,7 +15,6 @@ using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
 using Bloom.ImageProcessing;
-using Bloom.MiscUI;
 using Bloom.Publish;
 using Bloom.ToPalaso;
 using Bloom.Utils;
@@ -27,7 +25,6 @@ using Newtonsoft.Json;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
-using SIL.Linq;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
@@ -85,6 +82,8 @@ namespace Bloom.Book
         ExpandoObject BrandingAppearanceSettings { get; }
 
         bool LegacyThemeCanBeUsed { get; }
+
+        bool HarvesterMayConvertToDefaultTheme { get; }
 
         BookInfo BookInfo { get; set; }
         string NormalBaseForRelativepaths { get; }
@@ -156,15 +155,15 @@ namespace Bloom.Book
         ///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size.
         ///              2 = Remove any 'comical-generated' svgs that are transparent.
         ///				 3 = Ensure main img comes first in image container
-        ///   (Bloom 5.7 added kMediaMaintenanceLevel so we could distinguish migrations that affect
+        ///   (Bloom 6.0 added kMediaMaintenanceLevel so we could distinguish migrations that affect
         ///   other files (typically images or media) in the book folder from ones that only affect
-        ///   the DOM and can safely be done in memory. (Later in 5.7 we stopped doing incomplete
+        ///   the DOM and can safely be done in memory. (Later in 6.0 we stopped doing incomplete
         ///   book updates in memory, so this distinction may no longer be helpful.))
-        ///   Bloom 5.7  4 = Switched to using a theme (or explicitly using legacy)
-        /// History of kMediaMaintenanceLevel (introduced in 5.7)
+        ///   Bloom 6.0  4 = Switched to using a theme (or explicitly using legacy)
+        /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
-        ///   Bloom 5.7: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
+        ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
         public const int kMaintenanceLevel = 4;
         public const int kMediaMaintenanceLevel = 1;
@@ -204,7 +203,7 @@ namespace Bloom.Book
         /// <summary>
         /// Historically, we used this constructor, but every call resulted in initializing a new BookInfo
         /// during ExpensiveInitialization. Then, right after we finish constructing it, we set the BookInfo
-        /// we really want. That became more of a problem in 5.7, when we started doing more expensive
+        /// we really want. That became more of a problem in 6.0, when we started doing more expensive
         /// initialization of AppearanceSettings and could get in trouble working with one that was not
         /// fully initialized. So now we use the other constructor, which takes the BookInfo
         /// we really want to use. This one is retained only for convenience of old unit tests.
@@ -2608,6 +2607,14 @@ namespace Bloom.Book
                 .GetSettingsOrNull(XMatterHelper.PathToXMatterSettings)
                 ?.LegacyThemeCanBeUsed ?? true;
 
+        // Typically, harvester will not change the theme of a book so as not to potentially break things.
+        // But for certain cases, such as books which cannot use legacy but are uploaded before the appearance
+        // system, we have determined it is better to harvest them as default than refuse to harvest them at all.
+        public bool HarvesterMayConvertToDefaultTheme =>
+            XMatterSettings
+                .GetSettingsOrNull(XMatterHelper.PathToXMatterSettings)
+                ?.HarvesterMayConvertToDefaultTheme ?? false;
+
         public ExpandoObject BrandingAppearanceSettings =>
             Api.BrandingSettings
                 .GetSettingsOrNull(CollectionSettings.BrandingProjectKey)
@@ -3358,13 +3365,13 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Prior to Bloom 5.7, we had a single metadata element called "maintenanceLevel" that was used to
+        /// Prior to Bloom 6.0, we had a single metadata element called "maintenanceLevel" that was used to
         /// keep track of whether a book had been updated to the latest version of Bloom in certain somewhat
         /// time-consuming ways. (BringBookUpToDate does other migrations, too, but we just run them every time.)
         /// We did not distinguish between changes that only affect the DOM and ones we could only make in
         /// folders where we can write, nor between ones that must be done before editing, ones that must be
         /// done before we do anything with the book, or ones that are optional.
-        /// In 5.7 we introduced a new metadata element called "mediaMaintenanceLevel" that is used to keep
+        /// In 6.0 we introduced a new metadata element called "mediaMaintenanceLevel" that is used to keep
         /// track of migrations that affect files other than the main HTML one. This function,
         /// which must be called before any of the ones that might change the old maintenanceLevel metadata,
         /// initializes the new mediaMaintenanceLevel to the appropriate value based on the old maintenanceLevel
@@ -3677,7 +3684,11 @@ namespace Bloom.Book
             if (GetMaintenanceLevel() >= 4)
                 return;
 
-            if (Program.RunningHarvesterMode && !LegacyThemeCanBeUsed)
+            if (
+                Program.RunningHarvesterMode
+                && !LegacyThemeCanBeUsed
+                && !HarvesterMayConvertToDefaultTheme
+            )
             {
                 throw new CannotHarvestException(
                     "This book cannot currently be harvested, since it is not migrated to the appearance system and cannot use legacy theme."
@@ -3850,6 +3861,7 @@ namespace Bloom.Book
             var internalNodes = pageElement
                 .SelectNodes(".//div[contains(@class,'marginBox')]/div")
                 .Cast<XmlElement>();
+            Debug.Assert(internalNodes.Count() > 0, "marginBox is totally empty!");
             if (internalNodes.Count() == 0)
             {
                 ReportEmptyMarginBox(pageElement);
@@ -3861,6 +3873,7 @@ namespace Bloom.Book
                 if (string.IsNullOrEmpty(classes))
                     continue;
                 // If the marginBox has a div.pageLabel, the real content has disappeared and we don't want to save that state.
+                Debug.Assert(!classes.Contains("pageLabel"), "marginBox has emptied out, with the div.pageLabel moved inside!");
                 if (classes.Contains("pageLabel"))
                 {
                     ReportEmptyMarginBox(pageElement);

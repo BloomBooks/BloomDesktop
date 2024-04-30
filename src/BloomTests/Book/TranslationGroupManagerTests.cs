@@ -410,7 +410,7 @@ namespace BloomTests.Book
   ""pageNumber-show"": true
 }"
             );
-            settings._areSettingsConsistentWithFiles = true;    // needs to be set to allow the default theme to be used
+            settings._areSettingsConsistentWithFiles = true; // needs to be set to allow the default theme to be used
 
             // Here the arguments don't matter much. data-default-languages specifies N1, which means the Metadata1Language should
             // be visible, and N2, which currently turns on L3.
@@ -1796,6 +1796,7 @@ namespace BloomTests.Book
                 "tpi"
             );
             Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-contentSecond"));
+            Assert.That(editable.GetAttribute("class"), Does.Not.Contain("bloom-contentFirst"));
 
             editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
             TranslationGroupManager.AddThemeVisibleOrderClass(
@@ -1807,41 +1808,115 @@ namespace BloomTests.Book
                 "tpi"
             );
             Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-contentSecond"));
+            Assert.That(editable.GetAttribute("class"), Does.Not.Contain("bloom-contentFirst"));
         }
 
+        /// <summary>
+        /// This started life as a test of the AddThemeVisibleOrderClass method, but we needed at least
+        /// one test that tested it along with setting visibility classes, since there was a problem
+        /// when we didn't finish setting all the visibility classes before working on contentFirst etc.
+        /// </summary>
         [Test]
-        public void AddThemeVisibleOrderClass_SiblingL1AndL2_AddsContentThird()
+        public void UpdateContentLanguageClasses_SiblingL1AndL2_AddsContentThird()
         {
             var doc = new XmlDocument();
+            var body = doc.CreateElement("body");
+            doc.AppendChild(body);
             var tg = doc.CreateElement("div");
             tg.SetAttribute("class", "bloom-translationGroup");
-            doc.AppendChild(tg);
+            body.AppendChild(tg);
             tg.SetAttribute("data-visibility-variable", "cover-title-LN-show");
-            var editable = doc.CreateElement("div");
-            editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
-            tg.AppendChild(editable);
+            var editableThird = doc.CreateElement("div");
+            editableThird.SetAttribute("class", "bloom-editable");
+            editableThird.SetAttribute("lang", "es");
+            tg.AppendChild(editableThird);
             tg.AppendChild(doc.CreateWhitespace("  "));
             var editableFirst = doc.CreateElement("div");
-            editableFirst.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            editableFirst.SetAttribute("class", "bloom-editable");
             tg.AppendChild(editableFirst);
-            editableFirst.SetAttribute("lang", "fr");
+            editableFirst.SetAttribute("lang", "xyz");
             var editableSecond = doc.CreateElement("div");
-            editableSecond.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            editableSecond.SetAttribute("class", "bloom-editable");
             tg.AppendChild(editableSecond);
-            editableSecond.SetAttribute("lang", "en");
+            editableSecond.SetAttribute("lang", "fr");
+            var editableNone = doc.CreateElement("div");
+            editableNone.SetAttribute("class", "bloom-editable");
+            tg.AppendChild(editableNone);
+            editableNone.SetAttribute("lang", "tpi");
 
-            // No fair trying "fr" or "en" since those occurs on siblings
-
-            editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
-            TranslationGroupManager.AddThemeVisibleOrderClass(
-                editable,
-                false,
-                "tpi",
-                "fr",
-                "en",
-                "tpi"
+            editableThird.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
+            var bookData = new BookData(new HtmlDom(doc), _collectionSettings, null);
+            bookData.SetMultilingualContentLanguages("xyz");
+            var settings = new AppearanceSettings();
+            settings.UpdateFromJson(
+                @"{
+  ""cssThemeName"": ""default"",
+""cover-title-L1-show"": true,
+  ""cover-title-L2-show"": true,
+  ""cover-title-L3-show"": true
+}"
             );
-            Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-contentThird"));
+            settings.SetConsistentWithFiles();
+            TranslationGroupManager.UpdateContentLanguageClasses(
+                body,
+                bookData,
+                settings,
+                "xyz",
+                "fr",
+                "es"
+            );
+            Assert.That(editableThird.GetAttribute("class"), Does.Contain("bloom-contentThird"));
+            Assert.That(
+                editableThird.GetAttribute("class"),
+                Does.Not.Contain("bloom-contentFirst")
+            );
+            Assert.That(
+                editableThird.GetAttribute("class"),
+                Does.Not.Contain("bloom-contentSecond")
+            );
+            Assert.That(
+                editableThird.GetAttribute("class"),
+                Does.Contain("bloom-visibility-code-on")
+            );
+
+            Assert.That(
+                editableFirst.GetAttribute("class"),
+                Does.Contain("bloom-visibility-code-on")
+            );
+            Assert.That(editableFirst.GetAttribute("class"), Does.Contain("bloom-contentFirst"));
+            Assert.That(
+                editableFirst.GetAttribute("class"),
+                Does.Not.Contain("bloom-contentSecond")
+            );
+            Assert.That(
+                editableFirst.GetAttribute("class"),
+                Does.Not.Contain("bloom-contentThird")
+            );
+
+            Assert.That(
+                editableSecond.GetAttribute("class"),
+                Does.Contain("bloom-visibility-code-on")
+            );
+            Assert.That(
+                editableSecond.GetAttribute("class"),
+                Does.Not.Contain("bloom-contentFirst")
+            );
+            Assert.That(editableSecond.GetAttribute("class"), Does.Contain("bloom-contentSecond"));
+            Assert.That(
+                editableSecond.GetAttribute("class"),
+                Does.Not.Contain("bloom-contentThird")
+            );
+
+            Assert.That(
+                editableNone.GetAttribute("class"),
+                Does.Not.Contain("bloom-visibility-code-on")
+            );
+            Assert.That(editableNone.GetAttribute("class"), Does.Not.Contain("bloom-contentFirst"));
+            Assert.That(
+                editableNone.GetAttribute("class"),
+                Does.Not.Contain("bloom-contentSecond")
+            );
+            Assert.That(editableNone.GetAttribute("class"), Does.Not.Contain("bloom-contentThird"));
         }
 
         [Test]
@@ -1912,6 +1987,123 @@ namespace BloomTests.Book
                 editable.GetAttribute("class"),
                 Is.EqualTo("bloom-editable bloom-visibility-code-on")
             );
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasNoTextBlock_False()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml("<html><body><div class='bloom-page'></div></body></html>");
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(
+                TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithNoDataDefaultLangs_True()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false), Is.True);
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithN1_False()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' data-default-languages='N1'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(
+                TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_True()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' data-default-languages='V,N1'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false), Is.True);
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_AndDataVisibilityVariable_False()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' data-default-languages='V,N1' data-visibility-variable='cover-title-LN-show'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(
+                TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_AndDataVisibilityVariable_Legacy_True()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' data-default-languages='V,N1' data-visibility-variable='cover-title-LN-show'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, true), Is.True);
+        }
+
+        [Test]
+        public void IsPageAffectedByLanguageMenu_HasTextBlockWithN1_AndOneWithAuto_True()
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(
+                @"
+<html><body><div class='bloom-page'>
+   <div class='bloom-translationGroup' data-default-languages='N1'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+   <div class='bloom-translationGroup' data-default-languages='auto'>
+       <div class='bloom-editable' lang='xyz'></div>
+   </div>
+</div></body></html>"
+            );
+            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false), Is.True);
         }
     }
 }

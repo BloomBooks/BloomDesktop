@@ -165,8 +165,15 @@
      * set the margin you don't want to something like "deliberately-invalid".)*/
     --pageNumber-right-margin: 0;
     --pageNumber-always-left-margin: 0;
+}
+
+.Device16x9Landscape.numberedPage,
+.Device16x9Portrait.numberedPage {
+    /* These page sizes have small margins, so we need extra height on numbered ones.
+    (Note that this disappears if page numbers are turned off, because --pageNumber-show-multiplicand is 0.) */
     --pageNumber-extra-height: 8mm !important;
 }
+
 
 /* We need a small margin (above) for xmatter pages (e.g., Robots Mali credits page,
  * especially in landscape, comment in BL-13002).

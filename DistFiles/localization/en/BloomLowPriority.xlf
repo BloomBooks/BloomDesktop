@@ -185,18 +185,38 @@
             <source xml:lang="en">Bloom was not able to access a microphone.</source>
             <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
           </trans-unit>
-          <trans-unit id="ReportProblemDialog.OneDriveProblem" translate="no">
+          <trans-unit id="ReportProblemDialog.OneDriveProblem">
             <source xml:lang="en">OneDrive Problem</source>
             <note>ID: ReportProblemDialog.OneDriveProblem</note>
             <note>The title of a dialog telling the user about a problem with their Microsoft OneDrive.</note>
           </trans-unit>
-          <trans-unit id="ReportProblemDialog.OneDriveErrorMessage" translate="no">
+          <trans-unit id="ReportProblemDialog.OneDriveErrorMessage">
             <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
             <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
           </trans-unit>
-          <trans-unit id="ProblemReport.PageStructureProblem" translate="no">
+          <trans-unit id="ProblemReport.PageStructureProblem">
             <source xml:lang="en">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</source>
             <note>ID: ProblemReport.PageStructureProblem</note>
+          </trans-unit>
+          <trans-unit id="TeamCollection.AdministratorEmails">
+            <source xml:lang="en">Administrator Emails:</source>
+            <note>ID: TeamCollection.AdministratorEmails</note>
+          </trans-unit>
+          <trans-unit id="TeamCollection.InvalidAdminEmails">
+            <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
+            <note>ID: TeamCollection.InvalidAdminEmails</note>
+          </trans-unit>
+          <trans-unit id="Common.Preparing">
+            <source xml:lang="en">Preparing...</source>
+            <note>Common.Preparing</note>
+          </trans-unit>
+          <trans-unit id="Common.Finishing">
+            <source xml:lang="en">Finishing...</source>
+            <note>Common.Finishing</note>
+          </trans-unit>
+          <trans-unit id="Common.Finished">
+            <source xml:lang="en">Finished</source>
+            <note>Common.Finished</note>
           </trans-unit>
         </body>
     </file>
