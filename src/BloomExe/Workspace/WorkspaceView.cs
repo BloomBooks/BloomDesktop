@@ -1458,7 +1458,7 @@ namespace Bloom.Workspace
             {
                 if (_editTab.IsSelected)
                 {
-                    _editingView.Model.SaveNow();
+                    _editingView.Model.RequestBrowserToSave();
                 }
             }
             catch

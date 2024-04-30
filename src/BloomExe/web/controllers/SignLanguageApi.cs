@@ -572,7 +572,7 @@ namespace Bloom.web.controllers
             // We might modify the current page, but the user may also have modified it
             // without doing anything to cause a Save before the deactivate. So save their
             // changes before we go to work on it.
-            Model.SaveNow();
+            Model.RequestBrowserToSave();
 
             foreach (var videoPath in filesModifiedSinceDeactivate)
             {

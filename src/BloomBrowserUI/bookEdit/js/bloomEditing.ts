@@ -29,7 +29,7 @@ import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { getEditTabBundleExports } from "./bloomFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
-
+import { postJson } from "../../utils/bloomApi";
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
@@ -1265,8 +1265,13 @@ export const pageSelectionChanging = () => {
     }
 };
 
-// Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
-// editTabBundle.getEditablePageBundleExports().
+export function saveRequested(forceFullSave: boolean) {
+    postJson("editView/saveHtml", {
+        forceFullSave: forceFullSave,
+        html: getBodyContentForSavePage(),
+        userStylesheetContent: userStylesheetContent()
+    });
+}
 export const getBodyContentForSavePage = () => {
     const bubbleEditingOn = theOneBubbleManager.isComicEditingOn;
     if (bubbleEditingOn) {
