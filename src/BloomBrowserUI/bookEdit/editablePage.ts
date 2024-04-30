@@ -41,7 +41,7 @@ export interface IPageFrameExports {
 // For example, editTabBundle.getEditablePageBundleExports().pageSelectionChanging() can be called.
 import {
     pageSelectionChanging,
-    getBodyContentForSavePage,
+    callApiWithSaveData,
     userStylesheetContent,
     pageUnloading,
     disconnectForGarbageCollection,
@@ -54,7 +54,7 @@ import {
 } from "./js/bloomEditing";
 export {
     pageSelectionChanging,
-    getBodyContentForSavePage,
+    callApiWithSaveData,
     userStylesheetContent,
     pageUnloading,
     disconnectForGarbageCollection,

@@ -1260,27 +1260,37 @@ namespace Bloom.Edit
         int _saveCount = 0;
         object _saveCountLock = new object();
 
+        public void SaveHtmlNow(string bodyHtml, string userCssContent)
+        {
+            var dom = XmlHtmlConverter.GetXmlDomFromHtml(bodyHtml, false);
+            var bodyDom = dom.SelectSingleNode("//body");
+            var browserDomPage = bodyDom.SelectSingleNode(
+                "//body//div[contains(@class,'bloom-page')]"
+            );
+            var htmlDom = HtmlDom.FromXmlNodeNoClone(browserDomPage);
+
+            var styles = HtmlDom.CreateUserModifiedStyles(userCssContent);
+
+            var head = htmlDom.RawDom.SelectSingleNode("//head");
+            head.InnerXml = HtmlDom.CreateUserModifiedStyles(userCssContent);
+
+            _pageSelection.CurrentSelection.Book.SavePage(
+                htmlDom,
+                true /*todo forceFullSave*/
+            );
+            _pageHasUnsavedDataDerivedChange = false;
+            CheckForBL2634("finished save");
+            while (_tasksToDoAfterSaving.Count > 0)
+            {
+                var task = _tasksToDoAfterSaving[0];
+                _tasksToDoAfterSaving.RemoveAt(0);
+                task();
+            }
+        }
+
         public void SaveNow(bool forceFullSave = false)
         {
-            try
-            {
-                lock (_saveCountLock)
-                {
-                    Debug.Assert(
-                        _saveCount == 0,
-                        $"Trying to save while already saving: possible empty marginBox cause? (save count={_saveCount})"
-                    );
-                    _saveCount++;
-                }
-                SaveNowInternal(forceFullSave);
-            }
-            finally
-            {
-                lock (_saveCountLock)
-                {
-                    _saveCount--;
-                }
-            }
+            SaveNowInternal(forceFullSave);
         }
 
         private void SaveNowInternal(bool forceFullSave = false)
@@ -1292,92 +1302,92 @@ namespace Bloom.Edit
                 // Check memory for the benefit of developers.
                 MemoryManagement.CheckMemory(false, "before EditingModel.SaveNow()", false);
 #endif
-                try
-                {
-                    _webSocketServer.SendString("pageThumbnailList", "saving", "");
 
-                    // CleanHtml already requires that we are on UI thread. But it's worth asserting here too in case that changes.
-                    // If we weren't sure of that we would need locking for access to _tasksToDoAfterSaving and _inProcessOfSaving,
-                    // and would need to be careful about whether any delayed tasks needed to be on the UI thread.
-                    if (_view.InvokeRequired)
-                    {
-                        NonFatalProblem.Report(
-                            ModalIf.Beta,
-                            PassiveIf.Beta,
-                            "SaveNow called on wrong thread",
-                            null
-                        );
-                        _view.Invoke((Action)(() => SaveNowInternal(forceFullSave)));
-                        Logger.WriteMinorEvent(
-                            "EditingModel.SaveNow() finished after Invoke to get on UI thread"
-                        );
-                        return;
-                    }
-                    CheckForBL2634("beginning SaveNow");
-                    _inProcessOfSaving = true;
-                    _tasksToDoAfterSaving.Clear();
-                    _view.GetHtmlFromBrowserAndCopyToPageDom();
+                _webSocketServer.SendString("pageThumbnailList", "saving", "");
 
-                    //BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
-                    //this old code:
-                    //	CurrentBook.SavePage(_domForCurrentPage);
-                    //would some times ask book X to save a page from book Y.
-                    //We could never reproduce it at will, so this is to help with that...
-                    if (this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
-                    {
-                        Debug.Fail("This is the BL-1064 Situation");
-                        Logger.WriteEvent(
-                            "Warning: SaveNow() with a page that is not the current book. That should be ok, but it is the BL-1064 situation (though we now work around it)."
-                        );
-                    }
-                    //but meanwhile, the page knows its book, so we can see if it looks like a valid book and give a helpful
-                    //error if, for example, it was deleted:
-                    try
-                    {
-                        if (!_pageSelection.CurrentSelection.Book.IsSaveable)
-                        {
-                            Logger.WriteEvent(
-                                "Error: SaveNow() found that this book had IsSaveable=='false'"
-                            );
-                            Logger.WriteEvent(
-                                "Book path was {0}",
-                                _pageSelection.CurrentSelection.Book.FolderPath
-                            );
-                            throw new ApplicationException(
-                                "Bloom tried to save a page to a book that was not in a position to be updated."
-                            );
-                        }
-                    }
-                    catch (ObjectDisposedException err) // in case even calling CanUpdate gave an error
-                    {
-                        Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
-                        throw err;
-                    }
-                    catch (Exception err) // in case even calling CanUpdate gave an error
-                    {
-                        Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
-                        throw err;
-                    }
-                    CheckForBL2634("save");
-                    //OK, looks safe, time to save.
-                    var newPageData = GetPageData(_domForCurrentPage.RawDom);
-                    _pageSelection.CurrentSelection.Book.SavePage(
-                        _domForCurrentPage,
-                        forceFullSave || NeedToDoFullSave(newPageData)
-                    );
-                    _pageHasUnsavedDataDerivedChange = false;
-                    CheckForBL2634("finished save");
-                    while (_tasksToDoAfterSaving.Count > 0)
-                    {
-                        var task = _tasksToDoAfterSaving[0];
-                        _tasksToDoAfterSaving.RemoveAt(0);
-                        task();
-                    }
-                }
-                finally
-                {
-                    _inProcessOfSaving = false;
-                }
+                // CleanHtml already requires that we are on UI thread. But it's worth asserting here too in case that changes.
+                // If we weren't sure of that we would need locking for access to _tasksToDoAfterSaving and _inProcessOfSaving,
+                // and would need to be careful about whether any delayed tasks needed to be on the UI thread.
+                // if (_view.InvokeRequired)
+                // {
+                //     NonFatalProblem.Report(
+                //         ModalIf.Beta,
+                //         PassiveIf.Beta,
+                //         "SaveNow called on wrong thread",
+                //         null
+                //     );
+                //     _view.Invoke((Action)(() => SaveNowInternal(forceFullSave)));
+                //     Logger.WriteMinorEvent(
+                //         "EditingModel.SaveNow() finished after Invoke to get on UI thread"
+                //     );
+                //     return;
+                // }
+                CheckForBL2634("beginning SaveNow");
+                _inProcessOfSaving = true;
+                _tasksToDoAfterSaving.Clear();
+                // TODO: do the toolbox removal, check that things are loaded, etc.
+                var script =
+                    @"console.log('saving'); editTabBundle.getEditablePageBundleExports().callApiWithSaveData();";
+                _view.Browser.RunJavascriptAsync(script);
+
+                // _view.GetHtmlFromBrowserAndCopyToPageDom();
+
+                // //BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
+                // //this old code:
+                // //	CurrentBook.SavePage(_domForCurrentPage);
+                // //would some times ask book X to save a page from book Y.
+                // //We could never reproduce it at will, so this is to help with that...
+                // if (this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
+                // {
+                //     Debug.Fail("This is the BL-1064 Situation");
+                //     Logger.WriteEvent(
+                //         "Warning: SaveNow() with a page that is not the current book. That should be ok, but it is the BL-1064 situation (though we now work around it)."
+                //     );
+                // }
+                // //but meanwhile, the page knows its book, so we can see if it looks like a valid book and give a helpful
+                // //error if, for example, it was deleted:
+                // try
+                // {
+                //     if (!_pageSelection.CurrentSelection.Book.IsSaveable)
+                //     {
+                //         Logger.WriteEvent(
+                //             "Error: SaveNow() found that this book had IsSaveable=='false'"
+                //         );
+                //         Logger.WriteEvent(
+                //             "Book path was {0}",
+                //             _pageSelection.CurrentSelection.Book.FolderPath
+                //         );
+                //         throw new ApplicationException(
+                //             "Bloom tried to save a page to a book that was not in a position to be updated."
+                //         );
+                //     }
+                // }
+                // catch (ObjectDisposedException err) // in case even calling CanUpdate gave an error
+                // {
+                //     Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
+                //     throw err;
+                // }
+                // catch (Exception err) // in case even calling CanUpdate gave an error
+                // {
+                //     Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
+                //     throw err;
+                // }
+                // CheckForBL2634("save");
+                // //OK, looks safe, time to save.
+                // var newPageData = GetPageData(_domForCurrentPage.RawDom);
+                // _pageSelection.CurrentSelection.Book.SavePage(
+                //     _domForCurrentPage,
+                //     forceFullSave || NeedToDoFullSave(newPageData)
+                // );
+                // _pageHasUnsavedDataDerivedChange = false;
+                // CheckForBL2634("finished save");
+                // while (_tasksToDoAfterSaving.Count > 0)
+                // {
+                //     var task = _tasksToDoAfterSaving[0];
+                //     _tasksToDoAfterSaving.RemoveAt(0);
+                //     task();
+                // }
+
 #if MEMORYCHECK
                 // Check memory for the benefit of developers.
                 MemoryManagement.CheckMemory(false, "after EditingModel.SaveNow()", false);

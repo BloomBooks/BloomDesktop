@@ -1481,38 +1481,6 @@ namespace Bloom.Edit
             _pageListView.UpdateAllThumbnails();
         }
 
-        /// <summary>
-        /// this started as an experiment, where our textareas were not being read when we saved because of the need
-        /// to change the picture
-        /// </summary>
-        public async Task GetHtmlFromBrowserAndCopyToPageDom()
-        {
-            // NOTE: these calls to may lead to API calls from the JS. These are async, so the actions
-            // that JS might perform may not actually happen until well after this method. We ran into a problem in
-            // BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
-            // tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
-            // been editing, so there was an null.
-            var script =
-                @"
-if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined')
-	editTabBundle.getToolboxBundleExports().removeToolboxMarkup();
-if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined')
-	editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage() + '<SPLIT-DATA>' + editTabBundle.getEditablePageBundleExports().userStylesheetContent();";
-            var combinedData = RunJavascriptWithStringResult_Sync_Dangerous(script);
-            string bodyHtml = null;
-            string userCssContent = null;
-            if (combinedData != null)
-            {
-                var endHtml = combinedData.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
-                if (endHtml > 0)
-                {
-                    bodyHtml = combinedData.Substring(0, endHtml);
-                    userCssContent = combinedData.Substring(endHtml + "<SPLIT-DATA>".Length);
-                }
-            }
-            _browser1.ReadEditedHtmlNow(bodyHtml, userCssContent); // TODO this makes no sense being in browser. Has nothing to do with the browser.
-        }
-
         private void _copyButton_Click(object sender, EventArgs e)
         {
             ExecuteCommandSafely(_copyCommand);
