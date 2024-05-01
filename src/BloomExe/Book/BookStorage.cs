@@ -3797,6 +3797,7 @@ namespace Bloom.Book
 
         public static readonly string[] CssFilesThatAreObsolete =
         {
+            "languageDisplay.css",
             "langVisibility.css",
             "editOriginalMode.css",
             "editTranslationMode.css"
