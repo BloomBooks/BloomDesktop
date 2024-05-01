@@ -25,6 +25,11 @@ storiesOf("BloomCheckbox", module)
             const [checked, setChecked] = useState<boolean | undefined>(false);
             return (
                 <React.Fragment>
+                    <strong>
+                        The original purpose of this story was to compare the
+                        vertical alignment of the text to the checkbox.
+                    </strong>
+                    <hr />
                     original mui checkbox:
                     <div>
                         <FormControlLabel
@@ -51,6 +56,7 @@ storiesOf("BloomCheckbox", module)
                             onCheckChanged={() => {}}
                             l10nKey="bogus"
                         />
+                        <hr />
                         <BloomCheckbox
                             label={"With Icon " + kLongText}
                             icon={<VisuallyImpairedIcon />}
@@ -59,21 +65,34 @@ storiesOf("BloomCheckbox", module)
                             onCheckChanged={newState => setChecked(newState)}
                             l10nKey="bogus"
                         />
-                        <BloomCheckbox
-                            label={"hideBox, checked"}
-                            checked={true}
-                            hideBox={true}
-                            onCheckChanged={() => {}}
-                            l10nKey="bogus"
-                        />
-                        <BloomCheckbox
-                            label={"hideBox, not checked, with icon"}
-                            icon={<MotionIcon />}
-                            checked={false}
-                            hideBox={true}
-                            onCheckChanged={() => {}}
-                            l10nKey="bogus"
-                        />
+                        <div>
+                            <BloomCheckbox
+                                label={"hideBox, checked"}
+                                checked={true}
+                                hideBox={true}
+                                onCheckChanged={() => {}}
+                                l10nKey="bogus"
+                            />
+                        </div>
+                        <div>
+                            <BloomCheckbox
+                                label={"hideBox, not checked, no icon"}
+                                checked={false}
+                                hideBox={true}
+                                onCheckChanged={() => {}}
+                                l10nKey="bogus"
+                            />
+                        </div>
+                        <div>
+                            <BloomCheckbox
+                                label={"hideBox, not checked, with icon"}
+                                icon={<MotionIcon />}
+                                checked={false}
+                                hideBox={true}
+                                onCheckChanged={() => {}}
+                                l10nKey="bogus"
+                            />
+                        </div>
                     </div>
                 </React.Fragment>
             );
