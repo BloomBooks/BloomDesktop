@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -305,7 +306,11 @@ namespace Bloom.Collection
                         }
                         if (Type == CollectionType.TheOneEditableCollection)
                         {
-                            UpdateBloomLibraryStatusOfBooks(_bookInfos, true);
+                            // We can't afford to run this synchronously, since GetBookInfos is part of the critical
+                            // path for starting up Bloom. It would be nice if we could, because then we'd
+                            // have the status when we first display a book and would not need to update them individually.
+                            // But sometimes these queries are quite slow, so we really need to do them in the background.
+                            Task.Run(() => UpdateBloomLibraryStatusOfBooks(_bookInfos));
                         }
                     }
                     finally
@@ -493,10 +498,11 @@ namespace Bloom.Collection
             DebounceFolderChanged(fileSystemEventArgs.FullPath);
         }
 
-        public void UpdateBloomLibraryStatusOfBooks(
-            List<BookInfo> bookInfos,
-            bool skipBadgeUpdate = false
-        )
+        /// <summary>
+        /// Update the badges that show which books are in BloomLibrary and in what state.
+        /// This can be quite time-consuming, so it should be done in the background.
+        /// </summary>
+        public void UpdateBloomLibraryStatusOfBooks(List<BookInfo> bookInfos)
         {
             if (bookInfos == null || bookInfos.Count == 0)
                 return;
@@ -543,7 +549,7 @@ namespace Bloom.Collection
                     bookInfo.BloomLibraryStatus = null;
                     updateThumbnailBadge = true;
                 }
-                if (updateThumbnailBadge && !skipBadgeUpdate)
+                if (updateThumbnailBadge)
                 {
                     _webSocketServer.SendString("bookCollection", "updateBookBadge", bookInfo.Id);
                 }

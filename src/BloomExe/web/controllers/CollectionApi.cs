@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -566,10 +567,14 @@ namespace Bloom.web.controllers
                 if (reload || collection.PathToDirectory != _currentCollectionPath)
                 {
                     _currentCollectionPath = collection.PathToDirectory;
-                    collection.UpdateBloomLibraryStatusOfBooks(
-                        bookInfos.ToList(),
-                        skipBadgeUpdate: true
-                    );
+                    // This request is run on a background thread without locking, but at startup, the collection
+                    // content won't update until we get it. So it can't afford to wait around for queries to
+                    // bloomlibrary. Do this updating on (another) background thread.
+                    // (Playing safe here. Currently reload=true is never used as far as I can tell. So it might not
+                    // affect startup. But any time we do it the user is probably waiting on the results, and
+                    // does not want to wait for the bloomlibrary queries to finish just to get the badges
+                    // exactly right.)
+                    Task.Run(() => collection.UpdateBloomLibraryStatusOfBooks(bookInfos.ToList()));
                 }
             }
             var jsonInfos = bookInfos
