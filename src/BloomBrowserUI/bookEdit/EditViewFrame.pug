@@ -22,7 +22,7 @@ html
 			html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
 			iframe { border: 0 none;} /* apparently Gecko gives this a default 2 px wide. */
 			body, .pure-pusher { overflow:hidden }
-			#left { width:100%; padding-left:10px;/* separate from the page list */}
+			#left { width:100%; padding-left:10px; /* separate from the page list */ box-sizing: border-box;}
 			div#pusherContainer { padding-right: 35px;height: 100%;}
 			/* These rules achieve a change in the width of the frame I added just inside the pure-pusher
 			(the main content of the pure-drawer system) when the check-box is checked. The second line
