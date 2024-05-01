@@ -7,7 +7,13 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import WarningIcon from "@mui/icons-material/Warning";
 import InfoIcon from "@mui/icons-material/Info";
 import { BloomTooltip } from "./BloomToolTip";
-import { postJson, useApiObject, useWatchApiData } from "../utils/bloomApi";
+import { postJson, useWatchApiData } from "../utils/bloomApi";
+import {
+    MessageIgnoringIncompatibleCss,
+    MessageUsingMigratedThemeInsteadOfIncompatibleCss,
+    MessageUsingLegacyThemeWithIncompatibleCss,
+    MessageIgnoringIncompatibleCssCanDelete
+} from "../bookEdit/bookSettings/BookSettingsDialog";
 
 export const BookInfoIndicator: React.FunctionComponent<{
     bookId: string;
@@ -62,7 +68,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
                 </p>
             )}
             {
-                // The logic that shows one or none of these three messages is similar to that in BookSettingsDialog.
+                // The logic that shows one or none of these four messages is similar to that in BookSettingsDialog.
                 // See the comment there.
             }
             {firstPossiblyConflictingCss && theme === "legacy-5-6" && (
@@ -76,32 +82,40 @@ export const BookInfoIndicator: React.FunctionComponent<{
                         color="warning"
                         fontSize="small"
                     />
-                    <span>
-                        {`The ${firstPossiblyConflictingCss} stylesheet of this book is incompatible with
-                                    modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click (TODO) for more information.`}
-                    </span>
+                    <MessageUsingLegacyThemeWithIncompatibleCss
+                        css={css`
+                            display: inline;
+                        `}
+                        fileName={firstPossiblyConflictingCss}
+                    />
                 </div>
             )}
             {firstPossiblyConflictingCss === "customBookStyles.css" &&
                 theme !== "legacy-5-6" && (
                     <div>
-                        <span>
-                            <InfoIcon
+                        <InfoIcon
+                            css={css`
+                                position: relative;
+                                top: 2px;
+                                margin-right: 5px;
+                            `}
+                            fontSize="small"
+                        />
+                        {migratedTheme ? (
+                            <MessageUsingMigratedThemeInsteadOfIncompatibleCss
                                 css={css`
-                                    position: relative;
-                                    top: 2px;
-                                    margin-right: 5px;
+                                    display: inline;
                                 `}
-                                fontSize="small"
+                                fileName={firstPossiblyConflictingCss}
                             />
-                            {migratedTheme
-                                ? `Bloom found a known version of ${firstPossiblyConflictingCss} in this
-                                    book and replaced it with a modern theme. You can delete it unless you still need to
-                                    publish the book from an earlier version of Bloom.`
-                                : `The ${firstPossiblyConflictingCss} stylesheet of this book is incompatible with
-                                    modern themes. Bloom is currently ignoring it. If you don't need those
-                                    customizations any more, you can delete your ${firstPossiblyConflictingCss}. Click (TODO) for more information.`}
-                        </span>
+                        ) : (
+                            <MessageIgnoringIncompatibleCssCanDelete
+                                css={css`
+                                    display: inline;
+                                `}
+                                fileName={firstPossiblyConflictingCss}
+                            />
+                        )}
                     </div>
                 )}
             {firstPossiblyConflictingCss &&
@@ -116,8 +130,12 @@ export const BookInfoIndicator: React.FunctionComponent<{
                             `}
                             fontSize="small"
                         />
-                        {`The ${firstPossiblyConflictingCss} stylesheet of this book is incompatible with
--                                    modern themes. Bloom is currently ignoring it. Click (TODO) for more information.`}
+                        <MessageIgnoringIncompatibleCss
+                            css={css`
+                                display: inline;
+                            `}
+                            fileName={firstPossiblyConflictingCss}
+                        />
                     </span>
                 )}
         </div>

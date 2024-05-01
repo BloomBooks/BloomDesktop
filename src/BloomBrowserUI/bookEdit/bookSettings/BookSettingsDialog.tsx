@@ -47,7 +47,6 @@ import { Div } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
-import { useMemo } from "react";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 
 let isOpenAlready = false;
@@ -441,31 +440,17 @@ export const BookSettingsDialog: React.FunctionComponent<{
                         </ConfigrGroup>
                         <ConfigrGroup label={contentPagesLabel} level={1}>
                             {
-                                // This group of three possible messages...sometimes none of them shows, so there are four options...
+                                // This group of four possible messages...sometimes none of them shows, so there are five options...
                                 // is very similar to the one in BookInfoIndicator.tsx. If you change one, you may need to change the other.
                                 // In particular, the logic for which to show and the text of the messages should be kept in sync.
-                                // Unfortunately, the formatting is quite different, and here we want to use the Warning/NoteBox
-                                // components, but they don't apply there. Probably, when we internationalize and implement the
-                                // TODO links, we'll want to refactor this to use at least one common components for
-                                // Internationalized-messages-with-link. (I think all three message in both locations will use the
-                                // same link, so that could be built into the component.)
                                 // I'm not seeing a clean way to reuse the logic. Some sort of higher-order component might work,
                                 // but I don't think the logic is complex enough to be worth it, when only used in two places.
                             }
                             {firstPossiblyLegacyCss && theme === "legacy-5-6" && (
                                 <WarningBox>
-                                    <PWithLink
-                                        href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
-                                        l10nKey="BookSettings.UsingLegacyThemeWithIncompatibleCss"
-                                        l10nParam0={firstPossiblyLegacyCss}
-                                        l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
-                                    >
-                                        The {0} stylesheet of this book is
-                                        incompatible with modern themes. Bloom
-                                        is using it because the book is using
-                                        the Legacy-5-6 theme. Click [here] for
-                                        more information.
-                                    </PWithLink>
+                                    <MessageUsingLegacyThemeWithIncompatibleCss
+                                        fileName={firstPossiblyLegacyCss}
+                                    />
                                 </WarningBox>
                             )}
                             {firstPossiblyLegacyCss ===
@@ -474,46 +459,17 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     <NoteBox>
                                         <div>
                                             {migratedTheme ? (
-                                                <Div
-                                                    l10nKey="BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss"
-                                                    l10nParam0={
+                                                <MessageUsingMigratedThemeInsteadOfIncompatibleCss
+                                                    fileName={
                                                         firstPossiblyLegacyCss
                                                     }
-                                                    l10nComment="{0} is a placeholder for a filename."
-                                                >
-                                                    Bloom found a known version
-                                                    of {firstPossiblyLegacyCss}{" "}
-                                                    in this book and replaced it
-                                                    with a modern theme. You can
-                                                    delete it unless you still
-                                                    need to publish the book
-                                                    from an earlier version of
-                                                    Bloom.
-                                                </Div>
+                                                />
                                             ) : (
-                                                <PWithLink
-                                                    href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
-                                                    l10nKey="BookSettings.IgnoringIncompatibleCssCanDelete"
-                                                    l10nParam0={
+                                                <MessageIgnoringIncompatibleCssCanDelete
+                                                    fileName={
                                                         firstPossiblyLegacyCss
                                                     }
-                                                    l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
-                                                >
-                                                    The
-                                                    {
-                                                        firstPossiblyLegacyCss
-                                                    }{" "}
-                                                    stylesheet of this book is
-                                                    incompatible with modern
-                                                    themes. Bloom is currently
-                                                    ignoring it. If you don't
-                                                    need those customizations
-                                                    any more, you can delete
-                                                    your
-                                                    {firstPossiblyLegacyCss}.
-                                                    Click [here] for more
-                                                    information.
-                                                </PWithLink>
+                                                />
                                             )}
                                             <div
                                                 css={css`
@@ -551,28 +507,17 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                             </div>
                                         </div>
                                     </NoteBox>
-                                )
-                            }
+                                )}
                             {firstPossiblyLegacyCss &&
                                 firstPossiblyLegacyCss !==
                                     "customBookStyles.css" &&
                                 theme !== "legacy-5-6" && (
                                     <NoteBox>
-                                        <PWithLink
-                                            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
-                                            l10nKey="BookSettings.IgnoringIncompatibleCss"
-                                            l10nParam0={firstPossiblyLegacyCss}
-                                            l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
-                                        >
-                                            The {firstPossiblyLegacyCss}{" "}
-                                            stylesheet of this book is
-                                            incompatible with modern themes.
-                                            Bloom is currently ignoring it.
-                                            Click [here] for more information.
-                                        </PWithLink>
+                                        <MessageIgnoringIncompatibleCss
+                                            fileName={firstPossiblyLegacyCss}
+                                        />
                                     </NoteBox>
-                                )
-                            }
+                                )}
                             <ConfigrSubgroup label="" path={`appearance`}>
                                 {/* Wrapping these two in a div prevents Config-R from sticking a divider between them */}
                                 <div>
@@ -760,6 +705,81 @@ export function showBookSettingsDialog(initiallySelectedGroupIndex?: number) {
         );
     }
 }
+
+export const MessageUsingLegacyThemeWithIncompatibleCss: React.FunctionComponent<{
+    fileName: string;
+    className?: string;
+}> = props => {
+    return (
+        <PWithLink
+            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+            l10nKey="BookSettings.UsingLegacyThemeWithIncompatibleCss"
+            l10nParam0={props.fileName}
+            l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+            className={props.className}
+        >
+            The {0} stylesheet of this book is incompatible with modern themes.
+            Bloom is using it because the book is using the Legacy-5-6 theme.
+            Click [here] for more information.
+        </PWithLink>
+    );
+};
+
+export const MessageUsingMigratedThemeInsteadOfIncompatibleCss: React.FunctionComponent<{
+    fileName: string;
+    className?: string;
+}> = props => {
+    return (
+        <Div
+            l10nKey="BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss"
+            l10nParam0={props.fileName}
+            l10nComment="{0} is a placeholder for a filename."
+            className={props.className}
+        >
+            Bloom found a known version of {props.fileName} in this book and
+            replaced it with a modern theme. You can delete it unless you still
+            need to publish the book from an earlier version of Bloom.
+        </Div>
+    );
+};
+
+export const MessageIgnoringIncompatibleCssCanDelete: React.FunctionComponent<{
+    fileName: string;
+    className?: string;
+}> = props => {
+    return (
+        <PWithLink
+            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+            l10nKey="BookSettings.IgnoringIncompatibleCssCanDelete"
+            l10nParam0={props.fileName}
+            l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+            className={props.className}
+        >
+            The
+            {props.fileName} stylesheet of this book is incompatible with modern
+            themes. Bloom is currently ignoring it. If you don't need those
+            customizations any more, you can delete your
+            {props.fileName}. Click [here] for more information.
+        </PWithLink>
+    );
+};
+export const MessageIgnoringIncompatibleCss: React.FunctionComponent<{
+    fileName: string;
+    className?: string;
+}> = props => {
+    return (
+        <PWithLink
+            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+            l10nKey="BookSettings.IgnoringIncompatibleCss"
+            l10nParam0={props.fileName}
+            l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+        >
+            The {props.fileName} stylesheet of this book is incompatible with
+            modern themes. Bloom is currently ignoring it. Click [here] for more
+            information.
+        </PWithLink>
+    );
+};
 
 const ColorPickerForConfigr: React.FunctionComponent<{
     value: string;
