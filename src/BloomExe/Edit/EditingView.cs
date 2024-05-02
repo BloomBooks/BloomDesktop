@@ -382,25 +382,7 @@ namespace Bloom.Edit
             _splitContainer2.Panel2Collapsed = true; // used to hold TemplatesPagesView
         }
 
-        void VisibleNowAddSlowContents(object sender, EventArgs e)
-        {
-            //TODO: this is causing green boxes when you quit while it is still working
-            //we should change this to a proper background task, with good
-            //cancellation in case we switch documents.  Note we may also switch
-            //to some other way of making the thumbnails... e.g. it would be nice
-            //to have instant placeholders, with thumbnails later.
-
-            Application.Idle -= new EventHandler(VisibleNowAddSlowContents);
-
-            CheckFontAvailability();
-
-            Cursor = Cursors.WaitCursor;
-            _model.ViewVisibleNowDoSlowStuff();
-
-            Cursor = Cursors.Default;
-        }
-
-        private void CheckFontAvailability()
+        public void CheckFontAvailability()
         {
             var fontMessage = _model.GetFontAvailabilityMessage();
             if (!string.IsNullOrEmpty(fontMessage))
@@ -422,6 +404,7 @@ namespace Bloom.Edit
             _visible = visible;
             if (visible)
             {
+                Cursor = Cursors.WaitCursor;
                 if (_model.GetBookHasChanged())
                 {
                     //now we're doing it based on the focus textarea: ShowOrHideSourcePane(_model.ShowTranslationPanel);
@@ -429,13 +412,12 @@ namespace Bloom.Edit
                     //even before showing, we need to clear some things so the user doesn't see the old stuff
                     _pageListView.Clear();
                 }
-                Application.Idle += new EventHandler(VisibleNowAddSlowContents);
-                Cursor = Cursors.WaitCursor;
+                _model.OnBecomeVisible();
                 Logger.WriteEvent("Entered Edit Tab");
+                Cursor = Cursors.Default;
             }
             else
             {
-                Application.Idle -= new EventHandler(VisibleNowAddSlowContents); //make sure
                 _browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
                 _model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
             }

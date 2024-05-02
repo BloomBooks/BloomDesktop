@@ -641,8 +641,9 @@ namespace Bloom.Edit
             return _currentlyDisplayedBook != CurrentBook;
         }
 
-        public void ViewVisibleNowDoSlowStuff()
+        public void OnBecomeVisible()
         {
+            _view.CheckFontAvailability();
             if (_currentlyDisplayedBook != CurrentBook)
             {
                 // We must update the ContentLanguages. We've switched books, and it is supposed to reflect
@@ -718,14 +719,17 @@ namespace Bloom.Edit
         // completed saving it.
         int _selChangeCount = 0;
         object _selChangeLock = new object();
+
         private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
         {
             try
             {
                 lock (_selChangeLock)
                 {
-                    Debug.Assert(_selChangeCount == 0,
-                        $"Multiple active OnPageSelectionChanging calls, possible  empty marginBox cause? (count={_selChangeLock})");
+                    Debug.Assert(
+                        _selChangeCount == 0,
+                        $"Multiple active OnPageSelectionChanging calls, possible  empty marginBox cause? (count={_selChangeLock})"
+                    );
                     _selChangeCount++;
                 }
                 OnPageSelectionChangingInternal(sender, eventArgs);
@@ -738,6 +742,7 @@ namespace Bloom.Edit
                 }
             }
         }
+
         private void OnPageSelectionChangingInternal(object sender, EventArgs eventArgs)
         {
             CheckForBL2634("start of page selection changing--should have old IDs");
@@ -1255,14 +1260,17 @@ namespace Bloom.Edit
 
         int _saveCount = 0;
         object _saveCountLock = new object();
+
         public void SaveNow(bool forceFullSave = false)
         {
             try
             {
                 lock (_saveCountLock)
                 {
-                    Debug.Assert(_saveCount == 0,
-                        $"Trying to save while already saving: possible empty marginBox cause? (save count={_saveCount})");
+                    Debug.Assert(
+                        _saveCount == 0,
+                        $"Trying to save while already saving: possible empty marginBox cause? (save count={_saveCount})"
+                    );
                     _saveCount++;
                 }
                 SaveNowInternal(forceFullSave);
@@ -1275,6 +1283,7 @@ namespace Bloom.Edit
                 }
             }
         }
+
         private void SaveNowInternal(bool forceFullSave = false)
         {
             if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
