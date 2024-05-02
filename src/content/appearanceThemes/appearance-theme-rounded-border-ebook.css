@@ -24,10 +24,10 @@
     --formatButton-pageNumber-dodge: 20px;
 }
 
-[class*="Device"].numberedPage {
+[class*="Device"].numberedPage:not(.bloom-interactive-page) {
     --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
 }
-[class*="Device"].numberedPage::after {
+[class*="Device"].numberedPage:not(.bloom-interactive-page)::after {
     --pageNumber-bottom: 2mm;
     --pageNumber-top: unset;
     --pageNumber-font-size: 11pt;
