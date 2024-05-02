@@ -20,7 +20,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using SIL.Windows.Forms.ClearShare;
+#if DEBUG
+using System.Media;
+#endif
 
 namespace Bloom
 {
@@ -555,7 +557,17 @@ namespace Bloom
                     || m.Msg >= WM_MOUSEFIRST + 1 && m.Msg <= WM_MOUSELAST
                 )
                 {
-                    Debug.Fail($"Filtered out message {m.Msg}");
+                    Logger.WriteEvent($"AsyncMessageFilter filtered out message {m.Msg}");
+
+#if DEBUG
+                    // Get the developer's attention that something is being suppressed so s/he can look in the log.
+                    // Playing all three here because technically, the system could have one or more of these sounds disabled.
+                    // And even when all three play, it sounds like one sound.
+                    SystemSounds.Asterisk.Play();
+                    SystemSounds.Beep.Play();
+                    SystemSounds.Exclamation.Play();
+#endif
+
                     return true;
                 }
 
