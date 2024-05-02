@@ -646,8 +646,9 @@ namespace Bloom.Edit
             return _currentlyDisplayedBook != CurrentBook;
         }
 
-        public void ViewVisibleNowDoSlowStuff()
+        public void OnBecomeVisible()
         {
+            _view.CheckFontAvailability();
             if (_currentlyDisplayedBook != CurrentBook)
             {
                 // We must update the ContentLanguages. We've switched books, and it is supposed to reflect
