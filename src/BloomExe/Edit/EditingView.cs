@@ -164,6 +164,7 @@ namespace Bloom.Edit
                     UpdatePageList(true);
                 }
             );
+            _menusToolStrip.Renderer = new DisableColorRenderer(Color.FromArgb(114, 74, 106));
 #if __MonoCS__
             // The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
             // Merely introducing an "identity color matrix" to the image attributes appears to fix
