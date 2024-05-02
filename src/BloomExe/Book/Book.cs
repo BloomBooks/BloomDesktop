@@ -1636,6 +1636,7 @@ namespace Bloom.Book
                 }
             }
             RemoveObsoleteSoundAttributes(OurHtmlDom);
+            Storage.RepairEmptyPages();
             RemoveObsoleteImageAttributes(OurHtmlDom);
             BringBookInfoUpToDate(oldMetaData);
             FixErrorsEncounteredByUsers(OurHtmlDom);

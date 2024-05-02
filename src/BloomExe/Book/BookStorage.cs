@@ -77,6 +77,7 @@ namespace Bloom.Book
         void CleanupUnusedAudioFiles(bool isForPublish, HashSet<string> langsToExcludeAudioFor);
         void CleanupUnusedVideoFiles();
         void CleanupUnusedActivities();
+        void RepairEmptyPages();
 
         ExpandoObject XmatterAppearanceSettings { get; }
         ExpandoObject BrandingAppearanceSettings { get; }
@@ -3859,28 +3860,13 @@ namespace Bloom.Book
             if (Program.RunningUnitTests)
                 return false; // unit tests might have incomplete data, so we don't want to report this as an error.
             // If the content of the marginBox has disappeared, we don't want to save that state.
-            var internalNodes = pageElement
-                .SelectNodes(".//div[contains(@class,'marginBox')]/div")
-                .Cast<XmlElement>();
-            Debug.Assert(internalNodes.Count() > 0, "marginBox is totally empty!");
-            if (internalNodes.Count() == 0)
+
+            if (HasMessedUpMarginBox(pageElement))
             {
                 ReportEmptyMarginBox(pageElement);
                 return true;
             }
-            foreach (var node in internalNodes)
-            {
-                var classes = node.GetAttribute("class");
-                if (string.IsNullOrEmpty(classes))
-                    continue;
-                // If the marginBox has a div.pageLabel, the real content has disappeared and we don't want to save that state.
-                Debug.Assert(!classes.Contains("pageLabel"), "marginBox has emptied out, with the div.pageLabel moved inside!");
-                if (classes.Contains("pageLabel"))
-                {
-                    ReportEmptyMarginBox(pageElement);
-                    return true;
-                }
-            }
+
             return false;
         }
 
@@ -3923,6 +3909,98 @@ namespace Bloom.Book
 
             // Enhance: try to get stack dump from all threads?
             // See https://stackoverflow.com/questions/2057781/is-there-a-way-to-get-the-stacktraces-for-all-threads-in-c-like-java-lang-thre.
+        }
+
+        public const string kRepairedPageMessage =
+            "We apologize, but it appears that a bug in an older version of Bloom removed the contents of this page. Please delete it. If you have a backup of this book, you may be able to copy the page from the good copy back into this book.";
+
+        public void RepairEmptyPages()
+        {
+            var pages = Dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
+                .Cast<XmlElement>()
+                .ToList();
+            var problems = pages.Where(page => HasMessedUpMarginBox(page)).ToList();
+            if (problems.Count == 0)
+                return;
+            // Replace the messed up pages with modified clones of our "Just Text" page that contain the message above.
+            var pathToBasicBookFolder = BloomFileLocator.GetFactoryBookTemplateDirectory(
+                "Basic Book"
+            );
+            var pathToBasicBook = Path.Combine(pathToBasicBookFolder, "Basic Book.html");
+            var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(pathToBasicBook);
+            var justTextPage = dom.SelectSingleNode("//div[@id='" + Book.JustTextGuid + "']");
+            // The standard Just Text page has a bloom-editable with language 'z' that is meant to be a template
+            // for creating other language blocks. We'll just use it and modify the language.
+            var editable = justTextPage.SelectSingleNode(".//div[@lang='z']") as XmlElement;
+            // I'm deliberately not localizing this because it's a very rare message that we don't want our
+            // translators to waste time on. Moreover, it's purpose is just to let the user know something has
+            // gone wrong, which will be fairly evident even with an incomprehensible message in it.
+            editable.InnerText = kRepairedPageMessage;
+            // It does however want to be visible, so it needs to be marked as the right language
+            // (even though it probably isn't).
+            // This is not perfect...the user MIGHT have turned off the collection L1.
+            // In that case the message will show up in the source bubble. Not ideal, but
+            // it's a corner case of hack to alleviate the results of a rare bug that we
+            // think we've prevented from ever again doing this much damage. I think it's good enough.
+            editable.SetAttribute("lang", _collectionSettings.Language1Tag);
+            foreach (var page in problems)
+            {
+                page.ParentNode.ReplaceChild(
+                    page.OwnerDocument.ImportNode(justTextPage, true),
+                    page
+                );
+            }
+        }
+
+        // Tries to detect a state that some bug occasionally puts a page into, where it is more-or-less empty.
+        // Another characteristic state produced by the bug is where the page labels that should be outside
+        // the marginBox are inside it.
+        static bool HasMessedUpMarginBox(XmlElement page)
+        {
+            var marginBox = GetMarginBox(page);
+            if (marginBox == null)
+                return true; // marginBox should not be missing
+            var internalNodes = marginBox.ChildNodes
+                .Cast<XmlNode>()
+                .Where(x => x is XmlElement)
+                .ToList();
+            if (internalNodes.Count == 0)
+            {
+                return true; // marginBox should not be empty
+            }
+            foreach (XmlElement elt in internalNodes)
+            {
+                var classes = elt.GetAttribute("class");
+                if (string.IsNullOrEmpty(classes))
+                    continue;
+                // If the marginBox has a div.pageLabel, the real content has disappeared and we don't want to save that state.
+                if (classes.Contains("pageLabel"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // I think this is more efficient than an xpath, especially since marginBox is usually the last top-level child.
+        static XmlElement GetMarginBox(XmlElement parent)
+        {
+            foreach (
+                XmlElement child in parent.ChildNodes
+                    .Cast<XmlNode>()
+                    .Where(x => x is XmlElement)
+                    .Reverse()
+            )
+            {
+                if (child.GetAttribute("class").Contains("marginBox"))
+                    return child;
+                var mb = GetMarginBox(child);
+                if (mb != null)
+                    return mb;
+            }
+
+            return null;
         }
     }
 }
