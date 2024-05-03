@@ -59,7 +59,7 @@ namespace Bloom.Edit
         internal event EventHandler PageSelectModelChangesComplete;
 
         // These variables are not thread-safe. Access only on UI thread.
-        private bool _inProcessOfSaving;
+        internal bool InProcessOfSaving;
         private List<Action> _tasksToDoAfterSaving = new List<Action>();
 
         // Perhaps a bit hack-ish, but this causes a full save to be done when our datadiv has been modified
@@ -340,9 +340,9 @@ namespace Bloom.Edit
         internal void DeletePage(IPage page)
         {
             // This can only be called on the UI thread in response to a user button click.
-            // If that ever changed we might need to arrange locking for access to _inProcessOfSaving and _tasksToDoAfterSaving.
+            // If that ever changed we might need to arrange locking for access to InProcessOfSaving and _tasksToDoAfterSaving.
             Debug.Assert(!_view.InvokeRequired);
-            if (_inProcessOfSaving && page == _pageSelection.CurrentSelection)
+            if (InProcessOfSaving && page == _pageSelection.CurrentSelection)
             {
                 // Somehow (BL-431) it's possible that a Save is still in progress when we start executing a delete page.
                 // If this happens, to prevent crashes we need to let the Save complete before we go ahead with the delete.
@@ -718,14 +718,17 @@ namespace Bloom.Edit
         // completed saving it.
         int _selChangeCount = 0;
         object _selChangeLock = new object();
+
         private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
         {
             try
             {
                 lock (_selChangeLock)
                 {
-                    Debug.Assert(_selChangeCount == 0,
-                        $"Multiple active OnPageSelectionChanging calls, possible  empty marginBox cause? (count={_selChangeLock})");
+                    Debug.Assert(
+                        _selChangeCount == 0,
+                        $"Multiple active OnPageSelectionChanging calls, possible  empty marginBox cause? (count={_selChangeLock})"
+                    );
                     _selChangeCount++;
                 }
                 OnPageSelectionChangingInternal(sender, eventArgs);
@@ -738,6 +741,7 @@ namespace Bloom.Edit
                 }
             }
         }
+
         private void OnPageSelectionChangingInternal(object sender, EventArgs eventArgs)
         {
             CheckForBL2634("start of page selection changing--should have old IDs");
@@ -1255,14 +1259,17 @@ namespace Bloom.Edit
 
         int _saveCount = 0;
         object _saveCountLock = new object();
+
         public void SaveNow(bool forceFullSave = false)
         {
             try
             {
                 lock (_saveCountLock)
                 {
-                    Debug.Assert(_saveCount == 0,
-                        $"Trying to save while already saving: possible empty marginBox cause? (save count={_saveCount})");
+                    Debug.Assert(
+                        _saveCount == 0,
+                        $"Trying to save while already saving: possible empty marginBox cause? (save count={_saveCount})"
+                    );
                     _saveCount++;
                 }
                 SaveNowInternal(forceFullSave);
@@ -1275,9 +1282,10 @@ namespace Bloom.Edit
                 }
             }
         }
+
         private void SaveNowInternal(bool forceFullSave = false)
         {
-            if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
+            if (_domForCurrentPage != null && !InProcessOfSaving && !NavigatingSoSuspendSaving)
             {
                 Logger.WriteMinorEvent("EditingModel.SaveNow() starting");
 #if MEMORYCHECK
@@ -1289,7 +1297,7 @@ namespace Bloom.Edit
                     _webSocketServer.SendString("pageThumbnailList", "saving", "");
 
                     // CleanHtml already requires that we are on UI thread. But it's worth asserting here too in case that changes.
-                    // If we weren't sure of that we would need locking for access to _tasksToDoAfterSaving and _inProcessOfSaving,
+                    // If we weren't sure of that we would need locking for access to _tasksToDoAfterSaving and InProcessOfSaving,
                     // and would need to be careful about whether any delayed tasks needed to be on the UI thread.
                     if (_view.InvokeRequired)
                     {
@@ -1306,7 +1314,7 @@ namespace Bloom.Edit
                         return;
                     }
                     CheckForBL2634("beginning SaveNow");
-                    _inProcessOfSaving = true;
+                    InProcessOfSaving = true;
                     _tasksToDoAfterSaving.Clear();
                     _view.CleanHtmlAndCopyToPageDom();
 
@@ -1368,7 +1376,7 @@ namespace Bloom.Edit
                 }
                 finally
                 {
-                    _inProcessOfSaving = false;
+                    InProcessOfSaving = false;
                 }
 #if MEMORYCHECK
                 // Check memory for the benefit of developers.
@@ -1379,7 +1387,7 @@ namespace Bloom.Edit
             else
             {
                 Logger.WriteMinorEvent(
-                    $"EditingModel.SaveNow() called when _inProcessOfSaving={_inProcessOfDeleting}, NavigatingSoSuspendSaving={NavigatingSoSuspendSaving}, _domForCurrentPage={_domForCurrentPage}"
+                    $"EditingModel.SaveNow() called when InProcessOfSaving={_inProcessOfDeleting}, NavigatingSoSuspendSaving={NavigatingSoSuspendSaving}, _domForCurrentPage={_domForCurrentPage}"
                 );
             }
         }
