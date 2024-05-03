@@ -463,6 +463,12 @@ namespace Bloom.Edit
 #endif
             if (_model.HaveCurrentEditableBook)
             {
+                if (_model.InProcessOfSaving)
+                {
+                    throw new ApplicationException(
+                        "UpdateSingleDisplayedPage called while still in the process of saving a page. Changes to the page may not get saved. Please report and connect to BL-13120."
+                    );
+                }
                 _beginPageLoad = DateTime.Now;
                 _pageListView.SelectThumbnailWithoutSendingEvent(page);
                 _pageListView.UpdateThumbnailAsync(page);
