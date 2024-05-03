@@ -799,7 +799,7 @@ namespace Bloom.Edit
         {
             // BL-11709: It's just possible that the element we are pasting into has not yet been saved,
             // which will cause problems. So do a save before pasting.
-            _model.SaveNow();
+            _model.RequestBrowserToSave();
 
             using (var measure = PerformanceMeasurement.Global.Measure("Paste Image"))
             {
@@ -1049,7 +1049,7 @@ namespace Bloom.Edit
         {
             // Make sure any new image overlays on the page are saved, so our imgIndex will select the
             // right one.
-            Model.SaveNow();
+            Model.RequestBrowserToSave();
 
             var imageElement = GetImageNode(imgIndex);
             if (imageElement == null)
@@ -1484,38 +1484,6 @@ namespace Bloom.Edit
             _pageListView.UpdateAllThumbnails();
         }
 
-        /// <summary>
-        /// this started as an experiment, where our textareas were not being read when we saved because of the need
-        /// to change the picture
-        /// </summary>
-        public void CleanHtmlAndCopyToPageDom()
-        {
-            // NOTE: these calls to may lead to API calls from the JS. These are async, so the actions
-            // that JS might perform may not actually happen until well after this method. We ran into a problem in
-            // BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
-            // tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
-            // been editing, so there was an null.
-            var script =
-                @"
-if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined')
-	editTabBundle.getToolboxBundleExports().removeToolboxMarkup();
-if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined')
-	editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage() + '<SPLIT-DATA>' + editTabBundle.getEditablePageBundleExports().userStylesheetContent();";
-            var combinedData = RunJavascriptWithStringResult_Sync_Dangerous(script);
-            string bodyHtml = null;
-            string userCssContent = null;
-            if (combinedData != null)
-            {
-                var endHtml = combinedData.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
-                if (endHtml > 0)
-                {
-                    bodyHtml = combinedData.Substring(0, endHtml);
-                    userCssContent = combinedData.Substring(endHtml + "<SPLIT-DATA>".Length);
-                }
-            }
-            _browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
-        }
-
         private void _copyButton_Click(object sender, EventArgs e)
         {
             ExecuteCommandSafely(_copyCommand);
@@ -1873,7 +1841,7 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
         private void SaveWhenIdle(object o, EventArgs eventArgs)
         {
             Application.Idle -= SaveWhenIdle; // don't need to do again till next Deactivate.
-            _model.SaveNow();
+            _model.RequestBrowserToSave();
             // Restore any tool state removed by CleanHtmlAndCopyToPageDom(), which is called by _model.SaveNow().
             RunJavascriptAsync(
                 "if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxBundleExports().applyToolboxStateToPage();}"
@@ -2124,7 +2092,7 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
 
         private void _bookSettingsButton_Click(object sender, EventArgs e)
         {
-            _model.SaveNow();
+            _model.RequestBrowserToSave();
 
             // Open the book settings dialog to the context-specific group.
             var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;

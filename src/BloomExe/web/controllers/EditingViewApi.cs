@@ -67,6 +67,13 @@ namespace Bloom.web.controllers
                 HandleDuplicatePageMany,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/saveHtml",
+                HandleSaveHtml,
+                true /*review*/
+                ,
+                true /*review*/
+            );
             apiHandler.RegisterEndpointHandler("editView/topics", HandleTopics, false);
             apiHandler.RegisterEndpointHandler("editView/changeImage", HandleChangeImage, true);
             apiHandler.RegisterEndpointHandler("editView/cutImage", HandleCutImage, true);
@@ -229,6 +236,18 @@ namespace Bloom.web.controllers
                 Application.DoEvents();
                 Thread.Sleep(10);
             }
+        }
+
+        private void HandleSaveHtml(ApiRequest request)
+        {
+            // the post is an object of the form {html: string, userStyles:string}
+            // after we get it we call the SaveHtmlNow method on the model
+            dynamic data = request.RequiredPostDynamic();
+            var forceFullSave = (bool)data.forceFullSave;
+            var html = (string)data.html;
+            var userStylesheetContent = (string)data.userStylesheetContent;
+            View.Model.SavePageHtml(html, userStylesheetContent, forceFullSave);
+            request.PostSucceeded();
         }
 
         private void HandleChangeImage(ApiRequest request)

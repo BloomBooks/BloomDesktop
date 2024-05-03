@@ -1,10 +1,7 @@
 using Bloom.Api;
 using Bloom.Book;
-using Bloom.ErrorReporter;
 using Bloom.ToPalaso;
-using L10NSharp;
 using SIL.IO;
-using SIL.Reporting;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -286,127 +283,6 @@ namespace Bloom
             Debug.Assert(!InvokeRequired);
             ProcessExtra.SafeStartInFront("msedge", $"{Url}");
             // intentionally letting any errors just escape, give us an error
-        }
-
-        public void ReadEditableAreasNow(string bodyHtml, string userCssContent)
-        {
-            if (Url != "about:blank")
-            {
-                LoadPageDomFromBrowser(bodyHtml, userCssContent);
-            }
-        }
-
-        /// <summary>
-        /// What's going on here: the browser is just editing/displaying a copy of one page of the document.
-        /// So we need to copy any changes back to the real DOM.
-        /// We're now obtaining the new content another way, so this code doesn't have any reason
-        /// to be in this class...but we're aiming for a minimal change, maximal safety fix for 4.9
-        /// </summary>
-        private void LoadPageDomFromBrowser(string bodyHtml, string userCssContent)
-        {
-            Debug.Assert(!InvokeRequired);
-            if (_pageEditDom == null)
-                return;
-
-            try
-            {
-                // unlikely, but if we somehow couldn't get the new content, better keep the old.
-                // This MIGHT be able to happen in some cases of very fast page clicking, where
-                // the page isn't fully enough loaded to expose the functions we use to get the
-                // content. In that case, the user can't have made changes, so not saving is fine.
-                if (string.IsNullOrEmpty(bodyHtml))
-                    return;
-
-                var content = bodyHtml;
-                XmlDocument dom;
-
-                //todo: deal with exception that can come out of this
-                dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
-                var bodyDom = dom.SelectSingleNode("//body");
-
-                if (_pageEditDom == null)
-                    return;
-
-                var destinationDomPage = _pageEditDom.SelectSingleNode(
-                    "//body//div[contains(@class,'bloom-page')]"
-                );
-                if (destinationDomPage == null)
-                    return;
-                var expectedPageId = destinationDomPage.Attributes["id"].Value;
-
-                var browserDomPage = bodyDom.SelectSingleNode(
-                    "//body//div[contains(@class,'bloom-page')]"
-                );
-                if (browserDomPage == null)
-                    return; //why? but I've seen it happen
-
-                var thisPageId = browserDomPage.Attributes["id"].Value;
-                if (expectedPageId != thisPageId)
-                {
-                    SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-                        LocalizationManager.GetString(
-                            "Browser.ProblemSaving",
-                            "There was a problem while saving. Please return to the previous page and make sure it looks correct."
-                        )
-                    );
-                    return;
-                }
-
-                // We've seen pages get emptied out, and we don't know why. This is a safety check.
-                // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
-                if (BookStorage.CheckForEmptyMarginBoxOnPage(browserDomPage as XmlElement))
-                {
-                    // This has been logged and reported to the user. We don't want to save the empty page.
-                    return;
-                }
-
-                _pageEditDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
-
-                SaveCustomizedCssRules(userCssContent);
-
-                //enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
-                //				foreach (XmlElement j in _editDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
-                //				{
-                //					j.ParentNode.RemoveChild(j);
-                //				}
-                //				foreach (XmlAttribute j in _editDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
-                //				{
-                //					j.OwnerElement.RemoveAttributeNode(j);
-                //				}
-            }
-            catch (Exception e)
-            {
-                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-                Debug.Fail(
-                    "Debug Mode Only: Error while trying to read changes to CSSRules. In Release, this just gets swallowed. Will now re-throw the exception."
-                );
-#if DEBUG
-                throw;
-#endif
-            }
-
-            try
-            {
-                XmlHtmlConverter.ThrowIfHtmlHasErrors(_pageEditDom.OuterXml);
-            }
-            catch (Exception e)
-            {
-                //var exceptionWithHtmlContents = new Exception(content);
-                ErrorReport.NotifyUserOfProblem(
-                    e,
-                    "Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
-                    e.Message,
-                    Environment.NewLine
-                );
-            }
-        }
-
-        private void SaveCustomizedCssRules(string userCssContent)
-        {
-            // Yes, this wipes out everything else in the head. At this point, the only things
-            // we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
-            _pageEditDom.GetElementsByTagName("head")[0].InnerXml =
-                HtmlDom.CreateUserModifiedStyles(userCssContent);
         }
 
         [Obsolete(

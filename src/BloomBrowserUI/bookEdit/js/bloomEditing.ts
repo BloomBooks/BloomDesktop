@@ -29,7 +29,7 @@ import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { getEditTabBundleExports } from "./bloomFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
-
+import { postJson } from "../../utils/bloomApi";
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
@@ -1251,9 +1251,7 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         });
 }
 
-// This is invoked from C# when we are about to change pages. The C# code will save the changes
-// to the page after we return from this (hopefully; certainly in debugging this is the case).
-export const pageSelectionChanging = () => {
+function removeOrigami() {
     // We are mirroring the origami layoutToggleClickHandler() here, in case the user changes
     // pages while the origami toggle in on.
     // The DOM here is for just one page, so there's only ever one marginBox.
@@ -1263,10 +1261,16 @@ export const pageSelectionChanging = () => {
     for (let i = 0; i < textLabels.length; i++) {
         textLabels[i].remove();
     }
-};
+}
 
-// Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
-// editTabBundle.getEditablePageBundleExports().
+export function saveRequested(forceFullSave: boolean) {
+    removeOrigami();
+    postJson("editView/saveHtml", {
+        forceFullSave: forceFullSave,
+        html: getBodyContentForSavePage(),
+        userStylesheetContent: userStylesheetContent()
+    });
+}
 export const getBodyContentForSavePage = () => {
     const bubbleEditingOn = theOneBubbleManager.isComicEditingOn;
     if (bubbleEditingOn) {
