@@ -1756,6 +1756,8 @@ namespace Bloom.Workspace
         public NoBorderToolStripRenderer()
             : base(new NoBorderToolStripColorTable()) { }
 
+        public Color DisabledColor { get; set; }
+
         protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { }
 
         protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
@@ -1763,7 +1765,30 @@ namespace Bloom.Workspace
             // this is needed, especially on Linux
             e.SizeTextRectangleToText();
             AdjustToolStripLocationIfNecessary(e);
-            base.OnRenderItemText(e);
+            if (e.Item.Enabled)
+            {
+                base.OnRenderItemText(e);
+                return;
+            }
+
+            // We have to actually take over drawing it, because when disabled, e.TextColor
+            // is ignored. There doesn't seem to be a property for disabled text color.
+            TextRenderer.DrawText(
+                e.Graphics,
+                e.Text,
+                e.TextFont,
+                e.TextRectangle,
+                DisabledColor,
+                e.TextFormat
+            );
+        }
+
+        protected override void OnRenderArrow(ToolStripArrowRenderEventArgs e)
+        {
+            if (!e.Item.Enabled)
+                e.ArrowColor = DisabledColor;
+
+            base.OnRenderArrow(e);
         }
 
         /// <summary>

@@ -134,7 +134,10 @@ namespace Bloom.Edit
 
             // Adding this renderer prevents a white line from showing up under the components.
             // BL-5071 We don't want a hover border on the items either.
-            _menusToolStrip.Renderer = new NoBorderToolStripRenderer();
+            _menusToolStrip.Renderer = new NoBorderToolStripRenderer()
+            {
+                DisabledColor = Color.FromArgb(114, 74, 106)
+            };
             _rightToolStrip.Renderer = new NoBorderToolStripRenderer();
 
             //we're giving it to the parent control through the TopBarControls property
@@ -164,7 +167,6 @@ namespace Bloom.Edit
                     UpdatePageList(true);
                 }
             );
-            _menusToolStrip.Renderer = new DisableColorRenderer(Color.FromArgb(114, 74, 106));
 #if __MonoCS__
             // The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
             // Merely introducing an "identity color matrix" to the image attributes appears to fix
