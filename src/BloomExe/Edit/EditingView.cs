@@ -1502,12 +1502,13 @@ namespace Bloom.Edit
             // tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
             // been editing, so there was an null.
             var script =
-                @"
-if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined')
-	editTabBundle.getToolboxBundleExports().removeToolboxMarkup();
-if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined')
-	editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage() + '<SPLIT-DATA>' + editTabBundle.getEditablePageBundleExports().userStylesheetContent();";
-            var combinedData = RunJavascriptWithStringResult_Sync_Dangerous(script);
+                //                @"
+                //if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined')
+                //	editTabBundle.getToolboxBundleExports().removeToolboxMarkup();
+                //if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined')
+                //	editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage() + '<SPLIT-DATA>' + editTabBundle.getEditablePageBundleExports().userStylesheetContent();";
+                @"editTabBundle.getEditablePageBundleExports().postPageState(false);";
+            var combinedData = _browser1.RunJavascriptWithStringResult(script);
             string bodyHtml = null;
             string userCssContent = null;
             if (combinedData != null)

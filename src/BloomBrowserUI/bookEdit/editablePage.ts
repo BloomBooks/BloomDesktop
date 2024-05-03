@@ -42,6 +42,7 @@ export interface IPageFrameExports {
 import {
     pageSelectionChanging,
     getBodyContentForSavePage,
+    postPageState,
     userStylesheetContent,
     pageUnloading,
     disconnectForGarbageCollection,
@@ -55,6 +56,7 @@ import {
 export {
     pageSelectionChanging,
     getBodyContentForSavePage,
+    postPageState,
     userStylesheetContent,
     pageUnloading,
     disconnectForGarbageCollection,

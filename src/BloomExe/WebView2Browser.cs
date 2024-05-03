@@ -20,6 +20,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom.web.controllers;
+
 #if DEBUG
 using System.Media;
 #endif
@@ -579,9 +581,30 @@ namespace Bloom
             }
         }
 
-        [Obsolete(
-            "This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred."
-        )]
+        public override string RunJavascriptWithStringResult(string script)
+        {
+            CommonApi.JavascriptResult = null;
+            _webview.ExecuteScriptAsync(script);
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (CommonApi.JavascriptResult != null)
+                    break;
+                Thread.Sleep(1000);
+            }
+            if (CommonApi.JavascriptResult == null)
+            {
+                Logger.WriteEvent(
+                    "RunJavascriptWithStringResult_Sync_Dangerous: Timed out waiting for script to complete"
+                );
+                throw new TimeoutException(
+                    "RunJavascriptWithStringResult_Sync_Dangerous: Timed out waiting for script to complete"
+                );
+            }
+
+            return CommonApi.JavascriptResult;
+        }
+
         public override string RunJavascriptWithStringResult_Sync_Dangerous(string script)
         {
             Task<string> task = GetStringFromJavascriptAsync(script);

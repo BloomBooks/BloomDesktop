@@ -38,6 +38,8 @@ import {
     get,
     post,
     postBoolean,
+    postJson,
+    postString,
     postThatMightNavigate
 } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
@@ -1264,6 +1266,18 @@ export const pageSelectionChanging = () => {
         textLabels[i].remove();
     }
 };
+
+export function postPageState(forceFullSave: boolean) {
+    postString(
+        "common/javascriptResult",
+        getBodyContentForSavePage() + "<SPLIT-DATA>" + userStylesheetContent()
+    );
+    // postJson("common/javascriptResult", {
+    //     forceFullSave: forceFullSave,
+    //     html: getBodyContentForSavePage(),
+    //     userStylesheetContent: userStylesheetContent()
+    // });
+}
 
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
 // editTabBundle.getEditablePageBundleExports().

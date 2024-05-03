@@ -25,6 +25,7 @@ namespace Bloom.web.controllers
     /// </summary>
     public class CommonApi
     {
+        public static string JavascriptResult;
         private readonly BookSelection _bookSelection;
 
         public EditingModel Model { get; set; }
@@ -198,6 +199,19 @@ namespace Bloom.web.controllers
                     Debug.WriteLine("FROM JS: " + message);
                     request.PostSucceeded();
                 },
+                false
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                "common/javascriptResult",
+                request =>
+                {
+                    JavascriptResult = request.RequiredPostString();
+
+                    Debug.WriteLine("FROM JS: " + JavascriptResult);
+                    request.PostSucceeded();
+                },
+                false,
                 false
             );
 
