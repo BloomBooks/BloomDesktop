@@ -1507,7 +1507,7 @@ namespace Bloom.Edit
                 //	editTabBundle.getToolboxBundleExports().removeToolboxMarkup();
                 //if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined')
                 //	editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage() + '<SPLIT-DATA>' + editTabBundle.getEditablePageBundleExports().userStylesheetContent();";
-                @"editTabBundle.getEditablePageBundleExports().postPageState(false);";
+                @"editTabBundle.getEditablePageBundleExports().pageSelectionChanging();";
             var combinedData = _browser1.RunJavascriptWithStringResult(script);
             string bodyHtml = null;
             string userCssContent = null;

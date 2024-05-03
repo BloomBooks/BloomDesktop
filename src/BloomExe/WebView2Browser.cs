@@ -586,19 +586,19 @@ namespace Bloom
             CommonApi.JavascriptResult = null;
             _webview.ExecuteScriptAsync(script);
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 200; i++) // 10 seconds
             {
                 if (CommonApi.JavascriptResult != null)
                     break;
-                Thread.Sleep(1000);
+                Thread.Sleep(50);
             }
             if (CommonApi.JavascriptResult == null)
             {
                 Logger.WriteEvent(
-                    "RunJavascriptWithStringResult_Sync_Dangerous: Timed out waiting for script to complete"
+                    "RunJavascriptWithStringResult: Timed out waiting for script to complete"
                 );
                 throw new TimeoutException(
-                    "RunJavascriptWithStringResult_Sync_Dangerous: Timed out waiting for script to complete"
+                    "RunJavascriptWithStringResult: Timed out waiting for script to complete"
                 );
             }
 

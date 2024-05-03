@@ -13,7 +13,6 @@ import { theOneBubbleManager, BubbleManager } from "./js/bubbleManager";
 export interface IPageFrameExports {
     pageSelectionChanging(): void;
     pageUnloading(): void;
-    disconnectForGarbageCollection(): void;
     copySelection(): void;
     cutSelection(): void;
     pasteClipboardText(): void;
@@ -40,12 +39,10 @@ export interface IPageFrameExports {
 // This exports the functions that should be accessible from other IFrames or from C#.
 // For example, editTabBundle.getEditablePageBundleExports().pageSelectionChanging() can be called.
 import {
-    pageSelectionChanging,
     getBodyContentForSavePage,
-    postPageState,
+    pageSelectionChanging,
     userStylesheetContent,
     pageUnloading,
-    disconnectForGarbageCollection,
     copySelection,
     cutSelection,
     pasteClipboardText,
@@ -54,12 +51,10 @@ import {
     attachToCkEditor
 } from "./js/bloomEditing";
 export {
-    pageSelectionChanging,
     getBodyContentForSavePage,
-    postPageState,
+    pageSelectionChanging,
     userStylesheetContent,
     pageUnloading,
-    disconnectForGarbageCollection,
     copySelection,
     cutSelection,
     pasteClipboardText,
