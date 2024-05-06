@@ -1,5 +1,47 @@
 @import (reference) "../../bloomUI.less";
-@import "../../../content/templates/xMatter/standard-template-preview.less";
+
+// This is wanted only for previewing templates, not real books.
+// Real books always have a data-l1 attribute added, and the standard basePage rules work for them.
+.preview:not([data-l1]) {
+    // Get the front cover to look right in preview mode for most page sizes and layouts.
+    .bloom-frontMatter {
+        @MarginBetweenMajorItems: 15px;
+        .marginBox {
+            display: flex;
+            flex-direction: column;
+
+            .bloom-translationGroup.bookTitle {
+                min-height: 12%;
+            }
+            .bloom-imageContainer {
+                flex: 1 1 auto;
+                margin-top: @MarginBetweenMajorItems;
+                margin-bottom: @MarginBetweenMajorItems;
+            }
+            .bottomBlock {
+                min-height: 12%;
+            }
+        }
+        // This is needed for the Digital Comic Book and Sign Language to properly space items
+        // on the front cover.
+        &.Device16x9Landscape#ddd9b811-63d6-4d51-baf8-0a5fe88cd73d {
+            .bookTitle {
+                min-height: 10%;
+            }
+            .coverImage {
+                max-height: 65%;
+            }
+            .bottomBlock {
+                min-height: 20%;
+            }
+        }
+        // This is needed for the Digital Comic Book and Paper Comic Book which
+        // are .htm files with the "about" page defined.
+        &[data-xmatter-page="about"] {
+            display: none;
+        }
+    }
+}
 
 @media screen {
     body {

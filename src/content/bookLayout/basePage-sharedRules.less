@@ -170,3 +170,58 @@ span.bloom-linebreak {
         box-sizing: content-box;    // keep the same space for the text when selected
     }
 }
+
+// Rules that are shared by both the regular book front matter and the more minimalist epub front matter.
+// These rules were moved from bloom-xmatter-sharedRules.less to basePage-sharedRules.less in Bloom 6.0.
+.frontCover {
+    .bloom-translationGroup.bookTitle {
+        .bloom-editable {
+            //NB: THe order here is important. bloom-content1 should be last so that if a box is
+            // *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections),
+            // we want the bloom-content1 rule to win.
+            font-weight: bold;
+            // 1.4em is the minimum to show ทไปทั่วพื้ without clipping.
+            // Until Bloom 4.4, that was the default, but it was ugly
+            // for everyone else. 1.0 looks great for a simple latin
+            // alphabet without descenders, and 1.1 is safe with descenders. See BL-6402
+            line-height: 1.1;
+            min-height: auto; // elsewhere there is a min-height, that may or may not be a good idea, but for sure we don't want it here.
+            // These apply when not in legacy mode.  See basePage-legacy-5-6.less and baseEPUB.less for the legacy mode rules.
+            &.bloom-contentFirst {
+                //main title
+                font-size: var(--DefaultCoverTitle1FontSize, 25pt);
+                margin-bottom: var(--MarginBetweenXMatterMinorItems, 5px);
+            }
+            &.bloom-contentSecond {
+                font-size: var(--DefaultCoverTitle2FontSize, 12pt);
+                margin-bottom: var(--MarginBetweenXMatterMinorItems, 5px);
+            }
+            &.bloom-contentThird {
+                font-size: var(--DefaultCoverTitle3FontSize, 10pt);
+            }
+        }
+    }
+}
+
+.Title-On-Cover-style {
+    text-align: center;
+}
+.credits {
+    .licenseAndCopyrightBlock {
+        .copyright {
+            margin-bottom: var(--MarginBetweenXMatterBlocks, 2em);
+        }
+        .licenseBlock {
+            margin-bottom: var(--MarginBetweenXMatterBlocks, 2em);
+        }
+        img {
+            // creative commons license image
+
+            //note, if this is 93 or less, then FF29 (used to at least bloom 3.3) cuts off the right edge.
+            //It was fine if you zoomed in, fine in a more modern FF, fine in PDF, etc.
+            //I have tried changing a dozen different properties, including the image-rendering, and the
+            // only thing that helped was to make it a bit larger
+            width: 94px;
+        }
+    }
+}

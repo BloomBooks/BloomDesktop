@@ -197,3 +197,16 @@
     --page-margin-left: 0;
     --pageNumber-font-size: 0; /* review will this work to hide it? */
 }
+
+/*****************************************************************************
+ * These variables / rules are for xmatter pages.
+ */
+.bloom-frontMatter, .bloom-backMatter {
+    --MarginBetweenXMatterBlocks: 2em;
+    --MarginBetweenXMatterMinorItems: 5px;
+    --DefaultCoverTitle1FontSize: 25pt;
+    --DefaultCoverTitle2FontSize: 12pt;
+    /* Same as our ordinary default, but we have to set it explicitly because of a trick
+       that copies the DefaultCoverTitle1FontSize to the translationGroup. */
+    --DefaultCoverTitle3FontSize: 10pt;
+}
