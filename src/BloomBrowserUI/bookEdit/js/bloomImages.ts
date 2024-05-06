@@ -212,7 +212,12 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
 
     const addButtonHandler = (command: string) => {
         const button = $containerDiv.get(0)?.firstElementChild;
-        button?.addEventListener("click", () => {
+        button?.addEventListener("click", (e: MouseEvent) => {
+            // a rather sad api, but "detail >1" in chromium means this is a double click
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((e as any).detail > 1) {
+                return;
+            }
             const imgIndex = Array.from(
                 document.getElementsByClassName("bloom-imageContainer")
             ).indexOf($containerDiv.get(0));

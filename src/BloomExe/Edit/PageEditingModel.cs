@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -71,6 +71,7 @@ namespace Bloom.Edit
                 bookFolderPath,
                 isSameFile
             );
+            ImageUtils.SaveImageMetadata(imageInfo, Path.Combine(bookFolderPath, imageFileName));
             // Ask Javascript code to update the live version of the page.
             dynamic messageBundle = new DynamicJson();
             messageBundle.imgIndex = imgIndex;
@@ -78,13 +79,7 @@ namespace Bloom.Edit
             messageBundle.copyright = imageInfo.Metadata.CopyrightNotice ?? "";
             messageBundle.creator = imageInfo.Metadata.Creator ?? "";
             messageBundle.license = imageInfo.Metadata.License?.ToString() ?? "";
-            EditingViewApi.SendEventAndWaitForComplete(
-                webSocketServer,
-                "edit",
-                "changeImage",
-                messageBundle
-            );
-            ImageUtils.SaveImageMetadata(imageInfo, Path.Combine(bookFolderPath, imageFileName));
+            webSocketServer.SendBundle("edit", "changeImage", messageBundle);
         }
 
         /// <summary>

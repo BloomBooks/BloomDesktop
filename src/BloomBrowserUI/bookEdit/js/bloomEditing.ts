@@ -417,7 +417,6 @@ export function SetupElements(container: HTMLElement) {
         target.setAttribute("data-copyright", event.copyright);
         target.setAttribute("data-creator", event.creator);
         target.setAttribute("data-license", event.license);
-        post("edit/taskComplete");
     });
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
