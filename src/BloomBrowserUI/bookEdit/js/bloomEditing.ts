@@ -388,6 +388,34 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
         });
 }
 
+export function changeImage(imageInfo: {
+    imageIndex: number;
+    src: string; // must already appropriately URL-encoded.
+    copyright: string;
+    creator: string;
+    license: string;
+}) {
+    const container = Array.from(
+        document.getElementsByClassName("bloom-imageContainer")
+    )[imageInfo.imageIndex];
+
+    // I can't remember why, but what this is doing is saying that if the imageContainer
+    // has an <img> element, we're setting the src on that. But if it does not, we're
+    // setting the background-image on the container itself.
+    const img = container.getElementsByTagName("img")[0];
+    const target = img || container;
+    if (img) {
+        img.setAttribute("src", imageInfo.src);
+    } else {
+        container.setAttribute(
+            "style",
+            "background-image:url('" + imageInfo.src + "')"
+        );
+    }
+    target.setAttribute("data-copyright", imageInfo.copyright);
+    target.setAttribute("data-creator", imageInfo.creator);
+    target.setAttribute("data-license", imageInfo.license);
+}
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
@@ -395,29 +423,7 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
 export function SetupElements(container: HTMLElement) {
     SetupImagesInContainer(container);
-    WebSocketManager.addListener("edit", (event: IChangeImageEvent) => {
-        if (event.id !== "changeImage") {
-            return;
-        }
-        const container = Array.from(
-            document.getElementsByClassName("bloom-imageContainer")
-        )[event.imgIndex];
-        const img = container.getElementsByTagName("img")[0];
-        const target = img || container;
-        // This logic mirrors HtmlDom.SetImageElementUrl, except we assume event.src is
-        // already appropriately URL-encoded.
-        if (img) {
-            img.setAttribute("src", event.src);
-        } else {
-            container.setAttribute(
-                "style",
-                "background-image:url('" + event.src + "')"
-            );
-        }
-        target.setAttribute("data-copyright", event.copyright);
-        target.setAttribute("data-creator", event.creator);
-        target.setAttribute("data-license", event.license);
-    });
+
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
     initializeBubbleManager();

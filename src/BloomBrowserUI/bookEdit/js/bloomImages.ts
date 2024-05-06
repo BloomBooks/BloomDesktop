@@ -213,7 +213,10 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     const addButtonHandler = (command: string) => {
         const button = $containerDiv.get(0)?.firstElementChild;
         button?.addEventListener("click", (e: MouseEvent) => {
-            // a rather sad api, but "detail >1" in chromium means this is a double click
+            // "detail >1" in chromium means this is a double click.
+            // Note, if we have problems with timing, this wouldn't necessarily fix them.
+            // It's only going to debounce clicks that come in close enough to count as
+            // double clicks, presumably based on the OS's double click timing setting.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((e as any).detail > 1) {
                 return;
