@@ -1489,7 +1489,7 @@ namespace Bloom.Edit
                 Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
                 var editor = new PageEditingModel();
                 editor.ChangePicture(
-                    _webSocketServer,
+                    GetEditingBrowser(),
                     CurrentBook.FolderPath,
                     imgIndex,
                     imageElement,

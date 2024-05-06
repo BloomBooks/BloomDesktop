@@ -53,7 +53,7 @@ namespace Bloom.Edit
 
         // Should eventually replace the above, so don't worry about duplication.
         public void ChangePicture(
-            BloomWebSocketServer webSocketServer,
+            Browser browser,
             string bookFolderPath,
             int imgIndex,
             XmlElement imgOrDivWithBackgroundImage,
@@ -73,13 +73,22 @@ namespace Bloom.Edit
             );
             ImageUtils.SaveImageMetadata(imageInfo, Path.Combine(bookFolderPath, imageFileName));
             // Ask Javascript code to update the live version of the page.
-            dynamic messageBundle = new DynamicJson();
-            messageBundle.imgIndex = imgIndex;
-            messageBundle.src = UrlPathString.CreateFromUnencodedString(imageFileName).UrlEncoded;
-            messageBundle.copyright = imageInfo.Metadata.CopyrightNotice ?? "";
-            messageBundle.creator = imageInfo.Metadata.Creator ?? "";
-            messageBundle.license = imageInfo.Metadata.License?.ToString() ?? "";
-            webSocketServer.SendBundle("edit", "changeImage", messageBundle);
+            dynamic imageInfoForJavascript = new DynamicJson();
+            imageInfoForJavascript.imageIndex = imgIndex;
+            imageInfoForJavascript.src = UrlPathString
+                .CreateFromUnencodedString(imageFileName)
+                .UrlEncoded;
+            imageInfoForJavascript.copyright = imageInfo.Metadata.CopyrightNotice ?? "";
+            imageInfoForJavascript.creator = imageInfo.Metadata.Creator ?? "";
+            imageInfoForJavascript.license = imageInfo.Metadata.License?.ToString() ?? "";
+
+            // turn imageInfoForJavascript into a string
+            var s = imageInfoForJavascript.ToString();
+
+            // we don't need to wait. Even if our caller kicks off a save, its call to RunJavascriptAsync() will come in after ours.
+            browser.RunJavascriptAsync(
+                $"editTabBundle.getEditablePageBundleExports().changeImage({s})"
+            );
         }
 
         /// <summary>
