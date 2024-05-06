@@ -11,8 +11,8 @@ html
 		//- Eventually, we'll remove Bloom's need for this.
 		meta(name='pageTemplateSource', content='Basic Book')
 		title 'Template Starter'
-		+stylesheets('Basic Book.css')
-		+core-stylesheets()
+		+stylesheets('Basic Book.css') // includes core-stylesheets()
+		+stylesheet('appearance.css')
 		+standardStyles
 	body
 		+dataDiv

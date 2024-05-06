@@ -1374,3 +1374,43 @@ div.ui-audioCurrent p {
     height: 100% !important;
     width: 100% !important;
 }
+
+// Rules from bloom-xmatter-sharedRules.less in 5.6 (and before). That file was removed in 6.0.
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable {
+  font-weight: bold;
+  // 1.4em is the minimum to show ทไปทั่วพื้ without clipping.
+  // Until Bloom 4.4, that was the default, but it was ugly
+  // for everyone else. 1.0 looks great for a simple latin
+  // alphabet without descenders, and 1.1 is safe with descenders. See BL-6402
+  line-height: 1.1;
+  min-height: auto; // elsewhere there is a min-height, that may or may not be a good idea, but for sure we don't want it here.
+}
+// NB: The order here is important. bloom-content1 should be last so that if a box is
+// *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections),
+// we want the bloom-content1 rule to win.
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
+  //NB: we show the national language even if this is a monolingual book
+  font-size: var(--DefaultCoverTitle2FontSize, 12pt); // was 120% in 5.6
+  margin-bottom: var(--MarginBetweenMinorItems, 5px);
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
+  font-size: var(--DefaultCoverTitle1FontSize, 25pt); // was 250% in 5.6
+  margin-bottom: var(--MarginBetweenMinorItems, 5px);
+}
+.Title-On-Cover-style {
+  text-align: center;
+}
+.credits .licenseAndCopyrightBlock .copyright {
+  margin-bottom: var(--MarginBetweenBlocks, 2em);
+}
+.credits .licenseAndCopyrightBlock .licenseBlock {
+  margin-bottom: var(--MarginBetweenBlocks, 2em);
+}
+.credits .licenseAndCopyrightBlock img {
+  // creative commons license image
+  //note, if this is 93 or less, then FF29 (used to at least bloom 3.3) cuts off the right edge.
+  //It was fine if you zoomed in, fine in a more modern FF, fine in PDF, etc.
+  //I have tried changing a dozen different properties, including the image-rendering, and the
+  // only thing that helped was to make it a bit larger
+  width: 94px;
+}

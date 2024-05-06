@@ -1,4 +1,3 @@
-@import "bloom-xmatter-sharedRules.less";
 @import "../../bookLayout/paperDimensions.less";
 
 @XMatterPackName: "unknown";
@@ -257,7 +256,7 @@
         line-height: 1.4em; // supports ไปทั่วพื้ ที่นั่ ชื่ ปู ช้ต่างป
     }
     .originalAcknowledgments .bloom-editable {
-        margin-bottom: @MarginBetweenBlocks;
+        margin-bottom: var(--MarginBetweenBlocks, 2em);
     }
     .versionAcknowledgments .bloom-editable {
         height: auto;
@@ -449,5 +448,5 @@
     .ISBNContainer span {
         vertical-align: top;
     }
-    margin-bottom: @MarginBetweenBlocks;
+    margin-bottom: var(--MarginBetweenBlocks, 2em);
 }
