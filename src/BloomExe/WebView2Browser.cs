@@ -20,6 +20,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom.web.controllers;
+
 #if DEBUG
 using System.Media;
 #endif
@@ -530,86 +532,76 @@ namespace Bloom
             RobustFile.WriteAllText(path, html, Encoding.UTF8);
         }
 
-        // This filter suppresses the windows messages that are most likely to cause unexpected reentrancy
-        // while running DoEvents in the RunJavascriptWithStringResult_Sync_Dangerous method.
-        // Might be useful in other contexts where we use DoEvents
-        class AsyncMessageFilter : IMessageFilter
+        /// <summary>
+        /// The Javascript sent to this message must post a string result to common/javascriptResult.
+        /// This methods waits for that result to appear (repeatedly sleeping the UI thread until it does).
+        /// If it does not appear within 10 seconds, a TimeoutException is thrown.
+        /// Beware of allowing the Javascript called to send requests to our server that need the UI thread!
+        /// It is blocked while we are waiting for the result.
+        /// </summary>
+        /// <remarks>
+        /// This is very ugly. We tried many alternatives.
+        /// - If we keep the Task returned by ExecuteScriptAsync and repeatedly sleep waiting for it to be
+        /// completed, it never happens. It's necessary for messages to be pumped on the UI thread for
+        /// the completion to be signaled.
+        /// - Running the script on any other thread throws immediately.
+        /// - We tried using Application.DoEvents() in a loop until the Task was completed, and that
+        /// usually works. However, DoEvents() can pump other messages and cause reentrancy, which may
+        /// have been responsible for BL-13120.
+        /// - We started to try to get the results by making the method async. This requires changing
+        /// a great deal of code, because every calling method back to primary event handlers must be
+        /// async also. Furthermore, we have not yet found a technique to Invoke an async method when
+        /// Javascript needs to be run with a result from a background thread, such as an API call or
+        /// creating a publication. Moreover, I am worried that messages pumped by the main event
+        /// loop while waiting for the continuation of an awaited task could cause effects similar
+        /// to reentrancy.
+        /// Warning: so far, this technique seems reliable with a fully operational WebView2 that is
+        /// part of our UI. It does not work reliably with a WebView2 that is created temporarily
+        /// just to run a script and then destroyed. See experiment on JohnT's branch fixBloomPubJs.
+        /// </remarks>
+        public override string RunJavascriptThatPostsStringResultSync(string script)
         {
-            private const int WM_KEYFIRST = 0x0100;
-            private const int WM_KEYLAST = 0x0109;
-            private const int WM_GESTURE = 0x0119; // copilot
-            private const int WM_MOUSEFIRST = 0x0200;
-            private const int WM_MOUSELAST = 0x020E;
-            private const int WM_TOUCH = 0x0240; // copilot
+            CommonApi.JavascriptResult = null;
+            _webview.ExecuteScriptAsync(script);
 
-            public bool PreFilterMessage(ref Message m)
+            for (int i = 0; i < 200; i++) // 10 seconds
             {
-                // https://stackoverflow.com/questions/78028901/does-async-await-use-windows-messages-to-return-control-to-the-ui-thread
-                // suggests that it might be OK to filter out all messages below 0xc000, since Windows registers some message higher than
-                // that to indicate the completion of an async task. But it produced deadlock. I think this is enough to make it
-                // pretty hard for the user to initiate something that will interfere with Save().
-                if (
-                    m.Msg == WM_TOUCH
-                    || m.Msg == WM_GESTURE
-                    || m.Msg >= WM_KEYFIRST && m.Msg <= WM_KEYLAST
-                    // WM_MOUSEFIRST is also WM_MOUSEMOVE. I don't think we need to suppress that,
-                    // and not doing so makes it easier to catch a significant event being suppressed.
-                    || m.Msg >= WM_MOUSEFIRST + 1 && m.Msg <= WM_MOUSELAST
-                )
-                {
-                    // Originally, we tried a Debug.Fail here to make it obvious when this was happening.
-                    // But somehow that allowed the execution to continue, and we were still able to get
-                    // reentrancy into SaveNow().
-
-                    Logger.WriteEvent($"AsyncMessageFilter filtered out message {m.Msg}");
-
-#if DEBUG
-                    // Get the developer's attention that something is being suppressed so s/he can look in the log.
-                    // Playing all three here because technically, the system could have one or more of these sounds disabled.
-                    // And even when all three play, it sounds like one sound.
-                    SystemSounds.Asterisk.Play();
-                    SystemSounds.Beep.Play();
-                    SystemSounds.Exclamation.Play();
-#endif
-
-                    return true;
-                }
-
-                return false;
+                if (CommonApi.JavascriptResult != null)
+                    break;
+                Thread.Sleep(50);
             }
+            if (CommonApi.JavascriptResult == null)
+            {
+                Logger.WriteEvent(
+                    "RunJavascriptThatPostsStringResultSync: Timed out waiting for script to complete"
+                );
+                throw new TimeoutException(
+                    "RunJavascriptThatPostsStringResultSync: Timed out waiting for script to complete"
+                );
+            }
+
+            return CommonApi.JavascriptResult;
         }
 
-        [Obsolete(
-            "This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred."
-        )]
         public override string RunJavascriptWithStringResult_Sync_Dangerous(string script)
         {
             Task<string> task = GetStringFromJavascriptAsync(script);
             // This is dangerous. E.g. it caused this bug: https://issues.bloomlibrary.org/youtrack/issue/BL-12614
             // Came from an answer in https://stackoverflow.com/questions/65327263/how-to-get-sync-return-from-executescriptasync-in-webview2'
-            // The message filter makes it less dangerous, but we still need to be aware that (e.g.) while running javascript
-            // to get the content of a page to save it, any windows event not suppressed by the filter could run.
-            // Without the filter, it's quite possible for the user to initiate a new command while we are trying to run the
-            // code to save the page before completing the last thing the user requested.
+            // It's quite possible for the user to initiate a new command while we are trying to run the
+            // javascript before completing the last thing the user requested.
             // Note: at one point, I thought making our code async all the way would solve this, but now I'm not so sure.
             // A click event handler can be async, but it is "void" async (no task to await), so I think it can still
             // return control to the main message loop before all the async stuff it started has completed.
-            // The sad thing about this approach is that the filtered events are lost, not postponed. We could even lose
-            // a mousedown but still see the corresponding mouseup, which might do something unexpected.
-            // But it's better than reentrant event handling, which is probably the cause of BL-13120 and friends.
-            var filter = new AsyncMessageFilter();
-            Application.AddMessageFilter(filter);
-            try
+            // The reentrancy possibly caused BL-13120 and friends, when we were using this method to get the page content
+            // to save.
+            // We tried using a message filter to suppress messages that might cause reentrancy, but found
+            // that somehow it didn't fully solve the problem, AND things could get stuck in a state where
+            // everything got filtered.
+            while (!task.IsCompleted)
             {
-                while (!task.IsCompleted)
-                {
-                    Application.DoEvents();
-                    Thread.Sleep(10);
-                }
-            }
-            finally
-            {
-                Application.RemoveMessageFilter(filter);
+                Application.DoEvents();
+                Thread.Sleep(10);
             }
 
             return task.Result;

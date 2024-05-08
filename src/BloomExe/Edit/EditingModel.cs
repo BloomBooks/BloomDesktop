@@ -753,13 +753,7 @@ namespace Bloom.Edit
             )
             {
                 _view.ChangingPages = true;
-                _view.RunJavascriptWithStringResult_Sync_Dangerous(
-                    "if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {editTabBundle.getEditablePageBundleExports().pageSelectionChanging();}"
-                );
                 FinishSavingPage();
-                _view.RunJavascriptAsync(
-                    "if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {editTabBundle.getEditablePageBundleExports().disconnectForGarbageCollection();}"
-                );
             }
             _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = false;
         }
