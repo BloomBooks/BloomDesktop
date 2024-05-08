@@ -52,6 +52,7 @@ import {
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
 import { removeToolboxMarkup } from "../toolbox/toolbox";
+import { IBloomWebSocketEvent } from "../../utils/WebSocketManager";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
