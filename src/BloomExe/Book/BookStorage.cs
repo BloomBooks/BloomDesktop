@@ -3019,35 +3019,21 @@ namespace Bloom.Book
 			if (Program.RunningUnitTests)
 				return false; // unit tests might have incomplete data, so we don't want to report this as an error.
 
-			// Calendar pages don't have margin boxes and thus would give a false positive.
-			if (HtmlDom.IsCalendarPage(pageElement)) return false;
-
 			// If the content of the marginBox has disappeared, we don't want to save that state.
-			var internalNodes = pageElement
-				.SelectNodes(".//div[contains(@class,'marginBox')]/div")
-				.Cast<XmlElement>();
-			if (internalNodes.Count() == 0)
+
+			if (HasMessedUpMarginBox(pageElement))
 			{
 				ReportEmptyMarginBox(pageElement);
 				return true;
 			}
-			foreach (var node in internalNodes)
-			{
-				var classes = node.GetAttribute("class");
-				if (string.IsNullOrEmpty(classes))
-					continue;
-				// If the marginBox has a div.pageLabel, the real content has disappeared and we don't want to save that state.
-				if (classes.Contains("pageLabel"))
-				{
-					ReportEmptyMarginBox(pageElement);
-					return true;
-				}
-			}
+
 			return false;
 		}
 
 		private static void ReportEmptyMarginBox(XmlElement pageDocument)
 		{
+			Debug.Fail("Margin box is messed up");
+
 			Exception exception = null;
 			try
 			{
@@ -3066,7 +3052,7 @@ namespace Bloom.Book
 				Environment.NewLine,
 				new StackTrace(true)
 			);
-			// Write minor events to a second log to help diagnose the problem.	 Nothing seems to enable logging
+			// Write minor events to a second log to help diagnose the problem.  Nothing seems to enable logging
 			// the minor events to the main log, so we have to do it manually to a separate file.
 			var logpath = Path.Combine(Path.GetDirectoryName(Logger.LogPath), "MinorEventsLog.txt");
 			RobustFile.WriteAllText(
@@ -3085,6 +3071,57 @@ namespace Bloom.Book
 
 			// Enhance: try to get stack dump from all threads?
 			// See https://stackoverflow.com/questions/2057781/is-there-a-way-to-get-the-stacktraces-for-all-threads-in-c-like-java-lang-thre.
+		}
+
+		// Tries to detect a state that some bug occasionally puts a page into, where it is more-or-less empty.
+		// Another characteristic state produced by the bug is where the page labels that should be outside
+		// the marginBox are inside it.
+		static bool HasMessedUpMarginBox(XmlElement page)
+		{
+			var marginBox = GetMarginBox(page);
+			if (marginBox == null)
+				return true; // marginBox should not be missing
+			var internalNodes = marginBox.ChildNodes
+				.Cast<XmlNode>()
+				.Where(x => x is XmlElement)
+				.ToList();
+			if (internalNodes.Count == 0)
+			{
+				return true; // marginBox should not be empty
+			}
+			foreach (XmlElement elt in internalNodes)
+			{
+				var classes = elt.GetAttribute("class");
+				if (string.IsNullOrEmpty(classes))
+					continue;
+				// If the marginBox has a div.pageLabel, the real content has disappeared and we don't want to save that state.
+				if (classes.Contains("pageLabel"))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		// I think this is more efficient than an xpath, especially since marginBox is usually the last top-level child.
+		static XmlElement GetMarginBox(XmlElement parent)
+		{
+			foreach (
+				XmlElement child in parent.ChildNodes
+					.Cast<XmlNode>()
+					.Where(x => x is XmlElement)
+					.Reverse()
+			)
+			{
+				if (child.GetAttribute("class").Contains("marginBox"))
+					return child;
+				var mb = GetMarginBox(child);
+				if (mb != null)
+					return mb;
+			}
+
+			return null;
 		}
 	}
 }
