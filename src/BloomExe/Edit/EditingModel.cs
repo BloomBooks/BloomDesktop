@@ -753,7 +753,15 @@ namespace Bloom.Edit
             )
             {
                 _view.ChangingPages = true;
-                FinishSavingPage();
+                try
+                {
+                    SavePageWithTiming();
+                }
+                catch
+                {
+                    _view.ChangingPages = false;
+                    throw;
+                }
             }
             _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = false;
         }
@@ -1207,19 +1215,14 @@ namespace Bloom.Edit
         {
             if (CannotSavePage())
                 return;
-            FinishSavingPage(forceFullSave);
+            SavePageWithTiming(forceFullSave);
             RefreshDisplayOfCurrentPage();
         }
 
         /// <summary>
-        /// Called from a JavaScript event after it has done everything appropriate in JS land towards saving a page,
-        /// in the process of wrapping up this page before moving to another.
-        /// The main point is that any changes on this page get saved back to the main document.
-        /// In case it is an origami page, there is some special stuff to do as commented below.
-        /// (Argument is required for JS callback, not used).
+        /// Called as a result of page selection changing, leaving the Edit tab, or other event that requests a save and reload.
         /// </summary>
-        /// <returns>true if it was aborted (nothing to save or refresh)</returns>
-        private void FinishSavingPage(bool forceFullSave = false)
+        private void SavePageWithTiming(bool forceFullSave = false)
         {
             if (CannotSavePage())
                 return;
