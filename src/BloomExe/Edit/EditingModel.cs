@@ -752,14 +752,14 @@ namespace Bloom.Edit
                 && !_skipNextSaveBecauseDeveloperIsTweakingSupportingFiles
             )
             {
-                _view.ChangingPages = true;
+                _view.HidePageAndShowWaitCuror(true);
                 try
                 {
                     SavePageWithTiming();
                 }
                 catch
                 {
-                    _view.ChangingPages = false;
+                    _view.HidePageAndShowWaitCuror(false);
                     throw;
                 }
             }
@@ -1242,7 +1242,7 @@ namespace Bloom.Edit
                 || _currentlyDisplayedBook == null;
 
             if (returnVal)
-                _view.ChangingPages = false;
+                _view.HidePageAndShowWaitCuror(false);
 
             return returnVal;
         }

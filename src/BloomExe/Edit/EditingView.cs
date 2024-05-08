@@ -583,7 +583,7 @@ namespace Bloom.Edit
         void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
         {
             _browser1.DocumentCompleted -= WebBrowser_ReadyStateChanged;
-            ChangingPages = false;
+            HidePageAndShowWaitCuror(false);
             _model.DocumentCompleted();
             _browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
             var beginGarbageCollect = DateTime.Now;
@@ -1890,18 +1890,18 @@ namespace Bloom.Edit
         /// BL-2153: This is to provide visual feedback to the user that the program has received their
         ///          page change click and is actively processing the request.
         /// </summary>
-        public bool ChangingPages
+        public void HidePageAndShowWaitCuror(bool hidePage)
         {
-            set
-            {
-                if (_browser1.Visible != value)
-                    return;
+            _pageListView.Visible = !hidePage;
+            Cursor = hidePage ? Cursors.WaitCursor : Cursors.Default;
 
-                _browser1.Visible = !value;
-                _pageListView.Enabled = !value;
-                Cursor = value ? Cursors.WaitCursor : Cursors.Default;
-                _pageListView.Cursor = Cursor;
-            }
+            if (_browser1.Visible != hidePage)
+                return;
+
+            _browser1.Visible = !hidePage;
+            _pageListView.Enabled = !hidePage;
+            Cursor = hidePage ? Cursors.WaitCursor : Cursors.Default;
+            _pageListView.Cursor = Cursor;
         }
 
         public void ShowAddPageDialog()
