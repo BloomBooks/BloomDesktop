@@ -141,8 +141,13 @@ textarea,
 .bloom-background-none {
     background-color: transparent;
 }
+
+// Change the translation group background color if the user sets the textbox to the gray background
+.bloom-page {
+    --translationGroup-background-color: var(--marginBox-background-color);
+}
 .bloom-background-gray {
-    background-color: @preferredBackgroundGray;
+    --translationGroup-background-color: @preferredBackgroundGray;
 }
 
 // The user can get this in by pressing shift-enter. See bloomField.ts
