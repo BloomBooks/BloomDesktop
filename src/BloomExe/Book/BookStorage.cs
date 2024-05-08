@@ -3859,6 +3859,7 @@ namespace Bloom.Book
         {
             if (Program.RunningUnitTests)
                 return false; // unit tests might have incomplete data, so we don't want to report this as an error.
+
             // If the content of the marginBox has disappeared, we don't want to save that state.
 
             if (HasMessedUpMarginBox(pageElement))
@@ -3959,6 +3960,9 @@ namespace Bloom.Book
         // the marginBox are inside it.
         static bool HasMessedUpMarginBox(XmlElement page)
         {
+			// Calendar pages don't have margin boxes and thus would give a false positive.
+			if (HtmlDom.IsCalendarPage(page)) return false;
+
             var marginBox = GetMarginBox(page);
             if (marginBox == null)
                 return true; // marginBox should not be missing
