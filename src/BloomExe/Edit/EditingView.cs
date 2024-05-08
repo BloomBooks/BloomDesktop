@@ -583,7 +583,7 @@ namespace Bloom.Edit
         void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
         {
             _browser1.DocumentCompleted -= WebBrowser_ReadyStateChanged;
-            HidePageAndShowWaitCuror(false);
+            HidePageAndShowWaitCursor(false);
             _model.DocumentCompleted();
             _browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
             var beginGarbageCollect = DateTime.Now;
@@ -1890,11 +1890,8 @@ namespace Bloom.Edit
         /// BL-2153: This is to provide visual feedback to the user that the program has received their
         ///          page change click and is actively processing the request.
         /// </summary>
-        public void HidePageAndShowWaitCuror(bool hidePage)
+        public void HidePageAndShowWaitCursor(bool hidePage)
         {
-            _pageListView.Visible = !hidePage;
-            Cursor = hidePage ? Cursors.WaitCursor : Cursors.Default;
-
             if (_browser1.Visible != hidePage)
                 return;
 

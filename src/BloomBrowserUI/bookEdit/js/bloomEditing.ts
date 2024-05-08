@@ -38,15 +38,12 @@ import {
     get,
     post,
     postBoolean,
-    postJson,
     postString,
     postThatMightNavigate
 } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 import { fixUpDownArrowEventHandler } from "./arrowKeyWorkaroundManager";
-import WebSocketManager, {
-    IBloomWebSocketEvent
-} from "../../utils/WebSocketManager";
+
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import {
     BloomPalette,
@@ -419,12 +416,24 @@ export function changeImage(imageInfo: {
     target.setAttribute("data-creator", imageInfo.creator);
     target.setAttribute("data-license", imageInfo.license);
 }
+
+// This origami checking business is related BL-13120
+let hadOrigamiWhenWeLoadedThePage: boolean;
+function recordWhatThisPageLooksLikeForSanityCheck(container: HTMLElement) {
+    hadOrigamiWhenWeLoadedThePage = hasOrigami(container);
+}
+function hasOrigami(container: HTMLElement) {
+    return container.getElementsByClassName("split-pane-component").length > 0;
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
 // Now document.load calls this with $('body') as the container.
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
 export function SetupElements(container: HTMLElement) {
+    recordWhatThisPageLooksLikeForSanityCheck(container);
+
     SetupImagesInContainer(container);
 
     SetupVideoEditing(container);
@@ -1276,24 +1285,35 @@ function removeOrigami() {
 // Then it calls an API with the information we need to save. This works around the lack of a
 // non-async runJavascript API in WebView2.
 export function pageSelectionChanging() {
-    removeToolboxMarkup();
-    removeOrigami(); // Enhance this makes a change when better it would only changed the
-    const content = getBodyContentForSavePage();
-    const userStylesheet = userStylesheetContent();
-    disconnectForGarbageCollection();
-    postString(
-        "common/javascriptResult",
-        // We tossed up whether to use a JSON object here, but decided that it was simpler to just
-        // combine the two strings with a delimiter that we can split on in C#.
-        // For one thing, HTML requires some escaping to put in a JSON object, which would have
-        // to be done in Javascript, and then undone in C#.
-        content + "<SPLIT-DATA>" + userStylesheet
-    );
+    try {
+        removeToolboxMarkup();
+        removeOrigami(); // Enhance this makes a change when better it would only changed the
+        const content = getBodyContentForSavePage();
+        const userStylesheet = userStylesheetContent();
+        disconnectForGarbageCollection();
+        postString(
+            "common/javascriptResult",
+            // We tossed up whether to use a JSON object here, but decided that it was simpler to just
+            // combine the two strings with a delimiter that we can split on in C#.
+            // For one thing, HTML requires some escaping to put in a JSON object, which would have
+            // to be done in Javascript, and then undone in C#.
+            content + "<SPLIT-DATA>" + userStylesheet
+        );
+    } catch (e) {
+        postString(
+            "common/javascriptResult",
+            "ERROR: " + e.message + "\n" + e.stack
+        );
+    }
 }
 
-// Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
-// editTabBundle.getEditablePageBundleExports().
-export const getBodyContentForSavePage = () => {
+export function getBodyContentForSavePage() {
+    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(document.body)) {
+        throw new Error(
+            "getBodyContentForSavePage(): The page had origami when it loaded, but it doesn't now (check before cleanup). BL-13120"
+        );
+    }
+
     const bubbleEditingOn = theOneBubbleManager.isComicEditingOn;
     if (bubbleEditingOn) {
         theOneBubbleManager.turnOffBubbleEditing();
@@ -1314,12 +1334,20 @@ export const getBodyContentForSavePage = () => {
     const createCkEditorBookMarks = false;
     EditableDivUtils.doCkEditorCleanup(editableDivs, createCkEditorBookMarks);
 
+    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(document.body)) {
+        throw new Error(
+            "getBodyContentForSavePage(): The page had origami when it loaded, but it doesn't now (check after cleanup). BL-13120"
+        );
+    }
+
     const result = document.body.innerHTML;
+
     if (bubbleEditingOn) {
         theOneBubbleManager.turnOnBubbleEditing();
     }
+
     return result;
-};
+}
 
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
 // editTabBundle.getEditablePageBundleExports().

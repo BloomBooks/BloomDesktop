@@ -214,10 +214,13 @@ namespace Bloom.Edit
         {
             if (details.From == _view)
             {
-                SaveNow();
-                _view.RunJavascriptAsync(
-                    "if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {editTabBundle.getEditablePageBundleExports().disconnectForGarbageCollection();}"
-                );
+                if (!SaveAndReportIfItFails())
+                {
+                    // we might want to keep the user on the tab, but at the moment we're debugging
+                    // the actual failure and don't want to pause to make it possible to prevent the
+                    // tab from changing.
+                }
+
                 // This bizarre behavior prevents BL-2313 and related problems.
                 // For some reason I cannot discover, switching tabs when focus is in the Browser window
                 // causes Bloom to get deactivated, which prevents various controls from working.
@@ -752,14 +755,14 @@ namespace Bloom.Edit
                 && !_skipNextSaveBecauseDeveloperIsTweakingSupportingFiles
             )
             {
-                _view.HidePageAndShowWaitCuror(true);
+                _view.HidePageAndShowWaitCursor(true);
                 try
                 {
                     SavePageWithTiming();
                 }
                 catch
                 {
-                    _view.HidePageAndShowWaitCuror(false);
+                    _view.HidePageAndShowWaitCursor(false);
                     throw;
                 }
             }
@@ -1242,7 +1245,7 @@ namespace Bloom.Edit
                 || _currentlyDisplayedBook == null;
 
             if (returnVal)
-                _view.HidePageAndShowWaitCuror(false);
+                _view.HidePageAndShowWaitCursor(false);
 
             return returnVal;
         }
@@ -1256,6 +1259,20 @@ namespace Bloom.Edit
 
         int _saveCount = 0;
         object _saveCountLock = new object();
+
+        public bool SaveAndReportIfItFails(bool forceFullSave = false)
+        {
+            try
+            {
+                SaveNow(forceFullSave);
+            }
+            catch (Exception e)
+            {
+                NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, e.Message, e.ToString());
+                return false;
+            }
+            return true;
+        }
 
         public void SaveNow(bool forceFullSave = false)
         {

@@ -579,6 +579,10 @@ namespace Bloom
                     "RunJavascriptThatPostsStringResultSync: Timed out waiting for script to complete"
                 );
             }
+            if (CommonApi.JavascriptResult.StartsWith("ERROR"))
+            {
+                throw new ApplicationException(CommonApi.JavascriptResult);
+            }
 
             return CommonApi.JavascriptResult;
         }
