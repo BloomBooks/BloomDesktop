@@ -3018,6 +3018,10 @@ namespace Bloom.Book
 		{
 			if (Program.RunningUnitTests)
 				return false; // unit tests might have incomplete data, so we don't want to report this as an error.
+
+			// Calendar pages don't have margin boxes and thus would give a false positive.
+			if (HtmlDom.IsCalendarPage(pageElement)) return false;
+
 			// If the content of the marginBox has disappeared, we don't want to save that state.
 			var internalNodes = pageElement
 				.SelectNodes(".//div[contains(@class,'marginBox')]/div")
