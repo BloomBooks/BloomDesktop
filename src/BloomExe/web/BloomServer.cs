@@ -474,6 +474,15 @@ namespace Bloom.Api
                     }
                     localPath = localPath.Replace("book-preview", CurrentBook.FolderPath);
                 }
+                else if (localPath == "book-preview/appearance.css")
+                {
+                    // Use the current appearance-theme-default.css file if appearance.css doesn't exist.
+                    var cssFilePath = Path.Combine(CurrentBook.FolderPath, "appearance.css");
+                    if (RobustFileExistsWithCaseCheck(cssFilePath))
+                        localPath = cssFilePath;
+                    else
+                        localPath = Path.Combine(BloomFileLocator.GetFolderContainingAppearanceThemeFiles(), "appearance-theme-default.css");
+                }
                 else
                 {
                     localPath = localPath.Replace("book-preview", CurrentBook.FolderPath);
