@@ -3078,6 +3078,10 @@ namespace Bloom.Book
 		// the marginBox are inside it.
 		static bool HasMessedUpMarginBox(XmlElement page)
 		{
+			// Flyleaf pages are intentionally empty; they have no marginBox.
+			// See XMatterHelper.InjectFlyleafIfNeeded().
+			if (HtmlDom.IsFlyleafPage(page)) return false;
+
 			var marginBox = GetMarginBox(page);
 			if (marginBox == null)
 				return true; // marginBox should not be missing
