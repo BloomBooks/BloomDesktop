@@ -38,6 +38,8 @@ import {
     get,
     post,
     postBoolean,
+    postJson,
+    postString,
     postThatMightNavigate
 } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
@@ -52,6 +54,7 @@ import {
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
+import { removeToolboxMarkup } from "../toolbox/toolbox";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1256,9 +1259,8 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         });
 }
 
-// This is invoked from C# when we are about to change pages. The C# code will save the changes
-// to the page after we return from this (hopefully; certainly in debugging this is the case).
-export const pageSelectionChanging = () => {
+// This is invoked when we are about to change pages.
+function removeOrigami() {
     // We are mirroring the origami layoutToggleClickHandler() here, in case the user changes
     // pages while the origami toggle in on.
     // The DOM here is for just one page, so there's only ever one marginBox.
@@ -1268,7 +1270,26 @@ export const pageSelectionChanging = () => {
     for (let i = 0; i < textLabels.length; i++) {
         textLabels[i].remove();
     }
-};
+}
+
+// This is invoked from C# when we are about to change pages. It removes markup we don't want to save.
+// Then it calls an API with the information we need to save. This works around the lack of a
+// non-async runJavascript API in WebView2.
+export function pageSelectionChanging() {
+    removeToolboxMarkup();
+    removeOrigami(); // Enhance this makes a change when better it would only changed the
+    const content = getBodyContentForSavePage();
+    const userStylesheet = userStylesheetContent();
+    disconnectForGarbageCollection();
+    postString(
+        "common/javascriptResult",
+        // We tossed up whether to use a JSON object here, but decided that it was simpler to just
+        // combine the two strings with a delimiter that we can split on in C#.
+        // For one thing, HTML requires some escaping to put in a JSON object, which would have
+        // to be done in Javascript, and then undone in C#.
+        content + "<SPLIT-DATA>" + userStylesheet
+    );
+}
 
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
 // editTabBundle.getEditablePageBundleExports().
@@ -1320,11 +1341,11 @@ export const pageUnloading = () => {
     }
 };
 
-// This is invoked from C# when we are about to leave a page (often right after the previous
+// This is called leave a page (often right after the previous
 // method for changing pages).  It is mainly to clean things up so that garbage collection
 // won't lose multiple megabytes of data that both the DOM (C++) and Javascript subsystems
 // think the other is still using.
-export const disconnectForGarbageCollection = () => {
+function disconnectForGarbageCollection() {
     // disconnect all event handlers
     //review: was this, but TS didn't like it    $.find().off();
     $("body")
@@ -1343,7 +1364,7 @@ export const disconnectForGarbageCollection = () => {
     $("[style*='.background-image']").each(function() {
         $(this).remove();
     });
-};
+}
 
 // These clipboard functions are implemented in Javascript because WebView2 doesn't seem to have
 // a C# api for doing them. I've made the exported functions synchronous because I'm not sure

@@ -1496,18 +1496,8 @@ namespace Bloom.Edit
         /// </summary>
         public void CleanHtmlAndCopyToPageDom()
         {
-            // NOTE: these calls to may lead to API calls from the JS. These are async, so the actions
-            // that JS might perform may not actually happen until well after this method. We ran into a problem in
-            // BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
-            // tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
-            // been editing, so there was an null.
-            var script =
-                @"
-if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined')
-	editTabBundle.getToolboxBundleExports().removeToolboxMarkup();
-if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined')
-	editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage() + '<SPLIT-DATA>' + editTabBundle.getEditablePageBundleExports().userStylesheetContent();";
-            var combinedData = RunJavascriptWithStringResult_Sync_Dangerous(script);
+            var script = @"editTabBundle.getEditablePageBundleExports().pageSelectionChanging();";
+            var combinedData = _browser1.RunJavascriptThatPostsStringResultSync(script);
             string bodyHtml = null;
             string userCssContent = null;
             if (combinedData != null)
