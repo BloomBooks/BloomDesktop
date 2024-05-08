@@ -50,7 +50,8 @@ import {
     pasteClipboardText,
     makeElement,
     SetupElements,
-    attachToCkEditor
+    attachToCkEditor,
+    changeImage
 } from "./js/bloomEditing";
 export {
     pageSelectionChanging,
@@ -63,7 +64,8 @@ export {
     pasteClipboardText,
     makeElement,
     SetupElements,
-    attachToCkEditor
+    attachToCkEditor,
+    changeImage
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 export { origamiCanUndo, origamiUndo };

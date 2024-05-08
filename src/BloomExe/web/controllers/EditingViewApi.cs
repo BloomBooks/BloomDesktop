@@ -79,12 +79,6 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "edit/taskComplete",
-                HandleTaskComplete,
-                false,
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
                 "editView/prevPageSplit",
                 HandlePrevPageSplit,
                 false
@@ -192,43 +186,6 @@ namespace Bloom.web.controllers
             int imgIndex = (int)data.imgIndex;
             View.OnCutImage(imgIndex);
             request.PostSucceeded();
-        }
-
-        // Allow whatever code is waiting in SendEventAndWaitForComplete to continue;
-        // whatever action the event prompted has finished.
-        private void HandleTaskComplete(ApiRequest request)
-        {
-            waitingForTaskComplete = false;
-            request.PostSucceeded();
-        }
-
-        private static bool waitingForTaskComplete;
-
-        // Send an event to Javascript and wait until it is done.
-        // The event MUST post edit/taskComplete when it is finished.
-        // Review: as implemented here, we can't cope with more than one thing at a time
-        // sending an event and waiting for it; that's currently OK since it's only used on the
-        // UI thread. Results will also be dubious if more than one client is listening to
-        // the websocket, but that's also something we don't expect (except
-        // when debugging in a separate browser).
-        // This feels messy, but how else are we to ask Javascript to do something...
-        // we're trying to retire runJavascript, not add more, and it's taking a kluge
-        // to make that syncrhronous, anyway...when we need to know it has finished?
-        public static void SendEventAndWaitForComplete(
-            BloomWebSocketServer socketServer,
-            string clientContext,
-            string eventId,
-            dynamic messageBundle
-        )
-        {
-            waitingForTaskComplete = true; // BEFORE we send the bundle, in case handleTaskComplete occurs before SendBundle returns
-            socketServer.SendBundle(clientContext, eventId, messageBundle);
-
-            while (waitingForTaskComplete)
-            {
-                Application.DoEvents();
-                Thread.Sleep(10);
-            }
         }
 
         private void HandleChangeImage(ApiRequest request)
