@@ -3872,6 +3872,8 @@ namespace Bloom.Book
 
         private static void ReportEmptyMarginBox(XmlElement pageDocument)
         {
+            Debug.Fail("Margin box is messed up");
+
             Exception exception = null;
             try
             {
