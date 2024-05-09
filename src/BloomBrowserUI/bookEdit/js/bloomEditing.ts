@@ -27,7 +27,10 @@ import "../../lib/jquery.qtipSecondary.js";
 import "../../lib/long-press/jquery.longpress.js";
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { getEditTabBundleExports } from "./bloomFrames";
+import {
+    getEditTabBundleExports,
+    getToolboxBundleExports
+} from "./bloomFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
@@ -1287,7 +1290,8 @@ function removeOrigami() {
 // non-async runJavascript API in WebView2.
 export function pageSelectionChanging() {
     try {
-        removeToolboxMarkup();
+        // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
+        getToolboxBundleExports()?.removeToolboxMarkup();
         removeOrigami(); // Enhance this makes a change when better it would only changed the
         const content = getBodyContentForSavePage();
         const userStylesheet = userStylesheetContent();
@@ -1302,7 +1306,15 @@ export function pageSelectionChanging() {
     } catch (e) {
         postString(
             "common/javascriptResult",
-            "ERROR: " + e.message + "\n" + e.stack
+            "ERROR: " +
+                e.message +
+                "\n" +
+                e.stack +
+                "\n\n" +
+                `document ${document ? "exists" : "does not exist"}` +
+                "\n" +
+                "body.innerHTML: " +
+                document?.body?.innerHTML
         );
     }
 }
