@@ -78,7 +78,7 @@ namespace Bloom
         /// Get a bitmap showing the current state of the browser. Caller should dispose.
         /// </summary>
         /// <returns></returns>
-        public abstract Bitmap CapturePreview_Synchronous_Dangerous();
+        public abstract Task<Bitmap> CapturePreview();
 
         /// <summary>
         /// If it returns true these are in place of our standard extensions; if false, the

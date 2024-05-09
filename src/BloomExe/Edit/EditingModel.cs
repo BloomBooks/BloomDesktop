@@ -18,6 +18,7 @@ using Bloom.FontProcessing;
 using Bloom.MiscUI;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
@@ -409,6 +410,7 @@ namespace Bloom.Edit
         /// </summary>
         private void OnInsertPage(object page, PageInsertEventArgs e)
         {
+            SaveNow(); // there might be unsaved changes in the current page from before we clicked Add Page
             CurrentBook.InsertPageAfter(
                 DeterminePageWhichWouldPrecedeNextInsertion(),
                 page as Page,
@@ -1387,6 +1389,7 @@ namespace Bloom.Edit
                         _tasksToDoAfterSaving.RemoveAt(0);
                         task();
                     }
+                    PageTemplatesApi.LastSaveTime = DateTime.Now;
                 }
                 finally
                 {
@@ -1703,7 +1706,14 @@ namespace Bloom.Edit
 
         public void ShowAddPageDialog()
         {
-            SaveNow(); // At least in template mode, the current page shows in the Add Page dialog, and should be current.
+            // We would like to save here, but that leaves the page in a bad state in case the user cancels.
+            // Usually if we want to save but not go to another page, we we call SaveNow() and then RefreshDisplayOfCurrentPage().
+            // If we do that here, ShowAddPageDialog() does not bring up the dialog. So we decided to just not save here.
+            // If they actually add a page, we'll save then.
+            // The worst consequence is that if they add a page in a template, and then Add Page again, the thumbnail might not
+            // accurately reflect the new page.
+            // Usually, relevant changes will have been saved when Change Layout was turned off.
+            //SaveNow();
             _view.ShowAddPageDialog();
         }
 

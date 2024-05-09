@@ -510,18 +510,14 @@ namespace Bloom
 
         public override string Url => _webview.Source.ToString();
 
-        public override Bitmap CapturePreview_Synchronous_Dangerous()
+        public override async Task<Bitmap> CapturePreview()
         {
             var stream = new MemoryStream();
-            var task = _webview.CoreWebView2.CapturePreviewAsync(
+            await _webview.CoreWebView2.CapturePreviewAsync(
                 CoreWebView2CapturePreviewImageFormat.Png,
                 stream
             );
-            while (!task.IsCompleted)
-            {
-                Application.DoEvents();
-                Thread.Sleep(10);
-            }
+
             stream.Position = 0;
             return new Bitmap(stream);
         }

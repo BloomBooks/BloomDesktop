@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using Bloom.ImageProcessing;
@@ -362,7 +363,7 @@ namespace Bloom
         ///
         ///   The result is cached for possible future use so the caller should not dispose of it.
         ///   </summary>
-        public Image GetThumbnailForPage(
+        public async Task<Image> GetThumbnailForPage(
             Book.Book book,
             IPage page,
             bool isLandscape,
@@ -408,7 +409,7 @@ namespace Bloom
             }
             // In different books (or even the same one) in the same session we may have portrait and landscape
             // versions of the same template page. So we must use different IDs.
-            return _thumbnailProvider.GetThumbnail(
+            return await _thumbnailProvider.GetThumbnail(
                 page.Id + (isSquare ? "S" : (isLandscape ? "L" : "")),
                 pageDom,
                 thumbnailOptions
