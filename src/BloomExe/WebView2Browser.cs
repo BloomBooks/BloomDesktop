@@ -616,6 +616,11 @@ namespace Bloom
             await _webview.ExecuteScriptAsync(script);
         }
 
+        public override void RunJavascriptFireAndForget(string script)
+        {
+            _webview.ExecuteScriptAsync(script);
+        }
+
         public override async Task<string> GetStringFromJavascriptAsync(string script)
         {
             var result = await _webview.ExecuteScriptAsync(script);

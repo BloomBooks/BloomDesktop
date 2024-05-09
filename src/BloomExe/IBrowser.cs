@@ -417,6 +417,7 @@ namespace Bloom
 
         public abstract Task<string> GetStringFromJavascriptAsync(string script);
         public abstract Task RunJavascriptAsync(string script);
+        public abstract void RunJavascriptFireAndForget(string script);
 
         public abstract void SaveHTML(string path);
 
