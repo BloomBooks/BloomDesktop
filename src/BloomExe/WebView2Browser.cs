@@ -616,6 +616,16 @@ namespace Bloom
             await _webview.ExecuteScriptAsync(script);
         }
 
+        /// <summary>
+        /// Run a javascript script asynchronously.
+        /// This version of the method simply makes it explicit that we are purposefully not awaiting the result.
+        /// Therefore the script likely has not finished executing by the time the method returns.
+        /// </summary>
+        public override void RunJavascriptFireAndForget(string script)
+        {
+            _webview.ExecuteScriptAsync(script);
+        }
+
         public override async Task<string> GetStringFromJavascriptAsync(string script)
         {
             var result = await _webview.ExecuteScriptAsync(script);

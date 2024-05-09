@@ -518,7 +518,7 @@ namespace Bloom.Edit
                     {
                         Logger.WriteEvent("changing page via editTabBundle.switchContentPage()");
                         var pageUrl = _model.GetUrlForCurrentPage();
-                        RunJavascriptWithStringResult_Sync_Dangerous(
+                        _browser1.RunJavascriptFireAndForget(
                             "editTabBundle.switchContentPage('" + pageUrl + "');"
                         );
                     }
@@ -622,14 +622,6 @@ namespace Bloom.Edit
             }
             _pageListApi.ClearPagesCache();
             _pageListView.SetBook(_model.CurrentBook);
-        }
-
-        [Obsolete(
-            "This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred."
-        )]
-        internal string RunJavascriptWithStringResult_Sync_Dangerous(string script)
-        {
-            return _browser1.RunJavascriptWithStringResult_Sync_Dangerous(script);
         }
 
         internal async Task<string> GetStringFromJavascriptAsync(string script)

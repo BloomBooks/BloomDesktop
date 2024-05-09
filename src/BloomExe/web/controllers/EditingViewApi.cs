@@ -35,11 +35,7 @@ namespace Bloom.web.controllers
                 HandleGetColorsUsedInBookOverlays,
                 true
             );
-            apiHandler.RegisterEndpointLegacy(
-                "editView/editPagePainted",
-                HandleEditPagePainted,
-                true
-            );
+            apiHandler.RegisterEndpointHandler("editView/pageDomLoaded", HandlePageDomLoaded, true);
             apiHandler.RegisterEndpointLegacy(
                 "editView/saveToolboxSetting",
                 HandleSaveToolboxSetting,
@@ -338,9 +334,9 @@ namespace Bloom.web.controllers
             request.ReplyWithText("[" + String.Join(",", colors) + "]");
         }
 
-        private void HandleEditPagePainted(ApiRequest request)
+        private void HandlePageDomLoaded(ApiRequest request)
         {
-            View.Model.HandleEditPagePaintedEvent(this, new EventArgs());
+            View.Model.HandlePageDomLoadedEvent(this, new EventArgs());
             request.PostSucceeded();
         }
 
