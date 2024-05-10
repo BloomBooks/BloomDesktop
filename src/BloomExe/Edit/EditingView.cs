@@ -2123,5 +2123,13 @@ namespace Bloom.Edit
             var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
             RunJavascriptAsync($"editTabBundle.showEditViewBookSettingsDialog({groupIndex});");
         }
+
+        // This is temporary code we added in 6.0 when trying to determine why we are sometimes losing
+        // user data upon save. See BL-13120.
+        private void _topBarPanel_Click(object sender, EventArgs e)
+        {
+            if (Model.Visible && ModifierKeys == (Keys.Shift | Keys.Control))
+                _model.RethinkPageAndReloadIt();
+        }
     }
 }
