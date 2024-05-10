@@ -3030,6 +3030,8 @@ namespace Bloom.Book
 
 		private static void ReportEmptyMarginBox(XmlElement pageDocument)
 		{
+			Debug.Fail("Margin box is messed up");
+
 			Exception exception = null;
 			try
 			{
@@ -3048,7 +3050,7 @@ namespace Bloom.Book
 				Environment.NewLine,
 				new StackTrace(true)
 			);
-			// Write minor events to a second log to help diagnose the problem.	 Nothing seems to enable logging
+			// Write minor events to a second log to help diagnose the problem.  Nothing seems to enable logging
 			// the minor events to the main log, so we have to do it manually to a separate file.
 			var logpath = Path.Combine(Path.GetDirectoryName(Logger.LogPath), "MinorEventsLog.txt");
 			RobustFile.WriteAllText(
@@ -3115,8 +3117,9 @@ namespace Bloom.Book
 		// the marginBox are inside it.
 		static bool HasMessedUpMarginBox(XmlElement page)
 		{
-			// Calendar pages don't have margin boxes and thus would give a false positive.
-			if (HtmlDom.IsCalendarPage(page)) return false;
+			// Flyleaf pages are intentionally empty; they have no marginBox.
+			// See XMatterHelper.InjectFlyleafIfNeeded().
+			if (HtmlDom.IsFlyleafPage(page)) return false;
 
 			var marginBox = GetMarginBox(page);
 			if (marginBox == null)

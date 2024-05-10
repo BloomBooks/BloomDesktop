@@ -2747,6 +2747,12 @@ namespace Bloom.Book
 			return HasClass(pageElement, "calendarMonthBottom");
 		}
 
+		// See XMatterHelper.InjectFlyleafIfNeeded().
+		public static bool IsFlyleafPage(XmlElement pageElement)
+		{
+			return HasClass(pageElement, "bloom-flyleaf");
+		}
+
 		// Make the image's alt attr match the image description for the specified language.
 		// If we don't have one, make the alt attr exactly an empty string (except branding images may be allowed to have custom alt text).
 		private static void SetImageAltAttrFromDescription(XmlElement img, string descriptionLang)
