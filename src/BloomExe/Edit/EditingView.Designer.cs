@@ -126,6 +126,7 @@ namespace Bloom.Edit
             this._topBarPanel.Name = "_topBarPanel";
             this._topBarPanel.Size = new System.Drawing.Size(724, 66);
             this._topBarPanel.TabIndex = 3;
+            this._topBarPanel.Click += new System.EventHandler(this._topBarPanel_Click);
             // 
             // _rightToolStrip
             // 
