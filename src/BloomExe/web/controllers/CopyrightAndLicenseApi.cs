@@ -67,8 +67,6 @@ namespace Bloom.web.controllers
             switch (request.HttpMethod)
             {
                 case HttpMethods.Get:
-                    //in case we were in this dialog already and made changes which haven't found their way out to the book yet
-                    Model.SaveNow();
 
                     var intellectualPropertyData = GetJsonFromMetadata(
                         Model.CurrentBook.GetLicenseMetadata(),
