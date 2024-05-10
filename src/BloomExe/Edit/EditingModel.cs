@@ -1719,20 +1719,23 @@ namespace Bloom.Edit
             CurrentBook.SetMetadata(metadata);
 
             // This is awkward.
-            // Originally, one could only open the CopyrightAndLicenseDialog from the Edit tab, and we ensured the book was saved
-            // by other means. Now, one can open it from the Publish tab.
+            // Originally, one could only open the CopyrightAndLicenseDialog from the Edit tab. Now, one can open it from the Publish tab.
             // I wanted to introduce an event or other mechanism such that Edit and Publish could each do what they need to when
             // the dialog is closed, but CopyrightAndLicenseApi is already so entangled with EditModel, it wasn't going to be clean
             // no matter what I did. And this is simpler.
 
             // For Edit tab:
-            _pageHasUnsavedDataDerivedChange = true;
-            RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
+            if (Visible)
+            {
+                _pageHasUnsavedDataDerivedChange = true;
+                RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
+            }
 
-            // For Publish tab:
             // Apparently, there are two sources of truth for the book's metadata: the BookInfo object, and the dom. Sigh.
             CurrentBook.BookInfo.Save(); // Save copyright/license in meta.json; believe it or not, this doesn't happen as part of Book.Save().
             CurrentBook.Save(); // Save copyright/license in the dom.
+
+            // Used by the Publish tab to reload the UI when the data is saved.
             _webSocketServer.SendString(
                 "bookCopyrightAndLicense",
                 "saved",
