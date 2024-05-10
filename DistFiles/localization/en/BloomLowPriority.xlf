@@ -44,6 +44,10 @@
                 <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
                 <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
             </trans-unit>
+            <trans-unit id="OpenCreateCloneControl.InvalidFileTypeMessage">
+                <source xml:lang="en">Please select a .bloomCollection file.</source>
+                <note>ID: OpenCreateCloneControl.InvalidFileTypeMessage</note>
+            </trans-unit>
           <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true">
                 <source xml:lang="en">Bookshelf Color</source>
                 <note>ID: PublishTab.Android.BulkBookshelfColor</note>
