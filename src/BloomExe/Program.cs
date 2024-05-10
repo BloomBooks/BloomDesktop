@@ -567,7 +567,7 @@ namespace Bloom
                                 }
                                 else
                                 {
-                                    if (Utils.MiscUtils.ReportIfInvalidCollectionToEdit(path))
+                                    if (Utils.MiscUtils.ReportIfInvalidCollection(path))
                                         return 1;
                                     Settings.Default.MruProjects.AddNewPath(path);
                                 }

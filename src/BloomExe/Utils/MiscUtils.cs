@@ -304,8 +304,22 @@ namespace Bloom.Utils
         /// or is inside a ZIP file that needs to be unzipped before using.
         /// </summary>
         /// <returns><c>true</c> if the path points to an invalid collection to edit, <c>false</c> otherwise.</returns>
-        public static bool ReportIfInvalidCollectionToEdit(string path)
+        public static bool ReportIfInvalidCollection(string path)
         {
+            if (LongPathAware.GetExceedsMaxPath(path))
+            {
+                LongPathAware.ReportLongPath(path);
+                return true;
+            }
+            if (IsInvalidFileType(path))
+            {
+                var msg = L10NSharp.LocalizationManager.GetString(
+                    "OpenCreateCloneControl.InvalidFileTypeMessage",
+                    "Please select a .bloomCollection file or a .bloomLibrary file."
+                );
+                MessageBox.Show(msg);
+                return true;
+            }
             if (IsInvalidCollectionToEdit(path))
             {
                 var msg = L10NSharp.LocalizationManager.GetString(
@@ -325,6 +339,13 @@ namespace Bloom.Utils
                 return true;
             }
             return false;
+        }
+
+        // The user can paste in the path of a different type of file. See BL-13426
+        private static bool IsInvalidFileType(string path)
+        {
+            string extension = Path.GetExtension(path).ToLowerInvariant();
+            return extension != ".bloomlibrary" && extension != ".bloomcollection";
         }
 
         private static bool IsInsideZipFile(string path)
