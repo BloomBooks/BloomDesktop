@@ -3960,8 +3960,9 @@ namespace Bloom.Book
         // the marginBox are inside it.
         static bool HasMessedUpMarginBox(XmlElement page)
         {
-			// Calendar pages don't have margin boxes and thus would give a false positive.
-			if (HtmlDom.IsCalendarPage(page)) return false;
+			// Flyleaf pages are intentionally empty; they have no marginBox.
+			// See XMatterHelper.InjectFlyleafIfNeeded().
+			if (HtmlDom.IsFlyleafPage(page)) return false;
 
             var marginBox = GetMarginBox(page);
             if (marginBox == null)
