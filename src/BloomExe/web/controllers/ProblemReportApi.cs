@@ -342,13 +342,9 @@ namespace Bloom.web.controllers
                                 zipPath,
                                 new NullProgress()
                             );
-                            diagnosticInfo +=
-                                Environment.NewLine + "Problem book uploaded to " + uploadUrl;
-                            // We don't want to change the summary, but currently the YouTrack API requires us to set both together.
-                            issueSubmission.UpdateSummaryAndDescription(
+                            issueSubmission.AddCommentToIssue(
                                 issueId,
-                                subject,
-                                diagnosticInfo
+                                "Problem book uploaded to " + uploadUrl
                             );
                         }
                     }
@@ -362,15 +358,10 @@ namespace Bloom.web.controllers
                             + error.Message;
                         userDesc += Environment.NewLine + msg;
                         Logger.WriteEvent(userDesc);
-                        diagnosticInfo +=
-                            Environment.NewLine
-                            + "Uploading the problem book failed with exception "
-                            + error.Message;
                         // We don't want to change the summary, but currently the YouTrack API requires us to set both together.
-                        issueSubmission.UpdateSummaryAndDescription(
+                        issueSubmission.AddCommentToIssue(
                             issueId,
-                            subject,
-                            diagnosticInfo
+                            "Uploading the problem book failed with exception " + error.Message
                         );
                     }
                     finally

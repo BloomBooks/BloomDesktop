@@ -148,7 +148,7 @@ namespace Bloom
                     {
                         youTrackIssueId = issueSetting.idReadable;
                         // Now that we have an issue Id, attach any files.
-                        AttachFiles(youTrackIssueId);
+                        AttachFilesFullyVisible(youTrackIssueId);
                     }
                 }
             }
@@ -160,11 +160,48 @@ namespace Bloom
             return youTrackIssueId;
         }
 
-        private void AttachFiles(string youTrackIssueId)
+        public bool AddCommentToIssue(string youTrackIssueId, string comment)
+        {
+            try
+            {
+                const string developersGroupId = "25-3";
+                var commentData = new
+                {
+                    text = comment,
+                    silent = "true",
+                    visibility = new Dictionary<string, object>()
+                    {
+                        { "$type", "LimitedVisibility" },
+                        { "permittedGroups", new[] { new { id = developersGroupId } } }
+                    }
+                };
+
+                var jsonstring = JsonConvert.SerializeObject(commentData);
+                HttpContent content = new StringContent(jsonstring);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                var response = _client
+                    .PostAsync(
+                        $"https://{_youTrackBaseSite}/youtrack/api/issues/{youTrackIssueId}/comments",
+                        content
+                    )
+                    .Result;
+
+                var res = response.ToString();
+                return response.IsSuccessStatusCode;
+            }
+            catch (WebException e)
+            {
+                Console.WriteLine(e);
+            }
+            return false;
+        }
+
+        private void AttachFilesFullyVisible(string youTrackIssueId)
         {
             foreach (var filename in _filesToAttach)
             {
-                AttachFileToExistingIssue(youTrackIssueId, filename);
+                AttachFileToExistingIssueFullyVisibile(youTrackIssueId, filename);
             }
         }
 
@@ -174,7 +211,7 @@ namespace Bloom
         /// <remarks>
         /// https://www.jetbrains.com/help/youtrack/standalone/api-usecase-attach-files.html
         /// </remarks>
-        public bool AttachFileToExistingIssue(string youTrackIssueId, string filePath)
+        public bool AttachFileToExistingIssueFullyVisibile(string youTrackIssueId, string filePath)
         {
             if (!RobustFile.Exists(filePath))
             {
@@ -222,6 +259,7 @@ namespace Bloom
             return string.IsNullOrEmpty(problem);
         }
 
+        /* unused now
         public bool UpdateSummaryAndDescription(
             string youTrackIssueId,
             string summary,
@@ -264,6 +302,7 @@ namespace Bloom
 
             return string.IsNullOrEmpty(problem);
         }
+        */
 
         #region Unit test methods
 
