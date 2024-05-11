@@ -144,45 +144,52 @@ export const BookButton: React.FunctionComponent<{
         {
             label: "Export to Word or LibreOffice...",
             l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
-            command: "bookCommand/exportToWord"
+            command: "bookCommand/exportToWord",
+            shouldShow: () => props.collection.isEditableCollection,
         },
         {
             label: "Export to Spreadsheet...",
             l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
             command: "bookCommand/exportToSpreadsheet",
-            requiresEnterprise: true
+            requiresEnterprise: true,
+            shouldShow: () => props.collection.isEditableCollection,
         },
         {
             label: "Import Content from Spreadsheet...",
             l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
             command: "bookCommand/importSpreadsheetContent",
             requiresSavePermission: true,
-            requiresEnterprise: true
+            requiresEnterprise: true,
+            shouldShow: () => props.collection.isEditableCollection,
         },
-        { label: "-" },
+        { label: "-", shouldShow: () => props.collection.isEditableCollection },
         {
             label: "Save as Single File (*.bloomSource)...",
             l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
-            command: "bookCommand/saveAsDotBloomSource"
+            command: "bookCommand/saveAsDotBloomSource",
+            shouldShow: () => props.collection.isEditableCollection,
         },
         {
             label: "Save as Bloom Pack (*.BloomPack)",
             l10nId: "CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem",
             command: "bookCommand/makeBloompack",
-            addEllipsis: true
+            addEllipsis: true,
+            shouldShow: () => props.collection.isEditableCollection,
         },
-        { label: "-" },
+        { label: "-" , shouldShow: () => props.collection.isEditableCollection },
         {
             label: "Update Thumbnail",
             l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
             command: "bookCommand/updateThumbnail",
-            requiresSavePermission: true // marginal, but it does change the content of the book folder
+            requiresSavePermission: true, // marginal, but it does change the content of the book folder
+            shouldShow: () => props.collection.isEditableCollection,
         },
         {
             label: "Update Book",
             l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
             command: "bookCommand/updateBook",
-            requiresSavePermission: true // marginal, but it does change the content of the book folder
+            requiresSavePermission: true, // marginal, but it does change the content of the book folder
+            shouldShow: () => props.collection.isEditableCollection,
         }
     ];
 
@@ -193,13 +200,16 @@ export const BookButton: React.FunctionComponent<{
                 l10nId: "CollectionTab.BookMenu.RenameBook",
                 onClick: () => handleRename(),
                 requiresSavePermission: true,
-                addEllipsis: true
+                addEllipsis: true,
+                shouldShow: () => props.collection.isEditableCollection
             },
             {
                 label: "Duplicate Book",
                 l10nId: "CollectionTab.BookMenu.DuplicateBook",
                 command: "collections/duplicateBook",
-                shouldShow: () => !props.lockedToOneDownloadedBook
+                shouldShow: () => 
+                    props.collection.isEditableCollection &&
+                    !props.lockedToOneDownloadedBook
             },
             {
                 label: "Show in File Explorer",
@@ -228,11 +238,12 @@ export const BookButton: React.FunctionComponent<{
                     props.collection.isEditableCollection &&
                     (props.manager.getSelectedBookInfo()?.isTemplate ?? false)
             },
-            { label: "-" },
+            { label: "-", shouldShow: () => props.collection.isEditableCollection },
             {
                 label: "More",
                 l10nId: "CollectionTab.ContextMenu.More",
-                submenu: bookSubMenuItemsSpecs
+                submenu: bookSubMenuItemsSpecs,
+                shouldShow: () => props.collection.isEditableCollection,
             }
         ];
     };
