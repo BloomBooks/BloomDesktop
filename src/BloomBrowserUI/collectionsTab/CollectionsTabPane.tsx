@@ -267,7 +267,6 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             l10nId: "CollectionTab.MakeBloomPackOfShellBooks",
             command: "collections/makeShellBooksBloompack",
             addEllipsis: true
-            // BL-11761: Always show
         },
         {
             label: "Make Reader Template Bloom Pack...",
@@ -278,7 +277,6 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         {
             label: "Troubleshooting",
             l10nId: "CollectionTab.ContextMenu.Troubleshooting",
-            shouldShow: () => true, // show for all collections (except factory)
             submenu: [
                 {
                     label: "Do Checks of All Books",
@@ -575,13 +573,9 @@ export interface MenuItemSpec {
     // which invokes the corresponding API call to C# code.
     command?: string;
     onClick?: React.MouseEventHandler<HTMLElement>;
-    // If this is defined (rare), it determines whether the menu item should be shown
-    // (except in factory collections, where we never show any).
-    // If it's not defined, a menu item is shown if we're in the editable collection and
-    // other requirements are satisfied, and not otherwise.
-    shouldShow?: () => boolean;
+    hide?: () => boolean; // if not provided, always show
     // Involves making changes to the book; therefore, can only be done in the one editable collection
-    // (unless shouldInclude returns true), and if we're in a Team Collection, the book must be checked out.
+    // and if we're in a Team Collection, the book must be checked out.
     requiresSavePermission?: boolean;
     submenu?: MenuItemSpec[];
     icon?: React.ReactNode;
@@ -638,12 +632,8 @@ export const makeMenuItems = (
                     undefined
                 );
             }
-            // Default logic for whether to show a command at all
-            // Outside the editable collection, we only show commands that have a shouldShow function.
-            if (
-                (spec.shouldShow && !spec.shouldShow()) ||
-                (!spec.shouldShow && !isEditableCollection)
-            ) {
+
+            if (spec.hide && spec.hide()) {
                 return undefined;
             }
             // If we have determined that a command should be shown, this logic determines whether it should be
