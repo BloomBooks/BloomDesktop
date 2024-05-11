@@ -428,7 +428,7 @@ namespace Bloom.Collection
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
             var oldBrand = _collectionSettings.BrandingProjectKey;
-            if (oldBrand != _brand || _collectionSettings.LockedToOneDownloadedBook)
+            if (oldBrand != _brand || _collectionSettings.IgnoreExpiration)
             {
                 _collectionSettings.BrandingProjectKey = _brand;
                 _collectionSettings.SubscriptionCode = _subscriptionCode;

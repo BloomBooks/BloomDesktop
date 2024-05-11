@@ -467,6 +467,8 @@ namespace Bloom.Collection
                     FolderPath,
                     BloomLibraryPublishModel.kNameOfDownloadForEditFile
                 );
+                var bloomProblemBookJsonPath = Path.Combine(FolderPath, "BloomProblemBook.json");
+
                 // Various things are disabled if this collection was made by downloading a book for editing.
                 LockedToOneDownloadedBook = RobustFile.Exists(downloadEditPath);
 
@@ -483,27 +485,35 @@ namespace Bloom.Collection
                     if (expirationDate < DateTime.Now) // no longer require branding files to exist yet
                     {
                         InvalidBranding = BrandingProjectKey;
-                        BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
 
-                        if (LockedToOneDownloadedBook)
+                        // There are cases where we want to keep the branding, even if it's expired.
+                        // 1) they got this book using blorg's "download for editing" feature which is restricted to
+                        // user logins that are marked as editors of the collection. We want to allow them to re-upload it with fixes
+                        // even if the subscription has expired.
+                        // 2) this is a developer looking into a Bloom Problem Report.
+                        var downloadInfoPath = RobustFile.Exists(downloadEditPath)
+                            ? downloadEditPath
+                            : RobustFile.Exists(bloomProblemBookJsonPath)
+                                ? bloomProblemBookJsonPath
+                                : null;
+                        if (downloadInfoPath != null)
                         {
+                            IgnoreExpiration = true;
                             var editSettings = JObject.Parse(
-                                RobustFile.ReadAllText(downloadEditPath)
+                                RobustFile.ReadAllText(downloadInfoPath)
                             );
                             if (
                                 editSettings.TryGetValue("branding", out JToken branding)
                                 && branding.Value<string>() == InvalidBranding
                             )
                             {
-                                // We make an exception when the collection is a single book obtained using "downloaded for
-                                // editing", since we want to keep its branding. (The original uploader had a valid subscription
-                                // when first uploaded, and we want to allow re-uploading after editing even if this
-                                // user doesn't know that code or the subscription is expired. This doesn't provide
-                                // much of a workaround for unknown and expired codes, since the user can't add books
-                                // to this collection, so it only allows editing the one book previously uploaded with this branding.)
                                 _brandingProjectKeyOverrideForDownloadForEditing =
                                     BrandingProjectKey = InvalidBranding;
                             }
+                        }
+                        else
+                        {
+                            BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
                         }
                     }
                 }
@@ -595,7 +605,8 @@ namespace Bloom.Collection
             SetAnalyticsProperties();
         }
 
-        public bool LockedToOneDownloadedBook { get; set; }
+        public bool LockedToOneDownloadedBook;
+        public bool IgnoreExpiration;
 
         private void DoOneTimeCheck()
         {

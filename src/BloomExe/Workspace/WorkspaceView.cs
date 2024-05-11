@@ -978,10 +978,7 @@ namespace Bloom.Workspace
 
         public void CheckForInvalidBranding()
         {
-            if (
-                _collectionSettings.InvalidBranding == null
-                || _collectionSettings.LockedToOneDownloadedBook
-            )
+            if (_collectionSettings.InvalidBranding == null || _collectionSettings.IgnoreExpiration)
                 return;
             // I'm not very happy with this, but the only place I could find to detect that we're opening a new project
             // is too soon to bring up a dialog; it comes up before the main window is fully initialized, which can

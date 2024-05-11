@@ -549,7 +549,28 @@ namespace Bloom
                             // before looking for .bloomCollection.
                             var path = Utils.LongPathAware.GetLongPath(argPath);
 
-                            if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
+                            if (path.ToLowerInvariant().EndsWith(@".bloomproblembook"))
+                            {
+                                // unzip it into a temp folder
+                                var tempFolder = Path.Combine(
+                                    Path.GetTempPath(),
+                                    Path.GetRandomFileName()
+                                );
+                                var fileNameWIthoutExtension = Path.GetFileNameWithoutExtension(
+                                    path
+                                );
+                                var collectionFolder = Path.Combine(
+                                    tempFolder,
+                                    fileNameWIthoutExtension
+                                );
+                                ZipUtils.ExpandZip(path, collectionFolder);
+                                // get the path to the file ending in ".bloomCollection" in tempFolder
+                                var collectionPath = Directory
+                                    .GetFiles(collectionFolder, "*.bloomCollection")
+                                    .FirstOrDefault();
+                                Settings.Default.MruProjects.AddNewPath(collectionPath);
+                            }
+                            else if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
                             {
                                 // See BL-10012. We'll die eventually, might as well nip this in the bud.
                                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
@@ -1111,6 +1132,7 @@ namespace Bloom
         {
             return args.Length == 1
                 && !args[0].ToLowerInvariant().EndsWith(".bloomcollection")
+                && !args[0].ToLowerInvariant().EndsWith(".bloomproblembook")
                 && !IsInstallerLaunch(args);
         }
 
