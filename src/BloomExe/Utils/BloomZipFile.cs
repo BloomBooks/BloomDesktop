@@ -85,5 +85,20 @@ namespace Bloom.Utils
 
             _zipStream.CloseEntry();
         }
+
+        public void AddTopLevelText(string fileName, string contents)
+        {
+            var newEntry = new ZipEntry(fileName)
+            {
+                DateTime = System.DateTime.Now,
+                Size = contents.Length,
+                IsUnicodeText = true,
+                CompressionMethod = CompressionMethod.Deflated
+            };
+            _zipStream.PutNextEntry(newEntry);
+            var buffer = System.Text.Encoding.UTF8.GetBytes(contents);
+            _zipStream.Write(buffer, 0, buffer.Length);
+            _zipStream.CloseEntry();
+        }
     }
 }
