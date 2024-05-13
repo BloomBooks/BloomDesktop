@@ -450,7 +450,10 @@ namespace Bloom.web.controllers
                 dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
                 dlg.CheckFileExists = true;
                 dlg.CheckPathExists = true;
-                if (dlg.ShowDialog() == DialogResult.Cancel)
+                if (
+                    dlg.ShowDialog() == DialogResult.Cancel
+                    || MiscUtils.ReportIfInvalidCollection(dlg.FileName)
+                )
                     return;
                 pathToCollectionFile = dlg.FileName;
             }
