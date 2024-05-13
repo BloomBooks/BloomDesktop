@@ -1,0 +1,115 @@
+.preview:not([data-l1]) .bloom-frontMatter .marginBox {
+  display: flex;
+  flex-direction: column;
+}
+.preview:not([data-l1]) .bloom-frontMatter .marginBox .bloom-translationGroup.bookTitle {
+  min-height: 12%;
+}
+.preview:not([data-l1]) .bloom-frontMatter .marginBox .bloom-imageContainer {
+  flex: 1 1 auto;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+.preview:not([data-l1]) .bloom-frontMatter .marginBox .bottomBlock {
+  min-height: 12%;
+}
+.preview:not([data-l1]) .bloom-frontMatter.Device16x9Landscape#ddd9b811-63d6-4d51-baf8-0a5fe88cd73d .bookTitle {
+  min-height: 10%;
+}
+.preview:not([data-l1]) .bloom-frontMatter.Device16x9Landscape#ddd9b811-63d6-4d51-baf8-0a5fe88cd73d .coverImage {
+  max-height: 65%;
+}
+.preview:not([data-l1]) .bloom-frontMatter.Device16x9Landscape#ddd9b811-63d6-4d51-baf8-0a5fe88cd73d .bottomBlock {
+  min-height: 20%;
+}
+@media screen {
+  body {
+    background-color: #1a1a1a;
+  }
+}
+div.bloom-page.coverColor {
+  background-color: #d8adad;
+}
+html {
+  cursor: not-allowed;
+}
+.disabledVisual img {
+  opacity: 0.4;
+}
+/* Some images, like the copyright one, have no src initially. Don't puzzle the user with a missing-image icon.''*/
+img[src=""] {
+  display: none;
+}
+.disabledVisual div {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+input {
+  border: 1px solid transparent;
+}
+textarea {
+  /*we have javascript function which notices this border and makes it read-only
+(which isn't a style, so we can't set it ourselves*/
+  border: 1px solid transparent;
+}
+div.bloom-page {
+  margin-bottom: 15px;
+  /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
+  background-color: white;
+}
+@media print {
+  div.bloom-page {
+    /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
+    border: 0 none #d65649 !important;
+  }
+}
+div#formatButton {
+  display: none !important;
+}
+.bloom-page button {
+  display: none;
+}
+/*this is the purple label in the upper-left corner above pages*/
+.pageLabel {
+  display: none;
+}
+textarea.coverColor {
+  background-color: #d8adad;
+}
+input.coverColor {
+  background-color: #d8adad;
+}
+/*this could be placed on an element by hand, but it is notably added by jscript when the element has
+a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
+*.bloom-hideWhenPublishing,
+*.bloom-classSwitchingCombobox {
+  visibility: hidden;
+}
+div.coverBottomBookTopic div.topicN1 {
+  border: none;
+}
+.bloom-draggableLabel {
+  /*This matches the width of the dragHandle, which doesn't get added in preview mode
+and as a result, the labels are shifted to this many pixels to the width. This shifts them back.*/
+  padding-left: 22px;
+}
+.hidePlaceHolders img[src*="placeHolder.png"] {
+  display: none;
+}
+.preview.template .numberedPage .bloom-translationGroup,
+.bloomPlayer-page.template .numberedPage .bloom-translationGroup {
+  background: linear-gradient(45deg, #f0f0f0 12.5%, #fff 12.5%, #fff 37.5%, #f0f0f0 37.5%, #f0f0f0 62.5%, #fff 62.5%, #fff 87.5%, #f0f0f0 87.5%);
+  background-size: 50px 50px;
+  background-position: 50px 50px;
+}
+.preview.template .numberedPage .pageLabel,
+.bloomPlayer-page.template .numberedPage .pageLabel {
+  position: absolute;
+  z-index: 10000;
+  background-color: #d65649;
+  color: white;
+  padding: 5px;
+  display: block;
+}
+
+/*# sourceMappingURL=../../../../output/browser/collectionsTab/collectionsTabBookPane/previewMode.css.map */

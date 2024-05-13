@@ -1,0 +1,262 @@
+.bloom-frontMatter .pageLabel:before,
+.bloom-backMatter .pageLabel:before {
+  content: "Paper Saver";
+  display: none;
+}
+.bloom-frontMatter .pageLabel:after,
+.bloom-backMatter .pageLabel:after {
+  content: ": " attr(data-after-content);
+}
+.insideFrontCover .bloom-translationGroup {
+  height: 100%;
+}
+.iso693Code * {
+  display: inline;
+}
+.frontCover .marginBox {
+  display: flex;
+  flex-direction: column;
+}
+.frontCover .Cover-Default-style {
+  font-size: 12pt;
+}
+.frontCover .bloom-translationGroup.bookTitle {
+  flex: 0 0 auto;
+  order: 0;
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable {
+  order: 0;
+  height: auto;
+  justify-content: center;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
+  order: 1;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational2 {
+  order: 2;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentFirst {
+  order: 0;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentSecond {
+  order: 1;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentThird {
+  order: 2;
+}
+.frontCover .placeholder,
+.frontCover .bloom-imageContainer {
+  order: kFrontCoverImageOrder;
+  flex: 1 1 auto;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+.frontCover .asideContainer {
+  order: kFrontCoverImageOrder;
+}
+.frontCover .asideContainer p:first-child {
+  margin-top: 0;
+}
+.frontCover .bottomBlock {
+  flex: 0 0 auto;
+  order: 2;
+  display: flex;
+  flex-direction: row;
+}
+.frontCover .bottomBlock .branding {
+  order: 0;
+  margin: 0;
+}
+.frontCover .bottomBlock .bottomTextContent {
+  flex: 1 0 100%;
+  order: 1;
+  display: flex;
+  flex-direction: column;
+}
+.frontCover .bottomBlock .bottomTextContent .creditsRow .bloom-editable.smallCoverCredits {
+  text-align: center;
+  line-height: 1.7em;
+  min-height: 1.7em;
+  height: auto;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow[data-have-topic="false"] .coverBottomLangName {
+  margin-left: auto;
+  margin-right: auto;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow .coverBottomLangName {
+  line-height: 1.6em !important;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow .coverBottomBookTopic {
+  height: 20px;
+  min-width: 1px;
+  text-align: right;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow .coverBottomBookTopic .bloom-editable {
+  display: inline !important;
+  bottom: -4px;
+  padding-right: 1px;
+  text-align: right;
+}
+.frontCover .bottomBlock .bottomTextContent .bottomRow .coverBottomBookTopic .bloom-editable {
+  margin-top: 0;
+}
+.frontCover .topBlock,
+.titlePage .topBlock {
+  flex: 0 0 auto;
+  order: 0;
+  display: flex;
+  flex-direction: row;
+  direction: ltr;
+}
+.frontCover .topBlock .branding,
+.titlePage .topBlock .branding {
+  order: 0;
+  margin: 0;
+  margin-right: 10px;
+}
+.frontCover .topBlock .topContent,
+.titlePage .topBlock .topContent {
+  flex: 1 1 100%;
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 0;
+  margin-right: 0;
+  width: auto;
+}
+.credits .Credits-Page-style {
+  font-size: 10pt;
+  line-height: 1.4em;
+}
+.credits .originalAcknowledgments .bloom-editable {
+  margin-bottom: var(--MarginBetweenXMatterBlocks, 2em);
+}
+.credits .versionAcknowledgments .bloom-editable {
+  height: auto;
+  margin-bottom: 1em;
+}
+.credits .licenseUrl {
+  display: none;
+}
+.credits.Cm13Landscape .licenseImage,
+.credits.A6Landscape .licenseImage,
+.credits.A6Portrait .licenseImage,
+.credits.QuarterLetterLandscape .licenseImage,
+.credits.QuarterLetterPortrait .licenseImage {
+  width: 65px;
+}
+.credits.Cm13Landscape .copyright,
+.credits.A6Landscape .copyright,
+.credits.A6Portrait .copyright,
+.credits.QuarterLetterLandscape .copyright,
+.credits.QuarterLetterPortrait .copyright,
+.credits.Cm13Landscape .ISBNContainer,
+.credits.A6Landscape .ISBNContainer,
+.credits.A6Portrait .ISBNContainer,
+.credits.QuarterLetterLandscape .ISBNContainer,
+.credits.QuarterLetterPortrait .ISBNContainer,
+.credits.Cm13Landscape .licenseBlock,
+.credits.A6Landscape .licenseBlock,
+.credits.A6Portrait .licenseBlock,
+.credits.QuarterLetterLandscape .licenseBlock,
+.credits.QuarterLetterPortrait .licenseBlock,
+.credits.Cm13Landscape .originalAcknowledgments .bloom-editable,
+.credits.A6Landscape .originalAcknowledgments .bloom-editable,
+.credits.A6Portrait .originalAcknowledgments .bloom-editable,
+.credits.QuarterLetterLandscape .originalAcknowledgments .bloom-editable,
+.credits.QuarterLetterPortrait .originalAcknowledgments .bloom-editable {
+  margin-bottom: 0.5em;
+}
+.credits [data-book="credits-page-branding-bottom-html"] {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.titlePage #originalContributions .bloom-editable {
+  min-height: 3em;
+}
+.titlePage #funding .bloom-editable {
+  min-height: 3em;
+}
+.titlePage {
+  text-align: center;
+}
+.titlePage .Title-On-Title-Page-style {
+  font-size: 14pt;
+}
+.titlePage .Title-On-Title-Page-style[data-order="1"] {
+  font-size: 20pt;
+}
+.titlePage #titlePageTitleBlock .bloom-editable {
+  line-height: 1.4em;
+}
+.titlePage #languageInformation {
+  width: 100%;
+}
+.titlePage .marginBox {
+  display: flex;
+  flex-direction: column;
+}
+.titlePage [data-book="title-page-branding-bottom-html"] {
+  width: 100%;
+  flex: 0 2 1in;
+  min-height: 0.25in;
+}
+.titlePage [data-book="title-page-branding-bottom-html"] img {
+  height: 100%;
+  object-fit: contain;
+}
+.titlePage .smallFlexGap {
+  flex: 0 1 0.5em;
+}
+.titlePage .largeFlexGap {
+  flex: 0 4 3em;
+}
+.titlePage .fillPageFlexGap {
+  flex: 1 4 3em;
+}
+.insideBackCover .bloom-translationGroup {
+  height: 100%;
+}
+.outsideBackCover .marginBox {
+  display: flex;
+  flex-direction: column;
+}
+.outsideBackCover .marginBox .bloom-translationGroup {
+  min-height: 30%;
+  flex: 1;
+}
+.outsideBackCover .marginBox .bloom-translationGroup .bloom-editable {
+  text-align: center;
+}
+.outsideBackCover .marginBox [data-book="outside-back-cover-branding-bottom-html"] {
+  margin-top: 1em;
+}
+.ISBNContainer {
+  margin-bottom: var(--MarginBetweenXMatterBlocks, 2em);
+}
+.ISBNContainer .bloom-translationGroup {
+  display: inline-block;
+}
+.ISBNContainer .bloom-editable {
+  text-align: left !important;
+  width: 4.3cm !important;
+  max-height: 1.8em;
+  min-height: 1.8em;
+}
+.ISBNContainer .bloom-editable[lang="*"] {
+  display: inline-block;
+}
+.ISBNContainer .ISBNContainer span {
+  vertical-align: top;
+}
+/*# sourceMappingURL=Factory-XMatter.css.map */

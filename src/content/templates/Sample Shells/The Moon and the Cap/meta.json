@@ -1,8 +1,6 @@
 {
     "a11y_NoEssentialInfoByColor": false,
     "a11y_NoTextIncludedInAnyImages": false,
-    "epub_HowToPublishImageDescriptions": 0,
-    "epub_RemoveFontStyles": false,
     "bookInstanceId": "7d44eb16-86e8-4233-a7b3-95a4baab5c11",
     "suitableForMakingShells": false,
     "suitableForMakingTemplates": false,
@@ -10,12 +8,13 @@
     "bloomdVersion": 0,
     "experimental": false,
     "brandingProjectName": "Default",
+    "nameLocked": false,
     "folio": false,
     "isRtl": false,
     "title": "The Moon and the Cap",
     "allTitles": "{\"bo\":\"ཟླ་དཀར་དང་ཞྭ་མོ།།\",\"en\":\"The Moon and the Cap\",\"fr\":\"La lune et la casquette\"}",
-    "baseUrl": null,
-    "bookOrder": null,
+    "originalTitle": "The Moon and the Cap",
+    "BaseUrl": null,
     "isbn": "",
     "bookLineage": "056B6F11-4A6C-4942-B2BC-8861E62B03B3",
     "downloadSource": "librarian@bloomlibrary.org/7d44eb16-86e8-4233-a7b3-95a4baab5c11",
@@ -27,38 +26,20 @@
     "tags": ["topic:Story Book"],
     "pageCount": 16,
     "languages": [],
-    "langPointers": [
-        {
-            "__type": "Pointer",
-            "className": "language",
-            "objectId": "vTo23jVYzz"
-        },
-        {
-            "__type": "Pointer",
-            "className": "language",
-            "objectId": "ktQwLG70lg"
-        }
-    ],
+    "languageDescriptors": null,
     "summary": null,
     "allowUploadingToBloomLibrary": true,
+    "draft": false,
     "bookletMakingIsAppropriate": true,
-    "LeveledReaderTool": null,
-    "LeveledReaderLevel": 0,
     "country": "",
     "province": "",
     "district": "",
-    "xmatterName": null,
-    "uploader": {
-        "__type": "Pointer",
-        "className": "_User",
-        "objectId": "Ac9FA625Lw"
-    },
     "tools": [],
-    "currentTool": "",
+    "currentTool": "talkingBookTool",
     "toolboxIsOpen": false,
     "author": null,
     "publisher": "Pratham Books",
-    "originalPublisher": null,
+    "originalPublisher": "",
     "subjects": null,
     "hazards": null,
     "a11yFeatures": null,
@@ -70,5 +51,7 @@
     "page-number-style": "Decimal",
     "language-display-names": { "en": "English" },
     "internetLimits": null,
-    "use-original-copyright": false
+    "use-original-copyright": false,
+    "imported-book-source-url": null,
+    "phashOfFirstContentImage": null
 }
