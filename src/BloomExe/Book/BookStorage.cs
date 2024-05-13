@@ -1604,6 +1604,8 @@ namespace Bloom.Book
             SetBaseForRelativePaths(relocatableDom, FolderPath);
             if (withUpdatedStylesheets)
                 EnsureHasLinksToStylesheets(relocatableDom);
+            else
+                relocatableDom.PreserveExistingStylesheets = true;
 
             return relocatableDom;
         }
