@@ -309,6 +309,19 @@ namespace Bloom.Book
             return true;
         }
 
+        internal void ReplaceStylesheetLink(string oldCss, string newCss)
+        {
+            foreach (XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
+            {
+                var path = linkNode.GetAttribute("href");
+                if (path == oldCss)
+                {
+                    linkNode.SetAttribute("href", newCss);
+                    break;
+                }
+            }
+        }
+
         public XmlNodeList SafeSelectNodes(string xpath)
         {
             return RawDom.SafeSelectNodes(xpath);
@@ -3669,5 +3682,5 @@ namespace Bloom.Book
                 RemoveClass(Body, className);
             }
         }
-    }
+	}
 }

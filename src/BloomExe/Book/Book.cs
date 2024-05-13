@@ -931,6 +931,26 @@ namespace Bloom.Book
             // We want to use exactly the stylesheets that are already there, especially if we
             // are previewing a book we can't EnsureUpToDate().
             var previewDom = Storage.GetRelocatableCopyOfDom(false);
+            foreach (XmlElement meta in previewDom.Head.GetElementsByTagName("meta"))
+            {
+                if (meta.GetAttribute("name") == "Generator")
+                {
+                    var content = meta.GetAttribute("content");
+                    var match = Regex.Match(content, "Bloom Version ([0-9.]+)");
+                    if (match.Success)
+                    {
+                        var versionString = match.Groups[1].Value;
+                        var version = new Version(versionString);
+                        if (version.Major < 6)
+                        {
+                            // We need to use the legacy stylesheet for the preview to look like it would in 5.6
+                            // (or at all reasonable)
+                            previewDom.ReplaceStylesheetLink("basePage.css", "basePage-legacy-5-6.css");
+                        }
+                    }
+                    break;
+                }
+            }
             // Earlier code also added origami.css, but I don't know any reason to add it now
             // in the unlikely event it isn't already loaded. We want the preview to look just
             // like the HTML would look if we opened the file.
