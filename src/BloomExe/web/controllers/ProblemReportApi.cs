@@ -401,11 +401,17 @@ namespace Bloom.web.controllers
                     AddCollectionSettings();
 
                     // add a file that will tell Bloom to use this branding regardless of the date
+                    dynamic bookJson = new
+                    {
+                        branding = _bookSelection
+                            .CurrentSelection
+                            .CollectionSettings
+                            .BrandingProjectKey,
+                        issueId = basename // the issueID (unless we're doing an email report, in which case it's "ProblemBook")
+                    };
                     _reportZipFile.AddTopLevelFileWithText(
                         "BloomProblemBook.json",
-                        "{\"branding\":\""
-                            + _bookSelection.CurrentSelection.CollectionSettings.BrandingProjectKey
-                            + "\"}"
+                        Newtonsoft.Json.JsonConvert.SerializeObject(bookJson)
                     );
                 }
 
