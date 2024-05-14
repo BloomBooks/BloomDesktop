@@ -38,14 +38,17 @@ To watch code, use `yarn watchCode`
 
 To build the .NET/C# part of Bloom you'll need Visual Studio Community Edition.
 
-### Setting up c# formatting
+### Setting up formatting
 
 In a terminal, run `dotnet tool restore`. This will install any tools we have put in .config/dotnet-tools.json along with the correct versions.
 In Visual Studio, under Extensions, install "CSharpier".
 In Preferences, under CSharpier:Solution, set `Reformat with CSharpier on Save` to `true`. Note that you are setting it for this solution, not in general.
 You should also install the CSharpier extension in vscode.
+CSharpier should be using the version specified in `.config/dotnet-tools.json`.
 When testing a new version of csharpier, to format everything, run `dotnet csharpier src/BloomExe`
 To hide reformatting-only commits from git blame, add the sha of the commit to `.git-blame-ignore-revs`
+
+For Typescript formatting, we use the Prettier extension in VCode.
 
 
 ## Get Binary Dependencies
