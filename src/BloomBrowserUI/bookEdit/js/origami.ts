@@ -36,7 +36,7 @@ export function setupOrigami() {
             $("#myonoffswitch").prop("checked", true);
         }
 
-        $(".customPage, .origami-toggle")
+        $(".customPage, .origami-toggle-container")
             .find("*[data-i18n]")
             .localize();
     });
