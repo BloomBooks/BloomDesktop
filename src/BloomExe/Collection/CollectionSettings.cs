@@ -510,6 +510,11 @@ namespace Bloom.Collection
                                 _brandingProjectKeyOverrideForDownloadForEditing =
                                     BrandingProjectKey = InvalidBranding;
                             }
+                            // BloomProblemReport.json's have an issueID that will be better for us to use as a collection name
+                            if (editSettings.TryGetValue("issueID", out JToken issueID))
+                            {
+                                CollectionName = issueID.Value<string>();
+                            }
                         }
                         else
                         {
