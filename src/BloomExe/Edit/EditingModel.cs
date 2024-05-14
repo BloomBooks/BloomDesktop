@@ -1214,6 +1214,18 @@ namespace Bloom.Edit
             request.PostSucceeded();
         }
 
+        internal void RethinkPageAndReloadItAndReportIfItFails(bool forceFullSave = false)
+        {
+            try
+            {
+                RethinkPageAndReloadIt(forceFullSave);
+            }
+            catch (Exception e)
+            {
+                NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, e.Message, e.ToString());
+            }
+        }
+
         internal void RethinkPageAndReloadIt(bool forceFullSave = false)
         {
             if (CannotSavePage())

@@ -2057,7 +2057,7 @@ namespace Bloom.Edit
                 // here, SetZoom, which originally just changed the transform on the scaling container.
                 // However, when it was later changed to post a request for reloading the page,
                 // it became cleaner to just do the reload directly here.
-                _model.RethinkPageAndReloadIt();
+                _model.RethinkPageAndReloadItAndReportIfItFails();
             }
         }
 
@@ -2129,7 +2129,7 @@ namespace Bloom.Edit
         private void _topBarPanel_Click(object sender, EventArgs e)
         {
             if (Model.Visible && ModifierKeys == (Keys.Shift | Keys.Control))
-                _model.RethinkPageAndReloadIt();
+                _model.RethinkPageAndReloadItAndReportIfItFails();
         }
     }
 }
