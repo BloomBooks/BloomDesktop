@@ -383,7 +383,9 @@ namespace Bloom.web.controllers
             {
                 if (_reportZipFileTemp != null)
                     _reportZipFileTemp.Dispose(); // delete any previous report's temp file
-                _reportZipFileTemp = TempFile.WithFilenameInTempFolder(basename + ".zip");
+                _reportZipFileTemp = TempFile.WithFilenameInTempFolder(
+                    basename + ".BloomProblemBook"
+                );
                 _reportZipFile = new BloomZipFile(_reportZipFileTemp.Path);
 
                 if (includeBook)
@@ -400,6 +402,14 @@ namespace Bloom.web.controllers
                 }
 
                 AddOtherTopLevelFiles();
+
+                // add a file that will tell Bloom to use this branding regardless of the date
+                _reportZipFile.AddTopLevelFileWithText(
+                    "BloomProblemBook.json",
+                    "{\"branding\":\""
+                        + _bookSelection.CurrentSelection.CollectionSettings.BrandingProjectKey
+                        + "\"}"
+                );
                 _reportZipFile.Save();
                 return _reportZipFileTemp.Path;
             }
