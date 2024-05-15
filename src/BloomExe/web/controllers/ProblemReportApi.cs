@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -1470,10 +1469,8 @@ namespace Bloom.web.controllers
 
         public static string UnpackProblemBook(string path)
         {
-            // unzip it into a temp folder
-            // Here are the comments the reviewer wants here:
-            //     Yes, these temp folders will accumulate on dev machines and never get cleaned up.
-            //     Yes, if one does get cleaned up, and we try to open it, bad things will happen. (Maybe this isn't actually a problem since we don't list items in mru which don't exist.)
+            // Unzip it into a temp folder.
+            // We decided it is ok that these temp folders will accumulate on dev machines and never get cleaned up.
             var tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             var fileNameWIthoutExtension = Path.GetFileNameWithoutExtension(path);
             var collectionFolder = Path.Combine(tempFolder, fileNameWIthoutExtension);
