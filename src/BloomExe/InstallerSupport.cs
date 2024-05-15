@@ -36,6 +36,7 @@ namespace Bloom
             RemoveRegistryKey(null, ".BloomPackFile");
             RemoveRegistryKey(null, ".JoinBloomTC");
             RemoveRegistryKey(null, ".JoinBloomTCFile");
+            RemoveRegistryKey(null, ".BloomProblemBook");
             RemoveRegistryKey(null, ".BloomCollection");
             RemoveRegistryKey(null, ".BloomCollectionFile");
             RemoveRegistryKey(null, "Bloom.BloomPack");
@@ -280,6 +281,12 @@ namespace Bloom
                 "BloomCollectionIcon.ico",
                 "Bloom Book Collection"
             );
+            CreateIconRegistrySettings(
+                "BloomProblemBook",
+                iconDir,
+                "BloomProblemBook.ico",
+                "Bloom Problem Book"
+            );
             // BloomPack icon
             CreateIconRegistrySettings(
                 "BloomPack",
@@ -303,6 +310,7 @@ namespace Bloom
 
             BeTheExecutableFor(".BloomCollection", "BloomCollection file");
             BeTheExecutableFor(".BloomPack", "BloomPack file");
+            BeTheExecutableFor(".BloomProblemBook", "Bloom Problem Book file");
             BeTheExecutableFor(".JoinBloomTC", "JoinBloom file");
             // Make the OS run Bloom when it sees bloom://somebooktodownload
             BookDownloadSupport.RegisterForBloomUrlProtocol(_installInLocalMachine);

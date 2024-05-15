@@ -19,6 +19,7 @@ using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
+using Newtonsoft.Json.Linq;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
@@ -112,6 +113,7 @@ namespace Bloom.web.controllers
         /// since we turn off caching for this file in web/RequestInfo.cs to avoid stale screenshots.
         /// </summary>
         internal const string ScreenshotName = "ProblemReportScreenshot.png";
+        public const string kProblemBookJsonName = "BloomProblemBook.json";
 
         private string CollectionFolder =>
             Path.GetDirectoryName(
@@ -1480,6 +1482,39 @@ namespace Bloom.web.controllers
             // Probably overkill, but if there are subfolders, they will be zipped up with the book.
             foreach (var sub in Directory.GetDirectories(folder))
                 ListFolderContents(sub, listOfFilePaths);
+        }
+
+        public static string UnpackProblemBook(string path)
+        {
+            // Unzip it into a temp folder.
+            // We decided it is ok that these temp folders will accumulate on dev machines and never get cleaned up.
+            var tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            var fileNameWIthoutExtension = Path.GetFileNameWithoutExtension(path);
+            var collectionFolder = Path.Combine(tempFolder, fileNameWIthoutExtension);
+            ZipUtils.ExpandZip(path, collectionFolder);
+            // get the path to the file ending in ".bloomCollection" in tempFolder
+            var collectionPath = Directory
+                .GetFiles(collectionFolder, "*.bloomCollection")
+                .FirstOrDefault();
+
+            // rename the collection to match the issueId, this makes it easier for the dev to know what's what.
+            var problemReportSettingsPath = Path.Combine(collectionFolder, kProblemBookJsonName);
+            if (RobustFile.Exists(problemReportSettingsPath))
+            {
+                var editSettings = JObject.Parse(RobustFile.ReadAllText(problemReportSettingsPath));
+
+                // BloomProblemReport.json's have an issueId that will be better for us to use as a collection name
+                if (editSettings.TryGetValue("issueId", out JToken issueId))
+                {
+                    var newCollectionPath = Path.Combine(
+                        collectionFolder,
+                        issueId.Value<string>() + ".bloomCollection"
+                    );
+                    RobustFile.Move(collectionPath, newCollectionPath);
+                    return newCollectionPath;
+                }
+            }
+            return collectionPath;
         }
 
         public void Dispose()
