@@ -467,7 +467,10 @@ namespace Bloom.Collection
                     FolderPath,
                     BloomLibraryPublishModel.kNameOfDownloadForEditFile
                 );
-                var bloomProblemBookJsonPath = Path.Combine(FolderPath, "BloomProblemBook.json");
+                var bloomProblemBookJsonPath = Path.Combine(
+                    FolderPath,
+                    ProblemReportApi.kProblemBookJsonName
+                );
 
                 // Various things are disabled if this collection was made by downloading a book for editing.
                 LockedToOneDownloadedBook = RobustFile.Exists(downloadEditPath);
@@ -518,7 +521,9 @@ namespace Bloom.Collection
                         }
                         else
                         {
-                            BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
+                            // We've stored the original code in InvalidBranding for the purpose of showing it to the user.
+                            // But because it is expired, we're going to revert to using "default" branding.
+                            BrandingProjectKey = "Default";
                         }
                     }
                 }

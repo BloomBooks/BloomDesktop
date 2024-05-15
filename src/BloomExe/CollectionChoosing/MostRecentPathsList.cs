@@ -72,6 +72,8 @@ namespace Bloom.CollectionChoosing
                 if (RobustFile.Exists(path) || Directory.Exists(path))
                 {
                     // drop old BloomProblemBook paths so that they don't clutter devs up
+                    // However keep the first one, else we can't do a restart from the Collection Settings
+                    // (and also this may be appreciated).
                     if (i == 0 || !path.Contains("BL-"))
                         yield return path;
                 }
