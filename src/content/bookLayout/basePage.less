@@ -679,7 +679,7 @@ div[data-book*="branding"] {
 
     // editMode.less may change this when we're editing
     .split-pane-component-inner > .bloom-translationGroup {
-        background-color: var(--translationGroup-background-color) !important;
+        background-color: var(--marginBox-background-color) !important;
     }
     // We need this at least for comics, which typically have a black background everywhere,
     // but we need to go back to white for xmatter pages, where we want to see the black text.
@@ -703,6 +703,11 @@ div[data-book*="branding"] {
     }
 }
 
+/* About the calc() here: depending on the margin, we may need to adjust the padding of the text to make it so that
+you get less padding on the side of the text that is next to edge of the page.
+
+About the "multiplicand" value: We don't want to do the aforementioned adjustment if the page margin is not providing a visual buffer.
+The buffer would be absent if the marginBox had a border or the page has a background color that is different from the marginBox color.*/
 .mixinLeftTgPadding {
     padding-left: calc(
         var(--topLevel-text-padding-left) -
@@ -714,30 +719,38 @@ div[data-book*="branding"] {
 }
 .mixinRightTgPadding {
     padding-right: calc(
-            var(--topLevel-text-padding-right) -
-                (
-                    var(--page-margin-right) *
-                        var(--page-and-marginBox-are-same-color-multiplicand)
-                )
-        );
+        var(--topLevel-text-padding-right) -
+            (
+                var(--page-margin-right) *
+                    var(--page-and-marginBox-are-same-color-multiplicand)
+            )
+    );
 }
 .mixinTopTgPadding {
     padding-top: calc(
-            var(--topLevel-text-padding-top) -
-                (
-                    var(--page-margin-top) *
-                        var(--page-and-marginBox-are-same-color-multiplicand)
-                )
-        );
+        var(--topLevel-text-padding-top) -
+            (
+                var(--page-margin-top) *
+                    var(--page-and-marginBox-are-same-color-multiplicand)
+            )
+    );
 }
 .mixinBottomTgPadding {
+    --amountOfExtraMarginAddedForPageNumber: calc(
+        var(--pageNumber-extra-height) * var(--pageNumber-show-multiplicand)
+    );
+    --totalBottomMargin: calc(
+        var(--page-margin-bottom) + var(--amountOfExtraMarginAddedForPageNumber)
+    );
+    --amountOfVisualPaddingProvidedByBottomMargin: calc(
+        var(--totalBottomMargin) *
+            var(--page-and-marginBox-are-same-color-multiplicand)
+    );
+
     padding-bottom: calc(
-            var(--topLevel-text-padding-bottom) -
-                (
-                    (var(--page-margin-bottom) + var(--pageNumber-extra-height)) *
-                        var(--page-and-marginBox-are-same-color-multiplicand)
-                )
-        );
+        var(--topLevel-text-padding-bottom) -
+            var(--amountOfVisualPaddingProvidedByBottomMargin)
+    );
 }
 
 // ----------------------------
@@ -745,22 +758,27 @@ div[data-book*="branding"] {
 // We want to improve the padding for the 99% of simple books, but we don't want to break
 // the small number of books that use origami to break the page up into little boxes.
 // Therefore the rules here only apply to direct descendants of the marginBox.
+// See BL-13475 for some discussion on limitations.
 // ----------------------------
 .marginBox {
-    &
-        > .split-pane
-        > .split-pane-component
-        > .split-pane-component-inner
-        > .bloom-translationGroup {
-        /* About the calc() here: depending on the margin, we may need to adjust the padding of the text to make it so that
-you get less padding on the side of the text that is next to edge of the page.
-
-About the "multiplicand" value: We don't want to do the aforementioned adjustment if the page margin is not providing a visual buffer.
-The buffer would be absent if the marginBox had a border or the page has a background color that is different from the marginBox color.*/
-        .mixinLeftTgPadding;
-        .mixinRightTgPadding;
-        .mixinTopTgPadding;
-        .mixinBottomTgPadding;
+    // no split at all
+    .split-pane-component-inner > ,
+    // has been split
+    & > .split-pane > .split-pane-component > .split-pane-component-inner > {
+        .bloom-translationGroup {
+            .mixinLeftTgPadding;
+            .mixinRightTgPadding;
+            .mixinTopTgPadding;
+            .mixinBottomTgPadding;
+        }
+        // if the textbox has a special background color (only gray is offered for now),
+        // then visually the margin doesn't matter. We need the padding.
+        .bloom-translationGroup.bloom-background-gray {
+            padding-top: var(--topLevel-text-padding-top);
+            padding-bottom: var(--topLevel-text-padding-bottom);
+            padding-right: var(--topLevel-text-padding-right);
+            padding-left: var(--topLevel-text-padding-left);
+        }
     }
     /* on these "inner" edges, we don't need to consider the page margin */
     &

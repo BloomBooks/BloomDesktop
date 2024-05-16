@@ -141,13 +141,9 @@ textarea,
 .bloom-background-none {
     background-color: transparent;
 }
-
-// Change the translation group background color if the user sets the textbox to the gray background
-.bloom-page {
-    --translationGroup-background-color: var(--marginBox-background-color);
-}
-.bloom-background-gray {
-    --translationGroup-background-color: @preferredBackgroundGray;
+// repeated classes to increase our specificity artificially
+.bloom-translationGroup.bloom-background-gray.bloom-background-gray.bloom-background-gray {
+    background-color: @preferredBackgroundGray !important;
 }
 
 // The user can get this in by pressing shift-enter. See bloomField.ts
@@ -172,7 +168,7 @@ span.bloom-linebreak {
         // Ensure that the text wrapping in overlays is generally stable.  See BL-13135.
         // We would use the "stable" keyword, but that isn't implemented in most browsers.
         text-wrap: wrap;
-        box-sizing: content-box;    // keep the same space for the text when selected
+        box-sizing: content-box; // keep the same space for the text when selected
     }
 }
 
