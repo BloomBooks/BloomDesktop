@@ -646,6 +646,8 @@ namespace Bloom.Publish.Video
             LocalAudioNamesMessedUp = true;
             var renames = new Dictionary<string, string>();
             int shortNameIndex = 0;
+            string[] origAudioFileNames = Directory.GetFiles(workingDirectory);
+
             for (int i = 0; i < soundLog.Length; i++)
             {
                 var item = soundLog[i];
@@ -654,7 +656,7 @@ namespace Bloom.Publish.Video
                     string shortName = "";
                     while (
                         shortName == ""
-                        || RobustFile.Exists(Path.Combine(workingDirectory, shortName))
+                        || origAudioFileNames.Contains(Path.Combine(workingDirectory, shortName))
                     )
                     {
                         shortName = GetShortName(shortNameIndex) + Path.GetExtension(item.src);
