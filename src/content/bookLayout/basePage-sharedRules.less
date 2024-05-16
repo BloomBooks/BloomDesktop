@@ -24,7 +24,8 @@ body {
 // if the elements have their default position: relative. This is overidden in
 // audioRecording.less.)
 span.ui-audioCurrent,
-div.ui-audioCurrent p {
+div.ui-audioCurrent p,
+.ui-audioCurrent .ui-enableHighlight {
     background-color: #febf00;
     color: black;
 }
@@ -172,7 +173,7 @@ span.bloom-linebreak {
         // Ensure that the text wrapping in overlays is generally stable.  See BL-13135.
         // We would use the "stable" keyword, but that isn't implemented in most browsers.
         text-wrap: wrap;
-        box-sizing: content-box;    // keep the same space for the text when selected
+        box-sizing: content-box; // keep the same space for the text when selected
     }
 }
 
