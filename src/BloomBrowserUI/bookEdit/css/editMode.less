@@ -1218,25 +1218,26 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
 .bloom-page:hover {
     // Show the padding, multilingual gap, etc as colored areas.
     // The ".split-pane-component-inner >"  disables this for overlays, where it's common to have backgrounds like transparent
-    .split-pane-component-inner {
+    .split-pane-component-inner > .bloom-translationGroup {
         // no: a border here will take up space, wrecking WYSIWYG
         // border: solid thin var(--page-structure-color);
         // box-sizing: border-box;
         // Also, you'd think you could use outline instead, but it doesn't show on the side; the
         // children over it up because they are the full width of this parent.
 
-        > .bloom-translationGroup .bloom-editable { 
-            outline: 1px solid var(--page-structure-color);
-            outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
-            background-color: var(--translationGroup-background-color) !important;
+        &:not(.bloom-background-gray) {
+            background-color: var(--page-structure-color) !important;
         }
 
-        // Use --page-structure-color to show the padding unless this is a gray-background box in which case it would look weird
-        > .bloom-translationGroup:not(.bloom-background-gray) {
-            background-color: var(--page-structure-color) !important;
-            .bloom-editable { 
-                background-color: var(--translationGroup-background-color) !important;
-            }
+        .bloom-editable {
+            outline: 1px solid var(--page-structure-color);
+            outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
+        }
+        // the parent translation group has the "page structure" color so we
+        // normally want to have the edit box be white. Note however that in the case that
+        // we have a grey box, we're giving up on structure color and just want it all to be grey.
+        &:not(.bloom-background-gray) .bloom-editable {
+            background-color: var(--marginBox-background-color) !important;
         }
     }
 }
