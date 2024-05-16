@@ -118,6 +118,8 @@ namespace Bloom.Book
             get { return _dom.InnerXml; }
         }
 
+        internal bool PreserveExistingStylesheets;
+
         public HtmlDom Clone()
         {
             return new HtmlDom(RawDom);
@@ -487,7 +489,7 @@ namespace Bloom.Book
             foreach (var xmlElement in links)
             {
                 var href = xmlElement.GetStringAttribute("href");
-                if (!BookStorage.CssFilesThatAreObsolete.Contains(href))
+                if (PreserveExistingStylesheets || !BookStorage.CssFilesThatAreObsolete.Contains(href))
                 {
                     headNode.AppendChild(xmlElement);
                 }
@@ -3669,5 +3671,5 @@ namespace Bloom.Book
                 RemoveClass(Body, className);
             }
         }
-    }
+	}
 }
