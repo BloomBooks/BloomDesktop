@@ -6,6 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.ImageProcessing;
@@ -105,7 +106,11 @@ namespace Bloom
         /// <param name="document">Whose rendering will produce the thumbnail content.</param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public Image GetThumbnail(string key, HtmlDom document, ThumbnailOptions options)
+        public async Task<Image> GetThumbnail(
+            string key,
+            HtmlDom document,
+            ThumbnailOptions options
+        )
         {
             Image image;
             Image thumbnail = null;
@@ -126,139 +131,47 @@ namespace Bloom
                     );
                     return image;
                 }
+
                 Debug.WriteLine(
                     "Thumbnail Cache MISS: "
                         + key
                         + " thread="
                         + Thread.CurrentThread.ManagedThreadId
                 );
+            }
+            // We'd prefer to have all this inside the lock, but we can't have awaited code inside a lock.
+            // The worst consequence is a chance (very small) that we'll do the work twice.
 
-                _backgroundColorOfResult = options.BackgroundColor;
-                XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(document.RawDom);
+            _backgroundColorOfResult = options.BackgroundColor;
+            XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(document.RawDom);
 
-                var browser = GetBrowserForPaperSize(document.RawDom);
-                if (browser == null)
-                    return Resources.PagePlaceHolder;
+            var browser = GetBrowserForPaperSize(document.RawDom);
+            if (browser == null)
+                return Resources.PagePlaceHolder;
 
-                var order = new ThumbnailOrder() { Options = options, Document = document };
-                for (int i = 0; i < 4; i++)
+            var order = new ThumbnailOrder() { Options = options, Document = document };
+            for (int i = 0; i < 4; i++)
+            {
+                thumbnail = await CreateThumbNail(order, browser);
+                if (thumbnail != null)
+                    break;
+                // For some reason...possibly another navigation was in progress...we can't do this just now.
+                // Try a few times.
+            }
+            if (thumbnail == null) // just can't get it.
+            {
+                return Resources.PagePlaceHolder; // but don't save it...try again if we get another request.
+            }
+
+            if (!String.IsNullOrWhiteSpace(key))
+            {
+                lock (this)
                 {
-                    if (CreateThumbNail(order, browser, out thumbnail))
-                        break;
-                    // For some reason...possibly another navigation was in progress...we can't do this just now.
-                    // Try a few times.
-                }
-                if (thumbnail == null) // just can't get it.
-                {
-                    return Resources.PagePlaceHolder; // but don't save it...try again if we get another request.
-                }
-                if (!String.IsNullOrWhiteSpace(key))
                     _images[key] = thumbnail;
-            }
-            return thumbnail;
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="folderForThumbNailCache"></param>
-        /// <param name="key">whatever system you want... just used for caching</param>
-        /// <param name="document"></param>
-        /// <param name="options"></param>
-        /// <param name="callback"></param>
-        /// <param name="errorCallback"></param>
-        /// <returns></returns>
-        public void GetThumbnailAsync(
-            string folderForThumbNailCache,
-            string key,
-            HtmlDom document,
-            ThumbnailOptions options,
-            Action<Image> callback,
-            Action<Exception> errorCallback
-        )
-        {
-            GetThumbnail(
-                folderForThumbNailCache,
-                key,
-                document,
-                options,
-                callback,
-                errorCallback,
-                true
-            );
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="folderForThumbNailCache"></param>
-        /// <param name="key">whatever system you want... just used for caching</param>
-        /// <param name="document"></param>
-        /// <param name="options"></param>
-        /// <param name="callback"></param>
-        /// <param name="errorCallback"></param>
-        /// <param name="async"></param>
-        /// <returns></returns>
-        public void GetThumbnail(
-            string folderForThumbNailCache,
-            string key,
-            HtmlDom document,
-            ThumbnailOptions options,
-            Action<Image> callback,
-            Action<Exception> errorCallback,
-            bool async
-        )
-        {
-            //review: old code had it using "key" in one place(checking for existing), thumbNailFilePath in another (adding new)
-
-            string thumbNailFilePath = null;
-            if (!string.IsNullOrEmpty(folderForThumbNailCache))
-                thumbNailFilePath = Path.Combine(folderForThumbNailCache, options.FileName);
-
-            //In our cache?
-            Image image;
-            if (!string.IsNullOrWhiteSpace(key) && _images.TryGetValue(key, out image))
-            {
-                callback(image);
-                return;
-            }
-
-            //Sitting on disk?
-            if (!string.IsNullOrEmpty(folderForThumbNailCache))
-            {
-                if (RobustFile.Exists(thumbNailFilePath))
-                {
-                    var thumbnail = RobustImageIO.GetImageFromFile(thumbNailFilePath);
-                    thumbnail.Tag = thumbNailFilePath;
-                    if (!string.IsNullOrWhiteSpace(key))
-                        _images.Add(key, thumbnail);
-                    callback(thumbnail);
-                    return;
                 }
             }
 
-            var order = new ThumbnailOrder
-            {
-                ThumbNailFilePath = thumbNailFilePath,
-                Options = options,
-                Callback = callback,
-                ErrorCallback = errorCallback,
-                Document = document,
-                FolderForThumbNailCache = folderForThumbNailCache,
-                CancelToken = Program.BloomThreadCancelService,
-                Key = key
-            };
-            if (async)
-                QueueOrder(order);
-            else
-            {
-                ProcessOrder(order);
-            }
-        }
-
-        private void QueueOrder(ThumbnailOrder order)
-        {
-            ThreadPool.QueueUserWorkItem(new WaitCallback(ProcessOrder), order);
+            return thumbnail;
         }
 
 #if DEBUG
@@ -280,81 +193,49 @@ namespace Bloom
         private bool OpenTempFileInBrowser(Browser browser, HtmlDom dom)
         {
             var order = (ThumbnailOrder)browser.Tag;
-            if (_syncControl.InvokeRequired)
-            {
-                // Note: the new WebView2 code here had some testing before, in the course of changing other things,
-                // we stopped calling this method on background threads. There have been further changes to the code
-                // since then, particularly, we stopped passing a filePath (really a URL) argument and switched
-                // to creating the in memory page file here (or in NavigateAndWaitTillDonw).
-                bool success = false;
-                _syncControl.Invoke(
-                    (Action)(
-                        () =>
-                        {
-                            success = browser.NavigateAndWaitTillDone(
-                                dom,
-                                100000,
-                                InMemoryHtmlFileSource.Thumb,
-                                null,
-                                false
-                            );
-                            if (!success)
-                            {
-                                Logger.WriteEvent(
-                                    "HtmlThumbNailer ({1}): Timed out on ({0})",
-                                    order.ThumbNailFilePath,
-                                    Thread.CurrentThread.ManagedThreadId
-                                );
-#if DEBUG
-                                if (!_thumbnailTimeoutAlreadyDisplayed)
-                                {
-                                    _thumbnailTimeoutAlreadyDisplayed = true;
-                                    _syncControl.Invoke(
-                                        (Action)(
-                                            () =>
-                                                Debug.Fail(
-                                                    "(debug only) Make thumbnail timed out (won't show again)"
-                                                )
-                                        )
-                                    );
-                                }
-#endif
-                            }
-                        }
-                    )
-                );
-                return true;
-            }
-            else
-            {
-                using (
-                    var temp = BloomServer.MakeInMemoryHtmlFileInBookFolder(
-                        order.Document,
-                        source: InMemoryHtmlFileSource.Thumb
-                    )
-                )
-                {
-                    browser.Navigate(temp.Key, false);
 
-                    while (!order.Done)
-                    {
-                        Application.DoEvents();
-                        Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
-                    }
+            var success = browser.NavigateAndWaitTillDone(
+                dom,
+                100000,
+                InMemoryHtmlFileSource.Thumb,
+                null,
+                false
+            );
+            if (!success)
+            {
+                Logger.WriteEvent(
+                    "HtmlThumbNailer ({1}): Timed out on ({0})",
+                    order.ThumbNailFilePath,
+                    Thread.CurrentThread.ManagedThreadId
+                );
+#if DEBUG
+                if (!_thumbnailTimeoutAlreadyDisplayed)
+                {
+                    _thumbnailTimeoutAlreadyDisplayed = true;
+                    _syncControl.Invoke(
+                        (Action)(
+                            () =>
+                                Debug.Fail(
+                                    "(debug only) Make thumbnail timed out (won't show again)"
+                                )
+                        )
+                    );
                 }
+#endif
             }
 
             return true;
         }
 
-        private Size SetWidthAndHeight(Browser browser)
+        private async Task<Size> SetWidthAndHeight(Browser browser)
         {
             try
             {
                 if (_syncControl.InvokeRequired)
                 {
-                    return (Size)
-                        _syncControl.Invoke(new Func<Browser, Size>(SetWidthAndHeight), browser);
+                    throw new ApplicationException(
+                        "HtmlThumbNailer.SetWidthAndHeight should not be called on a background thread"
+                    );
                 }
             }
             catch (Exception e)
@@ -371,7 +252,7 @@ namespace Bloom
             var script =
                 @"
 const page = document.getElementsByClassName('bloom-page')[0]; page.clientHeight.toString() + ' ' + page.clientWidth.toString();";
-            var result = browser.RunJavascriptWithStringResult_Sync_Dangerous(script);
+            var result = await browser.GetStringFromJavascriptAsync(script);
             var parts = result.Split(' ');
             var height = (int)Math.Round(double.Parse(parts[0]));
             var width = (int)Math.Round(double.Parse(parts[1]));
@@ -385,134 +266,14 @@ const page = document.getElementsByClassName('bloom-page')[0]; page.clientHeight
             return new Size(browser.Width, browser.Height);
         }
 
-        private Image CreateImage(Browser browser, Color coverColor, int top, int bottom)
+        private async Task<Image> CreateImage(Browser browser)
         {
-            if (_syncControl.InvokeRequired)
+            using (var image = await browser.CapturePreview())
             {
-                return (Image)
-                    _syncControl.Invoke(
-                        new Func<Browser, Color, int, int, Image>(CreateImage),
-                        browser,
-                        coverColor,
-                        top,
-                        bottom
-                    );
+                // Note: In GeckoFx days, we had very complex code here to try to determine whether the page
+                // had been fully rendered. It doesn't seem to be needed with WebView2.
+                return new Bitmap(image);
             }
-            // It's REALLY tricky to get the thumbnail created so that it reliably shows the image.
-            // See BL-4170 and then BL-6257. We tried all kinds of tricks to tell when the image is
-            // loaded into the document, such as checking image.completed and image.naturalWidth > 0
-            // and waiting for two cycles of window.requestAnimationFrame (which is supposed to cover
-            // starting and completing painting images) after the onload event fires. None of this
-            // helped appreciably. A 400ms delay was enough for most images on a fast desktop, but
-            // there was no way to tell how long would be enough on a slow laptop.
-            // So, we finally came up with this technique, which is to examine the actual bitmap
-            // that is produced to see whether there is something drawn in the image region of the
-            // page. Even that did not prove to be enough: it's quite possible (especially with a tall
-            // PNG image) for CanvasGetPngImage to return an image with the cover picture only partly
-            // drawn. Fortunately, it seems to consistently draw from the top down, so we can be pretty
-            // sure there is no more image to come if we do two cycles and there is no change in the
-            // last line that is drawn.
-            // On a typical tall PNG this loop has three iterations.
-            // image is partly drawn (~40ms); ~140ms to find last line
-            // image is fully drawn (~80ms); 1ms to find last line
-            // image is fully drawn again (~28ms); 1ms to find last line
-            // On a typical wide png, 2 iterations:
-            // ~40 to draw image, ~80 to find last line (and repeat)
-            // For jpg we seem to typically have three also:
-            // ~20ms to make image; ~200ms to determine nothing is there
-            // ~600ms to make image; ~40 to find last line
-            // ~120 to redraw; ~40 to find last line
-            // Todo WebView2: I don't know whether all this complication is needed in WebView2, or whether
-            // its document-completed event is enough so that we can get a good image, or perhaps
-            // its GetPreview is good enough to wait till everything is drawn. For now, I'm keeping things
-            // as similar as possible on both tracks.
-            // Note: This code seems designed for a cover, with only one image. I see no reason why, if we
-            // really still need this, we might not need to make sure that all images are fully drawn.
-            // So if it really is still relevant, it might need some work. However, this is of much more
-            // minor importance now that it's only used for thumbnails of new template pages rather than
-            // the main thumbnail of a book.
-            while (true) // Exit when we settle on an image and return it.
-            {
-                var watch = new Stopwatch();
-                watch.Start();
-                int lastLineOfImage = -1;
-                while (true)
-                {
-                    using (var image = browser.CapturePreview_Synchronous_Dangerous())
-                    {
-                        if (watch.ElapsedMilliseconds > 5000)
-                        {
-                            // Maybe there's no image or it's color perfectly mathches the background?
-                            // When we used to do this with a simple delay 400ms was usually enough;
-                            // if we can't get it in 5s give up, and use whatever we've got.
-                            watch.Stop();
-                            Debug.WriteLine(
-                                "returned possibly incomplete thumnail after more than 5000ms"
-                            );
-                            return new Bitmap(image);
-                        }
-
-                        if (top < 0)
-                        {
-                            // no image to wait for, go with what we have.
-                            return new Bitmap(image);
-                        }
-
-                        // I'm not sure how top or bottom can get to be greater than image.Height, but if they do,
-                        // it causes a crash. It makes no sense to look for the last line drawn beyond the end of the
-                        // image, so if something tries, just start looking at the bottom.
-                        var newLastLine = GetLastLineOfImage(
-                            coverColor,
-                            Math.Min(top, image.Height),
-                            Math.Min(bottom, image.Height),
-                            image
-                        );
-
-                        // If nothing has been drawn yet, we want to keep trying until something is.
-                        // If something has been drawn, we want to keep trying until a cycle when
-                        // nothing more gets added.
-                        if (newLastLine == -1 || newLastLine > lastLineOfImage)
-                        {
-                            lastLineOfImage = newLastLine;
-                            // This is meant to give the browser more of a chance to load it.
-                            // It may well have been working on it anyway in another thread
-                            // while we were checking pixels. Not too sure about the best length
-                            // for this delay; longer might mean less time wasted checking pixels,
-                            // but the minimum delay is two times this interval, so we don't want
-                            // it too long. 50ms, at least on my desktop, usually doesn't result
-                            // in any wasted iterations, nor much delay.
-                            Thread.Sleep(50);
-                            continue; // try again
-                        }
-
-                        // No more image drawn than the last iteration, and we got something, so assume we have the whole thing.
-                        watch.Stop();
-                        Debug.WriteLine("Got image after waiting " + watch.ElapsedMilliseconds);
-                        return new Bitmap(image);
-                    }
-                }
-            }
-        }
-
-        // Find the last line of the image between top and bottom which contains a pixel not
-        // matching coverColor. If no such pixel is found, return -1.
-        // (If there's no picture on the cover, somehow, top and bottom will be -1, and this
-        // routine will return -1 after doing no iterations. We'll give up after 5s.
-        // Could make this special case faster, but it complicates things for little benefit.
-        // Bloom makes it pretty hard to have no cover picture. It may not even be possible.
-        private static int GetLastLineOfImage(Color coverColor, int top, int bottom, Bitmap image)
-        {
-            for (int i = bottom - 1; i >= top; i--)
-            {
-                for (int j = 0; j < image.Width; j++)
-                {
-                    var color = image.GetPixel(j, i);
-                    if (color != coverColor)
-                        return i;
-                }
-            }
-
-            return -1;
         }
 
         // The order we most recently started working on.
@@ -521,17 +282,15 @@ const page = document.getElementsByClassName('bloom-page')[0]; page.clientHeight
         private ThumbnailOrder _currentOrder;
 
         /// <summary>
-        /// Returns true if it make some attempt at an image, false if navigation is currently suppressed.
+        /// Returns an image if possible, null if for some reason we can't.
         /// </summary>
         /// <param name="order"></param>
         /// <param name="browser"></param>
-        /// <param name="thumbnail"></param>
         /// <returns></returns>
-        private bool CreateThumbNail(ThumbnailOrder order, Browser browser, out Image thumbnail)
+        private async Task<Image> CreateThumbNail(ThumbnailOrder order, Browser browser)
         {
-            // runs on threadpool thread
+            // runs on UI thread
             _currentOrder = order;
-            thumbnail = null;
 
             order.Done = false;
             browser.Tag = order;
@@ -541,11 +300,11 @@ const page = document.getElementsByClassName('bloom-page')[0]; page.clientHeight
                 out coverColor
             );
             if (!OpenTempFileInBrowser(browser, order.Document))
-                return false;
+                return null;
 
-            var browserSize = SetWidthAndHeight(browser);
+            var browserSize = await SetWidthAndHeight(browser);
             if (browserSize.Height == 0) //happens when we run into the as-yet-unreproduced-or-fixed bl-254
-                return false; // will try again later
+                return null; // will try again later
 
             try
             {
@@ -565,43 +324,11 @@ const page = document.getElementsByClassName('bloom-page')[0]; page.clientHeight
                     );
                 }
 
-                int topOfCoverImage = -1;
-                int bottomOfCoverImage = -1;
-                _syncControl.Invoke(
-                    (Action)(
-                        () =>
-                        {
-                            var script =
-                                @"
-const containers = document.getElementsByClassName('bloom-imageContainer');
-if (containers.length) containers[0].offsetTop.toString() + ' ' + containers[0].offsetHeight.toString();";
-                            var result = browser.RunJavascriptWithStringResult_Sync_Dangerous(
-                                script
-                            );
-                            if (!String.IsNullOrWhiteSpace(result))
-                            {
-                                var parts = result.Split(' ');
-                                topOfCoverImage = (int)Math.Round(double.Parse(parts[0]));
-                                bottomOfCoverImage =
-                                    topOfCoverImage + (int)Math.Round(double.Parse(parts[1]));
-                            }
-                        }
-                    )
-                );
-
-                using (
-                    Image fullsizeImage = CreateImage(
-                        browser,
-                        coverColor,
-                        topOfCoverImage,
-                        bottomOfCoverImage
-                    )
-                )
+                using (Image fullsizeImage = await CreateImage(browser))
                 {
                     if (_disposed)
-                        return false;
-                    thumbnail = MakeThumbNail(fullsizeImage, order.Options);
-                    return true;
+                        return null;
+                    return MakeThumbNail(fullsizeImage, order.Options);
                 }
             }
             catch (Exception error)
@@ -641,110 +368,7 @@ if (containers.length) containers[0].offsetTop.toString() + ' ' + containers[0].
 #endif
             }
 
-            return false;
-        }
-
-        private void ProcessOrder(object stateInfo)
-        {
-            // called on threadpool thread
-            var order = stateInfo as ThumbnailOrder;
-            if (order == null)
-                return;
-
-            try
-            { // This doesn't have an IsDisposed() method, so catch a possible exception.
-                // Note that tests won't have a order.CancelToken set.
-                if (order.CancelToken != null && order.CancelToken.IsCancellationRequested)
-                    return;
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
-
-            Image pendingThumbnail = null;
-
-            // Don't try to make thumbnails on the UI thread. It's easy to get into a situation like BL-6208,
-            // where the UI thread is waiting for this lock, but another thread that holds the lock is waiting
-            // to do something (e.g., navigate a browser) that can only be done on the UI thread.
-            Debug.Assert(
-                !Program.RunningOnUiThread,
-                "Thumbnails must not be made on the UI thread"
-            );
-
-            lock (this)
-            {
-                Logger.WriteMinorEvent(
-                    "HtmlThumbNailer ({1}): starting work on thumbnail ({0})",
-                    order.ThumbNailFilePath,
-                    Thread.CurrentThread.ManagedThreadId
-                );
-
-                _backgroundColorOfResult = order.Options.BackgroundColor;
-                XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document.RawDom);
-
-                var browser = GetBrowserForPaperSize(order.Document.RawDom);
-                if (browser == null)
-                    return;
-
-                if (!CreateThumbNail(order, browser, out pendingThumbnail) && !order.Canceled)
-                {
-                    // For some reason...possibly another navigation was in progress...we can't do this just now.
-                    // Try it again later.
-                    // Enhance: should we have some limit after which we give up?
-                    QueueOrder(order);
-                }
-                if (pendingThumbnail == null)
-                {
-                    pendingThumbnail = Resources.PagePlaceHolder;
-                }
-                else if (!string.IsNullOrEmpty(order.ThumbNailFilePath))
-                {
-                    try
-                    {
-                        //gives a blank         _pendingThumbnail.Save(thumbNailFilePath);
-                        using (Bitmap b = new Bitmap(pendingThumbnail))
-                        {
-                            RobustImageIO.SaveImage(b, order.ThumbNailFilePath);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        //this is going to fail if we don't have write permission
-                    }
-                }
-
-                pendingThumbnail.Tag = order.ThumbNailFilePath; //usefull if we later know we need to clear out that file
-
-                Debug.WriteLine(
-                    "Thumbnail created with dimensions ({0},{1})",
-                    browser.Width,
-                    browser.Height
-                );
-
-                try
-                //I saw a case where this threw saying that the key was already in there, even though back at the beginning of this function, it wasn't.
-                {
-                    if (_images.ContainsKey(order.Key))
-                        _images.Remove(order.Key);
-                    _images.Add(order.Key, pendingThumbnail);
-                }
-                catch (Exception error)
-                {
-                    Logger.WriteMinorEvent("Skipping minor error: " + error.Message);
-                    //not worth crashing over, at this point in Bloom's life, since it's just a cache. But since then, I did add a lock() around all this.
-                }
-            }
-
-            //order.ResultingThumbnail = pendingThumbnail;
-            if (_disposed)
-                return;
-            Logger.WriteMinorEvent(
-                "HtmlThumNailer ({1}): finished work on thumbnail ({0})",
-                order.ThumbNailFilePath,
-                Thread.CurrentThread.ManagedThreadId
-            );
-            order.Callback(pendingThumbnail);
+            return null;
         }
 
         private void _browser_OnDocumentCompleted(

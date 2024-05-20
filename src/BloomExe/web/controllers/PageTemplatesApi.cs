@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -153,8 +154,10 @@ namespace Bloom.web.controllers
             request.ReplyWithImage(pathToExistingOrGeneratedThumbnail);
         }
 
-        List<Action> _idleUpdates = new List<Action>();
-        private Action _currentIdleUpdate;
+        List<Func<Task>> _idleUpdates = new();
+        private Func<Task> _currentIdleUpdate;
+
+        public static DateTime LastSaveTime = DateTime.Now;
 
         /// <summary>
         /// Usually we expect that a file at the same path but with extension .svg will
@@ -187,6 +190,10 @@ namespace Bloom.web.controllers
                     return pngpath; // it's locked, don't try and replace it
 
                 if (!IsPageTypeFromCurrentBook(localPath))
+                    return pngpath;
+                // If the file was updated since we last saved, use it. This prevents an infinite loop,
+                // since we request it again after generating a new thumbnail.
+                if (new FileInfo(pngpath).LastWriteTime > LastSaveTime)
                     return pngpath;
                 tempPath = pngpath;
                 mustRegenerate = true; // prevent thumbnailer using cached (obsolete) image
@@ -226,7 +233,7 @@ namespace Bloom.web.controllers
                     (Action)(
                         () =>
                         {
-                            _idleUpdates.Add(() =>
+                            _idleUpdates.Add(async () =>
                             {
                                 // We don't have an image, or we want to make a fresh one
                                 var templatesDirectoryInTemplateBook = Path.GetDirectoryName(
@@ -269,7 +276,7 @@ namespace Bloom.web.controllers
                                 if (templatePage == null)
                                     templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
-                                Image thumbnail = _thumbNailer.GetThumbnailForPage(
+                                Image thumbnail = await _thumbNailer.GetThumbnailForPage(
                                     templateBook,
                                     templatePage,
                                     isLandscape,
@@ -328,7 +335,7 @@ namespace Bloom.web.controllers
 
                             // Each update must run to completion before another starts; otherwise, we get into a situation
                             // where we are trying to navigate two browsers at the same time and get into trouble.
-                            void Handler(object sender, EventArgs args)
+                            async void Handler(object sender, EventArgs args)
                             {
                                 if (_currentIdleUpdate != null)
                                     return;
@@ -340,7 +347,7 @@ namespace Bloom.web.controllers
 
                                 _currentIdleUpdate = _idleUpdates[0];
                                 _idleUpdates.RemoveAt(0);
-                                _currentIdleUpdate();
+                                await _currentIdleUpdate();
                                 _currentIdleUpdate = null;
                             }
 
