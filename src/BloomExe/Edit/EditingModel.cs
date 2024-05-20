@@ -1863,13 +1863,9 @@ namespace Bloom.Edit
             return WidgetHelper.AddWidgetFilesToBookFolder(CurrentBook.FolderPath, fullWidgetPath);
         }
 
-        // This event is fired after a page has finished painting.
-        public event EventHandler EditPagePainted;
-
-        public void HandleEditPagePaintedEvent(object sender, EventArgs args)
+        public void HandlePageDomLoadedEvent(object sender, EventArgs args)
         {
             NavigatingSoSuspendSaving = false;
-            EditPagePainted?.Invoke(sender, args);
         }
 
         // This speeds up developing brandings. It may speed up other things, but I haven't tested those.

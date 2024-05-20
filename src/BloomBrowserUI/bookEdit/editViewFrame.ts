@@ -93,6 +93,7 @@ export function switchContentPage(newSource: string) {
     // The normal way to deal with this is to wait and call the function after the new
     // page is loaded. But sometimes (see comment below) the load event doesn't get
     // raised, so we have a fall-back.
+    // Enhance: Should this use DOMContentLoaded instead of load?
     let handlerCalled = false;
     const handler = () => {
         handlerCalled = true;
@@ -108,7 +109,6 @@ export function switchContentPage(newSource: string) {
     // other cases since I have no explanation. Rather than leaving control state
     // permanently wrong, if the event is delayed much longer than expected we just
     // call the handler.
-    // For a similar event not firing problem, see bloomEditing.ts.
     window.setTimeout(() => {
         if (!handlerCalled) {
             handler();

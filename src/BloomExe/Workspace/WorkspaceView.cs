@@ -1002,7 +1002,7 @@ namespace Bloom.Workspace
 
             CurrentTabView = view as IBloomTabArea;
             // Warn the user if we're starting to use too much memory.
-            MemoryManagement.CheckMemory(false, "switched page in workspace", true);
+            MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
             if (_previouslySelectedControl != null)
             {
