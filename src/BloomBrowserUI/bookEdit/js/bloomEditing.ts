@@ -122,6 +122,10 @@ function Cleanup() {
         $(this).removeClass("ui-resizable");
         $(this).removeClass("hoverUp");
     });
+    $("span").each(function() {
+        $(this).removeClass("ui-disableHighlight");
+        $(this).removeClass("ui-enableHighlight");
+    });
 
     $("button")
         // Note, previously this was just removing all <button>s.

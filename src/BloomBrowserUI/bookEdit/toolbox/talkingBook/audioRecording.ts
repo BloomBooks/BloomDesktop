@@ -4425,7 +4425,7 @@ export default class AudioRecording {
         audioElements.forEach(audioElement => {
             // FYI, don't need to process the bloom-linebreak spans. Nothing bad happens, just unnecessary.
             const matches = this.findAll(
-                "span:not(.bloom-linebreak)",
+                "span[id]:not(.bloom-linebreak)",
                 audioElement,
                 true
             );
@@ -4583,7 +4583,6 @@ export default class AudioRecording {
     /**
      * This function will undo in BloomDesktop the modifications made by fixHighlighting()
      */
-
     public revertFixHighlighting() {
         this.nodesToRestoreAfterPlayEnded.forEach((htmlToRestore, id) => {
             const pageDocBody = this.getPageDocBody();
