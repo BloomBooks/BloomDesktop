@@ -1,0 +1,11 @@
+{
+    "presets": [
+        {
+            "comment": "This means 'Mixtec books'. This is for 'All Nations' BT in Mexico",
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Tutu-Tuun-Savi-back-cover.png'/><img class='badge' src='made-with-bloom-badge.svg'/>",
+            "condition": "always"
+        }
+    ]
+}
