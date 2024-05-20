@@ -1298,6 +1298,9 @@ export function pageSelectionChanging() {
     }
 }
 
+// Caution: We don't want this to become an async method because we don't want
+// any other event handlers running between cleaning up the page and
+// getting the content to save. (Or think hard before changing that.)
 export function getBodyContentForSavePage() {
     if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(document.body)) {
         throw new Error(
