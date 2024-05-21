@@ -21,6 +21,7 @@ using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -1507,44 +1508,39 @@ namespace Bloom.Edit
         }
 
         public void ChangePicture(
-            int imgIndex,
-            XmlElement imageElement,
-            PalasoImage imageInfo,
-            IProgress progress
+            string imageId,
+            UrlPathString priorImageSrc,
+            PalasoImage imageInfo
         )
         {
             try
             {
-                Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
-                var editor = new PageEditingModel();
-                editor.ChangePicture(
-                    GetEditingBrowser(),
+                Logger.WriteMinorEvent("Starting ChangePicture {0}...", (object)imageInfo.FileName);
+
+                // REVIEW: This does a "fire and forget" call to JS. It is followed by a SaveNow() call for the sake of the thumbnail.
+                var args = PageEditingModel.ChangePicture(
                     CurrentBook.FolderPath,
-                    imgIndex,
-                    imageElement,
-                    imageInfo,
-                    progress
+                    imageId,
+                    priorImageSrc,
+                    imageInfo
                 );
+                // we don't need to wait. Even if our caller kicks off a save, its call to RunJavascriptAsync() will come in after ours.
+                GetEditingBrowser()
+                    .RunJavascriptFireAndForget(
+                        $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
+                    );
 
-                // We need to save so that when asked by the thumbnailer, the book will give the proper image
-                SaveNow();
+                /* Right now, when we're trying to remove saves and simplify everytihng, we are
+                   leaving the thumbnail out-of-date until you change pages, just like we do when the user adds text.
+                   Enhance: Eventually when saving is less disruptive, we will bring it back.
+                              
+                    SaveNow();
+                    _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+                */
 
-                // BL-3717: if we cleanup unused image files whenever we change a picture then Cut can lose
-                // all of an image's metadata (because the actual file is missing from the book folder when we go to
-                // paste in the image that was copied onto the clipboard, which doesn't have metadata.)
-                // Let's only do this on ExpensiveIntialization() when loading a book.
-                //CurrentBook.Storage.CleanupUnusedImageFiles();
-
-                // But after saving, we need the non-cleaned version back there
-                RefreshDisplayOfCurrentPage();
-
-                _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
-                Logger.WriteMinorEvent(
-                    "Finished ChangePicture {0} (except for async thumbnail) ...",
-                    imageInfo.FileName
-                );
+                Logger.WriteMinorEvent("Finished ChangePicture {0}", (object)imageInfo.FileName);
                 Analytics.Track("Change Picture");
-                Logger.WriteEvent("ChangePicture {0}...", imageInfo.FileName);
+                Logger.WriteEvent("ChangePicture {0}...", (object)imageInfo.FileName);
             }
             catch (Exception e)
             {
@@ -1556,14 +1552,6 @@ namespace Bloom.Edit
                 ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
             }
         }
-
-        //        private void InvokeUpdatePageList()
-        //        {
-        //            if (UpdatePageList != null)
-        //            {
-        //                UpdatePageList(this, null);
-        //            }
-        //        }
 
         public void SetView(EditingView view)
         {

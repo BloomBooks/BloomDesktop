@@ -2989,22 +2989,6 @@ export default class AudioRecording {
         }
     }
 
-    // from http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-    private static createUuid(): string {
-        // http://www.ietf.org/rfc/rfc4122.txt
-        const s: string[] = [];
-        const hexDigits = "0123456789abcdef";
-        for (let i = 0; i < 36; i++) {
-            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-        }
-        s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
-        s[19] = hexDigits.substr((s[19].charCodeAt(0) & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
-        s[8] = s[13] = s[18] = s[23] = "-";
-
-        const uuid = s.join("");
-        return uuid;
-    }
-
     public static getChecksum(message: string): string {
         // Vertical line character ("|") acts as a phrase delimiter in Talking Books.
         // To perform phrase-level recording, the user can insert a temporary "|" character where he wants a phrase split to happen.
@@ -3380,7 +3364,7 @@ export default class AudioRecording {
     }
 
     public static createValidXhtmlUniqueId(): string {
-        let newId = AudioRecording.createUuid();
+        let newId = EditableDivUtils.createUuid();
         if (/^\d/.test(newId)) newId = "i" + newId; // valid ID in XHTML can't start with digit
 
         return newId;

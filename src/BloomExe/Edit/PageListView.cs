@@ -196,11 +196,6 @@ namespace Bloom.Edit
         public void UpdateThumbnailAsync(IPage page)
         {
             Logger.WriteMinorEvent("Updating thumbnail for page");
-
-            // This might be redundant, we no longer use premade images of pages in this view.
-            // However, it's just possible that when the cover page is modified we need this
-            // to get an updated cover image in the Collections view.
-            _thumbNailList.Thumbnailer.PageChanged(page.Id);
             _thumbNailList.UpdateThumbnailAsync(page);
         }
 

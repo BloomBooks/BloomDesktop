@@ -341,14 +341,6 @@ document.addEventListener("DOMContentLoaded", () =>
     post("editView/pageDomLoaded")
 );
 
-interface IChangeImageEvent extends IBloomWebSocketEvent {
-    imgIndex: number;
-    src: string;
-    copyright: string;
-    creator: string;
-    license: string;
-}
-
 // this is also called by the StyleEditor
 export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
     $(container)
@@ -371,33 +363,36 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
         });
 }
 
+// called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: {
-    imageIndex: number;
+    imageId: string;
     src: string; // must already appropriately URL-encoded.
     copyright: string;
     creator: string;
     license: string;
 }) {
-    const container = Array.from(
-        document.getElementsByClassName("bloom-imageContainer")
-    )[imageInfo.imageIndex];
-
+    const imgOrImageContainer = document.getElementById(imageInfo.imageId);
+    if (!imgOrImageContainer) {
+        throw new Error(
+            `changeImage: imageOrImageContainerId: "${imageInfo.imageId}" not found`
+        );
+    }
     // I can't remember why, but what this is doing is saying that if the imageContainer
     // has an <img> element, we're setting the src on that. But if it does not, we're
     // setting the background-image on the container itself.
-    const img = container.getElementsByTagName("img")[0];
-    const target = img || container;
-    if (img) {
-        img.setAttribute("src", imageInfo.src);
-    } else {
-        container.setAttribute(
+    if (imgOrImageContainer.tagName === "IMG") {
+        (imgOrImageContainer as HTMLImageElement).src = imageInfo.src;
+    }
+    // else if it has class bloom-imageContainer, we need to set the background-image on the container
+    else if (imgOrImageContainer.classList.contains("bloom-imageContainer")) {
+        imgOrImageContainer.setAttribute(
             "style",
             "background-image:url('" + imageInfo.src + "')"
         );
     }
-    target.setAttribute("data-copyright", imageInfo.copyright);
-    target.setAttribute("data-creator", imageInfo.creator);
-    target.setAttribute("data-license", imageInfo.license);
+    imgOrImageContainer.setAttribute("data-copyright", imageInfo.copyright);
+    imgOrImageContainer.setAttribute("data-creator", imageInfo.creator);
+    imgOrImageContainer.setAttribute("data-license", imageInfo.license);
 }
 
 // This origami checking business is related BL-13120
