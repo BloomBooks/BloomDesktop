@@ -22,6 +22,7 @@ using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
+using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -40,11 +41,8 @@ namespace Bloom.Edit
         private readonly DeletePageCommand _deletePageCommand;
         private readonly CollectionSettings _collectionSettings;
         private readonly ITemplateFinder _sourceCollectionsList;
-        private HtmlDom _domForCurrentPage;
+        private bool _havePageToSave;
 
-        // We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
-        // is the only resource being used, and there is only one instance of this object.
-        private InMemoryHtmlFile _currentPage;
         public bool Visible;
         private Book.Book _currentlyDisplayedBook;
         private Book.Book _bookForToolboxContent;
@@ -257,13 +255,13 @@ namespace Bloom.Edit
             if (_bookSelection.CurrentSelection == _currentlyDisplayedBook)
                 return;
             //prevent trying to save this page in whatever comes next
-            var wasNull = _domForCurrentPage == null;
-            _domForCurrentPage = null;
+            var hadPageToSave = _havePageToSave;
+            _havePageToSave = false;
             _currentlyDisplayedBook = null;
             if (Visible)
             {
                 _view.ClearOutDisplay();
-                if (!wasNull)
+                if (hadPageToSave)
                     _view.UpdatePageList(false);
             }
         }
@@ -316,7 +314,7 @@ namespace Bloom.Edit
                 try
                 {
                     SaveNow(); //ensure current page is saved first
-                    _domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
+                    _havePageToSave = false; //prevent us trying to save it later, as the page selection changes
                     _currentlyDisplayedBook.DuplicatePage(page, numberOfTimesToDuplicate);
                     // Book.DuplicatePage() updates the page list so we don't need to do it here.
                     // (See http://issues.bloomlibrary.org/youtrack/issue/BL-3715.)
@@ -373,7 +371,7 @@ namespace Bloom.Edit
                 }
 
                 _inProcessOfDeleting = true;
-                _domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
+                _havePageToSave = false; //prevent us trying to save it later, as the page selection changes
                 _currentlyDisplayedBook.DeletePage(page);
                 //_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                 Logger.WriteEvent("Delete Page");
@@ -751,7 +749,6 @@ namespace Bloom.Edit
 
         private void OnPageSelectionChangingInternal(object sender, EventArgs eventArgs)
         {
-            CheckForBL2634("start of page selection changing--should have old IDs");
             if (
                 _view != null
                 && !_inProcessOfDeleting
@@ -786,7 +783,7 @@ namespace Bloom.Edit
 
             if (_view != null)
             {
-                if (_previouslySelectedPage != null && _domForCurrentPage != null)
+                if (_previouslySelectedPage != null && _havePageToSave)
                 {
                     _view.UpdateThumbnailAsync(_previouslySelectedPage);
                 }
@@ -805,10 +802,6 @@ namespace Bloom.Edit
                 );
                 if (Visible)
                     RefreshDisplayOfCurrentPage();
-                else // prevent BL-13184 / BL-2634 (when changing tab too quickly)
-                    _domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(
-                        _pageSelection.CurrentSelection
-                    );
 
                 _duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
                 _deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
@@ -911,38 +904,51 @@ namespace Bloom.Edit
             return data;
         }
 
-        public void SetupServerWithCurrentPageIframeContents()
+        public static string GetEditPageIframeContents(Book.Book book, string pageId)
         {
-            _domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(
-                _pageSelection.CurrentSelection
+            var page = book.GetPages().FirstOrDefault(page => page.Id == pageId);
+            Guard.AgainstNull(page, "Could not find expected page");
+            return GetEditPageIframeContents(book, page);
+        }
+
+        public static string GetEditPageIframeContents(Book.Book book, IPage page)
+        {
+            return GetEditPageIframeDom(book, page).getHtmlStringDisplayOnly();
+        }
+
+        public static HtmlDom GetEditPageIframeDom(Book.Book book, IPage page)
+        {
+            var dom = book.GetEditableHtmlDomForPage(page);
+            AddMissingCopyrightNoticeIfNeeded(book, dom);
+            SetupPageZoom(dom);
+            book.InsertFullBleedMarkup(dom.Body);
+            XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
+            InsertLabelAndLayoutTogglePane(dom);
+            // We might want something like this? I think just for debugging?
+            // dom.Title = InMemoryHtmlFile.GetTitleForProcessExplorer(source) + " (InMemoryHtmlFile)"; // makes this show up in Windows Process Explorer WebView2 listing
+            return dom;
+        }
+
+        public void SaveStateForFullSaveDecision()
+        {
+            _pageDataBeforeEdits = GetPageData(
+                _pageSelection.CurrentSelection.GetDivNodeForThisPage()
             );
-            AddMissingCopyrightNoticeIfNeeded();
-            _pageDataBeforeEdits = GetPageData(_domForCurrentPage.RawDom);
             _featureRequirementsBeforeEdits = CurrentBook.OurHtmlDom.GetMetaValue(
                 "FeatureRequirement",
                 ""
             );
-            CheckForBL2634("setup");
-            SetupPageZoom();
-            CurrentBook.InsertFullBleedMarkup(_domForCurrentPage.Body);
-            XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
-            CheckForBL2634("made tags safe");
-            if (_currentPage != null)
-                _currentPage.Dispose();
-            InsertLabelAndLayoutTogglePane(_domForCurrentPage);
-            _currentPage = BloomServer.MakeInMemoryHtmlFileInBookFolder(_domForCurrentPage, true);
-            CheckForBL2634("made in memory page");
+            _havePageToSave = true;
         }
 
-        private void AddMissingCopyrightNoticeIfNeeded()
+        private static void AddMissingCopyrightNoticeIfNeeded(Book.Book book, HtmlDom dom)
         {
-            var licenseBlock = _domForCurrentPage
-                .SafeSelectNodes(".//div[@class='licenseBlock']")
+            var licenseBlock = dom.SafeSelectNodes(".//div[@class='licenseBlock']")
                 .Cast<XmlElement>()
                 .FirstOrDefault();
             if (licenseBlock == null)
                 return; // not the relevant page
-            var metadata = CurrentBook.GetLicenseMetadata();
+            var metadata = book.GetLicenseMetadata();
             // BL-10360 says that we don't want this notice for CC0, even if metadata is not complete.
             // But that situation is not currently possible through our UI, and further thought
             // suggests we want to know who says it is CC0. So commenting that aspect out.
@@ -1010,10 +1016,10 @@ namespace Bloom.Edit
         /// And https://issues.bloomlibrary.org/youtrack/issue/BL-11640 and
         /// https://issues.bloomlibrary.org/youtrack/issue/BL-12253.
         /// </remarks>
-        private void SetupPageZoom()
+        private static void SetupPageZoom(HtmlDom dom)
         {
-            var pageZoom = _view.Zoom / 100F;
-            var body = _domForCurrentPage.Body;
+            var pageZoom = EditingView.ZoomSetting / 100F;
+            var body = dom.Body;
             var pageDiv =
                 body.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]")
                 as XmlElement;
@@ -1036,10 +1042,9 @@ namespace Bloom.Edit
                     )
                 );
             }
-            CheckForBL2634("set page zoom");
         }
 
-        XmlElement InsertContainingScalingDiv(XmlElement body, XmlElement pageDiv)
+        static XmlElement InsertContainingScalingDiv(XmlElement body, XmlElement pageDiv)
         {
             // Note: because this extra div is OUTSIDE the page div, we don't have to remove it later,
             // because only the page div and its contents are saved back to the permanent file.
@@ -1050,20 +1055,12 @@ namespace Bloom.Edit
             return newDiv;
         }
 
-        /// <summary>
-        /// Return the DOM that represents the content of the current page.
-        /// Note that this is typically not the top-level thing displayed by the browser; rather, it is embedded in an
-        /// iframe.
-        /// </summary>
-        /// <returns></returns>
-        public HtmlDom GetXmlDocumentForCurrentPage()
-        {
-            return _domForCurrentPage;
-        }
-
         public string GetUrlForCurrentPage()
         {
-            return _currentPage.Key;
+            return BloomServer.UrlForCurrentBookPageEncodedForIframeSrc(
+                _bookSelection.CurrentSelection.FolderPath,
+                _pageSelection.CurrentSelection.Id
+            );
         }
 
         /// <summary>
@@ -1081,7 +1078,7 @@ namespace Bloom.Edit
             // See BloomServer.MakeInMemoryHtmlFileInBookFolder() for more details.
             var frameText = RobustFile
                 .ReadAllText(path, Encoding.UTF8)
-                .Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
+                .Replace("{simulatedPageFileInBookFolder}", GetUrlForCurrentPage());
             var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
             if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
@@ -1315,7 +1312,7 @@ namespace Bloom.Edit
 
         private void SaveNowInternal(bool forceFullSave = false)
         {
-            if (_domForCurrentPage != null && !InProcessOfSaving && !NavigatingSoSuspendSaving)
+            if (_havePageToSave && !InProcessOfSaving && !NavigatingSoSuspendSaving)
             {
                 Logger.WriteMinorEvent("EditingModel.SaveNow() starting");
 #if MEMORYCHECK
@@ -1343,10 +1340,15 @@ namespace Bloom.Edit
                         );
                         return;
                     }
-                    CheckForBL2634("beginning SaveNow");
                     InProcessOfSaving = true;
                     _tasksToDoAfterSaving.Clear();
-                    _view.CleanHtmlAndCopyToPageDom();
+                    var docFromBrowser = _view.GetCleanCurrentPageFromBrowser();
+                    if (docFromBrowser == null)
+                    {
+                        // nothing to save; since _havePageToSave is true, this is probably a bug
+                        Logger.WriteMinorEvent("EditingModel.SaveNow() found no page data to save");
+                        return;
+                    }
 
                     //BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
                     //this old code:
@@ -1388,15 +1390,13 @@ namespace Bloom.Edit
                         Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
                         throw err;
                     }
-                    CheckForBL2634("save");
                     //OK, looks safe, time to save.
-                    var newPageData = GetPageData(_domForCurrentPage.RawDom);
+                    var newPageData = GetPageData(docFromBrowser);
                     _pageSelection.CurrentSelection.Book.SavePage(
-                        _domForCurrentPage,
+                        HtmlDom.FromDoc(docFromBrowser),
                         forceFullSave || NeedToDoFullSave(newPageData)
                     );
                     _pageHasUnsavedDataDerivedChange = false;
-                    CheckForBL2634("finished save");
                     while (_tasksToDoAfterSaving.Count > 0)
                     {
                         var task = _tasksToDoAfterSaving[0];
@@ -1418,7 +1418,7 @@ namespace Bloom.Edit
             else
             {
                 Logger.WriteMinorEvent(
-                    $"EditingModel.SaveNow() called when InProcessOfSaving={_inProcessOfDeleting}, NavigatingSoSuspendSaving={NavigatingSoSuspendSaving}, _domForCurrentPage={_domForCurrentPage}"
+                    $"EditingModel.SaveNow() called when InProcessOfSaving={_inProcessOfDeleting}, NavigatingSoSuspendSaving={NavigatingSoSuspendSaving}"
                 );
             }
         }
@@ -1440,69 +1440,9 @@ namespace Bloom.Edit
                 || _featureRequirementsBeforeEdits != newFeatureRequirements;
         }
 
-        // One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
-        // to save is not in the book we're trying to save it into.
-        internal void CheckForBL2634(string when)
-        {
-            try
-            {
-                if (_pageSelection.CurrentSelection == null || _domForCurrentPage == null)
-                    return;
-                XmlElement divElement = _domForCurrentPage.SelectSingleNodeHonoringDefaultNS(
-                    "//div[contains(@class, 'bloom-page')]"
-                );
-                string pageDivId = divElement.GetAttribute("id");
-                if (pageDivId != _pageSelection.CurrentSelection.Id)
-                {
-                    // Several reports indicate that this occasionally and unrepeatably happens with various call stacks.
-                    // This code is aimed at finding out a little more about the circumstances.
-                    try
-                    {
-                        Logger.WriteEvent(
-                            "BL2634 failure: pageDiv is {0}",
-                            _domForCurrentPage.RawDom.OuterXml
-                        );
-                        Logger.WriteEvent(
-                            "BL2634 failure: selection div is {0}",
-                            _pageSelection.CurrentSelection.GetDivNodeForThisPage().OuterXml
-                        );
-                    }
-                    catch (Exception)
-                    {
-                        Logger.WriteEvent("Bl2634: failed to write XML of DOM and selection");
-                    }
-                    throw new ApplicationException(
-                        String.Format(
-                            "Bl-2634: at {2}, id of _domForCurrentPage ({0}) is not the same as ID of _pageSelection.CurrentSelection ({1})",
-                            pageDivId,
-                            _pageSelection.CurrentSelection.Id,
-                            when
-                        )
-                    );
-                }
-                // By comparing this with the stacks dumped when the check fails, we can hopefully tell whether the DOM or
-                // the Current Selection ID somehow changed, which may help partition the space we need to look in to
-                // solve the problem.
-                Logger.WriteMinorEvent(
-                    String.Format(
-                        "CheckForBl2634({0}: both ids are " + _pageSelection.CurrentSelection.Id,
-                        when
-                    )
-                );
-            }
-            catch (Exception err)
-            {
-                if (err.StackTrace.Contains("DeletePage"))
-                    Logger.WriteEvent("Trying to save a page while executing DeletePage");
-                Logger.WriteEvent("Error: SaveNow(): a mixup occurred in page IDs");
-                throw new ApplicationException("Check Inner Exception", err); //have to embed instead of just rethrow in order to preserve line number
-            }
-        }
-
         internal void RequestDefaultTranslationGroupContent(ApiRequest request)
         {
             string translationGroupHtml = TranslationGroupManager.GetDefaultTranslationGroupContent(
-                _domForCurrentPage.RawDom,
                 CurrentBook
             );
             request.ReplyWithHtml(translationGroupHtml);
