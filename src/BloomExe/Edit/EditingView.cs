@@ -472,8 +472,7 @@ namespace Bloom.Edit
                 _beginPageLoad = DateTime.Now;
                 _pageListView.SelectThumbnailWithoutSendingEvent(page);
                 _pageListView.UpdateThumbnailAsync(page);
-                _model.SetupServerWithCurrentPageIframeContents();
-                HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
+                _model.SaveStateForFullSaveDecision();
                 // A page can't be 'dirty' in the interval between when we start to navigate to it and when it's visible.
                 // (The previous page should have been fully saved before we begin such navigation, so we don't
                 // need to worry about losing changes there.)
@@ -505,7 +504,6 @@ namespace Bloom.Edit
                 )
                 {
                     // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
-                    _browser1.SetEditDom(domForCurrentPage);
                     if (ReloadCurrentPage())
                     {
                         Logger.WriteEvent("changing page via Navigate(\"CURRENTPAGE.htm\")");
@@ -530,12 +528,10 @@ namespace Bloom.Edit
                     var dom = _model.GetXmlDocumentForEditScreenWebPage();
                     _browser1.Navigate(
                         dom,
-                        domForCurrentPage,
                         setAsCurrentPageForDebugging: true,
                         source: InMemoryHtmlFileSource.Frame
                     );
                 }
-                _model.CheckForBL2634("navigated to page");
                 SetModalState(false); // ensure _pageListView is enabled (BL-9712).
             }
 #if MEMORYCHECK
@@ -1007,8 +1003,9 @@ namespace Bloom.Edit
 
         private XmlElement GetImageNode(int imgIndex)
         {
-            var containers = _model
-                .GetXmlDocumentForCurrentPage()
+            // Enhance: I'm hoping we can get rid of this method
+            var containers = EditingModel
+                .GetEditPageIframeDom(_model.CurrentBook, _model.CurrentPage)
                 .SafeSelectNodes("//div[contains(@class, 'bloom-imageContainer')]")
                 .Cast<XmlElement>();
             var container = containers.Skip(imgIndex).First();
@@ -1486,7 +1483,7 @@ namespace Bloom.Edit
         /// this started as an experiment, where our textareas were not being read when we saved because of the need
         /// to change the picture
         /// </summary>
-        public void CleanHtmlAndCopyToPageDom()
+        public XmlDocument CleanHtmlAndCopyToPageDom()
         {
             var script = @"editTabBundle.getEditablePageBundleExports().pageSelectionChanging();";
             var combinedData = _browser1.RunJavascriptThatPostsStringResultSync(script);
@@ -1501,7 +1498,7 @@ namespace Bloom.Edit
                     userCssContent = combinedData.Substring(endHtml + "<SPLIT-DATA>".Length);
                 }
             }
-            _browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
+            return _browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
         }
 
         private void _copyButton_Click(object sender, EventArgs e)
@@ -1907,8 +1904,10 @@ namespace Bloom.Edit
             RunJavascriptAsync("editTabBundle.showPageChooserDialog(true);");
         }
 
+        public int Zoom => EditingView.ZoomSetting;
+
         // The zoom factor that is shown in the top right of the toolbar (a percent).
-        public int Zoom
+        public static int ZoomSetting
         {
             // Whatever the user may have saved (e.g., from earlier use of ctrl-wheel), we'll make this an expected multiple-of-10 percent.
             get

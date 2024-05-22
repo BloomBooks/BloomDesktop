@@ -49,7 +49,6 @@ namespace Bloom
     public abstract class Browser : UserControl
     {
         internal Point ContextMenuLocation;
-        private XmlDocument _pageEditDom; // DOM, dypically in an iframe of _rootDom, which we are editing.
         private XmlDocument _rootDom; // root DOM we navigate the browser to; typically a shell with other doms in iframes
 
         // A temporary object needed just as long as it is the content of this browser.
@@ -122,7 +121,6 @@ namespace Bloom
         // to fake out the browser about where the 'file' is so internal references work.();
         public void Navigate(
             HtmlDom htmlDom,
-            HtmlDom htmlEditDom = null,
             bool setAsCurrentPageForDebugging = false,
             InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Nav
         )
@@ -130,9 +128,8 @@ namespace Bloom
             if (InvokeRequired)
             {
                 Invoke(
-                    new Action<HtmlDom, HtmlDom, bool, InMemoryHtmlFileSource>(Navigate),
+                    new Action<HtmlDom, bool, InMemoryHtmlFileSource>(Navigate),
                     htmlDom,
-                    htmlEditDom,
                     setAsCurrentPageForDebugging,
                     source
                 );
@@ -142,10 +139,8 @@ namespace Bloom
             EnsureBrowserReadyToNavigate();
 
             XmlDocument dom = htmlDom.RawDom;
-            XmlDocument editDom = htmlEditDom == null ? null : htmlEditDom.RawDom;
 
             _rootDom = dom; //.CloneNode(true); //clone because we want to modify it a bit
-            _pageEditDom = editDom ?? dom;
 
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
             var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(
@@ -288,12 +283,14 @@ namespace Bloom
             // intentionally letting any errors just escape, give us an error
         }
 
-        public void ReadEditableAreasNow(string bodyHtml, string userCssContent)
+        public XmlDocument ReadEditableAreasNow(string bodyHtml, string userCssContent)
         {
             if (Url != "about:blank")
             {
-                LoadPageDomFromBrowser(bodyHtml, userCssContent);
+                return LoadPageDomFromBrowser(bodyHtml, userCssContent);
             }
+
+            return null;
         }
 
         /// <summary>
@@ -302,11 +299,9 @@ namespace Bloom
         /// We're now obtaining the new content another way, so this code doesn't have any reason
         /// to be in this class...but we're aiming for a minimal change, maximal safety fix for 4.9
         /// </summary>
-        private void LoadPageDomFromBrowser(string bodyHtml, string userCssContent)
+        private XmlDocument LoadPageDomFromBrowser(string bodyHtml, string userCssContent)
         {
             Debug.Assert(!InvokeRequired);
-            if (_pageEditDom == null)
-                return;
 
             try
             {
@@ -315,7 +310,7 @@ namespace Bloom
                 // the page isn't fully enough loaded to expose the functions we use to get the
                 // content. In that case, the user can't have made changes, so not saving is fine.
                 if (string.IsNullOrEmpty(bodyHtml))
-                    return;
+                    return null;
 
                 var content = bodyHtml;
                 XmlDocument dom;
@@ -324,45 +319,36 @@ namespace Bloom
                 dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
                 var bodyDom = dom.SelectSingleNode("//body");
 
-                if (_pageEditDom == null)
-                    return;
-
-                var destinationDomPage = _pageEditDom.SelectSingleNode(
-                    "//body//div[contains(@class,'bloom-page')]"
-                );
-                if (destinationDomPage == null)
-                    return;
-                var expectedPageId = destinationDomPage.Attributes["id"].Value;
-
                 var browserDomPage = bodyDom.SelectSingleNode(
                     "//body//div[contains(@class,'bloom-page')]"
                 );
                 if (browserDomPage == null)
-                    return; //why? but I've seen it happen
-
-                var thisPageId = browserDomPage.Attributes["id"].Value;
-                if (expectedPageId != thisPageId)
-                {
-                    SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-                        LocalizationManager.GetString(
-                            "Browser.ProblemSaving",
-                            "There was a problem while saving. Please return to the previous page and make sure it looks correct."
-                        )
-                    );
-                    return;
-                }
+                    return null; //why? but I've seen it happen
 
                 // We've seen pages get emptied out, and we don't know why. This is a safety check.
                 // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
                 if (BookStorage.CheckForEmptyMarginBoxOnPage(browserDomPage as XmlElement))
                 {
                     // This has been logged and reported to the user. We don't want to save the empty page.
-                    return;
+                    return null;
                 }
 
-                _pageEditDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
-
-                SaveCustomizedCssRules(userCssContent);
+                SaveCustomizedCssRules(dom, userCssContent);
+                try
+                {
+                    XmlHtmlConverter.ThrowIfHtmlHasErrors(dom.OuterXml);
+                }
+                catch (Exception e)
+                {
+                    //var exceptionWithHtmlContents = new Exception(content);
+                    ErrorReport.NotifyUserOfProblem(
+                        e,
+                        "Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
+                        e.Message,
+                        Environment.NewLine
+                    );
+                }
+                return dom;
 
                 //enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
                 //				foreach (XmlElement j in _editDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
@@ -384,29 +370,15 @@ namespace Bloom
                 throw;
 #endif
             }
-
-            try
-            {
-                XmlHtmlConverter.ThrowIfHtmlHasErrors(_pageEditDom.OuterXml);
-            }
-            catch (Exception e)
-            {
-                //var exceptionWithHtmlContents = new Exception(content);
-                ErrorReport.NotifyUserOfProblem(
-                    e,
-                    "Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
-                    e.Message,
-                    Environment.NewLine
-                );
-            }
         }
 
-        private void SaveCustomizedCssRules(string userCssContent)
+        private void SaveCustomizedCssRules(XmlDocument dom, string userCssContent)
         {
             // Yes, this wipes out everything else in the head. At this point, the only things
             // we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
-            _pageEditDom.GetElementsByTagName("head")[0].InnerXml =
-                HtmlDom.CreateUserModifiedStyles(userCssContent);
+            dom.GetElementsByTagName("head")[0].InnerXml = HtmlDom.CreateUserModifiedStyles(
+                userCssContent
+            );
         }
 
         [Obsolete(
@@ -420,11 +392,6 @@ namespace Bloom
         public abstract void RunJavascriptFireAndForget(string script);
 
         public abstract void SaveHTML(string path);
-
-        public void SetEditDom(HtmlDom editDom)
-        {
-            _pageEditDom = editDom.RawDom;
-        }
 
         public abstract void SetEditingCommands(
             CutCommand cutCommand,
