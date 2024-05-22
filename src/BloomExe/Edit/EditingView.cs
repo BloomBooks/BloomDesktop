@@ -454,8 +454,7 @@ namespace Bloom.Edit
                 _beginPageLoad = DateTime.Now;
                 _pageListView.SelectThumbnailWithoutSendingEvent(page);
                 _pageListView.UpdateThumbnailAsync(page);
-                _model.SetupServerWithCurrentPageIframeContents();
-                HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
+                _model.SaveStateForFullSaveDecision();
                 // A page can't be 'dirty' in the interval between when we start to navigate to it and when it's visible.
                 // (The previous page should have been fully saved before we begin such navigation, so we don't
                 // need to worry about losing changes there.)
@@ -487,23 +486,11 @@ namespace Bloom.Edit
                 )
                 {
                     // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
-                    _browser1.SetEditDom(domForCurrentPage);
-                    if (ReloadCurrentPage())
-                    {
-                        Logger.WriteEvent("changing page via Navigate(\"CURRENTPAGE.htm\")");
-                        _browser1.Navigate(
-                            BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "CURRENTPAGE.htm",
-                            false
-                        );
-                    }
-                    else
-                    {
-                        Logger.WriteEvent("changing page via editTabBundle.switchContentPage()");
-                        var pageUrl = _model.GetUrlForCurrentPage();
-                        _browser1.RunJavascriptFireAndForget(
-                            "editTabBundle.switchContentPage('" + pageUrl + "');"
-                        );
-                    }
+                    Logger.WriteEvent("changing page via editTabBundle.switchContentPage()");
+                    var pageUrl = _model.GetUrlForCurrentPage();
+                    _browser1.RunJavascriptFireAndForget(
+                        "editTabBundle.switchContentPage('" + pageUrl + "');"
+                    );
                 }
                 else
                 {
@@ -512,12 +499,10 @@ namespace Bloom.Edit
                     var dom = _model.GetXmlDocumentForEditScreenWebPage();
                     _browser1.Navigate(
                         dom,
-                        domForCurrentPage,
                         setAsCurrentPageForDebugging: true,
                         source: InMemoryHtmlFileSource.Frame
                     );
                 }
-                _model.CheckForBL2634("navigated to page");
                 SetModalState(false); // ensure _pageListView is enabled (BL-9712).
             }
 #if MEMORYCHECK
@@ -546,9 +531,10 @@ namespace Bloom.Edit
         //
         // For 4.9 and 5.0 betas/releases, we set this to MemoryUtils.SystemIsShortOfMemory(),
         // but you can also set it to true so the full reload gets more testing (e.g. in alpha).
-        private bool ShouldDoFullReload() => MemoryUtils.SystemIsShortOfMemory();
+        private bool ShouldDoFullReload() =>
+            MemoryUtils.SystemIsShortOfMemory() || ForceFullReloadForDebugging();
 
-        private bool ReloadCurrentPage()
+        private bool ForceFullReloadForDebugging()
         {
             // Note that ModifierKeys does not seem to work on Linux.
             return ((ModifierKeys & Keys.Shift) == Keys.Shift)
@@ -1405,11 +1391,13 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// this started as an experiment, where our textareas were not being read when we saved because of the need
-        /// to change the picture
+        /// Read the current page from the browser, clean out stuff that is just UI and should not be saved,
+        /// and possibly other stuff not needed for saving changes to the page, and return it as an XmlDocument.
         /// </summary>
-        public void CleanHtmlAndCopyToPageDom()
+        public XmlDocument GetCleanCurrentPageFromBrowser()
         {
+            if (_browser1.Url == "about:blank")
+                return null; // too late, we can't get any page content
             var script = @"editTabBundle.getEditablePageBundleExports().pageSelectionChanging();";
             var combinedData = _browser1.RunJavascriptThatPostsStringResultSync(script);
             string bodyHtml = null;
@@ -1423,7 +1411,98 @@ namespace Bloom.Edit
                     userCssContent = combinedData.Substring(endHtml + "<SPLIT-DATA>".Length);
                 }
             }
-            _browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
+            return GetCleanCurrentPageFromBodyAndCss(bodyHtml, userCssContent);
+        }
+
+        /// <summary>
+        /// What's going on here: the browser is just editing/displaying a copy of one page of the document.
+        /// So we need to copy any changes back to the real DOM.
+        /// We're now obtaining the new content another way, so this code doesn't have any reason
+        /// to be in this class...but we're aiming for a minimal change, maximal safety fix for 4.9
+        /// </summary>
+        private XmlDocument GetCleanCurrentPageFromBodyAndCss(
+            string bodyHtml,
+            string userCssContent
+        )
+        {
+            Debug.Assert(!InvokeRequired);
+
+            try
+            {
+                // unlikely, but if we somehow couldn't get the new content, better keep the old.
+                // This MIGHT be able to happen in some cases of very fast page clicking, where
+                // the page isn't fully enough loaded to expose the functions we use to get the
+                // content. In that case, the user can't have made changes, so not saving is fine.
+                if (string.IsNullOrEmpty(bodyHtml))
+                    return null;
+
+                var content = bodyHtml;
+                XmlDocument dom;
+
+                //todo: deal with exception that can come out of this
+                dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
+                var bodyDom = dom.SelectSingleNode("//body");
+
+                var browserDomPage = bodyDom.SelectSingleNode(
+                    "//body//div[contains(@class,'bloom-page')]"
+                );
+                if (browserDomPage == null)
+                    return null; //why? but I've seen it happen
+
+                // We've seen pages get emptied out, and we don't know why. This is a safety check.
+                // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
+                if (BookStorage.CheckForEmptyMarginBoxOnPage(browserDomPage as XmlElement))
+                {
+                    // This has been logged and reported to the user. We don't want to save the empty page.
+                    return null;
+                }
+
+                SaveCustomizedCssRules(dom, userCssContent);
+                try
+                {
+                    XmlHtmlConverter.ThrowIfHtmlHasErrors(dom.OuterXml);
+                }
+                catch (Exception e)
+                {
+                    //var exceptionWithHtmlContents = new Exception(content);
+                    ErrorReport.NotifyUserOfProblem(
+                        e,
+                        "Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
+                        e.Message,
+                        Environment.NewLine
+                    );
+                }
+                return dom;
+
+                //enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
+                //				foreach (XmlElement j in _editDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
+                //				{
+                //					j.ParentNode.RemoveChild(j);
+                //				}
+                //				foreach (XmlAttribute j in _editDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
+                //				{
+                //					j.OwnerElement.RemoveAttributeNode(j);
+                //				}
+            }
+            catch (Exception e)
+            {
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+                Debug.Fail(
+                    "Debug Mode Only: Error while trying to read changes to CSSRules. In Release, this just gets swallowed. Will now re-throw the exception."
+                );
+#if DEBUG
+                throw;
+#endif
+            }
+        }
+
+        private void SaveCustomizedCssRules(XmlDocument dom, string userCssContent)
+        {
+            // Yes, this wipes out everything else in the head. At this point, the only things
+            // we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
+            dom.GetElementsByTagName("head")[0].InnerXml = HtmlDom.CreateUserModifiedStyles(
+                userCssContent
+            );
         }
 
         private void _copyButton_Click(object sender, EventArgs e)
@@ -1784,7 +1863,7 @@ namespace Bloom.Edit
         {
             Application.Idle -= SaveWhenIdle; // don't need to do again till next Deactivate.
             _model.SaveNow();
-            // Restore any tool state removed by CleanHtmlAndCopyToPageDom(), which is called by _model.SaveNow().
+            // Restore any tool state removed by GetCleanCurrentPageFromBrowser(), which is called by _model.SaveNow().
             RunJavascriptAsync(
                 "if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxBundleExports().applyToolboxStateToPage();}"
             );
@@ -1829,8 +1908,10 @@ namespace Bloom.Edit
             RunJavascriptAsync("editTabBundle.showPageChooserDialog(true);");
         }
 
+        public int Zoom => EditingView.ZoomSetting;
+
         // The zoom factor that is shown in the top right of the toolbar (a percent).
-        public int Zoom
+        public static int ZoomSetting
         {
             // Whatever the user may have saved (e.g., from earlier use of ctrl-wheel), we'll make this an expected multiple-of-10 percent.
             get

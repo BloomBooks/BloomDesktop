@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -389,6 +390,25 @@ namespace Bloom.Api
             }
         }
 
+        private static string UrlPrefixForCurrentBookPage(string bookFolderPath) =>
+            bookFolderPath.Replace("\\", "/") + "/page" + SimulatedFileUrlMarker;
+
+        public static string UrlForCurrentBookPage(string bookFolderPath, string pageId)
+        {
+            return (UrlPrefixForCurrentBookPage(bookFolderPath) + pageId + ".htm").ToLocalhost();
+        }
+
+        public static string UrlForCurrentBookPageEncodedForIframeSrc(
+            string bookFolderPath,
+            string pageId
+        )
+        {
+            var urlPath = UrlPathString.CreateFromUnencodedString(
+                UrlForCurrentBookPage(bookFolderPath, pageId)
+            );
+            return urlPath.UrlEncodedForHttpPath;
+        }
+
         // Every path should return false or send a response.
         // Otherwise we can get a timeout error as the browser waits for a response.
         //
@@ -481,7 +501,10 @@ namespace Bloom.Api
                     if (RobustFileExistsWithCaseCheck(cssFilePath))
                         localPath = cssFilePath;
                     else
-                        localPath = Path.Combine(BloomFileLocator.GetFolderContainingAppearanceThemeFiles(), "appearance-theme-default.css");
+                        localPath = Path.Combine(
+                            BloomFileLocator.GetFolderContainingAppearanceThemeFiles(),
+                            "appearance-theme-default.css"
+                        );
                 }
                 else
                 {
@@ -540,6 +563,23 @@ namespace Bloom.Api
             {
                 info.ResponseContentType = "text/html";
                 info.WriteCompleteOutput(content ?? "");
+                return true;
+            }
+
+            if (
+                CurrentBook?.FolderPath != null
+                && localPath.StartsWith(UrlPrefixForCurrentBookPage(CurrentBook.FolderPath))
+            )
+            {
+                var startIndex = UrlPrefixForCurrentBookPage(CurrentBook.FolderPath).Length;
+                var pageId = localPath.Substring(
+                    startIndex,
+                    localPath.Length - startIndex - ".htm".Length
+                );
+                info.ResponseContentType = "text/html";
+                info.WriteCompleteOutput(
+                    EditingModel.GetEditPageIframeContents(CurrentBook, pageId)
+                );
                 return true;
             }
 
