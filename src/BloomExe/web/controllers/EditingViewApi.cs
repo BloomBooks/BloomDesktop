@@ -338,7 +338,9 @@ namespace Bloom.web.controllers
 
         private void HandlePageDomLoaded(ApiRequest request)
         {
-            View.Model.HandlePageDomLoadedEvent(this, new EventArgs());
+            // we collect and pass on the pageId for bookkeeping purposes
+            var pageId = request.RequiredPostString();
+            View.Model.HandlePageDomLoadedEvent(pageId);
             request.PostSucceeded();
         }
 

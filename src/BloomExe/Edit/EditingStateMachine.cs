@@ -19,27 +19,14 @@ public class EditingStateMachine
     private State _currentState;
     private string _pageId;
     private Action<string> _navigate;
-    private Action _initiateSave;
-    private Action<
-        string /* pageId*/
-        ,
-        string /* contents */
-    > _savePage;
+    private Action<string /* pageId*/
+    > _requestPageSave;
 
-    public EditingStateMachine()
+    public EditingStateMachine(Action<string> navigate, Action<string> requestPageSave)
     {
         _currentState = State.NoPage;
-    }
-
-    public EditingStateMachine(
-        Action<string> navigate,
-        Action initiateSave,
-        Action<string, string> savePage
-    )
-    {
         this._navigate = navigate;
-        this._initiateSave = initiateSave;
-        this._savePage = savePage;
+        this._requestPageSave = requestPageSave;
     }
 
     public bool ToNoPage()
@@ -90,7 +77,7 @@ public class EditingStateMachine
                 {
                     LogTransition("navigating", pageId);
                     this._pageId = pageId;
-                    // todo: start navigating
+                    this._navigate(pageId);
                     return true;
                 }
             case State.Editing:
@@ -109,7 +96,7 @@ public class EditingStateMachine
         }
     }
 
-    // Called by api call which is invoked from page loaded event
+    // Called after we hear from the browser JS that the dom is finished loading
     public bool ToEditing(string pageId)
     {
         switch (_currentState)
@@ -144,7 +131,7 @@ public class EditingStateMachine
             case State.Editing:
                 this._postSaveAction = postSaveAction;
                 _currentState = State.SavePending;
-                // TODO: run Javascript to save the page
+                _requestPageSave(this._pageId);
                 LogTransition("savePending", null);
                 return true;
 
@@ -169,7 +156,10 @@ public class EditingStateMachine
             case State.SavePending:
                 _currentState = State.SavedAndStripped;
                 Guard.AgainstNull(this._postSaveAction, "postSaveAction");
-                this._savePage(this._pageId, pageContent);
+
+                // TODO should this save or the caller (editing model)
+
+                //                this._requestPageSave(this._pageId, pageContent);
                 this._postSaveAction(this._pageId);
                 this._postSaveAction = null;
                 LogTransition("saved and stripped", null);
@@ -203,10 +193,10 @@ public class EditingStateMachine
                 );
                 Guard.AgainstNull(postSaveAction, "postSaveAction");
                 // TODO: how does Delete() actually work
-                this._savePage(
-                    this._pageId,
-                    pageContentOrNull /* if we're deleting the page, this will be null */
-                );
+                //this._requestPageSave(
+                //    this._pageId,
+                //    pageContentOrNull /* if we're deleting the page, this will be null */
+                //);
                 this._postSaveAction(this._pageId);
                 LogTransition("saved and stripped", null);
                 return true;

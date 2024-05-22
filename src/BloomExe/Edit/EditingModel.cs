@@ -22,6 +22,7 @@ using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
+using Sentry.Protocol;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -86,6 +87,8 @@ namespace Bloom.Edit
 
         public delegate EditingModel Factory(); //autofac uses this
 
+        private EditingStateMachine _stateMachine;
+
         public EditingModel(
             BookSelection bookSelection,
             PageSelection pageSelection,
@@ -114,6 +117,29 @@ namespace Bloom.Edit
             _server = server;
             _webSocketServer = webSocketServer;
             _sourceCollectionsList = sourceCollectionsList;
+
+            _stateMachine = new EditingStateMachine(
+                // navigate,
+                (string pageId) =>
+                {
+                    // TODO: this is super minimal
+                    var url = BloomServer.UrlForCurrentBookPageEncodedForIframeSrc(
+                        _bookSelection.CurrentSelection.FolderPath,
+                        pageId
+                    );
+                    this._view.Browser.RunJavascriptFireAndForget(
+                        "editTabBundle.switchContentPage('" + pageId + "');"
+                    );
+                },
+                //requestPageSave,
+                (string pageId) =>
+                {
+                    // review; not using the pageId yet
+                    RequestBrowserToSave(
+                        true /* TODO forceFullSave */
+                    );
+                }
+            );
 
             bookSelection.SelectionChanged += OnBookSelectionChanged;
             pageSelection.SelectionChanged += OnPageSelectionChanged;
@@ -1792,9 +1818,10 @@ namespace Bloom.Edit
             return WidgetHelper.AddWidgetFilesToBookFolder(CurrentBook.FolderPath, fullWidgetPath);
         }
 
-        public void HandlePageDomLoadedEvent(object sender, EventArgs args)
+        public void HandlePageDomLoadedEvent(string pageId)
         {
-            NavigatingSoSuspendSaving = false;
+            this._stateMachine.ToEditing(pageId);
+            NavigatingSoSuspendSaving = false; // TODO remove
         }
 
         // This speeds up developing brandings. It may speed up other things, but I haven't tested those.
@@ -1914,6 +1941,64 @@ namespace Bloom.Edit
                 }
             }
             _weHaveSeenAJsonChange = false;
+        }
+
+        // called from the API
+        public void SavePageHtml(
+            string pageId,
+            string bodyHtml,
+            string userCssContent,
+            bool forceFullSave
+        )
+        {
+            // extract the page and convert it to xml
+            var dom = XmlHtmlConverter.GetXmlDomFromHtml(bodyHtml, false);
+            var bodyDom = dom.SelectSingleNode("//body");
+            var browserDomPage = bodyDom.SelectSingleNode(
+                "//body//div[contains(@class,'bloom-page')]"
+            );
+            var htmlDom = HtmlDom.FromXmlNodeNoClone(browserDomPage);
+
+            // stick the custom styles in the head
+            var styles = HtmlDom.CreateUserModifiedStyles(userCssContent);
+            var head = htmlDom.RawDom.SelectSingleNode("//head");
+            head.InnerXml = HtmlDom.CreateUserModifiedStyles(userCssContent);
+
+            // see if there were data-div changes which require a full save
+            var newPageData = GetPageData(browserDomPage);
+            var fullSave = forceFullSave || NeedToDoFullSave(newPageData);
+
+            // save it
+            _pageSelection.CurrentSelection.Book.SavePage(htmlDom, fullSave);
+            _pageHasUnsavedDataDerivedChange = false;
+
+            // TODO: reconcile this with the stateMachine's own _postSaveAction
+            // something to do with deleting?
+            while (_tasksToDoAfterSaving.Count > 0)
+            {
+                var task = _tasksToDoAfterSaving[0];
+                _tasksToDoAfterSaving.RemoveAt(0);
+                task();
+            }
+
+            _stateMachine.ToSavedAndStripped(pageId);
+        }
+
+        /*
+         * From JH's experiment.
+         * give something like this to the Statemachine?
+         *
+         */
+        private void RequestBrowserToSave(bool forceFullSave = false)
+        {
+            Logger.WriteMinorEvent("EditingModel.RequestSave() starting");
+            // show the saving message to the user
+            _webSocketServer.SendString("pageThumbnailList", "saving", "");
+            _tasksToDoAfterSaving.Clear(); // review
+            // review do we really need to be checking to see if things are loaded? If they are not, then there is nothing to save, and this doesn't thow.
+            var script =
+                $"console.log('saving'); editTabBundle.getToolboxBundleExports().removeToolboxMarkup();editTabBundle.getEditablePageBundleExports().saveRequested({forceFullSave.ToString().ToLowerInvariant()});";
+            _view.Browser.RunJavascriptAsync(script);
         }
     }
 }

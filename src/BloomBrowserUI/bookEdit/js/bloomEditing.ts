@@ -41,6 +41,7 @@ import {
     get,
     post,
     postBoolean,
+    postData,
     postString,
     postThatMightNavigate
 } from "../../utils/bloomApi";
@@ -337,9 +338,14 @@ function GetOverflowChecker() {
     return new OverflowChecker();
 }
 
-document.addEventListener("DOMContentLoaded", () =>
-    post("editView/pageDomLoaded")
-);
+function getPageId(): string {
+    const page = document.querySelector(".bloom-page");
+    if (!page) throw new Error("Could not find the div.bloom-page");
+    return page.getAttribute("id")!;
+}
+document.addEventListener("DOMContentLoaded", () => {
+    postData("editView/pageDomLoaded", getPageId());
+});
 
 // this is also called by the StyleEditor
 export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
