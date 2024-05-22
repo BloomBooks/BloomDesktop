@@ -1,0 +1,60 @@
+/* Below you find the settings of this custom Bloom design. This book only has custom designs for "Device 16x9 Landscape" and "Device 16x9 Portrait ebooks.   */
+
+/* The statement below hides the credits row from the Front page. It allows for a bigger picture.
+ * Simply delete this statement if you want the credits row back. */
+.frontCover .creditsRow {
+    --cover-creditsRow-show: none;
+}
+
+/* The text area is larger than normally allowed for the rounded-border-ebook theme. */
+
+[class*="Device16x9"].bloom-page {
+  --topLevel-text-padding-top: 0px;
+  --topLevel-text-padding-bottom: 0px;
+  --topLevel-text-padding-right: 0px;
+  --topLevel-text-padding-left: 2px;
+}
+
+/* The below statements control the size of the marginbox. It holds the text and
+ * picture of that page. */
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape  {
+  --page-margin-top: 1.5mm;
+  --page-margin-bottom: 4.5mm;
+  --page-margin-left: 1.5mm;
+  --page-margin-right: 4.5mm;
+}
+
+:not(.bloom-interactive-page).numberedPage.Device16x9Portrait  {
+  --page-margin-top: 4.5mm;
+  --page-margin-bottom: 4.5mm;
+  --page-margin-left: 3mm;
+  --page-margin-right: 3mm;
+}
+
+/* The below statement controls the space between the image and the title on the frontcover. */
+
+[class*="Device16x9"].frontCover .bloom-imageContainer {
+  order: 1;
+  flex: 1 1 auto;
+  margin-top: 1px !important;
+  margin-bottom: 1px;
+}
+
+/* The following two statements control the horizontal position of the page numbers */
+
+.Device16x9Portrait.numberedPage.side-left.side-left::after,
+.Device16x9Portrait.numberedPage.side-right.side-right::after {
+  --pageNumber-right-margin: var(--page-margin-left); /* page is symmetrical left-to-right */
+  --pageNumber-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
+  --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
+}
+
+/* The section below controls the pagenumber and the white circle around it.  */
+
+.Device16x9Portrait.numberedPage.numberedPage:not(.bloom-interactive-page)::after {
+  --pageNumber-top: var(--page-margin-top);
+  --pageNumber-bottom: unset;
+  --pageNumber-font-size: 10pt;
+  --pageNumber-display: inline-block;
+  --pageNumber-color: black;
+}
