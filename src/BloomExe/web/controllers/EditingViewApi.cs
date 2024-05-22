@@ -163,35 +163,37 @@ namespace Bloom.web.controllers
         private void HandlePasteImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            int imgIndex = (int)data.imgIndex;
-            View.OnPasteImage(imgIndex);
+            View.OnPasteImage(
+                data.imageId,
+                UrlPathString.CreateFromUrlEncodedString(data.imageSrc)
+            );
             request.PostSucceeded();
         }
 
         private void HandleCopyImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            int imgIndex = (int)data.imgIndex;
-            View.OnCopyImage(imgIndex);
+            View.OnCopyImage(UrlPathString.CreateFromUrlEncodedString(data.imageSrc));
             request.PostSucceeded();
         }
 
         private void HandleCutImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            int imgIndex = (int)data.imgIndex;
-            View.OnCutImage(imgIndex);
+            View.OnCutImage(data.imageId, UrlPathString.CreateFromUrlEncodedString(data.imageSrc));
             request.PostSucceeded();
         }
 
         private void HandleChangeImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            int imgIndex = (int)data.imgIndex;
             // We don't want to tie up server locks etc. while the dialog displays.
             MiscUtils.DoOnceOnIdle(() =>
             {
-                View.OnChangeImage(imgIndex);
+                View.OnChangeImage(
+                    data.imageId,
+                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc)
+                );
             });
             request.PostSucceeded();
         }

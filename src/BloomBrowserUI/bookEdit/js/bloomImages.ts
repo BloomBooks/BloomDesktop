@@ -12,6 +12,7 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import { theOneBubbleManager, updateOverlayClass } from "./bubbleManager";
 
 import { farthest } from "../../utils/elementUtils";
+import { EditableDivUtils } from "./editableDivUtils";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -195,6 +196,10 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
         return;
     }
     let img = getImgFromContainer(containerDiv);
+
+    // Enhance: remove this unused flexibility to put images as background-images on div.bloom-imageContainers.
+    // We still do it when making bloomPUBs, but that's a write-only operation (and we will retain the ability to migrate back).
+    // I (JH) think it is cognitively expensive to leave legacy cruft around.
     if (img.length === 0)
         // This case is probably a left over from some previous Bloom where
         // we were using background images instead of <img>? But it does
@@ -221,10 +226,15 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             if ((e as any).detail > 1) {
                 return;
             }
-            const imgIndex = Array.from(
-                document.getElementsByClassName("bloom-imageContainer")
-            ).indexOf($containerDiv.get(0));
-            postJson("editView/" + command + "Image", { imgIndex });
+            // get the image id attribute. If it doesn't have one, add it first
+            let imageId = img.attr("id");
+            const imageSrc = GetRawImageUrl(img);
+            if (!imageId) {
+                imageId = EditableDivUtils.createUuid();
+                img.attr("id", imageId);
+            }
+
+            postJson("editView/" + command + "Image", { imageId, imageSrc });
         });
     };
 

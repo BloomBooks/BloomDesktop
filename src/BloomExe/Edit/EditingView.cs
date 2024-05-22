@@ -748,11 +748,11 @@ namespace Bloom.Edit
             }
         }
 
-        public void OnCutImage(int imgIndex)
+        public void OnCutImage(string imageId, UrlPathString imageSrc)
         {
             var bookFolderPath = _model.CurrentBook.FolderPath;
 
-            if (CopyImageToClipboard(imgIndex, bookFolderPath)) // returns 'true' if successful
+            if (CopyImageToClipboard(imageSrc, bookFolderPath)) // returns 'true' if successful
             {
                 // Replace current image with placeHolder.png
                 // N.B. It is unnecessary to check for the existence of this file, since selecting a book in
@@ -761,26 +761,21 @@ namespace Bloom.Edit
                 var path = Path.Combine(bookFolderPath, "placeHolder.png");
                 using (var palasoImage = PalasoImage.FromFileRobustly(path))
                 {
-                    var imageElement = GetImageNode(imgIndex);
-                    _model.ChangePicture(imgIndex, imageElement, palasoImage, new NullProgress());
+                    _model.ChangePicture(imageId, imageSrc, palasoImage);
                 }
             }
         }
 
-        public void OnCopyImage(int imgIndex)
+        public void OnCopyImage(UrlPathString imageSrc)
         {
             // NB: bloomImages.js contains code that prevents us arriving here
             // if our image is simply the placeholder flower
 
-            CopyImageToClipboard(imgIndex, _model.CurrentBook.FolderPath);
+            CopyImageToClipboard(imageSrc, _model.CurrentBook.FolderPath);
         }
 
-        public void OnPasteImage(int imgIndex)
+        public void OnPasteImage(string imageId, UrlPathString priorImageSrc)
         {
-            // BL-11709: It's just possible that the element we are pasting into has not yet been saved,
-            // which will cause problems. So do a save before pasting.
-            _model.SaveNow();
-
             using (var measure = PerformanceMeasurement.Global.Measure("Paste Image"))
             {
                 PalasoImage clipboardImage = null;
@@ -813,9 +808,6 @@ namespace Bloom.Edit
                         return;
                     }
 
-                    var imageElement = GetImageNode(imgIndex);
-                    if (imageElement == null)
-                        return;
                     Cursor = Cursors.WaitCursor;
 
                     //nb: Taglib# requires an extension that matches the file content type.
@@ -827,12 +819,7 @@ namespace Bloom.Edit
                             "[Paste Image] Pasting jpeg image {0}",
                             clipboardImage.OriginalFilePath
                         );
-                        _model.ChangePicture(
-                            imgIndex,
-                            imageElement,
-                            clipboardImage,
-                            new NullProgress()
-                        );
+                        _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
                     }
                     else
                     {
@@ -842,12 +829,7 @@ namespace Bloom.Edit
                             Logger.WriteMinorEvent(
                                 "[Paste Image] Pasting image directly from clipboard (e.g. screenshot)"
                             );
-                            _model.ChangePicture(
-                                imgIndex,
-                                imageElement,
-                                clipboardImage,
-                                new NullProgress()
-                            );
+                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
                         }
                         //they pasted a path to a png
                         else if (
@@ -859,12 +841,7 @@ namespace Bloom.Edit
                                 "[Paste Image] Pasting png file {0}",
                                 clipboardImage.OriginalFilePath
                             );
-                            _model.ChangePicture(
-                                imgIndex,
-                                imageElement,
-                                clipboardImage,
-                                new NullProgress()
-                            );
+                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
                         }
                         else // they pasted a path to some other bitmap format
                         {
@@ -893,12 +870,7 @@ namespace Bloom.Edit
 
                                 using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
                                 {
-                                    _model.ChangePicture(
-                                        imgIndex,
-                                        imageElement,
-                                        palasoImage,
-                                        new NullProgress()
-                                    );
+                                    _model.ChangePicture(imageId, priorImageSrc, palasoImage);
                                 }
                             }
                         }
@@ -926,81 +898,58 @@ namespace Bloom.Edit
             return PortableClipboard.GetImageFromClipboard();
         }
 
-        private bool CopyImageToClipboard(int imgIndex, string bookFolderPath)
+        private bool CopyImageToClipboard(UrlPathString imageSrc, string bookFolderPath)
         {
-            var imageElement = GetImageNode(imgIndex);
-            if (imageElement != null)
+            var path = Path.Combine(bookFolderPath, imageSrc.PathOnly.NotEncoded);
+            try
             {
-                var url = HtmlDom.GetImageElementUrl(imageElement);
-                if (String.IsNullOrEmpty(url.PathOnly.NotEncoded))
-                    return false;
-
-                var path = Path.Combine(bookFolderPath, url.PathOnly.NotEncoded);
-                try
+                using (var image = PalasoImage.FromFileRobustly(path))
                 {
-                    using (var image = PalasoImage.FromFileRobustly(path))
-                    {
-                        PortableClipboard.CopyImageToClipboard(image);
-                    }
-                    return true;
+                    PortableClipboard.CopyImageToClipboard(image);
                 }
-                catch (NotImplementedException)
-                {
-                    var msg = LocalizationManager.GetDynamicString(
-                        "Bloom",
-                        "ImageToClipboard",
-                        "Copying an image to the clipboard is not yet implemented in Bloom for Linux.",
-                        "message for messagebox warning to user"
-                    );
-                    var header = LocalizationManager.GetDynamicString(
-                        "Bloom",
-                        "NotImplemented",
-                        "Not Yet Implemented",
-                        "header for messagebox warning to user"
-                    );
-                    MessageBox.Show(msg, header);
-                }
-                catch (ExternalException e)
-                {
-                    Logger.WriteEvent("CopyImageToClipboard -> ExternalException: " + e.Message);
-                    var msg =
-                        LocalizationManager.GetDynamicString(
-                            "Bloom",
-                            "EditTab.Image.CopyImageFailed",
-                            "Bloom had problems using your computer's clipboard. Some other program may be interfering."
-                        )
-                        + Environment.NewLine
-                        + Environment.NewLine
-                        + LocalizationManager.GetDynamicString(
-                            "Bloom",
-                            "EditTab.Image.TryRestart",
-                            "Try closing other programs and restart your computer if necessary."
-                        );
-                    MessageBox.Show(msg);
-                }
-                catch (Exception e)
-                {
-                    Debug.Fail(e.Message);
-                    Logger.WriteEvent("CopyImageToClipboard:" + e.Message);
-                }
+                return true;
             }
-            return false;
-        }
+            catch (NotImplementedException)
+            {
+                var msg = LocalizationManager.GetDynamicString(
+                    "Bloom",
+                    "ImageToClipboard",
+                    "Copying an image to the clipboard is not yet implemented in Bloom for Linux.",
+                    "message for messagebox warning to user"
+                );
+                var header = LocalizationManager.GetDynamicString(
+                    "Bloom",
+                    "NotImplemented",
+                    "Not Yet Implemented",
+                    "header for messagebox warning to user"
+                );
+                MessageBox.Show(msg, header);
+            }
+            catch (ExternalException e)
+            {
+                Logger.WriteEvent("CopyImageToClipboard -> ExternalException: " + e.Message);
+                var msg =
+                    LocalizationManager.GetDynamicString(
+                        "Bloom",
+                        "EditTab.Image.CopyImageFailed",
+                        "Bloom had problems using your computer's clipboard. Some other program may be interfering."
+                    )
+                    + Environment.NewLine
+                    + Environment.NewLine
+                    + LocalizationManager.GetDynamicString(
+                        "Bloom",
+                        "EditTab.Image.TryRestart",
+                        "Try closing other programs and restart your computer if necessary."
+                    );
+                MessageBox.Show(msg);
+            }
+            catch (Exception e)
+            {
+                Debug.Fail(e.Message);
+                Logger.WriteEvent("CopyImageToClipboard:" + e.Message);
+            }
 
-        private XmlElement GetImageNode(int imgIndex)
-        {
-            var containers = _model
-                .GetXmlDocumentForCurrentPage()
-                .SafeSelectNodes("//div[contains(@class, 'bloom-imageContainer')]")
-                .Cast<XmlElement>();
-            var container = containers.Skip(imgIndex).First();
-            var img =
-                container.ChildNodes
-                    .Cast<XmlNode>()
-                    .FirstOrDefault(x => x.Name.ToLowerInvariant() == "img") as XmlElement;
-            if (img == null)
-                return container;
-            return img;
+            return false;
         }
 
         /// <summary>
@@ -1025,31 +974,22 @@ namespace Bloom.Edit
             return true;
         }
 
-        public void OnChangeImage(int imgIndex)
+        public void OnChangeImage(string imageId, UrlPathString imageSrc)
         {
-            // Make sure any new image overlays on the page are saved, so our imgIndex will select the
-            // right one.
-            Model.SaveNow();
-
-            var imageElement = GetImageNode(imgIndex);
-            if (imageElement == null)
-                return;
-            string currentPath = HtmlDom.GetImageElementUrl(imageElement).PathOnly.NotEncoded;
-
-            if (!CheckIfLockedAndWarn(currentPath))
-                return;
-
             Cursor = Cursors.WaitCursor;
 
             var imageInfo = new PalasoImage();
             Image oldImage = null;
             var oldSize = new Size() { Height = 0, Width = 0 };
-            var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
+            var existingImagePath = Path.Combine(
+                _model.CurrentBook.FolderPath,
+                imageSrc.PathOnly.NotEncoded
+            );
             string newImagePath = null;
 
             //don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
             if (
-                !currentPath.ToLowerInvariant().Contains("placeholder")
+                !imageSrc.NotEncoded.ToLowerInvariant().Contains("placeholder")
                 && RobustFile.Exists(existingImagePath)
             )
             {
@@ -1235,7 +1175,7 @@ namespace Bloom.Edit
                                 dlg.ImageInfo.Save(newImagePath);
                             }
                             dlg.ImageInfo.SetCurrentFilePath(newImagePath);
-                            SaveChangedImage(imgIndex, imageElement, dlg.ImageInfo, exceptionMsg);
+                            SaveChangedImage(imageId, imageSrc, dlg.ImageInfo, exceptionMsg);
                         }
                         catch (Exception error)
                         {
@@ -1407,8 +1347,8 @@ namespace Bloom.Edit
         }
 
         public void SaveChangedImage(
-            int imgIndex,
-            XmlElement imageElement,
+            string imageId,
+            UrlPathString priorImageSrc,
             PalasoImage imageInfo,
             string exceptionMsg
         )
@@ -1417,7 +1357,7 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(imgIndex, imageElement, imageInfo, new NullProgress());
+                _model.ChangePicture(imageId, priorImageSrc, imageInfo);
             }
             catch (System.IO.IOException error)
             {

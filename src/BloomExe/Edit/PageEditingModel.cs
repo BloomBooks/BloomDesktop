@@ -10,85 +10,47 @@ using Bloom.web.controllers;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
+using static Bloom.Edit.PageEditingModel;
 using Application = System.Windows.Forms.Application;
 
 namespace Bloom.Edit
 {
-    public class PageEditingModel
+    // enhance: this is really just a single static method, so the file should be renamed
+    public static class PageEditingModel
     {
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="bookFolderPath"></param>
-        /// <param name="imgOrDivWithBackgroundImage">Can be an XmlElement (during testing)</param>
-        /// <param name="imageInfo"></param>
-        /// <param name="progress"></param>
-        public void ChangePicture(
-            string bookFolderPath,
-            XmlElement imgOrDivWithBackgroundImage,
-            PalasoImage imageInfo,
-            IProgress progress
-        )
+        // NB: don't rename any of this without also changing the javascript recipient
+        public class ImageInfoForJavascript
         {
-            var isSameFile = IsSameFilePath(
-                bookFolderPath,
-                HtmlDom.GetImageElementUrl(imgOrDivWithBackgroundImage),
-                imageInfo
-            );
-            var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(
-                imageInfo,
-                bookFolderPath,
-                isSameFile
-            );
-            HtmlDom.SetImageElementUrl(
-                imgOrDivWithBackgroundImage,
-                UrlPathString.CreateFromUnencodedString(imageFileName, true)
-            );
-            UpdateMetadataAttributesOnImage(imgOrDivWithBackgroundImage, imageInfo);
-            // It would seem more natural to use a metadata-saving method on imageInfo,
-            // but the imageInfo has the source file's path locked into it, and the API
-            // gives us no way to change it, so such a save would go to the wrong file.
-            imageInfo.Metadata.Write(Path.Combine(bookFolderPath, imageFileName));
+            public string imageId;
+            public string src;
+            public string copyright;
+            public string creator;
+            public string license;
         }
 
-        // Should eventually replace the above, so don't worry about duplication.
-        public void ChangePicture(
-            Browser browser,
+        public static ImageInfoForJavascript ChangePicture(
             string bookFolderPath,
-            int imgIndex,
-            XmlElement imgOrDivWithBackgroundImage,
-            PalasoImage imageInfo,
-            IProgress progress
+            string imageId,
+            UrlPathString priorImageSrc,
+            PalasoImage imageInfo
         )
         {
-            var isSameFile = IsSameFilePath(
-                bookFolderPath,
-                HtmlDom.GetImageElementUrl(imgOrDivWithBackgroundImage),
-                imageInfo
-            );
+            var isSameFile = IsSameFilePath(bookFolderPath, priorImageSrc, imageInfo);
             var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(
                 imageInfo,
                 bookFolderPath,
                 isSameFile
             );
             ImageUtils.SaveImageMetadata(imageInfo, Path.Combine(bookFolderPath, imageFileName));
-            // Ask Javascript code to update the live version of the page.
-            dynamic imageInfoForJavascript = new DynamicJson();
-            imageInfoForJavascript.imageIndex = imgIndex;
-            imageInfoForJavascript.src = UrlPathString
-                .CreateFromUnencodedString(imageFileName)
-                .UrlEncoded;
-            imageInfoForJavascript.copyright = imageInfo.Metadata.CopyrightNotice ?? "";
-            imageInfoForJavascript.creator = imageInfo.Metadata.Creator ?? "";
-            imageInfoForJavascript.license = imageInfo.Metadata.License?.ToString() ?? "";
 
-            // turn imageInfoForJavascript into a string
-            var s = imageInfoForJavascript.ToString();
-
-            // we don't need to wait. Even if our caller kicks off a save, its call to RunJavascriptAsync() will come in after ours.
-            browser.RunJavascriptAsync(
-                $"editTabBundle.getEditablePageBundleExports().changeImage({s})"
-            );
+            return new ImageInfoForJavascript()
+            {
+                imageId = imageId,
+                src = UrlPathString.CreateFromUnencodedString(imageFileName).UrlEncoded,
+                copyright = imageInfo.Metadata.CopyrightNotice ?? "",
+                creator = imageInfo.Metadata.Creator ?? "",
+                license = imageInfo.Metadata.License?.ToString() ?? ""
+            };
         }
 
         /// <summary>
@@ -103,7 +65,11 @@ namespace Bloom.Edit
         /// revised name.  We still need a tool to remove unused picture files from a
         /// book's folder.  (ie, BL-2351)
         /// </remarks>
-        private bool IsSameFilePath(string bookFolderPath, UrlPathString src, PalasoImage imageInfo)
+        private static bool IsSameFilePath(
+            string bookFolderPath,
+            UrlPathString src,
+            PalasoImage imageInfo
+        )
         {
             if (src != null)
             {
@@ -113,40 +79,5 @@ namespace Bloom.Edit
             }
             return false;
         }
-
-        public static void UpdateMetadataAttributesOnImage(
-            XmlElement imgOrDivWithBackgroundImage,
-            PalasoImage imageInfo
-        )
-        {
-            //see also Book.UpdateMetadataAttributesOnImage(), which does the same thing but on the document itself, not the browser dom
-            imgOrDivWithBackgroundImage.SetAttribute(
-                "data-copyright",
-                XmlString.FromUnencoded(imageInfo.Metadata.CopyrightNotice ?? "").Unencoded
-            );
-
-            imgOrDivWithBackgroundImage.SetAttribute(
-                "data-creator",
-                XmlString.FromUnencoded(imageInfo.Metadata.Creator ?? "").Unencoded
-            );
-
-            imgOrDivWithBackgroundImage.SetAttribute(
-                "data-license",
-                XmlString.FromUnencoded(imageInfo.Metadata.License?.ToString() ?? "").Unencoded
-            );
-        }
-
-        /*
-         * /// <summary>
-        /// NB: ideally, this would just be PreserveHtmlOfElement but for now, this actually only copies the @class over
-        /// </summary>
-        public void PreserveClassAttributeOfElement(XmlElement pageElement, string elementHtml)
-        {
-            XmlElement incoming = XmlHtmlConverter.GetXmlDomFromHtml(elementHtml, false).SelectSingleNode("//body").FirstChild as XmlElement;
-            string id = incoming.GetStringAttribute("id");
-            XmlElement elementToChange = pageElement.SelectSingleNode("//*[@id='" + id + "']") as XmlElement;
-            var newClassContent =  incoming.GetAttribute("class");
-            elementToChange.SetAttribute("class", newClassContent);
-        }*/
     }
 }
