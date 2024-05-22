@@ -531,7 +531,8 @@ namespace Bloom.Edit
         //
         // For 4.9 and 5.0 betas/releases, we set this to MemoryUtils.SystemIsShortOfMemory(),
         // but you can also set it to true so the full reload gets more testing (e.g. in alpha).
-        private bool ShouldDoFullReload() => MemoryUtils.SystemIsShortOfMemory();
+        private bool ShouldDoFullReload() =>
+            MemoryUtils.SystemIsShortOfMemory() || ForceFullReloadForDebugging();
 
         private bool UseBackgroundGC()
         {
