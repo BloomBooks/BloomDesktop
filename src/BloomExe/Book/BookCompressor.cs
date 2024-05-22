@@ -403,7 +403,7 @@ namespace Bloom.Book
             string srcPath,
             string dstPath,
             ImagePublishSettings imagePublishSettings,
-            bool needTransparentBackground
+            bool forUseOnColoredBackground
         )
         {
             using (var tagFile = RobustFileIO.CreateTaglibFile(srcPath))
@@ -423,7 +423,7 @@ namespace Bloom.Book
                         dstPath,
                         newSize,
                         false,
-                        needTransparentBackground,
+                        forUseOnColoredBackground,
                         tagFile
                     )
                 )
@@ -433,7 +433,7 @@ namespace Bloom.Book
             // This produces files with fixed quality of 75, which is not ideal, but it's better than nothing.
             var modifiedContent = BookCompressor.GetImageBytesForElectronicPub(
                 srcPath,
-                needTransparentBackground,
+                forUseOnColoredBackground,
                 imagePublishSettings
             );
             RobustFile.WriteAllBytes(dstPath, modifiedContent);
@@ -459,7 +459,7 @@ namespace Bloom.Book
         /// <returns>The bytes of the (possibly) adjusted image.</returns>
         internal static byte[] GetImageBytesForElectronicPub(
             string filePath,
-            bool needsTransparentBackground,
+            bool forUseOnColoredBackground,
             ImagePublishSettings imagePublishSettings
         )
         {
@@ -511,9 +511,8 @@ namespace Bloom.Book
                     imagePixelFormat = EnsureValidPixelFormat(imagePixelFormat);
 
                     // Making white pixels transparent for non-two-tone PNG files is not a good idea.  See BL-12570.
-                    var needTransparencyConversion =
-                        needsTransparentBackground
-                        && !appearsToBeJpeg
+                    var makeTransparent =
+                        forUseOnColoredBackground
                         && ImageUtils.ShouldMakeBackgroundTransparent(originalImage);
 
                     using (var newImage = new Bitmap(newWidth, newHeight, imagePixelFormat))
@@ -531,7 +530,7 @@ namespace Bloom.Book
                                 imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
 
                                 // In addition to possibly scaling, we want PNG images to have transparent backgrounds.
-                                if (needTransparencyConversion)
+                                if (makeTransparent)
                                 {
                                     // This specifies that all white or very-near-white pixels (all color components at least 253/255)
                                     // will be made transparent.
@@ -572,9 +571,7 @@ namespace Bloom.Book
                             if (!metadata.IsEmpty)
                                 metadata.Write(tempFile.Path);
                             var newBytes = RobustFile.ReadAllBytes(tempFile.Path);
-                            if (
-                                newBytes.Length < originalBytes.Length || needTransparencyConversion
-                            )
+                            if (newBytes.Length < originalBytes.Length || makeTransparent)
                                 return newBytes;
                         }
                     }
