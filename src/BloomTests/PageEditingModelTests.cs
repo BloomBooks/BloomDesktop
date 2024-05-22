@@ -35,7 +35,7 @@ namespace BloomTests
                     );
                     var pathToNewImage = dest.Combine("new.png");
                     Assert.IsTrue(File.Exists(pathToNewImage));
-                    Assert.That(result.Src, Is.EqualTo("new.png"));
+                    Assert.That(result.src, Is.EqualTo("new.png"));
                     var metadataFromImage = Metadata.FromFile(pathToNewImage);
                     Assert.That(metadataFromImage.Creator, Is.EqualTo(original.Metadata.Creator));
                 }
@@ -119,7 +119,7 @@ namespace BloomTests
                     original
                 );
                 Assert.IsTrue(File.Exists(dest.Combine("new.png")));
-                Assert.That(result.Src, Is.EqualTo("new.png"));
+                Assert.That(result.src, Is.EqualTo("new.png"));
                 using (var converted = Image.FromFile(dest.Combine("new.png")))
                 {
                     Assert.AreEqual(ImageFormat.Png.Guid, converted.RawFormat.Guid);
@@ -141,7 +141,7 @@ namespace BloomTests
                     original
                 );
                 Assert.IsTrue(File.Exists(dest.Combine("new.jpg")));
-                Assert.That(result.Src, Is.EqualTo("new.jpg"));
+                Assert.That(result.src, Is.EqualTo("new.jpg"));
                 using (var converted = Image.FromFile(dest.Combine("new.jpg")))
                 {
                     Assert.AreEqual(ImageFormat.Jpeg.Guid, converted.RawFormat.Guid);
