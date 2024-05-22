@@ -2056,6 +2056,42 @@ describe("audio recording tests", () => {
                 );
             });
 
+            it(`[${scenario}] disables highlight for &ZeroWidthSpace; (\u200B)`, () => {
+                const originalHtml =
+                    '<div id="box1" class="bloom-editable data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">T<em>hree\u200B \u200BEnd2.</em></span></p></div>';
+                SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
+                const box1 = getFrameElementById("page", "box1")!;
+
+                const recording = new AudioRecording();
+                recording.fixHighlighting(
+                    scenario === "Check" ? box1 : undefined
+                );
+
+                // Verification
+                expect(box1.innerHTML).toBeString(
+                    "<p>" +
+                        '<span id="span1" class="audio-sentence ui-audioCurrent ui-disableHighlight"><span class="ui-enableHighlight">T</span><em><span class="ui-enableHighlight">hree</span>\u200B \u200B<span class="ui-enableHighlight">End2.</span></em></span>' +
+                        "</p>"
+                );
+            });
+
+            it(`[${scenario}] disables highlight for complex html from real user`, () => {
+                SetupIFrameFromHtml(
+                    `<div id="page1">${getComplexHtmlFromUser()}</div>`
+                );
+                const box1 = getFrameElementById("page", "box1")!;
+
+                const recording = new AudioRecording();
+                recording.fixHighlighting(
+                    scenario === "Check" ? box1 : undefined
+                );
+
+                // Verification
+                expect(box1.innerHTML).toBeString(
+                    getExpectedResultForComplexHtmlFromUser()
+                );
+            });
+
             it(`[${scenario}] reverts fixHighlighting() in split text box.`, () => {
                 const originalHtml =
                     '<div id="box1" class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; End1.</span><span id="span2" class="bloom-highlightSegment">Three&nbsp;&nbsp; End2.</span><span id="span3" class="bloom-highlightSegment">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div>';
@@ -2206,4 +2242,31 @@ function replaceAll(input: string, pattern: string, replacement: string) {
 
 function escapeRegExp(regexPattern) {
     return regexPattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+}
+
+// Actually, when we got it (BL-13428), it was even worse. It had leftover enableHighlight and disableHighlight classes
+// which hadn't gotten cleaned up due to a bug.
+function getComplexHtmlFromUser() {
+    return `<div id="box1" class="bloom-editable normal-style bloom-content1 bloom-visibility-code-on" lang="es" style="min-height: 24px;" tabindex="0" spellcheck="false" role="textbox" aria-label="false" contenteditable="true" data-audiorecordingmode="Sentence" data-languagetipcontent="Spanish">
+    <p><strong><span style="color:#FFFFFF;">&nbsp; &nbsp; &nbsp;</span></strong></p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p><span id="i9da9787c-53f9-4e22-831a-9a427cd8b928" class="audio-sentence" recordingmd5="64aaf12b2d884f144a6708b77b4d61cc" data-duration="4.388571">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="color:#FFFFFF;">&nbsp; &nbsp; <strong>&nbsp;Mientras navegaban,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</strong></span><strong><span style="color:#FFFFFF;">Jesús se quedó&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></strong><strong><span style="color:#FFFFFF;">profundamente dormido.<span class="bloom-audio-split-marker"></span></span></strong></span></p>
+    <p><span id="i2bff1986-70df-4539-8fbd-be90babc9057" class="audio-sentence" recordingmd5="f9f36fe0a9162025c3a64a8a8bf703e5" data-duration="3.291429"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;​ ​&nbsp; &nbsp;​ <span style="color:#FFFFFF;">De pronto, una gran&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span></strong><strong><span style="color:#FFFFFF;">tormenta se desató.</span></strong></span><strong><span style="color:#FFFFFF;">&nbsp;</span></strong></p>
+</div>`;
+}
+function getExpectedResultForComplexHtmlFromUser() {
+    return `
+    <p><strong><span style="color:#FFFFFF;">&nbsp; &nbsp; &nbsp;</span></strong></p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p><span id="i9da9787c-53f9-4e22-831a-9a427cd8b928" class="audio-sentence ui-disableHighlight" recordingmd5="64aaf12b2d884f144a6708b77b4d61cc" data-duration="4.388571">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="color:#FFFFFF;">&nbsp; &nbsp; <strong><span class="ui-enableHighlight">&nbsp;Mientras navegaban,</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</strong></span><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight">Jesús se quedó</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></strong><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight">profundamente dormido.</span><span class="bloom-audio-split-marker"></span></span></strong></span></p>
+    <p><span id="i2bff1986-70df-4539-8fbd-be90babc9057" class="audio-sentence ui-disableHighlight" recordingmd5="f9f36fe0a9162025c3a64a8a8bf703e5" data-duration="3.291429"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;​ ​&nbsp; &nbsp;​ <span style="color:#FFFFFF;"><span class="ui-enableHighlight">De pronto, una gran</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span></strong><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight">tormenta se desató.</span></span></strong></span><strong><span style="color:#FFFFFF;">&nbsp;</span></strong></p>
+`;
 }
