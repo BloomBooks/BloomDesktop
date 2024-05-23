@@ -1471,13 +1471,17 @@ namespace Bloom.Edit
                         $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                     );
 
-                /* Right now, when we're trying to remove saves and simplify everytihng, we are
-                   leaving the thumbnail out-of-date until you change pages, just like we do when the user adds text.
-                   Enhance: Eventually when saving is less disruptive, we will bring it back.
-                              
-                    SaveNow();
-                    _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
-                */
+                /* We'd rather not SaveNow(), but it currently does two things:
+                 * 1) Makes it transparent if it should be:
+                 *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,
+                 *        so the check to see if we need to make it tranparent says "no".
+                 *        This could probably be done in a smarter way that isn't occuring to me at the moment.
+                 * 2) It is needed if we're going to update the thumbnail (we could live without this)
+                 */
+
+                SaveNow();
+                RefreshDisplayOfCurrentPage(); // this is needed because SaveNow() currently leaves us in a state stripped of UI
+                _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 
                 Logger.WriteMinorEvent("Finished ChangePicture {0}", (object)imageInfo.FileName);
                 Analytics.Track("Change Picture");
