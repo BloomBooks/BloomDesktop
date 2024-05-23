@@ -650,6 +650,11 @@ namespace Bloom.Book
             );
             ClearAwayDraftText(pageDiv);
             ClearAwayPageDescription(pageDiv);
+            // find any id attributes and replace them with new ids, because we cannot have two elements with the same id in a book
+            foreach (XmlElement element in pageDiv.SafeSelectNodes(".//*[@id]"))
+            {
+                element.SetAttribute("id", Guid.NewGuid().ToString());
+            }
         }
 
         /// <summary>
