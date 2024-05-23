@@ -53,7 +53,6 @@ namespace BloomTests.Book
                 storage,
                 templatefinder,
                 settings,
-                new PageSelection(),
                 new PageListChangedEvent(),
                 new BookRefreshEvent()
             );

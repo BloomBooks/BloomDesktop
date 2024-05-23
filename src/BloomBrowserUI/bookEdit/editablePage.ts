@@ -9,9 +9,18 @@ import "../lib/jquery.i18n.custom.ts"; //localize()
 import "errorHandler";
 import { theOneBubbleManager, BubbleManager } from "./js/bubbleManager";
 
+function getPageId(): string {
+    const page = document.querySelector(".bloom-page");
+    if (!page) throw new Error("Could not find the div.bloom-page");
+    return page.getAttribute("id")!;
+}
+document.addEventListener("DOMContentLoaded", () => {
+    postString("editView/pageDomLoaded", getPageId());
+});
+
 // This allows strong typing to be done for exported functions
 export interface IPageFrameExports {
-    pageSelectionChanging(): void;
+    requestPageContent(): void;
     pageUnloading(): void;
     copySelection(): void;
     cutSelection(): void;
@@ -37,10 +46,10 @@ export interface IPageFrameExports {
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, editTabBundle.getEditablePageBundleExports().pageSelectionChanging() can be called.
+// For example, editTabBundle.getEditablePageBundleExports().requestPageContent() can be called.
 import {
     getBodyContentForSavePage,
-    pageSelectionChanging,
+    requestPageContent,
     userStylesheetContent,
     pageUnloading,
     copySelection,
@@ -53,7 +62,7 @@ import {
 } from "./js/bloomEditing";
 export {
     getBodyContentForSavePage,
-    pageSelectionChanging,
+    requestPageContent,
     userStylesheetContent,
     pageUnloading,
     copySelection,
@@ -65,6 +74,7 @@ export {
     changeImage
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
+import { postString } from "../utils/bloomApi";
 export { origamiCanUndo, origamiUndo };
 
 const styleSheets = [

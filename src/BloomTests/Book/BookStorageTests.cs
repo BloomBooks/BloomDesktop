@@ -1402,7 +1402,6 @@ namespace BloomTests.Book
                 storage,
                 new Mock<ITemplateFinder>().Object,
                 collectionSettings,
-                new Mock<PageSelection>().Object,
                 new PageListChangedEvent(),
                 new BookRefreshEvent()
             );
@@ -1452,7 +1451,6 @@ namespace BloomTests.Book
                 storage,
                 new Mock<ITemplateFinder>().Object,
                 collectionSettings,
-                new Mock<PageSelection>().Object,
                 new PageListChangedEvent(),
                 new BookRefreshEvent()
             );

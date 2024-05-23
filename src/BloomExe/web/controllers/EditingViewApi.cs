@@ -41,6 +41,17 @@ namespace Bloom.web.controllers
                 HandleSaveToolboxSetting,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/pageContent",
+                request =>
+                {
+                    var htmlAndUserStyles = request.RequiredPostString();
+                    View.Model.ReceivePageContent(htmlAndUserStyles);
+                    request.PostSucceeded();
+                },
+                true,
+                true // review.
+            );
             apiHandler.RegisterEndpointLegacy("editView/setTopic", HandleSetTopic, true);
             apiHandler.RegisterEndpointLegacy(
                 "editView/isTextSelected",

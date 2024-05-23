@@ -348,11 +348,17 @@ namespace Bloom.Edit
                 WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
                 return;
             }
-            Model.SaveNow();
-            var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
-            RelocatePageEvent.Raise(relocatePageInfo);
-            UpdateItems(movedPage.Book.GetPages());
-            PageSelectedChanged(movedPage, new EventArgs());
+            Model.SaveThen(
+                () =>
+                {
+                    var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
+                    RelocatePageEvent.Raise(relocatePageInfo);
+                    UpdateItems(movedPage.Book.GetPages());
+                    PageSelectedChanged(movedPage, new EventArgs());
+                    return movedPage.Id;
+                },
+                forceFullSave: true
+            );
         }
 
         public void UpdateThumbnailAsync(IPage page)

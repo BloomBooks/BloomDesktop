@@ -428,12 +428,18 @@ namespace Bloom.Edit
 
         DateTime _beginPageLoad;
 
-        public void UpdateSingleDisplayedPage(IPage page, bool changingUiLanguage = false)
+        public void NextReloadChangesUiLanguage()
+        {
+            _changingUiLanguage = true;
+        }
+
+        public void GoToPage(IPage page, bool changingUiLanguage = false)
         {
             if (!_model.Visible)
             {
                 return;
             }
+            _changingUiLanguage |= changingUiLanguage;
 
 #if MEMORYCHECK
             // Check memory for the benefit of developers.
@@ -445,80 +451,82 @@ namespace Bloom.Edit
 #endif
             if (_model.HaveCurrentEditableBook)
             {
-                if (_model.InProcessOfSaving)
+                _beginPageLoad = DateTime.Now;
+                if (!_model.StateMachine.ToNavigating(page.Id))
                 {
                     throw new ApplicationException(
-                        "UpdateSingleDisplayedPage called while still in the process of saving a page. Changes to the page may not get saved. Please report and connect to BL-13120."
+                        "GotoPage called while not in a valid state. Changes to the page may not get saved. Please report and connect to BL-13120."
                     );
                 }
-                _beginPageLoad = DateTime.Now;
-                _pageListView.SelectThumbnailWithoutSendingEvent(page);
-                _pageListView.UpdateThumbnailAsync(page);
-                _model.SaveStateForFullSaveDecision();
-                // A page can't be 'dirty' in the interval between when we start to navigate to it and when it's visible.
-                // (The previous page should have been fully saved before we begin such navigation, so we don't
-                // need to worry about losing changes there.)
-                // So we don't want anything trying to save it during that time. Apart from wasting time, such a save
-                // might fail (BL-2634, BL-6296) if the new page is not yet loaded enough to have the right ID.
-                // To detect that the page IS loaded, we're looking for a notification from Javascript
-                // code (which detects that the page has first loaded and then been painted).
-                // We only get one notification per call to this function, so we need
-                // to set it up again each time we load a page. It's important to set it up before we start
-                // navigation; otherwise, we might miss the event and never enable saving for this page.
-                _model.NavigatingSoSuspendSaving = true;
-                // The following comment applies to GeckoFx. The logic described has moved into GeckoFxBrowser.
-                // Hopefully the WebView2 DocumentCompleted is more reliable and it won't be needed there.
-                // Unfortunately this comment isn't easily modifiable for the new context, so I'm leaving it here for now.
-                // So far, the most reliable way I've found to detect that the page is fully loaded and we can call
-                // initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
-                // This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
-                // being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
-                // but still, we never get one where the ready state is completed. This page just stays 'interactive'.
-                // A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
-                // has actually loaded. If you try that, be careful...this function seems to be used in cases where that
-                // never happens.
-                // Do this before we change the src of the iframe to make sure we're ready when the document-completed arrives.
-                _browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
-                if (
-                    _model.AreToolboxAndOuterFrameCurrent()
-                    && !changingUiLanguage
-                    && !ShouldDoFullReload()
-                )
-                {
-                    // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
-                    Logger.WriteEvent("changing page via editTabBundle.switchContentPage()");
-                    var pageUrl = _model.GetUrlForCurrentPage();
-                    _browser1.RunJavascriptFireAndForget(
-                        "editTabBundle.switchContentPage('" + pageUrl + "');"
-                    );
-                }
-                else
-                {
-                    // Set everything up and navigate the top browser to a new root document.
-                    _model.SetupServerWithCurrentBookToolboxContents();
-                    var dom = _model.GetXmlDocumentForEditScreenWebPage();
-                    _browser1.Navigate(
-                        dom,
-                        setAsCurrentPageForDebugging: true,
-                        source: InMemoryHtmlFileSource.Frame
-                    );
-                }
-                SetModalState(false); // ensure _pageListView is enabled (BL-9712).
             }
+        }
+
+        private bool _changingUiLanguage = false; // review: should this be part of the state machine state?
+
+        /// <summary>
+        /// This is the View part of what happens when the state machine determines that we should navigate
+        /// to a particular page (possibly the one we're on after it was saved and stripped).
+        /// Internal as a hint that it should only be called in that one way. To goto a particular page
+        /// with appropriate state changes and checks, call GoToPage.
+        /// </summary>
+        internal void StartNavigationToEditPage(IPage page)
+        {
+            _pageListView.SelectThumbnailWithoutSendingEvent(page);
+            _pageListView.UpdateThumbnailAsync(page);
+            _model.SaveStateForFullSaveDecision();
+            // The following comment applies to GeckoFx. The logic described has moved into GeckoFxBrowser.
+            // Hopefully the WebView2 DocumentCompleted is more reliable and it won't be needed there.
+            // Unfortunately this comment isn't easily modifiable for the new context, so I'm leaving it here for now.
+            // So far, the most reliable way I've found to detect that the page is fully loaded and we can call
+            // initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
+            // This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
+            // being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
+            // but still, we never get one where the ready state is completed. This page just stays 'interactive'.
+            // A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
+            // has actually loaded. If you try that, be careful...this function seems to be used in cases where that
+            // never happens.
+            // Do this before we change the src of the iframe to make sure we're ready when the document-completed arrives.
+            _browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
+            if (
+                _model.AreToolboxAndOuterFrameCurrent()
+                && !_changingUiLanguage
+                && !ShouldDoFullReload()
+            )
+            {
+                // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
+                Logger.WriteEvent("changing page via editTabBundle.switchContentPage()");
+                var pageUrl = _model.GetUrlForCurrentPage();
+                _browser1.RunJavascriptFireAndForget(
+                    "editTabBundle.switchContentPage('" + pageUrl + "');"
+                );
+            }
+            else
+            {
+                // Set everything up and navigate the top browser to a new root document.
+                _model.SetupServerWithCurrentBookToolboxContents();
+                var dom = _model.GetXmlDocumentForEditScreenWebPage();
+                _browser1.Navigate(
+                    dom,
+                    setAsCurrentPageForDebugging: true,
+                    source: InMemoryHtmlFileSource.Frame
+                );
+            }
+            SetModalState(false); // ensure _pageListView is enabled (BL-9712).
 #if MEMORYCHECK
             // Check memory for the benefit of developers.
             Bloom.Utils.MemoryManagement.CheckMemory(
                 false,
-                "EditingView - UpdateSingleDisplayedPage() about to call UpdateDisplay()",
+                "EditingView - StartNavigationToEditPage() about to call UpdateDisplay()",
                 false
             );
 #endif
+            _changingUiLanguage = false; // we've done a top-level navigate if this required it.
             UpdateDisplay();
 #if MEMORYCHECK
             // Check memory for the benefit of developers.
             Bloom.Utils.MemoryManagement.CheckMemory(
                 false,
-                "EditingView - UpdateSingleDisplayedPage() finished",
+                "EditingView - StartNavigationToEditPage() finished",
                 false
             );
 #endif
@@ -531,8 +539,7 @@ namespace Bloom.Edit
         //
         // For 4.9 and 5.0 betas/releases, we set this to MemoryUtils.SystemIsShortOfMemory(),
         // but you can also set it to true so the full reload gets more testing (e.g. in alpha).
-        private bool ShouldDoFullReload() =>
-            MemoryUtils.SystemIsShortOfMemory() || ForceFullReloadForDebugging();
+        private bool ShouldDoFullReload() => MemoryUtils.SystemIsShortOfMemory();
 
         private bool UseBackgroundGC()
         {
@@ -1383,121 +1390,6 @@ namespace Bloom.Edit
             _pageListView.UpdateAllThumbnails();
         }
 
-        /// <summary>
-        /// Read the current page from the browser, clean out stuff that is just UI and should not be saved,
-        /// and possibly other stuff not needed for saving changes to the page, and return it as an XmlDocument.
-        /// </summary>
-        public XmlDocument GetCleanCurrentPageFromBrowser()
-        {
-            if (_browser1.Url == "about:blank")
-                return null; // too late, we can't get any page content
-            var script = @"editTabBundle.getEditablePageBundleExports().pageSelectionChanging();";
-            var combinedData = _browser1.RunJavascriptThatPostsStringResultSync(script);
-            string bodyHtml = null;
-            string userCssContent = null;
-            if (combinedData != null)
-            {
-                var endHtml = combinedData.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
-                if (endHtml > 0)
-                {
-                    bodyHtml = combinedData.Substring(0, endHtml);
-                    userCssContent = combinedData.Substring(endHtml + "<SPLIT-DATA>".Length);
-                }
-            }
-            return GetCleanCurrentPageFromBodyAndCss(bodyHtml, userCssContent);
-        }
-
-        /// <summary>
-        /// What's going on here: the browser is just editing/displaying a copy of one page of the document.
-        /// So we need to copy any changes back to the real DOM.
-        /// We're now obtaining the new content another way, so this code doesn't have any reason
-        /// to be in this class...but we're aiming for a minimal change, maximal safety fix for 4.9
-        /// </summary>
-        private XmlDocument GetCleanCurrentPageFromBodyAndCss(
-            string bodyHtml,
-            string userCssContent
-        )
-        {
-            Debug.Assert(!InvokeRequired);
-
-            try
-            {
-                // unlikely, but if we somehow couldn't get the new content, better keep the old.
-                // This MIGHT be able to happen in some cases of very fast page clicking, where
-                // the page isn't fully enough loaded to expose the functions we use to get the
-                // content. In that case, the user can't have made changes, so not saving is fine.
-                if (string.IsNullOrEmpty(bodyHtml))
-                    return null;
-
-                var content = bodyHtml;
-                XmlDocument dom;
-
-                //todo: deal with exception that can come out of this
-                dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
-                var bodyDom = dom.SelectSingleNode("//body");
-
-                var browserDomPage = bodyDom.SelectSingleNode(
-                    "//body//div[contains(@class,'bloom-page')]"
-                );
-                if (browserDomPage == null)
-                    return null; //why? but I've seen it happen
-
-                // We've seen pages get emptied out, and we don't know why. This is a safety check.
-                // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
-                if (BookStorage.CheckForEmptyMarginBoxOnPage(browserDomPage as XmlElement))
-                {
-                    // This has been logged and reported to the user. We don't want to save the empty page.
-                    return null;
-                }
-
-                SaveCustomizedCssRules(dom, userCssContent);
-                try
-                {
-                    XmlHtmlConverter.ThrowIfHtmlHasErrors(dom.OuterXml);
-                }
-                catch (Exception e)
-                {
-                    //var exceptionWithHtmlContents = new Exception(content);
-                    ErrorReport.NotifyUserOfProblem(
-                        e,
-                        "Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
-                        e.Message,
-                        Environment.NewLine
-                    );
-                }
-                return dom;
-
-                //enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
-                //				foreach (XmlElement j in _editDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
-                //				{
-                //					j.ParentNode.RemoveChild(j);
-                //				}
-                //				foreach (XmlAttribute j in _editDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
-                //				{
-                //					j.OwnerElement.RemoveAttributeNode(j);
-                //				}
-            }
-            catch (Exception e)
-            {
-                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-                Debug.Fail(
-                    "Debug Mode Only: Error while trying to read changes to CSSRules. In Release, this just gets swallowed. Will now re-throw the exception."
-                );
-#if DEBUG
-                throw;
-#endif
-            }
-        }
-
-        private void SaveCustomizedCssRules(XmlDocument dom, string userCssContent)
-        {
-            // Yes, this wipes out everything else in the head. At this point, the only things
-            // we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
-            dom.GetElementsByTagName("head")[0].InnerXml = HtmlDom.CreateUserModifiedStyles(
-                userCssContent
-            );
-        }
-
         private void _copyButton_Click(object sender, EventArgs e)
         {
             ExecuteCommandSafely(_copyCommand);
@@ -1852,16 +1744,6 @@ namespace Bloom.Edit
             }
         }
 
-        private void SaveWhenIdle(object o, EventArgs eventArgs)
-        {
-            Application.Idle -= SaveWhenIdle; // don't need to do again till next Deactivate.
-            _model.SaveNow();
-            // Restore any tool state removed by GetCleanCurrentPageFromBrowser(), which is called by _model.SaveNow().
-            RunJavascriptAsync(
-                "if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxBundleExports().applyToolboxStateToPage();}"
-            );
-        }
-
         public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
 
         /// <summary>
@@ -2105,11 +1987,13 @@ namespace Bloom.Edit
 
         private void _bookSettingsButton_Click(object sender, EventArgs e)
         {
-            _model.SaveNow();
-
-            // Open the book settings dialog to the context-specific group.
-            var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
-            RunJavascriptAsync($"editTabBundle.showEditViewBookSettingsDialog({groupIndex});");
+            _model.SaveThen(() =>
+            {
+                // Open the book settings dialog to the context-specific group.
+                var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
+                RunJavascriptAsync($"editTabBundle.showEditViewBookSettingsDialog({groupIndex});");
+                return _model.CurrentPage.Id;
+            });
         }
 
         // This is temporary code we added in 6.0 when trying to determine why we are sometimes losing

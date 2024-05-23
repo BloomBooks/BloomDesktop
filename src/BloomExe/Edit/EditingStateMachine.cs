@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using SIL.Code;
 
+// The states that EditingModel can be in
 // Diagram: https://www.tldraw.com/r/WDLCDLfNbcDZW1kSXZVli?v=-441,-130,2813,1522&p=page
 public enum State
 {
@@ -9,12 +10,22 @@ public enum State
     Navigating,
     Editing,
     SavePending,
+
+    // The page has been saved; in the process, we stripped various UI elements from it,
+    // so it's not in a valid state for editing. We hope to fix this one day (BL-13502).
+    // In the meantime, to make sure we don't forget to load up some page in a valid state,
+    // the action that always goes along with a switch to this state returns the ID of a page we
+    // should navigate to next.
     SavedAndStripped
 }
 
+/// <summary>
+/// A state machine to help us reason about the possible states of the editing model,
+/// manage the valid transitions between them, and ensure that we don't attempt invalid ones.
+/// </summary>
 public class EditingStateMachine
 {
-    private Action<string /* pageId*/
+    private Func<string /* pageId*/
     > _postSaveAction;
     private State _currentState;
     private string _pageId;
@@ -22,13 +33,35 @@ public class EditingStateMachine
     private Action<string /* pageId*/
     > _requestPageSave;
 
-    public EditingStateMachine(Action<string> navigate, Action<string> requestPageSave)
+    // pageId, htmlAndUserStyles
+    private Action<string, string> _updateBookWithPageContents;
+    private Action _saveBook;
+    private bool _saveActionHandlesSaveBook;
+
+    /// <summary>
+    /// Set up a state machine. It must be passed four actions:
+    /// </summary>
+    /// <param name="navigate">Called to start navigation to another (or the same) page. String is page ID.</param>
+    /// <param name="requestPageSave">Called to initiate getting the page contents. String is page ID.</param>
+    /// <param name="updateBookWithPageContents">Called with page ID and htmlAndUserStyles data to update the main DOM with current page content</param>
+    /// <param name="saveBook">Called to save the current state of the DOM to disk.</param>
+    public EditingStateMachine(
+        Action<string> navigate,
+        Action<string> requestPageSave,
+        Action<string, string> updateBookWithPageContents,
+        Action saveBook
+    )
     {
         _currentState = State.NoPage;
-        this._navigate = navigate;
-        this._requestPageSave = requestPageSave;
+        _navigate = navigate;
+        _requestPageSave = requestPageSave;
+        _updateBookWithPageContents = updateBookWithPageContents;
+        _saveBook = saveBook;
     }
 
+    /// <summary>
+    /// Go to the state where we have no page loaded (switching to another tab).
+    /// </summary>
     public bool ToNoPage()
     {
         switch (_currentState)
@@ -58,26 +91,37 @@ public class EditingStateMachine
         }
     }
 
+    /// <summary>
+    /// True if we are in the process of navigating to a new page.
+    /// </summary>
+    public bool Navigating => _currentState == State.Navigating;
+
+    /// <summary>
+    /// True if we have initiated saving a page, but not yet received the html and user styles
+    /// from the browser.
+    /// </summary>
+    public bool SavePending => _currentState == State.SavePending;
+
+    /// <summary>
+    /// Called to initiate navigation to a new page (or the same one again).
+    /// Should not be called when there are unsaved (or incompletely saved) changes.
+    /// </summary>
     public bool ToNavigating(string pageId)
     {
         switch (_currentState)
         {
             case State.NoPage:
-                _currentState = State.Navigating;
-                // todo: start navigating
-                LogTransition("navigating", pageId);
+                StartNavigating(pageId);
                 return true;
             case State.Navigating:
-                if (this._pageId == pageId)
+                if (_pageId == pageId)
                 {
                     LogIgnore("navigate");
                     return true; // we're already headed there
                 }
                 else
                 {
-                    LogTransition("navigating", pageId);
-                    this._pageId = pageId;
-                    this._navigate(pageId);
+                    StartNavigating(pageId);
                     return true;
                 }
             case State.Editing:
@@ -87,7 +131,7 @@ public class EditingStateMachine
                 LogIgnore("navigate");
                 return false;
             case State.SavedAndStripped:
-                LogTransition("navigating", pageId);
+                StartNavigating(pageId);
                 return true;
             default:
                 throw new InvalidOperationException(
@@ -96,16 +140,26 @@ public class EditingStateMachine
         }
     }
 
-    // Called after we hear from the browser JS that the dom is finished loading
+    private void StartNavigating(string pageId)
+    {
+        LogTransition("navigating", pageId);
+        _currentState = State.Navigating;
+        _pageId = pageId;
+        _navigate(pageId);
+    }
+
+    /// <summary>
+    /// Called after we hear from the browser JS that the dom is finished loading
+    /// </summary>
     public bool ToEditing(string pageId)
     {
         switch (_currentState)
         {
             case State.Navigating:
-                if (this._pageId == pageId)
+                if (_pageId == pageId)
                 {
-                    _currentState = State.Editing;
                     LogTransition("editing", pageId);
+                    _currentState = State.Editing;
                     return true;
                 }
                 else
@@ -119,20 +173,47 @@ public class EditingStateMachine
         }
     }
 
-    public bool ToSavePending(Action<string> postSaveAction)
+    private void DoPostSaveAction(string htmlAndUserStyles, Func<string> postSaveAction)
+    {
+        if (htmlAndUserStyles != null)
+            _updateBookWithPageContents(_pageId, htmlAndUserStyles);
+        var pageId = postSaveAction();
+        if (_saveActionHandlesSaveBook)
+        {
+            _saveActionHandlesSaveBook = false;
+        }
+        else
+        {
+            _saveBook();
+        }
+
+        if (pageId != null)
+            ToNavigating(pageId);
+        else
+            ToNoPage();
+    }
+
+    /// <summary>
+    /// Start saving the current page. When get the page content and update the main HTML DOM with it,
+    /// the postSaveAction will be called. Then, unless saveActionHandlesSaveBook is passed as true,
+    /// we will call saveBook, typically saving the changes to disk. Finally, we navigate to the page
+    /// whose ID is returned by postSaveAction. (This is convenient, and also ensures that we don't leave
+    /// a page in the stripped state.)
+    /// </summary>
+    public bool ToSavePending(Func<string> postSaveAction, bool saveActionHandlesSaveBook = false)
     {
         switch (_currentState)
         {
             case State.NoPage:
-                postSaveAction(
-                    null /* no page id*/
-                ); // review
+                _saveActionHandlesSaveBook = saveActionHandlesSaveBook;
+                DoPostSaveAction(null, postSaveAction);
                 return true;
             case State.Editing:
-                this._postSaveAction = postSaveAction;
-                _currentState = State.SavePending;
-                _requestPageSave(this._pageId);
+                _saveActionHandlesSaveBook = saveActionHandlesSaveBook;
+                _postSaveAction = postSaveAction;
                 LogTransition("savePending", null);
+                _currentState = State.SavePending;
+                _requestPageSave(_pageId);
                 return true;
 
             case State.Navigating:
@@ -149,20 +230,16 @@ public class EditingStateMachine
 
     // Source: API call providing content of current page will request this after saving and before executing pending action
     // E.g. changing pages
-    public bool ToSavedAndStripped(string pageContent)
+    public bool ToSavedAndStripped(string htmlAndUserStyles)
     {
         switch (_currentState)
         {
             case State.SavePending:
-                _currentState = State.SavedAndStripped;
-                Guard.AgainstNull(this._postSaveAction, "postSaveAction");
-
-                // TODO should this save or the caller (editing model)
-
-                //                this._requestPageSave(this._pageId, pageContent);
-                this._postSaveAction(this._pageId);
-                this._postSaveAction = null;
+                Guard.AgainstNull(_postSaveAction, "postSaveAction");
                 LogTransition("saved and stripped", null);
+                _currentState = State.SavedAndStripped;
+                DoPostSaveAction(htmlAndUserStyles, _postSaveAction);
+                _postSaveAction = null;
                 return true;
             case State.NoPage:
             case State.Navigating:
@@ -178,27 +255,20 @@ public class EditingStateMachine
     }
 
     // Various (and growing) list of Javascript methods that gather the html to save and call Api:______(html-to-save, post-save-action)
-    // E.g. Delete would call this with null content
-    //
-    // TODO: we decided to make ChangePicture not use saving at all. 1) Post to api with the id of the image and current src 2) server runs JS like SetImage(id, newSrc, newImageMetadata)
-    public bool ToSavedAndStripped(Action postSaveAction, string pageContentOrNull = null)
+    // Untested since we don't have any such methods yet.
+    public bool ToSavedAndStripped(Func<string> postSaveAction, string pageContentOrNull = null)
     {
         switch (_currentState)
         {
             case State.Editing:
-                _currentState = State.SavedAndStripped;
                 Guard.AssertThat(
-                    this._postSaveAction == null,
-                    "stored this.postSaveAction should be null, we're going to use the parameter instead."
+                    _postSaveAction == null,
+                    "stored postSaveAction should be null, we're going to use the parameter instead."
                 );
                 Guard.AgainstNull(postSaveAction, "postSaveAction");
-                // TODO: how does Delete() actually work
-                //this._requestPageSave(
-                //    this._pageId,
-                //    pageContentOrNull /* if we're deleting the page, this will be null */
-                //);
-                this._postSaveAction(this._pageId);
                 LogTransition("saved and stripped", null);
+                _currentState = State.SavedAndStripped;
+                DoPostSaveAction(pageContentOrNull, postSaveAction);
                 return true;
             case State.NoPage:
             case State.Navigating:
@@ -215,12 +285,12 @@ public class EditingStateMachine
 
     private void Log(string message)
     {
-        Console.WriteLine("[EditingStateMachine] " + message);
+        Debug.WriteLine("[EditingStateMachine] " + message);
     }
 
     private void LogTransition(string nextState, string nextPageId)
     {
-        Log($"{_currentState}({this._pageId}) --> {nextState}({nextPageId})");
+        Log($"{_currentState}({_pageId}) --> {nextState}({nextPageId})");
     }
 
     private void LogError(string transitionRequest)
@@ -231,7 +301,7 @@ public class EditingStateMachine
     private void LogIgnore(string transitionRequest, string nextPageId = null)
     {
         Log(
-            $"Ignoring {transitionRequest}({nextPageId}) request while in {_currentState}({this._pageId}) state"
+            $"Ignoring {transitionRequest}({nextPageId}) request while in {_currentState}({_pageId}) state"
         );
     }
 

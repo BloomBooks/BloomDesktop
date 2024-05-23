@@ -57,7 +57,6 @@ namespace Bloom.Book
         private static int s_coverColorIndex = new Random().Next(CoverColors.Length - 1);
 
         private readonly ITemplateFinder _templateFinder;
-        private readonly PageSelection _pageSelection;
         private readonly PageListChangedEvent _pageListChangedEvent;
         private readonly BookRefreshEvent _bookRefreshEvent;
         private readonly BookSavedEvent _bookSavedEvent;
@@ -108,7 +107,6 @@ namespace Bloom.Book
             IBookStorage storage,
             ITemplateFinder templateFinder,
             CollectionSettings collectionSettings,
-            PageSelection pageSelection,
             PageListChangedEvent pageListChangedEvent,
             BookRefreshEvent bookRefreshEvent,
             BookSavedEvent bookSavedEvent = null,
@@ -149,7 +147,6 @@ namespace Bloom.Book
 
             CollectionSettings = collectionSettings ?? storage.CollectionSettings;
 
-            _pageSelection = pageSelection;
             _pageListChangedEvent = pageListChangedEvent;
             _bookRefreshEvent = bookRefreshEvent;
             _bookSavedEvent = bookSavedEvent;
@@ -3327,6 +3324,11 @@ namespace Bloom.Book
             }
         }
 
+        public IPage GetPage(string id)
+        {
+            return GetPages().FirstOrDefault(p => p.Id == id);
+        }
+
         private void BuildPageCache()
         {
             _pagesCache = new List<IPage>();
@@ -3348,29 +3350,6 @@ namespace Bloom.Book
                 }
                 _pagesCache.Add(CreatePageDecriptor(pageNode, caption, captionI18nId));
             }
-        }
-
-        private IPage GetPageToShowAfterDeletion(IPage page)
-        {
-            Guard.AgainstNull(_pagesCache, "_pageCache");
-            var matchingPageEvenIfNotActualObject = _pagesCache.First(p => p.Id == page.Id);
-            Guard.AgainstNull(
-                matchingPageEvenIfNotActualObject,
-                "Couldn't find page with matching id in cache"
-            );
-            var index = _pagesCache.IndexOf(matchingPageEvenIfNotActualObject);
-            Guard.Against(index < 0, "Couldn't find page in cache");
-
-            if (index == _pagesCache.Count - 1) //if it's the last page
-            {
-                if (index < 1) //if it's the only page
-                    throw new ApplicationException(
-                        "Bloom should not have allowed you to delete the last remaining page."
-                    );
-                return _pagesCache[index - 1]; //give the preceding page
-            }
-
-            return _pagesCache[index + 1]; //give the following page
         }
 
         public Dictionary<string, IPage> GetTemplatePagesIdDictionary()
@@ -3422,29 +3401,23 @@ namespace Bloom.Book
         {
             //review: could move to page
             var pageElement = OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv);
+            var outer = pageElement.OuterXml;
+            var oldInner = pageElement.InnerXml;
             Require.That(pageElement != null, "Page could not be found: " + page.XPathToDiv);
-            if (pageElement != null)
-                pageElement.InnerXml = XmlHtmlConverter.RemoveEmptySelfClosingTags(
-                    pageElement.InnerXml
-                );
+
+            pageElement.InnerXml = XmlHtmlConverter.RemoveEmptySelfClosingTags(oldInner);
 
             return pageElement as XmlElement;
         }
 
-        public void InsertPageAfter(IPage pageBefore, IPage templatePage, int numberToAdd = 1)
+        /// <summary>
+        /// Insert a copy of templatePage after pageBefore. If numberToAdd is greater than 1, multiple copies are inserted.
+        /// </summary>
+        /// <returns>the id of the first page added.</returns>
+        public string InsertPageAfter(IPage pageBefore, IPage templatePage, int numberToAdd = 1)
         {
             Guard.Against(HasFatalError, "Insert page failed: " + FatalErrorDescription);
             Guard.Against(!IsSaveable, "Tried to edit a non-editable book.");
-
-            // we need to break up the effects of changing the selected page.
-            // The before-selection-changes stuff includes saving the old page. We want any changes
-            // (e.g., newly defined styles) from the old page to be saved before we start
-            // possibly merging in things (e.g., imported styles) from the template page.
-            // On the other hand, we do NOT want stuff from the old page (e.g., its copy
-            // of the old book styles) overwriting what we figure out in the process of
-            // doing the insertion. So, do the stuff that involves the old page here,
-            // and later do the stuff that involves the new page.
-            _pageSelection.PrepareToSelectPage();
 
             ClearCachedDataFromDom();
             bool stylesChanged = false;
@@ -3572,8 +3545,6 @@ namespace Bloom.Book
                 Directory.CreateDirectory(templateFolderPath); // harmless if it exists already
             }
 
-            Save();
-
             MiscUtils.DoOnceOnIdle(() =>
             {
                 // This UI updating code generates a lot of API calls, especially when we pass
@@ -3582,10 +3553,9 @@ namespace Bloom.Book
                 // until the current one is over, to prevent deadlocks in the BloomServer.
                 _pageListChangedEvent?.Raise(stylesChanged);
 
-                _pageSelection.SelectPage(newPage, true);
-
                 InvokeContentsChanged(null);
             });
+            return newPage.Id;
         }
 
         private void CopyWidgetFilesIfNeeded(XmlElement newPageDiv, string sourceBookFolder)
@@ -3695,7 +3665,10 @@ namespace Bloom.Book
             return collectionKind;
         }
 
-        public void DuplicatePage(IPage page, int numberToAdd = 1)
+        /// <summary>
+        /// Duplicate the page and return the ID of the new one.
+        /// </summary>
+        public string DuplicatePage(IPage page, int numberToAdd = 1)
         {
             // Can be achieved by just using the current page as both the place to insert after
             // and the template to copy.
@@ -3703,7 +3676,7 @@ namespace Bloom.Book
             // take advantage of our knowledge that the code is shared so that between them they cover
             // the important code paths. If the code stops being shared, we should extend test
             // coverage appropriately.
-            InsertPageAfter(page, page, numberToAdd);
+            return InsertPageAfter(page, page, numberToAdd);
         }
 
         private void CopyAndRenameAudioFiles(XmlElement newpageDiv, string sourceBookFolder)
@@ -3796,8 +3769,6 @@ namespace Bloom.Book
             if (GetPages().Count() < 2)
                 return;
 
-            var pageToShowNext = GetPageToShowAfterDeletion(page);
-
             ClearCachedDataFromDom();
             //_pagesCache.Remove(page);
             OrderOrNumberOfPagesChanged();
@@ -3809,8 +3780,6 @@ namespace Bloom.Book
                 IsPrimaryLanguageRtl
             );
 
-            _pageSelection.SelectPage(pageToShowNext);
-            Save();
             _pageListChangedEvent?.Raise(false);
 
             InvokeContentsChanged(null);
@@ -3870,6 +3839,56 @@ namespace Bloom.Book
             && CollectionSettings.HaveEnterpriseFeatures;
 
         /// <summary>
+        /// Save the page content to the DOM. Return true if needToDoFullSave is true, or if this method
+        /// discovers another reason we need to do a full save.
+        /// Returns as an out param the page element from the book's dom that got modified.
+        /// </summary>
+        /// <returns></returns>
+        public bool SavePageContent(
+            HtmlDom editedPageDom,
+            out XmlElement pageFromStorage,
+            bool needToDoFullSave = true
+        )
+        {
+            // This is needed if the user did some ChangeLayout (origami) manipulation. This will populate new
+            // translationGroups with .bloom-editables and set the proper classes on those editables to match the current multilingual settings.
+            UpdateEditableAreasOfElement(editedPageDom);
+
+            //replace the corresponding page contents in our DOM with what is in this PageDom
+            XmlElement pageFromEditedDom = editedPageDom.SelectSingleNodeHonoringDefaultNS(
+                "//div[contains(@class, 'bloom-page')]"
+            );
+            string pageId = pageFromEditedDom.GetAttribute("id");
+            pageFromStorage = GetPageFromStorage(pageId);
+
+            HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
+            HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, Language1Tag);
+
+            // The main condition for being able to just write the page is that no shareable data on the
+            // page changed during editing. If that's so we can skip this step.
+            if (needToDoFullSave)
+                _bookData.SuckInDataFromEditedDom(editedPageDom, BookInfo); //this will do an updatetitle
+
+            // When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
+            // Here we copy that over to the book DOM.
+            var userModifiedStyles = HtmlDom.GetUserModifiedStyleElement(editedPageDom.Head);
+            var stylesChanged = false;
+            if (userModifiedStyles != null)
+            {
+                var userModifiedStyleElementFromStorage =
+                    GetOrCreateUserModifiedStyleElementFromStorage();
+                if (userModifiedStyleElementFromStorage.InnerXml != userModifiedStyles.InnerXml)
+                {
+                    userModifiedStyleElementFromStorage.InnerXml = userModifiedStyles.InnerXml;
+                    stylesChanged = true; // note, this is not shared data in the sense that needs SuckInDataFromEditedDom
+                }
+
+                //Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
+            }
+            return needToDoFullSave || stylesChanged;
+        }
+
+        /// <summary>
         /// Earlier, we handed out a single-page version of the document. Now it has been edited,
         /// so we now we need to fold changes back in
         /// </summary>
@@ -3878,46 +3897,38 @@ namespace Bloom.Book
             Debug.Assert(IsSaveable);
             try
             {
-                // This is needed if the user did some ChangeLayout (origami) manipulation. This will populate new
-                // translationGroups with .bloom-editables and set the proper classes on those editables to match the current multilingual settings.
-                UpdateEditableAreasOfElement(editedPageDom);
-
-                //replace the corresponding page contents in our DOM with what is in this PageDom
-                XmlElement pageFromEditedDom = editedPageDom.SelectSingleNodeHonoringDefaultNS(
-                    "//div[contains(@class, 'bloom-page')]"
+                var reallyNeedFullSave = SavePageContent(
+                    editedPageDom,
+                    out XmlElement pageFromStorage,
+                    needToDoFullSave
                 );
-                string pageId = pageFromEditedDom.GetAttribute("id");
-                var pageFromStorage = GetPageFromStorage(pageId);
 
-                HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
-                HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, Language1Tag);
+                SavePageToDisk(pageFromStorage, reallyNeedFullSave);
+            }
+            catch (Exception error)
+            {
+                var msg = LocalizationManager.GetString(
+                    "Errors.CouldNotSavePage",
+                    "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
+                );
+                ErrorReport.NotifyUserOfProblem(error, msg);
+            }
+        }
 
-                // The main condition for being able to just write the page is that no shareable data on the
-                // page changed during editing. If that's so we can skip this step.
-                if (needToDoFullSave)
-                    _bookData.SuckInDataFromEditedDom(editedPageDom, BookInfo); //this will do an updatetitle
-
-                // When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
-                // Here we copy that over to the book DOM.
-                var userModifiedStyles = HtmlDom.GetUserModifiedStyleElement(editedPageDom.Head);
-                var stylesChanged = false;
-                if (userModifiedStyles != null)
-                {
-                    var userModifiedStyleElementFromStorage =
-                        GetOrCreateUserModifiedStyleElementFromStorage();
-                    if (userModifiedStyleElementFromStorage.InnerXml != userModifiedStyles.InnerXml)
-                    {
-                        userModifiedStyleElementFromStorage.InnerXml = userModifiedStyles.InnerXml;
-                        stylesChanged = true; // note, this is not shared data in the sense that needs SuckInDataFromEditedDom
-                    }
-
-                    //Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
-                }
-
+        /// <summary>
+        /// Finish a delayed save. pageFromStorage should be the value from the out param of SavePage().
+        /// </summary>
+        /// <param name="pageFromStorage"></param>
+        /// <param name="reallyNeedFullSave"></param>
+        public void SavePageToDisk(XmlElement pageFromStorage, bool reallyNeedFullSave)
+        {
+            try
+            {
                 try
                 {
-                    if (!needToDoFullSave && !stylesChanged)
+                    if (pageFromStorage != null && !reallyNeedFullSave)
                     {
+                        string pageId = pageFromStorage.GetAttribute("id");
                         // nothing changed outside this page. We can do a much more efficient write operation.
                         // (On a 200+ page book, like the one in BL-7253, this version of updating the page
                         // runs in about a half second instead of two and a half. Moreover, on such a book,
