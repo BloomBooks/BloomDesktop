@@ -309,10 +309,10 @@ namespace Bloom.Utils
 			// of these create only the one (.bloomCollection) file in the temporary folder.
 			var tempDir = Path.GetTempPath();
 			var folder = Path.GetDirectoryName(path);
-			if (SIL.PlatformUtilities.Platform.IsWindows)
+			if (Platform.IsWindows)
 			{
 				if (folder.StartsWith(tempDir, StringComparison.InvariantCulture) &&
-						(folder.Contains(@".zip\") ||   // Windows Explorer
+						(folder.Contains(@".zip") ||   // Windows Explorer
 						folder.Contains(@"\7z")))       // 7-Zip
 				{
 					return IsSingleFileInFolder(folder);
