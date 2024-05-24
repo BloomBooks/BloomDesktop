@@ -140,7 +140,8 @@
 .A5Landscape,
 .A5Portrait,
 .Size6x9Landscape,
-.Size6x9Portrait {
+.Size6x9Portrait,
+.USComicPortrait {
     --page-margin: 12mm;
 }
 .QuarterLetterPortrait,
@@ -152,10 +153,6 @@
 .Cm13Landscape {
     --page-margin: 5mm;
 }
-.USComicPortrait {
-    --page-margin: 0mm;
-}
-
 .bloom-page[class*="Device"] {
     --page-margin: 10px;
 
