@@ -3492,6 +3492,7 @@ namespace Bloom.Book
                 if (i == 0)
                     firstPageAdded = clonedDiv;
                 BookStarter.SetupIdAndLineage(templatePageDiv, clonedDiv);
+                BookStarter.UniqueifyIds(clonedDiv);
                 elementOfPageBefore.ParentNode.InsertAfter(clonedDiv, elementOfPageBefore);
 
                 CopyAndRenameAudioFiles(clonedDiv, templatePage.Book.FolderPath);

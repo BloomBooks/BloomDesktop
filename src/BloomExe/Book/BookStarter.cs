@@ -650,11 +650,6 @@ namespace Bloom.Book
             );
             ClearAwayDraftText(pageDiv);
             ClearAwayPageDescription(pageDiv);
-            // find any id attributes and replace them with new ids, because we cannot have two elements with the same id in a book
-            foreach (XmlElement element in pageDiv.SafeSelectNodes(".//*[@id]"))
-            {
-                element.SetAttribute("id", Guid.NewGuid().ToString());
-            }
         }
 
         /// <summary>
@@ -840,6 +835,17 @@ namespace Bloom.Book
                 XmlString.FromXml(dom.GetBookSetting("licenseNotes").GetFirstAlternative()),
                 "*"
             );
+        }
+
+        internal static void UniqueifyIds(XmlElement pageDiv)
+        {
+            // find any img.id attributes and replace them with new ids, because we cannot have two elements with the same id in a book
+            // we might want to do this for other elements as well, but audio file names may be tied to the id, and would have already
+            // been uniquified by the time we get here.
+            foreach (XmlElement element in pageDiv.SafeSelectNodes(".//img[@id]"))
+            {
+                element.SetAttribute("id", Guid.NewGuid().ToString());
+            }
         }
     }
 }
