@@ -544,17 +544,14 @@ namespace Bloom
 
         public static string RestoreSvgs(string input, List<string> svgs)
         {
-            var result = input;
+            var builder = new StringBuilder(input);
+
             foreach (var svg in svgs)
             {
-                // We want a ReplaceFirst but .Net doesn't have it.
-                int index = result.IndexOf(SvgPlaceholder);
-                result =
-                    result.Substring(0, index)
-                    + svg
-                    + result.Substring(index + SvgPlaceholder.Length);
+                builder.Replace(SvgPlaceholder, svg);
             }
-            return result;
+
+            return builder.ToString();
         }
     }
 }
