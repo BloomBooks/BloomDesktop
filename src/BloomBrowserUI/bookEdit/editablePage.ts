@@ -14,6 +14,9 @@ function getPageId(): string {
     if (!page) throw new Error("Could not find the div.bloom-page");
     return page.getAttribute("id")!;
 }
+// This notification lets the C# know that this partciular page is ready to edit.
+// It is important that this does not get pulled into any other compiled bundle,
+// since it will generate errors when loaded into any page that does not have a .bloom-page.
 document.addEventListener("DOMContentLoaded", () => {
     postString("editView/pageDomLoaded", getPageId());
 });

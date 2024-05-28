@@ -132,7 +132,8 @@ namespace Bloom.Edit
                     RequestBrowserToSave();
                 },
                 // updateBookWithPageContent
-                (string pageId, string htmlAndUserStyles) => SavePageContent(htmlAndUserStyles),
+                (string pageId, string htmlAndUserStyles) =>
+                    UpdateBookDomFromBrowserPageContent(htmlAndUserStyles),
                 // saveBook
                 () =>
                 {
@@ -161,11 +162,11 @@ namespace Bloom.Edit
                     switch (behavior)
                     {
                         case PageRefreshEvent.SaveBehavior.SaveBeforeRefresh:
-                            RethinkPageAndReloadIt();
+                            SavePageAndReloadIt();
                             break;
 
                         case PageRefreshEvent.SaveBehavior.SaveBeforeRefreshFullSave:
-                            RethinkPageAndReloadIt(true);
+                            SavePageAndReloadIt(true);
                             break;
 
                         case PageRefreshEvent.SaveBehavior.JustRedisplay:
@@ -238,7 +239,14 @@ namespace Bloom.Edit
             }
         }
 
-        public void SavePageContent(string htmlAndUserStyles)
+        /// <summary>
+        /// Receives a string (which comes from the browser) that combines the body of the document of the page
+        /// being edited with the CSS that defines the user-defined styles. It updates the current book DOM
+        /// to match whatever the browser has.
+        /// Enhance: ideally we would use a mutation observer so the browser knows whether anything needs saving,
+        /// and this method would get something indicating it doesn't need to save if that's so.
+        /// </summary>
+        public void UpdateBookDomFromBrowserPageContent(string htmlAndUserStyles)
         {
             if (htmlAndUserStyles != null)
             {
@@ -253,7 +261,7 @@ namespace Bloom.Edit
                         bodyHtml,
                         userCssContent
                     );
-                    SavePageContent(docFromBrowser);
+                    UpdateBookDomFromBrowserPageContent(docFromBrowser);
                 }
             }
         }
@@ -876,6 +884,10 @@ namespace Bloom.Edit
             }
         }
 
+        /// <summary>
+        /// The code invoked by the state machine to actually start the editable page browser navigating
+        /// to a particular page. Anything that needs saving on the current page should already have been saved.
+        /// </summary>
         void StartNavigationToEditPage(IPage page)
         {
             _pageSelection.SelectPage(page);
@@ -974,6 +986,12 @@ namespace Bloom.Edit
             }
         }
 
+        /// <summary>
+        /// Make what the editable page browser is showing match what's currently in the DOM.
+        /// Assumes that anything that needs saving was saved before whatever changes
+        /// made this reload necessary (or perhaps we just need to reload because saving
+        /// currently strips out some UI stuff we need for editing).
+        /// </summary>
         public void RefreshDisplayOfCurrentPage(bool changingUiLanguage = false)
         {
             _view.GoToPage(_pageSelection.CurrentSelection, changingUiLanguage);
@@ -1315,12 +1333,12 @@ namespace Bloom.Edit
             _currentlyDisplayedBook.SetTopic(englishTopicAsKey);
             _pageHasUnsavedDataDerivedChange = true;
             //reflect that change on this page
-            RethinkPageAndReloadIt();
+            SavePageAndReloadIt();
         }
 
-        internal void RethinkPageAndReloadIt(ApiRequest request)
+        internal void SavePageAndReloadIt(ApiRequest request)
         {
-            RethinkPageAndReloadIt();
+            SavePageAndReloadIt();
             request.PostSucceeded();
         }
 
@@ -1328,7 +1346,7 @@ namespace Bloom.Edit
         {
             try
             {
-                RethinkPageAndReloadIt(forceFullSave);
+                SavePageAndReloadIt(forceFullSave);
             }
             catch (Exception e)
             {
@@ -1336,7 +1354,11 @@ namespace Bloom.Edit
             }
         }
 
-        internal void RethinkPageAndReloadIt(bool forceFullSave = false)
+        /// <summary>
+        /// Save all the changes to the current page, then reload it (thus restoring any UI stuff that
+        /// was stripped out by the Save).
+        /// </summary>
+        internal void SavePageAndReloadIt(bool forceFullSave = false)
         {
             if (CannotSavePage())
                 return;
@@ -1422,7 +1444,12 @@ namespace Bloom.Edit
 
         private XmlElement _modifiedPageElement;
 
-        public void SavePageContent(XmlDocument docFromBrowser)
+        /// <summary>
+        /// Receives a DOM (derived the browser) that combines the body of the document of the page
+        /// being edited with the CSS that defines the user-defined styles. It updates the current book DOM
+        /// to match whatever the browser has.
+        /// </summary>
+        public void UpdateBookDomFromBrowserPageContent(XmlDocument docFromBrowser)
         {
             //BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
             //this old code:
@@ -1466,7 +1493,7 @@ namespace Bloom.Edit
             }
             //OK, looks safe, time to save.
             var newPageData = GetPageData(docFromBrowser);
-            _nextSaveMustBeFull = _pageSelection.CurrentSelection.Book.SavePageContent(
+            _nextSaveMustBeFull = _pageSelection.CurrentSelection.Book.UpdateDomFromEditedPage(
                 HtmlDom.FromDoc(docFromBrowser),
                 out _modifiedPageElement,
                 _nextSaveMustBeFull || NeedToDoFullSave(newPageData)
@@ -1925,7 +1952,7 @@ namespace Bloom.Edit
                         (MethodInvoker)
                             delegate
                             {
-                                RethinkPageAndReloadIt();
+                                SavePageAndReloadIt();
                             }
                     );
                 }

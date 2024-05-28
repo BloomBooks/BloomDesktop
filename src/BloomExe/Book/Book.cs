@@ -3839,14 +3839,13 @@ namespace Bloom.Book
             && CollectionSettings.HaveEnterpriseFeatures;
 
         /// <summary>
-        /// Save the page content to the DOM. Return true if needToDoFullSave is true, or if this method
-        /// discovers another reason we need to do a full save.
+        /// Save the page content to the DOM.
+        /// Return true if needToDoFullSave is true, or if this method discovers another reason we need to do a full save.
         /// Returns as an out param the page element from the book's dom that got modified.
         /// </summary>
-        /// <returns></returns>
-        public bool SavePageContent(
+        public bool UpdateDomFromEditedPage(
             HtmlDom editedPageDom,
-            out XmlElement pageFromStorage,
+            out XmlElement pageToSaveToDisk,
             bool needToDoFullSave = true
         )
         {
@@ -3859,10 +3858,10 @@ namespace Bloom.Book
                 "//div[contains(@class, 'bloom-page')]"
             );
             string pageId = pageFromEditedDom.GetAttribute("id");
-            pageFromStorage = GetPageFromStorage(pageId);
+            pageToSaveToDisk = GetPageFromStorage(pageId);
 
-            HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
-            HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, Language1Tag);
+            HtmlDom.ProcessPageAfterEditing(pageToSaveToDisk, pageFromEditedDom);
+            HtmlDom.SetImageAltAttrsFromDescriptions(pageToSaveToDisk, Language1Tag);
 
             // The main condition for being able to just write the page is that no shareable data on the
             // page changed during editing. If that's so we can skip this step.
@@ -3889,21 +3888,20 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Earlier, we handed out a single-page version of the document. Now it has been edited,
-        /// so we now we need to fold changes back in
+        /// This combines saving the page content to the DOM and saving the DOM to disk.
         /// </summary>
         public void SavePage(HtmlDom editedPageDom, bool needToDoFullSave = true)
         {
             Debug.Assert(IsSaveable);
             try
             {
-                var reallyNeedFullSave = SavePageContent(
+                var reallyNeedFullSave = UpdateDomFromEditedPage(
                     editedPageDom,
-                    out XmlElement pageFromStorage,
+                    out XmlElement pageToSaveToDisk,
                     needToDoFullSave
                 );
 
-                SavePageToDisk(pageFromStorage, reallyNeedFullSave);
+                SavePageToDisk(pageToSaveToDisk, reallyNeedFullSave);
             }
             catch (Exception error)
             {
@@ -3916,32 +3914,31 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Finish a delayed save. pageFromStorage should be the value from the out param of SavePage().
+        /// Finish a delayed save. pageToSaveToDisk should be the value from the out param of UpdateDomFromEditedPage().
+        /// It is the one page that needs saving, if reallyNeedFullSave is false; if that is true, it is not used.
         /// </summary>
-        /// <param name="pageFromStorage"></param>
-        /// <param name="reallyNeedFullSave"></param>
-        public void SavePageToDisk(XmlElement pageFromStorage, bool reallyNeedFullSave)
+        public void SavePageToDisk(XmlElement pageToSaveToDisk, bool reallyNeedFullSave)
         {
             try
             {
                 try
                 {
-                    if (pageFromStorage != null && !reallyNeedFullSave)
+                    if (pageToSaveToDisk != null && !reallyNeedFullSave)
                     {
-                        string pageId = pageFromStorage.GetAttribute("id");
+                        string pageId = pageToSaveToDisk.GetAttribute("id");
                         // nothing changed outside this page. We can do a much more efficient write operation.
                         // (On a 200+ page book, like the one in BL-7253, this version of updating the page
                         // runs in about a half second instead of two and a half. Moreover, on such a book,
                         // running the full Save rather quickly fragments the heap...allocating about 16 7-megabyte
                         // memory chunks in each Save...to the point where Bloom runs out of memory.)
 
-                        SaveForPageChanged(pageId, pageFromStorage);
+                        SaveForPageChanged(pageId, pageToSaveToDisk);
                     }
                     else
                     {
                         // We've seen pages get emptied out, and we don't know why. This is a safety check.
                         // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
-                        if (BookStorage.CheckForEmptyMarginBoxOnPage(pageFromStorage))
+                        if (BookStorage.CheckForEmptyMarginBoxOnPage(pageToSaveToDisk))
                         {
                             // This has been logged and reported to the user. We don't want to save the empty page.
                             return;

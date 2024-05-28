@@ -433,6 +433,10 @@ namespace Bloom.Edit
             _changingUiLanguage = true;
         }
 
+        /// <summary>
+        /// Initiate switching to the specified page. The system should be in a state where we know
+        /// there are no unsaved changes.
+        /// </summary>
         public void GoToPage(IPage page, bool changingUiLanguage = false)
         {
             if (!_model.Visible)
@@ -1850,7 +1854,7 @@ namespace Bloom.Edit
             }
         }
 
-        // If SetZoom (and hence _model.RethinkPageAndReloadIt) is called repeatedly too
+        // If SetZoom (and hence _model.SavePageAndReloadIt) is called repeatedly too
         // frequently, Bloom can crash, with the program closing spontaneously.  So we
         // need to slow things down when the user is rapidly clicking on the zoom button,
         // without losing track of the desired zoom level.

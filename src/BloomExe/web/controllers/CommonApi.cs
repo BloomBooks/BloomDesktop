@@ -369,7 +369,7 @@ namespace Bloom.web.controllers
 
         private void RethinkPageAndReloadIt(ApiRequest request)
         {
-            Model.RethinkPageAndReloadIt(request);
+            Model.SavePageAndReloadIt(request);
         }
 
         /// <summary>

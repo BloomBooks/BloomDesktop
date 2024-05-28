@@ -228,8 +228,10 @@ public class EditingStateMachine
         }
     }
 
-    // Source: API call providing content of current page will request this after saving and before executing pending action
-    // E.g. changing pages
+    /// <summary>
+    /// Source: API call providing content of current page will request this after saving and before executing pending action
+    /// (e.g. changing pages)
+    /// </summary>
     public bool ToSavedAndStripped(string htmlAndUserStyles)
     {
         switch (_currentState)
@@ -254,8 +256,10 @@ public class EditingStateMachine
         }
     }
 
-    // Various (and growing) list of Javascript methods that gather the html to save and call Api:______(html-to-save, post-save-action)
-    // Untested since we don't have any such methods yet.
+    /// <summary>
+    /// Various (and growing) list of Javascript methods that gather the html to save and call Api:______(html-to-save, post-save-action)
+    /// Untested since we don't have any such methods yet.
+    /// </summary>
     public bool ToSavedAndStripped(Func<string> postSaveAction, string pageContentOrNull = null)
     {
         switch (_currentState)
