@@ -522,39 +522,28 @@ namespace Bloom
         public static string RemoveSvgs(string input, List<string> svgs)
         {
             // Tidy utterly chokes (exits the whole program without even a green screen) on SVGs.
-            var regexSvg = new Regex("<svg .*?</svg>", RegexOptions.Singleline);
-            // This is probably not the most efficient way to remove and restore them but the common case is that none are found,
+            // This may not the most efficient way to remove and restore them but the common case is that none are found,
             // and this is not too bad for that case.
-            var result = input;
-            for (
-                var matchSvg = regexSvg.Match(result);
-                matchSvg.Success;
-                matchSvg = regexSvg.Match(result)
-            )
-            {
-                svgs.Add(matchSvg.Value);
-                result =
-                    result.Substring(0, matchSvg.Index)
-                    + SvgPlaceholder
-                    + result.Substring(matchSvg.Index + matchSvg.Length);
-            }
-
-            return result;
+            return Regex.Replace(input, "<svg .*?</svg>", (Match match) => {
+                svgs.Add(match.Value); return SvgPlaceholder;
+            }, RegexOptions.Singleline);
         }
 
         public static string RestoreSvgs(string input, List<string> svgs)
         {
-            var result = input;
-            foreach (var svg in svgs)
+            if (svgs.Count == 0)
+                return input;
+            if (svgs.Count == 1)
+                return input.Replace(SvgPlaceholder, svgs[0]);
+            var splitInput = input.Split(new[] { SvgPlaceholder }, svgs.Count + 1, StringSplitOptions.None);
+            var builder = new StringBuilder();
+            for (int i = 0; i < svgs.Count; i++)
             {
-                // We want a ReplaceFirst but .Net doesn't have it.
-                int index = result.IndexOf(SvgPlaceholder);
-                result =
-                    result.Substring(0, index)
-                    + svg
-                    + result.Substring(index + SvgPlaceholder.Length);
+                builder.Append(splitInput[i]);
+                builder.Append(svgs[i]);
             }
-            return result;
+            builder.Append(splitInput[svgs.Count]);
+            return builder.ToString();
         }
     }
 }
