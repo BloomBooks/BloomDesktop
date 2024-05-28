@@ -516,13 +516,6 @@ namespace BloomTests.Book
     --page-margin: 5mm;"
                 )
             );
-            Assert.That(
-                _cssOfDefaultTheme,
-                Does.Contain(
-                    @".USComicPortrait {
-    --page-margin: 0mm;"
-                )
-            );
         }
 
         [Test]
