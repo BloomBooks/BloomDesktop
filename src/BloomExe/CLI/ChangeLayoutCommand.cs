@@ -138,7 +138,6 @@ namespace Bloom.CLI
                 null,
                 collectionSettings,
                 null,
-                null,
                 new BookRefreshEvent(),
                 new BookSavedEvent(),
                 new NoEditSaveContext()
@@ -168,7 +167,6 @@ namespace Bloom.CLI
                         ),
                         null,
                         collectionSettings,
-                        null,
                         null,
                         new BookRefreshEvent(),
                         new BookSavedEvent()

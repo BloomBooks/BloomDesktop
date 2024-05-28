@@ -37,7 +37,7 @@ namespace Bloom
             }
         }
 
-        public void Raise(TPayload descriptor)
+        public virtual void Raise(TPayload descriptor)
         {
             SIL.Reporting.Logger.WriteMinorEvent("Event: " + _nameForLogging);
             using (
@@ -64,6 +64,13 @@ namespace Bloom
     {
         public Control From;
         public Control To;
+
+        // Must be executed by the subscriber when it is safe to do so, possibly after returning
+        // from the event handler.
+        // This is a bit of a kludge. It works partly because there is currently only one subscriber,
+        // so there is no ambiguity about who should do this, or how we know when all the subscribers
+        // are done. If we ever have more than one subscriber, we'll need to do something more sophisticated.
+        public Action PostponedWork;
     }
 
     /// <summary>
@@ -90,13 +97,39 @@ namespace Bloom
             : base("CreateFromSourceBookCommand", LoggingLevel.Major) { }
     }
 
+    public class CollectionClosingArgs
+    {
+        // May be executed by one subscriber when it is safe to do so, typically in response to an event
+        // after returning from the event handler. A subscriber that wants to do this should set Delayed to true.
+        // This is a bit of a kludge. It works partly because there is currently only one subscriber
+        // that needs to postpone work until after the event handler has returned,
+        // so there is no ambiguity about who should do this. The tricky thing was to make sure
+        // all subscribers get to do their thing when we don't need to delay (when not in Edit tab).
+        // Hence Delayed and the override of Raise.
+        public Action PostponedWork;
+
+        // If a subscriber sets this to true, it takes responsibility for calling PostponedWork
+        // at some later time. If no one does, Raise() will call it after all subscribers have been called.
+        // At most one subscriber should set this to true. Review: should we enforce this?
+        public bool Delayed;
+    }
+
     /// <summary>
     /// called when the user is quiting or changing to another collection
     /// </summary>
-    public class CollectionClosing : Event<object>
+    public class CollectionClosing : Event<CollectionClosingArgs>
     {
         public CollectionClosing()
             : base("CollectionClosing", LoggingLevel.Major) { }
+
+        public override void Raise(CollectionClosingArgs descriptor)
+        {
+            base.Raise(descriptor);
+            if (!descriptor.Delayed)
+            {
+                descriptor.PostponedWork?.Invoke();
+            }
+        }
     }
 
     public class EditBookCommand : Event<Book.Book>

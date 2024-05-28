@@ -1039,31 +1039,37 @@ namespace Bloom.Workspace
             }
 
             _selectedTabAboutToChangeEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = view }
+                new TabChangedDetails()
+                {
+                    From = _previouslySelectedControl,
+                    To = view,
+                    PostponedWork = () =>
+                    {
+                        _selectedTabChangedEvent.Raise(
+                            new TabChangedDetails() { From = _previouslySelectedControl, To = view }
+                        );
+
+                        _previouslySelectedControl = view;
+                        _collectionApi.ResetUpdatingList();
+
+                        var zoomManager = CurrentTabView as IZoomManager;
+                        if (zoomManager != null)
+                        {
+                            if (!_toolStrip.Items.Contains(_zoomWrapper))
+                                _toolStrip.Items.Add(_zoomWrapper);
+                            _zoomControl.Zoom = zoomManager.Zoom;
+                            _zoomControl.ZoomChanged += (sender, args) =>
+                                zoomManager.SetZoom(_zoomControl.Zoom);
+                        }
+                        else
+                        {
+                            if (_toolStrip.Items.Contains(_zoomWrapper))
+                                _toolStrip.Items.Remove(_zoomWrapper);
+                        }
+                        // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
+                    }
+                }
             );
-
-            _selectedTabChangedEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = view }
-            );
-
-            _previouslySelectedControl = view;
-            _collectionApi.ResetUpdatingList();
-
-            var zoomManager = CurrentTabView as IZoomManager;
-            if (zoomManager != null)
-            {
-                if (!_toolStrip.Items.Contains(_zoomWrapper))
-                    _toolStrip.Items.Add(_zoomWrapper);
-                _zoomControl.Zoom = zoomManager.Zoom;
-                _zoomControl.ZoomChanged += (sender, args) =>
-                    zoomManager.SetZoom(_zoomControl.Zoom);
-            }
-            else
-            {
-                if (_toolStrip.Items.Contains(_zoomWrapper))
-                    _toolStrip.Items.Remove(_zoomWrapper);
-            }
-            // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
         }
 
         private void BackgroundColorsForLinux(IBloomTabArea currentTabView)
@@ -1455,25 +1461,29 @@ namespace Bloom.Workspace
             {
                 if (_editTab.IsSelected)
                 {
-                    _editingView.Model.SaveNow();
+                    _editingView.Model.SaveThen(() =>
+                    {
+                        // To test the Problem Dialog with a fatal error, uncomment this next line.
+                        // throw new ApplicationException("I just felt like an error!");
+
+                        // To test the Problem Dialog with a nonfatal error, uncomment this next line.
+                        // NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
+                        // To test clicking 'Report' in a toast, uncomment the line above, but use ModalIf.None.
+
+                        // To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
+                        // ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
+                        Logger.WriteEvent("User clicked the 'Report a Problem' menu item");
+                        ProblemReportApi.ShowProblemDialog(this, null);
+                        return _editingView.Model.CurrentPage.Id;
+                    });
                 }
             }
             catch
             {
-                // Ignore errors saving.
+                // Ignore errors saving. (But this may miss problems while responding to getting the page content.)
+                Logger.WriteEvent("User clicked the 'Report a Problem' menu item");
+                ProblemReportApi.ShowProblemDialog(this, null);
             }
-
-            // To test the Problem Dialog with a fatal error, uncomment this next line.
-            // throw new ApplicationException("I just felt like an error!");
-
-            // To test the Problem Dialog with a nonfatal error, uncomment this next line.
-            // NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
-            // To test clicking 'Report' in a toast, uncomment the line above, but use ModalIf.None.
-
-            // To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
-            // ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
-            Logger.WriteEvent("User clicked the 'Report a Problem' menu item");
-            ProblemReportApi.ShowProblemDialog(this, null);
         }
 
         public void SetStateOfNonPublishTabs(bool enable)

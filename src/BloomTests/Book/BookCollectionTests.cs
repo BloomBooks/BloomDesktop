@@ -53,7 +53,6 @@ namespace BloomTests.Book
                         Language1Tag = "xyz"
                     }
                 ),
-                new PageSelection(),
                 new PageListChangedEvent(),
                 new BookRefreshEvent()
             );

@@ -41,6 +41,7 @@ import {
     get,
     post,
     postBoolean,
+    postData,
     postString,
     postThatMightNavigate
 } from "../../utils/bloomApi";
@@ -336,10 +337,6 @@ function GetEditor() {
 function GetOverflowChecker() {
     return new OverflowChecker();
 }
-
-document.addEventListener("DOMContentLoaded", () =>
-    post("editView/pageDomLoaded")
-);
 
 // this is also called by the StyleEditor
 export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
@@ -1262,7 +1259,7 @@ function removeOrigami() {
 // This is invoked from C# when we are about to change pages. It removes markup we don't want to save.
 // Then it calls an API with the information we need to save. This works around the lack of a
 // non-async runJavascript API in WebView2.
-export function pageSelectionChanging() {
+export function requestPageContent() {
     try {
         // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
         getToolboxBundleExports()?.removeToolboxMarkup();
@@ -1270,7 +1267,7 @@ export function pageSelectionChanging() {
         const content = getBodyContentForSavePage();
         const userStylesheet = userStylesheetContent();
         postString(
-            "common/javascriptResult",
+            "editView/pageContent",
             // We tossed up whether to use a JSON object here, but decided that it was simpler to just
             // combine the two strings with a delimiter that we can split on in C#.
             // For one thing, HTML requires some escaping to put in a JSON object, which would have
@@ -1279,7 +1276,7 @@ export function pageSelectionChanging() {
         );
     } catch (e) {
         postString(
-            "common/javascriptResult",
+            "editView/pageContent",
             "ERROR: " +
                 e.message +
                 "\n" +

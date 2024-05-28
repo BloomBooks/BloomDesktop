@@ -64,12 +64,10 @@ namespace Bloom.web.controllers
         private const float maxAudioHeadDurationSec = 5; // maximum potentially allowable length in seconds of the non-useful "head" part of the audio which Aeneas will attempt to identify (if it exists) and then exclude from the timings
 
         BookSelection _bookSelection;
-        private PageSelection _pageSelection;
 
-        public AudioSegmentationApi(BookSelection bookSelection, PageSelection pageSelection)
+        public AudioSegmentationApi(BookSelection bookSelection)
         {
             _bookSelection = bookSelection;
-            _pageSelection = pageSelection;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)

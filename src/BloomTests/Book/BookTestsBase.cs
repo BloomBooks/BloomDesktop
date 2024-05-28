@@ -25,7 +25,6 @@ namespace BloomTests.Book
         protected Mock<ITemplateFinder> _templateFinder;
         private Mock<IFileLocator> _fileLocator;
         protected Mock<HtmlThumbNailer> _thumbnailer;
-        protected Mock<PageSelection> _pageSelection;
         protected PageListChangedEvent _pageListChangedEvent;
         protected TemporaryFolder _testFolder;
         protected TemporaryFolder _tempFolder;
@@ -218,7 +217,6 @@ namespace BloomTests.Book
                 .Returns(_fileLocator.Object);
 
             _thumbnailer = new Moq.Mock<HtmlThumbNailer>();
-            _pageSelection = new Mock<PageSelection>();
             _pageListChangedEvent = new PageListChangedEvent();
         }
 
@@ -241,7 +239,6 @@ namespace BloomTests.Book
                 _storage.Object,
                 _templateFinder.Object,
                 _collectionSettings,
-                _pageSelection.Object,
                 _pageListChangedEvent,
                 new BookRefreshEvent()
             );
@@ -275,7 +272,6 @@ namespace BloomTests.Book
                 storage,
                 _templateFinder.Object,
                 _collectionSettings,
-                _pageSelection.Object,
                 _pageListChangedEvent,
                 new BookRefreshEvent()
             );
@@ -438,7 +434,6 @@ namespace BloomTests.Book
                         storage,
                         null,
                         _collectionSettings,
-                        new PageSelection(),
                         new PageListChangedEvent(),
                         new BookRefreshEvent()
                     );

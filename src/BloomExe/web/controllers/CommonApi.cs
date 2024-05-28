@@ -25,7 +25,6 @@ namespace Bloom.web.controllers
     /// </summary>
     public class CommonApi
     {
-        public static string JavascriptResult;
         private readonly BookSelection _bookSelection;
 
         public EditingModel Model { get; set; }
@@ -202,20 +201,6 @@ namespace Bloom.web.controllers
                 false
             );
 
-            // This supports WebView2Browser.RunJavascriptThatPostsStringResultSync, and should not be used otherwise,
-            // since it could result in contention for the static JavascriptResult variable. It is safe for this
-            // purpose, since the UI thread is blocked until the result is posted by the Javascript.
-            apiHandler.RegisterEndpointHandler(
-                "common/javascriptResult",
-                request =>
-                {
-                    JavascriptResult = request.RequiredPostString();
-                    request.PostSucceeded();
-                },
-                false, // MUST not require UI thread, it is blocked waiting for this
-                false // don't want sync here, just touches one variable, and may be called during other API calls.
-            );
-
             // At this point we open dialogs from c# code; if we opened dialogs from javascript, we wouldn't need this
             // api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
             //
@@ -384,7 +369,7 @@ namespace Bloom.web.controllers
 
         private void RethinkPageAndReloadIt(ApiRequest request)
         {
-            Model.RethinkPageAndReloadIt(request);
+            Model.SavePageAndReloadIt(request);
         }
 
         /// <summary>

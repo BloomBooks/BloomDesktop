@@ -41,6 +41,17 @@ namespace Bloom.web.controllers
                 HandleSaveToolboxSetting,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/pageContent",
+                request =>
+                {
+                    var htmlAndUserStyles = request.RequiredPostString();
+                    View.Model.ReceivePageContent(htmlAndUserStyles);
+                    request.PostSucceeded();
+                },
+                true,
+                true // review.
+            );
             apiHandler.RegisterEndpointLegacy("editView/setTopic", HandleSetTopic, true);
             apiHandler.RegisterEndpointLegacy(
                 "editView/isTextSelected",
@@ -338,7 +349,9 @@ namespace Bloom.web.controllers
 
         private void HandlePageDomLoaded(ApiRequest request)
         {
-            View.Model.HandlePageDomLoadedEvent(this, new EventArgs());
+            // we collect and pass on the pageId for bookkeeping purposes
+            var pageId = request.RequiredPostString();
+            View.Model.HandlePageDomLoadedEvent(pageId);
             request.PostSucceeded();
         }
 

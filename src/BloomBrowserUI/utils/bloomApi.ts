@@ -497,7 +497,7 @@ export function postBoolean(urlSuffix: string, value: boolean) {
     );
 }
 
-// This method is used to post something from Bloom.
+// This method is used to post something to Bloom server.
 export function post(
     urlSuffix: string,
     successCallback?: (r: AxiosResponse) => void,
@@ -543,7 +543,7 @@ export function postThatMightNavigate(urlSuffix: string) {
     );
 }
 
-// This method is used to post something from Bloom with data.
+// Post something to Bloom server with data.
 export function postData(
     urlSuffix: string,
     data: any,
