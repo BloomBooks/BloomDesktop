@@ -197,6 +197,8 @@ namespace Bloom
         private static string _uiLanguageOfThisRun;
         private static bool _alreadyOpenedAWebView2Instance;
 
+        static int dataFolderCounter = 0;
+
         private async void InitWebView()
         {
             // based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
@@ -288,10 +290,20 @@ namespace Bloom
             // And it should always be a short name using simple ASCII characters, which might help.
             // I don't think this is ever called before the server chooses a port, but just in case, I'm providing a default
             // that won't match any port we actually use.
-            var dataFolder = Path.Combine(
-                Path.GetTempPath(),
-                "Bloom WV2-" + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
-            );
+            // We had some problems that seemed to possibly related to the folder being left in a bad state, or
+            // different instances of WebView2 using the same one, so we decided to make sure it is uniqiue.
+            // Enhance: it might be a good thing to try to delete this folder if we find it already exists (on a background thread).
+            // For now we'll just keep incrementing until we find an available folder.
+            string dataFolder;
+            do
+            {
+                dataFolder = Path.Combine(
+                    Path.GetTempPath(),
+                    "Bloom WV2-"
+                        + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
+                        + dataFolderCounter++
+                );
+            } while (Directory.Exists(dataFolder));
             var env = await CoreWebView2Environment.CreateAsync(
                 browserExecutableFolder: AlternativeWebView2Path,
                 userDataFolder: dataFolder,
