@@ -1472,18 +1472,26 @@ namespace Bloom.Workspace
 
                         // To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
                         // ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
-                        Logger.WriteEvent("User clicked the 'Report a Problem' menu item");
-                        ProblemReportApi.ShowProblemDialog(this, null);
+                        ReportAndLogProblem();
                         return _editingView.Model.CurrentPage.Id;
                     });
+                }
+                else
+                {
+                    ReportAndLogProblem();
                 }
             }
             catch
             {
                 // Ignore errors saving. (But this may miss problems while responding to getting the page content.)
-                Logger.WriteEvent("User clicked the 'Report a Problem' menu item");
-                ProblemReportApi.ShowProblemDialog(this, null);
+                ReportAndLogProblem();
             }
+        }
+
+        private void ReportAndLogProblem()
+        {
+            Logger.WriteEvent("User clicked the 'Report a Problem' menu item");
+            ProblemReportApi.ShowProblemDialog(this, null);
         }
 
         public void SetStateOfNonPublishTabs(bool enable)
