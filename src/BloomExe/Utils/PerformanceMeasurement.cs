@@ -97,7 +97,7 @@ namespace Bloom.Utils
             {
                 // swallow. This happens when we call from a browser, while debugging.
             }
-            using (Measure("Initial Memory Reading")) { }
+            using (Measure("Initial Memory Reading", refreshSubprocessList: true)) { }
         }
 
         /// <summary>
@@ -113,7 +113,10 @@ namespace Bloom.Utils
                 // no, leave it and its contents around: _folder.Dispose();
                 _stream = null;
             }
+            Measurement.PerfPoint.Cleanup();
         }
+
+        readonly string[] _majorActions = new string[] { "EditBookCommand", "SelectedTabChangedEvent" };
 
         /// <summary>
         /// This is the main public method, called anywhere in the c# code that we want to measure something.
@@ -128,12 +131,12 @@ namespace Bloom.Utils
         )
         {
             if (doMeasure)
-                return Measure(actionLabel, actionDetails);
+                return Measure(actionLabel, actionDetails, refreshSubprocessList: _majorActions.Contains(actionLabel));
             else
                 return new Lifespan(null, null);
         }
 
-        public IDisposable Measure(string actionLabel, string actionDetails = "")
+        public IDisposable Measure(string actionLabel, string actionDetails = "", bool refreshSubprocessList = false)
         {
             if (!CurrentlyMeasuring)
                 return null;
@@ -150,7 +153,7 @@ namespace Bloom.Utils
 
             var previousSize = _previousMeasurement?.LastKnownSize ?? 0L;
             Measurement m = null;
-            m = new Measurement(actionLabel, actionDetails, previousSize);
+            m = new Measurement(actionLabel, actionDetails, previousSize, refreshSubprocessList);
 
             _previousMeasurement = m;
             _measurement = m;
@@ -207,17 +210,19 @@ namespace Bloom.Utils
         private readonly PerfPoint _start;
         private PerfPoint _end;
         private readonly long _previousPrivateBytesKb;
+        private readonly bool _refreshSubprocessList;
 
         public long LastKnownSize => _end?.privateBytesKb ?? _start?.privateBytesKb ?? 0L;
 
-        public Measurement(string actionLabel, string actionDetails, long previousPrivateBytesKb)
+        public Measurement(string actionLabel, string actionDetails, long previousPrivateBytesKb, bool refreshSubprocessList = false)
         {
             _actionLabel = actionLabel;
             _actionDetails = actionDetails;
             _previousPrivateBytesKb = previousPrivateBytesKb;
+            _refreshSubprocessList = refreshSubprocessList;
             try
             {
-                _start = new PerfPoint();
+                _start = new PerfPoint(false);  // Use the old list of subprocesses, if any, for the starting point.
             }
             catch (Exception e)
             {
@@ -232,7 +237,7 @@ namespace Bloom.Utils
         {
             try
             {
-                _end = new PerfPoint();
+                _end = new PerfPoint(_refreshSubprocessList);
             }
             catch (Exception e)
             {
@@ -271,7 +276,7 @@ namespace Bloom.Utils
                 if (!IsComplete)
                     return 0;
 
-                TimeSpan diff = _end.when - _start.when;
+                TimeSpan diff = _end.when - _start.whenReady;
 
                 return Math.Round(diff.TotalMilliseconds / 1000, 2);
             }
@@ -287,7 +292,7 @@ namespace Bloom.Utils
                 // but not to crash any Javascript looking for the usual message.
                 return $"{_actionLabel} measurement failed,{_actionDetails},0:00,0,0";
             }
-            TimeSpan diff = _end.when - _start.when;
+            TimeSpan diff = _end.when - _start.whenReady;
             var time = diff.ToString(@"ss\.ff");
             return $"{_actionLabel},{_actionDetails},{time},{_end.privateBytesKb},{(_end.privateBytesKb - _previousPrivateBytesKb)}";
         }
@@ -298,7 +303,7 @@ namespace Bloom.Utils
                 return $"Measurement: details=\"{_actionDetails}\"; measurement failed";
 
             // For a ToString() summary, the delta/previousSizeKb is not important.
-            return $"Measurement: details=\"{_actionDetails}\"; start={_start.privateBytesKb}KB ({_start.when}); end={_end?.privateBytesKb}KB ({_end?.when})";
+            return $"Measurement: details=\"{_actionDetails}\"; start={_start.privateBytesKb}KB ({_start.whenReady}); end={_end?.privateBytesKb}KB ({_end?.when})";
         }
 
         public class PerfPoint
@@ -307,44 +312,55 @@ namespace Bloom.Utils
             public long pagedMemoryMb;
             public long workingSetKb;
             public DateTime when;
-            public long workingSetPrivateKb;
+            public DateTime whenReady;
             public long privateBytesKb;
 
-            public PerfPoint()
+            static readonly List<Process> _subProcesses = new List<Process>();
+
+            public PerfPoint(bool refreshSubprocessList)
             {
                 this.when = DateTime.Now;
                 using (var proc = Process.GetCurrentProcess())
                 {
+                    var afterGetProcess = DateTime.Now;
+                    //Debug.WriteLine($"Process.GetCurrentProcess() took {(afterGetProcess - when).TotalMilliseconds}ms; Name: {proc.ProcessName}, Id: {proc.Id}");
                     pagedMemoryMb = proc.PagedMemorySize64 / bytesPerMegabyte;
-                    workingSetKb = GetWorkingSetInKB(proc);
-                    workingSetPrivateKb = GetWorkingSetPrivateInKB(proc);
-                    privateBytesKb = GetPrivateBytesInKB(proc);
-
-                    var subProcesses = new List<Process>();
-                    try
+                    workingSetKb = proc.WorkingSet64 / 1024;
+                    privateBytesKb = proc.PrivateMemorySize64 / 1024;
+                    if (refreshSubprocessList)
                     {
+                        Cleanup();
+                        //var startSub = DateTime.Now;
                         var subsubProcs = GetSubProcesses(new List<Process> { proc });
+                        //var endSub = DateTime.Now;
+                        //Debug.WriteLine(
+                        //    $"GetSubProcesses took {(endSub - startSub).TotalMilliseconds}ms for {subsubProcs.Count} subprocesses"
+                        //);
                         while (subsubProcs.Any())
                         {
-                            subProcesses.AddRange(subsubProcs);
+                            _subProcesses.AddRange(subsubProcs);
                             subsubProcs = GetSubProcesses(subsubProcs);
                         }
-                        // Enhance: we could report the bytes of each sub-process, but that would be a lot of data.
-                        // Or: we could report the total bytes of all sub-processes, but would that be helpful?
-                        // Or: we could report the maximum bytes of all sub-processes, but would that be helpful?
-                        pagedMemoryMb += subProcesses.Sum(
-                            p => p.PagedMemorySize64 / bytesPerMegabyte
-                        );
-                        workingSetKb += subProcesses.Sum(p => GetWorkingSetInKB(p));
-                        workingSetPrivateKb += subProcesses.Sum(p => GetWorkingSetPrivateInKB(p));
-                        privateBytesKb += subProcesses.Sum(p => GetPrivateBytesInKB(p));
+                        //var endSubSub = DateTime.Now;
+                        //Debug.WriteLine(
+                        //    $"Looping for GetSubProcesses took {(endSubSub - endSub).TotalMilliseconds}ms for {_subProcesses.Count} total subprocesses"
+                        //);
+                        //foreach (var sub in _subProcesses)
+                        //{
+                        //    Debug.WriteLine($"Subprocess: {sub.ProcessName} {sub.Id}");
+                        //}
                     }
-                    finally
-                    {
-                        foreach (var subProc in subProcesses)
-                            subProc.Dispose();
-                    }
+                    // Enhance: we could report the bytes of each sub-process, but that would be a lot of data.
+                    // Or: we could report the total bytes of all sub-processes, but would that be helpful?
+                    // Or: we could report the maximum bytes of all sub-processes, but would that be helpful?
+                    pagedMemoryMb += _subProcesses.Sum(
+                        p => p.HasExited ? 0 : p.PagedMemorySize64 / bytesPerMegabyte
+                    );
+                    workingSetKb += _subProcesses.Sum(p => p.HasExited ? 0 : p.WorkingSet64 / 1024);
+                    privateBytesKb += _subProcesses.Sum(p => p.HasExited ? 0 : p.PrivateMemorySize64 / 1024);
                 }
+                this.whenReady = DateTime.Now;
+                Debug.WriteLine($"PerfPoint created in {(whenReady - when).TotalMilliseconds}ms");
             }
 
             private static List<Process> GetSubProcesses(List<Process> processes)
@@ -377,70 +393,11 @@ namespace Bloom.Utils
                 return subProcesses;
             }
 
-            // Significance: This counter indicates the current number of bytes allocated to this process that cannot be shared with
-            // other processes.This counter is used for identifying memory leaks.
-            private long GetPrivateBytesInKB(Process proc)
+            internal static void Cleanup()
             {
-                if (SIL.PlatformUtilities.Platform.IsLinux)
-                {
-                    return proc.PrivateMemorySize64 / 1024;
-                }
-                using (
-                    var perfCounter = new PerformanceCounter(
-                        "Process",
-                        "Private Bytes",
-                        proc.ProcessName
-                    )
-                )
-                {
-                    return perfCounter.RawValue / 1024;
-                }
-            }
-
-            // Significance: The working set is the set of memory pages currently loaded in RAM.
-            // If the system has sufficient memory, it can maintain enough space in the working
-            // set so that it does not need to perform the disk operations.
-            // However, if there is insufficient memory, the system tries to reduce the working
-            // set by taking away the memory from the processes which results in an increase in page faults.
-            // When the rate of page faults rises, the system tries to increase the working set of the process.
-            // If you observe wide fluctuations in the working set, it might indicate a memory shortage.
-            // Higher values in the working set may also be due to multiple assemblies in your application.
-            // You can improve the working set by using assemblies shared in the global assembly cache.
-            private long GetWorkingSetInKB(Process proc)
-            {
-                if (SIL.PlatformUtilities.Platform.IsLinux)
-                {
-                    return proc.WorkingSet64 / 1024;
-                }
-                using (
-                    var perfCounter = new PerformanceCounter(
-                        "Process",
-                        "Working Set",
-                        proc.ProcessName
-                    )
-                )
-                {
-                    return perfCounter.RawValue / 1024;
-                }
-            }
-
-            private long GetWorkingSetPrivateInKB(Process proc)
-            {
-                if (SIL.PlatformUtilities.Platform.IsLinux)
-                {
-                    // Can't get "private" working set on Linux.
-                    return proc.WorkingSet64 / 1024;
-                }
-                using (
-                    var perfCounter = new PerformanceCounter(
-                        "Process",
-                        "Working Set - Private",
-                        proc.ProcessName
-                    )
-                )
-                {
-                    return perfCounter.RawValue / 1024;
-                }
+                foreach (var subProc in _subProcesses)
+                    subProc.Dispose();
+                _subProcesses.Clear();
             }
         }
     }
