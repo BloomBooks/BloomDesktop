@@ -887,7 +887,10 @@ namespace Bloom.Api
                 // (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
                 // can return contents of any file that exists if the URL gives its full path...even ones that
                 // are generated temp files most certainly NOT distributed with the application.
+                // Ignore missing source map files. They are not critical to the functioning of the app.
+                var isMap = localPath.EndsWith(".map");
                 return FileLocationUtilities.GetFileDistributedWithApplication(
+                    optional: isMap,
                     BloomFileLocator.BrowserRoot,
                     modPath
                 );
@@ -905,6 +908,9 @@ namespace Bloom.Api
             try
             {
                 path = ProcessPath(localPath, modPath);
+                // Silently accept missing source map files. They are not critical to the functioning of the app.
+                if (path == null && localPath.EndsWith(".map"))
+                    return false;
             }
             catch (ApplicationException e)
             {
