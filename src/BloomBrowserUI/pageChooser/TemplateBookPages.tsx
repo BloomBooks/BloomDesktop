@@ -73,12 +73,12 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                     encodeURIComponent(groupUrls.templateBookPath)
             )
             .then(result => {
-                const pageData: HTMLElement = new DOMParser().parseFromString(
+                const resultPageData: HTMLElement = new DOMParser().parseFromString(
                     result.data,
                     "text/html"
                 ).body;
                 let bloomPages: HTMLDivElement[] = Array.from(
-                    pageData.querySelectorAll(".bloom-page")
+                    resultPageData.querySelectorAll(".bloom-page")
                 );
                 if (forChooseLayout) {
                     // This filters out the (empty) custom page, which is currently never a useful layout change,
@@ -106,7 +106,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                     return;
                 }
 
-                const bookTitleElement = pageData.querySelector(
+                const bookTitleElement = resultPageData.querySelector(
                     "div[data-book='bookTitle']"
                 );
                 if (bookTitleElement) {
@@ -117,9 +117,6 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                     );
                 }
                 setPageData(filteredBloomPages);
-                if (onLoad) {
-                    onLoad();
-                }
             })
             .catch(reason => {
                 console.log(reason);
@@ -130,7 +127,13 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                     onLoad(); // We didn't load a book, but we are just counting the axios response.
                 }
             });
-    }, [forChooseLayout, groupUrls, onLoad]);
+    }, [forChooseLayout, groupUrls.templateBookPath]);
+
+    useEffect(() => {
+        if (onLoad) {
+            onLoad();
+        }
+    }, [pageData, errorState, onLoad]);
 
     const pages = pageData
         ? pageData.map((currentPageDiv: HTMLDivElement, index) => {
