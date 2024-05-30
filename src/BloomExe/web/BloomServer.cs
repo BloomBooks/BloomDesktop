@@ -894,6 +894,7 @@ namespace Bloom.Api
             }
         }
 
+        private int _missingMapFileCount = 0;
         private bool ProcessAnyFileContent(IRequestInfo info, string localPath)
         {
             string modPath = localPath;
@@ -927,19 +928,53 @@ namespace Bloom.Api
             // book folders. So instead redirect to our browser file folder.
             if (String.IsNullOrEmpty(path) || !RobustFileExistsWithCaseCheck(path))
             {
+                var isMap = localPath.EndsWith(".map");
                 var startOfBookLayout = localPath.IndexOf("bookLayout");
                 if (startOfBookLayout > 0)
                     path = BloomFileLocator.GetBrowserFile(
-                        false,
+                        isMap,
                         localPath.Substring(startOfBookLayout)
                     );
                 var startOfBookEdit = localPath.IndexOf("bookEdit");
                 if (startOfBookEdit > 0)
                     path = BloomFileLocator.GetBrowserFile(
-                        false,
+                        isMap,
                         localPath.Substring(startOfBookEdit)
                     );
+                if ((startOfBookLayout > 0 || startOfBookEdit > 0) && isMap && path == null)
+                {
+                    ReportMissingFile(info); // This logs the problem, but doesn't show it to the user.
+                    ++_missingMapFileCount;
+                    if (ApplicationUpdateSupport.IsDev)
+                    {
+                        if (_missingMapFileCount < 5) // report first four missing files via dialog
+                        {
+                            NonFatalProblem.Report(
+                                ModalIf.All,
+                                PassiveIf.None,
+                                "Missing map file: " + localPath,
+                                showSendReport: false,
+                                skipSentryReport: true
+                            );
+                        }
+                    }
+                    else
+                    {
+                        if (_missingMapFileCount < 2) // report first missing file via toast
+                        {
+                            NonFatalProblem.Report(
+                                ModalIf.None,
+                                PassiveIf.All,
+                                "Missing map file: " + localPath,
+                                showSendReport: false,
+                                skipSentryReport: true
+                            );
+                        }
+                    }
+                    return false;
+                }
             }
+            
 
             if (
                 !RobustFileExistsWithCaseCheck(path)
