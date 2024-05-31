@@ -186,11 +186,15 @@ namespace Bloom.Edit
             {
                 if (Visible)
                 {
-                    args.Delayed = true;
                     // We want to save any changes, and they ought to be fully saved before we shut down the program.
-                    // To that end we take responsibility for calling book.Save() before doing the caller-supplied
-                    // action that continues the shutdown process.
-                    SaveThen(
+                    // To that end we normally set Delayed to indicate that we take responsibility for doing the caller-supplied
+                    // action that continues the shutdown process (after the Save completes).
+                    // If we can't initiate a Save, we'll just let the shutdown proceed (leave Delayed false).
+                    // Review: should we warn the user? Displaying UI while the user is tying to close the program is
+                    // generally a bad idea, but we may have failed to save some changes. On the other hand,
+                    // the only likely reason for this is that the program is in a bad state, probably from a previously
+                    // reported error.
+                    args.Delayed = SaveThen(
                         () =>
                         {
                             CurrentBook.Save();
@@ -890,44 +894,83 @@ namespace Bloom.Edit
         /// </summary>
         void StartNavigationToEditPage(IPage page)
         {
-            _pageSelection.SelectPage(page);
-            Logger.WriteMinorEvent("changing page selection");
-            Analytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
-
-            // Trace memory usage in case it may be useful
-            // First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
-            // If we seem to have a problem do it again forcing the GC and possibly warning the user.
-            if (MemoryManagement.CheckMemory(false, "switched page in edit", false, false))
-                MemoryManagement.CheckMemory(false, "switched page in edit", true);
-
-            if (_view != null)
+            try
             {
-                if (_previouslySelectedPage != null && _havePageToSave)
+                _pageSelection.SelectPage(page);
+                Logger.WriteMinorEvent("changing page selection");
+                Analytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
+
+                // Trace memory usage in case it may be useful
+                // First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
+                // If we seem to have a problem do it again forcing the GC and possibly warning the user.
+                if (MemoryManagement.CheckMemory(false, "switched page in edit", false, false))
+                    MemoryManagement.CheckMemory(false, "switched page in edit", true);
+
+                if (_view != null)
                 {
-                    _view.UpdateThumbnailAsync(_previouslySelectedPage);
-                }
-                _previouslySelectedPage = _pageSelection.CurrentSelection;
+                    if (_previouslySelectedPage != null && _havePageToSave)
+                    {
+                        _view.UpdateThumbnailAsync(_previouslySelectedPage);
+                    }
 
-                // BL-2339: remember last edited page
-                if (_previouslySelectedPage != null)
+                    _previouslySelectedPage = _pageSelection.CurrentSelection;
+
+                    // BL-2339: remember last edited page
+                    if (_previouslySelectedPage != null)
+                    {
+                        var idx = _previouslySelectedPage.GetIndex();
+                        if (idx > -1)
+                            _previouslySelectedPage.Book.UserPrefs.MostRecentPage = idx;
+                    }
+
+                    _pageSelection.CurrentSelection.Book.BringPageUpToDate(
+                        _pageSelection.CurrentSelection.GetDivNodeForThisPage()
+                    );
+                    if (Visible)
+                        _view.StartNavigationToEditPage(page);
+
+                    _duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
+                    _deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
+
+                    CheckForBL8852();
+
+                    PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            catch (Exception e)
+            {
+                // It's very important that we succeed in navigating to SOME page; otherwise, we may well be left
+                // in a state where the page UI isn't fully set up, and the state machine is in the SavedAndStripped
+                // state, which will prevent saving any future changes. So if something went wrong here, see if
+                // we can navigate to some other page. Arbitrarily, we'll try the first page, but only if that isn't
+                // what we were already doing...that could lead to an infinite recursion. I can't think of anything
+                // that feels useful to try if we can't navigate to the first page that is really in the current book.
+                // (Conceivably we could try to report it, but we already have a navigation error we're about to throw,
+                // and in that case it's presumably a report of something that went wrong while trying to navigate
+                // to the first page.)
+                // Review: in some ways it would be better to do this AFTER reporting the problem...but how can we reliably
+                // detect that we're done handling the exception? It MIGHT not even end up being reported, depending
+                // on what exception handlers may be up the stack.
+                try
                 {
-                    var idx = _previouslySelectedPage.GetIndex();
-                    if (idx > -1)
-                        _previouslySelectedPage.Book.UserPrefs.MostRecentPage = idx;
+                    var page1 = CurrentBook.GetPages().FirstOrDefault();
+                    if (page1 != null && page1.Id != page?.Id)
+                    {
+                        // Not just a recursive call to StartNavigationToEditPage, though that will happen,
+                        // because the state machine needs to know about the different page ID.
+                        StateMachine.ToNavigating(page1.Id);
+                    }
+                }
+                catch (Exception e2)
+                {
+                    // If we can't even navigate to the first page, we're in trouble. But better to throw the original error.
+                    Logger.WriteEvent("Error navigating to page1: " + e2.Message);
+                    // Ensure the user can at least try to recover by choosing another page.
+                    // (This is untested; it's a fall-back to a fall-back, and I can't think of a way to make it happen.)
+                    _view.SetModalState(false);
                 }
 
-                _pageSelection.CurrentSelection.Book.BringPageUpToDate(
-                    _pageSelection.CurrentSelection.GetDivNodeForThisPage()
-                );
-                if (Visible)
-                    _view.StartNavigationToEditPage(page);
-
-                _duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
-                _deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
-
-                CheckForBL8852();
-
-                PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
+                throw;
             }
         }
 
@@ -1396,15 +1439,17 @@ namespace Bloom.Edit
         /// Usually, the book will be saved to disk after executing the action, but before navigating to
         /// the new page. Sometimes the action needs to save the book itself, in which case it can prevent
         /// a further Save() by setting saveActionHandlesSaveBook to true.
+        /// Returns true if we're in a valid state to save, false if we're not. In the latter case, doAfterSaving
+        /// will not be called (even later).
         /// </summary>
-        public void SaveThen(
+        public bool SaveThen(
             Func<string> doAfterSaving,
             bool forceFullSave = false,
             bool saveActionHandlesSaveBook = false
         )
         {
             _nextSaveMustBeFull |= forceFullSave;
-            _stateMachine.ToSavePending(
+            return _stateMachine.ToSavePending(
                 doAfterSaving,
                 saveActionHandlesSaveBook: saveActionHandlesSaveBook
             );
