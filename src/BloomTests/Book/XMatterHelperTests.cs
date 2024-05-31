@@ -118,15 +118,25 @@ namespace BloomTests.Book
         /// making the htmlthumbnailer's caching system totally messed up.
         /// </summary>
         [Test]
-        public void InjectXMatter_AllDefaults_FirstPageHasNewIdInsteadOfCopying()
+        public void InjectXMatter_IdsDifferentFromTemplate_SameAsPreviousInject()
         {
-            CreatePaperSaverHelper().InjectXMatter(_dataSet, Layout.A5Portrait, false, "en");
+            var paperSaverHelper = CreatePaperSaverHelper();
+            paperSaverHelper.InjectXMatter(_dataSet, Layout.A5Portrait, false, "en");
             var id1 = _dom.SelectSingleNode("//div[contains(@class,'cover')]").GetAttribute("id");
+            var idSource = (
+                paperSaverHelper.XMatterDom.SelectSingleNode("//div[contains(@class,'cover')]")
+                as XmlElement
+            ).GetAttribute("id");
+            var oldIds = new List<string>();
+            XMatterHelper.RemoveExistingXMatter(_dom, oldIds);
             Setup(); //reset for another round
-            CreatePaperSaverHelper().InjectXMatter(_dataSet, Layout.A5Portrait, false, "en");
+            CreatePaperSaverHelper()
+                .InjectXMatter(_dataSet, Layout.A5Portrait, false, "en", oldIds);
             var id2 = _dom.SelectSingleNode("//div[contains(@class,'cover')]").GetAttribute("id");
 
-            Assert.AreNotEqual(id1, id2);
+            Assert.AreNotEqual(idSource, id1);
+            Assert.AreNotEqual(idSource, id2);
+            Assert.AreEqual(id1, id2);
         }
 
         [Test]

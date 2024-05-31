@@ -314,7 +314,8 @@ namespace Bloom.Book
             Dictionary<string, string> writingSystemCodes,
             Layout layout,
             bool orderXmatterForDeviceUse,
-            string metadataLangTag
+            string metadataLangTag,
+            List<string> oldIds = null
         )
         {
             //don't want to pollute shells with this content
@@ -357,8 +358,19 @@ namespace Bloom.Book
             )
             {
                 var newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as XmlElement;
-                //give a new id, else thumbnail caches get messed up because every book has, for example, the same id for the cover.
-                newPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
+                // If we're updating an existing book, we want to keep the IDs (as much as possible; sometimes
+                // the number of xmatter pages changes and we have to add IDs). In this case, oldIds is obtained
+                // while running RemoveExistingXMatter.
+                // If we're creating a new book, we want to generate new IDs, so things like caches of cover thumbnails
+                // by ID don't find the same ID for every book derived from a given template. In that case, we discard the IDs
+                // from any removed xmatter pages.
+                var newId = Guid.NewGuid().ToString();
+                if (oldIds != null && oldIds.Count > 0)
+                {
+                    newId = oldIds[0];
+                    oldIds.RemoveAt(0);
+                }
+                newPageDiv.SetAttribute("id", newId);
 
                 // Various fields don't have a useful lang attribute value (doesn't exist or is "*") but we need a lang attribute to set the font properly.
                 // By setting it on the page, all those fields can properly inherit the language 2 code and thus use its font. See BL-8545.
@@ -509,7 +521,7 @@ namespace Bloom.Book
         /// <summary>
         ///remove any x-matter in the book
         /// </summary>
-        public static void RemoveExistingXMatter(HtmlDom dom)
+        public static void RemoveExistingXMatter(HtmlDom dom, List<string> oldPageIds)
         {
             foreach (
                 XmlElement div in dom.SafeSelectNodes(
@@ -517,6 +529,11 @@ namespace Bloom.Book
                 )
             )
             {
+                var id = div.GetAttribute("id");
+                if (!string.IsNullOrEmpty(id))
+                {
+                    oldPageIds.Add(id);
+                }
                 div.ParentNode.RemoveChild(div);
             }
         }
