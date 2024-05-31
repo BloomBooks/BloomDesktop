@@ -2346,7 +2346,8 @@ namespace Bloom.Book
             // Per BL-3571, if it's using a layout we don't know (e.g., from a newer Bloom) we switch to A5Portrait.
             // Various things, especially publication, don't work with unknown page sizes.
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
-            XMatterHelper.RemoveExistingXMatter(bookDOM);
+            var oldIds = new List<string>();
+            XMatterHelper.RemoveExistingXMatter(bookDOM, oldIds);
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
             layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator);
@@ -2354,7 +2355,8 @@ namespace Bloom.Book
                 _bookData.WritingSystemAliases,
                 layout,
                 BookInfo.UseDeviceXMatter,
-                _bookData.MetadataLanguage1Tag
+                _bookData.MetadataLanguage1Tag,
+                oldIds
             );
 
             var dataBookLangs = bookDOM.GatherDataBookLanguages();

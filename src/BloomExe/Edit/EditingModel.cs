@@ -916,9 +916,7 @@ namespace Bloom.Edit
                         _previouslySelectedPage.Book.UserPrefs.MostRecentPage = idx;
                 }
 
-                _pageSelection.CurrentSelection.Book.BringPageUpToDate(
-                    _pageSelection.CurrentSelection.GetDivNodeForThisPage()
-                );
+                CurrentBook.BringPageUpToDate(page.GetDivNodeForThisPage());
                 if (Visible)
                     _view.StartNavigationToEditPage(page);
 
@@ -1456,7 +1454,7 @@ namespace Bloom.Edit
             //	CurrentBook.SavePage(_domForCurrentPage);
             //would some times ask book X to save a page from book Y.
             //We could never reproduce it at will, so this is to help with that...
-            if (this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
+            if (CurrentBook != _currentlyDisplayedBook)
             {
                 Debug.Fail("This is the BL-1064 Situation");
                 Logger.WriteEvent(
@@ -1467,15 +1465,12 @@ namespace Bloom.Edit
             //error if, for example, it was deleted:
             try
             {
-                if (!_pageSelection.CurrentSelection.Book.IsSaveable)
+                if (!CurrentBook.IsSaveable)
                 {
                     Logger.WriteEvent(
                         "Error: SaveNow() found that this book had IsSaveable=='false'"
                     );
-                    Logger.WriteEvent(
-                        "Book path was {0}",
-                        _pageSelection.CurrentSelection.Book.FolderPath
-                    );
+                    Logger.WriteEvent("Book path was {0}", CurrentBook.FolderPath);
                     throw new ApplicationException(
                         "Bloom tried to save a page to a book that was not in a position to be updated."
                     );
@@ -1493,7 +1488,7 @@ namespace Bloom.Edit
             }
             //OK, looks safe, time to save.
             var newPageData = GetPageData(docFromBrowser);
-            _nextSaveMustBeFull = _pageSelection.CurrentSelection.Book.UpdateDomFromEditedPage(
+            _nextSaveMustBeFull = CurrentBook.UpdateDomFromEditedPage(
                 HtmlDom.FromDoc(docFromBrowser),
                 out _modifiedPageElement,
                 _nextSaveMustBeFull || NeedToDoFullSave(newPageData)
