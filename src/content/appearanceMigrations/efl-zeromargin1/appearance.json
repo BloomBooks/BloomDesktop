@@ -1,0 +1,9 @@
+// Matches customBookStyles.css with checksum 2454bc3647d4f2f8e1222c57dcab6411
+// On Thu May 16 2024 this was used by 71 books (51 unique).
+// Affected branding projects included ["Education-For-Life","PNG-AUS-PIE","SIL-PNG","PNG-Kokoda-Track-Foundation","PNG-RISE","PNG-COVICEF","PNG-UnrestrICTed-Yumi","workshop"].
+// Uploaders included ["bep_langho...@sil.org","duarteuala...@gmail.com","educationforli...@sil.org"].
+// Example Book: https://bloomlibrary.org/:search:bookInstanceId%3A045abb3f-06df-41c1-ae42-2f1819e6b23e
+// A replacement customBookStyles.css has been generated.
+{
+  "cssThemeName": "default",
+}

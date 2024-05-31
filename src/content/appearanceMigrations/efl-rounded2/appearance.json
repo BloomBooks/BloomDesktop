@@ -1,0 +1,9 @@
+// Matches customBookStyles.css with checksum 00f22b1c9c48084adba4a0cbcb83527c
+// On Thu May 16 2024 this was used by 161 books (134 unique).
+// Affected branding projects included ["Vanuatu-Literacy-Nasara","Education-For-Life-SE","PNG-AUS-PIE","Education-For-Life","SIL-PNG"].
+// Uploaders included ["darlene_farr...@sil.org","educationforli...@sil.org","efl-mediaeditor_p...@sil.org"].
+// Example Book: https://bloomlibrary.org/:search:bookInstanceId%3A16ada132-5f3a-4753-818a-ef1cacd920d3
+// A replacement customBookStyles.css has been generated.
+{
+  "cssThemeName": "rounded-border-ebook",
+}
