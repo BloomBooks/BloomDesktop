@@ -186,18 +186,25 @@ namespace Bloom.Edit
             {
                 if (Visible)
                 {
-                    args.Delayed = true;
                     // We want to save any changes, and they ought to be fully saved before we shut down the program.
-                    // To that end we take responsibility for calling book.Save() before doing the caller-supplied
-                    // action that continues the shutdown process.
-                    SaveThen(
+                    // To that end we normally set Delayed to indicate that we take responsibility for doing the caller-supplied
+                    // action that continues the shutdown process (after the Save completes).
+                    // If we can't initiate a Save, we'll just let the shutdown proceed (leave Delayed false).
+                    // Review: should we warn the user? Displaying UI while the user is tying to close the program is
+                    // generally a bad idea, but we may have failed to save some changes. On the other hand,
+                    // the only likely reason for this is that the program is in a bad state, probably from a previously
+                    // reported error.
+                    args.Delayed = SaveThen(
                         () =>
                         {
+                            // We are setting skipSaveToDisk true so that we can do it ourselves here BEFORE
+                            // the postponed work, which is going to shut everything down and would prevent
+                            // the normal automatic save-to-disk from working.
                             CurrentBook.Save();
                             args.PostponedWork();
                             return null;
                         },
-                        saveActionHandlesSaveBook: true
+                        skipSaveToDisk: true
                     );
                 }
             });
@@ -367,6 +374,9 @@ namespace Bloom.Edit
                 SaveThen(
                     () =>
                     {
+                        // We are setting skipSaveToDisk true so that we can do it ourselves here BEFORE
+                        // the postponed work, which is going to shut everything down and would prevent
+                        // the normal automatic save-to-disk from working.
                         CurrentBook.Save(); // we need it all the way saved before doing the PostponedWork
                         // This bizarre behavior prevents BL-2313 and related problems.
                         // For some reason I cannot discover, switching tabs when focus is in the Browser window
@@ -378,7 +388,7 @@ namespace Bloom.Edit
                         details.PostponedWork?.Invoke();
                         return null; // leaving this tab, show blank page
                     },
-                    saveActionHandlesSaveBook: true
+                    skipSaveToDisk: true
                 );
             }
             else
@@ -890,6 +900,8 @@ namespace Bloom.Edit
         /// </summary>
         void StartNavigationToEditPage(IPage page)
         {
+            try
+            {
             _pageSelection.SelectPage(page);
             Logger.WriteMinorEvent("changing page selection");
             Analytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
@@ -906,6 +918,7 @@ namespace Bloom.Edit
                 {
                     _view.UpdateThumbnailAsync(_previouslySelectedPage);
                 }
+
                 _previouslySelectedPage = _pageSelection.CurrentSelection;
 
                 // BL-2339: remember last edited page
@@ -926,6 +939,42 @@ namespace Bloom.Edit
                 CheckForBL8852();
 
                 PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
+            }
+        }
+            catch (Exception e)
+            {
+                // It's very important that we succeed in navigating to SOME page; otherwise, we may well be left
+                // in a state where the page UI isn't fully set up, and the state machine is in the SavedAndStripped
+                // state, which will prevent saving any future changes. So if something went wrong here, see if
+                // we can navigate to some other page. Arbitrarily, we'll try the first page, but only if that isn't
+                // what we were already doing...that could lead to an infinite recursion. I can't think of anything
+                // that feels useful to try if we can't navigate to the first page that is really in the current book.
+                // (Conceivably we could try to report it, but we already have a navigation error we're about to throw,
+                // and in that case it's presumably a report of something that went wrong while trying to navigate
+                // to the first page.)
+                // Review: in some ways it would be better to do this AFTER reporting the problem...but how can we reliably
+                // detect that we're done handling the exception? It MIGHT not even end up being reported, depending
+                // on what exception handlers may be up the stack.
+                try
+                {
+                    var page1 = CurrentBook.GetPages().FirstOrDefault();
+                    if (page1 != null && page1.Id != page?.Id)
+                    {
+                        // Not just a recursive call to StartNavigationToEditPage, though that will happen,
+                        // because the state machine needs to know about the different page ID.
+                        StateMachine.ToNavigating(page1.Id);
+                    }
+                }
+                catch (Exception e2)
+                {
+                    // If we can't even navigate to the first page, we're in trouble. But better to throw the original error.
+                    Logger.WriteEvent("Error navigating to page1: " + e2.Message);
+                    // Ensure the user can at least try to recover by choosing another page.
+                    // (This is untested; it's a fall-back to a fall-back, and I can't think of a way to make it happen.)
+                    _view.SetModalState(false);
+                }
+
+                throw;
             }
         }
 
@@ -1393,18 +1442,21 @@ namespace Bloom.Edit
         /// to show a blank screen if we are leaving the edit tab.
         /// Usually, the book will be saved to disk after executing the action, but before navigating to
         /// the new page. Sometimes the action needs to save the book itself, in which case it can prevent
-        /// a further Save() by setting saveActionHandlesSaveBook to true.
+        /// a further Save() by setting skipSaveToDisk to true. (Or just possibly, we might not want the Save
+        /// to go all the way to disk, especially if we aren't going to switch pages.)
+        /// Returns true if we're in a valid state to save, false if we're not. In the latter case, doAfterSaving
+        /// will not be called (even later).
         /// </summary>
-        public void SaveThen(
+        public bool SaveThen(
             Func<string> doAfterSaving,
             bool forceFullSave = false,
-            bool saveActionHandlesSaveBook = false
+            bool skipSaveToDisk = false
         )
         {
             _nextSaveMustBeFull |= forceFullSave;
-            _stateMachine.ToSavePending(
+            return _stateMachine.ToSavePending(
                 doAfterSaving,
-                saveActionHandlesSaveBook: saveActionHandlesSaveBook
+                saveActionHandlesSaveBook: skipSaveToDisk
             );
         }
 
