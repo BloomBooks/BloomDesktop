@@ -113,14 +113,17 @@ namespace Bloom.web.controllers
                     request.ReplyWithJson(intellectualPropertyData);
                     break;
                 case HttpMethods.Post:
-                    View.Model.SaveThen(() =>
-                    { // Saved DOM must be up to date with possibly new imageUrl
-                        metadata = GetMetadataFromJson(request, forBook: false);
-                        bool askUserToCopyToAllImages = View.SaveImageMetadata(metadata);
-                        if (askUserToCopyToAllImages)
-                            View.AskUserToCopyImageMetadataToAllImages(metadata);
-                        return View.Model.CurrentPage.Id;
-                    });
+                    View.Model.SaveThen(
+                        () =>
+                        { // Saved DOM must be up to date with possibly new imageUrl
+                            metadata = GetMetadataFromJson(request, forBook: false);
+                            bool askUserToCopyToAllImages = View.SaveImageMetadata(metadata);
+                            if (askUserToCopyToAllImages)
+                                View.AskUserToCopyImageMetadataToAllImages(metadata);
+                            return View.Model.CurrentPage.Id;
+                        },
+                        () => { } // wrong state, do nothing
+                    );
 
                     request.PostSucceeded();
 

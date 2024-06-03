@@ -161,7 +161,7 @@ namespace Bloom.Edit
                 return;
             if (!_dontForwardSelectionEvent)
             {
-                _model.SaveThen(() => (page as Page).Id);
+                _model.SaveThen(() => (page as Page).Id, () => { });
             }
         }
 

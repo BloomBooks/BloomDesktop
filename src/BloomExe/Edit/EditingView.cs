@@ -1991,13 +1991,18 @@ namespace Bloom.Edit
 
         private void _bookSettingsButton_Click(object sender, EventArgs e)
         {
-            _model.SaveThen(() =>
-            {
-                // Open the book settings dialog to the context-specific group.
-                var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
-                RunJavascriptAsync($"editTabBundle.showEditViewBookSettingsDialog({groupIndex});");
-                return _model.CurrentPage.Id;
-            });
+            _model.SaveThen(
+                () =>
+                {
+                    // Open the book settings dialog to the context-specific group.
+                    var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
+                    RunJavascriptAsync(
+                        $"editTabBundle.showEditViewBookSettingsDialog({groupIndex});"
+                    );
+                    return _model.CurrentPage.Id;
+                },
+                () => { } // wrong state, do nothing
+            );
         }
 
         // This is temporary code we added in 6.0 when trying to determine why we are sometimes losing

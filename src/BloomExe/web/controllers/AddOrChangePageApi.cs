@@ -83,25 +83,28 @@ namespace Bloom.web.controllers
             if (templatePage == null)
                 return;
             var pageId = _pageSelection.CurrentSelection.Id;
-            _editingModel.SaveThen(() =>
-            {
-                CopyVideoPlaceHolderIfNeeded(templatePage);
-                var pageToChange = _pageSelection.CurrentSelection;
-                if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
-                    HtmlDom.AddStylesheetFromAnotherBook(
-                        templatePage.Book.OurHtmlDom,
-                        pageToChange.Book.OurHtmlDom
-                    );
-                if (changeWholeBook)
-                    ChangeSimilarPagesInEntireBook(pageToChange, templatePage, allowDataLoss);
-                else
-                    pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(
-                        pageToChange,
-                        templatePage
-                    );
+            _editingModel.SaveThen(
+                () =>
+                {
+                    CopyVideoPlaceHolderIfNeeded(templatePage);
+                    var pageToChange = _pageSelection.CurrentSelection;
+                    if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
+                        HtmlDom.AddStylesheetFromAnotherBook(
+                            templatePage.Book.OurHtmlDom,
+                            pageToChange.Book.OurHtmlDom
+                        );
+                    if (changeWholeBook)
+                        ChangeSimilarPagesInEntireBook(pageToChange, templatePage, allowDataLoss);
+                    else
+                        pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(
+                            pageToChange,
+                            templatePage
+                        );
 
-                return pageId;
-            });
+                    return pageId;
+                },
+                () => { } // wrong state, do nothing
+            );
             request.PostSucceeded();
         }
 
