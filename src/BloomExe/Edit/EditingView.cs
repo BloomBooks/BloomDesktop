@@ -421,9 +421,22 @@ namespace Bloom.Edit
             }
             else
             {
-                _browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
-                _model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
+                // This will rarely do anything. It's typically called from the OnTabChanged event, which is invoked after
+                // onTabAboutToChange, which (typically, in state Editing) initiates a Save with a pending action that returns null,
+                // which will also cause a change to NoPage. However, it will be ignored in states where it's not valid,
+                // and may be helpful in some cases (e.g., if somehow we're navigating), so I decided to put it in.
+                _model.StateMachine.ToNoPage();
             }
+        }
+
+        /// <summary>
+        /// Done when the state machine determines it really is safe to switch to the NoPage state, that is, we've
+        /// done any necessary saving before switching away from the Edit tab.
+        /// </summary>
+        public void OnHideEditTab()
+        {
+            _browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
+            _model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
         }
 
         DateTime _beginPageLoad;

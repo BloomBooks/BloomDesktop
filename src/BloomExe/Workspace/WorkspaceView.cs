@@ -169,6 +169,7 @@ namespace Bloom.Workspace
             //
             this._editingView = editingViewFactory();
             this._editingView.Dock = DockStyle.Fill;
+            this._editingView.Model.EnableSwitchingTabs = (enabled) => _tabStrip.Enabled = enabled;
 
             _collectionTabView = reactCollectionsTabsViewFactory();
             _collectionTabView.ManageSettings(_settingsLauncherHelper);
