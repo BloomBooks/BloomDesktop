@@ -362,7 +362,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
             page && page.contentWindow
                 ? page.contentWindow.document.body
                 : undefined;
-        if (current === undefined) {
+        if (!current) {
             return true;
         }
         const currentTranslationGroupCount = countTranslationGroupsForChangeLayout(
