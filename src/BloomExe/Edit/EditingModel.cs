@@ -194,7 +194,8 @@ namespace Bloom.Edit
                     // generally a bad idea, but we may have failed to save some changes. On the other hand,
                     // the only likely reason for this is that the program is in a bad state, probably from a previously
                     // reported error.
-                    args.Delayed = SaveThen(
+                    args.Delayed = true;
+                    SaveThen(
                         () =>
                         {
                             // We are setting skipSaveToDisk true so that we can do it ourselves here BEFORE
@@ -204,6 +205,7 @@ namespace Bloom.Edit
                             args.PostponedWork();
                             return null;
                         },
+                        doIfNotInRightStateToSave: () => args.Delayed = false, // go ahead and quit now
                         skipSaveToDisk: true
                     );
                 }
@@ -220,11 +222,14 @@ namespace Bloom.Edit
                 //shown so the view has never been full constructed, so we're not in a good state to do a refresh
                 if (Visible)
                 {
-                    SaveThen(() =>
-                    {
-                        _view.UpdatePageList(false);
-                        return _pageSelection.CurrentSelection.Id;
-                    });
+                    SaveThen(
+                        () =>
+                        {
+                            _view.UpdatePageList(false);
+                            return _pageSelection.CurrentSelection.Id;
+                        },
+                        () => { } // wrong state, I think there's nothing we can safely do.
+                    );
                 }
             });
             _contentLanguages = new List<ContentLanguage>();
@@ -388,6 +393,23 @@ namespace Bloom.Edit
                         details.PostponedWork?.Invoke();
                         return null; // leaving this tab, show blank page
                     },
+                    () =>
+                    {
+                        // We disable the tab control while we're in SavePending or SavedAndStripped.
+                        // We shouldn't be in NoPage while in the edit tab, but if we somehow are, we take the branch above.
+                        // If we're Editing, we will take the branch above.
+                        // So this is just the case where we're Navigating, either because we clicked on the Edit tab
+                        // and then immediately something else, or clicked another tab during the fraction of a second
+                        // while Bloom is navigating to a new page after doing some command. Abort the navigate, then go ahead.
+                        Guard.AssertThat(
+                            StateMachine.Navigating,
+                            "This branch should only be taken when navigating"
+                        );
+                        StateMachine.ToNoPage();
+                        _oldActiveForm = Form.ActiveForm;
+                        Application.Idle += ReactivateFormOnIdle;
+                        details.PostponedWork?.Invoke();
+                    },
                     skipSaveToDisk: true
                 );
             }
@@ -510,6 +532,7 @@ namespace Bloom.Edit
                     }
                     return newPageId;
                 },
+                () => { }, // wrong state, do nothing
                 forceFullSave: true
             );
         }
@@ -556,6 +579,7 @@ namespace Bloom.Edit
                         _inProcessOfDeleting = false;
                     }
                 },
+                () => { }, // wrong state, do nothing
                 forceFullSave: true
             );
         }
@@ -625,6 +649,7 @@ namespace Bloom.Edit
                     Logger.WriteEvent("InsertTemplatePage");
                     return newPageId;
                 },
+                () => { }, // wrong state, do nothing
                 forceFullSave: true
             );
         }
@@ -749,32 +774,35 @@ namespace Bloom.Edit
 
         public void SetLayout(Layout layout)
         {
-            SaveThen(() =>
-            {
-                var pageId = _pageSelection.CurrentSelection.Id;
-                var changedOrientation =
-                    CurrentBook.GetLayout().SizeAndOrientation.IsLandScape
-                    != layout.SizeAndOrientation.IsLandScape;
-                CurrentBook.SetLayout(layout);
-                if (changedOrientation)
+            SaveThen(
+                () =>
                 {
-                    // We need to update the xmatter, since this process selects images to display based on orientation.
-                    // (Here we need to do it even if we already brought this book up to date when it was selected.)
-                    CurrentBook.BringBookUpToDate(new NullProgress());
-                    // That wrecks everything. In particular guids stored in Page objects are obsolete.
-                    // Simulate switching to collection mode, force discarding everything problematic, and reinitialize.
-                    _view.OnVisibleChanged(false);
-                    _currentlyDisplayedBook = null;
-                    _previouslySelectedPage = null;
-                    _view.OnVisibleChanged(true);
-                    // If the Add Page dialog is open, we can still change layout.  The OnVisibleChanged calls close the dialog,
-                    // but can leave the PageListView disabled.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6554.
-                    _view.SetModalState(false);
-                }
-                CurrentBook.PrepareForEditing();
-                _view.UpdatePageList(true); //counting on this to redo the thumbnails
-                return pageId;
-            });
+                    var pageId = _pageSelection.CurrentSelection.Id;
+                    var changedOrientation =
+                        CurrentBook.GetLayout().SizeAndOrientation.IsLandScape
+                        != layout.SizeAndOrientation.IsLandScape;
+                    CurrentBook.SetLayout(layout);
+                    if (changedOrientation)
+                    {
+                        // We need to update the xmatter, since this process selects images to display based on orientation.
+                        // (Here we need to do it even if we already brought this book up to date when it was selected.)
+                        CurrentBook.BringBookUpToDate(new NullProgress());
+                        // That wrecks everything. In particular guids stored in Page objects are obsolete.
+                        // Simulate switching to collection mode, force discarding everything problematic, and reinitialize.
+                        _view.OnVisibleChanged(false);
+                        _currentlyDisplayedBook = null;
+                        _previouslySelectedPage = null;
+                        _view.OnVisibleChanged(true);
+                        // If the Add Page dialog is open, we can still change layout.  The OnVisibleChanged calls close the dialog,
+                        // but can leave the PageListView disabled.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6554.
+                        _view.SetModalState(false);
+                    }
+                    CurrentBook.PrepareForEditing();
+                    _view.UpdatePageList(true); //counting on this to redo the thumbnails
+                    return pageId;
+                },
+                () => { } // wrong state, do nothing
+            );
         }
 
         /// <summary>
@@ -790,15 +818,18 @@ namespace Bloom.Edit
             // The language choice is saved in the data-div, so we must do a full save even if this
             // page doesn't contain anything else that has non-local effects.
             _nextSaveMustBeFull = true;
-            SaveThen(() =>
-            {
-                CurrentBook.PrepareForEditing();
-                _view.UpdatePageList(true); //counting on this to redo the thumbnails
+            SaveThen(
+                () =>
+                {
+                    CurrentBook.PrepareForEditing();
+                    _view.UpdatePageList(true); //counting on this to redo the thumbnails
 
-                Logger.WriteEvent("ChangingContentLanguages");
-                Analytics.Track("Change Content Languages");
-                return _pageSelection.CurrentSelection.Id;
-            });
+                    Logger.WriteEvent("ChangingContentLanguages");
+                    Analytics.Track("Change Content Languages");
+                    return _pageSelection.CurrentSelection.Id;
+                },
+                () => { } // wrong state, do nothing
+            );
         }
 
         // Get current MultilingualContentLanguage settings based on what's been recently checked/unchecked.
@@ -969,8 +1000,10 @@ namespace Bloom.Edit
                 {
                     // If we can't even navigate to the first page, we're in trouble. But better to throw the original error.
                     Logger.WriteEvent("Error navigating to page1: " + e2.Message);
-                    // Ensure the user can at least try to recover by choosing another page.
-                    // (This is untested; it's a fall-back to a fall-back, and I can't think of a way to make it happen.)
+                    // Try to ensure the user can at least try to recover by choosing another page.
+                    // (This may not be sufficient, if the state machine is left in a state where we can't Save.
+                    // With no way to know just what went wrong, I can't be sure this fall-back to the fall-back
+                    // will work, but it may help in some cases.)
                     _view.SetModalState(false);
                 }
 
@@ -1324,14 +1357,17 @@ namespace Bloom.Edit
                 _currentlyDisplayedBook.BookInfo.MetaData.LeveledReaderLevel.ToString();
             if (correctLevel != currentLevel)
             {
-                SaveThen(() =>
-                {
-                    _currentlyDisplayedBook.OurHtmlDom.Body.SetAttribute(
-                        "data-leveledreaderlevel",
-                        correctLevel
-                    );
-                    return _pageSelection.CurrentSelection.Id;
-                });
+                SaveThen(
+                    () =>
+                    {
+                        _currentlyDisplayedBook.OurHtmlDom.Body.SetAttribute(
+                            "data-leveledreaderlevel",
+                            correctLevel
+                        );
+                        return _pageSelection.CurrentSelection.Id;
+                    },
+                    () => { } // wrong state, do nothing
+                );
             }
         }
 
@@ -1410,7 +1446,7 @@ namespace Bloom.Edit
             if (CannotSavePage())
                 return;
             _nextSaveMustBeFull |= forceFullSave;
-            SaveThen(() => _pageSelection.CurrentSelection.Id);
+            SaveThen(() => _pageSelection.CurrentSelection.Id, () => { });
         }
 
         private bool CannotSavePage()
@@ -1440,6 +1476,9 @@ namespace Bloom.Edit
         /// Request the needed data to do a save, then when the contents of the current page have been saved,
         /// do the given action. The result of the action is a page ID which we will then navigate to, or null
         /// to show a blank screen if we are leaving the edit tab.
+        /// If we are not in the right state to save, doAfterSaving() will not be called at all,
+        /// but instead doIfNotInRightStateToSave() will be called. Usually the latter does nothing,
+        /// but we are deliberately not making it optional to make sure it gets thought about.
         /// Usually, the book will be saved to disk after executing the action, but before navigating to
         /// the new page. Sometimes the action needs to save the book itself, in which case it can prevent
         /// a further Save() by setting skipSaveToDisk to true. (Or just possibly, we might not want the Save
@@ -1447,17 +1486,21 @@ namespace Bloom.Edit
         /// Returns true if we're in a valid state to save, false if we're not. In the latter case, doAfterSaving
         /// will not be called (even later).
         /// </summary>
-        public bool SaveThen(
+        public void SaveThen(
             Func<string> doAfterSaving,
+            Action doIfNotInRightStateToSave,
             bool forceFullSave = false,
             bool skipSaveToDisk = false
         )
         {
             _nextSaveMustBeFull |= forceFullSave;
-            return _stateMachine.ToSavePending(
-                doAfterSaving,
-                saveActionHandlesSaveBook: skipSaveToDisk
-            );
+            if (
+                !_stateMachine.ToSavePending(
+                    doAfterSaving,
+                    saveActionHandlesSaveBook: skipSaveToDisk
+                )
+            )
+                doIfNotInRightStateToSave();
         }
 
         // Send a request to the browser to send us the page content so we can save it.
@@ -1756,12 +1799,15 @@ namespace Bloom.Edit
             // For Edit tab:
             if (Visible)
             {
-                SaveThen(() =>
-                {
-                    CurrentBook.SetMetadata(metadata);
-                    _pageHasUnsavedDataDerivedChange = true;
-                    return _pageSelection.CurrentSelection.Id;
-                });
+                SaveThen(
+                    () =>
+                    {
+                        CurrentBook.SetMetadata(metadata);
+                        _pageHasUnsavedDataDerivedChange = true;
+                        return _pageSelection.CurrentSelection.Id;
+                    },
+                    () => { } // wrong state, do nothing
+                );
             }
             else
             {
@@ -1814,6 +1860,7 @@ namespace Bloom.Edit
                     _bookPathFromCopyPage = page.Book.GetPathHtmlFile();
                     return page.Id;
                 },
+                () => { }, // wrong state, do nothing
                 forceFullSave: true
             );
         }
