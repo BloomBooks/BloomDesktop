@@ -239,7 +239,9 @@ namespace Bloom.Book
             // class to figure out which BookData keys to remove.
             ClearUnneededOriginalContentFromDerivative(storage.Dom, bookData);
 
-            XMatterHelper.RemoveExistingXMatter(storage.Dom);
+            // For a new book, we discard any old xmatter Ids, so the new book will have its own page IDs.
+            // One way this is helpful is caching cover images by page ID, so each book has a different cover page ID.
+            XMatterHelper.RemoveExistingXMatter(storage.Dom, new List<string>());
 
             // BL-4586 Some old books ended up with background-image urls containing XML img tags
             // in the HTML-encoded string. This happened because the coverImage data-book element
