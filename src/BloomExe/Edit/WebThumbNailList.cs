@@ -357,6 +357,7 @@ namespace Bloom.Edit
                     PageSelectedChanged(movedPage, new EventArgs());
                     return movedPage.Id;
                 },
+                () => { }, // wrong state, do nothing
                 forceFullSave: true
             );
         }

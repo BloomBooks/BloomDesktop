@@ -1461,20 +1461,23 @@ namespace Bloom.Workspace
             {
                 if (_editTab.IsSelected)
                 {
-                    _editingView.Model.SaveThen(() =>
-                    {
-                        // To test the Problem Dialog with a fatal error, uncomment this next line.
-                        // throw new ApplicationException("I just felt like an error!");
+                    _editingView.Model.SaveThen(
+                        () =>
+                        {
+                            // To test the Problem Dialog with a fatal error, uncomment this next line.
+                            // throw new ApplicationException("I just felt like an error!");
 
-                        // To test the Problem Dialog with a nonfatal error, uncomment this next line.
-                        // NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
-                        // To test clicking 'Report' in a toast, uncomment the line above, but use ModalIf.None.
+                            // To test the Problem Dialog with a nonfatal error, uncomment this next line.
+                            // NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
+                            // To test clicking 'Report' in a toast, uncomment the line above, but use ModalIf.None.
 
-                        // To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
-                        // ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
-                        ReportAndLogProblem();
-                        return _editingView.Model.CurrentPage.Id;
-                    });
+                            // To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
+                            // ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
+                            ReportAndLogProblem();
+                            return _editingView.Model.CurrentPage.Id;
+                        },
+                        () => { } // wrong state, do nothing
+                    );
                 }
                 else
                 {
