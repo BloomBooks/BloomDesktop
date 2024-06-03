@@ -87,6 +87,21 @@ namespace Bloom.Edit
 
         public delegate EditingModel Factory(); //autofac uses this
 
+        /// <summary>
+        /// If this is set, the model may call it (passing false) to prevent switching to and from the Edit tab.
+        /// It should then be called (passing true) when it's OK to switch tabs again.
+        /// We use this so that
+        /// (a) when we are in the process of completing a Save for some command in the edit tab, we can't leave that
+        /// tab (until the save is complete), and
+        /// (b) when are doing the Save that is part of leaving the Edit tab, we can't switch back to Edit tab
+        /// until the save is complete and we're in the expected state for entering the tab.
+        /// Without these restrictions, it is hard to reason about the possible states of the system
+        /// as we execute commands and then rapidly switch tabs.
+        /// Probably only testers will switch tabs so frequently as to run into such problems, and even
+        /// they may not notice the brief disabling of the tabs.
+        /// </summary>
+        public Action<bool> EnableSwitchingTabs;
+
         private EditingStateMachine _stateMachine;
 
         public EditingStateMachine StateMachine => _stateMachine;
@@ -141,7 +156,16 @@ namespace Bloom.Edit
                     _nextSaveMustBeFull = false;
                     _pageHasUnsavedDataDerivedChange = false;
                     PageTemplatesApi.LastSaveTime = DateTime.Now;
-                }
+                },
+                // hidePage
+                () =>
+                {
+                    if (_view != null)
+                    {
+                        _view.OnHideEditTab();
+                    }
+                },
+                enableStateTransitions: (enabled) => EnableSwitchingTabs?.Invoke(enabled)
             );
 
             bookSelection.SelectionChanged += OnBookSelectionChanged;
@@ -382,7 +406,7 @@ namespace Bloom.Edit
                         // We are setting skipSaveToDisk true so that we can do it ourselves here BEFORE
                         // the postponed work, which is going to shut everything down and would prevent
                         // the normal automatic save-to-disk from working.
-                        CurrentBook.Save(); // we need it all the way saved before doing the PostponedWork
+                        CurrentBook?.Save(); // we need it all the way saved before doing the PostponedWork
                         // This bizarre behavior prevents BL-2313 and related problems.
                         // For some reason I cannot discover, switching tabs when focus is in the Browser window
                         // causes Bloom to get deactivated, which prevents various controls from working.
@@ -415,6 +439,7 @@ namespace Bloom.Edit
             }
             else
             {
+                // If the old tab is not Edit, we don't need to save anything, so just do the postponed work.
                 details.PostponedWork?.Invoke();
             }
         }
@@ -933,45 +958,45 @@ namespace Bloom.Edit
         {
             try
             {
-            _pageSelection.SelectPage(page);
-            Logger.WriteMinorEvent("changing page selection");
-            Analytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
+                _pageSelection.SelectPage(page);
+                Logger.WriteMinorEvent("changing page selection");
+                Analytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
 
-            // Trace memory usage in case it may be useful
-            // First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
-            // If we seem to have a problem do it again forcing the GC and possibly warning the user.
-            if (MemoryManagement.CheckMemory(false, "switched page in edit", false, false))
-                MemoryManagement.CheckMemory(false, "switched page in edit", true);
+                // Trace memory usage in case it may be useful
+                // First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
+                // If we seem to have a problem do it again forcing the GC and possibly warning the user.
+                if (MemoryManagement.CheckMemory(false, "switched page in edit", false, false))
+                    MemoryManagement.CheckMemory(false, "switched page in edit", true);
 
-            if (_view != null)
-            {
-                if (_previouslySelectedPage != null && _havePageToSave)
+                if (_view != null)
                 {
-                    _view.UpdateThumbnailAsync(_previouslySelectedPage);
+                    if (_previouslySelectedPage != null && _havePageToSave)
+                    {
+                        _view.UpdateThumbnailAsync(_previouslySelectedPage);
+                    }
+
+                    _previouslySelectedPage = _pageSelection.CurrentSelection;
+
+                    // BL-2339: remember last edited page
+                    if (_previouslySelectedPage != null)
+                    {
+                        var idx = _previouslySelectedPage.GetIndex();
+                        if (idx > -1)
+                            _previouslySelectedPage.Book.UserPrefs.MostRecentPage = idx;
+                    }
+
+                    CurrentBook.BringPageUpToDate(page.GetDivNodeForThisPage());
+                    if (Visible)
+                        _view.StartNavigationToEditPage(page);
+
+                    _duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
+                    _deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
+
+                    CheckForBL8852();
+
+                    PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
                 }
-
-                _previouslySelectedPage = _pageSelection.CurrentSelection;
-
-                // BL-2339: remember last edited page
-                if (_previouslySelectedPage != null)
-                {
-                    var idx = _previouslySelectedPage.GetIndex();
-                    if (idx > -1)
-                        _previouslySelectedPage.Book.UserPrefs.MostRecentPage = idx;
-                }
-
-                CurrentBook.BringPageUpToDate(page.GetDivNodeForThisPage());
-                if (Visible)
-                    _view.StartNavigationToEditPage(page);
-
-                _duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
-                _deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
-
-                CheckForBL8852();
-
-                PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
             }
-        }
             catch (Exception e)
             {
                 // It's very important that we succeed in navigating to SOME page; otherwise, we may well be left
