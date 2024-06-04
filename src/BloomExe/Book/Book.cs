@@ -3403,11 +3403,7 @@ namespace Bloom.Book
         {
             //review: could move to page
             var pageElement = OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv);
-            var outer = pageElement.OuterXml;
-            var oldInner = pageElement.InnerXml;
             Require.That(pageElement != null, "Page could not be found: " + page.XPathToDiv);
-
-            pageElement.InnerXml = XmlHtmlConverter.RemoveEmptySelfClosingTags(oldInner);
 
             return pageElement as XmlElement;
         }
