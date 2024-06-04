@@ -1144,6 +1144,11 @@ namespace Bloom.Edit
 
         public static string GetEditPageIframeContents(Book.Book book, IPage page)
         {
+            if (BookStorage.HasMessedUpMarginBox(page.GetDivNodeForThisPage()))
+                Debug.Fail(
+                    "page already has problem with marginBox before calling GetEditPageIframeDom"
+                );
+
             var dom = GetEditPageIframeDom(book, page);
             var newPage = dom.SelectSingleNode($"//div[@id='{page.Id}']");
             if (newPage == null || BookStorage.HasMessedUpMarginBox(newPage))
