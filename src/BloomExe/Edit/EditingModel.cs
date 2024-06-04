@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
@@ -1143,7 +1144,25 @@ namespace Bloom.Edit
 
         public static string GetEditPageIframeContents(Book.Book book, IPage page)
         {
-            return GetEditPageIframeDom(book, page).getHtmlStringDisplayOnly();
+            var dom = GetEditPageIframeDom(book, page);
+            var newPage = dom.SelectSingleNode($"//div[@id='{page.Id}']");
+            if (newPage == null || BookStorage.HasMessedUpMarginBox(newPage))
+            {
+                Debug.Fail("GetEditPageIframeDom caused problem with marginBox");
+            }
+            var html = dom.getHtmlStringDisplayOnly();
+            //Regex regex = new Regex("<div[^>]*class=[^>]*marginBox");
+            Regex regex = new Regex("marginBox");
+            if (regex.Matches(html).Count != 1)
+            {
+                Debug.Fail("getHtmlStringDisplayOnly has non-one marginBox");
+            }
+            regex = new Regex("bloom-translationGroup");
+            if (regex.Matches(html).Count == 0)
+            {
+                Debug.Fail("getHtmlStringDisplayOnly has no bloom-translationGroup");
+            }
+            return html;
         }
 
         public static HtmlDom GetEditPageIframeDom(Book.Book book, IPage page)

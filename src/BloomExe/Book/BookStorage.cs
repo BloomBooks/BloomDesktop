@@ -3960,11 +3960,12 @@ namespace Bloom.Book
         // Tries to detect a state that some bug occasionally puts a page into, where it is more-or-less empty.
         // Another characteristic state produced by the bug is where the page labels that should be outside
         // the marginBox are inside it.
-        static bool HasMessedUpMarginBox(XmlElement page)
+        public static bool HasMessedUpMarginBox(XmlElement page)
         {
-			// Flyleaf pages are intentionally empty; they have no marginBox.
-			// See XMatterHelper.InjectFlyleafIfNeeded().
-			if (HtmlDom.IsFlyleafPage(page)) return false;
+            // Flyleaf pages are intentionally empty; they have no marginBox.
+            // See XMatterHelper.InjectFlyleafIfNeeded().
+            if (HtmlDom.IsFlyleafPage(page))
+                return false;
 
             var marginBox = GetMarginBox(page);
             if (marginBox == null)
@@ -3988,6 +3989,17 @@ namespace Bloom.Book
                     return true;
                 }
             }
+            if (
+                page.ChildNodes
+                    .Cast<XmlNode>()
+                    .Where(
+                        (n) =>
+                            n is XmlElement xmlElement
+                            && xmlElement.GetAttribute("class").Contains("marginBox")
+                    )
+                    .Count() != 1
+            )
+                return true; // there should be only one marginBox
 
             return false;
         }

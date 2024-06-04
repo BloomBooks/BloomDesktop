@@ -400,6 +400,19 @@ function recordWhatThisPageLooksLikeForSanityCheck(container: HTMLElement) {
 function hasOrigami(container: HTMLElement) {
     return container.getElementsByClassName("split-pane-component").length > 0;
 }
+function checkMarginBoxes() {
+    if (document.body.getElementsByClassName("marginBox").length > 1) {
+        throw new Error("There are multiple marginBoxes in the body. ");
+    }
+    if (document.body.getElementsByClassName("marginBox").length === 0) {
+        throw new Error("There are no marginBoxes in the body. ");
+    }
+    if (
+        document.body.getElementsByClassName("bloom-translationGroup")
+            .length === 0
+    )
+        throw new Error("No bloom-translationGroups in the body. ");
+}
 
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
@@ -1113,6 +1126,8 @@ let reportedTextSelected = isTextSelected();
 // called inside document ready function
 // ---------------------------------------------------------------------------------
 export function bootstrap() {
+    checkMarginBoxes();
+
     bloomQtipUtils.setQtipZindex();
 
     $.fn.reverse = function() {
@@ -1149,8 +1164,11 @@ export function bootstrap() {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
+    checkMarginBoxes();
     SetupElements(document.body);
+    checkMarginBoxes();
     OneTimeSetup();
+    checkMarginBoxes();
 
     // configure ckeditor
     if (typeof CKEDITOR === "undefined") return; // this happens during unit testing
@@ -1172,12 +1190,20 @@ export function bootstrap() {
             attachToCkEditor(element);
         });
 
+    checkMarginBoxes();
+
     // We want to do this as late in the page setup process as possible because a
     // mouse zoom event will regenerate the page, and various things we do in the process
     // of starting up a page don't like it if the page we are loading is already unloading.
     // We currently suppress errors for pages which are in the process of going away, but better
     // not to generate them than suppress them if we can help it.
     setupWheelZooming();
+
+    checkMarginBoxes();
+
+    setTimeout(() => {
+        checkMarginBoxes();
+    }, 1000);
 }
 // Attach a function to implement zooming on mouse wheel with ctrl.
 // Setting this up should be one of the last things we do when loading the page...
