@@ -1299,6 +1299,9 @@ export function getBodyContentForSavePage() {
             "getBodyContentForSavePage(): The page had origami when it loaded, but it doesn't now (check before cleanup). BL-13120"
         );
     }
+    if (document.body.getElementsByClassName("marginBox").length > 1) {
+        throw new Error("There are multiple marginBoxes in the body. ");
+    }
 
     const bubbleEditingOn = theOneBubbleManager.isComicEditingOn;
     if (bubbleEditingOn) {
@@ -1326,7 +1329,26 @@ export function getBodyContentForSavePage() {
         );
     }
 
+    if (document.body.getElementsByClassName("marginBox").length > 1) {
+        throw new Error(
+            "After cleanup, there are multiple marginBoxes in the body. "
+        );
+    }
     const result = document.body.innerHTML;
+
+    if (hadOrigamiWhenWeLoadedThePage) {
+        if (result.indexOf("marginBox") < 0) {
+            throw new Error(
+                "After cleanup, the marginBox is missing from the body. "
+            );
+        }
+        // make sure there is only one marginBox
+        if (result.indexOf("marginBox", result.indexOf("marginBox") + 1) >= 0) {
+            throw new Error(
+                "After cleanup, there are multiple marginBoxes in the body. "
+            );
+        }
+    }
 
     if (bubbleEditingOn) {
         theOneBubbleManager.turnOnBubbleEditing();

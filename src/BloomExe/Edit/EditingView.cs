@@ -2025,5 +2025,17 @@ namespace Bloom.Edit
             if (Model.Visible && ModifierKeys == (Keys.Shift | Keys.Control))
                 _model.RethinkPageAndReloadItAndReportIfItFails();
         }
+
+        private void bitmapButton1_Click(object sender, EventArgs e)
+        {
+            if (!int.TryParse(this.bitmapButton1.Text, out int i))
+            {
+                this.bitmapButton1.Text = "0";
+            }
+
+            this.bitmapButton1.Text = (int.Parse(this.bitmapButton1.Text) + 1).ToString();
+            // toggle the check mark of the first language menu
+            this._contentLanguagesDropdown.DropDownItems[0].PerformClick();
+        }
     }
 }

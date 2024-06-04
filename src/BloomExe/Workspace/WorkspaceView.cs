@@ -447,7 +447,7 @@ namespace Bloom.Workspace
                             "The Team Collection has a newer version of this book. Return to the Collection Tab for more information."
                         );
                         _returnToCollectionTabNotifier = new ToastNotifier();
-                        _returnToCollectionTabNotifier.Image.Image = Resources.Error32x32;
+                        //_returnToCollectionTabNotifier.Image.Image = Resources.Error32x32;
                         _returnToCollectionTabNotifier.ToastClicked += (sender, _) =>
                         {
                             _returnToCollectionTabNotifier.CloseSafely();

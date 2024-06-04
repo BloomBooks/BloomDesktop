@@ -3403,6 +3403,10 @@ namespace Bloom.Book
         {
             //review: could move to page
             var pageElement = OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv);
+            if (pageElement == null)
+            {
+                throw new ApplicationException("FindPageDiv(): pageElement is null");
+            }
             var outer = pageElement.OuterXml;
             var oldInner = pageElement.InnerXml;
             Require.That(pageElement != null, "Page could not be found: " + page.XPathToDiv);

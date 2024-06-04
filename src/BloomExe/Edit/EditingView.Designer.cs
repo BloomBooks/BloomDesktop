@@ -44,10 +44,12 @@ namespace Bloom.Edit
 		private void InitializeComponent()
 		{
             this.components = new System.ComponentModel.Container();
-            System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
             System.Drawing.Imaging.ImageAttributes imageAttributes2 = new System.Drawing.Imaging.ImageAttributes();
             System.Drawing.Imaging.ImageAttributes imageAttributes3 = new System.Drawing.Imaging.ImageAttributes();
             System.Drawing.Imaging.ImageAttributes imageAttributes4 = new System.Drawing.Imaging.ImageAttributes();
+            System.Drawing.Imaging.ImageAttributes imageAttributes5 = new System.Drawing.Imaging.ImageAttributes();
+            System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditingView));
             this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
             this.settingsLauncherHelper1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
@@ -64,7 +66,9 @@ namespace Bloom.Edit
             this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
             this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
             this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
+            
             this._betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
+            this.bitmapButton1 = new SIL.Windows.Forms.Widgets.BitmapButton();
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this._splitContainer2)).BeginInit();
             this._splitContainer2.Panel1.SuspendLayout();
@@ -116,6 +120,7 @@ namespace Bloom.Edit
             // 
             // _topBarPanel
             // 
+            this._topBarPanel.Controls.Add(this.bitmapButton1);
             this._topBarPanel.Controls.Add(this._rightToolStrip);
             this._topBarPanel.Controls.Add(this._undoButton);
             this._topBarPanel.Controls.Add(this._cutButton);
@@ -133,6 +138,7 @@ namespace Bloom.Edit
             this._rightToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
             this._rightToolStrip.Dock = System.Windows.Forms.DockStyle.Right;
             this._rightToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this._rightToolStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
             this._rightToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._bookSettingsButton});
             this._rightToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
@@ -140,10 +146,10 @@ namespace Bloom.Edit
             this._L10NSharpExtender.SetLocalizationComment(this._rightToolStrip, null);
             this._L10NSharpExtender.SetLocalizationPriority(this._rightToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
             this._L10NSharpExtender.SetLocalizingId(this._rightToolStrip, "EditingView._rightToolStrip");
-            this._rightToolStrip.Location = new System.Drawing.Point(608, 0);
+            this._rightToolStrip.Location = new System.Drawing.Point(594, 0);
             this._rightToolStrip.Name = "_rightToolStrip";
             this._rightToolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this._rightToolStrip.Size = new System.Drawing.Size(116, 66);
+            this._rightToolStrip.Size = new System.Drawing.Size(130, 66);
             this._rightToolStrip.TabIndex = 32;
             this._rightToolStrip.Text = "_rightToolStrip";
             // 
@@ -157,10 +163,9 @@ namespace Bloom.Edit
             this._L10NSharpExtender.SetLocalizationComment(this._bookSettingsButton, null);
             this._L10NSharpExtender.SetLocalizingId(this._bookSettingsButton, "Common.BookSettings");
             this._bookSettingsButton.Name = "_bookSettingsButton";
-            this._bookSettingsButton.Size = new System.Drawing.Size(82, 63);
+            this._bookSettingsButton.Size = new System.Drawing.Size(126, 61);
             this._bookSettingsButton.Text = "Book Settings";
             this._bookSettingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this._bookSettingsButton.Visible = true;
             this._bookSettingsButton.Click += new System.EventHandler(this._bookSettingsButton_Click);
             // 
             // _undoButton
@@ -175,7 +180,7 @@ namespace Bloom.Edit
             this._undoButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
             this._undoButton.Image = null;
             this._undoButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-            this._undoButton.ImageAttributes = imageAttributes1;
+            this._undoButton.ImageAttributes = imageAttributes2;
             this._undoButton.ImageBorderColor = System.Drawing.Color.Transparent;
             this._undoButton.ImageBorderEnabled = false;
             this._undoButton.ImageDropShadow = false;
@@ -217,7 +222,7 @@ namespace Bloom.Edit
             this._cutButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
             this._cutButton.Image = null;
             this._cutButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this._cutButton.ImageAttributes = imageAttributes2;
+            this._cutButton.ImageAttributes = imageAttributes3;
             this._cutButton.ImageBorderColor = System.Drawing.Color.Transparent;
             this._cutButton.ImageBorderEnabled = false;
             this._cutButton.ImageDropShadow = false;
@@ -258,7 +263,7 @@ namespace Bloom.Edit
             this._pasteButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
             this._pasteButton.Image = null;
             this._pasteButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-            this._pasteButton.ImageAttributes = imageAttributes3;
+            this._pasteButton.ImageAttributes = imageAttributes4;
             this._pasteButton.ImageBorderColor = System.Drawing.Color.Transparent;
             this._pasteButton.ImageBorderEnabled = false;
             this._pasteButton.ImageDropShadow = false;
@@ -300,7 +305,7 @@ namespace Bloom.Edit
             this._copyButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
             this._copyButton.Image = null;
             this._copyButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this._copyButton.ImageAttributes = imageAttributes4;
+            this._copyButton.ImageAttributes = imageAttributes5;
             this._copyButton.ImageBorderColor = System.Drawing.Color.Transparent;
             this._copyButton.ImageBorderEnabled = false;
             this._copyButton.ImageDropShadow = false;
@@ -360,7 +365,7 @@ namespace Bloom.Edit
             this._L10NSharpExtender.SetLocalizationComment(this._contentLanguagesDropdown, null);
             this._L10NSharpExtender.SetLocalizingId(this._contentLanguagesDropdown, "EditTab.ContentLanguagesDropdown");
             this._contentLanguagesDropdown.Name = "_contentLanguagesDropdown";
-            this._contentLanguagesDropdown.Size = new System.Drawing.Size(129, 19);
+            this._contentLanguagesDropdown.Size = new System.Drawing.Size(191, 29);
             this._contentLanguagesDropdown.Text = "Multilingual Settings";
             // 
             // _layoutChoices
@@ -373,7 +378,7 @@ namespace Bloom.Edit
             this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
             this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "EditTab.PageSizeAndOrientationChoices");
             this._layoutChoices.Name = "_layoutChoices";
-            this._layoutChoices.Size = new System.Drawing.Size(50, 19);
+            this._layoutChoices.Size = new System.Drawing.Size(74, 29);
             this._layoutChoices.Text = "Paper";
             this._layoutChoices.ToolTipText = "(set dynamically, see code)";
             // 
@@ -401,12 +406,55 @@ namespace Bloom.Edit
             this._splitTemplateAndSource.SplitterWidth = 10;
             this._splitTemplateAndSource.TabIndex = 0;
             this._splitTemplateAndSource.TabStop = false;
+       
             // 
             // _betterToolTip1
             // 
             this._L10NSharpExtender.SetLocalizableToolTip(this._betterToolTip1, null);
             this._L10NSharpExtender.SetLocalizationComment(this._betterToolTip1, null);
             this._L10NSharpExtender.SetLocalizingId(this._betterToolTip1, "BTT_id");
+            // 
+            // bitmapButton1
+            // 
+            this.bitmapButton1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
+            this.bitmapButton1.BorderColor = System.Drawing.Color.Transparent;
+            this.bitmapButton1.DisabledTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(114)))), ((int)(((byte)(74)))), ((int)(((byte)(106)))));
+            this.bitmapButton1.FlatAppearance.BorderSize = 0;
+            this.bitmapButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.bitmapButton1.FocusRectangleEnabled = true;
+            this.bitmapButton1.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.bitmapButton1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
+            this.bitmapButton1.Image = null;
+            this.bitmapButton1.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.bitmapButton1.ImageAttributes = imageAttributes1;
+            this.bitmapButton1.ImageBorderColor = System.Drawing.Color.Transparent;
+            this.bitmapButton1.ImageBorderEnabled = false;
+            this.bitmapButton1.ImageDropShadow = false;
+            this.bitmapButton1.ImageFocused = null;
+            this.bitmapButton1.ImageInactive = global::Bloom.Properties.Resources.undoDisabled32x32;
+            this.bitmapButton1.ImageMouseOver = null;
+            this.bitmapButton1.ImageNormal = ((System.Drawing.Image)(resources.GetObject("bitmapButton1.ImageNormal")));
+            this.bitmapButton1.ImagePressed = null;
+            this.bitmapButton1.InnerBorderColor = System.Drawing.Color.Transparent;
+            this.bitmapButton1.InnerBorderColor_Focus = System.Drawing.Color.LightBlue;
+            this.bitmapButton1.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
+            this._L10NSharpExtender.SetLocalizableToolTip(this.bitmapButton1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.bitmapButton1, null);
+            this._L10NSharpExtender.SetLocalizingId(this.bitmapButton1, "EditTab.UndoButton");
+            this.bitmapButton1.Location = new System.Drawing.Point(453, -3);
+            this.bitmapButton1.Name = "bitmapButton1";
+            this.bitmapButton1.OffsetPressedContent = true;
+            this.bitmapButton1.Size = new System.Drawing.Size(54, 66);
+            this.bitmapButton1.StretchImage = false;
+            this.bitmapButton1.TabIndex = 33;
+            this.bitmapButton1.Text = "Test";
+            this.bitmapButton1.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.bitmapButton1.TextDropShadow = false;
+            this.bitmapButton1.TextWordWrap = false;
+            this._betterToolTip1.SetToolTip(this.bitmapButton1, "Undo (Ctrl+Z)");
+            this._betterToolTip1.SetToolTipWhenDisabled(this.bitmapButton1, "There is nothing to undo");
+            this.bitmapButton1.UseVisualStyleBackColor = false;
+            this.bitmapButton1.Click += new System.EventHandler(this.bitmapButton1_Click);
             // 
             // EditingView
             // 
@@ -455,5 +503,6 @@ namespace Bloom.Edit
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.ToolStrip _rightToolStrip;
 		private System.Windows.Forms.ToolStripButton _bookSettingsButton;
-	}
+        private SIL.Windows.Forms.Widgets.BitmapButton bitmapButton1;
+    }
 }
