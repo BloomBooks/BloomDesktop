@@ -38,8 +38,6 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
 }
 .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
-    border-top-left-radius: 50%;
-    border-top-right-radius: 0;
     --pageNumber-right-margin: var(--page-margin-right);
     --pageNumber-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
     --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
