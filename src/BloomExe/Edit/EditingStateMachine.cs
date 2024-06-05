@@ -218,7 +218,19 @@ public class EditingStateMachine
     {
         if (htmlAndUserStyles != null)
             _updateBookWithPageContents(_pageId, htmlAndUserStyles);
-        var pageId = postSaveAction();
+        string pageId = _pageId;
+        try
+        {
+            pageId = postSaveAction();
+        }
+        catch (Exception)
+        {
+            // We must not get stuck in the SavedAndStripped state, so we'll navigate to the page
+            // we were on before the save.
+            ToNavigating(pageId);
+            throw;
+        }
+
         if (_saveActionHandlesSaveBook)
         {
             _saveActionHandlesSaveBook = false;
