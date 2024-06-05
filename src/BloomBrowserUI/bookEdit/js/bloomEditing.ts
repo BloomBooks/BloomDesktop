@@ -415,14 +415,6 @@ export function SetupElements(container: HTMLElement) {
     SetupWidgetEditing(container);
     initializeBubbleManager();
 
-    //add a marginBox if it's missing. We introduced it early in the first beta
-    $(container)
-        .find(".bloom-page")
-        .each(function() {
-            if ($(this).find(".marginBox").length === 0) {
-                $(this).wrapInner("<div class='marginBox'></div>");
-            }
-        });
     $(container)
         .find(".bloom-editable")
         .each(function() {
