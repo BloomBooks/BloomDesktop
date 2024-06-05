@@ -690,6 +690,8 @@ namespace Bloom.Workspace
             var items = new List<LanguageItem>();
             if (onlyActiveItem)
             {
+                if (String.IsNullOrEmpty(Settings.Default.UserInterfaceLanguage))
+                    Settings.Default.UserInterfaceLanguage = "en";  // See BL-13545.
                 items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
             }
             else
