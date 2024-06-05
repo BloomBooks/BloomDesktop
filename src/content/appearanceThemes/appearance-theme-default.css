@@ -155,10 +155,13 @@
 }
 .bloom-page[class*="Device"] {
     --page-margin: 10px;
+}
 
-    /* Deliberately set both of these, which combines with a special device rule
+.bloom-page[class*="Device"],
+.bloomPlayer-page .bloom-page {
+    /* Deliberately set both of these, which combines with a special device/bloom-player rule
      * in basePage.less which sets both left and right margin to auto, and we get
-     * centered as the default for device pages. (To override this, you need to
+     * centered as the default for device/bloom-player pages. (To override this, you need to
      * set the margin you don't want to something like "deliberately-invalid".)*/
     --pageNumber-right-margin: 0;
     --pageNumber-always-left-margin: 0;
