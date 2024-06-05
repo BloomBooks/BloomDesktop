@@ -123,9 +123,6 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                 // We couldn't load a template file that the JSON says should be there.
                 // Just display a message.
                 setErrorState(true);
-                if (onLoad) {
-                    onLoad(); // We didn't load a book, but we are just counting the axios response.
-                }
             });
     }, [forChooseLayout, groupUrls.templateBookPath]);
 
