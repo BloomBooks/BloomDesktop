@@ -390,6 +390,10 @@ export function changeImage(imageInfo: {
     imgOrImageContainer.setAttribute("data-copyright", imageInfo.copyright);
     imgOrImageContainer.setAttribute("data-creator", imageInfo.creator);
     imgOrImageContainer.setAttribute("data-license", imageInfo.license);
+    const ancestor = imgOrImageContainer.parentElement?.parentElement;
+    if (ancestor) {
+        SetOverlayForImagesWithoutMetadata(ancestor);
+    }
 }
 
 // This origami checking business is related BL-13120
