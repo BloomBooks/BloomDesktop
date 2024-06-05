@@ -958,6 +958,13 @@ namespace Bloom.Edit
         {
             try
             {
+                if (page == null)
+                {
+                    // bizarre, but in some error recovery situations the page we were on before the crash might
+                    // no longer exist. In that case, just go to the first page.
+                    page = CurrentBook.FirstPage;
+                }
+
                 _pageSelection.SelectPage(page);
                 Logger.WriteMinorEvent("changing page selection");
                 Analytics.Track("Select Page"); //not "edit page" because at the moment we don't have the capability of detecting that.
