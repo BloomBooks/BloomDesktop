@@ -567,9 +567,9 @@ namespace Bloom.Book
 			get
 			{
 				//If you modify any of these, consider modifying/updating the localization files; the localization ids for these are just the current English (which is fragile)
-				//If you make changes/additions here, also synchronize with the bloomlibrary source in services.js
+				//If you make changes/additions here, also synchronize with blorg's ClosedVocabularies.ts
 
-				return new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Story Book", "Traditional Story" };
+				return new[] { "Agriculture", "Animal Stories", "Bible", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Personal Development", "Primer", "Science", "Story Book", "Traditional Story" };
 			}
 		}
 
