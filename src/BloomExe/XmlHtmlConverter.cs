@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Bloom.SafeXml;
 using Bloom.Utils;
 using SIL.IO;
 using SIL.Xml;
@@ -313,16 +314,16 @@ namespace Bloom
         /// anything following the <textarea> will be interpreted as part of the <textarea>!  This method makes sure such tags are never totally empty.
         /// </summary>
         /// <param name="dom"></param>
-        public static void MakeXmlishTagsSafeForInterpretationAsHtml(XmlDocument dom)
+        public static void MakeXmlishTagsSafeForInterpretationAsHtml(SafeXmlDocument dom)
         {
-            foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
+            foreach (SafeXmlElement node in dom.SafeSelectNodes("//textarea"))
             {
                 if (!node.HasChildNodes)
                 {
                     node.AppendChild(node.OwnerDocument.CreateTextNode(""));
                 }
             }
-            foreach (XmlElement node in dom.SafeSelectNodes("//div"))
+            foreach (SafeXmlElement node in dom.SafeSelectNodes("//div"))
             {
                 if (!node.HasChildNodes)
                 {
@@ -330,7 +331,7 @@ namespace Bloom
                 }
             }
 
-            foreach (XmlElement node in dom.SafeSelectNodes("//p"))
+            foreach (SafeXmlElement node in dom.SafeSelectNodes("//p"))
             //without  this, an empty paragraph suddenly takes over the subsequent elements. Browser sees <p></p> and thinks... let's just make it <p>, shall we? Stupid optional-closing language, html is....
             {
                 if (!node.HasChildNodes)
@@ -339,7 +340,7 @@ namespace Bloom
                 }
             }
 
-            foreach (XmlElement node in dom.SafeSelectNodes("//span"))
+            foreach (SafeXmlElement node in dom.SafeSelectNodes("//span"))
             {
                 if (!node.HasChildNodes)
                 {
@@ -347,7 +348,7 @@ namespace Bloom
                 }
             }
 
-            foreach (XmlElement node in dom.SafeSelectNodes("//cite"))
+            foreach (SafeXmlElement node in dom.SafeSelectNodes("//cite"))
             {
                 if (!node.HasChildNodes)
                 {
@@ -355,22 +356,22 @@ namespace Bloom
                 }
             }
 
-            foreach (XmlElement node in dom.SafeSelectNodes("//script"))
+            foreach (SafeXmlElement node in dom.SafeSelectNodes("//script"))
             {
-                if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
+                if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Length == 0)
                 {
                     node.InnerText = " ";
                 }
             }
 
-            foreach (XmlElement node in dom.SafeSelectNodes("//style"))
+            foreach (SafeXmlElement node in dom.SafeSelectNodes("//style"))
             {
-                if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
+                if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Length == 0)
                 {
                     node.InnerText = " ";
                 }
             }
-            foreach (XmlElement node in dom.SafeSelectNodes("//iframe"))
+            foreach (SafeXmlElement node in dom.SafeSelectNodes("//iframe"))
             {
                 if (!node.HasChildNodes)
                 {
@@ -381,10 +382,15 @@ namespace Bloom
             }
         }
 
+        public static void MakeXmlishTagsSafeForInterpretationAsHtml(XmlDocument dom)
+        {
+            MakeXmlishTagsSafeForInterpretationAsHtml(new SafeXmlDocument(dom));
+        }
+
         /// <summary>
         /// Convert the DOM (which is expected to be XHTML5) to HTML5
         /// </summary>
-        public static string SaveDOMAsHtml5(XmlDocument dom, string targetPath)
+        public static string SaveDOMAsHtml5(SafeXmlDocument dom, string targetPath)
         {
             var html = ConvertDomToHtml5(dom);
             try
@@ -399,13 +405,17 @@ namespace Bloom
 
             return targetPath;
         }
+        public static string SaveDOMAsHtml5(XmlDocument dom, string targetPath)
+        {
+            return SaveDOMAsHtml5(new SafeXmlDocument(dom), targetPath);
+        }
 
         /// <summary>
         /// Convert a single element into equivalent HTML.
         /// </summary>
         /// <param name="elt"></param>
         /// <returns></returns>
-        public static string ConvertElementToHtml5(XmlElement elt)
+        public static string ConvertElementToHtml5(SafeXmlElement elt)
         {
             var xmlStringBuilder = new StringBuilder();
             // There may be some way to make Tidy work on something that isn't a whole HTML document,
@@ -433,7 +443,7 @@ namespace Bloom
             return docHtml.Substring(start, endBodyIndex - start);
         }
 
-        public static string ConvertDomToHtml5(XmlDocument dom)
+        public static string ConvertDomToHtml5(SafeXmlDocument dom)
         {
             // First we write the DOM out to string
 
@@ -451,6 +461,11 @@ namespace Bloom
             }
 
             return ConvertXhtmlToHtml5(xmlStringBuilder.ToString());
+        }
+
+        public static string ConvertDomToHtml5(XmlDocument dom)
+        {
+            return ConvertDomToHtml5(new SafeXmlDocument(dom));
         }
 
         static string ConvertXhtmlToHtml5(string input)

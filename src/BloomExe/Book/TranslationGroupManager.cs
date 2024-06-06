@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml;
+using Bloom.SafeXml;
 using L10NSharp;
 using SIL.Reporting;
 using SIL.WritingSystems;
@@ -33,7 +34,7 @@ namespace Bloom.Book
         /// Also enable/disable editing as warranted (e.g. in shell mode or not)
         /// </summary>
         public static void PrepareElementsInPageOrDocument(
-            XmlNode pageOrDocumentNode,
+            SafeXmlNode pageOrDocumentNode,
             BookData bookData
         )
         {
@@ -67,7 +68,7 @@ namespace Bloom.Book
         /// The original (an possibly only) instance of this is with book titles. See bl-1210.
         /// </summary>
         public static void PrepareDataBookTranslationGroups(
-            XmlNode pageOrDocumentNode,
+            SafeXmlNode pageOrDocumentNode,
             IEnumerable<string> languageCodes
         )
         {
@@ -81,7 +82,7 @@ namespace Bloom.Book
             var findRestrictedFields =
                 "descendant-or-self::*[contains(@class,'bloom-translationGroup') and descendant::div[(@data-book='bookTitle' or @data-book='smallCoverCredits') and contains(@class,'bloom-editable')]]";
             foreach (
-                XmlElement groupElement in pageOrDocumentNode.SafeSelectNodes(findRestrictedFields)
+                SafeXmlElement groupElement in pageOrDocumentNode.SafeSelectNodes(findRestrictedFields)
             )
             {
                 foreach (var lang in languageCodes)
@@ -99,10 +100,10 @@ namespace Bloom.Book
         {
             // Borrow the book's XMLDocument so that we can create elements to work with.
             // We don't add them to the document, so it is never changed.
-            XmlDocument ownerDocument = currentBook.RawDom.OwnerDocument;
+            var ownerDocument = currentBook.RawDom.OwnerDocument;
             if (ownerDocument == null) // the OwnerDocument child can be null if currentBook.RawDom is a document itself
             {
-                if (currentBook.RawDom is XmlDocument)
+                if (currentBook.RawDom is SafeXmlDocument)
                     ownerDocument = currentBook.RawDom;
                 else
                 {
@@ -135,20 +136,17 @@ namespace Bloom.Book
             return containerElement.InnerXml;
         }
 
-        private static void GenerateEditableDivsWithPreTranslatedContent(XmlNode elementOrDom)
+        private static void GenerateEditableDivsWithPreTranslatedContent(SafeXmlNode elementOrDom)
         {
-            var ownerDoc =
-                elementOrDom.NodeType == XmlNodeType.Document
-                    ? (XmlDocument)elementOrDom
-                    : elementOrDom.OwnerDocument;
+            var ownerDoc = elementOrDom.OwnerDocument;
             foreach (
-                XmlElement editableDiv in elementOrDom.SafeSelectNodes(
+                SafeXmlElement editableDiv in elementOrDom.SafeSelectNodes(
                     ".//*[contains(@class,'bloom-editable') and @data-generate-translations and @data-i18n]"
                 )
             )
             {
                 var englishText = editableDiv.InnerText;
-                var l10nId = editableDiv.Attributes["data-i18n"].Value;
+                var l10nId = editableDiv.GetAttribute("data-i18n");
                 if (String.IsNullOrWhiteSpace(l10nId))
                     continue;
 
@@ -227,7 +225,7 @@ namespace Bloom.Book
         /// We stick various classes on editable things to control order and visibility
         /// </summary>
         public static void UpdateContentLanguageClasses(
-            XmlNode elementOrDom,
+            SafeXmlNode elementOrDom,
             BookData bookData,
             AppearanceSettings settings,
             string language1Tag,
@@ -260,23 +258,23 @@ namespace Bloom.Book
 
             //Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
             foreach (
-                XmlElement pageDiv in elementOrDom.SafeSelectNodes(
+                SafeXmlElement pageDiv in elementOrDom.SafeSelectNodes(
                     "descendant-or-self::div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"
                 )
             )
             {
-                HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
-                HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
-                HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-trilingual");
-                HtmlDom.AddClass(pageDiv, multilingualClass);
+                HtmlDom.RemoveClassesBeginningWith(pageDiv, "bloom-monolingual");
+                HtmlDom.RemoveClassesBeginningWith(pageDiv, "bloom-bilingual");
+                HtmlDom.RemoveClassesBeginningWith(pageDiv, "bloom-trilingual");
+                pageDiv.AddClass(multilingualClass);
             }
 
             // This is the "code" part of the visibility system: https://goo.gl/EgnSJo
-            foreach (XmlElement group in GetTranslationGroups(elementOrDom))
+            foreach (SafeXmlElement group in GetTranslationGroups(elementOrDom))
             {
                 // This controls visibility for fields not yet controlled by the Appearance system
                 // (or in legacy mode).
-                var defLangsAttr = HtmlDom.GetAttributeValue(group, "data-default-languages");
+                var defLangsAttr = group.GetAttribute("data-default-languages");
                 var dataDefaultLanguages = defLangsAttr.Split(
                     new char[] { ',', ' ' },
                     StringSplitOptions.RemoveEmptyEntries
@@ -296,7 +294,7 @@ namespace Bloom.Book
 
             // Also correct bloom-contentX fields in the bloomDataDiv, which are not listed under translation groups
             foreach (
-                XmlElement coverImageDescription in elementOrDom.SafeSelectNodes(
+                SafeXmlElement coverImageDescription in elementOrDom.SafeSelectNodes(
                     ".//*[@id='bloomDataDiv']/*[@data-book='coverImageDescription']"
                 )
             )
@@ -315,18 +313,18 @@ namespace Bloom.Book
             }
         }
 
-        public static bool IsPageAffectedByLanguageMenu(XmlElement page, bool legacy)
+        public static bool IsPageAffectedByLanguageMenu(SafeXmlElement page, bool legacy)
         {
             var groups = GetTranslationGroups(page);
             foreach (var g in groups)
             {
-                var defLangs = HtmlDom.GetAttributeValue(g, "data-default-languages");
+                var defLangs = g.GetAttribute("data-default-languages");
 
                 // missing attribute or empty is treated as "auto", and this menu definitely affects those.
                 if (string.IsNullOrEmpty(defLangs) || defLangs.StartsWith("auto"))
                     return true;
 
-                var visVariable = HtmlDom.GetAttributeValue(g, "data-visibility-variable");
+                var visVariable = g.GetAttribute("data-visibility-variable");
                 // If the group is controlled by the Appearance system, it's not affected by the language menu.
                 if (!String.IsNullOrEmpty(visVariable) && !legacy)
                     continue;
@@ -339,7 +337,7 @@ namespace Bloom.Book
         }
 
         private static void UpdateGeneratedClassesOnChildren(
-            XmlNodeList editables,
+            SafeXmlNode[] editables,
             BookData bookData,
             AppearanceSettings settings,
             string language2Tag,
@@ -350,7 +348,7 @@ namespace Bloom.Book
         {
             // Must do this first, content class generation depends on ALL elements in the group
             // having the visibility class set.
-            foreach (XmlElement e in editables)
+            foreach (SafeXmlElement e in editables)
             {
                 UpdateVisibilityClassOnElement(
                     e,
@@ -363,7 +361,7 @@ namespace Bloom.Book
                 );
             }
 
-            foreach (XmlElement e in editables)
+            foreach (SafeXmlElement e in editables)
             {
                 UpdateContentLanguageClassesOnElement(
                     e,
@@ -377,23 +375,23 @@ namespace Bloom.Book
             }
         }
 
-        public static XmlElement[] GetTranslationGroups(
-            XmlNode elementOrDom,
+        public static SafeXmlElement[] GetTranslationGroups(
+            SafeXmlNode elementOrDom,
             bool omitBoxHeaders = true
         )
         {
             var groups = elementOrDom
                 .SafeSelectNodes(".//div[contains(@class, 'bloom-translationGroup')]")
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             if (omitBoxHeaders)
             {
-                groups = groups.Where(g => !g.Attributes["class"].Value.Contains("box-header-off"));
+                groups = groups.Where(g => !g.GetAttribute("class").Contains("box-header-off"));
             }
             return groups.ToArray();
         }
 
         private static void UpdateVisibilityClassOnElement(
-            XmlElement editable,
+            SafeXmlElement editable,
             Dictionary<string, string> contentLanguages,
             BookData bookData,
             AppearanceSettings settings,
@@ -402,7 +400,7 @@ namespace Bloom.Book
             string[] dataDefaultLanguages
         )
         {
-            HtmlDom.RemoveClassesBeginingWith(editable, "bloom-visibility-code");
+            HtmlDom.RemoveClassesBeginningWith(editable, "bloom-visibility-code");
             var lang = editable.GetAttribute("lang");
             if (
                 ShouldShowEditable(
@@ -425,12 +423,12 @@ namespace Bloom.Book
                 // already visible in the page content. And so on. So we decided to stick with a variable that
                 // controls visibility in a straightforward, unconditional way, which means C# code can just look
                 // to see whether the class is there or not.
-                HtmlDom.AddClass(editable, "bloom-visibility-code-on");
+                editable.AddClass("bloom-visibility-code-on");
             }
         }
 
         private static void UpdateContentLanguageClassesOnElement(
-            XmlElement editable,
+            SafeXmlElement editable,
             Dictionary<string, string> contentLanguages,
             BookData bookData,
             AppearanceSettings settings,
@@ -439,7 +437,7 @@ namespace Bloom.Book
             string[] dataDefaultLanguages
         )
         {
-            HtmlDom.RemoveClassesBeginingWith(editable, "bloom-content");
+            HtmlDom.RemoveClassesBeginningWith(editable, "bloom-content");
             var lang = editable.GetAttribute("lang");
 
             //These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.
@@ -448,13 +446,13 @@ namespace Bloom.Book
             string orderClass;
             if (contentLanguages.TryGetValue(lang, out orderClass))
             {
-                HtmlDom.AddClass(editable, orderClass); //bloom-content1, bloom-content2, bloom-content3
+                editable.AddClass(orderClass); //bloom-content1, bloom-content2, bloom-content3
             }
 
             //Enhance: it's even more likely that we can get rid of these by replacing them with bloom-content2, bloom-content3
             if (lang == bookData.MetadataLanguage1Tag)
             {
-                HtmlDom.AddClass(editable, "bloom-contentNational1");
+                editable.AddClass("bloom-contentNational1");
             }
 
             // It's not clear that this class should be applied to blocks where lang == bookData.Language3Tag.
@@ -465,7 +463,7 @@ namespace Bloom.Book
             // hopefully we can make this distinction clearer and remove Language3Tag here.
             if (lang == bookData.Language3Tag || lang == bookData.MetadataLanguage2Tag)
             {
-                HtmlDom.AddClass(editable, "bloom-contentNational2");
+                editable.AddClass("bloom-contentNational2");
             }
 
             // At the time of this writing (6.0) this class only affects cover page titles.
@@ -481,7 +479,7 @@ namespace Bloom.Book
             UpdateRightToLeftSetting(bookData, editable, lang);
         }
 
-        static bool IsVisible(XmlElement editable)
+        static bool IsVisible(SafeXmlElement editable)
         {
             return editable.HasAttribute("class")
                 && editable.GetAttribute("class").Contains("bloom-visibility-code-on");
@@ -497,7 +495,7 @@ namespace Bloom.Book
         /// <remarks>We could obtain lang from the element, but the one real caller already has it, and passing
         /// it separately makes testing easier.</remarks>
         public static void AddThemeVisibleOrderClass(
-            XmlElement editable,
+            SafeXmlElement editable,
             bool legacy,
             string lang,
             string l1,
@@ -507,7 +505,7 @@ namespace Bloom.Book
         {
             if (legacy)
                 return; // not in theme mode
-            var visibilityVariable = (editable.ParentNode as XmlElement).GetAttribute(
+            var visibilityVariable = (editable.ParentNode as SafeXmlElement).GetAttribute(
                 "data-visibility-variable"
             );
             if (string.IsNullOrEmpty(visibilityVariable))
@@ -517,13 +515,12 @@ namespace Bloom.Book
             if (lang == l1)
             {
                 // L1 comes first, so if it's visible, it gets class 1.
-                HtmlDom.AddClass(editable, "bloom-contentFirst");
+                editable.AddClass("bloom-contentFirst");
                 return;
             }
-            var visibleSiblingLangs = (editable.ParentNode as XmlElement).ChildNodes
-                .Cast<XmlNode>()
-                .Where(ed => ed is XmlElement)
-                .Cast<XmlElement>()
+            var visibleSiblingLangs = (editable.ParentNode).ChildNodes
+                .Where(ed => ed is SafeXmlElement)
+                .Cast<SafeXmlElement>()
                 .Where(
                     ed =>
                         ed != editable
@@ -534,19 +531,19 @@ namespace Bloom.Book
             if (lang == l2)
             {
                 if (visibleSiblingLangs.Contains(l1))
-                    HtmlDom.AddClass(editable, "bloom-contentSecond");
+                    editable.AddClass("bloom-contentSecond");
                 else
-                    HtmlDom.AddClass(editable, "bloom-contentFirst");
+                    editable.AddClass("bloom-contentFirst");
                 return;
             }
             if (lang == l3)
             {
                 if (visibleSiblingLangs.Contains(l1) && visibleSiblingLangs.Contains(l2))
-                    HtmlDom.AddClass(editable, "bloom-contentThird");
+                    editable.AddClass("bloom-contentThird");
                 else if (visibleSiblingLangs.Contains(l1) || visibleSiblingLangs.Contains(l2))
-                    HtmlDom.AddClass(editable, "bloom-contentSecond");
+                    editable.AddClass("bloom-contentSecond");
                 else
-                    HtmlDom.AddClass(editable, "bloom-contentFirst");
+                    editable.AddClass("bloom-contentFirst");
             }
         }
 
@@ -557,7 +554,7 @@ namespace Bloom.Book
         /// but it may be slightly more efficient to do so just once for the group.
         /// </summary>
         static bool ShouldShowEditable(
-            XmlElement e,
+            SafeXmlElement e,
             AppearanceSettings settings,
             string lang,
             string[] dataDefaultLanguages,
@@ -578,7 +575,7 @@ namespace Bloom.Book
                 );
             }
 
-            var visibilityVariable = (e.ParentNode as XmlElement).GetAttribute(
+            var visibilityVariable = (e.ParentNode as SafeXmlElement).GetAttribute(
                 "data-visibility-variable"
             );
             if (string.IsNullOrEmpty(visibilityVariable))
@@ -635,7 +632,7 @@ namespace Bloom.Book
             );
         }
 
-        private static void UpdateRightToLeftSetting(BookData bookData, XmlElement e, string lang)
+        private static void UpdateRightToLeftSetting(BookData bookData, SafeXmlElement e, string lang)
         {
             HtmlDom.RemoveRtlDir(e);
             if (
@@ -722,10 +719,10 @@ namespace Bloom.Book
             return -1;
         }
 
-        private static void PrepareElementsOnPageOneLanguage(XmlNode pageDiv, string langTag)
+        private static void PrepareElementsOnPageOneLanguage(SafeXmlNode pageDiv, string langTag)
         {
             foreach (
-                XmlElement groupElement in pageDiv.SafeSelectNodes(
+                SafeXmlElement groupElement in pageDiv.SafeSelectNodes(
                     "descendant-or-self::*[contains(@class,'bloom-translationGroup')]"
                 )
             )
@@ -734,7 +731,7 @@ namespace Bloom.Book
 
                 //remove any elements in the translationgroup which don't have a lang (but ignore any label elements, which we're using for annotating groups)
                 foreach (
-                    XmlElement elementWithoutLanguage in groupElement.SafeSelectNodes(
+                    SafeXmlElement elementWithoutLanguage in groupElement.SafeSelectNodes(
                         "textarea[not(@lang)] | div[not(@lang) and not(self::label)]"
                     )
                 )
@@ -745,7 +742,7 @@ namespace Bloom.Book
 
             //any editable areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages))
             foreach (
-                XmlElement element in pageDiv.SafeSelectNodes( //NB: the jscript will take items with bloom-editable and set the contentEdtable to true.
+                SafeXmlElement element in pageDiv.SafeSelectNodes( //NB: the jscript will take items with bloom-editable and set the contentEdtable to true.
                     "descendant-or-self::textarea[not(@lang)] | descendant-or-self::*[(contains(@class, 'bloom-editable') or @contentEditable='true'  or @contenteditable='true') and not(@lang)]"
                 )
             )
@@ -754,14 +751,14 @@ namespace Bloom.Book
             }
 
             foreach (
-                XmlElement e in pageDiv.SafeSelectNodes(
+                SafeXmlElement e in pageDiv.SafeSelectNodes(
                     "descendant-or-self::*[starts-with(text(),'{')]"
                 )
             )
             {
                 foreach (var node in e.ChildNodes)
                 {
-                    XmlText t = node as XmlText;
+                    var t = node as SafeXmlText;
                     if (t != null && t.Value.StartsWith("{"))
                         t.Value = "";
                     //otherwise html tidy will throw away spans (at least) that are empty, so we never get a chance to fill in the values.
@@ -779,13 +776,13 @@ namespace Bloom.Book
         /// able to reproduce the effect or isolate the cause, but this fixes things.
         /// See https://issues.bloomlibrary.org/youtrack/issue/BL-6923.
         /// </remarks>
-        internal static void FixDuplicateLanguageDivs(XmlElement groupElement, string langTag)
+        internal static void FixDuplicateLanguageDivs(SafeXmlElement groupElement, string langTag)
         {
-            XmlNodeList list = groupElement.SafeSelectNodes("./div[@lang='" + langTag + "']");
-            if (list.Count > 1)
+            var list = groupElement.SafeSelectNodes("./div[@lang='" + langTag + "']");
+            if (list.Length > 1)
             {
-                var count = list.Count;
-                foreach (XmlNode div in list)
+                var count = list.Length;
+                foreach (var div in list)
                 {
                     var innerText = div.InnerText.Trim();
                     if (String.IsNullOrEmpty(innerText))
@@ -805,14 +802,14 @@ namespace Bloom.Book
                         $"Duplicate divs for {langTag} have been merged in a translation group."
                     );
                     list = groupElement.SafeSelectNodes("./div[@lang='" + langTag + "']");
-                    XmlNode first = list[0];
-                    for (int i = 1; i < list.Count; ++i)
+                    var first = list[0];
+                    for (int i = 1; i < list.Length; ++i)
                     {
                         var newline = groupElement.OwnerDocument.CreateTextNode(
                             Environment.NewLine
                         );
                         first.AppendChild(newline);
-                        foreach (XmlNode node in list[i].ChildNodes)
+                        foreach (SafeXmlNode node in list[i].ChildNodes)
                             first.AppendChild(node);
                         groupElement.RemoveChild(list[i]);
                     }
@@ -828,10 +825,10 @@ namespace Bloom.Book
         /// on, then immediate character formatting cannot turn it off anywhere in a text box that
         /// uses that style.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6282.
         /// </summary>
-        private static void FixGroupStyleSettings(XmlNode pageDiv)
+        private static void FixGroupStyleSettings(SafeXmlNode pageDiv)
         {
             foreach (
-                XmlElement groupElement in pageDiv.SafeSelectNodes(
+                SafeXmlElement groupElement in pageDiv.SafeSelectNodes(
                     "descendant-or-self::*[contains(@class,'bloom-translationGroup')]"
                 )
             )
@@ -843,18 +840,18 @@ namespace Bloom.Book
                 // Then remove the group style if it does have any child divs with the bloom-editable class.
                 bool hasInternalEditableDiv = false;
                 foreach (
-                    XmlElement element in groupElement.SafeSelectNodes(
+                    SafeXmlElement element in groupElement.SafeSelectNodes(
                         "child::div[contains(@class, 'bloom-editable')]"
                     )
                 )
                 {
                     var divStyle = HtmlDom.GetStyle(element);
                     if (String.IsNullOrEmpty(divStyle))
-                        HtmlDom.AddClass(element, groupStyle);
+                        element.AddClass(groupStyle);
                     hasInternalEditableDiv = true;
                 }
                 if (hasInternalEditableDiv)
-                    HtmlDom.RemoveClass(groupElement, groupStyle);
+                    groupElement.RemoveClass(groupStyle);
             }
         }
 
@@ -862,8 +859,8 @@ namespace Bloom.Book
         /// For each group (meaning they have a common parent) of editable items, we
         /// need to make sure there are the correct set of copies, with appropriate @lang attributes
         /// </summary>
-        public static XmlElement MakeElementWithLanguageForOneGroup(
-            XmlElement groupElement,
+        public static SafeXmlElement MakeElementWithLanguageForOneGroup(
+            SafeXmlElement groupElement,
             string langTag
         )
         {
@@ -876,12 +873,12 @@ namespace Bloom.Book
             if (string.IsNullOrEmpty(langTag))
                 return null;
 
-            XmlNodeList editableChildrenOfTheGroup = groupElement.SafeSelectNodes(
+            var editableChildrenOfTheGroup = groupElement.SafeSelectNodes(
                 "*[self::textarea or contains(@class,'bloom-editable')]"
             );
 
             var elementsAlreadyInThisLanguage =
-                from XmlElement x in editableChildrenOfTheGroup
+                from SafeXmlElement x in editableChildrenOfTheGroup
                 where x.GetAttribute("lang") == langTag
                 select x;
             if (elementsAlreadyInThisLanguage.Any())
@@ -893,12 +890,14 @@ namespace Bloom.Book
                     .SafeSelectNodes(
                         "ancestor-or-self::*[contains(@class,'bloom-translationGroup')]"
                     )
-                    .Count == 0
+                    .Length == 0
             )
                 return null;
 
-            var prototype = editableChildrenOfTheGroup[0] as XmlElement;
-            XmlElement newElementInThisLanguage;
+			SafeXmlElement prototype = null;
+            if (editableChildrenOfTheGroup.Length > 0)
+				prototype = editableChildrenOfTheGroup[0] as SafeXmlElement;
+			SafeXmlElement newElementInThisLanguage;
             if (prototype == null) //this was an empty translation-group (unusual, but we can cope)
             {
                 newElementInThisLanguage = groupElement.OwnerDocument.CreateElement("div");
@@ -917,7 +916,7 @@ namespace Bloom.Book
             {
                 //what we want to do is copy everything in the element, except that which is specific to a language.
                 //so classes on the element, non-text children (like images), etc. should be copied
-                newElementInThisLanguage = (XmlElement)
+                newElementInThisLanguage = (SafeXmlElement)
                     prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
                 //if there is an id, get rid of it, because we don't want 2 elements with the same id
                 newElementInThisLanguage.RemoveAttribute("id");
@@ -932,7 +931,7 @@ namespace Bloom.Book
                 // don't have this class.
                 // Also, if audio recording markup is done using one audio-sentence span per sentence, we won't copy it.  (Because we strip all out the text underneath this node)
                 // So, it's more consistent to treat all scenarios the same way (don't copy the audio-sentence markup)
-                HtmlDom.RemoveClass(newElementInThisLanguage, "audio-sentence");
+                newElementInThisLanguage.RemoveClass("audio-sentence");
 
                 // Nor any need to copy over other audio markup
                 // We want to clear up all the audio markup so it's not left in an inconsistent state
@@ -940,7 +939,7 @@ namespace Bloom.Book
                 // See BL-8215
                 newElementInThisLanguage.RemoveAttribute("data-audiorecordingmode");
                 newElementInThisLanguage.RemoveAttribute("data-audiorecordingendtimes");
-                HtmlDom.RemoveClass(newElementInThisLanguage, "bloom-postAudioSplit");
+                newElementInThisLanguage.RemoveClass("bloom-postAudioSplit");
 
                 //OK, now any text in there will belong to the prototype language, so remove it, while retaining everything else
                 StripOutText(newElementInThisLanguage);
@@ -954,11 +953,11 @@ namespace Bloom.Book
         /// Elements with a "bloom-cloneToOtherLanguages" class are preserved
         /// </summary>
         /// <param name="element"></param>
-        private static void StripOutText(XmlNode element)
+        private static void StripOutText(SafeXmlNode element)
         {
-            var listToRemove = new List<XmlNode>();
+            var listToRemove = new List<SafeXmlNode>();
             foreach (
-                XmlNode node in element.SelectNodes(
+                var node in element.SafeSelectNodes(
                     "descendant-or-self::*[(self::p or self::br or self::u or self::b or self::i) and not(contains(@class,'bloom-cloneToOtherLanguages'))]"
                 )
             )
@@ -967,7 +966,7 @@ namespace Bloom.Book
             }
             // clean up any remaining texts that weren't enclosed
             foreach (
-                XmlNode node in element.SelectNodes(
+                var node in element.SafeSelectNodes(
                     "descendant-or-self::*[not(contains(@class,'bloom-cloneToOtherLanguages'))]/text()"
                 )
             )
@@ -977,7 +976,7 @@ namespace Bloom.Book
             RemoveXmlChildren(listToRemove);
         }
 
-        private static void RemoveXmlChildren(List<XmlNode> removalList)
+        private static void RemoveXmlChildren(List<SafeXmlNode> removalList)
         {
             foreach (var node in removalList)
             {
@@ -995,7 +994,7 @@ namespace Bloom.Book
         /// </summary>
         /// <param name="groups"></param>
         /// <returns></returns>
-        public static List<XmlElement> SortTranslationGroups(IEnumerable<XmlElement> groups)
+        public static List<SafeXmlElement> SortTranslationGroups(IEnumerable<SafeXmlElement> groups)
         {
             // This is better than making the list and then using List's Sort method,
             // because it is guaranteed to be a stable sort, keeping things with the same
@@ -1003,9 +1002,9 @@ namespace Bloom.Book
             return groups.OrderBy(GetTabIndex).ToList();
         }
 
-        private static int GetTabIndex(XmlElement x)
+        private static int GetTabIndex(SafeXmlElement x)
         {
-            if (Int32.TryParse(x.Attributes["tabindex"]?.Value ?? "x", out int val))
+            if (Int32.TryParse(x.GetAttribute("tabindex"), out int val))
                 return val;
             return Int32.MaxValue;
         }
@@ -1013,8 +1012,8 @@ namespace Bloom.Book
         /// <summary>
         /// bloom-translationGroup elements on the page in audio-reading order.
         /// </summary>
-        public static List<XmlElement> SortedGroupsOnPage(
-            XmlElement page,
+        public static List<SafeXmlElement> SortedGroupsOnPage(
+            SafeXmlElement page,
             bool omitBoxHeaders = false
         )
         {

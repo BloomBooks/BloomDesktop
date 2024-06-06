@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
+using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.Workspace;
@@ -191,42 +192,42 @@ namespace Bloom.Publish
             Debug.Assert(dom != null && dom.Body != null);
 
             // Collect all the page divs.
-            var pageElts = new List<XmlElement>();
+            var pageElts = new List<SafeXmlElement>();
             if (epubMaker != null)
             {
-                pageElts.Add((XmlElement)dom.Body.FirstChild); // already have a single-page dom prepared for export
+                pageElts.Add((SafeXmlElement)dom.Body.FirstChild); // already have a single-page dom prepared for export
             }
             else
             {
-                foreach (XmlElement page in book.GetPageElements())
+                foreach (SafeXmlElement page in book.GetPageElements())
                     pageElts.Add(page);
             }
 
             RemoveEnterpriseFeaturesIfNeeded(book, pageElts, warningMessages);
 
             // Remove any left-over bubbles
-            foreach (XmlElement elt in dom.RawDom.SafeSelectNodes("//label"))
+            foreach (SafeXmlElement elt in dom.RawDom.SafeSelectNodes("//label"))
             {
-                if (HasClass(elt, "bubble"))
+                if (elt.HasClass("bubble"))
                     elt.ParentNode.RemoveChild(elt);
             }
             // Remove page labels and descriptions.  Also remove pages (or other div elements) that users have
             // marked invisible.  (The last mimics the effect of bookLayout/languageDisplay.less for editing
             // or PDF published books.)
-            foreach (XmlElement elt in dom.RawDom.SafeSelectNodes("//div"))
+            foreach (SafeXmlElement elt in dom.RawDom.SafeSelectNodes("//div"))
             {
                 if (!book.IsTemplateBook)
                 {
-                    if (!keepPageLabels && HasClass(elt, "pageLabel"))
+                    if (!keepPageLabels && elt.HasClass("pageLabel"))
                         elt.ParentNode.RemoveChild(elt);
 
-                    if (HasClass(elt, "pageDescription"))
+                    if (elt.HasClass("pageDescription"))
                         elt.ParentNode.RemoveChild(elt);
                 }
             }
             // Our recordingmd5 attribute is not allowed by epub
             foreach (
-                XmlElement elt in HtmlDom.SelectAudioSentenceElementsWithRecordingMd5(
+                SafeXmlElement elt in HtmlDom.SelectAudioSentenceElementsWithRecordingMd5(
                     dom.RawDom.DocumentElement
                 )
             )
@@ -234,12 +235,12 @@ namespace Bloom.Publish
                 elt.RemoveAttribute("recordingmd5");
             }
             // Users should not be able to edit content of published books
-            foreach (XmlElement elt in dom.RawDom.SafeSelectNodes("//div[@contenteditable]"))
+            foreach (SafeXmlElement elt in dom.RawDom.SafeSelectNodes("//div[@contenteditable]"))
             {
                 elt.RemoveAttribute("contenteditable");
             }
 
-            foreach (var div in dom.Body.SelectNodes("//div[@role='textbox']").Cast<XmlElement>())
+            foreach (var div in dom.Body.SafeSelectNodes("//div[@role='textbox']").Cast<SafeXmlElement>())
             {
                 div.RemoveAttribute("role"); // this isn't an editable textbox in an ebook
                 div.RemoveAttribute("aria-label"); // don't want this without a role
@@ -248,7 +249,7 @@ namespace Bloom.Publish
             }
 
             // Clean up img elements (BL-6035/BL-6036 and BL-7218)
-            foreach (var img in dom.Body.SelectNodes("//img").Cast<XmlElement>())
+            foreach (var img in dom.Body.SafeSelectNodes("//img").Cast<SafeXmlElement>())
             {
                 // Ensuring a proper alt attribute is handled elsewhere
                 var src = img.GetOptionalStringAttribute("src", null);
@@ -265,7 +266,7 @@ namespace Bloom.Publish
                 }
                 else
                 {
-                    var parent = img.ParentNode as XmlElement;
+                    var parent = img.ParentNode as SafeXmlElement;
                     parent.RemoveAttribute("title"); // We don't want this in published books.
                     img.RemoveAttribute("title"); // We don't want this in published books.  (probably doesn't exist)
                     img.RemoveAttribute("type"); // This is invalid, but has appeared for svg branding images.
@@ -277,8 +278,8 @@ namespace Bloom.Publish
                 // epub-check doesn't like these attributes (BL-6036).  I suppose BloomReader might find them useful.
                 foreach (
                     var div in dom.Body
-                        .SelectNodes("//div[contains(@class, 'split-pane-component-inner')]")
-                        .Cast<XmlElement>()
+                        .SafeSelectNodes("//div[contains(@class, 'split-pane-component-inner')]")
+                        .Cast<SafeXmlElement>()
                 )
                 {
                     div.RemoveAttribute("min-height");
@@ -291,7 +292,7 @@ namespace Bloom.Publish
             // exists, it probably has a style attribute (position:fixed) that epubcheck won't like.
             // (fixed position way off the screen to hide it)
             foreach (
-                var div in dom.Body.SelectNodes("//*[@data-cke-hidden-sel]").Cast<XmlElement>()
+                var div in dom.Body.SafeSelectNodes("//*[@data-cke-hidden-sel]").Cast<SafeXmlElement>()
             )
             {
                 div.ParentNode.RemoveChild(div);
@@ -309,7 +310,7 @@ namespace Bloom.Publish
             // need to use the real DOM with its stylesheets to figure out what is hidden there
             // and should be removed in the epub.
             HtmlDom displayDom = null;
-            foreach (XmlElement page in pageElts)
+            foreach (SafeXmlElement page in pageElts)
             {
                 EnsureAllThingsThatCanBeHiddenHaveIds(page);
                 if (displayDom == null)
@@ -365,10 +366,10 @@ namespace Bloom.Publish
                     _mapIdToFontFamily[info.id] = info.fontFamily;
                 }
             }
-            var toBeDeleted = new List<XmlElement>();
+            var toBeDeleted = new List<SafeXmlElement>();
             // Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
             // (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
-            foreach (XmlElement page in pageElts)
+            foreach (SafeXmlElement page in pageElts)
             {
                 // BL-9501 Don't remove pages from template books, which are often empty but we still want to show their components
                 if (!book.IsTemplateBook)
@@ -381,7 +382,7 @@ namespace Bloom.Publish
                     var selector = removeInactiveLanguages
                         ? kSelectThingsThatCanBeHidden
                         : kSelectThingsThatCanBeHiddenButAreNotText;
-                    foreach (XmlElement elt in page.SafeSelectNodes(selector))
+                    foreach (SafeXmlElement elt in page.SafeSelectNodes(selector))
                     {
                         // Even when they are not displayed we want to keep image descriptions if they aren't empty.
                         // This is necessary for retaining any associated audio files to play.
@@ -405,7 +406,7 @@ namespace Bloom.Publish
                 // We need the font information for wanted text elements as well.  This is a side-effect but related to
                 // unwanted elements in that we don't need fonts that are used only by unwanted elements.  Note that
                 // elements don't need to be actually visible to provide computed style information such as font-family.
-                foreach (XmlElement elt in page.SafeSelectNodes(".//div"))
+                foreach (SafeXmlElement elt in page.SafeSelectNodes(".//div"))
                 {
                     StoreFontUsed(elt);
                 }
@@ -422,7 +423,7 @@ namespace Bloom.Publish
 
         public static void RemoveEnterpriseFeaturesIfNeeded(
             Book.Book book,
-            List<XmlElement> pageElts,
+            List<SafeXmlElement> pageElts,
             ISet<string> warningMessages
         )
         {
@@ -454,7 +455,7 @@ namespace Bloom.Publish
         public static Dictionary<string, int> RemoveEnterprisePagesIfNeeded(
             BookData bookData,
             HtmlDom dom,
-            List<XmlElement> pageElts
+            List<SafeXmlElement> pageElts
         )
         {
             var omittedPages = new Dictionary<string, int>();
@@ -488,9 +489,9 @@ namespace Bloom.Publish
             RobustFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
         }
 
-        private bool IsDisplayed(XmlElement elt, bool throwOnFailure)
+        private bool IsDisplayed(SafeXmlElement elt, bool throwOnFailure)
         {
-            var id = elt.Attributes["id"].Value;
+            var id = elt.GetAttribute("id");
             if (!_mapIdToDisplay.TryGetValue(id, out var display))
             {
                 Debug.WriteLine("element not found in IsDisplayed()");
@@ -518,9 +519,9 @@ namespace Bloom.Publish
         /// Elements that are made invisible by CSS still have their styles computed and can provide font information.
         /// See https://issues.bloomlibrary.org/youtrack/issue/BL-11108 for a misunderstanding of this.
         /// </remarks>
-        private void StoreFontUsed(XmlElement elt)
+        private void StoreFontUsed(SafeXmlElement elt)
         {
-            var id = elt.Attributes["id"].Value;
+            var id = elt.GetAttribute("id");
             if (!_mapIdToFontFamily.TryGetValue(id, out var fontFamily))
                 return; // Shouldn't happen, but ignore if it does.
             // we actually can get a comma-separated list with fallback font options: split into an array so we can use just the first one
@@ -534,7 +535,7 @@ namespace Bloom.Publish
             // But this is the best we can do without a lot of additional work.  (See BL-11512.)
             if (Program.RunningHarvesterMode)
             {
-                var lang = elt.Attributes["lang"]?.Value;
+                var lang = elt.GetAttribute("lang");
                 if (string.IsNullOrEmpty(lang) || lang == "z" || lang == "*")
                     return; // no language information
                 if (!FontsAndLangsUsed.TryGetValue(font, out HashSet<string> langsForFont))
@@ -546,9 +547,9 @@ namespace Bloom.Publish
             }
         }
 
-        private bool IsNonEmptyImageDescription(XmlElement elt)
+        private bool IsNonEmptyImageDescription(SafeXmlElement elt)
         {
-            var classes = elt.Attributes["class"]?.Value;
+            var classes = elt.GetAttribute("class");
             if (
                 !String.IsNullOrEmpty(classes)
                 && (
@@ -565,36 +566,24 @@ namespace Bloom.Publish
         internal const string kTempIdMarker = "PublishTempIdXXYY";
         private static int s_count = 1;
 
-        public static void EnsureAllThingsThatCanBeHiddenHaveIds(XmlElement pageElt)
+        public static void EnsureAllThingsThatCanBeHiddenHaveIds(SafeXmlElement pageElt)
         {
-            foreach (XmlElement elt in pageElt.SafeSelectNodes(kSelectThingsThatCanBeHidden))
+            foreach (SafeXmlElement elt in pageElt.SafeSelectNodes(kSelectThingsThatCanBeHidden))
             {
-                if (elt.Attributes["id"] != null)
+                if (!string.IsNullOrEmpty(elt.GetAttribute("id")))
                     continue;
                 elt.SetAttribute("id", kTempIdMarker + s_count++);
             }
         }
 
-        public static void RemoveTempIds(XmlElement pageElt)
+        public static void RemoveTempIds(SafeXmlElement pageElt)
         {
-            foreach (XmlElement elt in pageElt.SafeSelectNodes(kSelectThingsThatCanBeHidden))
+            foreach (SafeXmlElement elt in pageElt.SafeSelectNodes(kSelectThingsThatCanBeHidden))
             {
-                if (
-                    elt.Attributes["id"] != null
-                    && elt.Attributes["id"].Value.StartsWith(kTempIdMarker)
-                )
+                var id = elt.GetAttribute("id");
+                if (id != null && id.StartsWith(kTempIdMarker))
                     elt.RemoveAttribute("id");
             }
-        }
-
-        public static bool HasClass(XmlElement elt, string className)
-        {
-            if (elt == null)
-                return false;
-            var classAttr = elt.Attributes["class"];
-            if (classAttr == null)
-                return false;
-            return ((" " + classAttr.Value + " ").Contains(" " + className + " "));
         }
 
         /// <summary>
@@ -651,7 +640,7 @@ namespace Bloom.Publish
             var domForVideoProcessing = modifiedBook.OurHtmlDom;
             var videoContainerElements = HtmlDom
                 .SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement)
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             if (videoContainerElements.Any())
             {
                 SignLanguageApi.ProcessVideos(videoContainerElements, modifiedBook.FolderPath);
@@ -711,7 +700,7 @@ namespace Bloom.Publish
         /// it might be null).
         /// </summary>
         public static void CollectPageLabel(
-            XmlElement pageElement,
+            SafeXmlElement pageElement,
             Dictionary<string, int> omittedPageLabels
         )
         {
@@ -978,7 +967,7 @@ namespace Bloom.Publish
         /// </summary>
         /// <returns><c>true</c> if any references for bad fonts were fixed, <c>false</c> otherwise.</returns>
         public static bool FixXmlDomReferencesForBadFonts(
-            XmlDocument bookDoc,
+            SafeXmlDocument bookDoc,
             string defaultFont,
             HashSet<string> badFonts,
             XmlNamespaceManager nsmgr = null,
