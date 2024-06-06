@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,22 +16,20 @@ using Bloom.Collection;
 using Bloom.ErrorReporter;
 using Bloom.FontProcessing;
 using Bloom.MiscUI;
+using Bloom.SafeXml;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
-using Sentry.Protocol;
 using SIL.Code;
-using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Miscellaneous;
-using SIL.Xml;
 
 namespace Bloom.Edit
 {
@@ -346,7 +343,7 @@ namespace Bloom.Edit
 
             // We've seen pages get emptied out, and we don't know why. This is a safety check.
             // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
-            if (BookStorage.CheckForEmptyMarginBoxOnPage(browserDomPage as XmlElement))
+            if (BookStorage.CheckForEmptyMarginBoxOnPage(SafeXmlElement.FakeWrap(browserDomPage as XmlElement)))
             {
                 //We don't want to save the empty page.
                 // This has been logged and reported to the user; we would prefer not to report it again, but we need the exception
@@ -370,7 +367,7 @@ namespace Bloom.Edit
         }
 
         private Form _oldActiveForm;
-        private XmlElement _pageDivFromCopyPage;
+        private SafeXmlElement _pageDivFromCopyPage;
         private string _bookPathFromCopyPage;
 
         internal BloomWebSocketServer EditModelSocketServer
@@ -1047,12 +1044,12 @@ namespace Bloom.Edit
                     return;
                 }
 
-                for (int i = 0; i < nodeList.Count; ++i)
+                for (int i = 0; i < nodeList.Length; ++i)
                 {
-                    var node = nodeList.Item(i);
+                    var node = nodeList[i];
 
                     // GetOptionalStringAttribute needs this to be non-null, or else an exception will happen
-                    if (node.Attributes == null)
+                    if (node.AttributeNames == null)
                     {
                         continue;
                     }
@@ -1101,7 +1098,7 @@ namespace Bloom.Edit
             var imgElt = _pageSelection.CurrentSelection
                 .GetDivNodeForThisPage()
                 .SafeSelectNodes($".//img[@src='{match}']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             if (imgElt == null)
                 return; // log? unexpected
@@ -1116,7 +1113,7 @@ namespace Bloom.Edit
         private DataSet _pageDataBeforeEdits;
         private string _featureRequirementsBeforeEdits;
 
-        private DataSet GetPageData(XmlNode page)
+        private DataSet GetPageData(SafeXmlNode page)
         {
             var data = new DataSet();
             CurrentBook.BookData.GatherDataItemsFromXElement(
@@ -1167,7 +1164,7 @@ namespace Bloom.Edit
         private static void AddMissingCopyrightNoticeIfNeeded(Book.Book book, HtmlDom dom)
         {
             var licenseBlock = dom.SafeSelectNodes(".//div[@class='licenseBlock']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             if (licenseBlock == null)
                 return; // not the relevant page
@@ -1177,10 +1174,10 @@ namespace Bloom.Edit
             // suggests we want to know who says it is CC0. So commenting that aspect out.
             var copyrightOk = metadata.IsMinimallyComplete; // || metadata.License?.Token == "cc0";
             var firstElementChild = licenseBlock.ChildNodes
-                .Cast<XmlNode>()
-                .FirstOrDefault(x => x is XmlElement);
+                .Cast<SafeXmlNode>()
+                .FirstOrDefault(x => x is SafeXmlElement);
             var haveMissingNotice =
-                firstElementChild?.Attributes?["class"]?.Value == "ui-missingCopyrightNotice";
+                firstElementChild?.GetAttribute("class") == "ui-missingCopyrightNotice";
             if (haveMissingNotice && copyrightOk)
                 licenseBlock.RemoveChild(firstElementChild);
             else if (!copyrightOk && !haveMissingNotice)
@@ -1204,10 +1201,8 @@ namespace Bloom.Edit
         private static void InsertLabelAndLayoutTogglePane(HtmlDom dom)
         {
             // Add an empty div that will provide space for the page label and origami toggle above the displayed page.
-            var node = dom.RawDom.CreateNode(XmlNodeType.Element, "div", "");
-            var attr = dom.RawDom.CreateAttribute("id");
-            attr.Value = "labelAndLayoutPane";
-            node.Attributes.Append(attr);
+            var node = dom.RawDom.CreateElement("div");
+            node.SetAttribute("id", "labelAndLayoutPane");
             dom.Body.InsertBefore(node, dom.Body.FirstChild);
         }
 
@@ -1245,7 +1240,7 @@ namespace Bloom.Edit
             var body = dom.Body;
             var pageDiv =
                 body.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]")
-                as XmlElement;
+                as SafeXmlElement;
             if (pageDiv != null)
             {
                 var outerDiv = InsertContainingScalingDiv(body, pageDiv);
@@ -1267,7 +1262,7 @@ namespace Bloom.Edit
             }
         }
 
-        static XmlElement InsertContainingScalingDiv(XmlElement body, XmlElement pageDiv)
+        static SafeXmlElement InsertContainingScalingDiv(SafeXmlElement body, SafeXmlElement pageDiv)
         {
             // Note: because this extra div is OUTSIDE the page div, we don't have to remove it later,
             // because only the page div and its contents are saved back to the permanent file.
@@ -1368,9 +1363,7 @@ namespace Bloom.Edit
 
         private void EnsureLevelAttrCorrect()
         {
-            var currentLevel = _currentlyDisplayedBook.OurHtmlDom.Body.Attributes[
-                "data-leveledreaderlevel"
-            ]?.Value;
+            var currentLevel = _currentlyDisplayedBook.OurHtmlDom.Body.GetAttribute("data-leveledreaderlevel");
             var correctLevel =
                 _currentlyDisplayedBook.BookInfo.MetaData.LeveledReaderLevel.ToString();
             if (correctLevel != currentLevel)
@@ -1546,7 +1539,7 @@ namespace Bloom.Edit
             _stateMachine.ToSavedAndStripped(pageContentData);
         }
 
-        private XmlElement _modifiedPageElement;
+        private SafeXmlElement _modifiedPageElement;
 
         /// <summary>
         /// Receives a DOM (derived the browser) that combines the body of the document of the page
@@ -1593,9 +1586,10 @@ namespace Bloom.Edit
                 throw err;
             }
             //OK, looks safe, time to save.
-            var newPageData = GetPageData(docFromBrowser);
+            var editedDom = HtmlDom.FromDoc(docFromBrowser);
+            var newPageData = GetPageData(editedDom.RawDom);
             _nextSaveMustBeFull = CurrentBook.UpdateDomFromEditedPage(
-                HtmlDom.FromDoc(docFromBrowser),
+                editedDom,
                 out _modifiedPageElement,
                 _nextSaveMustBeFull || NeedToDoFullSave(newPageData)
             );
@@ -1880,7 +1874,7 @@ namespace Bloom.Edit
                 {
                     // We have to clone this so that if the user changes the page after doing the copy,
                     // when they paste they get the page as it was, not as it is now.
-                    _pageDivFromCopyPage = (XmlElement)page.GetDivNodeForThisPage().CloneNode(true);
+                    _pageDivFromCopyPage = (SafeXmlElement)page.GetDivNodeForThisPage().CloneNode(true);
                     _bookPathFromCopyPage = page.Book.GetPathHtmlFile();
                     return page.Id;
                 },

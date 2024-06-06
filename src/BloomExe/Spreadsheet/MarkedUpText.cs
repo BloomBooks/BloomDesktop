@@ -108,12 +108,12 @@ namespace Bloom.Spreadsheet
             MarkedUpText pending = new MarkedUpText();
 
             //There are no paragraph elements, just keep all whitespace
-            if (((XmlElement)root).GetElementsByTagName("p").Count == 0)
+            if (((XmlElement)root).GetElementsByTagName("p").Count == 0)    // NOT SafeXmlElement
             {
                 return ParseXmlRecursive(root);
             }
 
-            foreach (XmlNode x in root.ChildNodes.Cast<XmlNode>())
+            foreach (var x in root.ChildNodes.Cast<XmlNode>())  // NOT SafeXmlNode
             {
                 if (x.Name == "#whitespace")
                 {
@@ -149,7 +149,7 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private static MarkedUpText ParseXmlRecursive(XmlNode node)
+        private static MarkedUpText ParseXmlRecursive(XmlNode node) // NOT SafeXmlNode
         {
             MarkedUpText markedUpText;
             if (
@@ -184,7 +184,7 @@ namespace Bloom.Spreadsheet
             else
             {
                 markedUpText = new MarkedUpText();
-                foreach (XmlNode child in node.ChildNodes)
+                foreach (XmlNode child in node.ChildNodes)  // NOT SafeXmlNode
                 {
                     MarkedUpText markedUpChild = ParseXmlRecursive(child);
                     ApplyFormatting(
