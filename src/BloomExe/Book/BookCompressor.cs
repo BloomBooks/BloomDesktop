@@ -323,14 +323,14 @@ namespace Bloom.Book
             dom.PreserveWhitespace = true;
             dom.Load(filePath);
             foreach (
-                var node in dom.SafeSelectNodes("//SubscriptionCode").Cast<XmlElement>().ToArray()
+                var node in dom.SafeSelectNodes("//SubscriptionCode").Cast<XmlElement>().ToArray()  // NOT SafeXmlElement
             )
             {
                 node.RemoveAll(); // should happen at most once
             }
             foreach (
                 var node in dom.SafeSelectNodes("//BrandingProjectName")
-                    .Cast<XmlElement>()
+                    .Cast<XmlElement>() // NOT SafeXmlElement
                     .ToArray()
             )
             {

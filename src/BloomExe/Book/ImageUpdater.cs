@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
@@ -74,7 +75,7 @@ namespace Bloom.Book
             //Now update the html attributes which echo some of it, and is used by javascript to overlay displays related to
             //whether the info is there or missing or whatever.
 
-            foreach (XmlElement img in dom.SafeSelectNodes("//img"))
+            foreach (SafeXmlElement img in dom.SafeSelectNodes("//img"))
             {
                 UpdateImgMetadataAttributesToMatchImage(folderPath, img, progress, metadata);
             }
@@ -187,7 +188,7 @@ namespace Bloom.Book
 
         public static void UpdateImgMetadataAttributesToMatchImage(
             string folderPath,
-            XmlElement imgElement,
+            SafeXmlElement imgElement,
             IProgress progress
         )
         {
@@ -196,7 +197,7 @@ namespace Bloom.Book
 
         public static void UpdateImgMetadataAttributesToMatchImage(
             string folderPath,
-            XmlElement imgElement,
+            SafeXmlElement imgElement,
             IProgress progress,
             Metadata metadata
         )
@@ -302,10 +303,10 @@ namespace Bloom.Book
                 dom.RawDom.DocumentElement
             );
             int completed = 0;
-            foreach (XmlElement img in imgElements)
+            foreach (SafeXmlElement img in imgElements)
             {
                 progress.ProgressIndicator.PercentCompleted = (int)(
-                    100.0 * (float)completed / (float)imgElements.Count
+                    100.0 * (float)completed / (float)imgElements.Length
                 );
                 UpdateImgMetadataAttributesToMatchImage(folderPath, img, progress);
                 completed++;

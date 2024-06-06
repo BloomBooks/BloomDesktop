@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using Bloom;
 using Bloom.Api;
 using Bloom.Book;
@@ -1130,8 +1131,8 @@ namespace BloomTests.Publish
                         "Expected to find untrimmed video"
                     );
                     var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(paramObj.Html);
-                    var secondSource = htmlDom.SelectNodes("//source")[1];
-                    var srcAttr = secondSource.Attributes["src"].Value;
+                    var secondSource = htmlDom.SelectNodes("//source")[1] as XmlElement;
+                    var srcAttr = secondSource.GetAttribute("src");
                     Assert.AreNotEqual(
                         -1,
                         zip.FindEntry(srcAttr, false),

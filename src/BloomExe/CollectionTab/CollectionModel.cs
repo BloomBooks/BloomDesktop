@@ -14,6 +14,7 @@ using Bloom.Collection;
 using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.SafeXml;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
@@ -619,18 +620,18 @@ namespace Bloom.CollectionTab
 
         // BL-5998 Apparently Word doesn't read our CSS rules for bloom-visibility correctly.
         // So we're forced to control visibility more directly with inline styles.
-        private static XmlDocument RepairWordVisibility(string content)
+        private static SafeXmlDocument RepairWordVisibility(string content)
         {
             var xmlDoc = XmlHtmlConverter.GetXmlDomFromHtml(content);
             var dom = new HtmlDom(xmlDoc);
             var bloomEditableDivs = dom.RawDom.SafeSelectNodes(
                 "//div[contains(@class, 'bloom-editable')]"
             );
-            foreach (XmlElement editableDiv in bloomEditableDivs)
+            foreach (SafeXmlElement editableDiv in bloomEditableDivs)
             {
                 HtmlDom.SetInlineStyle(
                     editableDiv,
-                    HtmlDom.HasClass(editableDiv, "bloom-visibility-code-on")
+                    editableDiv.HasClass("bloom-visibility-code-on")
                         ? "display: block;"
                         : "display: none;"
                 );
