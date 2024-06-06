@@ -5,7 +5,7 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Edit;
+using Bloom.SafeXml;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.Extensions;
@@ -13,7 +13,6 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.TestUtilities;
-using SIL.Xml;
 
 namespace BloomTests.Book
 {
@@ -1511,22 +1510,21 @@ namespace BloomTests.Book
 						</div>
 					</div></body></html>";
 
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _defaultCollectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _defaultCollectionSettings, null);
 
             BookStarter.SetupPage(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='fr']", 1);
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='es']", 1);
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='xyz']", 1);
         }
 
@@ -1539,24 +1537,23 @@ namespace BloomTests.Book
 						 <div class='pageDescription' lang='fr'>bonjour</div>
 					</div></body></html>";
 
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _alternateCollectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _alternateCollectionSettings, null);
 
             BookStarter.SetupPage(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
             //should remove the French (I don't see that we actually have any templates that have anything but English, but just in case)
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'pageDescription') and @lang != 'en']",
                     0
                 );
             //should leave English as a placeholder
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'pageDescription') and not(normalize-space(.))]",
                     1
@@ -1863,17 +1860,17 @@ namespace BloomTests.Book
             );
 
             BookCopyrightAndLicense.UpdateDomFromDataDiv(dom, null, bookData, false);
-            var nodes1 = dom.RawDom.SelectNodes(
+            var nodes1 = dom.RawDom.SafeSelectNodes(
                 "/html/body//div[@data-derived='originalCopyrightAndLicense']"
             );
-            Assert.AreEqual(1, nodes1.Count);
+            Assert.AreEqual(1, nodes1.Length);
             Assert.AreEqual(
                 "This book is an adaptation of the original, HTML Lesson 1: <strong> & <em> tags, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.",
-                nodes1.Item(0).InnerText
+                nodes1[0].InnerText
             );
             Assert.AreEqual(
                 "This book is an adaptation of the original, <cite data-book=\"originalTitle\">HTML Lesson 1: &lt;strong&gt; &amp; &lt;em&gt; tags</cite>, Copyright © 2011, LASI &amp; SILA. Licensed under CC BY-NC-SA 4.0.",
-                nodes1.Item(0).InnerXml
+                nodes1[0].InnerXml
             );
             BookStarterTests.AssertOriginalCopyrightAndLicense(
                 dom,
@@ -1888,7 +1885,7 @@ namespace BloomTests.Book
             return BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(bookData, dom);
         }
 
-        void AppendDataDivElement(XmlElement dataDiv, string dataBook, string lang, string val)
+        void AppendDataDivElement(SafeXmlElement dataDiv, string dataBook, string lang, string val)
         {
             var newDiv = dataDiv.OwnerDocument.CreateElement("div");
             newDiv.SetAttribute("data-book", dataBook);

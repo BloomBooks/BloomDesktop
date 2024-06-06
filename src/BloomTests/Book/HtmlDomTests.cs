@@ -4,8 +4,8 @@ using System.Linq;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
+using Bloom.SafeXml;
 using NUnit.Framework;
-using SIL.Xml;
 
 namespace BloomTests.Book
 {
@@ -85,25 +85,6 @@ namespace BloomTests.Book
             Assert.AreEqual("theBase", dom.BaseForRelativePaths);
         }
 
-        [TestCase("", "", "")]
-        [TestCase("a", "a", "")] // no other class present
-        [TestCase("a", "b", "a")] // target class not found
-        [TestCase("abc def ghk", "abc", "def ghk")] // target class at start
-        [TestCase("def ghk abc", "abc", "def ghk")] // target class at end
-        [TestCase("def ghk abc", "ghk", "def abc")] // target class in middle
-        [TestCase("def", "de", "def")] // don't remove prefix at start
-        [TestCase("def ghk", "de", "def ghk")] // don't remove prefix at start with following space
-        [TestCase("def ghk abc", "gh", "def ghk abc")] // don't remove prefix in middle
-        [TestCase("def ghk", "gh", "def ghk")] // don't remove prefix from last class
-        [TestCase("def", "ef", "def")] // don't remove suffix at end
-        [TestCase("def ghk", "hk", "def ghk")] // don't remove suffix at end
-        [TestCase("def ghk abc", "hk", "def ghk abc")] // don't remove sufffix in middle
-        [TestCase("def ghkj abc", "hk", "def ghkj abc")] // don't remove central part
-        public void RemoveClass_RemovesCorrectly(string input, string className, string output)
-        {
-            Assert.That(HtmlDom.RemoveClass(className, input), Is.EqualTo(output));
-        }
-
         [Test]
         public void BaseForRelativePaths_NullPath_SetsToEmpty()
         {
@@ -153,9 +134,9 @@ namespace BloomTests.Book
         [Test]
         public void AddClass_AlreadyThere_LeavesAlone()
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml(@"<div class='one two three'/>");
-            HtmlDom.AddClass((XmlElement)dom.FirstChild, "two");
+            ((SafeXmlElement)dom.FirstChild).AddClass("two");
             AssertThatXmlIn
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath("div[@class='one two three']", 1);
@@ -164,9 +145,9 @@ namespace BloomTests.Book
         [Test]
         public void AddClass_SubstringClass_Adds()
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml(@"<div class='decodable-reader-off'/>");
-            HtmlDom.AddClass((XmlElement)dom.FirstChild, "decodable-reader");
+            ((SafeXmlElement)dom.FirstChild).AddClass("decodable-reader");
             AssertThatXmlIn
                 .Dom(dom)
                 .HasSpecifiedNumberOfMatchesForXpath("div[contains(@class,'decodable-reader')]", 1);
@@ -181,9 +162,9 @@ namespace BloomTests.Book
         [Test]
         public void AddClass_NoClasses_Adds()
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml(@"<div class=''/>");
-            HtmlDom.AddClass((XmlElement)dom.FirstChild, "two");
+            ((SafeXmlElement)dom.FirstChild).AddClass("two");
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[@class='two']", 1);
         }
 
@@ -402,9 +383,9 @@ namespace BloomTests.Book
             Assert.AreEqual("", HtmlDom.GetImageElementUrl(element).UrlEncoded);
         }
 
-        private XmlElement MakeElement(string xml)
+        private SafeXmlElement MakeElement(string xml)
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml(xml);
             return dom.DocumentElement;
         }
@@ -426,17 +407,17 @@ namespace BloomTests.Book
             string[] classesToDrop
         )
         {
-            var sourceDom = new XmlDocument();
+            var sourceDom = new SafeXmlDocument(new XmlDocument());
             sourceDom.LoadXml(string.Format("<div class='{0}'/>", sourceClasses));
-            var targetDom = new XmlDocument();
+            var targetDom = new SafeXmlDocument(new XmlDocument());
             targetDom.LoadXml(string.Format("<div class='{0}'/>", targetClasses));
-            var targetNode = (XmlElement)targetDom.SelectSingleNode("div");
+            var targetNode = (SafeXmlElement)targetDom.SelectSingleNode("div");
             HtmlDom.MergeClassesIntoNewPage(
-                (XmlElement)sourceDom.SelectSingleNode("div"),
+                (SafeXmlElement)sourceDom.SelectSingleNode("div"),
                 targetNode,
                 classesToDrop
             );
-            return targetNode.GetStringAttribute("class");
+            return targetNode.GetAttribute("class");
         }
 
         [Test]
@@ -506,7 +487,7 @@ namespace BloomTests.Book
         [Test]
         public void SelectChildImgAndBackgroundImageElements()
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml(
                 "<div>"
                     + "<div id='thisShouldBeIgnored'>"
@@ -523,15 +504,15 @@ namespace BloomTests.Book
                     + "</div>"
             );
             var elements = HtmlDom.SelectChildImgAndBackgroundImageElements(
-                dom.SelectSingleNode("//*[@id='thisOne']") as XmlElement
+                dom.SelectSingleNode("//*[@id='thisOne']") as SafeXmlElement
             );
-            Assert.AreEqual(2, elements.Count);
+            Assert.AreEqual(2, elements.Length);
         }
 
         [Test]
         public void GetIsImgOrSomethingWithBackgroundImage_NoBackgroundImageProperty_False()
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml("<div style=\"color:red;\"></div>");
             Assert.IsFalse(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.DocumentElement));
         }
@@ -539,7 +520,7 @@ namespace BloomTests.Book
         [Test]
         public void GetIsImgOrSomethingWithBackgroundImage_HasBackgroundImageProperty_True()
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml("<div style=\" background-image : URL(\'old.png\')\"></div>");
             Assert.IsTrue(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.DocumentElement));
 
@@ -553,11 +534,11 @@ namespace BloomTests.Book
         [Test]
         public void GetIsImgOrSomethingWithBackgroundImage_Img_True()
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml("<html><body><img/></body></html>");
             Assert.IsTrue(
                 HtmlDom.IsImgOrSomethingWithBackgroundImage(
-                    dom.SelectNodes("//img")[0] as XmlElement
+                    dom.SafeSelectNodes("//img")[0] as SafeXmlElement
                 )
             );
         }
@@ -565,11 +546,11 @@ namespace BloomTests.Book
         [Test]
         public void GetIsImgOrSomethingWithBackgroundImage_ImgIsSybling_False()
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml("<html><body><img/><foo/></body></html>");
             Assert.IsFalse(
                 HtmlDom.IsImgOrSomethingWithBackgroundImage(
-                    dom.SelectNodes("//foo")[0] as XmlElement
+                    dom.SafeSelectNodes("//foo")[0] as SafeXmlElement
                 )
             );
         }
@@ -577,11 +558,11 @@ namespace BloomTests.Book
         [Test]
         public void GetIsImgOrSomethingWithBackgroundImage_ImgIsChild_False()
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml("<html><body><div><img/></div></body></html>");
             Assert.IsFalse(
                 HtmlDom.IsImgOrSomethingWithBackgroundImage(
-                    dom.SelectNodes("//div")[0] as XmlElement
+                    dom.SafeSelectNodes("//div")[0] as SafeXmlElement
                 )
             );
         }
@@ -787,9 +768,9 @@ namespace BloomTests.Book
         [Test]
         public void SetElementFromUserStringSafely_Various()
         {
-            var dom = new XmlDocument();
+            var dom = new SafeXmlDocument(new XmlDocument());
             dom.LoadXml("<div></div>");
-            var target = dom.FirstChild as XmlElement;
+            var target = dom.FirstChild as SafeXmlElement;
             HtmlDom.SetElementFromUserStringSafely(target, "1<br />2");
             Assert.AreEqual("<div>1<br />2</div>", dom.InnerXml);
             HtmlDom.SetElementFromUserStringSafely(target, "1<br/>2");
@@ -846,10 +827,10 @@ namespace BloomTests.Book
         private const string StylesContainsXpath =
             "//style[@title=\"userModifiedStyles\" and contains(text(),'{0}')]";
 
-        private void VerifyUserStylesCdataWrapping(XmlNode dom)
+        private void VerifyUserStylesCdataWrapping(SafeXmlNode dom)
         {
-            var stylesNodes = dom.SelectNodes("/html/head/style[@title=\"userModifiedStyles\"]");
-            Assert.AreEqual(1, stylesNodes.Count, "Should only be one userModifiedStyles element.");
+            var stylesNodes = dom.SafeSelectNodes("/html/head/style[@title=\"userModifiedStyles\"]");
+            Assert.AreEqual(1, stylesNodes.Length, "Should only be one userModifiedStyles element.");
             var contents = stylesNodes[0].InnerText.Trim();
             Assert.That(
                 contents.LastIndexOf(XmlHtmlConverter.CdataPrefix).Equals(0),
@@ -872,7 +853,7 @@ namespace BloomTests.Book
 					<body></body>
 				</html>"
             );
-            var pageDom = new XmlDocument();
+            var pageDom = new SafeXmlDocument(new XmlDocument());
             pageDom.LoadXml(
                 @"<html>
 					<head>
@@ -913,7 +894,7 @@ namespace BloomTests.Book
 					<body></body>
 				</html>"
             );
-            var pageDom = new XmlDocument();
+            var pageDom = new SafeXmlDocument(new XmlDocument());
             pageDom.LoadXml(
                 @"<html>
 					<head></head>
@@ -951,7 +932,7 @@ namespace BloomTests.Book
 					</body>
 				</html>"
             );
-            var pageDom = new XmlDocument();
+            var pageDom = new SafeXmlDocument(new XmlDocument());
             pageDom.LoadXml(
                 @"<html>
 				<head>
@@ -994,7 +975,7 @@ namespace BloomTests.Book
 					</body>
 				</html>"
             );
-            var pageDom = new XmlDocument();
+            var pageDom = new SafeXmlDocument(new XmlDocument());
             pageDom.LoadXml(
                 @"<html>
 				<head>
@@ -1038,7 +1019,7 @@ namespace BloomTests.Book
 					</body>
 				</html>"
             );
-            var pageDom = new XmlDocument();
+            var pageDom = new SafeXmlDocument(new XmlDocument());
             pageDom.LoadXml(
                 @"<html>
 				<head>
@@ -1252,7 +1233,7 @@ namespace BloomTests.Book
                 .Dom(bookDom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(goodPageLabels, 1);
             var countEmpty = 0;
-            foreach (XmlElement node in bookDom.RawDom.SafeSelectNodes(pageDescription))
+            foreach (SafeXmlElement node in bookDom.RawDom.SafeSelectNodes(pageDescription))
             {
                 if (String.IsNullOrWhiteSpace(node.InnerXml))
                     ++countEmpty;
@@ -1274,7 +1255,7 @@ namespace BloomTests.Book
                 .Dom(bookDom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(goodPageLabels, 2);
             countEmpty = 0;
-            foreach (XmlElement node in bookDom.RawDom.SafeSelectNodes(pageDescription))
+            foreach (SafeXmlElement node in bookDom.RawDom.SafeSelectNodes(pageDescription))
             {
                 if (String.IsNullOrWhiteSpace(node.InnerXml))
                     ++countEmpty;
@@ -1333,7 +1314,7 @@ namespace BloomTests.Book
                     + contents
                     + "</body></html>"
             );
-            var ego = dom.RawDom.SelectSingleNode("//div[@id='ego']") as XmlElement;
+            var ego = dom.RawDom.SelectSingleNode("//div[@id='ego']") as SafeXmlElement;
             Assert.AreEqual(expected, dom.GetPageNumberOfPage(ego), "Failed " + description);
         }
 
@@ -2080,7 +2061,7 @@ p {
             bool includeSplitTextBoxAudio
         )
         {
-            XmlDocument doc = new XmlDocument();
+            var doc = new SafeXmlDocument(new XmlDocument());
             doc.LoadXml(
                 @"<html>
 	<div id='textbox1' class='bloom-editable' data-audiorecordingmode='Sentence'>
@@ -2101,7 +2082,7 @@ p {
 </html>"
             );
 
-            XmlElement htmlElement = (XmlElement)doc.FirstChild;
+            var htmlElement = (SafeXmlElement)doc.FirstChild;
 
             // System under test
             var result = HtmlDom.SelectChildNarrationAudioElements(
@@ -2109,9 +2090,9 @@ p {
                 includeSplitTextBoxAudio
             );
 
-            Assert.IsTrue(result.Count > 0, "Count should not be 0.");
+            Assert.IsTrue(result.Length > 0, "Count should not be 0.");
 
-            var resultEnumerable = result.Cast<XmlNode>();
+            var resultEnumerable = result.Cast<SafeXmlNode>();
             Assert.AreEqual(
                 2,
                 resultEnumerable.Where(node => node.Name == "span").Count(),
@@ -2127,12 +2108,9 @@ p {
                 );
                 Assert.AreEqual(
                     "textbox2",
-                    resultEnumerable
-                        .Where(node => node.Name == "div")
-                        .First()
-                        .GetStringAttribute("id")
+                    resultEnumerable.Where(node => node.Name == "div").First().GetAttribute("id")
                 );
-                Assert.AreEqual(3, result.Count, "The result had too many elements.");
+                Assert.AreEqual(3, result.Length, "The result had too many elements.");
             }
             else
             {
@@ -2141,7 +2119,7 @@ p {
                     resultEnumerable.Where(node => node.Name == "div").Count(),
                     "Matching div count"
                 );
-                Assert.AreEqual(2, result.Count, "The result had too many elements.");
+                Assert.AreEqual(2, result.Length, "The result had too many elements.");
             }
         }
 
@@ -2152,7 +2130,7 @@ p {
             bool includeSplitTextBoxAudio
         )
         {
-            XmlDocument doc = new XmlDocument();
+            var doc = new SafeXmlDocument(new XmlDocument());
             doc.LoadXml(
                 @"<html>
 	<div id='textbox1' class='bloom-editable audio-sentence'>
@@ -2172,19 +2150,19 @@ p {
 
             foreach (var node in nodeList)
             {
-                var element = (XmlElement)node;
+                var element = (SafeXmlElement)node;
                 var result = HtmlDom.SelectChildNarrationAudioElements(
                     element,
                     includeSplitTextBoxAudio
                 );
 
-                if (element.GetStringAttribute("id") == "textbox2")
+                if (element.GetAttribute("id") == "textbox2")
                 {
                     if (includeSplitTextBoxAudio)
                     {
                         Assert.AreEqual(
                             2,
-                            result.Count,
+                            result.Length,
                             "Count does not match. Both the text box and the span should match in this case."
                         );
                     }
@@ -2192,7 +2170,7 @@ p {
                     {
                         Assert.AreEqual(
                             1,
-                            result.Count,
+                            result.Length,
                             "Count does not match. Only the span should match in this case."
                         );
                     }
@@ -2201,7 +2179,7 @@ p {
                 {
                     Assert.AreEqual(
                         1,
-                        result.Count,
+                        result.Length,
                         "Count does not match. Only the text box should match in this case."
                     );
                 }
@@ -2249,7 +2227,7 @@ p {
 </html>"
             );
 
-            List<XmlElement> result = htmlDom.GetLanguageDivs(includeXMatter).ToList();
+            var result = htmlDom.GetLanguageDivs(includeXMatter).ToList();
 
             Assert.AreEqual(expectedCount, result.Count);
         }
@@ -2290,12 +2268,12 @@ p {
 </html>"
             );
 
-            XmlNodeList result = htmlDom.SelectVideoSources();
+            var result = htmlDom.SelectVideoSources();
 
-            Assert.AreEqual(1, result.Count, "Count does not match");
+            Assert.AreEqual(1, result.Length, "Count does not match");
             Assert.AreEqual(
                 "vidSource",
-                ((XmlElement)result[0]).GetAttribute("id"),
+                ((SafeXmlElement)result[0]).GetAttribute("id"),
                 "ID does not match."
             );
         }
@@ -2393,7 +2371,7 @@ p {
             // Continue setting up test: Go from an ID to the corresonding XmlElement instance for that ID.
             var element = htmlDom
                 .SafeSelectNodes($"//*[@id='{id}']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             Assert.IsNotNull(element, "Test setup failure: element was not found");
 
@@ -2586,7 +2564,7 @@ p {
         [TestCase("A5Landscape")]
         public void InsertFullBleedMarkup_InsertsExpectedMarkup(string pageSizeClass)
         {
-            var doc = new XmlDocument();
+            var doc = new SafeXmlDocument(new XmlDocument());
             var input =
                 @"
 <html>
@@ -2602,7 +2580,7 @@ p {
 
             doc.LoadXml(input);
             HtmlDom.InsertFullBleedMarkup(
-                doc.DocumentElement.GetElementsByTagName("body").Cast<XmlElement>().First()
+                doc.DocumentElement.GetElementsByTagName("body").First()
             );
 
             var assertThatDoc = AssertThatXmlIn.Dom(doc);
@@ -2811,9 +2789,9 @@ p {
         [TestCase("<label>lbl</label>abc")]
         public void DivHasContent_HasContent_ReturnsTrue(string innerXml)
         {
-            XmlDocument doc = new XmlDocument();
+            var doc = new SafeXmlDocument(new XmlDocument());
             doc.LoadXml($"<div>{innerXml}</div>");
-            XmlElement div = doc.DocumentElement;
+            var div = doc.DocumentElement;
 
             Assert.That(HtmlDom.DivHasContent(div), Is.True);
 
@@ -2828,9 +2806,9 @@ p {
         [TestCase("<label>lbl</label><p></p>")]
         public void DivHasContent_HasNoContent_ReturnsFalse(string innerXml)
         {
-            XmlDocument doc = new XmlDocument();
+            var doc = new SafeXmlDocument(new XmlDocument());
             doc.LoadXml($"<div>{innerXml}</div>");
-            XmlElement div = doc.DocumentElement;
+            var div = doc.DocumentElement;
 
             Assert.That(HtmlDom.DivHasContent(div), Is.False);
 

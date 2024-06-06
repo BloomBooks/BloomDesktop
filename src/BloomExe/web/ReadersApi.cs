@@ -23,6 +23,7 @@ using Newtonsoft.Json.Linq;
 using SIL.PlatformUtilities;
 using SIL.Windows.Forms.Miscellaneous;
 using Bloom.ToPalaso;
+using Bloom.SafeXml;
 
 namespace Bloom.Api
 {
@@ -389,10 +390,10 @@ namespace Bloom.Api
 
             var pages = CurrentBook.RawDom
                 .SafeSelectNodes("//div[" + GenerateXPathClassStringSearch("bloom-page") + "]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .Where(p =>
                 {
-                    var cls = " " + p.Attributes["class"].Value + " ";
+                    var cls = " " + p.GetAttribute("class") + " ";
                     // We want only printing content pages as a first cut.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9876.
                     return !cls.Contains(" bloom-frontMatter ")
                         && !cls.Contains(" bloom-backMatter ")
@@ -412,11 +413,11 @@ namespace Bloom.Api
                 var pageWords = String.Empty;
                 var textDivs = page.SafeSelectNodes(xpathToTextContent);
                 // Skip the page if it contains no visible vernacular text elements.  (picture only)
-                if (textDivs.Count == 0)
+                if (textDivs.Length == 0)
                     continue;
                 // javascript code will strip the XHTML markup out of the returned strings.  This guarantees
                 // that entire books and individual pages are treated the same way.  (See BL-10129.)
-                foreach (XmlElement node in textDivs)
+                foreach (SafeXmlElement node in textDivs)
                     pageWords += " " + node.InnerXml;
 
                 pageTexts.Add(

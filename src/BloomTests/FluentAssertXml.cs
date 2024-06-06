@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Xml;
 using Bloom;
+using Bloom.SafeXml;
 using NUnit.Framework;
 using SIL.Xml;
 
@@ -36,6 +35,16 @@ namespace BloomTests
         public static AssertElement Element(XmlElement element)
         {
             return new AssertElement(element);
+        }
+
+        public static AssertDom Dom(SafeXmlDocument dom)
+        {
+            return new AssertDom(dom.UnsafePrivateWrappedXmlDocument_ForTestsOnly);
+        }
+
+        public static AssertElement Element(SafeXmlElement element)
+        {
+            return new AssertElement(element.UnsafePrivateWrappedXmlElement_ForTestsOnly);
         }
     }
 

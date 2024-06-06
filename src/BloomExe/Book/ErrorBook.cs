@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Xml;
+using Bloom.SafeXml;
 using SIL.Reporting;
 
 namespace Bloom.Book
@@ -89,7 +90,7 @@ namespace Bloom.Book
         //			return GetErrorDOM();
         //		}
 
-        public override XmlDocument RawDom
+        public override SafeXmlDocument RawDom
         {
             get
             {

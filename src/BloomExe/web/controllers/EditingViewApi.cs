@@ -4,18 +4,16 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
 using SIL.Windows.Forms.Miscellaneous;
-using SIL.Xml;
 
 namespace Bloom.web.controllers
 {
@@ -115,7 +113,7 @@ namespace Bloom.web.controllers
                             .SafeSelectNodes(
                                 $".//div[contains(@class, 'split-pane-component') and contains(@class, '{classPosition}')]"
                             )
-                            .Cast<XmlElement>()
+                            .Cast<SafeXmlElement>()
                             .ToArray();
                         // Enhance: this could reasonably do something fancier like finding the top-level split
                         // and using it if horizontal, even if there are other horizontal splits.
@@ -126,8 +124,8 @@ namespace Bloom.web.controllers
                             // it will be at 50%.
                             var split = "50";
 
-                            var style = topSplitPanes[0].Attributes["style"]?.Value;
-                            if (style != null)
+                            var style = topSplitPanes[0].GetAttribute("style");
+                            if (!string.IsNullOrEmpty(style))
                             {
                                 var styleKeyword = orientation == "horizontal" ? "bottom" : "right";
                                 var matches = new Regex($"{styleKeyword}: (.*)%").Match(style);

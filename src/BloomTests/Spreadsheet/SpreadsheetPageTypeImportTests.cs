@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.SafeXml;
 using Bloom.Spreadsheet;
 using BloomTemp;
 using BloomTests.TeamCollection;
@@ -27,7 +28,7 @@ namespace BloomTests.Spreadsheet
         private string _imagesFolder;
         private ProgressSpy _progressSpy;
 
-        private List<XmlElement> _contentPages;
+        private List<SafeXmlElement> _contentPages;
 
         private List<string> _warnings;
         private TemporaryFolder _bookFolder;
@@ -300,8 +301,7 @@ namespace BloomTests.Spreadsheet
             _warnings = await importer.ImportAsync(ss, _progressSpy);
 
             _contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                .Cast<XmlElement>()
-                .ToList();
+                .Cast<SafeXmlElement>().ToList();
 
             // Remove the xmatter to get just the content pages, but save so we can test that too.
             _contentPages.RemoveAt(0);
@@ -451,11 +451,11 @@ namespace BloomTests.Spreadsheet
         {
             var bloomEditables = _contentPages[n]
                 .SafeSelectNodes($".//div[@data-test-id='tg{tag}']/div")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToArray();
             Assert.That(bloomEditables.Length, Is.EqualTo(1));
             Assert.That(bloomEditables[0].InnerText.Trim(), Is.EqualTo(""));
-            Assert.That(bloomEditables[0].Attributes["lang"].Value, Is.EqualTo("z"));
+            Assert.That(bloomEditables[0].GetAttribute("lang"), Is.EqualTo("z"));
         }
 
         [TestCase(1, "this is block 1 on page 2")]
@@ -487,7 +487,7 @@ namespace BloomTests.Spreadsheet
         [TestCase(12, Bloom.Book.Book.JustTextGuid)] // page 14 should be inserted just-text
         public void PageType(int n, string guid)
         {
-            Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(guid));
+            Assert.That(_contentPages[n].GetAttribute("data-pagelineage"), Does.Contain(guid));
         }
 
         [Test]

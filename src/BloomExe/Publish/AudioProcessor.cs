@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Edit;
+using Bloom.SafeXml;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using SIL.CommandLineProcessing;
@@ -39,7 +40,7 @@ namespace Bloom.Publish
         /// should be the original book folder files, not the staged files. Otherwise you may get unexpected
         /// results. (See BL-5437)
         /// </summary>
-        public static bool IsAnyCompressedAudioMissing(string bookFolderPath, XmlDocument dom)
+        public static bool IsAnyCompressedAudioMissing(string bookFolderPath, SafeXmlDocument dom)
         {
             return !IsTrueForAllAudioSentenceElements(
                 bookFolderPath,
@@ -53,7 +54,7 @@ namespace Bloom.Publish
         /// Compress all the existing wav files into mp3s, if they aren't already compressed
         /// </summary>
         /// <returns>true if everything is compressed</returns>
-        public static bool TryCompressingAudioAsNeeded(string bookFolderPath, XmlDocument dom)
+        public static bool TryCompressingAudioAsNeeded(string bookFolderPath, SafeXmlDocument dom)
         {
             var watch = Stopwatch.StartNew();
             bool result = IsTrueForAllAudioSentenceElements(
@@ -90,20 +91,20 @@ namespace Bloom.Publish
 
         private static bool IsTrueForAllAudioSentenceElements(
             string bookFolderPath,
-            XmlDocument dom,
+            SafeXmlDocument dom,
             Func<string, string, bool> predicate
         )
         {
             var audioFolderPath = GetAudioFolderPath(bookFolderPath);
             return Book.HtmlDom
                 .SelectAudioSentenceElements(dom.DocumentElement)
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .All(span =>
                 {
                     var recordablePath = Path.Combine(
                         audioFolderPath,
                         Path.ChangeExtension(
-                            span.Attributes["id"]?.Value,
+                            span.GetAttribute("id"),
                             AudioRecording.kRecordableExtension
                         )
                     );

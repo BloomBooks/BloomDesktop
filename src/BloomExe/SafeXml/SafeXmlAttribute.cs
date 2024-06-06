@@ -1,0 +1,27 @@
+﻿using System.Xml;
+
+namespace Bloom.SafeXml
+{
+    // The EpubMaker.CheckForEpubProperties method uses this class.  I couldn't see any way around it.
+    // But this is a minimal implementation that should be safe and sufficient.
+    public class SafeXmlAttribute : SafeXmlNode
+    {
+        public SafeXmlAttribute(XmlAttribute node, SafeXmlDocument doc) : base(node, doc)
+        {
+        }
+
+        public string Value
+        {
+            get
+            {
+                lock (_doc.Lock)
+                    return ((XmlAttribute)_node).Value;
+            }
+            set
+            {
+                lock (_doc.Lock)
+                    ((XmlAttribute)_node).Value = value;
+            }
+        }
+    }
+}
