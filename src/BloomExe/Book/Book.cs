@@ -1694,6 +1694,7 @@ namespace Bloom.Book
             // already been done, so they must be called in exactly this order.
             Storage.MigrateMaintenanceLevels();
             Storage.MigrateToMediaLevel1ShrinkLargeImages();
+            Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
 
