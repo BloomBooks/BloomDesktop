@@ -371,6 +371,7 @@ namespace Bloom.Edit
 #if DEBUG
                 throw;
 #endif
+                return null;
             }
         }
 
