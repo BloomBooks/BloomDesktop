@@ -2818,8 +2818,8 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Perform expensive updates that new versions of Bloom can perform on older books that don't
-		/// involve actual book format changes.
+		/// Perform one-time updates that new versions of Bloom can perform on older books that don't
+		/// involve actual book format changes (i.e. FormatVersion).
 		/// </summary>
 		public void PerformNecessaryMaintenanceOnBook()
 		{
