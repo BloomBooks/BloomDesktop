@@ -146,26 +146,7 @@ namespace Bloom
                         }
                         else
                         {
-                            // We don't want any notification (MessageBox or toast) targetting a ProgressDialog,
-                            // since the dialog seems to disappear quickly and leave us hanging... and not able to show.
-                            // We'll keep the form if it's not a ProgressDialog in order to center our message properly.
-                            if (formForSynchronizing is ProgressDialog)
-                            {
-                                MessageBox.Show(
-                                    fullDetailedMessage,
-                                    string.Empty,
-                                    MessageBoxButtons.OK
-                                );
-                            }
-                            else
-                            {
-                                MessageBox.Show(
-                                    formForSynchronizing,
-                                    fullDetailedMessage,
-                                    string.Empty,
-                                    MessageBoxButtons.OK
-                                );
-                            }
+                            ShowProblemInMessageBox(fullDetailedMessage, formForSynchronizing);
                         }
                     }
                     catch (Exception ex)
@@ -209,6 +190,43 @@ namespace Bloom
                         errorWhileReporting,
                         "Error while reporting non fatal error"
                     );
+            }
+        }
+
+        private static void ShowProblemInMessageBox(string fullDetailedMessage, Form formForSynchronizing)
+        {
+            if (formForSynchronizing == null)
+                return; // could be on wrong thread
+
+            if (formForSynchronizing.InvokeRequired)
+            {
+                formForSynchronizing.BeginInvoke(
+                    new Action(() =>
+                    {
+                        ShowProblemInMessageBox(fullDetailedMessage, formForSynchronizing);
+                    })
+                );
+                return;
+            }
+            // We don't want any notification (MessageBox or toast) targetting a ProgressDialog,
+            // since the dialog seems to disappear quickly and leave us hanging... and not able to show.
+            // We'll keep the form if it's not a ProgressDialog in order to center our message properly.
+            if (formForSynchronizing is ProgressDialog)
+            {
+                MessageBox.Show(
+                    fullDetailedMessage,
+                    string.Empty,
+                    MessageBoxButtons.OK
+                );
+            }
+            else
+            {
+                MessageBox.Show(
+                    formForSynchronizing,
+                    fullDetailedMessage,
+                    string.Empty,
+                    MessageBoxButtons.OK
+                );
             }
         }
 

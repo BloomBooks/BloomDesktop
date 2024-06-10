@@ -645,12 +645,23 @@ namespace Bloom.Publish.Video
             var workingDirectory = Path.GetDirectoryName(soundLog[0].src);
             LocalAudioNamesMessedUp = true;
             var renames = new Dictionary<string, string>();
+            int shortNameIndex = 0;
+            string[] origAudioFileNames = Directory.GetFiles(workingDirectory);
+
             for (int i = 0; i < soundLog.Length; i++)
             {
                 var item = soundLog[i];
                 if (Path.GetDirectoryName(item.src) == workingDirectory)
                 {
-                    var shortName = GetShortName(i) + Path.GetExtension(item.src);
+                    string shortName = "";
+                    while (
+                        shortName == ""
+                        || origAudioFileNames.Contains(Path.Combine(workingDirectory, shortName))
+                    )
+                    {
+                        shortName = GetShortName(shortNameIndex) + Path.GetExtension(item.src);
+                        shortNameIndex++;
+                    }
                     if (renames.TryGetValue(item.src, out string prevShortName))
                     {
                         // If we already saw (and renamed) this item, just use what we already renamed it to.

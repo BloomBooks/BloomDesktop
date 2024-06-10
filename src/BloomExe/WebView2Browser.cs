@@ -20,7 +20,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using SIL.Windows.Forms.ClearShare;
+using Bloom.web.controllers;
+
+#if DEBUG
+using System.Media;
+#endif
 
 namespace Bloom
 {
@@ -193,6 +197,8 @@ namespace Bloom
         private static string _uiLanguageOfThisRun;
         private static bool _alreadyOpenedAWebView2Instance;
 
+        static int dataFolderCounter = 0;
+
         private async void InitWebView()
         {
             // based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
@@ -284,10 +290,20 @@ namespace Bloom
             // And it should always be a short name using simple ASCII characters, which might help.
             // I don't think this is ever called before the server chooses a port, but just in case, I'm providing a default
             // that won't match any port we actually use.
-            var dataFolder = Path.Combine(
-                Path.GetTempPath(),
-                "Bloom WV2-" + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
-            );
+            // We had some problems that seemed to possibly related to the folder being left in a bad state, or
+            // different instances of WebView2 using the same one, so we decided to make sure it is uniqiue.
+            // Enhance: it might be a good thing to try to delete this folder if we find it already exists (on a background thread).
+            // For now we'll just keep incrementing until we find an available folder.
+            string dataFolder;
+            do
+            {
+                dataFolder = Path.Combine(
+                    Path.GetTempPath(),
+                    "Bloom WV2-"
+                        + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
+                        + dataFolderCounter++
+                );
+            } while (Directory.Exists(dataFolder));
             var env = await CoreWebView2Environment.CreateAsync(
                 browserExecutableFolder: AlternativeWebView2Path,
                 userDataFolder: dataFolder,
@@ -506,18 +522,14 @@ namespace Bloom
 
         public override string Url => _webview.Source.ToString();
 
-        public override Bitmap CapturePreview_Synchronous_Dangerous()
+        public override async Task<Bitmap> CapturePreview()
         {
             var stream = new MemoryStream();
-            var task = _webview.CoreWebView2.CapturePreviewAsync(
+            await _webview.CoreWebView2.CapturePreviewAsync(
                 CoreWebView2CapturePreviewImageFormat.Png,
                 stream
             );
-            while (!task.IsCompleted)
-            {
-                Application.DoEvents();
-                Thread.Sleep(10);
-            }
+
             stream.Position = 0;
             return new Bitmap(stream);
         }
@@ -528,72 +540,25 @@ namespace Bloom
             RobustFile.WriteAllText(path, html, Encoding.UTF8);
         }
 
-        // This filter suppresses the windows messages that are most likely to cause unexpected reentrancy
-        // while running DoEvents in the RunJavascriptWithStringResult_Sync_Dangerous method.
-        // Might be useful in other contexts where we use DoEvents
-        class AsyncMessageFilter : IMessageFilter
-        {
-            private const int WM_KEYFIRST = 0x0100;
-            private const int WM_KEYLAST = 0x0109;
-            private const int WM_GESTURE = 0x0119; // copilot
-            private const int WM_MOUSEFIRST = 0x0200;
-            private const int WM_MOUSELAST = 0x020E;
-            private const int WM_TOUCH = 0x0240; // copilot
-
-            public bool PreFilterMessage(ref Message m)
-            {
-                // https://stackoverflow.com/questions/78028901/does-async-await-use-windows-messages-to-return-control-to-the-ui-thread
-                // suggests that it might be OK to filter out all messages below 0xc000, since Windows registers some message higher than
-                // that to indicate the completion of an async task. But it produced deadlock. I think this is enough to make it
-                // pretty hard for the user to initiate something that will interfere with Save().
-                if (
-                    m.Msg == WM_TOUCH
-                    || m.Msg == WM_GESTURE
-                    || m.Msg >= WM_KEYFIRST && m.Msg <= WM_KEYLAST
-                    // WM_MOUSEFIRST is also WM_MOUSEMOVE. I don't think we need to suppress that,
-                    // and not doing so makes it easier to catch a significant event being suppressed.
-                    || m.Msg >= WM_MOUSEFIRST + 1 && m.Msg <= WM_MOUSELAST
-                )
-                {
-                    Debug.Fail($"Filtered out message {m.Msg}");
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-        [Obsolete(
-            "This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred."
-        )]
         public override string RunJavascriptWithStringResult_Sync_Dangerous(string script)
         {
             Task<string> task = GetStringFromJavascriptAsync(script);
             // This is dangerous. E.g. it caused this bug: https://issues.bloomlibrary.org/youtrack/issue/BL-12614
             // Came from an answer in https://stackoverflow.com/questions/65327263/how-to-get-sync-return-from-executescriptasync-in-webview2'
-            // The message filter makes it less dangerous, but we still need to be aware that (e.g.) while running javascript
-            // to get the content of a page to save it, any windows event not suppressed by the filter could run.
-            // Without the filter, it's quite possible for the user to initiate a new command while we are trying to run the
-            // code to save the page before completing the last thing the user requested.
+            // It's quite possible for the user to initiate a new command while we are trying to run the
+            // javascript before completing the last thing the user requested.
             // Note: at one point, I thought making our code async all the way would solve this, but now I'm not so sure.
             // A click event handler can be async, but it is "void" async (no task to await), so I think it can still
             // return control to the main message loop before all the async stuff it started has completed.
-            // The sad thing about this approach is that the filtered events are lost, not postponed. We could even lose
-            // a mousedown but still see the corresponding mouseup, which might do something unexpected.
-            // But it's better than reentrant event handling, which is probably the cause of BL-13120 and friends.
-            var filter = new AsyncMessageFilter();
-            Application.AddMessageFilter(filter);
-            try
+            // The reentrancy possibly caused BL-13120 and friends, when we were using this method to get the page content
+            // to save.
+            // We tried using a message filter to suppress messages that might cause reentrancy, but found
+            // that somehow it didn't fully solve the problem, AND things could get stuck in a state where
+            // everything got filtered.
+            while (!task.IsCompleted)
             {
-                while (!task.IsCompleted)
-                {
-                    Application.DoEvents();
-                    Thread.Sleep(10);
-                }
-            }
-            finally
-            {
-                Application.RemoveMessageFilter(filter);
+                Application.DoEvents();
+                Thread.Sleep(10);
             }
 
             return task.Result;
@@ -602,6 +567,16 @@ namespace Bloom
         public override async Task RunJavascriptAsync(string script)
         {
             await _webview.ExecuteScriptAsync(script);
+        }
+
+        /// <summary>
+        /// Run a javascript script asynchronously.
+        /// This version of the method simply makes it explicit that we are purposefully not awaiting the result.
+        /// Therefore the script likely has not finished executing by the time the method returns.
+        /// </summary>
+        public override void RunJavascriptFireAndForget(string script)
+        {
+            _webview.ExecuteScriptAsync(script);
         }
 
         public override async Task<string> GetStringFromJavascriptAsync(string script)

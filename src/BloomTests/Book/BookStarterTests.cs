@@ -228,7 +228,6 @@ namespace BloomTests.Book
                         storage,
                         null,
                         collectionSettings,
-                        new PageSelection(),
                         new PageListChangedEvent(),
                         new BookRefreshEvent()
                     );

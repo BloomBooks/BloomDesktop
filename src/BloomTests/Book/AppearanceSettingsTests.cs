@@ -505,7 +505,7 @@ namespace BloomTests.Book
             Assert.That(
                 _cssOfDefaultTheme,
                 Does.Contain(
-                    @".Device16x9Landscape {
+                    @".bloom-page[class*=""Device""] {
     --page-margin: 10px;"
                 )
             );
@@ -514,13 +514,6 @@ namespace BloomTests.Book
                 Does.Contain(
                     @".Cm13Landscape {
     --page-margin: 5mm;"
-                )
-            );
-            Assert.That(
-                _cssOfDefaultTheme,
-                Does.Contain(
-                    @".USComicPortrait {
-    --page-margin: 0mm;"
                 )
             );
         }

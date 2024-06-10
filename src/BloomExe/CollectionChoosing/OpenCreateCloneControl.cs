@@ -197,16 +197,10 @@ namespace Bloom.CollectionChoosing
 
         public void SelectCollectionAndClose(string path)
         {
-            if (Bloom.Utils.LongPathAware.GetExceedsMaxPath(path))
-            {
-                Utils.LongPathAware.ReportLongPath(path);
-                return; // don't close
-            }
-
             SelectedPath = path;
             if (!string.IsNullOrEmpty(path))
             {
-                if (Utils.MiscUtils.ReportIfInvalidCollectionToEdit(path))
+                if (Utils.MiscUtils.ReportIfInvalidCollection(path))
                     return;
                 //CheckForBeingInDropboxFolder(path);
                 _mruList.AddNewPath(path);

@@ -137,52 +137,89 @@ namespace Bloom
             _audioRecording.PauseMonitoringAudio(true);
         }
 
+        private bool _startedClosingEvent;
+        private bool _finishedClosingEvent;
+
         protected override void OnClosing(CancelEventArgs e)
         {
-            //get everything saved (under the old collection name, if we are changing the name and restarting)
-            _collectionClosingEvent.Raise(null);
-
-            if (
-                !string.IsNullOrEmpty(_nameToChangeCollectionUponClosing)
-                && _nameToChangeCollectionUponClosing != _collectionSettings.CollectionName
-                && UserWantsToOpeReopenProject
-            )
+            // We want to get everything saved (under the old collection name, if we are changing the name and restarting).
+            // This is tricky because we may need to save current changes to a book we are editing, and this
+            // involves an inherently asynchronous process (thanks to WebView2). We tried endless ways to
+            // wait for the data we need from the page we're editing, and nothing worked reliably.
+            // If we go ahead and close the Shell, the message we eventually get on our API with the data to save
+            // tries to use Invoke on the Shell to get on the UI thread, but the Shell is already disposed.
+            // So, the first time OnClosing is called, we raise an event that will do the saving, and cancel
+            // the close. In case the user manages to click the Close button again before the saving is done,
+            // we set a flag to say it is in progress, so that we can ignore any subsequent OnClosing events
+            // until we are done saving. When we ARE done saving, we set a flag to say so, and then call Close()
+            // to actually get the window closed.
+            if (_finishedClosingEvent)
             {
-                // Without checking and resetting this flag, Linux endlessly spawns new instances. Apparently the Mono runtime
-                // calls OnClosing again as a result of calling Program.RestartBloom() which calls Application.Exit().
-                UserWantsToOpeReopenProject = false;
-                //Actually restart Bloom with a parameter requesting this name change. It's way more likely to succeed
-                //when this run isn't holding onto anything.
-                try
-                {
-                    var existingDirectoryPath = Path.GetDirectoryName(
-                        _collectionSettings.SettingsFilePath
-                    );
-                    var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
-                    var newDirectoryPath = Path.Combine(
-                        parentDirectory,
-                        _nameToChangeCollectionUponClosing
-                    );
-
-                    Program.RestartBloom(
-                        true,
-                        string.Format(
-                            "--rename \"{0}\" \"{1}\" ",
-                            existingDirectoryPath,
-                            newDirectoryPath
-                        )
-                    );
-                }
-                catch (Exception error)
-                {
-                    SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-                        error,
-                        "Sorry, Bloom failed to even prepare for the rename of the project to '{0}'",
-                        _nameToChangeCollectionUponClosing
-                    );
-                }
+                base.OnClosing(e);
+                return;
             }
 
+            if (_startedClosingEvent)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            _startedClosingEvent = true;
+
+            _collectionClosingEvent.Raise(
+                new CollectionClosingArgs()
+                {
+                    PostponedWork = () =>
+                    {
+                        if (
+                            !string.IsNullOrEmpty(_nameToChangeCollectionUponClosing)
+                            && _nameToChangeCollectionUponClosing
+                                != _collectionSettings.CollectionName
+                            && UserWantsToOpeReopenProject
+                        )
+                        {
+                            // Without checking and resetting this flag, Linux endlessly spawns new instances. Apparently the Mono runtime
+                            // calls OnClosing again as a result of calling Program.RestartBloom() which calls Application.Exit().
+                            UserWantsToOpeReopenProject = false;
+                            //Actually restart Bloom with a parameter requesting this name change. It's way more likely to succeed
+                            //when this run isn't holding onto anything.
+                            try
+                            {
+                                var existingDirectoryPath = Path.GetDirectoryName(
+                                    _collectionSettings.SettingsFilePath
+                                );
+                                var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
+                                var newDirectoryPath = Path.Combine(
+                                    parentDirectory,
+                                    _nameToChangeCollectionUponClosing
+                                );
+
+                                Program.RestartBloom(
+                                    true,
+                                    string.Format(
+                                        "--rename \"{0}\" \"{1}\" ",
+                                        existingDirectoryPath,
+                                        newDirectoryPath
+                                    )
+                                );
+                            }
+                            catch (Exception error)
+                            {
+                                SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+                                    error,
+                                    "Sorry, Bloom failed to even prepare for the rename of the project to '{0}'",
+                                    _nameToChangeCollectionUponClosing
+                                );
+                            }
+                        }
+
+                        _finishedClosingEvent = true;
+                        Close();
+                    }
+                }
+            );
+            e.Cancel = true;
             base.OnClosing(e);
         }
 

@@ -263,7 +263,7 @@ namespace Bloom
         public static string GetFolderContainingAppearanceThemeFiles()
         {
             return FileLocationUtilities.GetDirectoryDistributedWithApplication(
-                Path.Combine(BloomFileLocator.BrowserRoot, "AppearanceThemes")
+                Path.Combine(BloomFileLocator.BrowserRoot, "appearanceThemes")
             );
         }
 

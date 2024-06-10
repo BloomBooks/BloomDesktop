@@ -33,6 +33,8 @@ export interface IToolboxFrameExports {
     undo(): void;
 
     applyToolboxStateToPage(): void;
+
+    removeToolboxMarkup(): void;
 }
 
 // each of these exports shows up under this window's toolboxBundle object (see bloomFrames.ts)

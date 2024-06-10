@@ -549,7 +549,13 @@ namespace Bloom
                             // before looking for .bloomCollection.
                             var path = Utils.LongPathAware.GetLongPath(argPath);
 
-                            if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
+                            if (path.ToLowerInvariant().EndsWith(@".bloomproblembook"))
+                            {
+                                Settings.Default.MruProjects.AddNewPath(
+                                    ProblemReportApi.UnpackProblemBook(path)
+                                );
+                            }
+                            else if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
                             {
                                 // See BL-10012. We'll die eventually, might as well nip this in the bud.
                                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
@@ -567,7 +573,7 @@ namespace Bloom
                                 }
                                 else
                                 {
-                                    if (Utils.MiscUtils.ReportIfInvalidCollectionToEdit(path))
+                                    if (Utils.MiscUtils.ReportIfInvalidCollection(path))
                                         return 1;
                                     Settings.Default.MruProjects.AddNewPath(path);
                                 }
@@ -1111,6 +1117,7 @@ namespace Bloom
         {
             return args.Length == 1
                 && !args[0].ToLowerInvariant().EndsWith(".bloomcollection")
+                && !args[0].ToLowerInvariant().EndsWith(".bloomproblembook")
                 && !IsInstallerLaunch(args);
         }
 

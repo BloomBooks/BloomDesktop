@@ -641,7 +641,6 @@ namespace BloomTests.Book
                 _storage.Object,
                 _templateFinder.Object,
                 _collectionSettings,
-                _pageSelection.Object,
                 _pageListChangedEvent,
                 new BookRefreshEvent()
             );
@@ -1566,7 +1565,6 @@ namespace BloomTests.Book
                     storage.Object,
                     _templateFinder.Object,
                     CreateDefaultCollectionsSettings(),
-                    _pageSelection.Object,
                     _pageListChangedEvent,
                     new BookRefreshEvent()
                 );
@@ -1669,7 +1667,6 @@ namespace BloomTests.Book
                     storage.Object,
                     _templateFinder.Object,
                     CreateDefaultCollectionsSettings(),
-                    _pageSelection.Object,
                     _pageListChangedEvent,
                     new BookRefreshEvent()
                 );
@@ -1765,7 +1762,6 @@ namespace BloomTests.Book
                     storage.Object,
                     _templateFinder.Object,
                     CreateDefaultCollectionsSettings(),
-                    _pageSelection.Object,
                     _pageListChangedEvent,
                     new BookRefreshEvent()
                 );

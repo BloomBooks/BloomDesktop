@@ -636,6 +636,7 @@ div.bloom-templateMode {
     .bloom-editable.overflow {
         overflow-y: scroll;
         display: block;
+        height: inherit; // BL-13374. This is needed to make the scroll bar work properly.
 
         // the language label at the bottom gets messed up once scrolling is on, so anchor it to the top
         &:after {
@@ -1224,10 +1225,18 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
         // Also, you'd think you could use outline instead, but it doesn't show on the side; the
         // children over it up because they are the full width of this parent.
 
-        background-color: var(--page-structure-color) !important;
+        &:not(.bloom-background-gray) {
+            background-color: var(--page-structure-color) !important;
+        }
+
         .bloom-editable {
             outline: 1px solid var(--page-structure-color);
             outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
+        }
+        // the parent translation group has the "page structure" color so we
+        // normally want to have the edit box be white. Note however that in the case that
+        // we have a grey box, we're giving up on structure color and just want it all to be grey.
+        &:not(.bloom-background-gray) .bloom-editable {
             background-color: var(--marginBox-background-color) !important;
         }
     }

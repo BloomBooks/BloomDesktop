@@ -35,15 +35,22 @@ namespace Bloom.web.controllers
                 HandleGetColorsUsedInBookOverlays,
                 true
             );
-            apiHandler.RegisterEndpointLegacy(
-                "editView/editPagePainted",
-                HandleEditPagePainted,
-                true
-            );
+            apiHandler.RegisterEndpointHandler("editView/pageDomLoaded", HandlePageDomLoaded, true);
             apiHandler.RegisterEndpointLegacy(
                 "editView/saveToolboxSetting",
                 HandleSaveToolboxSetting,
                 true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/pageContent",
+                request =>
+                {
+                    var htmlAndUserStyles = request.RequiredPostString();
+                    View.Model.ReceivePageContent(htmlAndUserStyles);
+                    request.PostSucceeded();
+                },
+                true,
+                true // review.
             );
             apiHandler.RegisterEndpointLegacy("editView/setTopic", HandleSetTopic, true);
             apiHandler.RegisterEndpointLegacy(
@@ -75,12 +82,6 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 "editView/sourceTextTab",
                 HandleSourceTextTab,
-                false,
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                "edit/taskComplete",
-                HandleTaskComplete,
                 false,
                 false
             );
@@ -173,72 +174,37 @@ namespace Bloom.web.controllers
         private void HandlePasteImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            int imgIndex = (int)data.imgIndex;
-            View.OnPasteImage(imgIndex);
+            View.OnPasteImage(
+                data.imageId,
+                UrlPathString.CreateFromUrlEncodedString(data.imageSrc)
+            );
             request.PostSucceeded();
         }
 
         private void HandleCopyImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            int imgIndex = (int)data.imgIndex;
-            View.OnCopyImage(imgIndex);
+            View.OnCopyImage(UrlPathString.CreateFromUrlEncodedString(data.imageSrc));
             request.PostSucceeded();
         }
 
         private void HandleCutImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            int imgIndex = (int)data.imgIndex;
-            View.OnCutImage(imgIndex);
+            View.OnCutImage(data.imageId, UrlPathString.CreateFromUrlEncodedString(data.imageSrc));
             request.PostSucceeded();
-        }
-
-        // Allow whatever code is waiting in SendEventAndWaitForComplete to continue;
-        // whatever action the event prompted has finished.
-        private void HandleTaskComplete(ApiRequest request)
-        {
-            waitingForTaskComplete = false;
-            request.PostSucceeded();
-        }
-
-        private static bool waitingForTaskComplete;
-
-        // Send an event to Javascript and wait until it is done.
-        // The event MUST post edit/taskComplete when it is finished.
-        // Review: as implemented here, we can't cope with more than one thing at a time
-        // sending an event and waiting for it; that's currently OK since it's only used on the
-        // UI thread. Results will also be dubious if more than one client is listening to
-        // the websocket, but that's also something we don't expect (except
-        // when debugging in a separate browser).
-        // This feels messy, but how else are we to ask Javascript to do something...
-        // we're trying to retire runJavascript, not add more, and it's taking a kluge
-        // to make that syncrhronous, anyway...when we need to know it has finished?
-        public static void SendEventAndWaitForComplete(
-            BloomWebSocketServer socketServer,
-            string clientContext,
-            string eventId,
-            dynamic messageBundle
-        )
-        {
-            waitingForTaskComplete = true; // BEFORE we send the bundle, in case handleTaskComplete occurs before SendBundle returns
-            socketServer.SendBundle(clientContext, eventId, messageBundle);
-
-            while (waitingForTaskComplete)
-            {
-                Application.DoEvents();
-                Thread.Sleep(10);
-            }
         }
 
         private void HandleChangeImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            int imgIndex = (int)data.imgIndex;
             // We don't want to tie up server locks etc. while the dialog displays.
             MiscUtils.DoOnceOnIdle(() =>
             {
-                View.OnChangeImage(imgIndex);
+                View.OnChangeImage(
+                    data.imageId,
+                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc)
+                );
             });
             request.PostSucceeded();
         }
@@ -381,9 +347,11 @@ namespace Bloom.web.controllers
             request.ReplyWithText("[" + String.Join(",", colors) + "]");
         }
 
-        private void HandleEditPagePainted(ApiRequest request)
+        private void HandlePageDomLoaded(ApiRequest request)
         {
-            View.Model.HandleEditPagePaintedEvent(this, new EventArgs());
+            // we collect and pass on the pageId for bookkeeping purposes
+            var pageId = request.RequiredPostString();
+            View.Model.HandlePageDomLoadedEvent(pageId);
             request.PostSucceeded();
         }
 

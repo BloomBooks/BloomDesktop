@@ -67,7 +67,6 @@ namespace BloomTests.Spreadsheet
                 storage,
                 null,
                 settings,
-                new Bloom.Edit.PageSelection(),
                 new PageListChangedEvent(),
                 new BookRefreshEvent()
             );

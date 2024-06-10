@@ -304,8 +304,22 @@ namespace Bloom.Utils
         /// or is inside a ZIP file that needs to be unzipped before using.
         /// </summary>
         /// <returns><c>true</c> if the path points to an invalid collection to edit, <c>false</c> otherwise.</returns>
-        public static bool ReportIfInvalidCollectionToEdit(string path)
+        public static bool ReportIfInvalidCollection(string path)
         {
+            if (LongPathAware.GetExceedsMaxPath(path))
+            {
+                LongPathAware.ReportLongPath(path);
+                return true;
+            }
+            if (IsInvalidCollectionExtension(path))
+            {
+                var msg = L10NSharp.LocalizationManager.GetString(
+                    "OpenCreateCloneControl.InvalidFileTypeMessage",
+                    "Please select a .bloomCollection file."
+                );
+                MessageBox.Show(msg);
+                return true;
+            }
             if (IsInvalidCollectionToEdit(path))
             {
                 var msg = L10NSharp.LocalizationManager.GetString(
@@ -327,6 +341,14 @@ namespace Bloom.Utils
             return false;
         }
 
+        // The user can paste in the path of a different type of file. See BL-13426
+        private static bool IsInvalidCollectionExtension(string path)
+        {
+            string extension = Path.GetExtension(path).ToLowerInvariant();
+            // .bloomlibrary is just for legacy reasons. See also OpenAndCreateCollectionDialog.
+            return extension != ".bloomlibrary" && extension != ".bloomcollection";
+        }
+
         private static bool IsInsideZipFile(string path)
         {
             // Windows Explorer and 7-Zip both do a minimal extraction to the user's temp folder
@@ -336,16 +358,15 @@ namespace Bloom.Utils
             // of these create only the one (.bloomCollection) file in the temporary folder.
             var tempDir = Path.GetTempPath();
             var folder = Path.GetDirectoryName(path);
-            if (SIL.PlatformUtilities.Platform.IsWindows)
+            if (Platform.IsWindows)
             {
                 if (
                     folder.StartsWith(tempDir, StringComparison.InvariantCulture)
                     && (
-                        folder.Contains(@".zip\")
-                        || // Windows Explorer
-                        folder.Contains(@"\7z")
+                        folder.Contains(@".zip") // Windows Explorer
+                        || folder.Contains(@"\7z") // 7-Zip
                     )
-                ) // 7-Zip
+                )
                 {
                     return IsSingleFileInFolder(folder);
                 }

@@ -12,6 +12,7 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import { theOneBubbleManager, updateOverlayClass } from "./bubbleManager";
 
 import { farthest } from "../../utils/elementUtils";
+import { EditableDivUtils } from "./editableDivUtils";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -195,6 +196,10 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
         return;
     }
     let img = getImgFromContainer(containerDiv);
+
+    // Enhance: remove this unused flexibility to put images as background-images on div.bloom-imageContainers.
+    // We still do it when making bloomPUBs, but that's a write-only operation (and we will retain the ability to migrate back).
+    // I (JH) think it is cognitively expensive to leave legacy cruft around.
     if (img.length === 0)
         // This case is probably a left over from some previous Bloom where
         // we were using background images instead of <img>? But it does
@@ -212,11 +217,24 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
 
     const addButtonHandler = (command: string) => {
         const button = $containerDiv.get(0)?.firstElementChild;
-        button?.addEventListener("click", () => {
-            const imgIndex = Array.from(
-                document.getElementsByClassName("bloom-imageContainer")
-            ).indexOf($containerDiv.get(0));
-            postJson("editView/" + command + "Image", { imgIndex });
+        button?.addEventListener("click", (e: MouseEvent) => {
+            // "detail >1" in chromium means this is a double click.
+            // Note, if we have problems with timing, this wouldn't necessarily fix them.
+            // It's only going to debounce clicks that come in close enough to count as
+            // double clicks, presumably based on the OS's double click timing setting.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((e as any).detail > 1) {
+                return;
+            }
+            // get the image id attribute. If it doesn't have one, add it first
+            let imageId = img.attr("id");
+            const imageSrc = GetRawImageUrl(img);
+            if (!imageId) {
+                imageId = EditableDivUtils.createUuid();
+                img.attr("id", imageId);
+            }
+
+            postJson("editView/" + command + "Image", { imageId, imageSrc });
         });
     };
 

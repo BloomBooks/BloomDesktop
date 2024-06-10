@@ -12,21 +12,21 @@ namespace Bloom.web.controllers
     public class AddOrChangePageApi
     {
         private readonly TemplateInsertionCommand _templateInsertionCommand;
-        private readonly PageRefreshEvent _pageRefreshEvent;
         private readonly PageSelection _pageSelection;
         private readonly ITemplateFinder _sourceCollectionsList;
+        private readonly EditingModel _editingModel;
 
         public AddOrChangePageApi(
             TemplateInsertionCommand templateInsertionCommand,
-            PageRefreshEvent pageRefreshEvent,
             PageSelection pageSelection,
-            ITemplateFinder sourceCollectionsList
+            ITemplateFinder sourceCollectionsList,
+            EditingModel editingModel
         )
         {
             _templateInsertionCommand = templateInsertionCommand;
-            _pageRefreshEvent = pageRefreshEvent;
             _pageSelection = pageSelection;
             _sourceCollectionsList = sourceCollectionsList;
+            _editingModel = editingModel;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -50,7 +50,10 @@ namespace Bloom.web.controllers
             CopyVideoPlaceHolderIfNeeded(templatePage);
             _templateInsertionCommand.Insert(templatePage as Page, numberOfPagesToAdd);
 
-            _pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
+            // Don't understand what the comment is getting at here. Is it somehow possible that the new page has style
+            // definitions that have not been captured yet? We can't just do this here, because the insertion involves
+            // async code, and the new page has not been fully loaded (and the system is not in a valid state) for saving.
+            //_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
             request.PostSucceeded();
         }
 
@@ -79,19 +82,29 @@ namespace Bloom.web.controllers
                 GetPageTemplateAndUserStyles(request);
             if (templatePage == null)
                 return;
-            CopyVideoPlaceHolderIfNeeded(templatePage);
-            var pageToChange = _pageSelection.CurrentSelection;
-            if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
-                HtmlDom.AddStylesheetFromAnotherBook(
-                    templatePage.Book.OurHtmlDom,
-                    pageToChange.Book.OurHtmlDom
-                );
-            if (changeWholeBook)
-                ChangeSimilarPagesInEntireBook(pageToChange, templatePage, allowDataLoss);
-            else
-                pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
+            var pageId = _pageSelection.CurrentSelection.Id;
+            _editingModel.SaveThen(
+                () =>
+                {
+                    CopyVideoPlaceHolderIfNeeded(templatePage);
+                    var pageToChange = _pageSelection.CurrentSelection;
+                    if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
+                        HtmlDom.AddStylesheetFromAnotherBook(
+                            templatePage.Book.OurHtmlDom,
+                            pageToChange.Book.OurHtmlDom
+                        );
+                    if (changeWholeBook)
+                        ChangeSimilarPagesInEntireBook(pageToChange, templatePage, allowDataLoss);
+                    else
+                        pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(
+                            pageToChange,
+                            templatePage
+                        );
 
-            _pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
+                    return pageId;
+                },
+                () => { } // wrong state, do nothing
+            );
             request.PostSucceeded();
         }
 

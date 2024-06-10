@@ -964,7 +964,7 @@ namespace Bloom.ImageProcessing
             string path,
             Size size,
             bool makeOpaque,
-            bool makeTransparent,
+            bool forUseOnColoredBackground,
             TagLib.File oldMetaData,
             IProgress progress = null
         )
@@ -983,6 +983,26 @@ namespace Bloom.ImageProcessing
             if (!RobustFile.Exists(exeGraphicsMagick))
                 return false;
             var tempCopy = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(path));
+
+            bool makeTransparent = false;
+            if (forUseOnColoredBackground)
+            {
+                try
+                {
+                    using (var originalImage = PalasoImage.FromFileRobustly(path))
+                    {
+                        makeTransparent = ShouldMakeBackgroundTransparent(originalImage);
+                    }
+                }
+                catch (Exception e)
+                {
+                    string messageString =
+                        $"Error loading image from {path} for ShouldMakeBackgroundTransparent check. Will not make transparent. "
+                        + e.Message;
+                    Logger.WriteEvent(messageString);
+                    Console.WriteLine(messageString);
+                }
+            }
             try
             {
                 var options = new GraphicsMagickOptions

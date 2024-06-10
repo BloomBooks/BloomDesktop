@@ -41,6 +41,7 @@ export const AudioHilitePage: React.FunctionComponent<{
         }
         justify-content: space-between;
         margin-right: 20px;
+        align-items: center;
     `;
     return (
         <ThemeProvider theme={lightTheme}>

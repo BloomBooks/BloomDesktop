@@ -95,24 +95,11 @@ namespace Bloom.Book
         /// Returns the sequence of bloom-editable divs that would normally be created as the content of an empty bloom-translationGroup,
         /// given the current collection and book settings, with the classes that would normally be set on them prior to editing to make the right ones visible etc.
         /// </summary>
-        public static string GetDefaultTranslationGroupContent(
-            XmlNode pageOrDocumentNode,
-            Book currentBook
-        )
+        public static string GetDefaultTranslationGroupContent(Book currentBook)
         {
-            // First get a XMLDocument so that we can start creating elements using it.
-            XmlDocument ownerDocument = pageOrDocumentNode?.OwnerDocument;
-            if (ownerDocument == null) // the OwnerDocument child can be null if pageOrDocumentNode is a document itself
-            {
-                if (pageOrDocumentNode is XmlDocument)
-                {
-                    ownerDocument = pageOrDocumentNode as XmlDocument;
-                }
-                else
-                {
-                    return "";
-                }
-            }
+            // Borrow the book's XMLDocument so that we can create elements to work with.
+            // We don't add them to the document, so it is never changed.
+            XmlDocument ownerDocument = currentBook.RawDom.OwnerDocument;
 
             // We want to use the usual routines that insert the required bloom-editables and classes into existing translation groups.
             // To make this work we make a temporary translation group
@@ -125,7 +112,7 @@ namespace Bloom.Book
 
             PrepareElementsInPageOrDocument(containerElement, currentBook.BookData);
 
-            TranslationGroupManager.UpdateContentLanguageClasses(
+            UpdateContentLanguageClasses(
                 wrapper,
                 currentBook.BookData,
                 currentBook.BookInfo.AppearanceSettings,

@@ -27,7 +27,6 @@ namespace Bloom.Collection
         private readonly CollectionSettings _collectionSettings;
         private readonly QueueRenameOfCollection _queueRenameOfCollection;
         private readonly XMatterPackFinder _xmatterPackFinder;
-        private readonly PageRefreshEvent _pageRefreshEvent;
         private bool _restartRequired;
         private bool _loaded;
         private string _subscriptionCode;
@@ -66,14 +65,12 @@ namespace Bloom.Collection
         public CollectionSettingsDialog(
             CollectionSettings collectionSettings,
             QueueRenameOfCollection queueRenameOfCollection,
-            PageRefreshEvent pageRefreshEvent,
             TeamCollectionManager tcManager,
             XMatterPackFinder xmatterPackFinder
         )
         {
             _collectionSettings = collectionSettings;
             _queueRenameOfCollection = queueRenameOfCollection;
-            _pageRefreshEvent = pageRefreshEvent;
             _xmatterPackFinder = xmatterPackFinder;
             _settingsProtectionRequirePassword = SettingsProtectionSingleton
                 .Settings
@@ -428,7 +425,7 @@ namespace Bloom.Collection
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
             var oldBrand = _collectionSettings.BrandingProjectKey;
-            if (oldBrand != _brand || _collectionSettings.LockedToOneDownloadedBook)
+            if (oldBrand != _brand || _collectionSettings.IgnoreExpiration)
             {
                 _collectionSettings.BrandingProjectKey = _brand;
                 _collectionSettings.SubscriptionCode = _subscriptionCode;

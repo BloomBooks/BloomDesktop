@@ -169,6 +169,7 @@ namespace Bloom.Workspace
             //
             this._editingView = editingViewFactory();
             this._editingView.Dock = DockStyle.Fill;
+            this._editingView.Model.EnableSwitchingTabs = (enabled) => _tabStrip.Enabled = enabled;
 
             _collectionTabView = reactCollectionsTabsViewFactory();
             _collectionTabView.ManageSettings(_settingsLauncherHelper);
@@ -689,6 +690,8 @@ namespace Bloom.Workspace
             var items = new List<LanguageItem>();
             if (onlyActiveItem)
             {
+                if (String.IsNullOrEmpty(Settings.Default.UserInterfaceLanguage))
+                    Settings.Default.UserInterfaceLanguage = "en";  // See BL-13545.
                 items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
             }
             else
@@ -978,10 +981,7 @@ namespace Bloom.Workspace
 
         public void CheckForInvalidBranding()
         {
-            if (
-                _collectionSettings.InvalidBranding == null
-                || _collectionSettings.LockedToOneDownloadedBook
-            )
+            if (_collectionSettings.InvalidBranding == null || _collectionSettings.IgnoreExpiration)
                 return;
             // I'm not very happy with this, but the only place I could find to detect that we're opening a new project
             // is too soon to bring up a dialog; it comes up before the main window is fully initialized, which can
@@ -1005,7 +1005,7 @@ namespace Bloom.Workspace
 
             CurrentTabView = view as IBloomTabArea;
             // Warn the user if we're starting to use too much memory.
-            MemoryManagement.CheckMemory(false, "switched page in workspace", true);
+            MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
             if (_previouslySelectedControl != null)
             {
@@ -1042,31 +1042,37 @@ namespace Bloom.Workspace
             }
 
             _selectedTabAboutToChangeEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = view }
+                new TabChangedDetails()
+                {
+                    From = _previouslySelectedControl,
+                    To = view,
+                    PostponedWork = () =>
+                    {
+                        _selectedTabChangedEvent.Raise(
+                            new TabChangedDetails() { From = _previouslySelectedControl, To = view }
+                        );
+
+                        _previouslySelectedControl = view;
+                        _collectionApi.ResetUpdatingList();
+
+                        var zoomManager = CurrentTabView as IZoomManager;
+                        if (zoomManager != null)
+                        {
+                            if (!_toolStrip.Items.Contains(_zoomWrapper))
+                                _toolStrip.Items.Add(_zoomWrapper);
+                            _zoomControl.Zoom = zoomManager.Zoom;
+                            _zoomControl.ZoomChanged += (sender, args) =>
+                                zoomManager.SetZoom(_zoomControl.Zoom);
+                        }
+                        else
+                        {
+                            if (_toolStrip.Items.Contains(_zoomWrapper))
+                                _toolStrip.Items.Remove(_zoomWrapper);
+                        }
+                        // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
+                    }
+                }
             );
-
-            _selectedTabChangedEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = view }
-            );
-
-            _previouslySelectedControl = view;
-            _collectionApi.ResetUpdatingList();
-
-            var zoomManager = CurrentTabView as IZoomManager;
-            if (zoomManager != null)
-            {
-                if (!_toolStrip.Items.Contains(_zoomWrapper))
-                    _toolStrip.Items.Add(_zoomWrapper);
-                _zoomControl.Zoom = zoomManager.Zoom;
-                _zoomControl.ZoomChanged += (sender, args) =>
-                    zoomManager.SetZoom(_zoomControl.Zoom);
-            }
-            else
-            {
-                if (_toolStrip.Items.Contains(_zoomWrapper))
-                    _toolStrip.Items.Remove(_zoomWrapper);
-            }
-            // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
         }
 
         private void BackgroundColorsForLinux(IBloomTabArea currentTabView)
@@ -1458,23 +1464,38 @@ namespace Bloom.Workspace
             {
                 if (_editTab.IsSelected)
                 {
-                    _editingView.Model.SaveNow();
+                    _editingView.Model.SaveThen(
+                        () =>
+                        {
+                            // To test the Problem Dialog with a fatal error, uncomment this next line.
+                            // throw new ApplicationException("I just felt like an error!");
+
+                            // To test the Problem Dialog with a nonfatal error, uncomment this next line.
+                            // NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
+                            // To test clicking 'Report' in a toast, uncomment the line above, but use ModalIf.None.
+
+                            // To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
+                            // ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
+                            ReportAndLogProblem();
+                            return _editingView.Model.CurrentPage.Id;
+                        },
+                        () => { } // wrong state, do nothing
+                    );
+                }
+                else
+                {
+                    ReportAndLogProblem();
                 }
             }
             catch
             {
-                // Ignore errors saving.
+                // Ignore errors saving. (But this may miss problems while responding to getting the page content.)
+                ReportAndLogProblem();
             }
+        }
 
-            // To test the Problem Dialog with a fatal error, uncomment this next line.
-            // throw new ApplicationException("I just felt like an error!");
-
-            // To test the Problem Dialog with a nonfatal error, uncomment this next line.
-            // NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
-            // To test clicking 'Report' in a toast, uncomment the line above, but use ModalIf.None.
-
-            // To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
-            // ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
+        private void ReportAndLogProblem()
+        {
             Logger.WriteEvent("User clicked the 'Report a Problem' menu item");
             ProblemReportApi.ShowProblemDialog(this, null);
         }
@@ -1756,6 +1777,8 @@ namespace Bloom.Workspace
         public NoBorderToolStripRenderer()
             : base(new NoBorderToolStripColorTable()) { }
 
+        public Color DisabledColor { get; set; }
+
         protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { }
 
         protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
@@ -1763,7 +1786,30 @@ namespace Bloom.Workspace
             // this is needed, especially on Linux
             e.SizeTextRectangleToText();
             AdjustToolStripLocationIfNecessary(e);
-            base.OnRenderItemText(e);
+            if (e.Item.Enabled)
+            {
+                base.OnRenderItemText(e);
+                return;
+            }
+
+            // We have to actually take over drawing it, because when disabled, e.TextColor
+            // is ignored. There doesn't seem to be a property for disabled text color.
+            TextRenderer.DrawText(
+                e.Graphics,
+                e.Text,
+                e.TextFont,
+                e.TextRectangle,
+                DisabledColor,
+                e.TextFormat
+            );
+        }
+
+        protected override void OnRenderArrow(ToolStripArrowRenderEventArgs e)
+        {
+            if (!e.Item.Enabled)
+                e.ArrowColor = DisabledColor;
+
+            base.OnRenderArrow(e);
         }
 
         /// <summary>

@@ -134,7 +134,10 @@ namespace Bloom.Edit
 
             // Adding this renderer prevents a white line from showing up under the components.
             // BL-5071 We don't want a hover border on the items either.
-            _menusToolStrip.Renderer = new NoBorderToolStripRenderer();
+            _menusToolStrip.Renderer = new NoBorderToolStripRenderer()
+            {
+                DisabledColor = Color.FromArgb(114, 74, 106)
+            };
             _rightToolStrip.Renderer = new NoBorderToolStripRenderer();
 
             //we're giving it to the parent control through the TopBarControls property
@@ -382,25 +385,7 @@ namespace Bloom.Edit
             _splitContainer2.Panel2Collapsed = true; // used to hold TemplatesPagesView
         }
 
-        void VisibleNowAddSlowContents(object sender, EventArgs e)
-        {
-            //TODO: this is causing green boxes when you quit while it is still working
-            //we should change this to a proper background task, with good
-            //cancellation in case we switch documents.  Note we may also switch
-            //to some other way of making the thumbnails... e.g. it would be nice
-            //to have instant placeholders, with thumbnails later.
-
-            Application.Idle -= new EventHandler(VisibleNowAddSlowContents);
-
-            CheckFontAvailability();
-
-            Cursor = Cursors.WaitCursor;
-            _model.ViewVisibleNowDoSlowStuff();
-
-            Cursor = Cursors.Default;
-        }
-
-        private void CheckFontAvailability()
+        public void CheckFontAvailability()
         {
             var fontMessage = _model.GetFontAvailabilityMessage();
             if (!string.IsNullOrEmpty(fontMessage))
@@ -422,6 +407,7 @@ namespace Bloom.Edit
             _visible = visible;
             if (visible)
             {
+                Cursor = Cursors.WaitCursor;
                 if (_model.GetBookHasChanged())
                 {
                     //now we're doing it based on the focus textarea: ShowOrHideSourcePane(_model.ShowTranslationPanel);
@@ -429,26 +415,48 @@ namespace Bloom.Edit
                     //even before showing, we need to clear some things so the user doesn't see the old stuff
                     _pageListView.Clear();
                 }
-                Application.Idle += new EventHandler(VisibleNowAddSlowContents);
-                Cursor = Cursors.WaitCursor;
+                _model.OnBecomeVisible();
                 Logger.WriteEvent("Entered Edit Tab");
+                Cursor = Cursors.Default;
             }
             else
             {
-                Application.Idle -= new EventHandler(VisibleNowAddSlowContents); //make sure
-                _browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
-                _model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
+                // This will rarely do anything. It's typically called from the OnTabChanged event, which is invoked after
+                // onTabAboutToChange, which (typically, in state Editing) initiates a Save with a pending action that returns null,
+                // which will also cause a change to NoPage. However, it will be ignored in states where it's not valid,
+                // and may be helpful in some cases (e.g., if somehow we're navigating), so I decided to put it in.
+                _model.StateMachine.ToNoPage();
             }
+        }
+
+        /// <summary>
+        /// Done when the state machine determines it really is safe to switch to the NoPage state, that is, we've
+        /// done any necessary saving before switching away from the Edit tab.
+        /// </summary>
+        public void OnHideEditTab()
+        {
+            _browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
+            _model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
         }
 
         DateTime _beginPageLoad;
 
-        public void UpdateSingleDisplayedPage(IPage page, bool changingUiLanguage = false)
+        public void NextReloadChangesUiLanguage()
+        {
+            _changingUiLanguage = true;
+        }
+
+        /// <summary>
+        /// Initiate switching to the specified page. The system should be in a state where we know
+        /// there are no unsaved changes.
+        /// </summary>
+        public void GoToPage(IPage page, bool changingUiLanguage = false)
         {
             if (!_model.Visible)
             {
                 return;
             }
+            _changingUiLanguage |= changingUiLanguage;
 
 #if MEMORYCHECK
             // Check memory for the benefit of developers.
@@ -461,88 +469,81 @@ namespace Bloom.Edit
             if (_model.HaveCurrentEditableBook)
             {
                 _beginPageLoad = DateTime.Now;
-                _pageListView.SelectThumbnailWithoutSendingEvent(page);
-                _pageListView.UpdateThumbnailAsync(page);
-                _model.SetupServerWithCurrentPageIframeContents();
-                HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
-                // A page can't be 'dirty' in the interval between when we start to navigate to it and when it's visible.
-                // (The previous page should have been fully saved before we begin such navigation, so we don't
-                // need to worry about losing changes there.)
-                // So we don't want anything trying to save it during that time. Apart from wasting time, such a save
-                // might fail (BL-2634, BL-6296) if the new page is not yet loaded enough to have the right ID.
-                // To detect that the page IS loaded, we're looking for a notification from Javascript
-                // code (which detects that the page has first loaded and then been painted).
-                // We only get one notification per call to this function, so we need
-                // to set it up again each time we load a page. It's important to set it up before we start
-                // navigation; otherwise, we might miss the event and never enable saving for this page.
-                _model.NavigatingSoSuspendSaving = true;
-                // The following comment applies to GeckoFx. The logic described has moved into GeckoFxBrowser.
-                // Hopefully the WebView2 DocumentCompleted is more reliable and it won't be needed there.
-                // Unfortunately this comment isn't easily modifiable for the new context, so I'm leaving it here for now.
-                // So far, the most reliable way I've found to detect that the page is fully loaded and we can call
-                // initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
-                // This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
-                // being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
-                // but still, we never get one where the ready state is completed. This page just stays 'interactive'.
-                // A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
-                // has actually loaded. If you try that, be careful...this function seems to be used in cases where that
-                // never happens.
-                // Do this before we change the src of the iframe to make sure we're ready when the document-completed arrives.
-                _browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
-                if (
-                    _model.AreToolboxAndOuterFrameCurrent()
-                    && !changingUiLanguage
-                    && !ShouldDoFullReload()
-                )
+                if (!_model.StateMachine.ToNavigating(page.Id))
                 {
-                    // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
-                    _browser1.SetEditDom(domForCurrentPage);
-                    if (ReloadCurrentPage())
-                    {
-                        Logger.WriteEvent("changing page via Navigate(\"CURRENTPAGE.htm\")");
-                        _browser1.Navigate(
-                            BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "CURRENTPAGE.htm",
-                            false
-                        );
-                    }
-                    else
-                    {
-                        Logger.WriteEvent("changing page via editTabBundle.switchContentPage()");
-                        var pageUrl = _model.GetUrlForCurrentPage();
-                        RunJavascriptWithStringResult_Sync_Dangerous(
-                            "editTabBundle.switchContentPage('" + pageUrl + "');"
-                        );
-                    }
-                }
-                else
-                {
-                    // Set everything up and navigate the top browser to a new root document.
-                    _model.SetupServerWithCurrentBookToolboxContents();
-                    var dom = _model.GetXmlDocumentForEditScreenWebPage();
-                    _browser1.Navigate(
-                        dom,
-                        domForCurrentPage,
-                        setAsCurrentPageForDebugging: true,
-                        source: InMemoryHtmlFileSource.Frame
+                    throw new ApplicationException(
+                        "GotoPage called while not in a valid state. Changes to the page may not get saved. Please report and connect to BL-13120."
                     );
                 }
-                _model.CheckForBL2634("navigated to page");
-                SetModalState(false); // ensure _pageListView is enabled (BL-9712).
             }
+        }
+
+        private bool _changingUiLanguage = false; // review: should this be part of the state machine state?
+
+        /// <summary>
+        /// This is the View part of what happens when the state machine determines that we should navigate
+        /// to a particular page (possibly the one we're on after it was saved and stripped).
+        /// Internal as a hint that it should only be called in that one way. To goto a particular page
+        /// with appropriate state changes and checks, call GoToPage.
+        /// </summary>
+        internal void StartNavigationToEditPage(IPage page)
+        {
+            _pageListView.SelectThumbnailWithoutSendingEvent(page);
+            _pageListView.UpdateThumbnailAsync(page);
+            _model.SaveStateForFullSaveDecision();
+            // The following comment applies to GeckoFx. The logic described has moved into GeckoFxBrowser.
+            // Hopefully the WebView2 DocumentCompleted is more reliable and it won't be needed there.
+            // Unfortunately this comment isn't easily modifiable for the new context, so I'm leaving it here for now.
+            // So far, the most reliable way I've found to detect that the page is fully loaded and we can call
+            // initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
+            // This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
+            // being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
+            // but still, we never get one where the ready state is completed. This page just stays 'interactive'.
+            // A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
+            // has actually loaded. If you try that, be careful...this function seems to be used in cases where that
+            // never happens.
+            // Do this before we change the src of the iframe to make sure we're ready when the document-completed arrives.
+            _browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
+            if (
+                _model.AreToolboxAndOuterFrameCurrent()
+                && !_changingUiLanguage
+                && !ShouldDoFullReload()
+            )
+            {
+                // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
+                Logger.WriteEvent("changing page via editTabBundle.switchContentPage()");
+                var pageUrl = _model.GetUrlForCurrentPage();
+                _browser1.RunJavascriptFireAndForget(
+                    "editTabBundle.switchContentPage('" + pageUrl + "');"
+                );
+            }
+            else
+            {
+                // Set everything up and navigate the top browser to a new root document.
+                _model.SetupServerWithCurrentBookToolboxContents();
+                var dom = _model.GetXmlDocumentForEditScreenWebPage();
+                _browser1.Navigate(
+                    dom,
+                    setAsCurrentPageForDebugging: true,
+                    source: InMemoryHtmlFileSource.Frame
+                );
+            }
+            SetModalState(false); // ensure _pageListView is enabled (BL-9712).
 #if MEMORYCHECK
             // Check memory for the benefit of developers.
             Bloom.Utils.MemoryManagement.CheckMemory(
                 false,
-                "EditingView - UpdateSingleDisplayedPage() about to call UpdateDisplay()",
+                "EditingView - StartNavigationToEditPage() about to call UpdateDisplay()",
                 false
             );
 #endif
+            _changingUiLanguage = false; // we've done a top-level navigate if this required it.
             UpdateDisplay();
 #if MEMORYCHECK
             // Check memory for the benefit of developers.
             Bloom.Utils.MemoryManagement.CheckMemory(
                 false,
-                "EditingView - UpdateSingleDisplayedPage() finished",
+                "EditingView - StartNavigationToEditPage() finished",
                 false
             );
 #endif
@@ -557,13 +558,6 @@ namespace Bloom.Edit
         // but you can also set it to true so the full reload gets more testing (e.g. in alpha).
         private bool ShouldDoFullReload() => MemoryUtils.SystemIsShortOfMemory();
 
-        private bool ReloadCurrentPage()
-        {
-            // Note that ModifierKeys does not seem to work on Linux.
-            return ((ModifierKeys & Keys.Shift) == Keys.Shift)
-                || RobustFile.Exists("/tmp/UseCURRENTPAGE");
-        }
-
         private bool UseBackgroundGC()
         {
             // Note that ModifierKeys does not seem to work on Linux.
@@ -574,7 +568,7 @@ namespace Bloom.Edit
         void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
         {
             _browser1.DocumentCompleted -= WebBrowser_ReadyStateChanged;
-            ChangingPages = false;
+            HidePageAndShowWaitCursor(false);
             _model.DocumentCompleted();
             _browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
             var beginGarbageCollect = DateTime.Now;
@@ -613,14 +607,6 @@ namespace Bloom.Edit
             }
             _pageListApi.ClearPagesCache();
             _pageListView.SetBook(_model.CurrentBook);
-        }
-
-        [Obsolete(
-            "This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred."
-        )]
-        internal string RunJavascriptWithStringResult_Sync_Dangerous(string script)
-        {
-            return _browser1.RunJavascriptWithStringResult_Sync_Dangerous(script);
         }
 
         internal async Task<string> GetStringFromJavascriptAsync(string script)
@@ -765,11 +751,11 @@ namespace Bloom.Edit
             }
         }
 
-        public void OnCutImage(int imgIndex)
+        public void OnCutImage(string imageId, UrlPathString imageSrc)
         {
             var bookFolderPath = _model.CurrentBook.FolderPath;
 
-            if (CopyImageToClipboard(imgIndex, bookFolderPath)) // returns 'true' if successful
+            if (CopyImageToClipboard(imageSrc, bookFolderPath)) // returns 'true' if successful
             {
                 // Replace current image with placeHolder.png
                 // N.B. It is unnecessary to check for the existence of this file, since selecting a book in
@@ -778,26 +764,21 @@ namespace Bloom.Edit
                 var path = Path.Combine(bookFolderPath, "placeHolder.png");
                 using (var palasoImage = PalasoImage.FromFileRobustly(path))
                 {
-                    var imageElement = GetImageNode(imgIndex);
-                    _model.ChangePicture(imgIndex, imageElement, palasoImage, new NullProgress());
+                    _model.ChangePicture(imageId, imageSrc, palasoImage);
                 }
             }
         }
 
-        public void OnCopyImage(int imgIndex)
+        public void OnCopyImage(UrlPathString imageSrc)
         {
             // NB: bloomImages.js contains code that prevents us arriving here
             // if our image is simply the placeholder flower
 
-            CopyImageToClipboard(imgIndex, _model.CurrentBook.FolderPath);
+            CopyImageToClipboard(imageSrc, _model.CurrentBook.FolderPath);
         }
 
-        public void OnPasteImage(int imgIndex)
+        public void OnPasteImage(string imageId, UrlPathString priorImageSrc)
         {
-            // BL-11709: It's just possible that the element we are pasting into has not yet been saved,
-            // which will cause problems. So do a save before pasting.
-            _model.SaveNow();
-
             using (var measure = PerformanceMeasurement.Global.Measure("Paste Image"))
             {
                 PalasoImage clipboardImage = null;
@@ -830,9 +811,6 @@ namespace Bloom.Edit
                         return;
                     }
 
-                    var imageElement = GetImageNode(imgIndex);
-                    if (imageElement == null)
-                        return;
                     Cursor = Cursors.WaitCursor;
 
                     //nb: Taglib# requires an extension that matches the file content type.
@@ -844,12 +822,7 @@ namespace Bloom.Edit
                             "[Paste Image] Pasting jpeg image {0}",
                             clipboardImage.OriginalFilePath
                         );
-                        _model.ChangePicture(
-                            imgIndex,
-                            imageElement,
-                            clipboardImage,
-                            new NullProgress()
-                        );
+                        _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
                     }
                     else
                     {
@@ -859,12 +832,7 @@ namespace Bloom.Edit
                             Logger.WriteMinorEvent(
                                 "[Paste Image] Pasting image directly from clipboard (e.g. screenshot)"
                             );
-                            _model.ChangePicture(
-                                imgIndex,
-                                imageElement,
-                                clipboardImage,
-                                new NullProgress()
-                            );
+                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
                         }
                         //they pasted a path to a png
                         else if (
@@ -876,12 +844,7 @@ namespace Bloom.Edit
                                 "[Paste Image] Pasting png file {0}",
                                 clipboardImage.OriginalFilePath
                             );
-                            _model.ChangePicture(
-                                imgIndex,
-                                imageElement,
-                                clipboardImage,
-                                new NullProgress()
-                            );
+                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
                         }
                         else // they pasted a path to some other bitmap format
                         {
@@ -910,12 +873,7 @@ namespace Bloom.Edit
 
                                 using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
                                 {
-                                    _model.ChangePicture(
-                                        imgIndex,
-                                        imageElement,
-                                        palasoImage,
-                                        new NullProgress()
-                                    );
+                                    _model.ChangePicture(imageId, priorImageSrc, palasoImage);
                                 }
                             }
                         }
@@ -943,81 +901,58 @@ namespace Bloom.Edit
             return PortableClipboard.GetImageFromClipboard();
         }
 
-        private bool CopyImageToClipboard(int imgIndex, string bookFolderPath)
+        private bool CopyImageToClipboard(UrlPathString imageSrc, string bookFolderPath)
         {
-            var imageElement = GetImageNode(imgIndex);
-            if (imageElement != null)
+            var path = Path.Combine(bookFolderPath, imageSrc.PathOnly.NotEncoded);
+            try
             {
-                var url = HtmlDom.GetImageElementUrl(imageElement);
-                if (String.IsNullOrEmpty(url.PathOnly.NotEncoded))
-                    return false;
-
-                var path = Path.Combine(bookFolderPath, url.PathOnly.NotEncoded);
-                try
+                using (var image = PalasoImage.FromFileRobustly(path))
                 {
-                    using (var image = PalasoImage.FromFileRobustly(path))
-                    {
-                        PortableClipboard.CopyImageToClipboard(image);
-                    }
-                    return true;
+                    PortableClipboard.CopyImageToClipboard(image);
                 }
-                catch (NotImplementedException)
-                {
-                    var msg = LocalizationManager.GetDynamicString(
-                        "Bloom",
-                        "ImageToClipboard",
-                        "Copying an image to the clipboard is not yet implemented in Bloom for Linux.",
-                        "message for messagebox warning to user"
-                    );
-                    var header = LocalizationManager.GetDynamicString(
-                        "Bloom",
-                        "NotImplemented",
-                        "Not Yet Implemented",
-                        "header for messagebox warning to user"
-                    );
-                    MessageBox.Show(msg, header);
-                }
-                catch (ExternalException e)
-                {
-                    Logger.WriteEvent("CopyImageToClipboard -> ExternalException: " + e.Message);
-                    var msg =
-                        LocalizationManager.GetDynamicString(
-                            "Bloom",
-                            "EditTab.Image.CopyImageFailed",
-                            "Bloom had problems using your computer's clipboard. Some other program may be interfering."
-                        )
-                        + Environment.NewLine
-                        + Environment.NewLine
-                        + LocalizationManager.GetDynamicString(
-                            "Bloom",
-                            "EditTab.Image.TryRestart",
-                            "Try closing other programs and restart your computer if necessary."
-                        );
-                    MessageBox.Show(msg);
-                }
-                catch (Exception e)
-                {
-                    Debug.Fail(e.Message);
-                    Logger.WriteEvent("CopyImageToClipboard:" + e.Message);
-                }
+                return true;
             }
-            return false;
-        }
+            catch (NotImplementedException)
+            {
+                var msg = LocalizationManager.GetDynamicString(
+                    "Bloom",
+                    "ImageToClipboard",
+                    "Copying an image to the clipboard is not yet implemented in Bloom for Linux.",
+                    "message for messagebox warning to user"
+                );
+                var header = LocalizationManager.GetDynamicString(
+                    "Bloom",
+                    "NotImplemented",
+                    "Not Yet Implemented",
+                    "header for messagebox warning to user"
+                );
+                MessageBox.Show(msg, header);
+            }
+            catch (ExternalException e)
+            {
+                Logger.WriteEvent("CopyImageToClipboard -> ExternalException: " + e.Message);
+                var msg =
+                    LocalizationManager.GetDynamicString(
+                        "Bloom",
+                        "EditTab.Image.CopyImageFailed",
+                        "Bloom had problems using your computer's clipboard. Some other program may be interfering."
+                    )
+                    + Environment.NewLine
+                    + Environment.NewLine
+                    + LocalizationManager.GetDynamicString(
+                        "Bloom",
+                        "EditTab.Image.TryRestart",
+                        "Try closing other programs and restart your computer if necessary."
+                    );
+                MessageBox.Show(msg);
+            }
+            catch (Exception e)
+            {
+                Debug.Fail(e.Message);
+                Logger.WriteEvent("CopyImageToClipboard:" + e.Message);
+            }
 
-        private XmlElement GetImageNode(int imgIndex)
-        {
-            var containers = _model
-                .GetXmlDocumentForCurrentPage()
-                .SafeSelectNodes("//div[contains(@class, 'bloom-imageContainer')]")
-                .Cast<XmlElement>();
-            var container = containers.Skip(imgIndex).First();
-            var img =
-                container.ChildNodes
-                    .Cast<XmlNode>()
-                    .FirstOrDefault(x => x.Name.ToLowerInvariant() == "img") as XmlElement;
-            if (img == null)
-                return container;
-            return img;
+            return false;
         }
 
         /// <summary>
@@ -1042,31 +977,22 @@ namespace Bloom.Edit
             return true;
         }
 
-        public void OnChangeImage(int imgIndex)
+        public void OnChangeImage(string imageId, UrlPathString imageSrc)
         {
-            // Make sure any new image overlays on the page are saved, so our imgIndex will select the
-            // right one.
-            Model.SaveNow();
-
-            var imageElement = GetImageNode(imgIndex);
-            if (imageElement == null)
-                return;
-            string currentPath = HtmlDom.GetImageElementUrl(imageElement).PathOnly.NotEncoded;
-
-            if (!CheckIfLockedAndWarn(currentPath))
-                return;
-
             Cursor = Cursors.WaitCursor;
 
             var imageInfo = new PalasoImage();
             Image oldImage = null;
             var oldSize = new Size() { Height = 0, Width = 0 };
-            var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
+            var existingImagePath = Path.Combine(
+                _model.CurrentBook.FolderPath,
+                imageSrc.PathOnly.NotEncoded
+            );
             string newImagePath = null;
 
             //don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
             if (
-                !currentPath.ToLowerInvariant().Contains("placeholder")
+                !imageSrc.NotEncoded.ToLowerInvariant().Contains("placeholder")
                 && RobustFile.Exists(existingImagePath)
             )
             {
@@ -1252,7 +1178,7 @@ namespace Bloom.Edit
                                 dlg.ImageInfo.Save(newImagePath);
                             }
                             dlg.ImageInfo.SetCurrentFilePath(newImagePath);
-                            SaveChangedImage(imgIndex, imageElement, dlg.ImageInfo, exceptionMsg);
+                            SaveChangedImage(imageId, imageSrc, dlg.ImageInfo, exceptionMsg);
                         }
                         catch (Exception error)
                         {
@@ -1424,8 +1350,8 @@ namespace Bloom.Edit
         }
 
         public void SaveChangedImage(
-            int imgIndex,
-            XmlElement imageElement,
+            string imageId,
+            UrlPathString priorImageSrc,
             PalasoImage imageInfo,
             string exceptionMsg
         )
@@ -1434,7 +1360,7 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(imgIndex, imageElement, imageInfo, new NullProgress());
+                _model.ChangePicture(imageId, priorImageSrc, imageInfo);
             }
             catch (System.IO.IOException error)
             {
@@ -1479,38 +1405,6 @@ namespace Bloom.Edit
         public void UpdateAllThumbnails()
         {
             _pageListView.UpdateAllThumbnails();
-        }
-
-        /// <summary>
-        /// this started as an experiment, where our textareas were not being read when we saved because of the need
-        /// to change the picture
-        /// </summary>
-        public void CleanHtmlAndCopyToPageDom()
-        {
-            // NOTE: these calls to may lead to API calls from the JS. These are async, so the actions
-            // that JS might perform may not actually happen until well after this method. We ran into a problem in
-            // BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
-            // tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
-            // been editing, so there was an null.
-            var script =
-                @"
-if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined')
-	editTabBundle.getToolboxBundleExports().removeToolboxMarkup();
-if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined')
-	editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage() + '<SPLIT-DATA>' + editTabBundle.getEditablePageBundleExports().userStylesheetContent();";
-            var combinedData = RunJavascriptWithStringResult_Sync_Dangerous(script);
-            string bodyHtml = null;
-            string userCssContent = null;
-            if (combinedData != null)
-            {
-                var endHtml = combinedData.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
-                if (endHtml > 0)
-                {
-                    bodyHtml = combinedData.Substring(0, endHtml);
-                    userCssContent = combinedData.Substring(endHtml + "<SPLIT-DATA>".Length);
-                }
-            }
-            _browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
         }
 
         private void _copyButton_Click(object sender, EventArgs e)
@@ -1867,16 +1761,6 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
             }
         }
 
-        private void SaveWhenIdle(object o, EventArgs eventArgs)
-        {
-            Application.Idle -= SaveWhenIdle; // don't need to do again till next Deactivate.
-            _model.SaveNow();
-            // Restore any tool state removed by CleanHtmlAndCopyToPageDom(), which is called by _model.SaveNow().
-            RunJavascriptAsync(
-                "if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxBundleExports().applyToolboxStateToPage();}"
-            );
-        }
-
         public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
 
         /// <summary>
@@ -1891,18 +1775,15 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
         /// BL-2153: This is to provide visual feedback to the user that the program has received their
         ///          page change click and is actively processing the request.
         /// </summary>
-        public bool ChangingPages
+        public void HidePageAndShowWaitCursor(bool hidePage)
         {
-            set
-            {
-                if (_browser1.Visible != value)
-                    return;
+            if (_browser1.Visible != hidePage)
+                return;
 
-                _browser1.Visible = !value;
-                _pageListView.Enabled = !value;
-                Cursor = value ? Cursors.WaitCursor : Cursors.Default;
-                _pageListView.Cursor = Cursor;
-            }
+            _browser1.Visible = !hidePage;
+            _pageListView.Enabled = !hidePage;
+            Cursor = hidePage ? Cursors.WaitCursor : Cursors.Default;
+            _pageListView.Cursor = Cursor;
         }
 
         public void ShowAddPageDialog()
@@ -1919,8 +1800,10 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
             RunJavascriptAsync("editTabBundle.showPageChooserDialog(true);");
         }
 
+        public int Zoom => EditingView.ZoomSetting;
+
         // The zoom factor that is shown in the top right of the toolbar (a percent).
-        public int Zoom
+        public static int ZoomSetting
         {
             // Whatever the user may have saved (e.g., from earlier use of ctrl-wheel), we'll make this an expected multiple-of-10 percent.
             get
@@ -1984,7 +1867,7 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
             }
         }
 
-        // If SetZoom (and hence _model.RethinkPageAndReloadIt) is called repeatedly too
+        // If SetZoom (and hence _model.SavePageAndReloadIt) is called repeatedly too
         // frequently, Bloom can crash, with the program closing spontaneously.  So we
         // need to slow things down when the user is rapidly clicking on the zoom button,
         // without losing track of the desired zoom level.
@@ -2061,7 +1944,7 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
                 // here, SetZoom, which originally just changed the transform on the scaling container.
                 // However, when it was later changed to post a request for reloading the page,
                 // it became cleaner to just do the reload directly here.
-                _model.RethinkPageAndReloadIt();
+                _model.RethinkPageAndReloadItAndReportIfItFails();
             }
         }
 
@@ -2121,11 +2004,26 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
 
         private void _bookSettingsButton_Click(object sender, EventArgs e)
         {
-            _model.SaveNow();
+            _model.SaveThen(
+                () =>
+                {
+                    // Open the book settings dialog to the context-specific group.
+                    var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
+                    RunJavascriptAsync(
+                        $"editTabBundle.showEditViewBookSettingsDialog({groupIndex});"
+                    );
+                    return _model.CurrentPage.Id;
+                },
+                () => { } // wrong state, do nothing
+            );
+        }
 
-            // Open the book settings dialog to the context-specific group.
-            var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
-            RunJavascriptAsync($"editTabBundle.showEditViewBookSettingsDialog({groupIndex});");
+        // This is temporary code we added in 6.0 when trying to determine why we are sometimes losing
+        // user data upon save. See BL-13120.
+        private void _topBarPanel_Click(object sender, EventArgs e)
+        {
+            if (Model.Visible && ModifierKeys == (Keys.Shift | Keys.Control))
+                _model.RethinkPageAndReloadItAndReportIfItFails();
         }
     }
 }

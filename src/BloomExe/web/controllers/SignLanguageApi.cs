@@ -572,44 +572,43 @@ namespace Bloom.web.controllers
             // We might modify the current page, but the user may also have modified it
             // without doing anything to cause a Save before the deactivate. So save their
             // changes before we go to work on it.
-            Model.SaveNow();
+            Model.SaveThen(
+                () =>
+                {
+                    foreach (var videoPath in filesModifiedSinceDeactivate)
+                    {
+                        var expectedSrcAttr = UrlPathString.CreateFromUnencodedString(
+                            BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
+                        );
+                        var videoElts = CurrentBook.RawDom.SafeSelectNodes(
+                            $"//video/source[contains(@src,'{expectedSrcAttr.UrlEncodedForHttpPath}')]"
+                        );
+                        if (videoElts.Count == 0)
+                            continue; // not used in book, ignore
 
-            foreach (var videoPath in filesModifiedSinceDeactivate)
-            {
-                var expectedSrcAttr = UrlPathString.CreateFromUnencodedString(
-                    BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
-                );
-                var videoElts = CurrentBook.RawDom.SafeSelectNodes(
-                    $"//video/source[contains(@src,'{expectedSrcAttr.UrlEncodedForHttpPath}')]"
-                );
-                if (videoElts.Count == 0)
-                    continue; // not used in book, ignore
+                        // OK, the user has modified the file outside of Bloom. Something is determined to cache video.
+                        // Defeat it by setting a fake param.
+                        // Note that doing this will discard any fragment in the existing URL, typically trimming.
+                        // I think this is good...if the user has edited the video, we should start over assuming he
+                        // wants all of it.
 
-                // OK, the user has modified the file outside of Bloom. Something is determined to cache video.
-                // Defeat it by setting a fake param.
-                // Note that doing this will discard any fragment in the existing URL, typically trimming.
-                // I think this is good...if the user has edited the video, we should start over assuming he
-                // wants all of it.
+                        var newSrcAttr = UrlPathString.CreateFromUnencodedString(
+                            BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
+                        );
+                        HtmlDom.SetSrcOfVideoElement(
+                            newSrcAttr,
+                            (XmlElement)videoElts[0],
+                            true,
+                            "?now=" + DateTime.Now.Ticks
+                        );
+                    }
 
-                var newSrcAttr = UrlPathString.CreateFromUnencodedString(
-                    BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
-                );
-                HtmlDom.SetSrcOfVideoElement(
-                    newSrcAttr,
-                    (XmlElement)videoElts[0],
-                    true,
-                    "?now=" + DateTime.Now.Ticks
-                );
-            }
-
-            // We could try to figure out whether one of the modified videos is on the current page.
-            // But that's the most likely video to be modified, and it doesn't take long to reload,
-            // and this only happens in the very special case that the user has modified a video outside
-            // of Bloom.
-            View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-
-            // Likewise, this is probably overkill, but it's a probably-rare case.
-            View.UpdateAllThumbnails();
+                    // Likewise, this is probably overkill, but it's a probably-rare case.
+                    View.UpdateAllThumbnails();
+                    return _pageSelection.CurrentSelection.Id;
+                },
+                () => { } // wrong state, do nothing
+            );
         }
 
         /// <summary>

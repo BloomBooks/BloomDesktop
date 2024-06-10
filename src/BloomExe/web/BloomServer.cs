@@ -2,12 +2,14 @@
 // Copyright (c) 2014-2018 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -123,9 +125,11 @@ namespace Bloom.Api
         private readonly Thread _listenerThread;
 
         /// <summary>
-        /// Pool of threads that pull a request from the _queue and processes it
+        /// Pool of threads that pull a request from the _queue and processes it.
+        /// This is a ConcurrentDictionary (ManagedThreadId to thread) just so we can add and remove
+        /// things from it without worrying about locking (or deadlocking).
         /// </summary>
-        private readonly List<Thread> _workers = new List<Thread>();
+        private readonly ConcurrentDictionary<int, Thread> _workers = new();
 
         /// <summary>
         /// Notifies threads that they should stop because the BloomServer object is being disposed
@@ -389,6 +393,25 @@ namespace Bloom.Api
             }
         }
 
+        private static string UrlPrefixForCurrentBookPage(string bookFolderPath) =>
+            bookFolderPath.Replace("\\", "/") + "/page" + SimulatedFileUrlMarker;
+
+        public static string UrlForCurrentBookPage(string bookFolderPath, string pageId)
+        {
+            return (UrlPrefixForCurrentBookPage(bookFolderPath) + pageId + ".htm").ToLocalhost();
+        }
+
+        public static string UrlForCurrentBookPageEncodedForIframeSrc(
+            string bookFolderPath,
+            string pageId
+        )
+        {
+            var urlPath = UrlPathString.CreateFromUnencodedString(
+                UrlForCurrentBookPage(bookFolderPath, pageId)
+            );
+            return urlPath.UrlEncodedForHttpPath;
+        }
+
         // Every path should return false or send a response.
         // Otherwise we can get a timeout error as the browser waits for a response.
         //
@@ -474,6 +497,18 @@ namespace Bloom.Api
                     }
                     localPath = localPath.Replace("book-preview", CurrentBook.FolderPath);
                 }
+                else if (localPath == "book-preview/appearance.css")
+                {
+                    // Use the current appearance-theme-default.css file if appearance.css doesn't exist.
+                    var cssFilePath = Path.Combine(CurrentBook.FolderPath, "appearance.css");
+                    if (RobustFileExistsWithCaseCheck(cssFilePath))
+                        localPath = cssFilePath;
+                    else
+                        localPath = Path.Combine(
+                            BloomFileLocator.GetFolderContainingAppearanceThemeFiles(),
+                            "appearance-theme-default.css"
+                        );
+                }
                 else
                 {
                     localPath = localPath.Replace("book-preview", CurrentBook.FolderPath);
@@ -531,6 +566,23 @@ namespace Bloom.Api
             {
                 info.ResponseContentType = "text/html";
                 info.WriteCompleteOutput(content ?? "");
+                return true;
+            }
+
+            if (
+                CurrentBook?.FolderPath != null
+                && localPath.StartsWith(UrlPrefixForCurrentBookPage(CurrentBook.FolderPath))
+            )
+            {
+                var startIndex = UrlPrefixForCurrentBookPage(CurrentBook.FolderPath).Length;
+                var pageId = localPath.Substring(
+                    startIndex,
+                    localPath.Length - startIndex - ".htm".Length
+                );
+                info.ResponseContentType = "text/html";
+                info.WriteCompleteOutput(
+                    EditingModel.GetEditPageIframeContents(CurrentBook, pageId)
+                );
                 return true;
             }
 
@@ -842,6 +894,7 @@ namespace Bloom.Api
             }
         }
 
+        private int _missingMapFileCount = 0;
         private bool ProcessAnyFileContent(IRequestInfo info, string localPath)
         {
             string modPath = localPath;
@@ -875,19 +928,53 @@ namespace Bloom.Api
             // book folders. So instead redirect to our browser file folder.
             if (String.IsNullOrEmpty(path) || !RobustFileExistsWithCaseCheck(path))
             {
+                var isMap = localPath.EndsWith(".map");
                 var startOfBookLayout = localPath.IndexOf("bookLayout");
                 if (startOfBookLayout > 0)
                     path = BloomFileLocator.GetBrowserFile(
-                        false,
+                        isMap,
                         localPath.Substring(startOfBookLayout)
                     );
                 var startOfBookEdit = localPath.IndexOf("bookEdit");
                 if (startOfBookEdit > 0)
                     path = BloomFileLocator.GetBrowserFile(
-                        false,
+                        isMap,
                         localPath.Substring(startOfBookEdit)
                     );
+                if ((startOfBookLayout > 0 || startOfBookEdit > 0) && isMap && path == null)
+                {
+                    ReportMissingFile(info); // This logs the problem, but doesn't show it to the user.
+                    ++_missingMapFileCount;
+                    if (ApplicationUpdateSupport.IsDev)
+                    {
+                        if (_missingMapFileCount < 5) // report first four missing files via dialog
+                        {
+                            NonFatalProblem.Report(
+                                ModalIf.All,
+                                PassiveIf.None,
+                                "Missing map file: " + localPath,
+                                showSendReport: false,
+                                skipSentryReport: true
+                            );
+                        }
+                    }
+                    else
+                    {
+                        if (_missingMapFileCount < 2) // report first missing file via toast
+                        {
+                            NonFatalProblem.Report(
+                                ModalIf.None,
+                                PassiveIf.All,
+                                "Missing map file: " + localPath,
+                                showSendReport: false,
+                                skipSentryReport: true
+                            );
+                        }
+                    }
+                    return false;
+                }
             }
+            
 
             if (
                 !RobustFileExistsWithCaseCheck(path)
@@ -1224,13 +1311,15 @@ namespace Bloom.Api
             Logger.WriteEvent("Server will use " + ServerUrlEndingInSlash);
             _listenerThread.Start();
 
-            for (var i = 0; i < Math.Max(Environment.ProcessorCount, 2); i++)
+            for (var i = 0; i < MinWorkerThreads; i++)
             {
                 SpinUpAWorker();
             }
 
             VerifyWeAreNowListening();
         }
+
+        private static int MinWorkerThreads => Math.Max(Environment.ProcessorCount, 2);
 
         /// <summary>
         /// Tries to start listening on the currently proposed server url
@@ -1380,14 +1469,17 @@ namespace Bloom.Api
             );
         }
 
+        private static int _serverIndex;
+
         // After the initial startup, this should only be called inside a lock(_queue),
         // to avoid race conditions modifying the _workers collection.
         private void SpinUpAWorker()
         {
             var thread = new Thread(RequestProcessorLoop);
-            thread.Name = WorkerThreadNamePrefix + _workers.Count;
-            _workers.Add(thread);
-            _workers.Last().Start();
+            var newIndex = Interlocked.Increment(ref _serverIndex);
+            thread.Name = WorkerThreadNamePrefix + newIndex;
+            _workers.TryAdd(thread.ManagedThreadId, thread);
+            thread.Start();
         }
 
         #endregion
@@ -1399,6 +1491,33 @@ namespace Bloom.Api
         {
             while (_listener.IsListening)
             {
+                // We've found that sometimes one of our worker threads just dies. One way to force it to happen is to
+                // uncomment the block of code that converts requests for .map files into 404s.
+                // We know of no reason for a thread to die except for throwing an uncaught exception, and the method
+                // in which this thread loops catches all exceptions that it can, and the handler does not fire in
+                // this situation. Conceivably it is something like a stack overflow exception that can't be caught.
+                // It's very bad if all our server threads die; Bloom freezes up and can't even quit (in edit mode) because
+                // that requires a server request to obtain the page content. So we detect dead threads here and replace them.
+                // This is not very satisfactory. We don't know what task if any was left incomplete by the dead thread,
+                // nor whether it might have incremented but not decremented one of our counts of threads-in-use.
+                // But it's better than freezing up.
+                var deadThreads = _workers.Where(kvp => !kvp.Value.IsAlive);
+                foreach (var kvp in deadThreads)
+                {
+                    //thread.Join(); Copilot suggested this but I don't think you can join a dead thread???
+                    // Do we want a more drastic report? We don't know what went wrong with the thread, so a report
+                    // is unlikely to be very informative. But it's remotely possible that it damaged some data.
+                    // Could this be related to the wipeout bug?
+                    Debug.WriteLine(
+                        $"Worker thread {kvp.Key} ({kvp.Value.Name}) died unexpectedly. Spinning up a replacement"
+                    );
+                    _workers.TryRemove(kvp.Key, out Thread _);
+                    // Seems like just making one would be enough, but preliminary testing still found the number
+                    // declining slowly.
+                    while (_workers.Count < MinWorkerThreads)
+                        SpinUpAWorker();
+                }
+
                 var context = _listener.BeginGetContext(QueueRequest, null);
 
                 if (0 == WaitHandle.WaitAny(new[] { _stop, context.AsyncWaitHandle }))
@@ -1504,9 +1623,21 @@ namespace Bloom.Api
                     )
                     {
                         var r = new RequestInfo(new BloomHttpListenerContext(context));
+
                         r.WriteError(404);
+
                         return;
                     }
+                    // Uncommenting this is a way to cause lots of worker threads to die when an inspector is opened.
+                    // Note, this is NOT the right place to handle missing map files; this blocks ALL map file requests,
+                    // even if we DO have it. Just keeping the code as a record of a way to reproduce a very puzzling
+                    // problem we may want to work on again.
+                    //if (rawurl.EndsWith(".map"))
+                    //{
+                    //    var r = new RequestInfo(new BloomHttpListenerContext(context));
+                    //    r.WriteError(404);
+                    //    return;
+                    //}
 
                     // set lower priority for thumbnails in order to have less impact on the UI thread
                     if (rawurl.Contains("thumbnail=1"))
@@ -2036,14 +2167,15 @@ namespace Bloom.Api
 
                         // wait for each worker thread to stop
                         foreach (
-                            var worker in _workers.Where(
-                                worker =>
-                                    (worker != null)
-                                    && (worker.ThreadState != ThreadState.Unstarted)
+                            var kvp in _workers.Where(
+                                kvp =>
+                                    (kvp.Value != null)
+                                    && kvp.Value.IsAlive
+                                    && (kvp.Value.ThreadState != ThreadState.Unstarted)
                             )
                         )
                         {
-                            if (!worker.Join((int)(secondsToWait * 1000)))
+                            if (!kvp.Value.Join((int)(secondsToWait * 1000)))
                             {
                                 Logger.WriteError(
                                     "Could not kill a worker thread after waiting 2 seconds.",

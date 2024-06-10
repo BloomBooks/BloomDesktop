@@ -50,7 +50,8 @@ let pageIsClosing: boolean = false;
 // Returns a modified promise (the same promise you passed in, but with an error reporting catch included)
 export async function wrapAxios<T>(
     call: Promise<void | AxiosResponse<T>>,
-    report: boolean = true
+    report: boolean = true,
+    url: string = "unknown"
 ): Promise<void | AxiosResponse<T>> {
     // Save the place where the original axios call was made.
     // The stack in the error passed to catch is usually not very
@@ -83,14 +84,17 @@ export async function wrapAxios<T>(
         // altogether, for some unknown reason; calling window.onerror with a composed stack
         // defeats its stack mapping.)
 
-        let msg: string;
+        let msg: string = "Unexpected promise failure";
+        if (url !== "unknown") {
+            msg += " in " + url;
+        }
         if (error && error.message && error.stack) {
-            msg = "Unexpected promise failure: " + error.message;
+            msg += ": " + error.message;
             if (error.response && error.response.statusText) {
-                msg += " (response: " + error.response.statusText + ")";
+                msg += ": (response: " + error.response.statusText + ")";
             }
         } else {
-            msg = "Unexpected promise failure: " + error;
+            msg += ": " + error;
         }
 
         // First we make a preliminary report that doesn't involve going to the server for source maps.
@@ -488,16 +492,19 @@ export function postString(urlSuffix: string, value: string) {
 
 export function postBoolean(urlSuffix: string, value: boolean) {
     const data = adjustFalsyData(value);
+    const url = getBloomApiPrefix() + urlSuffix;
     wrapAxios(
-        axios.post(getBloomApiPrefix() + urlSuffix, data, {
+        axios.post(url, data, {
             headers: {
                 "Content-Type": "application/json"
             }
-        })
+        }),
+        true,
+        url
     );
 }
 
-// This method is used to post something from Bloom.
+// This method is used to post something to Bloom server.
 export function post(
     urlSuffix: string,
     successCallback?: (r: AxiosResponse) => void,
@@ -543,7 +550,7 @@ export function postThatMightNavigate(urlSuffix: string) {
     );
 }
 
-// This method is used to post something from Bloom with data.
+// Post something to Bloom server with data.
 export function postData(
     urlSuffix: string,
     data: any,

@@ -5972,6 +5972,11 @@ Do you want to go ahead?</note>
         <note>ID: Topics.Animal Stories</note>
         <note>shows in the topics chooser in the edit tab</note>
       </trans-unit>
+      <trans-unit id="Topics.Bible" sil:dynamic="true">
+        <source xml:lang="en">Bible</source>
+        <note>ID: Topics.Bible</note>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
       <trans-unit id="Topics.Business" sil:dynamic="true">
         <source xml:lang="en">Business</source>
         <note>ID: Topics.Business</note>
@@ -6046,6 +6051,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Spiritual</source>
         <note>ID: Topics.Spiritual</note>
         <note>shows in the topics chooser in the edit tab</note>
+        <note>Obsolete as of Bloom 5.6</note>
       </trans-unit>
       <trans-unit id="Topics.Story Book" sil:dynamic="true">
         <source xml:lang="en">Story Book</source>

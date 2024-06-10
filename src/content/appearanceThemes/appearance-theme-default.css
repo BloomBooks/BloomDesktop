@@ -140,7 +140,8 @@
 .A5Landscape,
 .A5Portrait,
 .Size6x9Landscape,
-.Size6x9Portrait {
+.Size6x9Portrait,
+.USComicPortrait {
     --page-margin: 12mm;
 }
 .QuarterLetterPortrait,
@@ -152,23 +153,22 @@
 .Cm13Landscape {
     --page-margin: 5mm;
 }
-.USComicPortrait {
-    --page-margin: 0mm;
+.bloom-page[class*="Device"] {
+    --page-margin: 10px;
 }
 
-.Device16x9Portrait,
-.Device16x9Landscape {
-    --page-margin: 10px;
-    /* Deliberately set both of these, which combines with a special device rule
-     * in basepage.less which sets both left and right margin to auto, and we get
-     * centered as the default for device pages. (To override this, you need to
+.bloom-page[class*="Device"],
+.bloomPlayer-page .bloom-page {
+    /* Deliberately set both of these, which combines with a special device/bloom-player rule
+     * in basePage.less which sets both left and right margin to auto, and we get
+     * centered as the default for device/bloom-player pages. (To override this, you need to
      * set the margin you don't want to something like "deliberately-invalid".)*/
     --pageNumber-right-margin: 0;
     --pageNumber-always-left-margin: 0;
 }
 
-.Device16x9Landscape.numberedPage,
-.Device16x9Portrait.numberedPage {
+.numberedPage[class*="Device"]
+{
     /* These page sizes have small margins, so we need extra height on numbered ones.
     (Note that this disappears if page numbers are turned off, because --pageNumber-show-multiplicand is 0.) */
     --pageNumber-extra-height: 8mm !important;
@@ -196,4 +196,17 @@
     --page-margin-right: 0;
     --page-margin-left: 0;
     --pageNumber-font-size: 0; /* review will this work to hide it? */
+}
+
+/*****************************************************************************
+ * These variables / rules are for xmatter pages.
+ */
+.bloom-frontMatter, .bloom-backMatter {
+    --MarginBetweenXMatterBlocks: 2em;
+    --MarginBetweenXMatterMinorItems: 5px;
+    --DefaultCoverTitle1FontSize: 25pt;
+    --DefaultCoverTitle2FontSize: 12pt;
+    /* Same as our ordinary default, but we have to set it explicitly because of a trick
+       that copies the DefaultCoverTitle1FontSize to the translationGroup. */
+    --DefaultCoverTitle3FontSize: 10pt;
 }

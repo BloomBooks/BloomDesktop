@@ -66,11 +66,16 @@ namespace Bloom.CollectionChoosing
 
         private IEnumerable<string> GetNonStalePaths()
         {
-            foreach (string path in _paths)
+            for (int i = 0; i < _paths.Count; i++)
             {
+                string path = _paths[i];
                 if (RobustFile.Exists(path) || Directory.Exists(path))
                 {
-                    yield return path;
+                    // drop old BloomProblemBook paths so that they don't clutter devs up
+                    // However keep the first one, else we can't do a restart from the Collection Settings
+                    // (and also this may be appreciated).
+                    if (i == 0 || !path.Contains("BL-"))
+                        yield return path;
                 }
             }
         }

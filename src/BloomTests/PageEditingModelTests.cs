@@ -4,9 +4,7 @@ using System.IO;
 using System.Xml;
 using Bloom;
 using Bloom.Edit;
-using Bloom.ImageProcessing;
 using NUnit.Framework;
-using SIL.IO;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
@@ -19,14 +17,8 @@ namespace BloomTests
         private int kSampleImageDimension = 5;
 
         [Test]
-        [Category("RequiresUI")]
         public void ChangePicture_PictureIsFromOutsideProject_PictureCopiedAndAttributeChanged_AndMetadataSaved()
         {
-            var dom = new XmlDocument();
-            dom.LoadXml(
-                "<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>"
-            );
-
             using (var src = new TemporaryFolder("bloom pictures test source"))
             using (var dest = new TemporaryFolder("bloom picture tests dest"))
             {
@@ -35,52 +27,53 @@ namespace BloomTests
                 {
                     original.Metadata.Creator = "Some nice user";
                     original.Metadata.HasChanges = true;
-                    ChangePicture(dest.Path, dom, "two", original);
+                    var result = PageEditingModel.ChangePicture(
+                        dest.Path,
+                        "pretendImageId",
+                        UrlPathString.CreateFromUnencodedString("old.png"),
+                        original
+                    );
                     var pathToNewImage = dest.Combine("new.png");
                     Assert.IsTrue(File.Exists(pathToNewImage));
-                    AssertThatXmlIn
-                        .Dom(dom)
-                        .HasSpecifiedNumberOfMatchesForXpath(
-                            @"//img[@id='two' and @src='new.png']",
-                            1
-                        );
+                    Assert.That(result.src, Is.EqualTo("new.png"));
                     var metadataFromImage = Metadata.FromFile(pathToNewImage);
-                    Assert.That(metadataFromImage.Creator, Is.EqualTo("Some nice user"));
+                    Assert.That(metadataFromImage.Creator, Is.EqualTo(original.Metadata.Creator));
                 }
             }
         }
 
-        /// <summary>
-        /// With this, we test the secenario where someone grabs, say "untitled.png", then does
-        /// so again in a different place. At this time, we will just throw away the first one
-        /// and use the new one, in both places in document. Alternatively, we could take the
-        /// trouble to rename the second one to a safe name so that there are two files.
-        /// </summary>
-        [Test, Ignore("Test needs work")]
-        public void ChangePicture_AlreadyHaveACopyInPublicationFolder_PictureUpdated()
-        {
-            var dom = new XmlDocument();
-            dom.LoadXml(
-                "<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>"
-            );
-
-            using (var src = new TemporaryFolder("bloom pictures test source"))
-            using (var dest = new TemporaryFolder("bloom picture tests dest"))
+        /*
+            /// <summary>
+            /// With this, we test the secenario where someone grabs, say "untitled.png", then does
+            /// so again in a different place. At this time, we will just throw away the first one
+            /// and use the new one, in both places in document. Alternatively, we could take the
+            /// trouble to rename the second one to a safe name so that there are two files.
+            /// </summary>
+            [Test, Ignore("Test needs work")]
+            public void ChangePicture_AlreadyHaveACopyInPublicationFolder_PictureUpdated()
             {
-                var dogImagePath = src.Combine("dog.png");
-                using (var original = MakeSamplePngImage(dogImagePath))
+                var dom = new XmlDocument();
+                dom.LoadXml(
+                    "<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>"
+                );
+
+                using (var src = new TemporaryFolder("bloom pictures test source"))
+                using (var dest = new TemporaryFolder("bloom picture tests dest"))
                 {
-                    var destDogImagePath = dest.Combine("dog.png");
-                    File.WriteAllText(destDogImagePath, "old dog");
-                    ChangePicture(dest.Path, dom, "two", original);
-                    Assert.IsTrue(
-                        RobustImageIO.GetImageFromFile(destDogImagePath).Width
-                            == kSampleImageDimension
-                    );
+                    var dogImagePath = src.Combine("dog.png");
+                    using (var original = MakeSamplePngImage(dogImagePath))
+                    {
+                        var destDogImagePath = dest.Combine("dog.png");
+                        File.WriteAllText(destDogImagePath, "old dog");
+                        ChangePicture(dest.Path, dom, "two", original);
+                        Assert.IsTrue(
+                            RobustImageIO.GetImageFromFile(destDogImagePath).Width
+                                == kSampleImageDimension
+                        );
+                    }
                 }
             }
-        }
-
+    */
         private PalasoImage MakeSamplePngImage(string path)
         {
             var x = new Bitmap(kSampleImageDimension, kSampleImageDimension);
@@ -108,7 +101,6 @@ namespace BloomTests
         /// Some (or maybe all?) browsers can't show tiff, so we might as well convert it
         /// </summary>
         [Test]
-        [Category("RequiresUI")]
         public void ChangePicture_PictureIsTiff_ConvertedToPng()
         {
             var dom = new XmlDocument();
@@ -120,11 +112,14 @@ namespace BloomTests
             using (var dest = new TemporaryFolder("bloom picture tests dest"))
             using (var original = MakeSampleTifImage(src.Combine("new.tif")))
             {
-                ChangePicture(dest.Path, dom, "two", original);
+                var result = PageEditingModel.ChangePicture(
+                    dest.Path,
+                    "pretendImageId",
+                    UrlPathString.CreateFromUnencodedString("old.png"),
+                    original
+                );
                 Assert.IsTrue(File.Exists(dest.Combine("new.png")));
-                AssertThatXmlIn
-                    .Dom(dom)
-                    .HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.png']", 1);
+                Assert.That(result.src, Is.EqualTo("new.png"));
                 using (var converted = Image.FromFile(dest.Combine("new.png")))
                 {
                     Assert.AreEqual(ImageFormat.Png.Guid, converted.RawFormat.Guid);
@@ -135,71 +130,23 @@ namespace BloomTests
         [Test]
         public void ChangePicture_PictureIsJpg_StaysJpg()
         {
-            var dom = new XmlDocument();
-            dom.LoadXml(
-                "<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>"
-            );
-
             using (var src = new TemporaryFolder("bloom pictures test source"))
             using (var dest = new TemporaryFolder("bloom picture tests dest"))
             using (var original = MakeSampleJpegImage(src.Combine("new.jpg")))
             {
-                ChangePicture(dest.Path, dom, "two", original);
+                var result = PageEditingModel.ChangePicture(
+                    dest.Path,
+                    "pretendImageId",
+                    UrlPathString.CreateFromUnencodedString("old.png"),
+                    original
+                );
                 Assert.IsTrue(File.Exists(dest.Combine("new.jpg")));
-                AssertThatXmlIn
-                    .Dom(dom)
-                    .HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.jpg']", 1);
+                Assert.That(result.src, Is.EqualTo("new.jpg"));
                 using (var converted = Image.FromFile(dest.Combine("new.jpg")))
                 {
                     Assert.AreEqual(ImageFormat.Jpeg.Guid, converted.RawFormat.Guid);
                 }
             }
-        }
-
-        [Test]
-        public void ChangePicture_ElementIsDivWithBackgroundImage_Changes()
-        {
-            var dom = new XmlDocument();
-            dom.LoadXml(
-                "<html><body><div id='one' style='background-image:url(\"old.png\")'></div></body></html>"
-            );
-
-            using (var src = new TemporaryFolder("bloom pictures test source"))
-            using (var dest = new TemporaryFolder("bloom picture tests dest"))
-            using (var original = MakeSampleJpegImage(src.Combine("new.jpg")))
-            {
-                ChangePicture(dest.Path, dom, "one", original);
-                Assert.IsTrue(File.Exists(dest.Combine("new.jpg")));
-                AssertThatXmlIn
-                    .Dom(dom)
-                    .HasSpecifiedNumberOfMatchesForXpath(
-                        "//div[@id='one' and @style=\"background-image:url(\'new.jpg\')\"]",
-                        1
-                    );
-            }
-        }
-
-        /* abandoned this feature for now, as I realized we don't need it. But maybe some day.
-        [Test]
-        public void PreserveClassAttributeOfElement_ElementFound_HtmlChanged()
-        {
-            var dom = new XmlDocument();
-            dom.LoadXml("<html><body><div id='parent'><div id='foo' class='old'></div></div></body></html>");
-            var model = new PageEditingModel();
-            model.PreserveClassAttributeOfElement(dom.DocumentElement, "<div id='foo' class='new'></div>");
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//div[@id='foo' and @class='new']", 1);
-        }*/
-
-        public void ChangePicture(
-            string bookFolderPath,
-            XmlDocument dom,
-            string imageId,
-            PalasoImage imageInfo
-        )
-        {
-            var model = new PageEditingModel();
-            var node = (XmlElement)dom.SelectSingleNode("//*[@id='" + imageId + "']");
-            model.ChangePicture(bookFolderPath, node, imageInfo, null);
         }
     }
 }

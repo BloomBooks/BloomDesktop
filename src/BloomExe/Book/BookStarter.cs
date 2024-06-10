@@ -239,7 +239,9 @@ namespace Bloom.Book
             // class to figure out which BookData keys to remove.
             ClearUnneededOriginalContentFromDerivative(storage.Dom, bookData);
 
-            XMatterHelper.RemoveExistingXMatter(storage.Dom);
+            // For a new book, we discard any old xmatter Ids, so the new book will have its own page IDs.
+            // One way this is helpful is caching cover images by page ID, so each book has a different cover page ID.
+            XMatterHelper.RemoveExistingXMatter(storage.Dom, new List<string>());
 
             // BL-4586 Some old books ended up with background-image urls containing XML img tags
             // in the HTML-encoded string. This happened because the coverImage data-book element
@@ -835,6 +837,17 @@ namespace Bloom.Book
                 XmlString.FromXml(dom.GetBookSetting("licenseNotes").GetFirstAlternative()),
                 "*"
             );
+        }
+
+        internal static void UniqueifyIds(XmlElement pageDiv)
+        {
+            // find any img.id attributes and replace them with new ids, because we cannot have two elements with the same id in a book
+            // we might want to do this for other elements as well, but audio file names may be tied to the id, and would have already
+            // been uniquified by the time we get here.
+            foreach (XmlElement element in pageDiv.SafeSelectNodes(".//img[@id]"))
+            {
+                element.SetAttribute("id", Guid.NewGuid().ToString());
+            }
         }
     }
 }

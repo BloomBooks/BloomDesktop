@@ -583,15 +583,28 @@ namespace Bloom.Book
 
         private void MigrateData(DataSet data)
         {
-            //Until late in Bloom 3, we collected the topic in the National language, which is messy because then we would have to know how to
-            //translate from all those languages to all other languages. Now, we just save English, and translate from English to whatever.
-            //By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
-            //an English word as their value for "topic", so there we just switch it over to English.
-            DataSetElementValue topic;
-            if (!data.TextVariables.TryGetValue("topic", out topic))
-                return;
+			MigrateTopic(data);
+		}
+
+		private void MigrateTopic(DataSet data)
+		{
+			DataSetElementValue topic;
+			if (!data.TextVariables.TryGetValue("topic", out topic))
+				return;
+
+			CleanupTopic(topic);
+
+			MigrateSpiritualTopic(data, topic);
+		}
+
+		//Until late in Bloom 3, we collected the topic in the National language, which is messy because then we would have to know how to
+		//translate from all those languages to all other languages. Now, we just save English, and translate from English to whatever.
+		//By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
+		//an English word as their value for "topic", so there we just switch it over to English.
+		private void CleanupTopic(DataSetElementValue topic)
+		{
             var topicStrings = topic.TextAlternatives;
-            if (string.IsNullOrEmpty(topicStrings["en"]) && topicStrings["tpi"] != null)
+			if (string.IsNullOrEmpty(topicStrings["en"]) && topicStrings["tpi"] != null)
             {
                 topicStrings["en"] = topicStrings["tpi"];
 
@@ -621,6 +634,41 @@ namespace Bloom.Book
                     .Cast<XmlElement>()
                     .ForEach(e => e.ParentNode.RemoveChild(e));
             }
+		}
+
+		// In 5.6, we removed the Spiritual topic and added the Bible topic.
+		// We can auto-migrate from Spiritual to Bible if the copyright
+		// (or original copyright) indicates it is appropriate.
+		// Otherwise, we just remove the Spiritual topic.
+		private void MigrateSpiritualTopic(DataSet data, DataSetElementValue topic)
+		{
+			var topicStr = topic.TextAlternatives["en"];
+			if (topicStr != "Spiritual")
+				return;
+
+			string copyrightStr = null;
+			if (data.TextVariables.TryGetValue("copyright", out var copyright))
+			{
+				copyrightStr = copyright.TextAlternatives["*"];
+			}
+			if (string.IsNullOrEmpty(copyrightStr) && data.TextVariables.TryGetValue("originalCopyright", out var originalCopyright))
+			{
+				copyrightStr = originalCopyright.TextAlternatives["*"];
+			}
+			if (!string.IsNullOrEmpty(copyrightStr))
+			{
+				foreach (var bibleCopyright in new[] { "Bible", "SIL", "Global Recordings", "Kartidaya", "Little Zebra", "JMPBK", "WPS" })
+				{
+					if (copyrightStr.Contains(bibleCopyright))
+					{
+						topic.TextAlternatives["en"] = "Bible";
+						return;
+					}
+				}
+			}
+
+			// We didn't find a Bible-related copyright; just remove the Spiritual topic from the book.
+			data.TextVariables.Remove("topic");
         }
 
         private void UpdateCredits(BookInfo info)

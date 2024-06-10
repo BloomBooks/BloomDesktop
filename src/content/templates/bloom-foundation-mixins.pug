@@ -22,6 +22,7 @@ mixin core-stylesheets
 mixin stylesheets(nameOfTemplateSpecificCSS)
 	+core-stylesheets
 	+stylesheet(nameOfTemplateSpecificCSS)
+	+stylesheet('appearance.css')
 
 mixin bookVariable(element, langCode, value)
 	div(data-book=element, lang=langCode)=value

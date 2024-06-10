@@ -19,6 +19,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.TestUtilities;
+using SIL.Xml;
 
 namespace BloomTests.Book
 {
@@ -60,6 +61,119 @@ namespace BloomTests.Book
             _thingsToDispose = null;
 
             _fixtureFolder.Dispose();
+        }
+
+        [Test]
+        public void RepairEmptyPages_VariousEmptyPages_DoesIt()
+        {
+            var testFolder = new TemporaryFolder(_fixtureFolder.Path);
+            var bookPath = testFolder.Combine("theBook.htm");
+            // An empty page, an empty marginBox, page label moved inside marginBox
+            File.WriteAllText(
+                bookPath,
+                @"
+<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body>
+<div class='bloom-page'></div>
+<div class=""A5Portrait bloom-page numberedPage customPage"">
+  <div class=""marginBox"">
+  </div>
+</div>
+<div class=""A5Portrait bloom-page numberedPage customPage"">
+  <div class=""marginBox"">
+      <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just a Picture"">Just a Picture</div>
+      <div class=""pageDescription"" lang=""en""></div>
+  </div>
+</div>
+</body></html>"
+            );
+            var collectionSettings = new CollectionSettings(
+                Path.Combine(testFolder.Path, "test.bloomCollection")
+            );
+            collectionSettings.Language1Tag = "de";
+            collectionSettings.Language2Tag = "fr";
+            var folderPath = ConvertToNetworkPath(testFolder.Path);
+            var storage = new BookStorage(
+                folderPath,
+                _fileLocator,
+                new BookRenamedEvent(),
+                collectionSettings
+            );
+            storage.RepairEmptyPages();
+            var pages = storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]");
+            Assert.That(pages.Count, Is.EqualTo(3));
+            foreach (XmlElement repairedPage in pages)
+            {
+                var tgs = repairedPage.SafeSelectNodes(
+                    ".//div[contains(@class,'bloom-translationGroup')]"
+                );
+                Assert.That(tgs.Count, Is.EqualTo(1));
+                var editables = tgs[0]
+                    .SafeSelectNodes(".//div[contains(@class,'bloom-editable')]")
+                    .Cast<XmlElement>()
+                    .ToList();
+                Assert.That(editables.Count, Is.EqualTo(1));
+                var L1Editable = editables.FirstOrDefault(e => e.GetAttribute("lang") == "de");
+                Assert.That(L1Editable, Is.Not.Null);
+                Assert.That(L1Editable.InnerText, Does.Contain(BookStorage.kRepairedPageMessage));
+            }
+        }
+
+        [Test]
+        public void RepairEmptyPages_VariousGoodPages_LeavesThem()
+        {
+            var testFolder = new TemporaryFolder(_fixtureFolder.Path);
+            var bookPath = testFolder.Combine("theBook.htm");
+            File.WriteAllText(
+                bookPath,
+                // A typical picture-only page (copied from Basic Book)
+                // A very unusual page where the marginBox is nested
+                @"
+<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body>
+    <div class=""A5Portrait bloom-page numberedPage customPage"" data-page=""extra"" id=""adcd48df-e9ab-4a07-afd4-6a24d0398385"">
+      <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just a Picture"">Just a Picture</div>
+      <div class=""pageDescription"" lang=""en""></div>
+      <div class=""marginBox"">
+        <div class=""split-pane-component-inner"">
+          <div class=""bloom-imageContainer""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+          </div>
+        </div>
+      </div>
+    </div>
+	<div class=""A5Portrait bloom-page numberedPage customPage"" data-page=""extra"" id=""adcd48df-e9ab-4a07-afd4-6a24d0398385"">
+	  <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just a Picture"">Just a Picture</div>
+	  <div class=""pageDescription"" lang=""en""></div>
+	  <div>
+		  <div class=""marginBox"">
+		    <div class=""split-pane-component-inner"">
+		      <div class=""bloom-imageContainer""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+		      </div>
+		    </div>
+		  </div>
+	  </div>
+	</div>
+	
+</body></html>"
+            );
+            var collectionSettings = new CollectionSettings(
+                Path.Combine(testFolder.Path, "test.bloomCollection")
+            );
+            collectionSettings.Language1Tag = "de";
+            collectionSettings.Language2Tag = "fr";
+            var folderPath = ConvertToNetworkPath(testFolder.Path);
+            var storage = new BookStorage(
+                folderPath,
+                _fileLocator,
+                new BookRenamedEvent(),
+                collectionSettings
+            );
+            storage.RepairEmptyPages();
+            // None of them got clobbered
+            var pages = storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]");
+            Assert.That(pages.Count, Is.EqualTo(2));
+            Assert.That(
+                storage.Dom.RawDom.InnerText,
+                Does.Not.Contain(BookStorage.kRepairedPageMessage)
+            );
         }
 
         [Test]
@@ -1288,7 +1402,6 @@ namespace BloomTests.Book
                 storage,
                 new Mock<ITemplateFinder>().Object,
                 collectionSettings,
-                new Mock<PageSelection>().Object,
                 new PageListChangedEvent(),
                 new BookRefreshEvent()
             );
@@ -1338,7 +1451,6 @@ namespace BloomTests.Book
                 storage,
                 new Mock<ITemplateFinder>().Object,
                 collectionSettings,
-                new Mock<PageSelection>().Object,
                 new PageListChangedEvent(),
                 new BookRefreshEvent()
             );

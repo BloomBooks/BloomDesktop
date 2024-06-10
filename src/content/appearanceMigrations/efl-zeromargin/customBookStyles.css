@@ -1,0 +1,56 @@
+/* Below you find the settings of this custom Bloom design. This book only has custom designs for "Device 16x9 Landscape". */
+
+/* The below statement controls the space between the image and the title on the frontcover. */
+
+.Device16x9Landscape.frontCover .bloom-imageContainer {
+  order: 1;
+  flex: 1 1 auto;
+  margin-top: 1px !important;
+  margin-bottom: 1px;
+}
+
+.Device16x9Landscape.bloom-frontMatter,
+.Device16x9Landscape.bloom-backMatter {
+    --page-margin: 3mm;
+}
+
+/* The below statements control the size of the marginbox. It holds the text and picture of that page. */
+.Device16x9Landscape.numberedPage:not(.bloom-interactive-page)  {
+  --page-margin: 0mm;
+
+  /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
+  --page-verticalSplit-width: 0; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
+  --page-horizontalSplit-height: 0;
+}
+
+/* The following two statements control the position of the page number   */
+
+.Device16x9Landscape.numberedPage.side-left::after {
+  left: calc(100% / 2 - 87mm);
+}
+
+.Device16x9Landscape.numberedPage.side-right::after {
+  left: calc(100% / 2 - 168mm);
+}
+
+/* The section below controls the pagenumber and the white circle around it.  */
+.Device16x9Landscape.numberedPage {
+    --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+}
+
+.Device16x9Landscape.numberedPage::after {
+  --pageNumber-bottom: 2mm;
+  --pageNumber-top: unset;
+  --pageNumber-font-size: 10pt;
+
+  border-radius: 50%;
+  --pageNumber-background-color: #bcd49e;
+  --pageNumber-background-width: 5mm;
+  --pageNumber-always-left-margin: 2mm;
+  --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
+  --pageNumber-color: black;
+  z-index: 1000;
+  padding: 1mm;
+  text-align: center !important;
+  margin: auto;
+}

@@ -144,45 +144,52 @@ export const BookButton: React.FunctionComponent<{
         {
             label: "Export to Word or LibreOffice...",
             l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
-            command: "bookCommand/exportToWord"
+            command: "bookCommand/exportToWord",
+            hide: () => !props.collection.isEditableCollection
         },
         {
             label: "Export to Spreadsheet...",
             l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
             command: "bookCommand/exportToSpreadsheet",
-            requiresEnterprise: true
+            requiresEnterprise: true,
+            hide: () => !props.collection.isEditableCollection
         },
         {
             label: "Import Content from Spreadsheet...",
             l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
             command: "bookCommand/importSpreadsheetContent",
             requiresSavePermission: true,
-            requiresEnterprise: true
+            requiresEnterprise: true,
+            hide: () => !props.collection.isEditableCollection
         },
-        { label: "-" },
+        { label: "-", hide: () => !props.collection.isEditableCollection },
         {
             label: "Save as Single File (*.bloomSource)...",
             l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
-            command: "bookCommand/saveAsDotBloomSource"
+            command: "bookCommand/saveAsDotBloomSource",
+            hide: () => !props.collection.isEditableCollection
         },
         {
             label: "Save as Bloom Pack (*.BloomPack)",
             l10nId: "CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem",
             command: "bookCommand/makeBloompack",
-            addEllipsis: true
+            addEllipsis: true,
+            hide: () => !props.collection.isEditableCollection
         },
-        { label: "-" },
+        { label: "-", hide: () => !props.collection.isEditableCollection },
         {
             label: "Update Thumbnail",
             l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
             command: "bookCommand/updateThumbnail",
-            requiresSavePermission: true // marginal, but it does change the content of the book folder
+            requiresSavePermission: true, // marginal, but it does change the content of the book folder
+            hide: () => !props.collection.isEditableCollection
         },
         {
             label: "Update Book",
             l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
             command: "bookCommand/updateBook",
-            requiresSavePermission: true // marginal, but it does change the content of the book folder
+            requiresSavePermission: true, // marginal, but it does change the content of the book folder
+            hide: () => !props.collection.isEditableCollection
         }
     ];
 
@@ -193,46 +200,50 @@ export const BookButton: React.FunctionComponent<{
                 l10nId: "CollectionTab.BookMenu.RenameBook",
                 onClick: () => handleRename(),
                 requiresSavePermission: true,
-                addEllipsis: true
+                addEllipsis: true,
+                hide: () => !props.collection.isEditableCollection
             },
             {
                 label: "Duplicate Book",
                 l10nId: "CollectionTab.BookMenu.DuplicateBook",
                 command: "collections/duplicateBook",
-                shouldShow: () => !props.lockedToOneDownloadedBook
+                hide: () =>
+                    !props.collection.isEditableCollection ||
+                    props.lockedToOneDownloadedBook
             },
             {
                 label: "Show in File Explorer",
                 l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
                 command: "bookCommand/openFolderOnDisk",
-                shouldShow: () => !props.collection.isFactoryInstalled // show for all collections (except factory)
+                hide: () => props.collection.isFactoryInstalled // show for all collections except factory
             },
             {
                 label: "Delete Book",
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
                 command: "collections/deleteBook",
                 icon: <DeleteIcon></DeleteIcon>,
-                requiresSavePermission: true, // for consistency, but not used since shouldShow is defined
+                requiresSavePermission: true,
                 addEllipsis: true,
                 // Allowed for the downloaded books collection and the editable collection
-                shouldShow: () =>
-                    props.collection.containsDownloadedBooks ||
-                    props.collection.isEditableCollection
+                hide: () =>
+                    !props.collection.containsDownloadedBooks &&
+                    !props.collection.isEditableCollection
             },
             {
                 label: "Make a book using this source",
                 l10nId: "CollectionTab.MakeBookUsingThisTemplate",
                 command: "app/makeFromSelectedBook",
-                // Allowed for the downloaded books collection and the editable collection (provided the book is checked out, if applicable)
-                shouldShow: () =>
-                    props.collection.isEditableCollection &&
-                    (props.manager.getSelectedBookInfo()?.isTemplate ?? false)
+                // Only show on template books that are in the editable collection (provided the book is checked out, if applicable)
+                hide: () =>
+                    !props.collection.isEditableCollection ||
+                    !props.manager.getSelectedBookInfo()?.isTemplate
             },
-            { label: "-" },
+            { label: "-", hide: () => !props.collection.isEditableCollection },
             {
                 label: "More",
                 l10nId: "CollectionTab.ContextMenu.More",
-                submenu: bookSubMenuItemsSpecs
+                submenu: bookSubMenuItemsSpecs,
+                hide: () => !props.collection.isEditableCollection
             }
         ];
     };

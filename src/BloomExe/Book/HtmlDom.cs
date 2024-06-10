@@ -58,6 +58,13 @@ namespace Bloom.Book
             _dom = (XmlDocument)domToClone.Clone();
         }
 
+        public static HtmlDom FromDoc(XmlDocument docToWrap)
+        {
+            var result = new HtmlDom();
+            result._dom = docToWrap;
+            return result;
+        }
+
         /// <summary>
         /// Make a DOM out of the input
         /// </summary>
@@ -117,6 +124,8 @@ namespace Bloom.Book
         {
             get { return _dom.InnerXml; }
         }
+
+        internal bool PreserveExistingStylesheets;
 
         public HtmlDom Clone()
         {
@@ -487,7 +496,10 @@ namespace Bloom.Book
             foreach (var xmlElement in links)
             {
                 var href = xmlElement.GetStringAttribute("href");
-                if (!BookStorage.CssFilesThatAreObsolete.Contains(href))
+                if (
+                    PreserveExistingStylesheets
+                    || !BookStorage.CssFilesThatAreObsolete.Contains(href)
+                )
                 {
                     headNode.AppendChild(xmlElement);
                 }
@@ -1875,7 +1887,7 @@ namespace Bloom.Book
             // and then see whether it contains bloom-ui surrounded by spaces.
             // However, we need to do this in the edited page before copying to the storage page, since we are about to suck
             // info from the edited page into the dataDiv and we don't want the bloom-ui elements in there either!
-            // Note that EditingView.CleanHtmlAndCopyToPageDom() also removes bits
+            // Note that EditingView.GetCleanCurrentPageFromBrowser() also removes bits
             // of html that are used during editing but are not saved to disk.  (It calls javascript to deal with items inserted
             // by javascript.)
             string[] classNamesToUnion = new string[] { "bloom-ui", "ui-resizable-handle" };
@@ -3206,6 +3218,20 @@ namespace Bloom.Book
         public static bool IsBackMatterPage(XmlElement pageElement)
         {
             return HtmlDom.HasClass(pageElement, "bloom-backMatter");
+        }
+
+        // Here, we specifically mean a page with the calendar layout,
+        // not any page in a calendar book.
+        // For the more general test of being in a calendar book, use Book.IsCalendar().
+        public static bool IsCalendarPage(XmlElement pageElement)
+        {
+            return HasClass(pageElement, "calendarMonthBottom");
+        }
+
+        // See XMatterHelper.InjectFlyleafIfNeeded().
+        public static bool IsFlyleafPage(XmlElement pageElement)
+        {
+            return HasClass(pageElement, "bloom-flyleaf");
         }
 
         // Make the image's alt attr match the image description for the specified language.
