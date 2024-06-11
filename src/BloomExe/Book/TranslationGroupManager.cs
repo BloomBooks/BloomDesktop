@@ -100,6 +100,13 @@ namespace Bloom.Book
             // Borrow the book's XMLDocument so that we can create elements to work with.
             // We don't add them to the document, so it is never changed.
             XmlDocument ownerDocument = currentBook.RawDom.OwnerDocument;
+            if (ownerDocument == null) // the OwnerDocument child can be null if currentBook.RawDom is a document itself
+            {
+                if (currentBook.RawDom is XmlDocument)
+                    ownerDocument = currentBook.RawDom;
+                else
+                    return "";
+            }
 
             // We want to use the usual routines that insert the required bloom-editables and classes into existing translation groups.
             // To make this work we make a temporary translation group
