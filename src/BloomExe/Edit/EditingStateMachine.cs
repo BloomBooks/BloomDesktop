@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
+using L10NSharp;
 using SIL.Code;
+using SIL.Reporting;
 
 // The states that EditingModel can be in
 // Diagram: https://www.tldraw.com/r/WDLCDLfNbcDZW1kSXZVli?v=-441,-130,2813,1522&p=page
@@ -27,8 +29,10 @@ public class EditingStateMachine
 {
     private Func<string /* pageId*/
     > _postSaveAction;
+    private Action _failureAction;
     private State _currentState;
     private string _pageId;
+    private string _pageIdWeFailedToSave;
     private Action<string> _navigate;
 
     // arg is pageId
@@ -214,10 +218,49 @@ public class EditingStateMachine
         }
     }
 
-    private void DoPostSaveAction(string htmlAndUserStyles, Func<string> postSaveAction)
+    private void DoPostSaveAction(
+        string htmlAndUserStyles,
+        Func<string> postSaveAction,
+        Action failureAction = null
+    )
     {
-        if (htmlAndUserStyles != null)
-            _updateBookWithPageContents(_pageId, htmlAndUserStyles);
+        try
+        {
+            if (htmlAndUserStyles.StartsWith("ERROR:"))
+                throw new ApplicationException(htmlAndUserStyles); // This is caught immediately below. We want that error handling for this case.
+
+            if (htmlAndUserStyles != null)
+            {
+                _updateBookWithPageContents(_pageId, htmlAndUserStyles);
+                _pageIdWeFailedToSave = null;
+            }
+            else
+            {
+                // We're in the no page state, and there's nothing to save.
+            }
+        }
+        catch (Exception e)
+        {
+            // This prevents us from reporting the same error over and over again, which would also prevent the user from doing anything, including closing Bloom.
+            if (_pageId != _pageIdWeFailedToSave)
+            {
+                _pageIdWeFailedToSave = _pageId;
+
+                var msg = LocalizationManager.GetString(
+                    "Errors.CouldNotSavePage",
+                    "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
+                );
+                ErrorReport.NotifyUserOfProblem(e, msg);
+
+                failureAction?.Invoke();
+
+                // We must not get stuck in the SavedAndStripped state, so we'll navigate to the page
+                // we were on before the save.
+                ToNavigating(_pageId);
+                return;
+            }
+        }
+
         string pageId = _pageId;
         try
         {
@@ -253,7 +296,11 @@ public class EditingStateMachine
     /// whose ID is returned by postSaveAction. (This is convenient, and also ensures that we don't leave
     /// a page in the stripped state.)
     /// </summary>
-    public bool ToSavePending(Func<string> postSaveAction, bool saveActionHandlesSaveBook = false)
+    public bool ToSavePending(
+        Func<string> postSaveAction,
+        bool saveActionHandlesSaveBook = false,
+        Action failureAction = null
+    )
     {
         try
         {
@@ -261,11 +308,12 @@ public class EditingStateMachine
             {
                 case State.NoPage:
                     _saveActionHandlesSaveBook = saveActionHandlesSaveBook;
-                    DoPostSaveAction(null, postSaveAction);
+                    DoPostSaveAction(null, postSaveAction, failureAction);
                     return true;
                 case State.Editing:
                     _saveActionHandlesSaveBook = saveActionHandlesSaveBook;
                     _postSaveAction = postSaveAction;
+                    _failureAction = failureAction;
                     LogTransition("savePending", null);
                     _currentState = State.SavePending;
                     _requestPageSave(_pageId);
@@ -302,8 +350,9 @@ public class EditingStateMachine
                     Guard.AgainstNull(_postSaveAction, "postSaveAction");
                     LogTransition("saved and stripped", null);
                     _currentState = State.SavedAndStripped;
-                    DoPostSaveAction(htmlAndUserStyles, _postSaveAction);
+                    DoPostSaveAction(htmlAndUserStyles, _postSaveAction, _failureAction);
                     _postSaveAction = null;
+                    _failureAction = null;
                     return true;
                 case State.NoPage:
                 case State.Navigating:

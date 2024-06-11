@@ -216,6 +216,10 @@ namespace Bloom
 
                         _finishedClosingEvent = true;
                         Close();
+                    },
+                    FailureAction = () =>
+                    {
+                        _startedClosingEvent = false;
                     }
                 }
             );
