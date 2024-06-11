@@ -574,5 +574,25 @@ namespace Bloom.Utils
 			}
 			return false;
 		}
+
+		// from https://stackoverflow.com/questions/1365407/c-sharp-code-to-validate-email-address
+		public static bool IsValidEmail(string email)
+		{
+			var trimmedEmail = email.Trim();
+
+			if (trimmedEmail.EndsWith("."))
+			{
+				return false; // suggested by @TK-421
+			}
+			try
+			{
+				var addr = new System.Net.Mail.MailAddress(email);
+				return addr.Address == trimmedEmail;
+			}
+			catch
+			{
+				return false;
+			}
+		}
 	}
 }
