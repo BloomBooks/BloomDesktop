@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 using DesktopAnalytics;
 
 namespace Bloom.Registration
@@ -77,12 +78,15 @@ namespace Bloom.Registration
 
         private void UpdateDisplay()
         {
+            var emailAddressProvided = !string.IsNullOrWhiteSpace(_email.Text);
+
             _okButton.Enabled =
                 !string.IsNullOrWhiteSpace(_firstName.Text)
                 && !string.IsNullOrWhiteSpace(_surname.Text)
                 && !string.IsNullOrWhiteSpace(_organization.Text)
                 && !string.IsNullOrWhiteSpace(_howAreYouUsing.Text)
-                && (!IsEmailRequired || !string.IsNullOrWhiteSpace(_email.Text));
+                && (!IsEmailRequired || emailAddressProvided)
+                && (!emailAddressProvided || MiscUtils.IsValidEmail(_email.Text));
 
             //reset the stuck detection timer
             _userIsStuckDetector.Stop();
@@ -154,7 +158,11 @@ namespace Bloom.Registration
             SIL.Windows.Forms.Registration.Registration.Default.Surname = _surname.Text;
             SIL.Windows.Forms.Registration.Registration.Default.Organization = _organization.Text;
             SIL.Windows.Forms.Registration.Registration.Default.Email =
-                _email.Text == null ? null : _email.Text.Trim();
+                _email.Text == null
+                    ? null
+                    : MiscUtils.IsValidEmail(_email.Text)
+                        ? _email.Text.Trim()
+                        : null;
             SIL.Windows.Forms.Registration.Registration.Default.HowUsing = _howAreYouUsing.Text;
             SIL.Windows.Forms.Registration.Registration.Default.Save();
             try
