@@ -45,8 +45,8 @@ namespace Bloom.web.controllers
                 "editView/pageContent",
                 request =>
                 {
-                    var htmlAndUserStyles = request.RequiredPostString();
-                    View.Model.ReceivePageContent(htmlAndUserStyles);
+                    var pageContentData = request.RequiredPostString();
+                    View.Model.ReceivePageContent(pageContentData);
                     request.PostSucceeded();
                 },
                 true,

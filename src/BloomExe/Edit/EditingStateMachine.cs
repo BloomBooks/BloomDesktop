@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
+using L10NSharp;
 using SIL.Code;
+using SIL.Reporting;
 
 // The states that EditingModel can be in
 // Diagram: https://www.tldraw.com/r/WDLCDLfNbcDZW1kSXZVli?v=-441,-130,2813,1522&p=page
@@ -25,29 +27,28 @@ public enum State
 /// </summary>
 public class EditingStateMachine
 {
-    private Func<string /* pageId*/
-    > _postSaveAction;
+    private Func<string> _postSaveAction; // returns pageId
+    private Action _failureAction;
     private State _currentState;
     private string _pageId;
-    private Action<string> _navigate;
+    private string _pageIdWeFailedToSave;
+    private Action<string> _navigate; // arg is (pageId)
 
-    // arg is pageId
-    private Action<string> _requestPageSave;
+    private Action<string> _requestPageSave; // arg is (pageId)
 
-    // pageId, htmlAndUserStyles
-    private Action<string, string> _updateBookWithPageContents;
+    private Action<string, string> _updateBookWithPageContents; // args are (pageId, pageContentData)
     private Action _saveBook;
     private bool _saveActionHandlesSaveBook;
     private Action _hidePage;
 
-    private Action<bool> _enableStateTransitions;
+    private Action<bool> _enableStateTransitions; // arg is (enabled)
 
     /// <summary>
     /// Set up a state machine. It must be passed six actions:
     /// </summary>
     /// <param name="navigate">Called to start navigation to another (or the same) page. String is page ID.</param>
     /// <param name="requestPageSave">Called to initiate getting the page contents. String is page ID.</param>
-    /// <param name="updateBookWithPageContents">Called with page ID and htmlAndUserStyles data to update the main DOM with current page content</param>
+    /// <param name="updateBookWithPageContents">Called with page ID and pageContentData to update the main DOM with current page content</param>
     /// <param name="saveBook">Called to save the current state of the DOM to disk.</param>
     /// <param name="hidePage">Called to make the transition to NoPage (when edit tab is hidden).</param>
     /// <param name="enableStateTransitions">Called to enable or disabled UI actions that would result in new state transitions.
@@ -214,10 +215,49 @@ public class EditingStateMachine
         }
     }
 
-    private void DoPostSaveAction(string htmlAndUserStyles, Func<string> postSaveAction)
+    private void DoPostSaveAction(
+        string pageContentData,
+        Func<string> postSaveAction,
+        Action failureAction = null
+    )
     {
-        if (htmlAndUserStyles != null)
-            _updateBookWithPageContents(_pageId, htmlAndUserStyles);
+        try
+        {
+            if (pageContentData.StartsWith("ERROR:"))
+                throw new ApplicationException(pageContentData); // This is caught immediately below. We want that error handling for this case.
+
+            if (pageContentData != null)
+            {
+                _updateBookWithPageContents(_pageId, pageContentData);
+                _pageIdWeFailedToSave = null;
+            }
+            else
+            {
+                // We're in the no page state, and there's nothing to save.
+            }
+        }
+        catch (Exception e)
+        {
+            // This prevents us from reporting the same error over and over again, which would also prevent the user from doing anything, including closing Bloom.
+            if (_pageId != _pageIdWeFailedToSave)
+            {
+                _pageIdWeFailedToSave = _pageId;
+
+                var msg = LocalizationManager.GetString(
+                    "Errors.CouldNotSavePage",
+                    "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
+                );
+                ErrorReport.NotifyUserOfProblem(e, msg);
+
+                failureAction?.Invoke();
+
+                // We must not get stuck in the SavedAndStripped state, so we'll navigate to the page
+                // we were on before the save.
+                ToNavigating(_pageId);
+                return;
+            }
+        }
+
         string pageId = _pageId;
         try
         {
@@ -253,7 +293,11 @@ public class EditingStateMachine
     /// whose ID is returned by postSaveAction. (This is convenient, and also ensures that we don't leave
     /// a page in the stripped state.)
     /// </summary>
-    public bool ToSavePending(Func<string> postSaveAction, bool saveActionHandlesSaveBook = false)
+    public bool ToSavePending(
+        Func<string> postSaveAction,
+        bool saveActionHandlesSaveBook = false,
+        Action failureAction = null
+    )
     {
         try
         {
@@ -261,11 +305,12 @@ public class EditingStateMachine
             {
                 case State.NoPage:
                     _saveActionHandlesSaveBook = saveActionHandlesSaveBook;
-                    DoPostSaveAction(null, postSaveAction);
+                    DoPostSaveAction(null, postSaveAction, failureAction);
                     return true;
                 case State.Editing:
                     _saveActionHandlesSaveBook = saveActionHandlesSaveBook;
                     _postSaveAction = postSaveAction;
+                    _failureAction = failureAction;
                     LogTransition("savePending", null);
                     _currentState = State.SavePending;
                     _requestPageSave(_pageId);
@@ -292,7 +337,7 @@ public class EditingStateMachine
     /// Source: API call providing content of current page will request this after saving and before executing pending action
     /// (e.g. changing pages)
     /// </summary>
-    public bool ToSavedAndStripped(string htmlAndUserStyles)
+    public bool ToSavedAndStripped(string pageContentData)
     {
         try
         {
@@ -302,8 +347,9 @@ public class EditingStateMachine
                     Guard.AgainstNull(_postSaveAction, "postSaveAction");
                     LogTransition("saved and stripped", null);
                     _currentState = State.SavedAndStripped;
-                    DoPostSaveAction(htmlAndUserStyles, _postSaveAction);
+                    DoPostSaveAction(pageContentData, _postSaveAction, _failureAction);
                     _postSaveAction = null;
+                    _failureAction = null;
                     return true;
                 case State.NoPage:
                 case State.Navigating:

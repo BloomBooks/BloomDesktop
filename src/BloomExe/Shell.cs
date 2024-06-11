@@ -216,6 +216,13 @@ namespace Bloom
 
                         _finishedClosingEvent = true;
                         Close();
+                    },
+                    FailureAction = () =>
+                    {
+                        // We didn't want a second attempt at saving if the user clicks the close box while we are
+                        // still trying to save after the first click on Close. But if the first attempt fails,
+                        // we don't want to stay in a state where all attempts to close the program are ignored.
+                        _startedClosingEvent = false;
                     }
                 }
             );
