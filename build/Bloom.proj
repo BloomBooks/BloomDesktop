@@ -29,8 +29,7 @@
     <dotChannel>.$(channel)</dotChannel>
     <dotChannel Condition="'$(channel)'==''"></dotChannel>
     <ApplicationName>Bloom$(channel)</ApplicationName>
-    <!-- normally Release, but we want Debug for testing 6.0 Alpha -->
-    <Configuration>Debug</Configuration>
+    <Configuration>Release</Configuration>
     <BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
     <useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
     <useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
@@ -58,8 +57,8 @@
   <UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
   <PropertyGroup>
     <ProfileName>BloomLibrary</ProfileName>
-    <Bucket>bloomlibrary.org</Bucket>
     <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
+    <Bucket>bloomlibrary.org</Bucket>
   </PropertyGroup>
   <Import Project="../.nuget/NuGet.targets" />
   <Target Name="RestoreBuildTasks" DependsOnTargets="CheckPrerequisites">

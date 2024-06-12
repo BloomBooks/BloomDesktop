@@ -18,11 +18,11 @@
 	<iconUrl>https://s3.amazonaws.com/bloomlibrary.org/squirrel/BloomSetup.ico</iconUrl>
   </metadata>
 	<files>
-		<file src="..\..\output\debug\**\*.*" exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\BloomTests.*;remoteDebugging;**\Moq.*;**\nunit.*.dll;**\NUnit3.*.dll" target="lib\net45\"/>
+		<file src="..\..\output\release\**\*.*" exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\BloomTests.*;remoteDebugging;**\Moq.*;**\nunit.*.dll;**\NUnit3.*.dll" target="lib\net45\"/>
 		<!-- Having excluded all pdbs, we do want the main one for the Bloom exe, so we get better stack dumps.
 		This pattern should cover Bloom.pdb or BloomAlpha.pdb or anything similar (but we don't need BloomTests.pdb or BloomChorusPlugin.pdb).-->
-		<file src="..\..\output\debug\Bloom*.pdb" exclude="**\*Tests.*;**\*Chorus*.*" target="lib\net45\"/>
-		<file src="..\..\output\debug\SIL.*.pdb" target="lib\net45\"/> <!-- Palaso library debug symbols -->
+		<file src="..\..\output\release\Bloom*.pdb" exclude="**\*Tests.*;**\*Chorus*.*" target="lib\net45\"/>
+		<file src="..\..\output\release\SIL.*.pdb" target="lib\net45\"/> <!-- Palaso library debug symbols -->
 		<!-- Starting with 3.8 we can switch to svgs for branding, but in 3.7 gecko makes them fuzzy in pdfs, so don't ship the svgs -->
 		<file src="..\..\DistFiles\**\*.*"  target="lib\net45\" exclude="**\branding\*.svg"/>
 		<!-- The *.* above misses some license files which have no ".". So we use this to include them, but exclude *.* to prevent duplicates. -->
