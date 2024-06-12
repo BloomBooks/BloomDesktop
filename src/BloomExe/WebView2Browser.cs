@@ -427,7 +427,11 @@ namespace Bloom
         protected override void UpdateDisplay(string newUrl)
         {
             EnsureBrowserReadyToNavigate();
-            _webview.CoreWebView2.Navigate(newUrl);
+
+            // If we are disposed, this will certainly fail. Likely we are shutting down and just
+            // trying to navigate to a blank page.
+            if (!_webview.IsDisposed && !_webview.Disposing)
+                _webview.CoreWebView2.Navigate(newUrl);
         }
 
         protected override void EnsureBrowserReadyToNavigate()
