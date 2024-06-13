@@ -155,7 +155,8 @@ namespace Bloom.WebLibraryIntegration
 					"Bloom " + Application.ProductVersion + " " + ApplicationUpdateSupport.ChannelName
 				);
 				ProcessExtra.SafeStartInFront("https://bloomlibrary.org/download");
-				return;
+				// Application.Run() hasn't been executed yet, so we can't use Application.Exit().
+				Environment.Exit(1);
 			}
 			using (var progressDialog = new ProgressDialog())
 			{
