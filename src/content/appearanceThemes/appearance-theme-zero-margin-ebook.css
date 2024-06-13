@@ -13,8 +13,8 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     --page-margin: 0mm;
 
     /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
-    --page-verticalSplit-width: 0; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
-    --page-horizontalSplit-height: 0;
+    --page-verticalSplit-width: 0mm; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
+    --page-horizontalSplit-height: 0mm;
 }
 
 /* The section below controls the page number and the white circle around it.  */

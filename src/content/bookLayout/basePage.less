@@ -762,10 +762,10 @@ The buffer would be absent if the marginBox had a border or the page has a backg
 // ----------------------------
 .marginBox {
     // no split at all
-    .split-pane-component-inner > ,
+    & > .split-pane-component-inner ,
     // has been split
-    & > .split-pane > .split-pane-component > .split-pane-component-inner > {
-        .bloom-translationGroup {
+    & > .split-pane > .split-pane-component > .split-pane-component-inner {
+        & > .bloom-translationGroup {
             .mixinLeftTgPadding;
             .mixinRightTgPadding;
             .mixinTopTgPadding;
