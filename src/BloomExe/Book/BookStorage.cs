@@ -2351,8 +2351,16 @@ namespace Bloom.Book
 				// due to BL-2166, we no longer compare times since downloaded books often have
 				// more recent times than the DistFiles versions we want to use
 				// var documentTime = RobustFile.GetLastWriteTimeUtc(documentPath);
-				if (factoryPath == documentPath)
-					return; // no point in trying to update self!
+				if (Platform.IsWindows) // See BL-13577.
+				{
+					if (factoryPath.ToLowerInvariant() == documentPath.ToLowerInvariant())
+						return; // no point in trying to update self!
+				}
+				else
+				{
+					if (factoryPath == documentPath)
+						return; // no point in trying to update self!
+				}
 				if (IsPathReadonly(documentPath))
 				{
 					var msg = $"Could not update one of the support files in this document ({documentPath}) because the destination was marked ReadOnly.";
