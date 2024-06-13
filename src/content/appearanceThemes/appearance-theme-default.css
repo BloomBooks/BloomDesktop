@@ -18,6 +18,8 @@
  * - a default for every property here that applies to every page in every book in every theme
  * - a way to override default property values for certain page sizes
  * - a way to override for certain themes (either for all page sizes or by page-size)
+ * Note: variables here set to zero representing a distance should have some unit, since they may
+ * be used in calc() expressions. For example, 0px, 0mm, 0in are all valid. 0 as a multiplier is fine.
 */
 .bloom-page {
     --topLevel-text-padding: 1em;
@@ -69,7 +71,7 @@
     --page-verticalSplit-width: 3px; /* 3px is matching Bloom 5.6's right margin for vertical split */
     /* padding-top: value in .split-pane.horizontal-percent
      *  .split-pane-component.position-bottom .split-pane-component-inner > div */
-    --page-horizontalSplit-height: 0;
+    --page-horizontalSplit-height: 0px;
     /* gap: value for .bloom-translationGroup */
     /* When Bloom is configured to show each block of text in more than one language, this controls
        the space between the different language sections of each block. */
@@ -163,8 +165,8 @@
      * in basePage.less which sets both left and right margin to auto, and we get
      * centered as the default for device/bloom-player pages. (To override this, you need to
      * set the margin you don't want to something like "deliberately-invalid".)*/
-    --pageNumber-right-margin: 0;
-    --pageNumber-always-left-margin: 0;
+    --pageNumber-right-margin: 0px;
+    --pageNumber-always-left-margin: 0px;
 }
 
 .numberedPage[class*="Device"]
@@ -191,11 +193,11 @@
  * and thus the last one wins. */
 .no-margin-page.no-margin-page,
 .comic.comic {
-    --page-margin-top: 0;
-    --page-margin-bottom: 0;
-    --page-margin-right: 0;
-    --page-margin-left: 0;
-    --pageNumber-font-size: 0; /* review will this work to hide it? */
+    --page-margin-top: 0px;
+    --page-margin-bottom: 0px;
+    --page-margin-right: 0px;
+    --page-margin-left: 0px;
+    --pageNumber-font-size: 0px; /* review will this work to hide it? */
 }
 
 /*****************************************************************************
