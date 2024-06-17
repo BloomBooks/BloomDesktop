@@ -2,13 +2,14 @@
 
 .comic {
     &::after {
-        /* Hide page number */
+        // Hide page number in legacy mode.
         display: none;
     }
     & .marginBox img {
         max-width: unset; // device.less sets this, presumably expecting a margin
     }
     .marginBox {
+        // Set zero margins in legacy mode.
         left: 0 !important;
         top: 0 !important;
         height: 100% !important;
