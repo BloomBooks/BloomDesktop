@@ -223,11 +223,10 @@ public class EditingStateMachine
     {
         try
         {
-            if (pageContentData.StartsWith("ERROR:"))
-                throw new ApplicationException(pageContentData); // This is caught immediately below. We want that error handling for this case.
-
             if (pageContentData != null)
             {
+                if (pageContentData.StartsWith("ERROR:"))
+                    throw new ApplicationException(pageContentData); // This is caught immediately below. We want that error handling for this case.
                 _updateBookWithPageContents(_pageId, pageContentData);
                 _pageIdWeFailedToSave = null;
             }
