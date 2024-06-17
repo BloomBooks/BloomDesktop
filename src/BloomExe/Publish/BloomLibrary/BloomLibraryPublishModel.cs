@@ -462,6 +462,7 @@ namespace Bloom.Publish.BloomLibrary
             {
                 var langCode = kvp.Key;
                 var isRequiredLang = book.IsRequiredLanguage(langCode);
+                var isCollectionLang = book.IsCollectionLanguage(langCode);
 
                 // First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
                 if (
@@ -484,7 +485,7 @@ namespace Bloom.Publish.BloomLibrary
 
                 // Nope, either no value exists or the value was some kind of default value.
                 // Compute (or recompute) what the value should default to.
-                bool shouldBeChecked = kvp.Value || isRequiredLang;
+                bool shouldBeChecked = (kvp.Value && isCollectionLang) || isRequiredLang;
 
                 var newInitialValue = shouldBeChecked
                     ? InclusionSetting.IncludeByDefault
