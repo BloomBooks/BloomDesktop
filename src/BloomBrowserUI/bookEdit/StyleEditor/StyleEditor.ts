@@ -77,14 +77,12 @@ class FormattingStyle {
     }
 
     public hasStyleId(name: string): boolean {
-        return this.styleId.toLowerCase() == name.toLowerCase();
+        return this.styleId.toLowerCase() === name.toLowerCase();
     }
 
     public getLocalizedName(): string {
         // null-coalesce operator would be handy here.
-        return this.localizedName
-            ? this.englishDisplayName
-            : this.localizedName;
+        return this.localizedName || this.englishDisplayName;
     }
 }
 
