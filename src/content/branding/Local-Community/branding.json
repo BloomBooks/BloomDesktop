@@ -9,7 +9,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<p>This book was created with Bloom Enterprise features freely enabled in order to support projects funded by the local community.</p><img class='branding' src='Bloom Against Light HD.png'/>",
+            "content": "<img class='branding' src='back-cover-local.svg'/>",
             "condition": "always"
         }
     ]

@@ -17,11 +17,12 @@
         <target xml:lang="ar" state="final">طباعة كتاب كبير</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
+      <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="ar" state="final">للتمكين من إدارة الأمور على نحو أفضل، تم تعيين هذا النموذج على ورقة A4 أفقية وخطوط كبيرة.
+        <target xml:lang="ar" state="translated">للتمكين من إدارة الأمور على نحو أفضل، تم تعيين هذا النموذج على ورقة A4 أفقية وخطوط كبيرة.
 يمكنك بسهولة تأليف كتب بحجم A3 (ضعف الحجم).
 لن يلزمك سوى إضافة A4 PDF إلى طابعة وطلب تكبيرها إلى A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>

@@ -199,7 +199,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                 <HelpLink
                     l10nKey="Common.WhatCausedThisProblem"
                     l10nComment="This is usually a link to an explanatory document."
-                    helpId="User_Interface/Dialog_boxes/Are_these_the_same_book_dialog_box.htm"
+                    helpId="User_Interface/Dialog_boxes/Is_this_an_update_of_your_existing_book.htm"
                     style={whatCausedThisStyles}
                 >
                     What caused this problem?

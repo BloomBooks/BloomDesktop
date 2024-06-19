@@ -2739,6 +2739,20 @@ namespace Bloom.Book
 			return HtmlDom.HasClass(pageElement, "bloom-backMatter");
 		}
 
+		// Here, we specifically mean a page with the calendar layout,
+		// not any page in a calendar book.
+		// For the more general test of being in a calendar book, use Book.IsCalendar().
+		public static bool IsCalendarPage(XmlElement pageElement)
+		{
+			return HasClass(pageElement, "calendarMonthBottom");
+		}
+
+		// See XMatterHelper.InjectFlyleafIfNeeded().
+		public static bool IsFlyleafPage(XmlElement pageElement)
+		{
+			return HasClass(pageElement, "bloom-flyleaf");
+		}
+
 		// Make the image's alt attr match the image description for the specified language.
 		// If we don't have one, make the alt attr exactly an empty string (except branding images may be allowed to have custom alt text).
 		private static void SetImageAltAttrFromDescription(XmlElement img, string descriptionLang)

@@ -628,6 +628,7 @@ div.bloom-templateMode {
     .bloom-editable.overflow {
         overflow-y: scroll;
         display: block;
+        height: inherit; // BL-13374. This is needed to make the scroll bar work properly.
 
         // the language label at the bottom gets messed up once scrolling is on, so anchor it to the top
         &:after {

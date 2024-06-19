@@ -73,6 +73,17 @@ namespace Bloom
 					// hard exit
 					Environment.Exit(1);
 				}
+				// Prevent the browser from opening external links in iframes by intercepting FrameNavigationStarting events.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-13316.  Old versions of Bloom would open a new browser
+				// window for external links the same as this does.
+				_webview.CoreWebView2.FrameNavigationStarting += (object sender, CoreWebView2NavigationStartingEventArgs args) =>
+				{
+					if (args.Uri.StartsWith("http") && !args.Uri.StartsWith("http://localhost"))
+					{
+						args.Cancel = true;
+						ToPalaso.ProcessExtra.SafeStartInFront(args.Uri);
+					}
+				};
 				_webview.CoreWebView2.FrameNavigationCompleted += (o, eventArgs) =>
 				{
 					RaiseDocumentCompleted(o, eventArgs);

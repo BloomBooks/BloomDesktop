@@ -207,7 +207,7 @@ namespace BloomTests.Publish
 		{
 			var htmlTemplate = @"<html>
 									<body>
-										<div class='bloom-page A5Portrait' ' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08
+										<div class='bloom-page A5Portrait' ' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'
 											<div class='marginBox'>
 											<div class='bloom-translationGroup' data-default-languages='N1' id='test1'>
 

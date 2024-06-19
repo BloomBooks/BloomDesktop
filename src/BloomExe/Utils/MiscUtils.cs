@@ -309,10 +309,10 @@ namespace Bloom.Utils
 			// of these create only the one (.bloomCollection) file in the temporary folder.
 			var tempDir = Path.GetTempPath();
 			var folder = Path.GetDirectoryName(path);
-			if (SIL.PlatformUtilities.Platform.IsWindows)
+			if (Platform.IsWindows)
 			{
 				if (folder.StartsWith(tempDir, StringComparison.InvariantCulture) &&
-						(folder.Contains(@".zip\") ||   // Windows Explorer
+						(folder.Contains(@".zip") ||   // Windows Explorer
 						folder.Contains(@"\7z")))       // 7-Zip
 				{
 					return IsSingleFileInFolder(folder);
@@ -573,6 +573,26 @@ namespace Bloom.Utils
 					return true;
 			}
 			return false;
+		}
+
+		// from https://stackoverflow.com/questions/1365407/c-sharp-code-to-validate-email-address
+		public static bool IsValidEmail(string email)
+		{
+			var trimmedEmail = email.Trim();
+
+			if (trimmedEmail.EndsWith("."))
+			{
+				return false; // suggested by @TK-421
+			}
+			try
+			{
+				var addr = new System.Net.Mail.MailAddress(email);
+				return addr.Address == trimmedEmail;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 	}
 }
