@@ -75,52 +75,52 @@ cd -
 # *** Results ***
 # build: Bloom-Default-Continuous (bt222)
 # project: Bloom
-# URL: https://build.palaso.org/viewType.html?buildTypeId=bt222
+# URL: https://build.palaso.org/buildConfiguration/bt222?mode=builds
 # VCS: https://github.com/BloomBooks/BloomDesktop.git [refs/heads/master]
 # dependencies:
 # [0] build: bloom-win32-static-dependencies (bt396)
 #     project: Bloom
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=bt396
+#     URL: https://build.palaso.org/buildConfiguration/bt396?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "gm.zip!**"=>"lib", "RedistributableDlls.zip!**"=>"lib/RedistributableDlls", "meddle.exe"=>"lib/dotnet"}
 # [1] build: PortableDevices (from PodcastUtilities) (Bloom_PortableDevicesFromPodcastUtitlies)
 #     project: Bloom
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_PortableDevicesFromPodcastUtitlies
+#     URL: https://build.palaso.org/buildConfiguration/Bloom_PortableDevicesFromPodcastUtitlies?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PodcastUtilities.PortableDevices.dll"=>"lib/dotnet", "PodcastUtilities.PortableDevices.pdb"=>"lib/dotnet", "Interop.PortableDeviceApiLib.dll"=>"lib/dotnet", "Interop.PortableDeviceTypesLib.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/PodcastUtilities.git [refs/heads/master]
 # [2] build: Squirrel (Bloom_Squirrel)
 #     project: Bloom
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_Squirrel
+#     URL: https://build.palaso.org/buildConfiguration/Bloom_Squirrel?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/Squirrel.Windows.git [refs/heads/master]
-# [3] build: Bloom Help 5.6 (Bloom_Help_BloomHelp56)
+# [3] build: Bloom Help 6.1 (Bloom_Help_BloomHelp61)
 #     project: Help
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp56
+#     URL: https://build.palaso.org/buildConfiguration/Bloom_Help_BloomHelp61?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
 # [4] build: PdfDroplet-Win-master-Continuous (bt54)
 #     project: PdfDroplet
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=bt54
+#     URL: https://build.palaso.org/buildConfiguration/bt54?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
 # [5] build: TidyManaged-master-win32-continuous (bt349)
 #     project: TidyManaged
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=bt349
+#     URL: https://build.palaso.org/buildConfiguration/bt349?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
 # [6] build: Windows master continuous (XliffForHtml_WindowsMasterContinuous)
 #     project: XliffForHtml
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=XliffForHtml_WindowsMasterContinuous
+#     URL: https://build.palaso.org/buildConfiguration/XliffForHtml_WindowsMasterContinuous?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"HtmlXliff.*"=>"lib/dotnet", "HtmlAgilityPack.*"=>"lib/dotnet"}
@@ -187,7 +187,7 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/signtool.exe ../lib/dotnet/signtool.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/squirrel.windows.props ../lib/dotnet/squirrel.windows.props
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/update.com ../lib/dotnet/update.com
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp56/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp61/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
