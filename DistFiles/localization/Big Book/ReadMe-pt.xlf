@@ -17,12 +17,14 @@
         <target xml:lang="pt-PT" state="final">Imprimir um Livro Grande</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4">
+      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="pt-PT" state="translated">Para tornar as coisas mais simples, este modelo é definido em A4 horizontal, com fontes grandes. Você pode facilmente produzir livros que são A3 (duas vezes mais grande). Só leve seu PDF A4 para uma impressora e pedir-lhes para ampliá-lo para A3.</target>
+        <target xml:lang="pt-PT" state="final">Para ficar mais simples, este modelo está configurado para imprimir no tamanho A4, orientação paisagem, com fontes grandes. 
+A orientação retrato no tamanho A4 é também possível.
+É simples produzir livros que são do tamanho A3 (duas vezes maior). Simplesmente levar o seu PDF A4 para uma gráfica ou LAN house e peça que amplie para tamanho A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
@@ -39,7 +41,7 @@ Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="pt-PT" state="final">Esta versão inclui uma página de "Instruções para professores" que já está preenchida, em inglês. Se você gostaria de ter instruções em um idioma diferente, você pode excluir esse texto e digite seu próprio. Se você nos enviar esse texto, nós pode incluí-lo em uma versão futura do modelo.</target>
+        <target xml:lang="pt-PT" state="final">Esta versão inclui uma página de "Instruções para professores" que já está preenchida, em inglês. Caso queira as instruções num idioma diferente, pode excluir o inglês e digitar no seu idioma. Se você nos enviar esse texto, podemos incluí-lo numa versão futura do modelo.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
     </body>
