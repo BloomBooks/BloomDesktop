@@ -318,7 +318,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <None Include="Resources\PackageFlat.png" />
     <None Include="Resources\placeHolderBookThumbnail.png" />
     <None Include="Resources\upload.png" />
-    <None Include="Resources\SIL_Logo_2014Small1.png" />
     <None Include="Resources\duplicatePage32x32.png" />
     <None Include="Resources\duplicatePageDisabled32x32.png" />
     <None Include="Resources\videos.png" />
@@ -339,7 +338,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <None Include="Resources\TC Button Warning.png" />
     <None Include="Resources\TC Button Updates Available.png" />
     <None Include="Resources\Team32x32.png" />
-    <None Include="Resources\LogoForSplashScreen.png" />
     <None Include="Resources\help16x16Darker.png" />
     <None Include="Resources\sad16x16.png" />
     <None Include="Resources\weblink.png" />
