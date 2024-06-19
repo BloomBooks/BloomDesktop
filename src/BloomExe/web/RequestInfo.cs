@@ -305,7 +305,7 @@ namespace Bloom.Api
         }
 
         readonly HashSet<string> _cacheableExtensions = new HashSet<string>(
-            new[] { ".js", ".css", ".jpg", ".jpeg", ".svg", ".png" }
+            new[] { ".js", ".css", ".jpg", ".jpeg", ".svg", ".png", ".woff2" }
         );
 
         private bool ShouldCache(string path, string originalPath)
