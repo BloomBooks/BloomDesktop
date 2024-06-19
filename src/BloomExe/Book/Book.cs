@@ -5556,6 +5556,11 @@ namespace Bloom.Book
             return GetRequiredLanguages().Contains(langCode);
         }
 
+        public bool IsCollectionLanguage(string langCode)
+        {
+            return CollectionSettings.GetAllLanguageTags().Contains(langCode);
+        }
+
         private IEnumerable<string> GetRequiredLanguages()
         {
             return new[] { BookData.Language1.Tag, Language2Tag, Language3Tag }.Where(
