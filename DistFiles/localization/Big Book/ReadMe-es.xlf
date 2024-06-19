@@ -17,11 +17,12 @@
         <target xml:lang="es-ES" state="final">Imprimiendo un Libro Grande</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
+      <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="es-ES" state="final">Para hacer las cosas más manejables, esta plantilla usa el tamaño A4 Horizontal, con fuentes grandes. Fácilmente puede producir libros que son A3 (dos veces más grande).
+        <target xml:lang="es-ES" state="translated">Para hacer las cosas más manejables, esta plantilla usa el tamaño A4 Horizontal, con fuentes grandes. Fácilmente puede producir libros que son A3 (dos veces más grande).
 Sólo lleve su PDF tamaño A4 a una imprenta y pida que lo agranden a uno de tamaño A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>

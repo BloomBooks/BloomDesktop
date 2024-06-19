@@ -17,11 +17,12 @@
         <target xml:lang="zh-CN" state="final">打印大书</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
+      <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="zh-CN" state="final">为了便于操作，此模板设置为A4横向且用大的字体。
+        <target xml:lang="zh-CN" state="translated">为了便于操作，此模板设置为A4横向且用大的字体。
 可以很容易地把书做成A3（两倍大）尺寸。
 只需把A4尺寸的 PDF带到打印店，让他们放大到A3尺寸。</target>
         <note>ID: bigbook.printing.enlargeA4</note>

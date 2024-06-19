@@ -7,14 +7,14 @@
         <target xml:lang="pt-PT" state="final">A instalar... </target>
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
       </trans-unit>
-      <trans-unit id="Errors.CorruptImageFile">
+      <trans-unit id="Errors.CorruptImageFile" approved="yes">
         <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
-        <target xml:lang="pt-PT" state="needs-translation">The image file {0} is corrupt and needs to be replaced. ({1})</target>
+        <target xml:lang="pt-PT" state="final">O arquivo de imagem {0} está corrompido e precisa ser substituído. ({1})</target>
         <note>ID: Errors.CorruptImageFile</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom could not reach the server to get the list of bookshelves.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não pode acessar o servidor para obter a lista de estantes.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
@@ -37,9 +37,9 @@
         <target xml:lang="pt-PT" state="final">Resultado da conversão da ortografia:</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
       </trans-unit>
-      <trans-unit id="Errors.CannotConnectToBloomServer.2">
+      <trans-unit id="Errors.CannotConnectToBloomServer.2" approved="yes">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Bloom era incapaz de começar seu próprio ouvinte HTTP que usa para comunicar com seu navegador Firefox incorporado. Se isso acontecer mesmo se você apenas ha reiniciado o computador, deve pedir que alguém investiga se você tem instalado um produto de firewall agressivo. É possível que o produto de firewall agressivo devería ser desinstalado antes de que você pode usar Bloom.</target>
         <note>ID: Errors.CannotConnectToBloomServer.2</note>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InZipFileMessage" approved="yes">
@@ -47,14 +47,19 @@
         <target xml:lang="pt-PT" state="final">Parece que está a tentar abrir uma coleção Bloom de dentro de um arquivo ZIP. Primeiro, precisa descompactar o arquivo ZIP e, em seguida, abrir a coleção.</target>
         <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
       </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InvalidFileTypeMessage" approved="yes">
+        <source xml:lang="en">Please select a .bloomCollection file.</source>
+        <target xml:lang="pt-PT" state="final">Por favor, selecione um arquivo .bloomColletion.</target>
+        <note>ID: OpenCreateCloneControl.InvalidFileTypeMessage</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bookshelf Color</source>
         <target xml:lang="pt-PT" state="final">Cor da estante</target>
         <note>ID: PublishTab.Android.BulkBookshelfColor</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo" approved="yes">
-        <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
-        <target xml:lang="pt-PT" state="final">Atualmente, Bloom não suporta incluir áudio de vídeos de linguagem de gesto na saída de vídeo.</target>
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+        <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
+        <target xml:lang="pt-PT" state="translated">Atualmente, Bloom não suporta incluir áudio de vídeos de linguagem de gesto na saída de vídeo.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
@@ -62,9 +67,9 @@
         <target xml:lang="pt-PT" state="final">Bloom precisa verificar seu e-mail, mas nossa tentativa de reenviar a solicitação falhou, possivelmente porque você fez muitos solicitações muito próximas uma da outra. Por favor, verifique seu e-mail e se você não conseguir encontrar a mensagem, tente novamente mais tarde.</target>
         <note>ID: PublishTab.Upload.CheckEmailFailed</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BookshelfError">
+      <trans-unit id="PublishTab.Upload.BookshelfError" approved="yes">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</source>
-        <target xml:lang="pt-PT" state="needs-translation">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</target>
+        <target xml:lang="pt-PT" state="final">A estante da coleção não constava da lista de estantes para esta assinatura empresarial.</target>
         <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community" approved="yes">
@@ -186,14 +191,14 @@
         <target xml:lang="pt-PT" state="final">A pasta {0} já existe e parece que pode ser uma pasta de livros Bloom!</target>
         <note>ID: Spreadsheet.OverwriteBook</note>
       </trans-unit>
-      <trans-unit id="Spreadsheet.TroubleCopying">
+      <trans-unit id="Spreadsheet.TroubleCopying" approved="yes">
         <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: {1}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom had trouble copying the file {0} to the video folder: {1}</target>
+        <target xml:lang="pt-PT" state="final">Bloom teve problemas para copiar o arquivo {0} para a pasta de vídeo: {1}</target>
         <note>ID: Spreadsheet.TroubleCopying</note>
       </trans-unit>
-      <trans-unit id="Spreadsheet.TroubleCopyingFolder">
+      <trans-unit id="Spreadsheet.TroubleCopyingFolder" approved="yes">
         <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder: {1}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom had trouble copying the folder {0} to the activities folder: {1}</target>
+        <target xml:lang="pt-PT" state="final">Bloom teve problemas para copiar o arquivo {0} para a pasta de vídeo: {1}</target>
         <note>ID: Spreadsheet.TroubleCopyingFolder</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.WriteFailed" approved="yes">
@@ -205,15 +210,55 @@
         <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
         <target xml:lang="pt-PT" state="final">Coloque a resposta correta neste botão. Bloom irá randomizar a ordem mais tarde.</target>
       </trans-unit>
-      <trans-unit id="Download.PleaseSendLogFile">
+      <trans-unit id="Download.PleaseSendLogFile" approved="yes">
         <source xml:lang="en">Please also send us the latest log file found at {0}.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Please also send us the latest log file found at {0}.</target>
+        <target xml:lang="pt-PT" state="final">Por favor, também nos envie o último arquivo de log encontrado em {0}.</target>
         <note>ID: Download.PleaseSendLogFile</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem" approved="yes">
         <source xml:lang="en">Bloom was not able to access a microphone.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom was not able to access a microphone.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não conseguiu acessar um microfone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveProblem" approved="yes">
+        <source xml:lang="en">OneDrive Problem</source>
+        <target xml:lang="pt-PT" state="final">Problema no OneDrive</target>
+        <note>ID: ReportProblemDialog.OneDriveProblem</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveErrorMessage" approved="yes">
+        <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
+        <target xml:lang="pt-PT" state="final">Há um problema com o seu Microsoft OneDrive que está impedindo o acesso do Bloom aos arquivos.</target>
+        <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
+      </trans-unit>
+      <trans-unit id="ProblemReport.PageStructureProblem" approved="yes">
+        <source xml:lang="en">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</source>
+        <target xml:lang="pt-PT" state="final">Bloom cometeu um erro nesta página. Por favor, reporte isto para nós, e verifique se nada foi perdido.</target>
+        <note>ID: ProblemReport.PageStructureProblem</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AdministratorEmails" approved="yes">
+        <source xml:lang="en">Administrator Emails:</source>
+        <target xml:lang="pt-PT" state="final">E-mail do administrador:</target>
+        <note>ID: TeamCollection.AdministratorEmails</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.InvalidAdminEmails" approved="yes">
+        <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
+        <target xml:lang="pt-PT" state="final">Por favor, insira um ou mais endereços de e-mail do administrador válidos, separados por vírgulas ou espaços.</target>
+        <note>ID: TeamCollection.InvalidAdminEmails</note>
+      </trans-unit>
+      <trans-unit id="Common.Preparing" approved="yes">
+        <source xml:lang="en">Preparing...</source>
+        <target xml:lang="pt-PT" state="final">A preparar...</target>
+        <note>Common.Preparing</note>
+      </trans-unit>
+      <trans-unit id="Common.Finishing" approved="yes">
+        <source xml:lang="en">Finishing...</source>
+        <target xml:lang="pt-PT" state="final">Finalizando...</target>
+        <note>Common.Finishing</note>
+      </trans-unit>
+      <trans-unit id="Common.Finished" approved="yes">
+        <source xml:lang="en">Finished</source>
+        <target xml:lang="pt-PT" state="final">Concluído</target>
+        <note>Common.Finished</note>
       </trans-unit>
     </body>
   </file>
