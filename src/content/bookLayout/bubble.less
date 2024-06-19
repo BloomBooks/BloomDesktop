@@ -254,6 +254,9 @@
             // the default for align-content is stretch, but that overrides our Paragraph Spacing setting and can create big gaps between the flex-items (paragraphs).
             align-content: center;
 
+            // This is set 100% elsewhere, but that doesn't work for bubbles with padding.  (BL-13604)
+            width: auto;
+
             // Paragraphs are the expected flex-items
             p {
                 // Set to 100% so that two paragraphs can't share a line in the flex layout
