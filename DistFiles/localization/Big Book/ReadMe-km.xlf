@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="bigbook.title">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="km" state="needs-translation">About Big Books</target>
+        <target xml:lang="km" state="translated">អំពី​សៀវភៅ​ធំ</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="km" state="needs-translation">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</target>
+        <target xml:lang="km" state="translated">សៀវភៅ​ធំ​មាន​តួនាទី​សម្រាប់​កាន់​បង្ហាញ​ក្នុង​ថ្នាក់រៀន​ឲ្យ​សិស្ស​មើលឃើញ​ច្បាស់។ សម្រាប់​ពត៌មាន​បន្ថែម​សូម​ចូល​ទៅ​មើល​ក្នុង​ <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF ពី Scholastic</g>។</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing">
@@ -19,9 +19,11 @@
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
         <target xml:lang="km" state="needs-translation">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>

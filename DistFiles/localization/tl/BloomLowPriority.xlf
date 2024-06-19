@@ -47,14 +47,19 @@
         <target xml:lang="tl" state="needs-translation">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</target>
         <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
       </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InvalidFileTypeMessage">
+        <source xml:lang="en">Please select a .bloomCollection file.</source>
+        <target xml:lang="tl" state="needs-translation">Please select a .bloomCollection file.</target>
+        <note>ID: OpenCreateCloneControl.InvalidFileTypeMessage</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true">
         <source xml:lang="en">Bookshelf Color</source>
         <target xml:lang="tl" state="needs-translation">Bookshelf Color</target>
         <note>ID: PublishTab.Android.BulkBookshelfColor</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
-        <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
-        <target xml:lang="tl" state="needs-translation">Currently, Bloom does not support including audio from Sign Language videos in video output.</target>
+        <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
+        <target xml:lang="tl" state="needs-translation">Currently, Bloom does not support including audio from embedded videos in video output.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed">
@@ -214,6 +219,46 @@
         <source xml:lang="en">Bloom was not able to access a microphone.</source>
         <target xml:lang="tl" state="needs-translation">Bloom was not able to access a microphone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveProblem">
+        <source xml:lang="en">OneDrive Problem</source>
+        <target xml:lang="tl" state="needs-translation">OneDrive Problem</target>
+        <note>ID: ReportProblemDialog.OneDriveProblem</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveErrorMessage">
+        <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
+        <target xml:lang="tl" state="needs-translation">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</target>
+        <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
+      </trans-unit>
+      <trans-unit id="ProblemReport.PageStructureProblem">
+        <source xml:lang="en">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</source>
+        <target xml:lang="tl" state="needs-translation">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</target>
+        <note>ID: ProblemReport.PageStructureProblem</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AdministratorEmails">
+        <source xml:lang="en">Administrator Emails:</source>
+        <target xml:lang="tl" state="needs-translation">Administrator Emails:</target>
+        <note>ID: TeamCollection.AdministratorEmails</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.InvalidAdminEmails">
+        <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
+        <target xml:lang="tl" state="needs-translation">Please enter one or more valid administrator email addresses, separated by commas or spaces.</target>
+        <note>ID: TeamCollection.InvalidAdminEmails</note>
+      </trans-unit>
+      <trans-unit id="Common.Preparing">
+        <source xml:lang="en">Preparing...</source>
+        <target xml:lang="tl" state="needs-translation">Preparing...</target>
+        <note>Common.Preparing</note>
+      </trans-unit>
+      <trans-unit id="Common.Finishing">
+        <source xml:lang="en">Finishing...</source>
+        <target xml:lang="tl" state="needs-translation">Finishing...</target>
+        <note>Common.Finishing</note>
+      </trans-unit>
+      <trans-unit id="Common.Finished">
+        <source xml:lang="en">Finished</source>
+        <target xml:lang="tl" state="needs-translation">Finished</target>
+        <note>Common.Finished</note>
       </trans-unit>
     </body>
   </file>

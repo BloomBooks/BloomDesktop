@@ -17,11 +17,12 @@
         <target xml:lang="pbu" state="final">د غټ کتاب چاپول</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
+      <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="pbu" state="final">د موادو/شیانو د ښه مدیریت لپاره دا نمونه د ‏A4‏ پاڼو په اوږدو کې په غټو حروفو چاپېږي.
+        <target xml:lang="pbu" state="translated">د موادو/شیانو د ښه مدیریت لپاره دا نمونه د ‏A4‏ پاڼو په اوږدو کې په غټو حروفو چاپېږي.
 تاسو په آسانۍ سره د ‏A3‏ کتابونه چاپولی شئ (دوه چنده غټ).
 یواځې د خپل ‏A4‏ ‏PDF‏ یو چاپیندي (پرنټر) ته ویسئ او ورڅخه وغواړئ چې A3 ته یې غټ کړي.</target>
         <note>ID: bigbook.printing.enlargeA4</note>

@@ -19,6 +19,7 @@
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
         <target xml:lang="th" state="translated">เพื่อจัดการสิ่งต่างๆ ได้ง่ายขึ้นเทมเพลตนี้ตั้งไว้ A4 แนวนอน ด้วยฟอนต์ขนาดใหญ่ คุณสามารถผลิตหนังสือ A3 (ขนาดใหญ่สองเท่า) อย่างง่ายดายโดยนำไฟล์ PDF ขนาด A4 ไปที่ร้านพิมพ์และขอให้ขยายเป็น A3</target>

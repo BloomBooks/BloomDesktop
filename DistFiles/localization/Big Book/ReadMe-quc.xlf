@@ -17,11 +17,12 @@
         <target xml:lang="quc" state="final">Katajin katz'ajtz'ib'ax jun nim wuj</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
+      <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="quc" state="final">Rech kb’an kowinem chech ri sutaq, we uxe’ raqanib’al ukojik pa A4 
+        <target xml:lang="quc" state="translated">Rech kb’an kowinem chech ri sutaq, we uxe’ raqanib’al ukojik pa A4 
 Q’e’lik, ruk' nima’q taq uwach tz’ib’. Kkowinik kub’an wuj A3 ruk’ (kab’ichal unimal). Xuwi kk’am ub’ik ri PDF A4 pa jun tz’ajtz’ib’al wuj xuquje’ chta chi kech kkinimarisaj pa A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
