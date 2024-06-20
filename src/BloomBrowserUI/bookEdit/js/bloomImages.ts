@@ -200,11 +200,11 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     // Enhance: remove this unused flexibility to put images as background-images on div.bloom-imageContainers.
     // We still do it when making bloomPUBs, but that's a write-only operation (and we will retain the ability to migrate back).
     // I (JH) think it is cognitively expensive to leave legacy cruft around.
-    if (img.length === 0)
+    if (img === undefined)
         // This case is probably a left over from some previous Bloom where
         // we were using background images instead of <img>? But it does
         // no harm so I'm leaving it in.
-        img = $(containerDiv); //using a backgroundImage
+        img = containerDiv; //using a backgroundImage
 
     const $containerDiv = $(containerDiv);
     if ($containerDiv.find(kPlaybackOrderContainerSelector).length > 0) {
@@ -223,15 +223,15 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             // It's only going to debounce clicks that come in close enough to count as
             // double clicks, presumably based on the OS's double click timing setting.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((e as any).detail > 1) {
+            if ((e as any).detail > 1 || !img) {
                 return;
             }
             // get the image id attribute. If it doesn't have one, add it first
-            let imageId = img.attr("id");
+            let imageId = img.getAttribute("id");
             const imageSrc = GetRawImageUrl(img);
             if (!imageId) {
                 imageId = EditableDivUtils.createUuid();
-                img.attr("id", imageId);
+                img.setAttribute("id", imageId);
             }
 
             postJson("editView/" + command + "Image", { imageId, imageSrc });
@@ -455,15 +455,17 @@ export function getImageUrlFromImageButton(button: HTMLButtonElement): string {
     return GetRawImageUrl(getImgFromContainer(imageContainer));
 }
 
-function getImgFromContainer(imageContainer: HTMLElement) {
-    // FF60 doesn't seem to do this properly, so I'm punting and using jquery...
-    // return imageContainer.querySelector(
-    //     "img:not(.bloom-ui > img, .bloom-ui)"
-    // );
-    return $(imageContainer)
-        .find("img")
-        .not(".bloom-ui") // e.g. dragHandle.svg
-        .not(".bloom-ui img"); // e.g. cog.svg
+function getImgFromContainer(
+    imageContainer: HTMLElement
+): HTMLElement | undefined {
+    // If there is ever a case where the img we want is not a direct child of the container,
+    // be careful not to fix this in a way that might accidentally return an overlay image
+    // when we want the parent image (or accidentally return all of them, especially if
+    // you use jquery).
+    // The bloom-ui filter prevents returning controls we add to overlays.
+    return Array.from(imageContainer.children).find(
+        c => c.tagName === "IMG" && !c.classList.contains("bloom-ui")
+    ) as HTMLElement;
 }
 
 /**
