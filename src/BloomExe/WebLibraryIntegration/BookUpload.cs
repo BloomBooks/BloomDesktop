@@ -226,6 +226,7 @@ namespace Bloom.WebLibraryIntegration
 					// Do NOT save this change in the book folder!
 					metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles,
 						textLanguages);
+					bool isNewBook = false;
 					var response = ParseClient.SetBookRecord(metadata.WebDataJson);
 					parseId = response.ResponseUri.LocalPath;
 					int index = parseId.LastIndexOf('/');
@@ -235,18 +236,28 @@ namespace Bloom.WebLibraryIntegration
 						// For NEW books the response URL is useless...need to do a new query to get the ID.
 						var json = ParseClient.GetSingleBookRecord(metadata.Id);
 						parseId = json.objectId.Value;
+						isNewBook = true;
 					}
-					//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
+					if (IsProductionRun) // don't make it seem like there are more uploads than there really are if this is just a tester pushing to the sandbox
 					{
-						Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title } });
+						Analytics.Track(
+							"UploadBook-Success",
+							new Dictionary<string, string>()
+							{
+								{ "url", metadata.BaseUrl },
+								{ "title", metadata.Title },
+								{ "uploader", UploadedBy },
+								{ "BookId", metadata.Id },
+								{ "isNewBook", isNewBook.ToString() },
+							}
+						);
 					}
 				}
 			}
 			catch (WebException e)
 			{
 				DisplayNetworkUploadProblem(e, progress);
-				if (IsProductionRun) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
-					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title }, { "error", e.Message } });
+				ReportFailureToAnalytics(metadata, e);
 				return "";
 			}
 			catch (AmazonS3Exception e)
@@ -261,18 +272,14 @@ namespace Bloom.WebLibraryIntegration
 				else
 				{
 					DisplayNetworkUploadProblem(e, progress);
-					if (IsProductionRun)
-						// don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-						Analytics.Track("UploadBook-Failure",
-							new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title }, { "error", e.Message } });
+					ReportFailureToAnalytics(metadata, e);
 				}
 				return "";
 			}
 			catch (AmazonServiceException e)
 			{
 				DisplayNetworkUploadProblem(e, progress);
-				if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title }, { "error", e.Message } });
+				ReportFailureToAnalytics(metadata, e);
 				return "";
 			}
 			catch (Exception e)
@@ -284,12 +291,27 @@ namespace Bloom.WebLibraryIntegration
 				progress.WriteError(msg2);
 				progress.WriteVerbose(e.StackTrace);
 
-				if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BaseUrl }, { "title", metadata.Title }, { "error", e.Message } });
+				ReportFailureToAnalytics(metadata, e);
 				return "";
 			}
 
 			return storageKeyOfBookFolderOnS3;
+		}
+
+		private void ReportFailureToAnalytics(BookMetaData metadata, Exception e)
+        {
+            if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this is just a tester pushing to the sandbox
+                Analytics.Track(
+                    "UploadBook-Failure",
+                    new Dictionary<string, string>()
+                    {
+                        { "url", metadata.BaseUrl },
+                        { "title", metadata.Title },
+                        { "error", e.Message },
+                        { "uploader", UploadedBy },
+                        { "BookId", metadata.Id },
+                    }
+                );
 		}
 
 		/// <summary>

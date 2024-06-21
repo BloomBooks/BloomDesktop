@@ -727,15 +727,6 @@ namespace Bloom.Publish
 			_thumbNailer.HtmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions, onReady, onError);
 		}
 
-		public void ReportAnalytics(string eventName)
-		{
-			Analytics.Track(eventName, new Dictionary<string, string>()
-			{
-				{"BookId", BookSelection.CurrentSelection.ID},
-				{"Country", _collectionSettings.Country}
-			});
-		}
-
 		/// <summary>
 		/// Remove all text data that is not in a desired language.
 		/// Keeps all xmatter data if shouldPruneXmatter is false; if it is true, keeps xmatter data in xmatterLangsToKeep.
