@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -454,6 +454,9 @@ namespace Bloom.ImageProcessing
             var graphicsMagickPath = GetGraphicsMagickPath();
             if (RobustFile.Exists(graphicsMagickPath))
             {
+                // http://www.graphicsmagick.org/GraphicsMagick.html#details-profile states:
+                // Use +profile profile_name to remove the respective profile.
+                // For example, +profile '!icm,*' strips all profiles except for the ICM profile.
                 var profiles = "!icm,*"; // strip all metadata except color profile
                 if (
                     imageInfo.Metadata?.ExceptionCaughtWhileLoading?.StackTrace != null
@@ -473,8 +476,19 @@ namespace Bloom.ImageProcessing
                     ProfilesToStrip = profiles
                 };
                 var result = RunGraphicsMagick(sourcePath, destinationPath, options);
-                return result.ExitCode == 0;
+                var resultExitCode = result.ExitCode;
+                if (resultExitCode != 0)
+                {
+                    Logger.WriteEvent(
+                        $"Failed to strip image metadata from {sourcePath}. ExitCode = {resultExitCode}. StandardError = {result.StandardError}"
+                    );
+                }
+                return resultExitCode == 0;
             }
+
+            Logger.WriteEvent(
+                $"Failed to strip image metadata from {sourcePath}. Could not find GraphicsMagick. graphicsMagickPath = {graphicsMagickPath}."
+            );
             return false;
         }
 
@@ -1352,8 +1366,13 @@ namespace Bloom.ImageProcessing
                     argsBldr.Append(
                         " -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
                     );
+
+                // http://www.graphicsmagick.org/GraphicsMagick.html#details-profile states:
+                // Use +profile profile_name to remove the respective profile.
+                // For example, +profile '!icm,*' strips all profiles except for the ICM profile.
                 if (!String.IsNullOrEmpty(options.ProfilesToStrip))
-                    argsBldr.AppendFormat(" -strip \"{0}\"", options.ProfilesToStrip);
+                    argsBldr.AppendFormat(" +profile \"{0}\"", options.ProfilesToStrip);
+
                 // GraphicsMagick quality numbers: http://www.graphicsmagick.org/GraphicsMagick.html#details-quality
                 // For PNG files, "quality" really means "compression".  75 is the default value used in GraphicsMagick
                 // for .png files, and tests out as having a good balance between speed and resulting file size.
