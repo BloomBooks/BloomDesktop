@@ -473,8 +473,19 @@ namespace Bloom.ImageProcessing
                     ProfilesToStrip = profiles
                 };
                 var result = RunGraphicsMagick(sourcePath, destinationPath, options);
-                return result.ExitCode == 0;
+                var resultExitCode = result.ExitCode;
+                if (resultExitCode != 0)
+                {
+                    Logger.WriteEvent(
+                        $"Failed to strip image metadata from {sourcePath}. ExitCode = {resultExitCode}. StandardError = {result.StandardError}"
+                    );
+                }
+                return resultExitCode == 0;
             }
+
+            Logger.WriteEvent(
+                $"Failed to strip image metadata from {sourcePath}. Could not find GraphicsMagick. graphicsMagickPath = {graphicsMagickPath}."
+            );
             return false;
         }
 
@@ -1353,7 +1364,7 @@ namespace Bloom.ImageProcessing
                         " -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
                     );
                 if (!String.IsNullOrEmpty(options.ProfilesToStrip))
-                    argsBldr.AppendFormat(" -strip \"{0}\"", options.ProfilesToStrip);
+                    argsBldr.AppendFormat(" +profile \"{0}\"", options.ProfilesToStrip);
                 // GraphicsMagick quality numbers: http://www.graphicsmagick.org/GraphicsMagick.html#details-quality
                 // For PNG files, "quality" really means "compression".  75 is the default value used in GraphicsMagick
                 // for .png files, and tests out as having a good balance between speed and resulting file size.

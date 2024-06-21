@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
@@ -355,6 +355,32 @@ namespace BloomTests.ImageProcessing
             {
                 var isBW = ImageUtils.ShouldMakeBackgroundTransparent(image);
                 Assert.That(isBW, Is.EqualTo(expectedResult));
+            }
+        }
+
+        [Test]
+        public void StripMetadataFromImageFile()
+        {
+            var imagePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "ImageWithProblematicMetadata.jpg"
+            );
+
+            using (var image = PalasoImage.FromFileRobustly(imagePath))
+            {
+                using (var tempFile = TempFile.WithExtension(".jpg"))
+                {
+                    // Verify setup
+                    Assert.Throws<System.InvalidOperationException>(
+                        () => ImageUtils.SaveImageMetadata(image, tempFile.Path)
+                    );
+
+                    // SUT
+                    ImageUtils.StripMetadataFromImageFile(image);
+
+                    // Verify
+                    Assert.DoesNotThrow(() => ImageUtils.SaveImageMetadata(image, tempFile.Path));
+                }
             }
         }
     }
