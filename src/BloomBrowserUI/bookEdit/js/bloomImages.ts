@@ -226,12 +226,21 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             if ((e as any).detail > 1 || !img) {
                 return;
             }
-            // get the image id attribute. If it doesn't have one, add it first
+            // get the image id attribute. If it doesn't have one, add it before calling
+            // the server api. This is needed to properly identify the image later on in the
+            // changeImage method.  The copy command doesn't need to identify the image later,
+            // as the source url is enough for that command.
+            // (An image usually shouldn't have an id to begin with.)
             let imageId = img.getAttribute("id");
             const imageSrc = GetRawImageUrl(img);
-            if (!imageId) {
-                imageId = EditableDivUtils.createUuid();
-                img.setAttribute("id", imageId);
+            if (command !== "copy") {
+                if (!imageId) {
+                    imageId = EditableDivUtils.createUuid();
+                    img.setAttribute("id", imageId);
+                }
+                // Note that the changeImage method (called from the C# code) will remove the id
+                // attribute after using it to find the correct image.  The C# code will call the
+                // removeImageId method if it doesn't call the changeImage method.  See BL-13619.
             }
 
             postJson("editView/" + command + "Image", { imageId, imageSrc });

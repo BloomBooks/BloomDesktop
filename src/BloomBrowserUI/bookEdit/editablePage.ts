@@ -61,6 +61,7 @@ import {
     makeElement,
     SetupElements,
     attachToCkEditor,
+    removeImageId,
     changeImage
 } from "./js/bloomEditing";
 export {
@@ -74,6 +75,7 @@ export {
     makeElement,
     SetupElements,
     attachToCkEditor,
+    removeImageId,
     changeImage
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
