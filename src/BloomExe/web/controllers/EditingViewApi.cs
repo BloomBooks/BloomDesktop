@@ -185,6 +185,7 @@ namespace Bloom.web.controllers
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
             View.OnCopyImage(UrlPathString.CreateFromUrlEncodedString(data.imageSrc));
+            View.RemoveUnneededImageId(data.imageId);
             request.PostSucceeded();
         }
 

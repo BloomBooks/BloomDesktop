@@ -226,7 +226,9 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             if ((e as any).detail > 1 || !img) {
                 return;
             }
-            // get the image id attribute. If it doesn't have one, add it first
+            // get the image id attribute. If it doesn't have one, add it before calling
+            // the server api. This is needed to easily identify the image later on.
+            // (An image usually shouldn't have an id to begin with.)
             let imageId = img.getAttribute("id");
             const imageSrc = GetRawImageUrl(img);
             if (!imageId) {

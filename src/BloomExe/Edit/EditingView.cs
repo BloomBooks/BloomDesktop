@@ -1205,6 +1205,11 @@ namespace Bloom.Edit
 #endif
                     }
                 }
+                else
+                {
+                    // remove imageId from the element since it's no longer needed
+                    RemoveUnneededImageId(imageId);
+                }
 
                 // If the user changed the search language for art of reading, remember their change. But if they didn't
                 // touch it, don't remember it. Instead, let it continue to track the UI language so that if
@@ -1359,7 +1364,11 @@ namespace Bloom.Edit
             try
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
+                {
+                    // remove imageId from the element since it's no longer needed
+                    RemoveUnneededImageId(imageId);
                     return;
+                }
                 _model.ChangePicture(imageId, priorImageSrc, imageInfo);
             }
             catch (System.IO.IOException error)
@@ -1377,6 +1386,14 @@ namespace Bloom.Edit
                 error.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
                 ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
             }
+        }
+
+        public void RemoveUnneededImageId(string imageId)
+        {
+            Model.GetEditingBrowser()
+                .RunJavascriptFireAndForget(
+                    $"editTabBundle.getEditablePageBundleExports().removeImageId('{imageId}')"
+                );
         }
 
         private bool ShouldBailOutBecauseUserAgreedNotToUseJpeg(PalasoImage imageInfo)
