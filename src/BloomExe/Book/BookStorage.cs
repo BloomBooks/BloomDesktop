@@ -2851,8 +2851,16 @@ namespace Bloom.Book
                 // due to BL-2166, we no longer compare times since downloaded books often have
                 // more recent times than the DistFiles versions we want to use
                 // var documentTime = RobustFile.GetLastWriteTimeUtc(documentPath);
-                if (sourcePathIncludingFileName == documentPath)
-                    return; // no point in trying to update self!
+                if (Platform.IsWindows) // See BL-13577.
+                {
+                    if (sourcePathIncludingFileName.ToLowerInvariant() == documentPath.ToLowerInvariant())
+                        return; // no point in trying to update self!
+                }
+                else
+                {
+                    if (sourcePathIncludingFileName == documentPath)
+                        return; // no point in trying to update self!
+                }
                 if (IsPathReadonly(documentPath))
                 {
                     var msg =
@@ -3959,13 +3967,9 @@ namespace Bloom.Book
 
         // Tries to detect a state that some bug occasionally puts a page into, where it is more-or-less empty.
         // Another characteristic state produced by the bug is where the page labels that should be outside
-        // the marginBox are inside it.
+        // the marginBox are inside it. BL-13120.
         static bool HasMessedUpMarginBox(XmlElement page)
         {
-			// Flyleaf pages are intentionally empty; they have no marginBox.
-			// See XMatterHelper.InjectFlyleafIfNeeded().
-			if (HtmlDom.IsFlyleafPage(page)) return false;
-
             var marginBox = GetMarginBox(page);
             if (marginBox == null)
                 return true; // marginBox should not be missing

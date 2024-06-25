@@ -7,14 +7,14 @@
         <target xml:lang="fr" state="final">Installation en cours...</target>
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
       </trans-unit>
-      <trans-unit id="Errors.CorruptImageFile">
+      <trans-unit id="Errors.CorruptImageFile" approved="yes">
         <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
-        <target xml:lang="fr" state="translated">Le fichier image {0} est corrompu et doit être remplacé. ({1})</target>
+        <target xml:lang="fr" state="final">Le fichier image {0} est corrompu et doit être remplacé. ({1})</target>
         <note>ID: Errors.CorruptImageFile</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
-        <target xml:lang="fr" state="translated">Bloom n'a pas pu rejoindre le serveur pour obtenir la liste des étagères.</target>
+        <target xml:lang="fr" state="final">Bloom n'a pas pu rejoindre le serveur pour obtenir la liste des étagères.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
@@ -47,14 +47,19 @@
         <target xml:lang="fr" state="final">On dirait que vous essayez d'ouvrir une Collection Bloom à l'intérieur d'un fichier ZIP. Vous devez d'abord décompresser le fichier ZIP, puis ouvrir la collection.</target>
         <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
       </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InvalidFileTypeMessage" approved="yes">
+        <source xml:lang="en">Please select a .bloomCollection file.</source>
+        <target xml:lang="fr" state="final">Veuillez sélectionner un fichier .bloomCollection.</target>
+        <note>ID: OpenCreateCloneControl.InvalidFileTypeMessage</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bookshelf Color</source>
         <target xml:lang="fr" state="final">Couleur de l'Étagère</target>
         <note>ID: PublishTab.Android.BulkBookshelfColor</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo" approved="yes">
-        <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
-        <target xml:lang="fr" state="final">Pour le moment, Bloom ne prend pas en charge l'inclusion de l'audio des vidéos en Langue des Signes dans la sortie vidéo.</target>
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+        <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
+        <target xml:lang="fr" state="translated">Pour le moment, Bloom ne prend pas en charge l'inclusion de l'audio des vidéos en Langue des Signes dans la sortie vidéo.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
@@ -62,9 +67,9 @@
         <target xml:lang="fr" state="final">Bloom doit vérifier votre courriel, mais notre tentative de renvoyer la demande a échoué, peut-être parce que vous avez fait trop de demandes trop rapprochées. Veuillez vérifier vos courriels et, si vous ne trouvez pas le message, réessayez plus tard.</target>
         <note>ID: PublishTab.Upload.CheckEmailFailed</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BookshelfError">
+      <trans-unit id="PublishTab.Upload.BookshelfError" approved="yes">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</source>
-        <target xml:lang="fr" state="translated">L'étagère de la collection ne figurait pas sur la liste des étagères pour cet abonnement Entreprise.</target>
+        <target xml:lang="fr" state="final">L'étagère de la collection ne figurait pas sur la liste des étagères pour cet abonnement Entreprise.</target>
         <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community" approved="yes">
@@ -186,14 +191,14 @@
         <target xml:lang="fr" state="final">Le dossier nommé {0} existe déjà et semble être un dossier Bloom !</target>
         <note>ID: Spreadsheet.OverwriteBook</note>
       </trans-unit>
-      <trans-unit id="Spreadsheet.TroubleCopying">
+      <trans-unit id="Spreadsheet.TroubleCopying" approved="yes">
         <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: {1}</source>
-        <target xml:lang="fr" state="translated">Bloom a eu des difficultés à copier le fichier {0} dans le dossier vidéo : {1}</target>
+        <target xml:lang="fr" state="final">Bloom a eu du mal à copier le fichier {0} dans le dossier vidéo : {1}</target>
         <note>ID: Spreadsheet.TroubleCopying</note>
       </trans-unit>
-      <trans-unit id="Spreadsheet.TroubleCopyingFolder">
+      <trans-unit id="Spreadsheet.TroubleCopyingFolder" approved="yes">
         <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder: {1}</source>
-        <target xml:lang="fr" state="translated">Bloom a eu des difficultés à copier le dossier {0} dans le dossier activités : {1}</target>
+        <target xml:lang="fr" state="final">Bloom a eu du mal à copier le dossier {0} dans le dossier activités : {1}</target>
         <note>ID: Spreadsheet.TroubleCopyingFolder</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.WriteFailed" approved="yes">
@@ -214,6 +219,46 @@
         <source xml:lang="en">Bloom was not able to access a microphone.</source>
         <target xml:lang="fr" state="final">Bloom n'a pas pu accéder à un microphone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveProblem">
+        <source xml:lang="en">OneDrive Problem</source>
+        <target xml:lang="fr" state="needs-translation">OneDrive Problem</target>
+        <note>ID: ReportProblemDialog.OneDriveProblem</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveErrorMessage">
+        <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
+        <target xml:lang="fr" state="needs-translation">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</target>
+        <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
+      </trans-unit>
+      <trans-unit id="ProblemReport.PageStructureProblem" approved="yes">
+        <source xml:lang="en">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</source>
+        <target xml:lang="fr" state="final">Bloom a fait une erreur sur cette page. Veuillez bien nous le signaler, puis vérifiez que rien n'a été perdu.</target>
+        <note>ID: ProblemReport.PageStructureProblem</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AdministratorEmails" approved="yes">
+        <source xml:lang="en">Administrator Emails:</source>
+        <target xml:lang="fr" state="final">Courriel de l'Administrateur :</target>
+        <note>ID: TeamCollection.AdministratorEmails</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.InvalidAdminEmails" approved="yes">
+        <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
+        <target xml:lang="fr" state="final">Veuillez saisir un ou plusieurs courriels d'administrateur valides, séparés par des virgules ou espaces.</target>
+        <note>ID: TeamCollection.InvalidAdminEmails</note>
+      </trans-unit>
+      <trans-unit id="Common.Preparing" approved="yes">
+        <source xml:lang="en">Preparing...</source>
+        <target xml:lang="fr" state="final">Préparation en cours...</target>
+        <note>Common.Preparing</note>
+      </trans-unit>
+      <trans-unit id="Common.Finishing" approved="yes">
+        <source xml:lang="en">Finishing...</source>
+        <target xml:lang="fr" state="final">Finalisation en cours...</target>
+        <note>Common.Finishing</note>
+      </trans-unit>
+      <trans-unit id="Common.Finished" approved="yes">
+        <source xml:lang="en">Finished</source>
+        <target xml:lang="fr" state="final">Terminé</target>
+        <note>Common.Finished</note>
       </trans-unit>
     </body>
   </file>

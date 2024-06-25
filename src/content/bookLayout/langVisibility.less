@@ -1,4 +1,4 @@
-// The code reads the (bloom-visibility-template-langs + collection langs + multlingual settings)
+// The code reads the (bloom-visibility-template-langs + collection langs + multilingual settings)
 // and set this if it determines that this would normally be visible:
 // Note that these two rules are overridden to produce display:flex when we are dealing
 // with non-default vertical alignment.
@@ -22,5 +22,10 @@
 
     .bloom-editable.bloom-visibility-code-on {
         display: flex;
+
+        p {
+            // Prevent paragraphs from overlapping each other.
+            flex-shrink: 0;
+        }
     }
 }

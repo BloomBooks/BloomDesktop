@@ -57,8 +57,8 @@
   <UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
   <PropertyGroup>
     <ProfileName>BloomLibrary</ProfileName>
-    <Bucket>bloomlibrary.org</Bucket>
     <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
+    <Bucket>bloomlibrary.org</Bucket>
   </PropertyGroup>
   <Import Project="../.nuget/NuGet.targets" />
   <Target Name="RestoreBuildTasks" DependsOnTargets="CheckPrerequisites">

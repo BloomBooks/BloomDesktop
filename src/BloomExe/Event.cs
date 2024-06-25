@@ -112,6 +112,11 @@ namespace Bloom
         // at some later time. If no one does, Raise() will call it after all subscribers have been called.
         // At most one subscriber should set this to true. Review: should we enforce this?
         public bool Delayed;
+
+        // If something goes wrong (typically, we failed to save the current page due to a bug), this should be called.
+        // Typically, postponed work will not happen, so the collection closing will also not happen.
+        // We are currently using this to reset a flag in Shell.OnClosing so we can try again.
+        public Action FailureAction;
     }
 
     /// <summary>

@@ -1228,7 +1228,8 @@ div.ui-audioCurrent p {
 
 
 /* -------------------------------------------------------
- * Rules from langVisibility.css which was retired in 6.0
+ * Rules from langVisibility.css which we stopped adding to books directly in 6.0
+ * (but is still imported into basePage.less)
  * ------------------------------------------------------- */
 .bloom-editable.bloom-visibility-code-on {
     display: block;
@@ -1238,6 +1239,10 @@ div.ui-audioCurrent p {
 .bloom-vertical-align-bottom {
     .bloom-editable.bloom-visibility-code-on {
         display: flex;
+        p {
+            // Prevent paragraphs from overlapping each other.
+            flex-shrink: 0;
+        }
     }
 }
 

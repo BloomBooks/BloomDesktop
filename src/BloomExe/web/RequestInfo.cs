@@ -305,7 +305,7 @@ namespace Bloom.Api
         }
 
         readonly HashSet<string> _cacheableExtensions = new HashSet<string>(
-            new[] { ".js", ".css", ".jpg", ".jpeg", ".svg", ".png" }
+            new[] { ".js", ".css", ".jpg", ".jpeg", ".svg", ".png", ".woff2" }
         );
 
         private bool ShouldCache(string path, string originalPath)
@@ -334,7 +334,9 @@ namespace Bloom.Api
                 )
             )
                 return false; // ePUB export files should not be cached.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6253.
-            if (BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(path))
+            if (folderToCheck.Contains(PublishApi.kStagingFolder))
+                return false; // Don't cache when showing BloomPUB preview
+            if (BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(Path.GetFileName(path)))
                 return false;
 
             // The preview iframe uses urls like /book-preview/index.htm, which means urls

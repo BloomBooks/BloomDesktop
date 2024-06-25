@@ -865,11 +865,6 @@
         <target xml:lang="ha" state="needs-translation">Click to get a better Bloom!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
-        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
-        <target xml:lang="ha" state="final">Saboda wannan asalin tari ne, Bloom ba ya bayar da kowace irin kumba a matsayin tushen sabuwar kumba.Idan kana son ƙara wani harshe ga wata kumba, kana buƙatar yin gyare-gyaren tarin bayanan da ke ƙunshe a kumba, ba yin kwafin sa ba.  Haka kuma, ba za a iya amfani da Kalandar Bango ba  a halin yanzu don yin wata sabuwar kumba.</target>
-        <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="ha" state="needs-translation">Show translations which have not been approved yet</target>
@@ -1359,10 +1354,20 @@
         <target xml:lang="ha" state="final">Sauke littafi</target>
         <note>ID: Download.DownloadingDialogTitle</note>
       </trans-unit>
+      <trans-unit id="Download.FromBloomLibrary">
+        <source xml:lang="en">From Bloom Library</source>
+        <target xml:lang="ha" state="needs-translation">From Bloom Library</target>
+        <note>ID: Download.FromBloomLibrary</note>
+      </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <target xml:lang="ha" state="final">An samu wata matsala a lokacin saukar da littafinka</target>
         <note>ID: Download.GenericNetworkProblemNotice</note>
+      </trans-unit>
+      <trans-unit id="Download.OldVersion">
+        <source xml:lang="en">The download you started needs version {0} or later of Bloom. Please install that version if you haven't already, and run it. Then try the download again.</source>
+        <target xml:lang="ha" state="needs-translation">The download you started needs version {0} or later of Bloom. Please install that version if you haven't already, and run it. Then try the download again.</target>
+        <note>ID: Download.OldVersion</note>
       </trans-unit>
       <trans-unit id="Download.ProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
@@ -1468,6 +1473,11 @@
         <source xml:lang="en">Multilingual Settings</source>
         <target xml:lang="ha" state="final">Saitin harsuna da yawa</target>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip">
+        <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
+        <target xml:lang="ha" state="needs-translation">Choose language to make this a bilingual or trilingual book</target>
+        <note>ID: EditTab.ContentLanguagesDropdown.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
@@ -1834,6 +1844,16 @@
         <target xml:lang="ha" state="final">Sabon tsari</target>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Overlay" sil:dynamic="true">
+        <source xml:lang="en">Overlay</source>
+        <target xml:lang="ha" state="needs-translation">Overlay</target>
+        <note>ID: EditTab.FormatDialog.Overlay</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true">
+        <source xml:lang="en">Padding: space between the text and its border</source>
+        <target xml:lang="ha" state="needs-translation">Padding: space between the text and its border</target>
+        <note>ID: EditTab.FormatDialog.Padding</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ParagraphSpacing" sil:dynamic="true">
         <source xml:lang="en">Space Between Paragraphs</source>
         <target xml:lang="ha" state="needs-translation">Space Between Paragraphs</target>
@@ -1868,6 +1888,11 @@
         <source xml:lang="en">Text Color</source>
         <target xml:lang="ha" state="needs-translation">Text Color</target>
         <note>ID: EditTab.FormatDialog.TextColor</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.VisitEachPage" sil:dynamic="true">
+        <source xml:lang="en">After making changes to a style, please visit each page that uses it. This allows Bloom to fully apply your changes.</source>
+        <target xml:lang="ha" state="needs-translation">After making changes to a style, please visit each page that uses it. This allows Bloom to fully apply your changes.</target>
+        <note>ID: EditTab.FormatDialog.VisitEachPage</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Extra Wide</source>
@@ -1968,16 +1993,6 @@
         <source xml:lang="en">, </source>
         <target xml:lang="ha" state="needs-translation">, </target>
         <note>ID: EditTab.FrontMatter.ListSeparator</note>
-      </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.MarkTheBookEnd" sil:dynamic="true">
-        <source xml:lang="en">Something to tell the reader/viewer that this is the end of the book.</source>
-        <target xml:lang="ha" state="needs-translation">Something to tell the reader/viewer that this is the end of the book.</target>
-        <note>ID: EditTab.FrontMatter.MarkTheBookEnd</note>
-      </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.MarkTheVideoEnd" sil:dynamic="true">
-        <source xml:lang="en">Something to tell the reader/viewer that this is the end.</source>
-        <target xml:lang="ha" state="needs-translation">Something to tell the reader/viewer that this is the end.</target>
-        <note>ID: EditTab.FrontMatter.MarkTheVideoEnd</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MultipleImageCredit">
         <source xml:lang="en">Images on pages {0} by {1}.</source>
@@ -3769,36 +3784,6 @@
         <target xml:lang="ha" state="final">Girman Harafi da rubutu</target>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the collection type.</source>
-        <target xml:lang="ha" state="final">Zaɓi irin tarin bayanai</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
-        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
-        <target xml:lang="ha" state="final">Idan kana da wani tarin bayanan da kake son ka buɗe, dangwala malatsin 'Soke'.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="ha" state="final">Asalin Tari</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
-        <target xml:lang="ha" state="final">Tarin bayanan kumba ko littafan muhalli a cikin harshe ɗaya ko fiye na gamammiyar sadarwa. Za ka iya ɗora wadannan kumbunan ɗakin karatun Bloom na yanar gizo zuwa BloomLibrary.org.Kuma kana iya yin Ƙunshin Bloom ka ba wasu don su rubuta littafai a cikin wasu harsuna da kumbunan littafanka.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Local Language Collection</source>
-        <target xml:lang="ha" state="final">Wani Harshe/Tarin Bayanan Harshen Gida</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-      </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of books in a local language.</source>
-        <target xml:lang="ha" state="final">Tarin Littafa a cikin harshen gida.</target>
-        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
         <target xml:lang="ha" state="final">Ka ba Harshe Wuri</target>
@@ -4013,11 +3998,6 @@
         <target xml:lang="ha" state="needs-translation">Save BloomPUB File</target>
         <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <target xml:lang="ha" state="needs-translation">Choose landscape to activate Motion Book mode</target>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true">
         <source xml:lang="en">Send over USB Cable</source>
         <target xml:lang="ha" state="needs-translation">Send over USB Cable</target>
@@ -4027,11 +4007,6 @@
         <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="ha" state="needs-translation">Share over Wi-Fi</target>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
-        <source xml:lang="en">Send or Save</source>
-        <target xml:lang="ha" state="needs-translation">Send or Save</target>
-        <note>ID: PublishTab.Android.Control</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true">
         <source xml:lang="en">Copy to Clipboard</source>
@@ -4097,16 +4072,6 @@
         <source xml:lang="en">Get Bloom Reader App</source>
         <target xml:lang="ha" state="needs-translation">Get Bloom Reader App</target>
         <note>ID: PublishTab.Android.GetBloomReader</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <target xml:lang="ha" state="needs-translation">Send Your Book to the Bloom Reader Android App</target>
-        <note>ID: PublishTab.Android.Intro</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
-        <source xml:lang="en">Choose how to send to device</source>
-        <target xml:lang="ha" state="needs-translation">Choose how to send to device</target>
-        <note>ID: PublishTab.Android.Method</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
         <source xml:lang="en">Motion Book</source>
@@ -4274,8 +4239,8 @@
         <note>ID: PublishTab.Android.Wifi.Start</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <target xml:lang="ha" state="needs-translation">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</target>
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <target xml:lang="ha" state="needs-translation">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", which may cause text to scroll. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</target>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
@@ -5331,10 +5296,50 @@
         <target xml:lang="ha" state="needs-translation">Already in Bloom Library</target>
         <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
       </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeBranding">
+        <source xml:lang="en">The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
+        <target xml:lang="ha" state="needs-translation">The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</target>
+        <note>ID: PublishTab.UploadCollisionDialog.ChangeBranding</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader">
+        <source xml:lang="en">Change the official uploader to {0}. (Bloom Library will hide part of your email address)</source>
+        <target xml:lang="ha" state="needs-translation">Change the official uploader to {0}. (Bloom Library will hide part of your email address)</target>
+        <note>ID: PublishTab.UploadCollisionDialog.ChangeUploader</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.FirstUploadedOn">
+        <source xml:lang="en">Originally uploaded {0}</source>
+        <target xml:lang="ha" state="needs-translation">Originally uploaded {0}</target>
+        <note>ID: PublishTab.UploadCollisionDialog.FirstUploadedOn</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.HaveMany">
+        <source xml:lang="en">BloomLibrary.org already has {0} books that have the same ID as this one.</source>
+        <target xml:lang="ha" state="needs-translation">BloomLibrary.org already has {0} books that have the same ID as this one.</target>
+        <note>ID: PublishTab.UploadCollisionDialog.HaveMany</note>
+      </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne">
         <source xml:lang="en">BloomLibrary.org already has a book with this ID from you ({0}).</source>
         <target xml:lang="ha" state="needs-translation">BloomLibrary.org already has a book with this ID from you ({0}).</target>
         <note>ID: PublishTab.UploadCollisionDialog.HaveOne</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne2">
+        <source xml:lang="en">BloomLibrary.org already has a book with this ID.</source>
+        <target xml:lang="ha" state="needs-translation">BloomLibrary.org already has a book with this ID.</target>
+        <note>ID: PublishTab.UploadCollisionDialog.HaveOne2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.LastUploadedOn">
+        <source xml:lang="en">Last updated {0}</source>
+        <target xml:lang="ha" state="needs-translation">Last updated {0}</target>
+        <note>ID: PublishTab.UploadCollisionDialog.LastUploadedOn</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.MoreLanguages">
+        <source xml:lang="en">{0} more</source>
+        <target xml:lang="ha" state="needs-translation">{0} more</target>
+        <note>ID: PublishTab.UploadCollisionDialog.MoreLanguages</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.CancelUpload">
+        <source xml:lang="en">Yes, these are the same book -- Cancel upload for now</source>
+        <target xml:lang="ha" state="needs-translation">Yes, these are the same book -- Cancel upload for now</target>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.CancelUpload</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks">
         <source xml:lang="en">No, these are different books</source>
@@ -5346,20 +5351,57 @@
         <target xml:lang="ha" state="needs-translation">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</target>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
       </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2">
+        <source xml:lang="en">Bloom will fix the ID of your book and upload it as a new book. The old book on Bloom Library will stay the same.</source>
+        <target xml:lang="ha" state="needs-translation">Bloom will fix the ID of your book and upload it as a new book. The old book on Bloom Library will stay the same.</target>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2</note>
+      </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
         <source xml:lang="en">Yes, this is an update of my book</source>
         <target xml:lang="ha" state="needs-translation">Yes, this is an update of my book</target>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2">
+        <source xml:lang="en">Yes, I want to update this book</source>
+        <target xml:lang="ha" state="needs-translation">Yes, I want to update this book</target>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook2</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary">
         <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
         <target xml:lang="ha" state="needs-translation">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</target>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary</note>
       </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary">
+        <source xml:lang="en">Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
+        <target xml:lang="ha" state="needs-translation">Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</target>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBookCancel.Commentary">
+        <source xml:lang="en">If your organization has an Enterprise Subscription, you may ask [librarian@bloomlibrary.org] to connect your account to your organization's bookshelves. Then you will be able to update books on those bookshelves.
+        </source>
+        <target xml:lang="ha" state="needs-translation">If your organization has an Enterprise Subscription, you may ask [librarian@bloomlibrary.org] to connect your account to your organization's bookshelves. Then you will be able to update books on those bookshelves.
+        </target>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBookCancel.Commentary</note>
+      </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
         <source xml:lang="en">Is this an update of your existing book?</source>
         <target xml:lang="ha" state="needs-translation">Is this an update of your existing book?</target>
         <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.SameBookNotMine">
+        <source xml:lang="en">Is this an update of an existing book?</source>
+        <target xml:lang="ha" state="needs-translation">Is this an update of an existing book?</target>
+        <note>ID: PublishTab.UploadCollisionDialog.SameBookNotMine</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.UploadedBy">
+        <source xml:lang="en">Uploaded by {0}</source>
+        <target xml:lang="ha" state="needs-translation">Uploaded by {0}</target>
+        <note>ID: PublishTab.UploadCollisionDialog.UploadedBy</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.YouHavePermissionToModify">
+        <source xml:lang="en">You have permission to modify this book</source>
+        <target xml:lang="ha" state="needs-translation">You have permission to modify this book</target>
+        <note>ID: PublishTab.UploadCollisionDialog.YouHavePermissionToModify</note>
       </trans-unit>
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
         <source xml:lang="en">Check Your Understanding</source>
@@ -5871,11 +5913,6 @@
         <target xml:lang="ha" state="needs-translation">It keeps happening</target>
         <note>ID: ReportProblemDialog.ItKeepsHappening</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name" approved="yes">
-        <source xml:lang="en">Name</source>
-        <target xml:lang="ha" state="final">Suna</target>
-        <note>ID: ReportProblemDialog.Name</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.NonFatalTitle">
         <source xml:lang="en">Bloom had a problem</source>
         <target xml:lang="ha" state="needs-translation">Bloom had a problem</target>
@@ -5931,30 +5968,15 @@
         <target xml:lang="ha" state="needs-translation">Report a Problem</target>
         <note>ID: ReportProblemDialog.UserTitle</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WhatsTheProblem" approved="yes">
-        <source xml:lang="en">What seems to be the problem?</source>
-        <target xml:lang="ha" state="final">Mecece matsalar?</target>
-        <note>ID: ReportProblemDialog.WhatsTheProblem</note>
-      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatDoing">
         <source xml:lang="en">What were you doing?</source>
         <target xml:lang="ha" state="needs-translation">What were you doing?</target>
         <note>ID: ReportProblemDialog.WhatDoing</note>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WindowTitle" approved="yes">
-        <source xml:lang="en">Report A Problem</source>
-        <target xml:lang="ha" state="final">Kai Rahoton Matsala</target>
-        <note>ID: ReportProblemDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.Zipping" approved="yes">
-        <source xml:lang="en">Uploading book...</source>
-        <target xml:lang="ha" state="final">Rufe littafi...</target>
-        <note>ID: ReportProblemDialog.Zipping</note>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.linkLabel1" approved="yes">
-        <source xml:lang="en">Will not be private</source>
-        <target xml:lang="ha" state="final">Ba zai zama abin sirri ba</target>
-        <note>ID: ReportProblemDialog.linkLabel1</note>
+      <trans-unit id="ReportProblemDialog.SearchOnline">
+        <source xml:lang="en">Search online</source>
+        <target xml:lang="ha" state="needs-translation">Search online</target>
+        <note>ID: ReportProblemDialog.SearchOnline</note>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
         <source xml:lang="en">I get it. Do not show this again.</source>
@@ -6001,10 +6023,20 @@
         <target xml:lang="ha" state="needs-translation">Funded by the local community only</target>
         <note>ID: Settings.Enterprise.Community</note>
       </trans-unit>
+      <trans-unit id="Settings.Enterprise.DownloadForEdit" sil:dynamic="true">
+        <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same Bloom Enterprise branding as when it was last uploaded.</source>
+        <target xml:lang="ha" state="needs-translation">This collection is in "Download for Edit" mode. The book has the same Bloom Enterprise branding as when it was last uploaded.</target>
+        <note>ID: Settings.Enterprise.DownloadForEdit</note>
+      </trans-unit>
       <trans-unit id="Settings.Enterprise.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
         <target xml:lang="ha" state="needs-translation">Learn More</target>
         <note>ID: Settings.Enterprise.LearnMore</note>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true">
+        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
+        <target xml:lang="ha" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</target>
+        <note>ID: Settings.Enterprise.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" sil:dynamic="true">
         <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
@@ -6107,6 +6139,10 @@
         <source xml:lang="en">The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.</source>
         <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.CheckoutRequired" sil:dynamic="true">
+        <source xml:lang="en">CheckoutRequired</source>
+        <note>ID: TeamCollection.ConflictingEdit</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.CreateTeamCollection" sil:dynamic="true">
         <source xml:lang="en">Create a Team Collection</source>
         <note>ID: TeamCollection.CreateTeamCollection</note>
@@ -6198,6 +6234,10 @@
         <source xml:lang="en">Bloom was not able to check out "{0}".</source>
         <note>ID: TeamCollection.CheckoutError</note>
         <note>{0} is the name of the book</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckoutRequiredExplanation" sil:dynamic="true">
+        <source xml:lang="en">Please check out this book from the Team Collection before publishing it.</source>
+        <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
 -->
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
@@ -6784,6 +6824,11 @@
         <source xml:lang="en">Animal Stories</source>
         <target xml:lang="ha" state="final">Labaran Dabbobi</target>
         <note>ID: Topics.Animal Stories</note>
+      </trans-unit>
+      <trans-unit id="Topics.Bible" sil:dynamic="true">
+        <source xml:lang="en">Bible</source>
+        <target xml:lang="ha" state="needs-translation">Bible</target>
+        <note>ID: Topics.Bible</note>
       </trans-unit>
       <trans-unit id="Topics.Business" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Business</source>

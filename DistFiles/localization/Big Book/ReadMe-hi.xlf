@@ -17,11 +17,12 @@
         <target xml:lang="hi" state="final">एक बड़ी पुस्तिका प्रिंट हो रही है</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
+      <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="hi" state="final">चीजों को अधिक प्रबंधनीय बनाने के लिए, इस टेम्पलेट को बड़े फोंट के साथ, A4 लैंडस्केप में सेट किया गया है। आप आसानी से A3 (दुगनी बड़ी) आकार की पुस्तकों को बना सकते हैं।
+        <target xml:lang="hi" state="translated">चीजों को अधिक प्रबंधनीय बनाने के लिए, इस टेम्पलेट को बड़े फोंट के साथ, A4 लैंडस्केप में सेट किया गया है। आप आसानी से A3 (दुगनी बड़ी) आकार की पुस्तकों को बना सकते हैं।
 आपके A4 PDF को छापनेवाले के पास ले जाएं और उन्हें इसे A3 आकार जितना बड़ा बनाने को कहें।</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>

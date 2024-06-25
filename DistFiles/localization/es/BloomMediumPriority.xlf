@@ -71,6 +71,11 @@
         <target xml:lang="es-ES" state="final">Haga clic aquí para insertar un carácter "|" en el texto en la posición actual del cursor. Este carácter indica a Bloom que introduzca un nuevo segmento para resaltar el texto durante la reproducción de audio. También puede escribir el carácter "|" con el teclado.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Bloom will hide these when you publish.</source>
+        <target xml:lang="es-ES" state="final">Bloom los ocultará cuando los publique.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">First, put the cursor in a box which has something to record.</source>
         <target xml:lang="es-ES" state="final">En primer lugar, coloca el cursor en una casilla que tenga algo que grabar.</target>
@@ -320,7 +325,7 @@
       <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true" approved="yes">
         <source xml:lang="en">View on BloomLibrary.org</source>
         <target xml:lang="es-ES" state="final">Ver en Bloom Library</target>
-        <note>CollectionTab.OnBlorgBadge.ViewBookOnBlorg</note>
+        <note>CollectionTab.OnBlorgBadge.ViewOnBlorg</note>
       </trans-unit>
       <trans-unit id="CollectionTab.OnBlorgBadge.Published" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Published</source>
@@ -332,55 +337,208 @@
         <target xml:lang="es-ES" state="final">Marcado como borrador</target>
         <note>CollectionTab.OnBlorgBadge.MarkedAsDraft</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.OnBlorgBadge.Processing" sil:dynamic="true">
-        <source xml:lang="en">BloomLibrary.org is processing this book</source>
-        <target xml:lang="es-ES" state="needs-translation">BloomLibrary.org is processing this book</target>
-        <note>CollectionTab.OnBlorgBadge.Processing</note>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Harvesting" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">In Progress</source>
+        <target xml:lang="es-ES" state="final">Procesando</target>
+        <note>CollectionTab.OnBlorgBadge.Harvesting</note>
       </trans-unit>
       <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Problem</source>
         <target xml:lang="es-ES" state="final">Problema</target>
         <note>CollectionTab.OnBlorgBadge.Problem</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Title" sil:dynamic="true">
+      <trans-unit id="BookSettings.LockedByBranding" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Locked by {0} Branding</source>
+        <target xml:lang="es-ES" state="final">Bloqueado por {0} Branding</target>
+        <note>BookSettings.LockedByBranding</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LockedByLegacy" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Locked by Legacy-5-6 theme</source>
+        <target xml:lang="es-ES" state="final">Bloqueado por el tema Legacy-5-6</target>
+        <note>BookSettings.LockedByLegacy</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LockedByXMatter" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Locked by {0} Front/Back matter</source>
+        <target xml:lang="es-ES" state="final">Bloqueado por {0} material de las páginas de inicio y final</target>
+        <note>BookSettings.LockedByXMatter</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book Settings</source>
-        <target xml:lang="es-ES" state="needs-translation">Book Settings</target>
+        <target xml:lang="es-ES" state="final">Configuración del libro</target>
         <note>BookSettings.Title</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max Image Size</source>
-        <target xml:lang="es-ES" state="needs-translation">Max Image Size</target>
+        <target xml:lang="es-ES" state="final">Tamaño máx. de la imagen</target>
         <note>BookSettings.eBook.Image.MaxResolution</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Small</source>
-        <target xml:lang="es-ES" state="needs-translation">Small</target>
+        <target xml:lang="es-ES" state="final">Pequeño</target>
         <note>BookSettings.eBook.Image.MaxResolution.Small</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HD</source>
-        <target xml:lang="es-ES" state="needs-translation">HD</target>
+        <target xml:lang="es-ES" state="final">HD</target>
         <note>BookSettings.eBook.Image.MaxResolution.HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Full HD</source>
-        <target xml:lang="es-ES" state="needs-translation">Full HD</target>
+        <target xml:lang="es-ES" state="final">Full HD</target>
         <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4K</source>
-        <target xml:lang="es-ES" state="needs-translation">4K</target>
+        <target xml:lang="es-ES" state="final">4K</target>
         <note>BookSettings.eBook.Image.MaxResolution.4K</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Description" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
-        <target xml:lang="es-ES" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
-        <note>BookSettings.eBook.Image.MaxResolution.Description</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
-        <source xml:lang="en">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</source>
-        <target xml:lang="es-ES" state="needs-translation">Bloom reduces images to a maximum size to make books easier to view over poor internet connections and take up less space on phones.</target>
+        <target xml:lang="es-ES" state="final">Bloom reduce las imágenes a un tamaño máximo para facilitar la visualización de los libros en conexiones de Internet de baja calidad y ocupar menos espacio en los teléfonos.</target>
         <note>BookSettings.eBook.Image.MaxResolution.Directions</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CoverGroupLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Cover</source>
+        <target xml:lang="es-ES" state="final">Portada</target>
+        <note>BookSettings.CoverGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true">
+        <source xml:lang="en">Content Pages</source>
+        <target xml:lang="es-ES" state="translated">Páginas de contenido</target>
+        <note>BookSettings.ContentPagesGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Languages to show in normal text boxes</source>
+        <target xml:lang="es-ES" state="final">Idiomas para mostrar en cuadros de texto normales</target>
+        <note>BookSettings.NormalTextBoxLangsLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageThemeLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Page Theme</source>
+        <target xml:lang="es-ES" state="final">Tema de la página</target>
+        <note>BookSettings.PageThemeLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Theme.Description" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog](https://docs.bloomlibrary.org/page-themes-catalog).</source>
+        <target xml:lang="es-ES" state="final">Los temas de página son un conjunto de márgenes, bordes y otros ajustes de página. Para obtener información sobre cada tema, consulte [Catálogo de temas de página](https://docs.bloomlibrary.org/page-themes-catalog).</target>
+        <note>BookSettings.Theme.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CoverBackground" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Cover Background</source>
+        <target xml:lang="es-ES" state="final">Fondo de la portada</target>
+        <note>BookSettings.CoverBackground</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Front Cover</source>
+        <target xml:lang="es-ES" state="final">Portada delantera</target>
+        <note>BookSettings.WhatToShowOnCover</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowContentLanguage" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show {0}</source>
+        <target xml:lang="es-ES" state="final">Mostrar {0}</target>
+        <note>BookSettings.ShowContentLanguage</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowWrittenLanguageTitle" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show Title in {0}</source>
+        <target xml:lang="es-ES" state="final">Mostrar título en {0}</target>
+        <note>BookSettings.ShowWrittenLanguageTitle</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowLanguageName" sil:dynamic="true">
+        <source xml:lang="en">Show Language Name</source>
+        <target xml:lang="es-ES" state="translated">Mostrar nombre del idioma</target>
+        <note>BookSettings.ShowLanguageName</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowTopic" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show Topic</source>
+        <target xml:lang="es-ES" state="final">Mostrar tema</target>
+        <note>BookSettings.ShowTopic</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Page Numbers</source>
+        <target xml:lang="es-ES" state="final">Números de página</target>
+        <note>BookSettings.PageNumbers</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowPageNumbers" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show Page Numbers</source>
+        <target xml:lang="es-ES" state="final">Mostrar números de página</target>
+        <note>BookSettings.ShowPageNumbers</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Front &amp; Back Matter</source>
+        <target xml:lang="es-ES" state="final">Material de las páginas de inicio y final</target>
+        <note>BookSettings.FrontAndBackMatter</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FrontAndBackMatter.Description" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Normally, books use the front &amp; back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.</source>
+        <target xml:lang="es-ES" state="final">Normalmente, los libros utilizan el material de las páginas de inicio y final elegido para toda la colección. Con este ajuste, puede hacer que este libro individual utilice uno diferente.</target>
+        <note>BookSettings.FrontAndBackMatter.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Resolution" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Resolution</source>
+        <target xml:lang="es-ES" state="final">Resolución</target>
+        <note>BookSettings.Resolution</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.DeleteCustomBookStyles" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Delete {0}</source>
+        <target xml:lang="es-ES" state="final">Eliminar {0}</target>
+        <note>BookSettings.DeleteCustomBookStyles</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CustomMigrateCanDelete" sil:dynamic="true">
+        <source xml:lang="en"/>
+        <note>BookSettings.CustomMigrateCanDelete</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.UsingLegacyThemeWithIncompatibleCss" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is using it because the book is using the Legacy-5-6 theme. Click [here] for more information.</source>
+        <target xml:lang="es-ES" state="final">La hoja de estilo {0} de este libro es incompatible con los temas modernos. Bloom la utiliza porque el libro utiliza el tema Legacy-5-6. Haga clic [aquí] para obtener más información.</target>
+        <note>BookSettings.UsingLegacyThemeWithIncompatibleCss</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Bloom found a known version of {0} in this book and replaced it with a modern theme. You can delete it unless you still need to publish the book from an earlier version of Bloom.</source>
+        <target xml:lang="es-ES" state="final">Bloom encontró una versión conocida de {0} en este libro y la sustituyó por un tema moderno. Puede borrarlo a menos que aún necesite publicar el libro desde una versión anterior de Bloom.</target>
+        <note>BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.IgnoringIncompatibleCssCanDelete" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is currently ignoring it. If you don't need those customizations any more, you can delete your {0}. Click [here] for more information.</source>
+        <target xml:lang="es-ES" state="final">La hoja de estilo {0} de este libro es incompatible con los temas modernos. Bloom la ignora actualmente. Si ya no necesita esas personalizaciones, puede borrar su {0}. Haga clic [aquí] para obtener más información.</target>
+        <note>BookSettings.IgnoringIncompatibleCssCanDelete</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.IgnoringIncompatibleCss" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">The {0} stylesheet of this book is incompatible with modern themes. Bloom is currently ignoring it. Click [here] for more information.</source>
+        <target xml:lang="es-ES" state="final">La hoja de estilo {0} de este libro es incompatible con los temas modernos. Bloom la ignora actualmente. Haga clic [aquí] para obtener más información.</target>
+        <note>BookSettings.IgnoringIncompatibleCss</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ThemeDisablesOptionsNotice" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">The selected page theme does not support the following settings.</source>
+        <target xml:lang="es-ES" state="final">El tema de página seleccionado no admite los siguientes ajustes.</target>
+        <note>BookSettings.ThemeDisablesOptionsNotice</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.default" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="es-ES" state="final">Por defecto</target>
+        <note>AppearanceTheme.default</note>
+      </trans-unit>
+      <!-- <trans-unit id="AppearanceTheme.rounded-border-bottom-number-ebook" sil:dynamic="true">
+        <source xml:lang="en">Experimental Rounded Border</source>
+        <note>AppearanceTheme.ebook-rounded-border-bottom-number</note>
+      </trans-unit> -->
+      <trans-unit id="AppearanceTheme.zero-margin-ebook" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Zero Margin Ebook</source>
+        <target xml:lang="es-ES" state="final">eBook de margen cero</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Narrow Margin Ebook</source>
+        <target xml:lang="es-ES" state="final">eBook de margen estrecho</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.rounded-border-ebook" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Rounded Border Ebook</source>
+        <target xml:lang="es-ES" state="final">eBook de bordes redondeados</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.legacy-5-6" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Legacy (Bloom 5.6)</source>
+        <target xml:lang="es-ES" state="final">Legacy (Bloom 5.6)</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
     </body>
   </file>

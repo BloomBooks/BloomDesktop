@@ -147,11 +147,14 @@ namespace Bloom.Edit
                     RequestBrowserToSave();
                 },
                 // updateBookWithPageContent
-                (string pageId, string htmlAndUserStyles) =>
-                    UpdateBookDomFromBrowserPageContent(htmlAndUserStyles),
+                (string pageId, string pageContentData) =>
+                    UpdateBookDomFromBrowserPageContent(pageContentData),
                 // saveBook
                 () =>
                 {
+                    if (_modifiedPageElement == null)
+                        return;
+
                     CurrentBook.SavePageToDisk(_modifiedPageElement, _nextSaveMustBeFull);
                     _nextSaveMustBeFull = false;
                     _pageHasUnsavedDataDerivedChange = false;
@@ -225,12 +228,18 @@ namespace Bloom.Edit
                             // We are setting skipSaveToDisk true so that we can do it ourselves here BEFORE
                             // the postponed work, which is going to shut everything down and would prevent
                             // the normal automatic save-to-disk from working.
+                            // If the save failed before this action gets called, Delayed is true, and PostponedWork
+                            // doesn't get done at all. This typically means the collection will not close.
+                            // However, FailureAction should be called in this case which allows closing the collection
+                            // to try again. If we do try again and the same page fails again, the state machine will
+                            // call this action anyway. So, finally PostponedWork will get called and we can close the collection.
                             CurrentBook.Save();
                             args.PostponedWork();
                             return null;
                         },
                         doIfNotInRightStateToSave: () => args.Delayed = false, // go ahead and quit now
-                        skipSaveToDisk: true
+                        skipSaveToDisk: true,
+                        failureAction: args.FailureAction
                     );
                 }
             });
@@ -282,17 +291,15 @@ namespace Bloom.Edit
         /// Enhance: ideally we would use a mutation observer so the browser knows whether anything needs saving,
         /// and this method would get something indicating it doesn't need to save if that's so.
         /// </summary>
-        public void UpdateBookDomFromBrowserPageContent(string htmlAndUserStyles)
+        public void UpdateBookDomFromBrowserPageContent(string pageContentData)
         {
-            if (htmlAndUserStyles != null)
+            if (pageContentData != null)
             {
-                var endHtml = htmlAndUserStyles.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
+                var endHtml = pageContentData.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
                 if (endHtml > 0)
                 {
-                    var bodyHtml = htmlAndUserStyles.Substring(0, endHtml);
-                    var userCssContent = htmlAndUserStyles.Substring(
-                        endHtml + "<SPLIT-DATA>".Length
-                    );
+                    var bodyHtml = pageContentData.Substring(0, endHtml);
+                    var userCssContent = pageContentData.Substring(endHtml + "<SPLIT-DATA>".Length);
                     var docFromBrowser = GetCleanCurrentPageFromBodyAndCss(
                         bodyHtml,
                         userCssContent
@@ -315,64 +322,42 @@ namespace Bloom.Edit
             string userCssContent
         )
         {
-            try
+            // If anything goes badly wrong here, we want to throw rather then just bringing up a dialog.
+            // The process of saving the page content to the DOM should either succeed or throw, so that
+            // we don't get stuck in an invalid state that locks up the UI.
+
+            if (string.IsNullOrEmpty(bodyHtml))
+                throw new ApplicationException("Got an empty body while trying to save page");
+
+            var content = bodyHtml;
+            XmlDocument dom;
+
+            //todo: deal with exception that can come out of this
+            dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
+            var bodyDom = dom.SelectSingleNode("//body");
+
+            var browserDomPage = bodyDom.SelectSingleNode(
+                "//body//div[contains(@class,'bloom-page')]"
+            );
+            if (browserDomPage == null)
+                throw new ApplicationException(
+                    "Got a null browserDomPage while trying to save page"
+                ); //why? but I've seen it happen
+
+            // We've seen pages get emptied out, and we don't know why. This is a safety check.
+            // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
+            if (BookStorage.CheckForEmptyMarginBoxOnPage(browserDomPage as XmlElement))
             {
-                // unlikely, but if we somehow couldn't get the new content, better keep the old.
-                // This MIGHT be able to happen in some cases of very fast page clicking, where
-                // the page isn't fully enough loaded to expose the functions we use to get the
-                // content. In that case, the user can't have made changes, so not saving is fine.
-                if (string.IsNullOrEmpty(bodyHtml))
-                    return null;
-
-                var content = bodyHtml;
-                XmlDocument dom;
-
-                //todo: deal with exception that can come out of this
-                dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
-                var bodyDom = dom.SelectSingleNode("//body");
-
-                var browserDomPage = bodyDom.SelectSingleNode(
-                    "//body//div[contains(@class,'bloom-page')]"
-                );
-                if (browserDomPage == null)
-                    return null; //why? but I've seen it happen
-
-                // We've seen pages get emptied out, and we don't know why. This is a safety check.
-                // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
-                if (BookStorage.CheckForEmptyMarginBoxOnPage(browserDomPage as XmlElement))
-                {
-                    // This has been logged and reported to the user. We don't want to save the empty page.
-                    return null;
-                }
-
-                SaveCustomizedCssRules(dom, userCssContent);
-                try
-                {
-                    XmlHtmlConverter.ThrowIfHtmlHasErrors(dom.OuterXml);
-                }
-                catch (Exception e)
-                {
-                    //var exceptionWithHtmlContents = new Exception(content);
-                    ErrorReport.NotifyUserOfProblem(
-                        e,
-                        "Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
-                        e.Message,
-                        Environment.NewLine
-                    );
-                }
-                return dom;
+                //We don't want to save the empty page.
+                // This has been logged and reported to the user; we would prefer not to report it again, but we need the exception
+                // handling inside the state machine to run so we can maintain a valid state, so we throw anyway.
+                // Enhance: make that reporter not report again when we know we have already reported.
+                throw new ApplicationException("Check for valid margin box failed");
             }
-            catch (Exception e)
-            {
-                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-                Debug.Fail(
-                    "Debug Mode Only: Error while trying to read changes to CSSRules. In Release, this just gets swallowed. Will now re-throw the exception."
-                );
-#if DEBUG
-                throw;
-#endif
-                return null;
-            }
+
+            SaveCustomizedCssRules(dom, userCssContent);
+            XmlHtmlConverter.ThrowIfHtmlHasErrors(dom.OuterXml);
+            return dom;
         }
 
         private void SaveCustomizedCssRules(XmlDocument dom, string userCssContent)
@@ -1526,14 +1511,16 @@ namespace Bloom.Edit
             Func<string> doAfterSaving,
             Action doIfNotInRightStateToSave,
             bool forceFullSave = false,
-            bool skipSaveToDisk = false
+            bool skipSaveToDisk = false,
+            Action failureAction = null
         )
         {
             _nextSaveMustBeFull |= forceFullSave;
             if (
                 !_stateMachine.ToSavePending(
                     doAfterSaving,
-                    saveActionHandlesSaveBook: skipSaveToDisk
+                    saveActionHandlesSaveBook: skipSaveToDisk,
+                    failureAction
                 )
             )
                 doIfNotInRightStateToSave();
@@ -1554,21 +1541,9 @@ namespace Bloom.Edit
         /// Called by an API from JavaScript code invoked by RequestBrowserToSave, this receives the body and user-defined
         /// styles of the current page and saves them to the book DOM.
         /// </summary>
-        /// <param name="htmlAndUserStyles"></param>
-        public void ReceivePageContent(string htmlAndUserStyles)
+        public void ReceivePageContent(string pageContentData)
         {
-            if (htmlAndUserStyles.StartsWith("ERROR:"))
-            {
-                ErrorReport.NotifyUserOfProblem(
-                    "Sorry, Bloom was not able to save this this page (validating page).{1}{1}+{0}",
-                    htmlAndUserStyles,
-                    Environment.NewLine
-                );
-            }
-            else
-            {
-                _stateMachine.ToSavedAndStripped(htmlAndUserStyles);
-            }
+            _stateMachine.ToSavedAndStripped(pageContentData);
         }
 
         private XmlElement _modifiedPageElement;
@@ -1674,17 +1649,30 @@ namespace Bloom.Edit
                         $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                     );
 
-                /* Right now, when we're trying to remove saves and simplify everytihng, we are
-                   leaving the thumbnail out-of-date until you change pages, just like we do when the user adds text.
-                   Enhance: Eventually when saving is less disruptive, we will bring it back.
-                              
-                    SaveNow();
-                    _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
-                */
+                /* We're Saving to the DOM here:
+                 * 1) Makes it transparent if it should be:
+                 *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,
+                 *        so the check to see if we need to make it tranparent says "no".
+                 *        This could probably be done in a smarter way that isn't occuring to me at the moment.
+                 * 2) It is needed if we're going to update the thumbnail (we could live without this)
+                 */
+                SaveThen(
+                    doAfterSaving: () =>
+                    {
+                        _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 
-                Logger.WriteMinorEvent("Finished ChangePicture {0}", (object)imageInfo.FileName);
-                Analytics.Track("Change Picture");
-                Logger.WriteEvent("ChangePicture {0}...", (object)imageInfo.FileName);
+                        Logger.WriteMinorEvent(
+                            "Finished ChangePicture {0}",
+                            (object)imageInfo.FileName
+                        );
+                        Analytics.Track("Change Picture");
+                        Logger.WriteEvent("ChangePicture {0}...", (object)imageInfo.FileName);
+                        return _pageSelection.CurrentSelection.Id; // we're not changing pages
+                    },
+                    doIfNotInRightStateToSave: () => { },
+                    forceFullSave: false,
+                    skipSaveToDisk: false // we can wait for the normal save to disk
+                );
             }
             catch (Exception e)
             {

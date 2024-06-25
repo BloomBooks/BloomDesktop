@@ -3938,7 +3938,10 @@ namespace Bloom.Book
                     {
                         // We've seen pages get emptied out, and we don't know why. This is a safety check.
                         // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
-                        if (BookStorage.CheckForEmptyMarginBoxOnPage(pageToSaveToDisk))
+                        if (
+                            pageToSaveToDisk != null
+                            && BookStorage.CheckForEmptyMarginBoxOnPage(pageToSaveToDisk)
+                        )
                         {
                             // This has been logged and reported to the user. We don't want to save the empty page.
                             return;
@@ -3955,10 +3958,6 @@ namespace Bloom.Book
                 if (!BookInfo.FileNameLocked)
                     Storage.UpdateBookFileAndFolderName(CollectionSettings);
                 //review used to have   UpdateBookFolderAndFileNames(data);
-
-                //Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
-                //e.g., look for the class "cover"
-                InvokeContentsChanged(null); //enhance: above we could detect if anything actually changed
             }
             catch (Exception error)
             {
@@ -4558,6 +4557,8 @@ namespace Bloom.Book
             // wait to see if what I did made and accesibility check change. Of course we're *probably*
             // ready to run this much, much sooner.
             Task.Delay(1000).ContinueWith((task) => _bookSavedEvent.Raise(this));
+
+            InvokeContentsChanged(null); //enhance: could we detect if anything actually changed?
         }
 
         /// <summary>
@@ -5553,6 +5554,11 @@ namespace Bloom.Book
         {
             // Languages which have been selected for display in this book need to be selected
             return GetRequiredLanguages().Contains(langCode);
+        }
+
+        public bool IsCollectionLanguage(string langCode)
+        {
+            return CollectionSettings.GetAllLanguageTags().Contains(langCode);
         }
 
         private IEnumerable<string> GetRequiredLanguages()
