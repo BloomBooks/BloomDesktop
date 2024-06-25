@@ -685,12 +685,7 @@ export class BubbleManager {
             // Don't use an arrow function as an event handler here.
             //These can never be identified as duplicate event listeners, so we'll end up with tons
             // of duplicates.
-            element.addEventListener("focusin", ev => {
-                // Restore hiding these when we focus a bubble, so they don't get in the way of working on
-                // that bubble.
-                this.turnOnHidingImageButtons();
-                BubbleManager.onFocusSetActiveElement(ev);
-            });
+            element.addEventListener("focusin", this.handleFocusInEvent);
             if (
                 includeCkEditor &&
                 element.classList.contains("bloom-editable")
@@ -698,6 +693,13 @@ export class BubbleManager {
                 attachToCkEditor(element);
             }
         });
+    }
+
+    private handleFocusInEvent(ev: Event) {
+        // Restore hiding these when we focus a bubble, so they don't get in the way of working on
+        // that bubble.
+        theOneBubbleManager.turnOnHidingImageButtons();
+        BubbleManager.onFocusSetActiveElement(ev);
     }
 
     // This should not return any .bloom-imageContainers that have imageContainer ancestors.
@@ -2728,6 +2730,12 @@ export class BubbleManager {
             }
 
             this.duplicateBubbleFamily(patriarchBubble, bubbleSpecToDuplicate);
+
+            // The JQuery resizable event handler needs to be removed after the duplicate bubble
+            // family is created, and then the over picture editing needs to be initialized again.
+            // See BL-13617.
+            this.removeJQueryResizableWidget();
+            this.initializeOverPictureEditing();
         }
     }
 
@@ -3172,6 +3180,12 @@ export class BubbleManager {
             thisOverPictureElement.find(".bloom-ui").remove(); // Just in case somehow one is stuck in there
             thisOverPictureElement.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
         });
+    }
+
+    private removeJQueryResizableWidget() {
+        const allOverPictureElements = $("body").find(kTextOverPictureSelector);
+        // Removes the resizable functionality completely. This will return the element back to its pre-init state.
+        allOverPictureElements.resizable("destroy");
     }
 
     // Make any added BubbleManager textboxes draggable, clickable, and resizable.
