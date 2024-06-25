@@ -767,6 +767,11 @@ namespace Bloom.Edit
                     _model.ChangePicture(imageId, imageSrc, palasoImage);
                 }
             }
+            else
+            {
+                // remove imageId from the element since it's no longer needed
+                RemoveUnneededImageId(imageId);
+            }
         }
 
         public void OnCopyImage(UrlPathString imageSrc)
@@ -779,6 +784,7 @@ namespace Bloom.Edit
 
         public void OnPasteImage(string imageId, UrlPathString priorImageSrc)
         {
+            var pictureChanged = false;
             using (var measure = PerformanceMeasurement.Global.Measure("Paste Image"))
             {
                 PalasoImage clipboardImage = null;
@@ -823,6 +829,7 @@ namespace Bloom.Edit
                             clipboardImage.OriginalFilePath
                         );
                         _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                        pictureChanged = true;
                     }
                     else
                     {
@@ -833,6 +840,7 @@ namespace Bloom.Edit
                                 "[Paste Image] Pasting image directly from clipboard (e.g. screenshot)"
                             );
                             _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                            pictureChanged = true;
                         }
                         //they pasted a path to a png
                         else if (
@@ -845,6 +853,7 @@ namespace Bloom.Edit
                                 clipboardImage.OriginalFilePath
                             );
                             _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                            pictureChanged = true;
                         }
                         else // they pasted a path to some other bitmap format
                         {
@@ -874,6 +883,7 @@ namespace Bloom.Edit
                                 using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
                                 {
                                     _model.ChangePicture(imageId, priorImageSrc, palasoImage);
+                                    pictureChanged = true;
                                 }
                             }
                         }
@@ -890,6 +900,8 @@ namespace Bloom.Edit
                 {
                     if (clipboardImage != null)
                         clipboardImage.Dispose();
+                    if (!pictureChanged)
+                        RemoveUnneededImageId(imageId);
                 }
             }
 
@@ -1107,6 +1119,7 @@ namespace Bloom.Edit
                     false
                 );
 #endif
+                var imageChanged = false;
                 if (DialogResult.OK == result && dlg.ImageInfo != null)
                 {
                     using (PerformanceMeasurement.Global?.Measure("Processing Image"))
@@ -1179,6 +1192,7 @@ namespace Bloom.Edit
                             }
                             dlg.ImageInfo.SetCurrentFilePath(newImagePath);
                             SaveChangedImage(imageId, imageSrc, dlg.ImageInfo, exceptionMsg);
+                            imageChanged = true;
                         }
                         catch (Exception error)
                         {
@@ -1204,6 +1218,11 @@ namespace Bloom.Edit
                         );
 #endif
                     }
+                }
+                if (!imageChanged)
+                {
+                    // remove imageId from the element since it's no longer needed
+                    RemoveUnneededImageId(imageId);
                 }
 
                 // If the user changed the search language for art of reading, remember their change. But if they didn't
@@ -1356,11 +1375,13 @@ namespace Bloom.Edit
             string exceptionMsg
         )
         {
+            var imageChanged = false;
             try
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
                 _model.ChangePicture(imageId, priorImageSrc, imageInfo);
+                imageChanged = true;
             }
             catch (System.IO.IOException error)
             {
@@ -1377,6 +1398,22 @@ namespace Bloom.Edit
                 error.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
                 ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
             }
+            finally
+            {
+                if (!imageChanged)
+                {
+					// remove imageId from the element since it's no longer needed
+					RemoveUnneededImageId(imageId);
+                }
+            }
+        }
+
+        public void RemoveUnneededImageId(string imageId)
+        {
+            Model.GetEditingBrowser()
+                .RunJavascriptFireAndForget(
+                    $"editTabBundle.getEditablePageBundleExports().removeImageId('{imageId}')"
+                );
         }
 
         private bool ShouldBailOutBecauseUserAgreedNotToUseJpeg(PalasoImage imageInfo)
