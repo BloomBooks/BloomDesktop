@@ -143,7 +143,7 @@ namespace BloomTests.Book
         [Test]
         public void InjectXMatter_SpanWithNameOfLanguage2_GetsLang()
         {
-            var frontMatterDom = new SafeXmlDocument(new XmlDocument());
+            var frontMatterDom = SafeXmlDocument.Create();
             frontMatterDom.LoadXml(
                 @"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body>
 						 <div class='bloom-page cover coverColor bloom-frontMatter' data-page='required'>
@@ -163,7 +163,7 @@ namespace BloomTests.Book
         [Test]
         public void InjectXMatter_HasBackMatter_BackMatterInjectedAtEnd()
         {
-            var xMatterDom = new SafeXmlDocument(new XmlDocument());
+            var xMatterDom = SafeXmlDocument.Create();
             xMatterDom.LoadXml(
                 @"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body>
 						 <div class='bloom-page cover coverColor bloom-frontMatter' data-page='required'>
@@ -208,7 +208,7 @@ namespace BloomTests.Book
         [Test]
         public void InjectXMatter_GenericLanguageFieldsHaveCorrectEffectiveLangAttribute()
         {
-            var xMatterDom = new SafeXmlDocument(new XmlDocument());
+            var xMatterDom = SafeXmlDocument.Create();
             var dom = new HtmlDom(
                 @"<html><head></head><body>
 					<div class='bloom-page titlePage bloom-frontMatter'>

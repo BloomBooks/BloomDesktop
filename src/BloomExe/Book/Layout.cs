@@ -245,30 +245,30 @@ namespace Bloom.Book
 
             contents = "{\"root\": " + contents + "}";
             //I found it really hard to work with the json libraries, so I just convert it to xml. It's weird xml, but at least it's not like trying to mold smoke.
-            var doc = JsonConvert.DeserializeXmlNode(contents);
+            var doc = new SafeXmlDocument(JsonConvert.DeserializeXmlNode(contents));
             var root = doc.SelectSingleNode("root");
 
-            foreach (XmlElement element in root.SelectNodes("layouts")) // NOT SafeXmlElement
+            foreach (SafeXmlElement element in root.SafeSelectNodes("layouts"))
             {
                 foreach (var sizeAndOrientation in element.ChildNodes)
                 {
-                    if (sizeAndOrientation is XmlText)  // NOT SafeXmlText
+                    if (sizeAndOrientation is SafeXmlText)
                     {
                         layouts.Add(
                             new Layout()
                             {
                                 SizeAndOrientation = SizeAndOrientation.FromString(
-                                    ((XmlText)sizeAndOrientation).InnerText // NOT SafeXmlText
+                                    ((SafeXmlText)sizeAndOrientation).InnerText
                                 )
                             }
                         );
                     }
-                    else if (sizeAndOrientation is XmlElement)
+                    else if (sizeAndOrientation is SafeXmlElement)
                     {
-                        SizeAndOrientation soa = SizeAndOrientation.FromString(
-                            ((XmlElement)sizeAndOrientation).Name   // NOT SafeXmlElement
+                        var soa = SizeAndOrientation.FromString(
+                            ((SafeXmlElement)sizeAndOrientation).Name
                         );
-                        foreach (XmlElement option in ((XmlElement)sizeAndOrientation).ChildNodes)  // NOT SafeXmlElement
+                        foreach (SafeXmlElement option in ((SafeXmlElement)sizeAndOrientation).ChildNodes)
                         {
                             if (option.Name.ToLowerInvariant() != "styles")
                                 continue; //we don't handle anything else yet

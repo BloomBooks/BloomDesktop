@@ -308,13 +308,13 @@ namespace Bloom.Edit
 
         /// <summary>
         /// Given the body of the editable page and the CSS for any user-defined styles (from the
-        /// editable page browser), this method creates a new XmlDocument that contains the same state.
+        /// editable page browser), this method creates a new SafeXmlDocument that contains the same state.
         /// It does some additional cleanup of things that get added to the page as UI controls
         /// to support editing. (Enhance: it would be nice if ALL the cleanup happened in one place,
         /// probably the Javascript method that retrieves the page content).
         /// (Nicer still if cleanup didn't leave the page in an invalid state, see BL-13502.)
         /// </summary>
-        private XmlDocument GetCleanCurrentPageFromBodyAndCss(
+        private SafeXmlDocument GetCleanCurrentPageFromBodyAndCss(
             string bodyHtml,
             string userCssContent
         )
@@ -327,7 +327,7 @@ namespace Bloom.Edit
                 throw new ApplicationException("Got an empty body while trying to save page");
 
             var content = bodyHtml;
-            XmlDocument dom;
+            SafeXmlDocument dom;
 
             //todo: deal with exception that can come out of this
             dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
@@ -343,7 +343,7 @@ namespace Bloom.Edit
 
             // We've seen pages get emptied out, and we don't know why. This is a safety check.
             // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
-            if (BookStorage.CheckForEmptyMarginBoxOnPage(SafeXmlElement.FakeWrap(browserDomPage as XmlElement)))
+            if (BookStorage.CheckForEmptyMarginBoxOnPage(browserDomPage as SafeXmlElement))
             {
                 //We don't want to save the empty page.
                 // This has been logged and reported to the user; we would prefer not to report it again, but we need the exception
@@ -357,7 +357,7 @@ namespace Bloom.Edit
             return dom;
         }
 
-        private void SaveCustomizedCssRules(XmlDocument dom, string userCssContent)
+        private void SaveCustomizedCssRules(SafeXmlDocument dom, string userCssContent)
         {
             // Yes, this wipes out everything else in the head. At this point, the only things
             // we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
@@ -1546,7 +1546,7 @@ namespace Bloom.Edit
         /// being edited with the CSS that defines the user-defined styles. It updates the current book DOM
         /// to match whatever the browser has.
         /// </summary>
-        public void UpdateBookDomFromBrowserPageContent(XmlDocument docFromBrowser)
+        public void UpdateBookDomFromBrowserPageContent(SafeXmlDocument docFromBrowser)
         {
             //BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
             //this old code:
@@ -1586,7 +1586,7 @@ namespace Bloom.Edit
                 throw err;
             }
             //OK, looks safe, time to save.
-            var editedDom = HtmlDom.FromDoc(docFromBrowser);
+            var editedDom = new HtmlDom(docFromBrowser);
             var newPageData = GetPageData(editedDom.RawDom);
             _nextSaveMustBeFull = CurrentBook.UpdateDomFromEditedPage(
                 editedDom,

@@ -1,7 +1,7 @@
 ﻿using System.IO;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.SafeXml;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
@@ -231,7 +231,7 @@ namespace BloomTests.web
     </div>
 </body></html>
 ";
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(htmlLeveledReader);
             var dom = new HtmlDom(doc);
             var storage = CreateMockStorage(dom, "GetPagesForReader");

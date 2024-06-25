@@ -48,7 +48,7 @@ namespace BloomTests.Book
         [Test]
         public void PageSizeName_USLetter()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 @"<html ><body><div id='foo'></div><div class='blah bloom-page LetterPortrait'></div></body></html>"
             );
@@ -61,7 +61,7 @@ namespace BloomTests.Book
         [Test]
         public void PageSizeName_A5LANDSCAPE()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 @"<html ><body><div id='foo'></div><div class='blah bloom-page A5Landscape'></div></body></html>"
             );
@@ -74,7 +74,7 @@ namespace BloomTests.Book
         [Test]
         public void IsLandscape_portraitCSS_false()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 @"<html ><body><div id='foo'></div><div class='blah bloom-page a5Portrait'></div></body></html>"
             );
@@ -84,7 +84,7 @@ namespace BloomTests.Book
         [Test]
         public void IsLandscape_landscapeCSS_true()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 @"<html ><body><div id='foo'></div><div class='blah bloom-page A5Landscape'></div></body></html>"
             );

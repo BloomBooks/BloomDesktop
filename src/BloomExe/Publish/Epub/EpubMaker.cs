@@ -2822,14 +2822,14 @@ namespace Bloom.Publish.Epub
             {
                 if (Path.GetFileName(xhtmlFileName) == "nav.xhtml")
                     continue;
-                var bookDoc = new XmlDocument();
+                var bookDoc = SafeXmlDocument.Create();
                 bookDoc.PreserveWhitespace = true;
                 bookDoc.Load(xhtmlFileName);
-                var nsmgr = new XmlNamespaceManager(bookDoc.NameTable);
+                var nsmgr = bookDoc.GetNewNamespaceManager();
                 nsmgr.AddNamespace("x", "http://www.w3.org/1999/xhtml");
                 if (
                     PublishHelper.FixXmlDomReferencesForBadFonts(
-                        new SafeXmlDocument(bookDoc),
+                        bookDoc,
                         defaultFont,
                         badFonts,
                         nsmgr,
@@ -3052,11 +3052,12 @@ namespace Bloom.Publish.Epub
         /// </remarks>
         private void PruneSvgFileOfCruft(string filename)
         {
-            var xdoc = new XmlDocument();
+            var xdoc = SafeXmlDocument.Create();
             xdoc.Load(filename);
-            var unwantedElements = new List<XmlElement>();
+            var unwantedElements = new List<SafeXmlElement>();
             var unwantedAttrsCount = 0;
-            foreach (var xel in xdoc.SelectNodes("//*").Cast<XmlElement>()) // NOT SafeXmlElement
+			// The SVG has namespaces, but we don't want them used to change the xpath expression.
+			foreach (var xel in xdoc.SafeSelectNodes("//*", null).Cast<SafeXmlElement>())
             {
                 if (
                     xel.Name.StartsWith("inkscape:")
@@ -3073,9 +3074,9 @@ namespace Bloom.Publish.Epub
                 else
                 {
                     // Removing the attribute here requires working from the end of the list of attributes.
-                    for (int i = xel.Attributes.Count - 1; i >= 0; --i)
+                    for (int i = xel.AttributePairs.Length - 1; i >= 0; --i)
                     {
-                        var attr = xel.Attributes[i];
+                        var attr = xel.AttributePairs[i];
                         if (
                             attr.Name.StartsWith("inkscape:")
                             || attr.Name.StartsWith("sodipodi:")
@@ -3083,7 +3084,7 @@ namespace Bloom.Publish.Epub
                             || attr.Name == "overflow"
                         ) // epubcheck for epub 3.2 reports error: SVG version 2 doesn't have this attribute
                         {
-                            xel.RemoveAttributeAt(i);
+                            xel.RemoveAttribute(attr.Name);
                             ++unwantedAttrsCount;
                         }
                     }
@@ -3091,7 +3092,7 @@ namespace Bloom.Publish.Epub
             }
             foreach (var xel in unwantedElements)
             {
-                var parent = (XmlElement)xel.ParentNode;    // NOT SafeXmlElement
+                var parent = (SafeXmlElement)xel.ParentNode;
                 parent.RemoveChild(xel);
             }
             //System.Diagnostics.Debug.WriteLine($"PruneSvgFileOfCruft(\"{filename}\"): removed {unwantedElements.Count} elements and {unwantedAttrsCount} attributes");

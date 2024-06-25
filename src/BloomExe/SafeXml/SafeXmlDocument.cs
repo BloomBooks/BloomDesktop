@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System;
+using System.Xml;
 using SIL.Xml;
 
 namespace Bloom.SafeXml
@@ -19,6 +20,11 @@ namespace Bloom.SafeXml
         private XmlDocument Doc => (XmlDocument)_node;
         internal object Lock = new object();
 
+        internal static SafeXmlDocument Create()
+        {
+            return new SafeXmlDocument(new XmlDocument());
+        }
+
         public SafeXmlDocument(XmlDocument doc)
             : base(doc, null)
         {
@@ -29,6 +35,12 @@ namespace Bloom.SafeXml
         {
             lock (Lock)
                 Doc.LoadXml(xml);
+        }
+
+        public void Load(string filename)
+        {
+            lock (Lock)
+                Doc.Load(filename);
         }
 
         public bool PreserveWhitespace
@@ -76,6 +88,18 @@ namespace Bloom.SafeXml
         {
             lock (Lock)
                 Doc.WriteTo(writer);
+        }
+
+        public void Save(string path)
+        {
+            lock (Lock)
+                Doc.Save(path);
+        }
+
+        public void Save(XmlWriter writer)
+        {
+            lock (Lock)
+                Doc.Save(writer);
         }
 
         internal SafeXmlNode[] GetElementsByTagName(string name)

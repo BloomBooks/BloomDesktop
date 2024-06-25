@@ -9,19 +9,5 @@ namespace Bloom.SafeXml
         public SafeXmlAttribute(XmlAttribute node, SafeXmlDocument doc) : base(node, doc)
         {
         }
-
-        public string Value
-        {
-            get
-            {
-                lock (_doc.Lock)
-                    return ((XmlAttribute)_node).Value;
-            }
-            set
-            {
-                lock (_doc.Lock)
-                    ((XmlAttribute)_node).Value = value;
-            }
-        }
     }
 }

@@ -99,7 +99,7 @@ namespace BloomTests
 
         protected override XmlNode NodeOrDom
         {
-            get { return XmlHtmlConverter.GetXmlDomFromHtmlFile(_path, false); }
+            get { return XmlHtmlConverter.GetXmlDomFromHtmlFile(_path, false).UnsafePrivateWrappedXmlDocument_ForTestsOnly; }
         }
     }
 

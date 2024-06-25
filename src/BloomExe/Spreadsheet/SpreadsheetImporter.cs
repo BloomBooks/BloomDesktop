@@ -413,7 +413,7 @@ namespace Bloom.Spreadsheet
 
         class PageRecord
         {
-            public XmlElement Page;
+            public SafeXmlElement Page;
             public string SourceBookPath;
         }
 
@@ -453,7 +453,7 @@ namespace Bloom.Spreadsheet
         /// show in the Add Page dialog for a page that has a div with class pageLabel
         /// and lang en whose content is the requested label (ignoring case).
         /// </summary>
-        private XmlElement GetPageForLabel(string label1)
+        private SafeXmlElement GetPageForLabel(string label1)
         {
             var label = label1.ToLowerInvariant();
             if (_bookTemplatePaths == null)
@@ -491,9 +491,9 @@ namespace Bloom.Spreadsheet
                 _bookTemplatePaths.RemoveAt(0);
                 var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
                 var pages = dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
-                foreach (XmlElement page in pages)
+                foreach (SafeXmlElement page in pages)
                 {
-                    var pageLabel = GetLabelFromPage(SafeXmlElement.FakeWrap(page)).ToLowerInvariant();
+                    var pageLabel = GetLabelFromPage(page).ToLowerInvariant();
                     // If we already found a page with this label, keep using the one we found first.
                     // This is so that if some random template contains a page with an unchanged
                     // label from one of our built-in templates, we will use the original on import.
@@ -519,9 +519,9 @@ namespace Bloom.Spreadsheet
         {
             var head = result.Page.OwnerDocument
                 .GetElementsByTagName("head")
-                .Cast<XmlElement>() // NOT SafeXmlElement
+                .Cast<SafeXmlElement>()
                 .First();
-            var userStylesOnPage = HtmlDom.GetUserModifiableStylesUsedOnPage(SafeXmlElement.FakeWrap(head), SafeXmlElement.FakeWrap(result.Page));
+            var userStylesOnPage = HtmlDom.GetUserModifiableStylesUsedOnPage(head, result.Page);
             var existingUserStyles = Book.Book.GetOrCreateUserModifiedStyleElementFromStorage(
                 _destinationDom.Head
             );
@@ -1110,8 +1110,8 @@ namespace Bloom.Spreadsheet
 
         private int PageNumberToReport => _currentPageIndex + 1 - _frontMatterPagesSeen;
 
-        private List<XmlDocument> _sourcesForDefaultPages;
-        private HashSet<XmlDocument> _sourcesWithExtraStylesheets;
+        private List<SafeXmlDocument> _sourcesForDefaultPages;
+        private HashSet<SafeXmlDocument> _sourcesWithExtraStylesheets;
         private string _activityTemplatePath;
 
         /// <summary>
@@ -1122,8 +1122,8 @@ namespace Bloom.Spreadsheet
         {
             if (_sourcesForDefaultPages == null)
             {
-                _sourcesForDefaultPages = new List<XmlDocument>();
-                _sourcesWithExtraStylesheets = new HashSet<XmlDocument>();
+                _sourcesForDefaultPages = new List<SafeXmlDocument>();
+                _sourcesWithExtraStylesheets = new HashSet<SafeXmlDocument>();
                 var path = Path.Combine(
                     BloomFileLocator.FactoryCollectionsDirectory,
                     "template books",
@@ -1156,10 +1156,10 @@ namespace Bloom.Spreadsheet
             {
                 var templatePage =
                     _sourcesForDefaultPages[i].SelectSingleNode($"//div[@id='{guid}']")
-                    as XmlElement;
+                    as SafeXmlElement;
                 if (templatePage != null)
                 {
-                    ImportPage(SafeXmlElement.FakeWrap(templatePage));
+                    ImportPage(templatePage);
                     if (_sourcesWithExtraStylesheets.Contains(_sourcesForDefaultPages[i]))
                     {
                         // Activity folder is the only one that might require us to copy a stylesheet
@@ -1168,7 +1168,7 @@ namespace Bloom.Spreadsheet
                     var pageLabel =
                         templatePage
                             .SafeSelectNodes(".//div[@class='pageLabel']")
-                            .Cast<XmlElement>() // NOT SafeXmlElement
+                            .Cast<SafeXmlElement>()
                             .FirstOrDefault()
                             ?.InnerText ?? "";
                     Progress($"Adding page {PageNumberToReport} using a {pageLabel} layout");
@@ -1504,7 +1504,7 @@ namespace Bloom.Spreadsheet
                 var templatePage = GetPageForLabel(pageTypeNeeded);
                 if (templatePage != null)
                 {
-                    var safeTemplatePage = SafeXmlElement.FakeWrap(templatePage);
+                    var safeTemplatePage = templatePage;
                     var blocksOnPage = new List<SafeXmlElement>[blockTypeCount];
                     CollectElementsFromPage(safeTemplatePage, blocksOnPage);
                     var typesOnTemplatePage = BlockTypesAvailable(blocksOnPage);

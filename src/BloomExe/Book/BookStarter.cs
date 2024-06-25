@@ -309,8 +309,8 @@ namespace Bloom.Book
             {
                 var sourceDiv =
                     sourceDom.SelectSingleNode("//div[@id='" + div.GetAttribute("id") + "']")
-                    as XmlElement;  // NOT SafeXmlElement
-                SetupIdAndLineage(SafeXmlElement.FakeWrap(sourceDiv), div);
+                    as SafeXmlElement;
+                SetupIdAndLineage(sourceDiv, div);
                 SetupPage(div, bookData);
             }
 

@@ -973,7 +973,7 @@ namespace BloomTests.Book
 										<div class='bloom-editable' data-book='bookTitle' lang='en'>Some English</div>
 								</div>
 						</div></body></html>";
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
 
             var languages = new string[] { "en", "es", "fr" };
@@ -1491,7 +1491,7 @@ namespace BloomTests.Book
 				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'></div>
 			</div>
 		</div>";
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
             TranslationGroupManager.FixDuplicateLanguageDivs(
                 (SafeXmlElement)
@@ -1539,7 +1539,7 @@ namespace BloomTests.Book
 				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'></div>
 			</div>
 		</div>";
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
             TranslationGroupManager.FixDuplicateLanguageDivs(
                 (SafeXmlElement)
@@ -1587,7 +1587,7 @@ namespace BloomTests.Book
 				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'>Xyz text</div>
 			</div>
 		</div>";
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
             TranslationGroupManager.FixDuplicateLanguageDivs(
                 (SafeXmlElement)
@@ -1635,7 +1635,7 @@ namespace BloomTests.Book
 				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'>Second Xyz text</div>
 			</div>
 		</div>";
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
             TranslationGroupManager.FixDuplicateLanguageDivs(
                 (SafeXmlElement)
@@ -1676,7 +1676,7 @@ namespace BloomTests.Book
         [Test]
         public void SortTranslationGroups_YieldsExpectedOrder()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             var input = new List<SafeXmlElement>();
             for (int i = 0; i < 7; i++)
             {
@@ -1704,7 +1704,7 @@ namespace BloomTests.Book
         [Test]
         public void AddThemeVisibleOrderClass_NoSiblings_AddsContentFirst()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             var tg = doc.CreateElement("div");
             tg.SetAttribute("class", "bloom-translationGroup");
             doc.AppendChild(tg);
@@ -1753,7 +1753,7 @@ namespace BloomTests.Book
         [Test]
         public void AddThemeVisibleOrderClass_SiblingL1_AddsContentSecond()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             var tg = doc.CreateElement("div");
             tg.SetAttribute("class", "bloom-translationGroup");
             doc.AppendChild(tg);
@@ -1768,10 +1768,9 @@ namespace BloomTests.Book
             editableFirst.SetAttribute("lang", "fr");
             // We don't want to have to implement SafeXmlDocument.CreateWhitespace, so we'll just
             // wrap the editable element instead of creating a SafeXmlDocument to start with.
-            var safeEditable = SafeXmlElement.FakeWrap(editable);
 			// No fair trying "fr" since that occurs on sibling
 			TranslationGroupManager.AddThemeVisibleOrderClass(
-                safeEditable,
+                editable,
                 false,
                 "en",
                 "fr",
@@ -1783,7 +1782,7 @@ namespace BloomTests.Book
 
             editable.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
             TranslationGroupManager.AddThemeVisibleOrderClass(
-				safeEditable,
+                editable,
                 false,
                 "tpi",
                 "fr",
@@ -1802,7 +1801,7 @@ namespace BloomTests.Book
         [Test]
         public void UpdateContentLanguageClasses_SiblingL1AndL2_AddsContentThird()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             var body = doc.CreateElement("body");
             doc.AppendChild(body);
             var tg = doc.CreateElement("div");
@@ -1842,9 +1841,8 @@ namespace BloomTests.Book
             settings.SetConsistentWithFiles();
 			// We don't want to have to implement SafeXmlDocument.CreateWhitespace, so we'll just
 			// wrap the body element instead of creating a SafeXmlDocument to start with.
-			var safeBody = SafeXmlElement.FakeWrap(body);
 			TranslationGroupManager.UpdateContentLanguageClasses(
-                safeBody,
+                body,
                 bookData,
                 settings,
                 "xyz",
@@ -1908,7 +1906,7 @@ namespace BloomTests.Book
         [Test]
         public void AddThemeVisibleOrderClass_NotVisible_Or_Irrelevant_AddsNothing()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             var tg = doc.CreateElement("div");
             tg.SetAttribute("class", "bloom-translationGroup");
             doc.AppendChild(tg);
@@ -1978,7 +1976,7 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasNoTextBlock_False()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml("<html><body><div class='bloom-page'></div></body></html>");
             var page = (SafeXmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
             Assert.That(
@@ -1990,7 +1988,7 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithNoDataDefaultLangs_True()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2006,7 +2004,7 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithN1_False()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2025,7 +2023,7 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_True()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2041,7 +2039,7 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_AndDataVisibilityVariable_False()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2060,7 +2058,7 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_AndDataVisibilityVariable_Legacy_True()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2076,7 +2074,7 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithN1_AndOneWithAuto_True()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>

@@ -21,7 +21,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Text;
-using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -43,7 +42,7 @@ namespace Bloom.Book
 
         public HtmlDom()
         {
-            _dom = new SafeXmlDocument(new XmlDocument());
+            _dom = SafeXmlDocument.Create();
             _dom.LoadXml("<html><head></head><body></body></html>");
         }
 
@@ -57,13 +56,6 @@ namespace Bloom.Book
             _dom = domToWrap.Clone();
         }
 
-        public static HtmlDom FromDoc(XmlDocument docToWrap)
-        {
-            var result = new HtmlDom();
-            result._dom = new SafeXmlDocument(docToWrap);
-            return result;
-        }
-
         /// <summary>
         /// Make a DOM out of the input
         /// </summary>
@@ -75,7 +67,7 @@ namespace Bloom.Book
         /// set it where we know we do need it.</param>
         public HtmlDom(string xhtml, bool preserveWhiteSpace = false)
         {
-            _dom = new SafeXmlDocument(new XmlDocument());
+            _dom = SafeXmlDocument.Create();
             if (preserveWhiteSpace)
                 _dom.PreserveWhitespace = true;
             _dom.LoadXml(xhtml);
@@ -143,11 +135,11 @@ namespace Bloom.Book
                 return xmlContent;
             try
             {
-                XmlDocument doc = new XmlDocument();
+                var doc = SafeXmlDocument.Create();
                 doc.LoadXml("<div>" + xmlContent + "</div>"); // may be multiple paragraphs
                 var nodes = doc.FirstChild
                     .SafeSelectNodes("(.//div|.//span)[@id]")
-                    .Cast<XmlElement>() // NOT SafeXmlElement!
+                    .Cast<SafeXmlElement>()
                     .ToList();
                 foreach (var node in nodes)
                 {
@@ -2129,13 +2121,13 @@ namespace Bloom.Book
         {
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(htmlContent);
             var styles = dom.SafeSelectNodes("/html/head/style");
-            foreach (XmlElement style in styles)    // NOT SafeXmlElement!
+            foreach (SafeXmlElement style in styles)
             {
                 var cssContent = style.InnerText;
                 FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
             }
             var elementsWithStyleAttribute = dom.SafeSelectNodes("/html/body//*[@style]");
-            foreach (XmlElement element in elementsWithStyleAttribute)  // NOT SafeXmlElement!
+            foreach (SafeXmlElement element in elementsWithStyleAttribute)
             {
                 var cssContent = element.GetAttribute("style");
                 if (

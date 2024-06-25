@@ -7,22 +7,8 @@ namespace Bloom.SafeXml
     /// </summary>
     public class SafeXmlCharacterData : SafeXmlLinkedNode
     {
-        public SafeXmlCharacterData(XmlNode node, SafeXmlDocument doc) : base(node, doc)
+        public SafeXmlCharacterData(XmlCharacterData node, SafeXmlDocument doc) : base(node, doc)
         {
-        }
-
-        public string Value
-        {
-            get
-            {
-                lock (_doc.Lock)
-                    return ((XmlCharacterData)_node).Value;
-            }
-            set
-            {
-                lock (_doc.Lock)
-                    ((XmlCharacterData)_node).Value = value;
-            }
         }
     }
 }

@@ -7,7 +7,7 @@ using SIL.Xml;
 
 namespace Bloom.SafeXml
 {
-	public class SafeXmlElement : SafeXmlLinkedNode
+    public class SafeXmlElement : SafeXmlLinkedNode
     {
         public SafeXmlElement(XmlElement element, SafeXmlDocument doc)
             : base(element, doc) { }
@@ -20,6 +20,12 @@ namespace Bloom.SafeXml
         {
             lock (_doc.Lock)
                 return Element.GetAttribute(name);
+        }
+
+        public string GetAttribute(string name, string namespaceURI)
+        {
+            lock (_doc.Lock)
+                return Element.GetAttribute(name, namespaceURI);
         }
 
         public override void SetAttribute(string name, string value)
@@ -156,16 +162,6 @@ namespace Bloom.SafeXml
             if (elt == null)
                 return null;
             return new SafeXmlElement(elt, doc);
-        }
-
-        /// <summary>
-        /// This is useful when an element does not need to be thread-safe (e.g., a node from
-        /// a document that only exists in local variables on one thread), but an API calls for
-        /// SafeXmlNode.
-        /// </summary>
-        public static SafeXmlElement FakeWrap(XmlElement elt)
-        {
-            return (SafeXmlElement)SafeXmlNode.FakeWrap(elt);
         }
 
         /// <summary>

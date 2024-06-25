@@ -7,19 +7,5 @@ namespace Bloom.SafeXml
     {
         public SafeXmlText(XmlText node, SafeXmlDocument doc)
             : base(node, doc) { }
-
-        public string Value
-        {
-            get
-            {
-                lock (_doc.Lock)
-                    return ((XmlText)_node).Value;
-            }
-            set
-            {
-                lock (_doc.Lock)
-                    ((XmlText)_node).Value = value;
-            }
-        }
     }
 }

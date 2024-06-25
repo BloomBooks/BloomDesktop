@@ -20,7 +20,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Xml;
 
 namespace BloomTests.Book
 {
@@ -65,7 +64,7 @@ namespace BloomTests.Book
 						</div>
 					</div>
 				</body></html>";
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(htmlSourceBook);
             var dom = new HtmlDom(doc);
             _storage.SetupGet(x => x.Dom).Returns(() => dom);
@@ -1547,7 +1546,7 @@ namespace BloomTests.Book
                 )
             )
             {
-                var doc = new XmlDocument();
+                var doc = SafeXmlDocument.Create();
                 doc.LoadXml(htmlSourceBook);
                 var dom = new HtmlDom(doc);
                 var storage = MakeMockStorage(tempFolder.Path, () => dom);
@@ -1649,7 +1648,7 @@ namespace BloomTests.Book
                 var tempFolder = new SIL.TestUtilities.TemporaryFolder(_testFolder, "sourceBook")
             )
             {
-                var doc = new XmlDocument();
+                var doc = SafeXmlDocument.Create();
                 doc.LoadXml(htmlSourceBook);
                 var dom = new HtmlDom(doc);
                 var storage = MakeMockStorage(tempFolder.Path, () => dom);
@@ -1744,7 +1743,7 @@ namespace BloomTests.Book
                 var tempFolder = new SIL.TestUtilities.TemporaryFolder(_testFolder, "sourceBook")
             )
             {
-                var doc = new XmlDocument();
+                var doc = SafeXmlDocument.Create();
                 doc.LoadXml(htmlSourceBook);
                 var dom = new HtmlDom(doc);
                 var storage = MakeMockStorage(tempFolder.Path, () => dom);
@@ -2014,7 +2013,7 @@ namespace BloomTests.Book
 				    DIV.bloom-page.coverColor       {               background-color: #abcdef !important;   }
 				</style>
 			</head><body></body></html>";
-            var document = new SafeXmlDocument(new XmlDocument());
+            var document = SafeXmlDocument.Create();
             document.LoadXml(xml);
 
             // SUT
@@ -2037,7 +2036,7 @@ namespace BloomTests.Book
 				    }
 			    </style>
 			</head><body></body></html>";
-            var document = new SafeXmlDocument(new XmlDocument());
+            var document = SafeXmlDocument.Create();
             document.LoadXml(xml);
 
             // SUT
@@ -2061,7 +2060,7 @@ namespace BloomTests.Book
 				    }
 			    </style>
 			</head><body></body></html>";
-            var document = new SafeXmlDocument(new XmlDocument());
+            var document = SafeXmlDocument.Create();
             document.LoadXml(xml);
 
             // SUT
@@ -5255,7 +5254,7 @@ namespace BloomTests.Book
             var templatePage = new Moq.Mock<IPage>();
 
             templatePage.Setup(x => x.Book).Returns(mockTemplateBook.Object);
-            var d = new SafeXmlDocument(new XmlDocument());
+            var d = SafeXmlDocument.Create();
             d.LoadXml("<wrapper>" + divContent + "</wrapper>");
             var pageContentElement = (SafeXmlElement)d.SelectSingleNode("//div");
             templatePage.Setup(x => x.GetDivNodeForThisPage()).Returns(pageContentElement);
@@ -6029,7 +6028,7 @@ namespace BloomTests.Book
             var xml =
                 "<div class='bloom-page simple-comprehension-quiz enterprise-only bloom-interactive-page side-right A5Portrait bloom-monolingual'></div>";
 
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(xml);
             var page = doc.DocumentElement;
             Assert.True(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
@@ -6067,7 +6066,7 @@ namespace BloomTests.Book
         </div>
     </div>";
 
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(xml);
             var page = doc.DocumentElement;
             Assert.False(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
@@ -6098,7 +6097,7 @@ namespace BloomTests.Book
         </div>
     </div>";
 
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(xml);
             var page = doc.DocumentElement;
             Assert.False(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
@@ -6447,7 +6446,7 @@ namespace BloomTests.Book
         [Test]
         public void ElementIsInXMatter_AncestorHasBloomFrontMatter_ReturnsTrue()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             var body = doc.CreateElement("body");
             var xmatterDiv = doc.CreateElement("div");
             xmatterDiv.SetAttribute("class", "bloom-frontMatter");
@@ -6468,7 +6467,7 @@ namespace BloomTests.Book
         [Test]
         public void ElementIsInXMatter_NoAncestorHasBloomFrontMatter_ReturnsFalse()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             var body = doc.CreateElement("body");
             var nonXmatterDiv = doc.CreateElement("div");
             body.AppendChild(nonXmatterDiv);
@@ -6488,7 +6487,7 @@ namespace BloomTests.Book
         [Test]
         public void ElementIsInXMatter_ElementIsBody_ReturnsFalse()
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             var body = doc.CreateElement("body");
 
             Assert.That(Bloom.Book.Book.ElementIsInXMatter(body), Is.False);
