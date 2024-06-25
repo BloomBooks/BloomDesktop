@@ -576,7 +576,7 @@ namespace Bloom.WebLibraryIntegration
             if (String.IsNullOrEmpty(settingsPath) || !RobustFile.Exists(settingsPath))
                 return;
             var settingsText = RobustFile.ReadAllText(settingsPath);
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.PreserveWhitespace = true;
             doc.LoadXml(settingsText);
             var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");

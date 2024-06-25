@@ -412,7 +412,7 @@ namespace Bloom.Book
                 return null;
             try
             {
-                var doc = new XmlDocument();
+                var doc = SafeXmlDocument.Create();
                 doc.PreserveWhitespace = true;
                 doc.LoadXml("<div>" + input + "</div>");
 
@@ -424,7 +424,7 @@ namespace Bloom.Book
                 var lineBreaks = doc.SafeSelectNodes(
                     "//span[contains(concat(' ', normalize-space(@class), ' '), ' bloom-linebreak ')]"
                 );
-                var lineBreakElements = lineBreaks.Cast<XmlElement>().ToArray();    // NOT SafeXmlElement
+                var lineBreakElements = lineBreaks.Cast<SafeXmlElement>().ToArray();
                 foreach (var lineBreakSpan in lineBreakElements)
                 {
                     // But before we mess with lineBreakSpan, first check if it's immediately followed by a BOM
@@ -1504,8 +1504,7 @@ namespace Bloom.Book
             var layoutOfThisBook = GetLayout();
             var bookPath = BloomFileLocator.GetFactoryBookTemplateDirectory(updateTo.Path);
             var templateDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
-            var newPage = SafeXmlElement.FakeWrap(
-                (XmlElement)templateDoc.SafeSelectNodes("//div[@id='" + updateTo.Guid + "']")[0]);
+            var newPage = templateDoc.SafeSelectNodes("//div[@id='" + updateTo.Guid + "']")[0] as SafeXmlElement;
             var classesToDrop = new[]
             {
                 "imageWholePage",
@@ -3094,7 +3093,7 @@ namespace Bloom.Book
             Debug.Assert(vidSource.Name == "source");
             // In case future books have video branding...
             if (
-				vidSource.HasClass("branding")
+                vidSource.HasClass("branding")
                 || (vidSource.ParentNode as SafeXmlElement).HasClass("branding")
             )
                 return false;
@@ -3389,11 +3388,7 @@ namespace Bloom.Book
         {
             //review: could move to page
             var pageElement = OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv);
-            if (pageElement == null)
-            {
-                throw new ApplicationException("FindPageDiv(): pageElement is null");
-            }
-            Require.That(pageElement != null, "Page could not be found: " + page.XPathToDiv);
+            Require.That(pageElement != null, "FindPageDiv could not find page: " + page.XPathToDiv);
 
             return pageElement as SafeXmlElement;
         }
@@ -4015,6 +4010,13 @@ namespace Bloom.Book
 
             ClearCachedDataFromDom();
 
+            // The list of pages is used only to find the place to insert the relocated
+            // page after removing it from the DOM.  Note that the removed page may occur
+            // either before or after the page it is to be inserted after.  Removing the
+            // page from the list after we remove it from the DOM is the easiest way to
+            // keep the index to the preceding page in sync.  (An earlier implementation
+            // here using an XmlNodeList did this adjusting automatically under the hood
+            // with the enumerator.)
             var pages = GetPageElements().ToList();
             var pageDiv = FindPageDiv(page);
             var body = pageDiv.ParentNode;

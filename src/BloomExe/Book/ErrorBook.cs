@@ -72,7 +72,7 @@ namespace Bloom.Book
         //		private HtmlDom GetErrorDOM()
         //		{
         //
-        //			var dom = new XmlDocument();
+        //			var dom = SafeXmlDocument.Create();
         //			var builder = new StringBuilder();
         //			builder.Append("<html><body>");
         //			builder.AppendLine("<p>This book (" + FolderPath + ") has errors.");

@@ -173,7 +173,7 @@ namespace BloomTests.web.controllers
 	</div>
 </body>";
 
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(xhtml);
             var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(
                 dom.SelectSingleNode("//body")
@@ -344,7 +344,7 @@ namespace BloomTests.web.controllers
 	</div>
 </body>";
 
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(xhtml);
             var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(
                 dom.SelectSingleNode("//body")
@@ -381,7 +381,7 @@ namespace BloomTests.web.controllers
 	</div>
 </body>";
 
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(xhtml);
             var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(
                 dom.SelectSingleNode("//body")

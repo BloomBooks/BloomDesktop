@@ -11,7 +11,7 @@ namespace BloomTests.Book
         [Test]
         public void UpdatePageSplitMode_WasCombinedAndShouldStayThatWay_PageUntouched()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 @"<html ><body><div id='foo'></div><div class='bloom-page A5Landscape bloom-combinedPage'></div></body></html>"
             );
@@ -47,7 +47,7 @@ namespace BloomTests.Book
         [Test]
         public void UpdatePageSplitMode_WasCombined_IsNowSplitIntoTwoPages()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 @"<html ><body><div id='somemarginbox'><div class='bloom-page A5Landscape bloom-combinedPage'></div></div></body></html>"
             );
@@ -83,7 +83,7 @@ namespace BloomTests.Book
         [Test]
         public void UpdatePageSplitMode_WasCombined_IndividualPagesHaveOwnIds()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 @"<html ><body><div id='foo'></div><div id='1' class='bloom-page A5Landscape bloom-combinedPage'></div></body></html>"
             );
@@ -99,7 +99,7 @@ namespace BloomTests.Book
         [Test]
         public void UpdatePageSplitMode_WasCombined_ElementNowDividedBetweenTwoPages()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 @"<html ><body>
 					<div class='bloom-page A5Landscape bloom-combinedPage'>

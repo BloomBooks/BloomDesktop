@@ -8,7 +8,6 @@ using System.Xml;
 using Bloom.SafeXml;
 using Bloom.Utils;
 using SIL.IO;
-using SIL.Xml;
 using TidyManaged;
 
 namespace Bloom
@@ -42,7 +41,7 @@ namespace Bloom
             @"<(p|cite)(\s+[^><]*\s*)/>"
         );
 
-        public static XmlDocument GetXmlDomFromHtmlFile(
+        public static SafeXmlDocument GetXmlDomFromHtmlFile(
             string path,
             bool includeXmlDeclaration = false
         )
@@ -55,12 +54,12 @@ namespace Bloom
         /// <param name="includeXmlDeclaration"></param>
         /// <exception>Throws if there are parsing errors</exception>
         /// <returns></returns>
-        public static XmlDocument GetXmlDomFromHtml(
+        public static SafeXmlDocument GetXmlDomFromHtml(
             string content,
             bool includeXmlDeclaration = false
         )
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             content = AddFillerToKeepTidyFromRemovingEmptyElementsAndWhiteSpace(content);
 
             //in BL-2250, we found that in previous versions, this method would return, for example, "<u> </u>" REMOVEWHITESPACE.
@@ -382,11 +381,6 @@ namespace Bloom
             }
         }
 
-        public static void MakeXmlishTagsSafeForInterpretationAsHtml(XmlDocument dom)
-        {
-            MakeXmlishTagsSafeForInterpretationAsHtml(new SafeXmlDocument(dom));
-        }
-
         /// <summary>
         /// Convert the DOM (which is expected to be XHTML5) to HTML5
         /// </summary>
@@ -404,10 +398,6 @@ namespace Bloom
             }
 
             return targetPath;
-        }
-        public static string SaveDOMAsHtml5(XmlDocument dom, string targetPath)
-        {
-            return SaveDOMAsHtml5(new SafeXmlDocument(dom), targetPath);
         }
 
         /// <summary>
@@ -461,11 +451,6 @@ namespace Bloom
             }
 
             return ConvertXhtmlToHtml5(xmlStringBuilder.ToString());
-        }
-
-        public static string ConvertDomToHtml5(XmlDocument dom)
-        {
-            return ConvertDomToHtml5(new SafeXmlDocument(dom));
         }
 
         static string ConvertXhtmlToHtml5(string input)
@@ -526,21 +511,22 @@ namespace Bloom
             return html;
         }
 
-        public static void RemoveAllContentTypesMetas(XmlDocument dom)
+        public static void RemoveAllContentTypesMetas(SafeXmlDocument dom)
         {
-            foreach (XmlElement n in dom.SafeSelectNodes("//head/meta[@http-equiv='Content-Type']"))
+            foreach (SafeXmlElement n in dom.SafeSelectNodes("//head/meta[@http-equiv='Content-Type']"))
             {
                 n.ParentNode.RemoveChild(n);
             }
         }
 
-        private static readonly Regex _svgMatch = new Regex("<svg\\s.*?</svg>", RegexOptions.Singleline|RegexOptions.Compiled);
+        private static readonly Regex _svgMatch = new Regex("<svg\\s.*?</svg>", RegexOptions.Singleline | RegexOptions.Compiled);
         public static string RemoveSvgs(string input, List<string> svgs)
         {
             // Tidy utterly chokes (exits the whole program without even a green screen) on SVGs.
             // This may not the most efficient way to remove and restore them but the common case is that none are found,
             // and this is not too bad for that case.
-            return _svgMatch.Replace(input, (Match match) => {
+            return _svgMatch.Replace(input, (Match match) =>
+            {
                 svgs.Add(match.Value); return SvgPlaceholder;
             });
         }

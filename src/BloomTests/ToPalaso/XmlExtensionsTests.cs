@@ -8,6 +8,12 @@ namespace BloomTests.ToPalaso
     /// <summary>
     /// Unit tests for the XmlExtensions class.
     /// </summary>
+    /// <remarks>
+    /// These tests must use the XmlDocument class, not the SafeXmlDocument class.
+    /// The XmlExtensions are written to work with the XmlDocument class.
+    /// The SafeXmlDocument and SafeXmlElement classes implement some of the same methods,
+    /// either directly or using the XmlExtension method.
+    /// </remarks>
     [TestFixture]
     public class XmlExtensionsTests
     {

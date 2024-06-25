@@ -9,6 +9,7 @@ using BloomTemp;
 using System.Xml;
 using System;
 using System.Threading.Tasks;
+using Bloom.SafeXml;
 
 namespace BloomTests.Spreadsheet
 {
@@ -18,7 +19,7 @@ namespace BloomTests.Spreadsheet
         private TemporaryFolder _bookFolder;
         private SpreadsheetImporter _importer;
         private HtmlDom _dom;
-        private XmlElement _resultElement;
+        private SafeXmlElement _resultElement;
 
         [OneTimeTearDown]
         public void OneTimeTearDown()
@@ -209,14 +210,14 @@ namespace BloomTests.Spreadsheet
 			</div>
 		</div>";
 
-        private XmlElement ReadResultingBookToXml(string newTitle)
+        private SafeXmlElement ReadResultingBookToXml(string newTitle)
         {
             // _bookFolder is no longer accurate here, since BringBookUpToDate has renamed the folder
             // to match the new title.
             var bookPath = Path.Combine(_testFolder.FolderPath, newTitle, newTitle + ".htm");
             if (!File.Exists(bookPath))
                 return null;
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             try
             {
                 dom.LoadXml(RobustFile.ReadAllText(bookPath));
@@ -232,11 +233,11 @@ namespace BloomTests.Spreadsheet
         public void BookTitleGetsPersisted()
         {
             var datadivdom = AssertThatXmlIn.Element(
-                _resultElement.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement
+                _resultElement.SelectSingleNode("//div[@id='bloomDataDiv']") as SafeXmlElement
             );
             var frontCoverDom = AssertThatXmlIn.Element(
                 _resultElement.SelectSingleNode("//div[contains(@class, 'frontCover')]")
-                    as XmlElement
+                    as SafeXmlElement
             );
 
             // Check DataDiv title
@@ -262,11 +263,11 @@ namespace BloomTests.Spreadsheet
         public void FrontCoverImageGetsPersisted()
         {
             var datadivdom = AssertThatXmlIn.Element(
-                _resultElement.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement
+                _resultElement.SelectSingleNode("//div[@id='bloomDataDiv']") as SafeXmlElement
             );
             var frontCoverDom = AssertThatXmlIn.Element(
                 _resultElement.SelectSingleNode("//div[contains(@class, 'frontCover')]")
-                    as XmlElement
+                    as SafeXmlElement
             );
 
             // Check DataDiv front cover image
@@ -299,7 +300,7 @@ namespace BloomTests.Spreadsheet
         {
             var pageWithJustTextDom = AssertThatXmlIn.Element(
                 _resultElement.SelectSingleNode("//div[@id='dc90dbe0-7584-4d9f-bc06-0e0326060054']")
-                    as XmlElement
+                    as SafeXmlElement
             );
             // This page we added started out as 'side-left'.
             // The xmatter update process changes our frontCover xmatter to frontCoverPage +

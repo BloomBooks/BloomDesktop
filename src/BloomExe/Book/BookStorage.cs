@@ -2237,7 +2237,7 @@ namespace Bloom.Book
             }
             else
             {
-                XmlDocument xmlDomFromHtmlFile;
+                SafeXmlDocument xmlDomFromHtmlFile;
                 try
                 {
                     xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(
@@ -2286,7 +2286,7 @@ namespace Bloom.Book
                 InitialLoadErrors = ValidateBook(Dom, pathToExistingHtml);
                 if (!string.IsNullOrEmpty(InitialLoadErrors))
                 {
-                    XmlDocument possibleBackupDom;
+                    SafeXmlDocument possibleBackupDom;
                     if (TryGetValidXmlDomFromHtmlFile(backupPath, out possibleBackupDom))
                     {
                         RestoreBackup(
@@ -2400,7 +2400,7 @@ namespace Bloom.Book
             InitialLoadErrors = "";
         }
 
-        private bool TryGetValidXmlDomFromHtmlFile(string path, out XmlDocument xmlDomFromHtmlFile)
+        private bool TryGetValidXmlDomFromHtmlFile(string path, out SafeXmlDocument xmlDomFromHtmlFile)
         {
             xmlDomFromHtmlFile = null;
             if (!RobustFile.Exists(path))
@@ -3941,7 +3941,7 @@ namespace Bloom.Book
             var justTextPage = dom.SelectSingleNode("//div[@id='" + Book.JustTextGuid + "']");
             // The standard Just Text page has a bloom-editable with language 'z' that is meant to be a template
             // for creating other language blocks. We'll just use it and modify the language.
-            var editable = justTextPage.SelectSingleNode(".//div[@lang='z']") as XmlElement;
+            var editable = justTextPage.SelectSingleNode(".//div[@lang='z']") as SafeXmlElement;
             // I'm deliberately not localizing this because it's a very rare message that we don't want our
             // translators to waste time on. Moreover, it's purpose is just to let the user know something has
             // gone wrong, which will be fairly evident even with an incomprehensible message in it.
@@ -3956,7 +3956,7 @@ namespace Bloom.Book
             foreach (var page in problems)
             {
                 page.ParentNode.ReplaceChild(
-                    page.OwnerDocument.ImportNode(SafeXmlElement.FakeWrap(justTextPage), true),
+                    page.OwnerDocument.ImportNode(justTextPage, true),
                     page
                 );
             }
@@ -3967,10 +3967,6 @@ namespace Bloom.Book
         // the marginBox are inside it. BL-13120.
         static bool HasMessedUpMarginBox(SafeXmlElement page)
         {
-            // Flyleaf pages are intentionally empty; they have no marginBox.
-            // See XMatterHelper.InjectFlyleafIfNeeded().
-            if (HtmlDom.IsFlyleafPage(page))
-                return false;
             var marginBox = GetMarginBox(page);
             if (marginBox == null)
                 return true; // marginBox should not be missing

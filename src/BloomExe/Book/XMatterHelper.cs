@@ -112,7 +112,7 @@ namespace Bloom.Book
                 );
                 throw new ApplicationException();
             }
-            XMatterDom = new SafeXmlDocument( XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml, false) );
+            XMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml, false);
         }
 
         public static string GetBestDeviceXMatterAvailable(
@@ -472,7 +472,7 @@ namespace Bloom.Book
                 // page after that says it needs to be facing the next page
                 if (firstContentPageAndAlsoStartsSpread != null)
                 {
-                    var flyDom = new XmlDocument();
+                    var flyDom = SafeXmlDocument.Create();
                     flyDom.LoadXml(
                         @"
 						<div class='bloom-flyleaf bloom-frontMatter bloom-page' data-page='required singleton'>
@@ -484,7 +484,7 @@ namespace Bloom.Book
                             </div>
 						</div>"
                     );
-                    var flyleaf = _bookDom.RawDom.ImportNode(SafeXmlElement.FakeWrap(flyDom.FirstChild), true) as SafeXmlElement;
+                    var flyleaf = _bookDom.RawDom.ImportNode(flyDom.FirstChild, true) as SafeXmlElement;
                     flyleaf.SetAttribute("id", Guid.NewGuid().ToString());
                     lastFrontMatterPage.ParentNode.InsertAfter(flyleaf, lastFrontMatterPage);
                     SizeAndOrientation.UpdatePageSizeAndOrientationClasses(flyleaf, layout);

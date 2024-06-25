@@ -134,7 +134,7 @@ namespace BloomTests.Book
         [Test]
         public void AddClass_AlreadyThere_LeavesAlone()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(@"<div class='one two three'/>");
             ((SafeXmlElement)dom.FirstChild).AddClass("two");
             AssertThatXmlIn
@@ -145,7 +145,7 @@ namespace BloomTests.Book
         [Test]
         public void AddClass_SubstringClass_Adds()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(@"<div class='decodable-reader-off'/>");
             ((SafeXmlElement)dom.FirstChild).AddClass("decodable-reader");
             AssertThatXmlIn
@@ -162,7 +162,7 @@ namespace BloomTests.Book
         [Test]
         public void AddClass_NoClasses_Adds()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(@"<div class=''/>");
             ((SafeXmlElement)dom.FirstChild).AddClass("two");
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[@class='two']", 1);
@@ -385,7 +385,7 @@ namespace BloomTests.Book
 
         private SafeXmlElement MakeElement(string xml)
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(xml);
             return dom.DocumentElement;
         }
@@ -407,9 +407,9 @@ namespace BloomTests.Book
             string[] classesToDrop
         )
         {
-            var sourceDom = new SafeXmlDocument(new XmlDocument());
+            var sourceDom = SafeXmlDocument.Create();
             sourceDom.LoadXml(string.Format("<div class='{0}'/>", sourceClasses));
-            var targetDom = new SafeXmlDocument(new XmlDocument());
+            var targetDom = SafeXmlDocument.Create();
             targetDom.LoadXml(string.Format("<div class='{0}'/>", targetClasses));
             var targetNode = (SafeXmlElement)targetDom.SelectSingleNode("div");
             HtmlDom.MergeClassesIntoNewPage(
@@ -487,7 +487,7 @@ namespace BloomTests.Book
         [Test]
         public void SelectChildImgAndBackgroundImageElements()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 "<div>"
                     + "<div id='thisShouldBeIgnored'>"
@@ -512,7 +512,7 @@ namespace BloomTests.Book
         [Test]
         public void GetIsImgOrSomethingWithBackgroundImage_NoBackgroundImageProperty_False()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<div style=\"color:red;\"></div>");
             Assert.IsFalse(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.DocumentElement));
         }
@@ -520,7 +520,7 @@ namespace BloomTests.Book
         [Test]
         public void GetIsImgOrSomethingWithBackgroundImage_HasBackgroundImageProperty_True()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<div style=\" background-image : URL(\'old.png\')\"></div>");
             Assert.IsTrue(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.DocumentElement));
 
@@ -534,7 +534,7 @@ namespace BloomTests.Book
         [Test]
         public void GetIsImgOrSomethingWithBackgroundImage_Img_True()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<html><body><img/></body></html>");
             Assert.IsTrue(
                 HtmlDom.IsImgOrSomethingWithBackgroundImage(
@@ -546,7 +546,7 @@ namespace BloomTests.Book
         [Test]
         public void GetIsImgOrSomethingWithBackgroundImage_ImgIsSybling_False()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<html><body><img/><foo/></body></html>");
             Assert.IsFalse(
                 HtmlDom.IsImgOrSomethingWithBackgroundImage(
@@ -558,7 +558,7 @@ namespace BloomTests.Book
         [Test]
         public void GetIsImgOrSomethingWithBackgroundImage_ImgIsChild_False()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<html><body><div><img/></div></body></html>");
             Assert.IsFalse(
                 HtmlDom.IsImgOrSomethingWithBackgroundImage(
@@ -768,7 +768,7 @@ namespace BloomTests.Book
         [Test]
         public void SetElementFromUserStringSafely_Various()
         {
-            var dom = new SafeXmlDocument(new XmlDocument());
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<div></div>");
             var target = dom.FirstChild as SafeXmlElement;
             HtmlDom.SetElementFromUserStringSafely(target, "1<br />2");
@@ -853,7 +853,7 @@ namespace BloomTests.Book
 					<body></body>
 				</html>"
             );
-            var pageDom = new SafeXmlDocument(new XmlDocument());
+            var pageDom = SafeXmlDocument.Create();
             pageDom.LoadXml(
                 @"<html>
 					<head>
@@ -894,7 +894,7 @@ namespace BloomTests.Book
 					<body></body>
 				</html>"
             );
-            var pageDom = new SafeXmlDocument(new XmlDocument());
+            var pageDom = SafeXmlDocument.Create();
             pageDom.LoadXml(
                 @"<html>
 					<head></head>
@@ -932,7 +932,7 @@ namespace BloomTests.Book
 					</body>
 				</html>"
             );
-            var pageDom = new SafeXmlDocument(new XmlDocument());
+            var pageDom = SafeXmlDocument.Create();
             pageDom.LoadXml(
                 @"<html>
 				<head>
@@ -975,7 +975,7 @@ namespace BloomTests.Book
 					</body>
 				</html>"
             );
-            var pageDom = new SafeXmlDocument(new XmlDocument());
+            var pageDom = SafeXmlDocument.Create();
             pageDom.LoadXml(
                 @"<html>
 				<head>
@@ -1019,7 +1019,7 @@ namespace BloomTests.Book
 					</body>
 				</html>"
             );
-            var pageDom = new SafeXmlDocument(new XmlDocument());
+            var pageDom = SafeXmlDocument.Create();
             pageDom.LoadXml(
                 @"<html>
 				<head>
@@ -2061,7 +2061,7 @@ p {
             bool includeSplitTextBoxAudio
         )
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"<html>
 	<div id='textbox1' class='bloom-editable' data-audiorecordingmode='Sentence'>
@@ -2130,7 +2130,7 @@ p {
             bool includeSplitTextBoxAudio
         )
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"<html>
 	<div id='textbox1' class='bloom-editable audio-sentence'>
@@ -2564,7 +2564,7 @@ p {
         [TestCase("A5Landscape")]
         public void InsertFullBleedMarkup_InsertsExpectedMarkup(string pageSizeClass)
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             var input =
                 @"
 <html>
@@ -2789,7 +2789,7 @@ p {
         [TestCase("<label>lbl</label>abc")]
         public void DivHasContent_HasContent_ReturnsTrue(string innerXml)
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml($"<div>{innerXml}</div>");
             var div = doc.DocumentElement;
 
@@ -2806,7 +2806,7 @@ p {
         [TestCase("<label>lbl</label><p></p>")]
         public void DivHasContent_HasNoContent_ReturnsFalse(string innerXml)
         {
-            var doc = new SafeXmlDocument(new XmlDocument());
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml($"<div>{innerXml}</div>");
             var div = doc.DocumentElement;
 

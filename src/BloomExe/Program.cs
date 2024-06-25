@@ -24,7 +24,6 @@ using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml;
 using Bloom.CLI;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
@@ -33,13 +32,11 @@ using Bloom.MiscUI;
 using Bloom.web;
 using CommandLine;
 using Sentry;
-using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
-using SIL.Xml;
-using Microsoft.Web.WebView2.Core;
 using System.Text;
 using Bloom.Utils;
 using Bloom.web.controllers;
+using Bloom.SafeXml;
 
 namespace Bloom
 {
@@ -1685,7 +1682,7 @@ namespace Bloom
                         var xliffPath = Path.Combine(subdir, "Bloom.xlf");
                         if (RobustFile.Exists(xliffPath))
                         {
-                            var doc = new XmlDocument();
+                            var doc = SafeXmlDocument.Create();
                             doc.Load(xliffPath);
                             var fileNode = doc.DocumentElement.SelectSingleNodeHonoringDefaultNS(
                                 "/xliff/file"

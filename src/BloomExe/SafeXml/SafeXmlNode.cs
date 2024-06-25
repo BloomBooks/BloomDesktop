@@ -147,6 +147,20 @@ namespace Bloom.SafeXml
             }
         }
 
+        public string Value
+        {
+            get
+            {
+                lock (_doc.Lock)
+                    return _node.Value;
+            }
+            set
+            {
+                lock (_doc.Lock)
+                    _node.Value = value;
+            }
+        }
+
         public SafeXmlNode[] ChildNodes
         {
             get
@@ -202,25 +216,31 @@ namespace Bloom.SafeXml
                 return WrapNode(_node.CloneNode(deep), _doc);
         }
 
+        public void RemoveAll()
+        {
+            lock (_doc.Lock)
+                _node.RemoveAll();
+        }
+
         public static bool operator ==(SafeXmlNode a, SafeXmlNode b)
         {
             if (a != null)
             {
                 lock (a._doc.Lock)
-					return a._node == b?._node;
-			}
-            return b == null;
-		}
+                    return a._node == b?._node;
+            }
+            return (object)b == null;
+        }
 
         public static bool operator !=(SafeXmlNode a, SafeXmlNode b)
         {
-            if (a != null)
+            if ((object)a != null)
             {
                 lock (a._doc.Lock)
-					return a._node != b?._node;
-			}
-            return b != null;
-		}
+                    return a._node != b?._node;
+            }
+            return (object)b != null;
+        }
 
         public override bool Equals(object obj)
         {
@@ -305,8 +325,8 @@ namespace Bloom.SafeXml
                 return new SafeXmlDocument(xd);
             else if (node is XmlAttribute xa)
                 return new SafeXmlAttribute(xa, doc);
-            else if (node is XmlCDataSection)
-                return new SafeXmlCDataSection(node, doc);
+            else if (node is XmlCDataSection cdata)
+                return new SafeXmlCDataSection(cdata, doc);
             // Enhance: if we use more subtypes add more cases
 
             Guard.Against(
@@ -314,16 +334,6 @@ namespace Bloom.SafeXml
                 $"trying to convert an unexpected type of XmlNode: {node.GetType().Name}"
             );
             return new SafeXmlNode(node, doc);
-        }
-
-        /// <summary>
-        /// This is useful when an element does not need to be thread-safe (e.g., a node from
-        /// a document that only exists in local variables on one thread), but an API calls for
-        /// SafeXmlNode.
-        /// </summary>
-        public static SafeXmlNode FakeWrap(XmlNode node)
-        {
-            return WrapNode(node, new SafeXmlDocument(new XmlDocument()));
         }
 
         public SafeXmlNode SelectSingleNode(string xpath)
