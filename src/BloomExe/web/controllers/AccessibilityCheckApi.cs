@@ -96,7 +96,7 @@ namespace Bloom.web.controllers
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "bookName",
                 request =>
                 {
@@ -105,7 +105,7 @@ namespace Bloom.web.controllers
                 false
             );
 
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "showAccessibilityChecker",
                 request =>
                 {
@@ -117,7 +117,7 @@ namespace Bloom.web.controllers
                 true
             );
 
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "descriptionsForAllImages",
                 request =>
                 {
@@ -130,7 +130,7 @@ namespace Bloom.web.controllers
                 false
             );
 
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "audioForAllImageDescriptions",
                 request =>
                 {
@@ -143,7 +143,7 @@ namespace Bloom.web.controllers
                 false
             );
 
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "audioForAllText",
                 request =>
                 {
@@ -181,7 +181,7 @@ namespace Bloom.web.controllers
             );
 
             //enhance: this might have to become async to work on large books on slow computers
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "aceByDaisyReportUrl",
                 request =>
                 {

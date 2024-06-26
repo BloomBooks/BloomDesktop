@@ -59,8 +59,8 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             // These are both just retrieving information about files, apart from using _bookSelection.CurrentSelection.FolderPath.
-            apiHandler.RegisterEndpointLegacy("image/info", HandleImageInfo, false);
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler("image/info", HandleImageInfo, false);
+            apiHandler.RegisterEndpointHandler(
                 "image/imageCreditsForWholeBook",
                 HandleCopyImageCreditsForWholeBook,
                 false

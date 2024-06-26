@@ -48,7 +48,7 @@ export const getTemplatePageImageSource = (
     //NB:  without the generateThumbnaiIfNecessary=true, we can run out of worker threads and get deadlocked.
     //See EnhancedImageServer.IsRecursiveRequestContext
     return (
-        `${urlPrefix}pageTemplateThumbnail/` +
+        `${urlPrefix}pageTemplateThumbnail?path=` +
         encodeURIComponent(templateBookFolderUrl) +
         "/template/" +
         encodeURIComponent(label) +

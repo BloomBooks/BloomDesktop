@@ -26,7 +26,7 @@ namespace BloomTests.web.controllers
                 HandleEnabledToolsRequest,
                 true
             );
-            apiHandler.RegisterEndpointLegacy("toolbox/fileExists", HandleFileExistsRequest, true);
+            apiHandler.RegisterEndpointHandler("toolbox/fileExists", HandleFileExistsRequest, true);
             apiHandler.RegisterBooleanEndpointHandler(
                 "toolbox/decodable",
                 null,

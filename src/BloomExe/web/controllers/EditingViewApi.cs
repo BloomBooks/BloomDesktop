@@ -29,14 +29,14 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler("editView/setModalState", HandleSetModalState, true);
-            apiHandler.RegisterEndpointLegacy("editView/chooseWidget", HandleChooseWidget, true);
+            apiHandler.RegisterEndpointHandler("editView/chooseWidget", HandleChooseWidget, true);
             apiHandler.RegisterEndpointHandler(
                 "editView/getColorsUsedInBookOverlays",
                 HandleGetColorsUsedInBookOverlays,
                 true
             );
             apiHandler.RegisterEndpointHandler("editView/pageDomLoaded", HandlePageDomLoaded, true);
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "editView/saveToolboxSetting",
                 HandleSaveToolboxSetting,
                 true
@@ -52,24 +52,24 @@ namespace Bloom.web.controllers
                 true,
                 true // review.
             );
-            apiHandler.RegisterEndpointLegacy("editView/setTopic", HandleSetTopic, true);
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
+            apiHandler.RegisterEndpointHandler(
                 "editView/isTextSelected",
                 HandleIsTextSelected,
                 false
             );
-            apiHandler.RegisterEndpointLegacy("editView/getBookLangs", HandleGetBookLangs, false);
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler("editView/getBookLangs", HandleGetBookLangs, false);
+            apiHandler.RegisterEndpointHandler(
                 "editView/isClipboardBookHyperlink",
                 HandleIsClipboardBookHyperlink,
                 false
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "editView/requestTranslationGroupContent",
                 RequestDefaultTranslationGroupContent,
                 true
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "editView/duplicatePageMany",
                 HandleDuplicatePageMany,
                 true
