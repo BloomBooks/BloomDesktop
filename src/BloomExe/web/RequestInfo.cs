@@ -436,22 +436,25 @@ namespace Bloom.Api
             return GetPostStringInner();
         }
 
-        public string GetPostString()
+        public string GetPostString(bool unescape = true)
         {
             Debug.Assert(
                 _actualContext.Request.ContentType.ToLowerInvariant().Contains("text/plain"),
                 "The backend expected this post to have content-type text/plain."
             );
-            return GetPostStringInner();
+            return GetPostStringInner(unescape);
         }
 
-        private string GetPostStringInner()
+        private string GetPostStringInner(bool unescape = true)
         {
             var request = _actualContext.Request;
             if (!request.HasEntityBody)
                 return string.Empty;
 
-            return UnescapeString(GetStringContent());
+            var stringContent = GetStringContent();
+            if (unescape)
+                return UnescapeString(stringContent);
+            return stringContent;
         }
 
         // you can only read from the stream once. But this makes for a fragile API for this class, where
