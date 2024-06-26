@@ -14,7 +14,7 @@ export default class HtmlHelpLink extends LocalizableElement<
     IHtmlHelpLinkProps,
     {}
 > {
-    private target = `externalLink/help/${this.props.fileid}-en.htm`;
+    private target = `externalLink?path=help/${this.props.fileid}-en.htm`;
 
     public render() {
         return (

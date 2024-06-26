@@ -200,7 +200,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                                 </li>
                                 <li>
                                     <PWithLink
-                                        href="/bloom/api/help/Concepts/EPUB.htm"
+                                        href="/bloom/api/help?topic=Concepts/EPUB.htm"
                                         l10nKey="PublishTab.Epub.FeatureLimitations"
                                         l10nComment="The text inside the [square brackets] will become a link to a website."
                                     >

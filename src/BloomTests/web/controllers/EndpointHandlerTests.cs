@@ -94,23 +94,11 @@ namespace BloomTests.web
                 () =>
                     ApiTest.GetString(
                         _server,
-                        endPoint: "foo[0-9]bar",
+                        endPoint: "foo88bar",
                         endOfUrlForTest: "foobar",
                         handler: request => request.PostSucceeded()
                     )
             );
-        }
-
-        [Test]
-        public void Get_RegexEndPoint()
-        {
-            var result = ApiTest.GetString(
-                _server,
-                endPoint: "foo[0-9]bar",
-                endOfUrlForTest: "foo7bar",
-                handler: request => request.PostSucceeded()
-            );
-            Assert.That(result, Is.EqualTo("OK"));
         }
     }
 }

@@ -40,7 +40,7 @@ namespace Bloom.Utils
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "performance/showCsvFile",
                 (request) =>
                 {
@@ -49,7 +49,7 @@ namespace Bloom.Utils
                 },
                 false
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "performance/applicationInfo",
                 (request) =>
                 {
@@ -59,7 +59,7 @@ namespace Bloom.Utils
                 },
                 false
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "performance/allMeasurements",
                 (request) =>
                 {

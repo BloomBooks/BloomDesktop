@@ -33,10 +33,10 @@ namespace Bloom.web.controllers
         {
             // Both of these display UI, expect to require UI thread.
             apiHandler
-                .RegisterEndpointLegacy("addPage", HandleAddPage, true)
+                .RegisterEndpointHandler("addPage", HandleAddPage, true)
                 .Measureable("Add Page");
             apiHandler
-                .RegisterEndpointLegacy("changeLayout", HandleChangeLayout, true)
+                .RegisterEndpointHandler("changeLayout", HandleChangeLayout, true)
                 .Measureable("Change Layout");
             ;
         }

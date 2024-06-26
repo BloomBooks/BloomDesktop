@@ -34,26 +34,26 @@ namespace Bloom.web
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler
-                .RegisterEndpointLegacy("pageList/pages", HandlePagesRequest, false)
+                .RegisterEndpointHandler("pageList/pages", HandlePagesRequest, false)
                 .Measureable();
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "pageList/pageContent",
                 HandlePageContentRequest,
                 false
             );
             apiHandler
-                .RegisterEndpointLegacy("pageList/pageMoved", HandlePageMovedRequest, true)
+                .RegisterEndpointHandler("pageList/pageMoved", HandlePageMovedRequest, true)
                 .Measureable();
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "pageList/pageClicked",
                 HandlePageClickedRequest,
                 true
             );
             apiHandler
-                .RegisterEndpointLegacy("pageList/menuClicked", HandleShowMenuRequest, true)
+                .RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true)
                 .Measureable();
 
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "pageList/bookAttributesThatMayAffectDisplay",
                 (request) =>
                 {

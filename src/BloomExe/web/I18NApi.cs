@@ -18,143 +18,138 @@ namespace Bloom.Api
         {
             // We get lots of these requests, and they don't use any non-local data except the LocalizationManager,
             // which is designed to be thread-safe for lookup functions. So we can take advantage of parallelism here.
-            apiHandler.RegisterEndpointLegacy("i18n/", HandleI18nRequest, false, false);
+            apiHandler.RegisterEndpointHandler("i18n/loadStrings", HandleI18nLoadStrings, false, false);
+            apiHandler.RegisterEndpointHandler("i18n/translate", HandleI18nTranslate, false, false);
+            apiHandler.RegisterEndpointHandler("i18n/uilang", HandleI18nUiLang, false, false);
         }
 
-        public void HandleI18nRequest(ApiRequest request)
+        public void HandleI18nLoadStrings(ApiRequest request)
         {
-            var lastSegment = request.LocalPath().Split(new char[] { '/' }).Last();
-            switch (lastSegment)
+            var d = new Dictionary<string, string>();
+            var post = request.GetPostDataWhenFormEncoded();
+            if (post != null)
             {
-                case "loadStrings":
-                    var d = new Dictionary<string, string>();
-                    var post = request.GetPostDataWhenFormEncoded();
-
-                    if (post != null)
+                foreach (string key in post.Keys)
+                {
+                    try
                     {
-                        foreach (string key in post.Keys)
-                        {
-                            try
-                            {
-                                if (d.ContainsKey(key))
-                                    continue;
+                        if (d.ContainsKey(key))
+                            continue;
 
-                                var translation = GetTranslationDefaultMayNotBeEnglish(
-                                    key,
-                                    post[key]
-                                );
-                                d.Add(key, translation);
-                            }
-                            catch (Exception error)
-                            {
-                                Debug.Fail(
-                                    "Debug Only:"
-                                        + error.Message
-                                        + Environment.NewLine
-                                        + "A bug reported at this location is BL-923"
-                                );
-                                //Until BL-923 is fixed (hard... it's a race condition, it's better to swallow this for users
-                            }
-                        }
+                        var translation = GetTranslationDefaultMayNotBeEnglish(
+                            key,
+                            post[key]
+                        );
+                        d.Add(key, translation);
                     }
-                    request.ReplyWithJson(JsonConvert.SerializeObject(d));
-                    break;
-
-                case "translate":
-                    var parameters = request.Parameters;
-                    string id = parameters["key"];
-                    string englishText = parameters["englishText"];
-                    string langId = parameters["langId"];
-                    string dontWarnIfMissing = parameters["dontWarnIfMissing"];
-                    bool isDontWarnIfMissing =
-                        dontWarnIfMissing != null && dontWarnIfMissing.Equals("true");
-                    string langTag1;
-                    string langTagM1;
-                    string langTagM2;
-                    if (request.CurrentBook != null)
+                    catch (Exception error)
                     {
-                        langTag1 = request.CurrentBook.BookData.Language1Tag;
-                        langTagM1 = request.CurrentBook.BookData.MetadataLanguage1Tag;
-                        langTagM2 = request.CurrentBook.BookData.MetadataLanguage2Tag;
+                        Debug.Fail(
+                            "Debug Only:"
+                                + error.Message
+                                + Environment.NewLine
+                                + "A bug reported at this location is BL-923"
+                        );
+                        //Until BL-923 is fixed (hard... it's a race condition, it's better to swallow this for users
+                    }
+                }
+            }
+            request.ReplyWithJson(JsonConvert.SerializeObject(d));
+        }
+
+        public void HandleI18nTranslate(ApiRequest request)
+        {
+            var parameters = request.Parameters;
+            string id = parameters["key"];
+            string englishText = parameters["englishText"];
+            string langId = parameters["langId"];
+            string dontWarnIfMissing = parameters["dontWarnIfMissing"];
+            bool isDontWarnIfMissing =
+                dontWarnIfMissing != null && dontWarnIfMissing.Equals("true");
+            string langTag1;
+            string langTagM1;
+            string langTagM2;
+            if (request.CurrentBook != null)
+            {
+                langTag1 = request.CurrentBook.BookData.Language1Tag;
+                langTagM1 = request.CurrentBook.BookData.MetadataLanguage1Tag;
+                langTagM2 = request.CurrentBook.BookData.MetadataLanguage2Tag;
+            }
+            else
+            {
+                langTag1 = request.CurrentCollectionSettings.Language1.Tag;
+                langTagM1 = request.CurrentCollectionSettings.Language2.Tag;
+                langTagM2 = request.CurrentCollectionSettings.Language3?.Tag ?? "";
+            }
+            langId = langId.Replace("V", langTag1);
+            langId = langId.Replace("N1", langTagM1);
+            langId = langId.Replace("N2", langTagM2);
+            langId = langId.Replace("UI", LocalizationManager.UILanguageId);
+            if (GetSomeTranslation(id, langId, out var localizedString))
+            {
+                // Ensure that we actually have a value for localized string.  (This should already be true, but I'm paranoid.)
+                if (localizedString == null)
+                    localizedString = englishText;
+                request.ReplyWithJson(new { text = localizedString, success = true });
+            }
+            else
+            {
+                var idFound = true;
+                // Don't report missing strings if they are numbers
+                // Enhance: We might get the Javascript to do locale specific numbers someday
+                // The C# side doesn't currently have the smarts to do DigitSubstitution
+                // See Remark at https://msdn.microsoft.com/en-us/library/system.globalization.numberformatinfo.digitsubstitution(v=vs.110).aspx
+                if (IsInteger(id))
+                {
+                    englishText = id;
+                }
+                else
+                {
+                    // Now that end users can create templates, it's annoying to report that their names,
+                    // page labels, and page descriptions don't have localizations.
+                    if (IsTemplateBookKey(id))
+                    {
+                        englishText = englishText.Trim();
                     }
                     else
                     {
-                        langTag1 = request.CurrentCollectionSettings.Language1.Tag;
-                        langTagM1 = request.CurrentCollectionSettings.Language2.Tag;
-                        langTagM2 = request.CurrentCollectionSettings.Language3?.Tag ?? "";
-                    }
-                    langId = langId.Replace("V", langTag1);
-                    langId = langId.Replace("N1", langTagM1);
-                    langId = langId.Replace("N2", langTagM2);
-                    langId = langId.Replace("UI", LocalizationManager.UILanguageId);
-                    if (GetSomeTranslation(id, langId, out var localizedString))
-                    {
-                        // Ensure that we actually have a value for localized string.  (This should already be true, but I'm paranoid.)
-                        if (localizedString == null)
-                            localizedString = englishText;
-                        request.ReplyWithJson(new { text = localizedString, success = true });
-                    }
-                    else
-                    {
-                        var idFound = true;
-                        // Don't report missing strings if they are numbers
-                        // Enhance: We might get the Javascript to do locale specific numbers someday
-                        // The C# side doesn't currently have the smarts to do DigitSubstitution
-                        // See Remark at https://msdn.microsoft.com/en-us/library/system.globalization.numberformatinfo.digitsubstitution(v=vs.110).aspx
-                        if (IsInteger(id))
+                        // it's ok if we don't have a translation, but if the string isn't even in the list of things that need translating,
+                        // then we want to remind the developer to add it to the english xlf file.
+                        if (!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
                         {
-                            englishText = id;
+                            if (!isDontWarnIfMissing)
+                                ReportL10NMissingString(
+                                    id,
+                                    englishText,
+                                    UrlPathString
+                                        .CreateFromUrlEncodedString(
+                                            parameters["comment"] ?? ""
+                                        )
+                                        .NotEncoded
+                                );
+                            idFound = false;
                         }
                         else
                         {
-                            // Now that end users can create templates, it's annoying to report that their names,
-                            // page labels, and page descriptions don't have localizations.
-                            if (IsTemplateBookKey(id))
-                            {
-                                englishText = englishText.Trim();
-                            }
-                            else
-                            {
-                                // it's ok if we don't have a translation, but if the string isn't even in the list of things that need translating,
-                                // then we want to remind the developer to add it to the english xlf file.
-                                if (!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
-                                {
-                                    if (!isDontWarnIfMissing)
-                                        ReportL10NMissingString(
-                                            id,
-                                            englishText,
-                                            UrlPathString
-                                                .CreateFromUrlEncodedString(
-                                                    parameters["comment"] ?? ""
-                                                )
-                                                .NotEncoded
-                                        );
-                                    idFound = false;
-                                }
-                                else
-                                {
-                                    //ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
-                                    // And return the English string, which is what we would do the next time anyway.  (BL-3374)
+                            //ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
+                            // And return the English string, which is what we would do the next time anyway.  (BL-3374)
 
-                                    //This is what we had before 5.5: LocalizationManager.GetDynamicString("Bloom", id, englishText);
-                                    // That apparently just gives us back whatever we already have in `englishText`, which is "" if
-                                    // the code did not have a duplicate of the string. We want to support the ideal (in Hatton's mind)
-                                    // that duplication is just asking for trouble by allowing the code to not know what the English is.
-                                    // So now, we just do this which just means "ah well, what's the English?".
-                                    GetSomeTranslation(id, "en", out englishText);
-                                }
-                            }
+                            //This is what we had before 5.5: LocalizationManager.GetDynamicString("Bloom", id, englishText);
+                            // That apparently just gives us back whatever we already have in `englishText`, which is "" if
+                            // the code did not have a duplicate of the string. We want to support the ideal (in Hatton's mind)
+                            // that duplication is just asking for trouble by allowing the code to not know what the English is.
+                            // So now, we just do this which just means "ah well, what's the English?".
+                            GetSomeTranslation(id, "en", out englishText);
                         }
-                        request.ReplyWithJson(new { text = englishText, success = idFound });
                     }
-                    break;
-                case "uilang":
-                    request.ReplyWithText(LocalizationManager.UILanguageId);
-                    break;
-                default:
-                    request.Failed();
-                    break;
+                }
+                request.ReplyWithJson(new { text = englishText, success = idFound });
             }
+        }
+
+        public void HandleI18nUiLang(ApiRequest request)
+        {
+            request.ReplyWithText(LocalizationManager.UILanguageId);
         }
 
         // Get a translation of the specified string, in the specified language,

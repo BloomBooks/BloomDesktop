@@ -72,20 +72,20 @@ namespace Bloom.web.controllers
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "checkAutoSegmentDependencies",
                 CheckAutoSegmentDependenciesMet,
                 handleOnUiThread: false,
                 requiresSync: false
             );
             // JH: this is unused: apiHandler.RegisterEndpointLegacy(kApiUrlPart + "autoSegmentAudio", AutoSegment, handleOnUiThread: true/* may ask for a file*/, requiresSync: false);
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "getForcedAlignmentTimings",
                 GetForcedAlignmentTimings,
                 handleOnUiThread: false,
                 requiresSync: false
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "eSpeakPreview",
                 ESpeakPreview,
                 handleOnUiThread: false,
@@ -309,12 +309,13 @@ namespace Bloom.web.controllers
             return request;
         }
 
-        /// <summary>
+
+#if OBSOLETEAPI
         /// API Handler when the Auto Segment button is clicked
         ///
         /// Replies with true if AutoSegment completed successfully, or false if there was an error. In addition, a NonFatal message/exception may be reported with the error
         /// </summary>
-        /* (JH) I don't know why this exists, it is unused
+        /* (JH) I don't know why this exists, it is unused  (SMc) it supported the obsolete autoSegmentAudio API call
         public void AutoSegment(ApiRequest request)
         {
             Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): AutoSegment started.");
@@ -350,6 +351,7 @@ namespace Bloom.web.controllers
             request.ReplyWithBoolean(true); // Success
         }
         */
+#endif
 
         internal AutoSegmentResponse GetAeneasTimings(AutoSegmentRequest requestParameters)
         {
@@ -1020,6 +1022,7 @@ namespace Bloom.web.controllers
             return timings;
         }
 
+#if OBSOLETEAPI
         /// <summary>
         /// Given a list of timings, segments a whole audio file into the individual pieces specified by the timing list
         /// </summary>
@@ -1149,6 +1152,7 @@ namespace Bloom.web.controllers
 
             return tcs.Task;
         }
+#endif
         #endregion
 
 

@@ -53,8 +53,7 @@ namespace Bloom.web.controllers
         {
             // Must not require sync, because it launches a Bloom dialog, which will make other api requests
             // that will be blocked if this is locked.
-            apiHandler.RegisterEndpointHandler(
-                "bookCommand/exportToSpreadsheet",
+            apiHandler.RegisterEndpointHandler("bookCommand/exportToSpreadsheet",
                 (request) =>
                 {
                     _spreadsheetApi.ShowExportToSpreadsheetUI(GetBookObjectFromPost(request));
@@ -63,8 +62,7 @@ namespace Bloom.web.controllers
                 true,
                 false
             );
-            apiHandler.RegisterEndpointHandler(
-                "bookCommand/enhanceLabel",
+            apiHandler.RegisterEndpointHandler("bookCommand/enhanceLabel",
                 (request) =>
                 {
                     // We want this to be fast...many things are competing for api handling threads while
@@ -78,7 +76,82 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
-            apiHandler.RegisterEndpointLegacy("bookCommand/", HandleBookCommand, true);
+            apiHandler.RegisterEndpointHandler("bookCommand/makeBloompack",
+                (request) =>
+                {
+                    var book = GetBookObjectFromPost(request);
+                    HandleMakeBloompack(book);
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler("bookCommand/openFolderOnDisk",
+                (request) =>
+                {
+                    // Currently, the request comes with data to let us identify which book,
+                    // but it will always be the current book, which is all the model api lets us open anyway.
+                    _collectionModel.OpenFolderOnDisk();
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler("bookCommand/exportToWord",
+                (request) =>
+                {
+                    var book = GetBookObjectFromPost(request);
+                    HandleExportToWord(book);
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler("bookCommand/importSpreadsheetContent",
+                (request) =>
+                {
+                    // As currently implemented this would more naturally go in CollectionApi, since it adds a book
+                    // to the collection (a backup). However, we are probably going to change how backups are handled
+                    // so this is no longer true.
+                    var book = GetBookObjectFromPost(request);
+                    _spreadsheetApi.HandleImportContentFromSpreadsheet(book);
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler("bookCommand/saveAsDotBloomSource",
+                (request) =>
+                {
+                    var book = GetBookObjectFromPost(request);
+                    HandleSaveAsDotBloomSource(book);
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler("bookCommand/updateThumbnail",
+                (request) =>
+                {
+                    var book = GetBookObjectFromPost(request);
+                    ScheduleRefreshOfOneThumbnail(book);
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler("bookCommand/updateBook",
+                (request) =>
+                {
+                    var book = GetBookObjectFromPost(request);
+                    HandleBringBookUpToDate(book);
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler("bookCommand/rename",
+                (request) =>
+                {
+                    var book = GetBookObjectFromPost(request);
+                    HandleRename(book, request);
+                    request.PostSucceeded();
+                },
+                true
+            );
         }
 
         public void RequestButtonLabelUpdate(string collectionPath, string id)
@@ -246,47 +319,6 @@ namespace Bloom.web.controllers
                 badBook = true;
                 return null;
             }
-        }
-
-        private void HandleBookCommand(ApiRequest request)
-        {
-            var book = GetBookObjectFromPost(request);
-            var command = request
-                .LocalPath()
-                .Substring((BloomApiHandler.ApiPrefix + "bookCommand/").Length);
-            switch (command)
-            {
-                case "makeBloompack":
-                    HandleMakeBloompack(book);
-                    break;
-                case "openFolderOnDisk":
-                    // Currently, the request comes with data to let us identify which book,
-                    // but it will always be the current book, which is all the model api lets us open anyway.
-                    _collectionModel.OpenFolderOnDisk();
-                    break;
-                case "exportToWord":
-                    HandleExportToWord(book);
-                    break;
-                // As currently implemented this would more naturally go in CollectionApi, since it adds a book
-                // to the collection (a backup). However, we are probably going to change how backups are handled
-                // so this is no longer true.
-                case "importSpreadsheetContent":
-                    _spreadsheetApi.HandleImportContentFromSpreadsheet(book);
-                    break;
-                case "saveAsDotBloomSource":
-                    HandleSaveAsDotBloomSource(book);
-                    break;
-                case "updateThumbnail":
-                    ScheduleRefreshOfOneThumbnail(book);
-                    break;
-                case "updateBook":
-                    HandleBringBookUpToDate(book);
-                    break;
-                case "rename":
-                    HandleRename(book, request);
-                    break;
-            }
-            request.PostSucceeded();
         }
 
         private void HandleRename(Book.Book book, ApiRequest request)

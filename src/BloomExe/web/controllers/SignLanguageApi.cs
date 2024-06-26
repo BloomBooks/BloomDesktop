@@ -47,22 +47,22 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler
-                .RegisterEndpointLegacy(
+                .RegisterEndpointHandler(
                     "signLanguage/recordedVideo",
                     HandleRecordedVideoRequest,
                     true
                 )
                 .Measureable("Process recorded video");
             apiHandler
-                .RegisterEndpointLegacy("signLanguage/deleteVideo", HandleDeleteVideoRequest, true)
+                .RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true)
                 .Measureable("Delete video");
             ;
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "signLanguage/importVideo",
                 HandleImportVideoRequest,
                 true
             ); // has dialog, so measure internally after the dialog.
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "signLanguage/getStats",
                 HandleVideoStatisticsRequest,
                 true

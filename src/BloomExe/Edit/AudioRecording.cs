@@ -103,54 +103,54 @@ namespace Bloom.Edit
         {
             // HandleStartRecording seems to need to be on the UI thread in order for HandleEndRecord() to detect the correct state.
             apiHandler
-                .RegisterEndpointLegacy("audio/startRecord", HandleStartRecording, true)
+                .RegisterEndpointHandler("audio/startRecord", HandleStartRecording, true)
                 .Measureable();
 
             // Note: This handler locks and unlocks a shared resource (_completeRecording lock).
             // Any other handlers depending on this resource should not wait on the same thread (i.e. the UI thread) or deadlock can occur.
             apiHandler
-                .RegisterEndpointLegacy("audio/endRecord", HandleEndRecord, true)
+                .RegisterEndpointHandler("audio/endRecord", HandleEndRecord, true)
                 .Measureable();
 
             // Any handler which retrieves information from the audio folder SHOULD wait on the _completeRecording lock (call WaitForRecordingToComplete()) to ensure that it sees
             // a consistent state of the audio folder, and therefore should NOT run on the UI thread.
             // Also, explicitly setting requiresSync to true (even tho that's default anyway) to make concurrency less complicated to think about
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "audio/checkForAnyRecording",
                 HandleCheckForAnyRecording,
                 false,
                 true
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "audio/checkForAllRecording",
                 HandleCheckForAllRecording,
                 false,
                 true
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "audio/deleteSegment",
                 HandleDeleteSegment,
                 false,
                 true
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "audio/checkForSegment",
                 HandleCheckForSegment,
                 false,
                 true
             );
-            apiHandler.RegisterEndpointLegacy("audio/wavFile", HandleAudioFileRequest, false, true);
+            apiHandler.RegisterEndpointHandler("audio/wavFile", HandleAudioFileRequest, false, true);
 
             // Doesn't matter whether these are on UI thread or not, so using the old default which was true
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "audio/currentRecordingDevice",
                 HandleCurrentRecordingDevice,
                 true
             );
-            apiHandler.RegisterEndpointLegacy("audio/devices", HandleAudioDevices, true);
+            apiHandler.RegisterEndpointHandler("audio/devices", HandleAudioDevices, true);
 
-            apiHandler.RegisterEndpointLegacy("audio/copyAudioFile", HandleCopyAudioFile, false);
-            apiHandler.RegisterEndpointLegacy("audio/stopMonitoring", HandleStopMonitoring, true);
+            apiHandler.RegisterEndpointHandler("audio/copyAudioFile", HandleCopyAudioFile, false);
+            apiHandler.RegisterEndpointHandler("audio/stopMonitoring", HandleStopMonitoring, true);
 
             Debug.Assert(
                 BloomServer.portForHttp > 0,

@@ -145,7 +145,7 @@ function process_UI_Message(event: MessageEvent): void {
                     break;
                 default:
             }
-            if (helpFile) post("help/" + helpFile);
+            if (helpFile) post("help?topic=" + helpFile);
             return;
         }
 

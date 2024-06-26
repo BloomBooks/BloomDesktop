@@ -44,7 +44,7 @@ namespace Bloom.Edit
     {
         public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointLegacy("toolbox/settings", HandleSettings, false);
+            apiHandler.RegisterEndpointHandler("toolbox/settings", HandleSettings, false);
         }
 
         /// <summary>

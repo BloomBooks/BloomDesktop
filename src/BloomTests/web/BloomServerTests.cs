@@ -177,15 +177,15 @@ namespace BloomTests.web
                 );
                 EndpointHandler testFunc = (request) =>
                 {
-                    Assert.That(request.LocalPath(), Does.Contain("thisWontWorkWithoutInjection"));
+                    Assert.That(request.LocalPath(), Does.Contain("thisWontWorkWithoutInjectionButWillWithIt"));
                     Assert.That(
                         request.CurrentCollectionSettings,
                         Is.EqualTo(server.CurrentCollectionSettings)
                     );
                     request.ReplyWithText("Did It!");
                 };
-                server.ApiHandler.RegisterEndpointLegacy(
-                    "thisWontWorkWithoutInjection",
+                server.ApiHandler.RegisterEndpointHandler(
+					"thisWontWorkWithoutInjectionButWillWithIt",
                     testFunc,
                     true
                 );

@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Bloom.Api;
+﻿using Bloom.Api;
 using Bloom.ToPalaso;
 
 namespace Bloom.web
@@ -10,25 +9,23 @@ namespace Bloom.web
     /// and open the browser.
     ///
     /// For html pages shipped with bloom, use this controller by writing
-    /// <a href='/api/externalLink/blah/foo.html#fragment=idOfSomeSectionOfFoo'></a>
+    /// <a href='/api/externalLink?path=blah/foo.html#fragment=idOfSomeSectionOfFoo'></a>
     /// </summary>
     public class ExternalLinkController
     {
-        const string kPrefix = "externalLink";
-
         public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             // Opening a page, better be in UI thread.
-            apiHandler.RegisterEndpointLegacy(kPrefix + "/.*", HandleRequest, true);
-            // It's odd not to use kPrefix. However, the above handler wants to handle ANY link that starts
-            // with externalLink/, and it feels confusing to have both that and one that handles
-            // externalLink by itself. Yet this class feels like the right place to handle links
-            // that simply open a link in the external browser. So I decided to use a simpler pattern.
+            apiHandler.RegisterEndpointHandler("externalLink", HandleExternalLink, true);
+            // This class feels like the right place to handle link elements that simply open a link
+            // in the external browser.
             apiHandler.RegisterEndpointHandler("link", HandleLink, true);
         }
 
-        // Javascript currently activates this for links that start with http or mailto.
-        // It opens the link in the system default browser.
+        /// <summary>
+        /// Javascript currently activates this for links that start with http or mailto.
+        /// It opens the link in the system default browser.
+        /// </summary>
         private static void HandleLink(ApiRequest request)
         {
             var href = request.RequiredPostString();
@@ -37,30 +34,21 @@ namespace Bloom.web
         }
 
         /// <summary>
-        /// Handles a url starting with api/kPrefix by stripping off that prefix, searching for the file
-        /// named in the remainder of the url, and opening it in some browser (passing on any anchor specified).
+        /// Handles a url matching externalLink with a path parameter and optional fragment parameter.
         /// </summary>
-        public static void HandleRequest(ApiRequest request)
+        public static void HandleExternalLink(ApiRequest request)
         {
-            //NB: be careful not to lose case, as at least chrome is case-sensitive with anchors (e.g. #ChoiceOfTopic)
-            var localPath = Regex.Replace(
-                request.LocalPath(),
-                "api/" + kPrefix + "/",
-                "",
-                RegexOptions.IgnoreCase
-            );
+            var path = request.RequiredParam("path");
             var completeUiLangPath =
-                BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, localPath);
+                BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, path);
             var cleanUrl = completeUiLangPath.Replace("\\", "/"); // allows jump to file to work
 
-            //we would like to get something like foo.htm#secondPart but the browser strips off that fragment part
-            //so we require that to be written as foo.htm?fragment=secondPart so it gets to us, then we convert
+            //we would like to get something like ?path=foo.htm#secondPart but the browser strips off that fragment part
+            //so we require that to be written as ?path=foo.htm&fragment=secondPart so it gets to us, then we convert
             //it back to the normal format before sending it to a parser
-            if (!string.IsNullOrEmpty(request.Parameters["fragment"]))
-            {
-                cleanUrl += "#" + request.Parameters["fragment"];
-                request.Parameters.Remove("fragment");
-            }
+            var fragment = request.GetParamOrNull("fragment");
+            if (!string.IsNullOrEmpty(fragment))
+                cleanUrl += "#" + fragment;
 
             // If we simply provide a path to the file and have a fragment (#xxx), we get file not found exception.
             // If we prepend "file:///", the fragment part of the link (#xxx) is not sent unless we provide the browser path too.

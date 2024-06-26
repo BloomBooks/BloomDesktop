@@ -15,7 +15,7 @@ namespace Bloom.web.controllers
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointLegacy("progress/cancel", Cancel, false, false);
+            apiHandler.RegisterEndpointHandler("progress/cancel", Cancel, false, false);
             apiHandler.RegisterEndpointHandler(
                 "progress/closed",
                 BrowserProgressDialog.HandleProgressDialogClosed,
