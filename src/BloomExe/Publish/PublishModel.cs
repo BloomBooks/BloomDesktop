@@ -306,7 +306,7 @@ namespace Bloom.Publish
         {
             if (owner == null)
                 owner = View;
-            Debug.Assert(owner != null); // must pass if we don't have a view.
+            Debug.Assert(owner != null || Program.RunningInConsoleMode); // must pass if we don't have a view.
             try
             {
                 using (var tempHtml = MakeFinalHtmlForPdfMaker())
