@@ -49,6 +49,8 @@ namespace Bloom
                 CoreWebView2InitializationCompletedEventArgs args
             ) =>
             {
+                if (Disposing)
+                    return;     // disposed before initialization completed.  See BL-13593.
                 if (args.IsSuccess == false)
                 {
                     // One way to get this to fail is to have a zombie Bloom running that has different "accept-lang" arguments.

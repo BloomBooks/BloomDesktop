@@ -29,7 +29,6 @@ namespace Bloom.Publish.PDF
 
         public void MakePdf(
             PdfMakingSpecs specs,
-            Control owner,
             BackgroundWorker worker,
             DoWorkEventArgs doWorkEventArgs
         )

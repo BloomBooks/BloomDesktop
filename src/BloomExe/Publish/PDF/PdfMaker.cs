@@ -54,7 +54,6 @@ namespace Bloom.Publish.PDF
             {
                 new MakePdfUsingExternalPdfMakerProgram().MakePdf(
                     specs,
-                    owner,
                     worker,
                     doWorkEventArgs
                 );
@@ -72,22 +71,19 @@ namespace Bloom.Publish.PDF
                 if (RobustFile.Exists(specs.OutputPdfPath))
                     break; // normally the first time
             }
-            if (!RobustFile.Exists(specs.OutputPdfPath) && owner != null)
+            if (!RobustFile.Exists(specs.OutputPdfPath))
             {
                 // Should never happen, but...
-                owner.Invoke(
-                    (Action)(
-                        () =>
+                // Review: should we localize these? Hopefully the user never sees it...don't want to increase burden on localizers...
+                var message = "Bloom unexpectedly failed to create the PDF. If this happens repeatedly please report it to the developers. Probably it will work if you just try again.";
+                var header = "PDF creation failed";
+                if (owner != null)
+                    owner.Invoke(() =>
                         {
-                            // Review: should we localize this? Hopefully the user never sees it...don't want to increase burden on localizers...
-                            MessageBox.Show(
-                                "Bloom unexpectedly failed to create the PDF. If this happens repeatedy please report it to the developers. Probably it will work if you just try again.",
-                                "Pdf creation failed",
-                                MessageBoxButtons.OK
-                            );
-                        }
-                    )
-                );
+                            MessageBox.Show(message, header, MessageBoxButtons.OK);
+                        });
+                else
+                    Console.WriteLine(message);
                 doWorkEventArgs.Result = MakingPdfFailedException.CreatePdfException();
                 return;
             }
