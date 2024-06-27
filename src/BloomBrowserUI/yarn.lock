@@ -5528,9 +5528,9 @@ bindings@^1.5.0:
     file-uri-to-path "1.0.0"
 
 bloom-player@^2.2:
-  version "2.2.41"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.2.41.tgz#491d2081655f842fe97d61ffc0fe36342e02adda"
-  integrity sha512-cjjDBfVBYEuJai6fhW2mI5iXYSj/FZUS6vcOONf/xJJ7k6J3jq/EW58ekoLgSyPeOP613KZPPfqFbNqo6LWghg==
+  version "2.2.42"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.2.42.tgz#221e6df720065d6eeb0f183d8c9bebb674da4026"
+  integrity sha512-+mt96t5btYifPNvpnwmTMtHsA4y4flr7iiixT7NQeBQclMRp+RqdmQACETTjTu132ZrZNNMQkZD5rP+HnuqgVw==
 
 bluebird@^3.3.5, bluebird@^3.5.5:
   version "3.7.2"
