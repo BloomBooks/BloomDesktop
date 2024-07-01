@@ -56,11 +56,10 @@ namespace Bloom
 
         public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointLegacy(
-                "help/.*",
+            apiHandler.RegisterEndpointHandler("help",
                 (request) =>
                 {
-                    var topic = request.LocalPath().Replace("api/help", "");
+                    var topic = request.RequiredParam("topic");
                     Show(Application.OpenForms.Cast<Form>().Last(), topic);
                     //if this is called from a simple html anchor, we don't want the browser to do anything
                     request.ExternalLinkSucceeded();

@@ -41,16 +41,16 @@ namespace Bloom.web.controllers
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointLegacy("uiLanguages", HandleUiLanguages, false); // App
-            apiHandler.RegisterEndpointLegacy("currentUiLanguage", HandleCurrentUiLanguage, false); // App
-            apiHandler.RegisterEndpointLegacy("bubbleLanguages", HandleBubbleLanguages, false); // Move to EditingViewApi
-            apiHandler.RegisterEndpointLegacy("common/error", HandleJavascriptError, false); // Common
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false); // App
+            apiHandler.RegisterEndpointHandler("currentUiLanguage", HandleCurrentUiLanguage, false); // App
+            apiHandler.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false); // Move to EditingViewApi
+            apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false); // Common
+            apiHandler.RegisterEndpointHandler(
                 "common/preliminaryError",
                 HandlePreliminaryJavascriptError,
                 false
             ); // Common
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "common/saveChangesAndRethinkPageEvent",
                 RethinkPageAndReloadIt,
                 true
@@ -66,13 +66,13 @@ namespace Bloom.web.controllers
                 HandleHasPreserveCoverColor,
                 true
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "common/showSettingsDialog",
                 HandleShowSettingsDialog,
                 false
             ); // Common
             apiHandler.RegisterEndpointHandler("common/logger/writeEvent", HandleLogEvent, false);
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "common/problemWithBookMessage",
                 request =>
                 {
@@ -84,7 +84,7 @@ namespace Bloom.web.controllers
                 },
                 false
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "common/clickHereForHelp",
                 request =>
                 {
@@ -103,7 +103,7 @@ namespace Bloom.web.controllers
             // invocation of the code that decides whether to enable the paste hyperlink button). This causes a deadlock
             // unless we make this endpoint requiresSync:false. I think this is safe as it doesn't interact with any other
             // Bloom objects.
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "common/clipboardText",
                 request =>
                 {
@@ -170,7 +170,7 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "common/checkForUpdates",
                 request =>
                 {
@@ -179,7 +179,7 @@ namespace Bloom.web.controllers
                 },
                 false
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "common/channel",
                 request =>
                 {
@@ -210,7 +210,7 @@ namespace Bloom.web.controllers
             // other solutions for that including opening the dialog on Application.Idle. But the dialog needs
             // to give a real-time result so callers can know what do with button presses. Since some of those
             // callers are in libpalaso, we can't just ignore the result and handle the actions ourselves.
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "common/closeReactDialog",
                 request =>
                 {
@@ -222,7 +222,7 @@ namespace Bloom.web.controllers
             );
 
             // TODO: move to the new App API (BL-9635)
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "common/reloadCollection",
                 HandleReloadCollection,
                 true

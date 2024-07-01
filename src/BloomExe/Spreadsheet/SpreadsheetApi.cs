@@ -38,7 +38,7 @@ namespace Bloom.Spreadsheet
             // go through a single "bookCommand/" API, so we don't register that here.
             // Instead all we need to register is any api enpoints used by our own spreadsheet dialogs
 
-            apiHandler.RegisterEndpointLegacy("spreadsheet/export", ExportToSpreadsheet, true);
+            apiHandler.RegisterEndpointHandler("spreadsheet/export", ExportToSpreadsheet, true);
         }
 
         public void ShowExportToSpreadsheetUI(Book.Book book)

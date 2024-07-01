@@ -99,7 +99,7 @@ export default class BookMetadataDialog extends React.Component<
                             variant="outlined"
                             enabled={true}
                             l10nKey="Common.Help"
-                            clickApiEndpoint="help/User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
+                            clickApiEndpoint="help?topic=User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
                             hasText={true}
                         >
                             Help

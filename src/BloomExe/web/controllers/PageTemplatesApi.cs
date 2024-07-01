@@ -62,13 +62,9 @@ namespace Bloom.web.controllers
         {
             // We could probably get away with using the server thread here, but the code interacts quite a bit with the
             // current book and other state.
-            apiHandler.RegisterEndpointLegacy("pageTemplates", HandleTemplatesRequest, true);
+            apiHandler.RegisterEndpointHandler("pageTemplates", HandleTemplatesRequest, true);
             // Being on the UI thread causes a deadlock on Linux/Mono.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3818.
-            apiHandler.RegisterEndpointLegacy(
-                "pageTemplateThumbnail",
-                HandleThumbnailRequest,
-                false
-            );
+            apiHandler.RegisterEndpointHandler("pageTemplateThumbnail", HandleThumbnailRequest, false);
         }
 
         /// <summary>
@@ -133,7 +129,7 @@ namespace Bloom.web.controllers
         /// </summary>
         public void HandleThumbnailRequest(ApiRequest request)
         {
-            var filePath = request.LocalPath().Replace("api/pageTemplateThumbnail/", "");
+            var filePath = request.RequiredParam("path");
             var pathToExistingOrGeneratedThumbnail = FindOrGenerateThumbnail(
                 filePath,
                 out bool isGenerating
@@ -324,7 +320,7 @@ namespace Bloom.web.controllers
                                     .Replace(
                                         BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
                                         BloomServer.ServerUrlWithBloomPrefixEndingInSlash
-                                            + "api/pageTemplateThumbnail/"
+                                            + "api/pageTemplateThumbnail?path="
                                     );
                                 _webSocketServer.SendBundle(
                                     "page-chooser",
