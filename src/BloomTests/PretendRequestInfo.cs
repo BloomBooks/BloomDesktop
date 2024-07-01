@@ -122,7 +122,7 @@ namespace Bloom.Api
             _jsonForPost = value;
         }
 
-        public string GetPostString()
+        public string GetPostString(bool unescape = true)
         {
             return "";
         }

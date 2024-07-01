@@ -30,7 +30,7 @@ namespace Bloom.Api
         System.Collections.Specialized.NameValueCollection GetQueryParameters();
         System.Collections.Specialized.NameValueCollection GetPostDataWhenFormEncoded();
         string GetPostJson();
-        string GetPostString();
+        string GetPostString(bool unescape = true);
         HttpMethods HttpMethod { get; }
         void ExternalLinkSucceeded();
         string DoNotCacheFolder { set; }
