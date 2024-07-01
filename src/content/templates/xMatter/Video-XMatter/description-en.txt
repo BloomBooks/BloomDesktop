@@ -1,1 +1,0 @@
-Used for Bloom Apps that are primarily consumed as talking/animating experiences, rather than "books".

@@ -39,7 +39,7 @@ namespace Bloom.Book
         {
             if (!RobustFile.Exists(settingsPath))
                 return null;
-            var settingsJson = System.IO.File.ReadAllText(settingsPath);
+            var settingsJson = RobustFile.ReadAllText(settingsPath);
             return JsonConvert.DeserializeObject<Settings>(settingsJson);
         }
     }

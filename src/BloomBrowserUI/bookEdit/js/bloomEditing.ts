@@ -360,6 +360,12 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
         });
 }
 
+// called by C# to remove the id attribute from the image element
+export function removeImageId(imageId: string) {
+    const imgOrImageContainer = document.getElementById(imageId);
+    imgOrImageContainer?.removeAttribute("id");
+}
+
 // called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: {
     imageId: string;
@@ -394,6 +400,8 @@ export function changeImage(imageInfo: {
     if (ancestor) {
         SetOverlayForImagesWithoutMetadata(ancestor);
     }
+    // id is just a temporary expedient to find the right image easily in this method.
+    imgOrImageContainer.removeAttribute("id");
 }
 
 // This origami checking business is related BL-13120

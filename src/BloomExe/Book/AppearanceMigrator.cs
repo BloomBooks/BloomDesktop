@@ -50,7 +50,7 @@ namespace Bloom.Book
             )
             {
                 var path = Path.Combine(folderPath, "appearance.json");
-                if (!File.Exists(path))
+                if (!RobustFile.Exists(path))
                     continue; // or throw??
                 var content = RobustFile.ReadAllText(path);
                 var match = Regex.Match(content, " with checksum ([a-f0-9, ]*)");

@@ -412,9 +412,9 @@ namespace Bloom.Api
             return _requestInfo.GetPostJson();
         }
 
-        public string RequiredPostString()
+        public string RequiredPostString(bool unescape = true)
         {
-            var s = GetPostStringOrNull();
+            var s = GetPostStringOrNull(unescape);
             if (!string.IsNullOrWhiteSpace(s))
             {
                 return s;
@@ -424,7 +424,7 @@ namespace Bloom.Api
             );
         }
 
-        public string GetPostStringOrNull()
+        public string GetPostStringOrNull(bool unescape = true)
         {
             string contentType = RequestContentType;
             if (contentType == null)
@@ -432,7 +432,7 @@ namespace Bloom.Api
                 return null;
             }
             Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
-            return _requestInfo.GetPostString();
+            return _requestInfo.GetPostString(unescape);
         }
 
         /// <summary>
