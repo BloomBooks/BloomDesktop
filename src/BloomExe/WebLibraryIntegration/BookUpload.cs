@@ -263,6 +263,7 @@ namespace Bloom.WebLibraryIntegration
                 RobustFile.Delete(file);
 
             string bookObjectId = "";
+            bool isNewBook = existingBookObjectIdOrNull == null;
             try
             {
                 if (!IsDryRun)
@@ -275,8 +276,6 @@ namespace Bloom.WebLibraryIntegration
 
                     if (progress.CancelRequested)
                         return "";
-
-                    bool isNewBook = existingBookObjectIdOrNull == null;
 
                     // This currently (unfortunately) enforces a single upload at a time.
                     // If we want to change that in the future, we would need different folder names,
@@ -360,14 +359,17 @@ namespace Bloom.WebLibraryIntegration
                         bookObjectId = transactionId;
                     }
 
-                    //   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
+                    if (IsProductionRun) // don't make it seem like there are more uploads than there really are if this a tester pushing to the sandbox
                     {
                         Analytics.Track(
                             "UploadBook-Success",
                             new Dictionary<string, string>()
                             {
                                 { "url", metadata.BaseUrl },
-                                { "title", metadata.Title }
+                                { "title", metadata.Title },
+                                { "uploader", UploadedBy },
+                                { "BookId", metadata.Id },
+                                { "isNewBook", isNewBook.ToString() },
                             }
                         );
                     }
@@ -376,16 +378,7 @@ namespace Bloom.WebLibraryIntegration
             catch (WebException e)
             {
                 DisplayNetworkUploadProblem(e, progress);
-                if (IsProductionRun) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
-                    Analytics.Track(
-                        "UploadBook-Failure",
-                        new Dictionary<string, string>()
-                        {
-                            { "url", metadata.BaseUrl },
-                            { "title", metadata.Title },
-                            { "error", e.Message }
-                        }
-                    );
+                ReportFailureToAnalytics(metadata, isNewBook, e);
                 return "";
             }
             catch (AmazonS3Exception e)
@@ -408,33 +401,14 @@ namespace Bloom.WebLibraryIntegration
                 else
                 {
                     DisplayNetworkUploadProblem(e, progress);
-                    if (IsProductionRun)
-                        // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-                        Analytics.Track(
-                            "UploadBook-Failure",
-                            new Dictionary<string, string>()
-                            {
-                                { "url", metadata.BaseUrl },
-                                { "title", metadata.Title },
-                                { "error", e.Message }
-                            }
-                        );
+                    ReportFailureToAnalytics(metadata, isNewBook, e);
                 }
                 return "";
             }
             catch (AmazonServiceException e)
             {
                 DisplayNetworkUploadProblem(e, progress);
-                if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-                    Analytics.Track(
-                        "UploadBook-Failure",
-                        new Dictionary<string, string>()
-                        {
-                            { "url", metadata.BaseUrl },
-                            { "title", metadata.Title },
-                            { "error", e.Message }
-                        }
-                    );
+                ReportFailureToAnalytics(metadata, isNewBook, e);
                 return "";
             }
             catch (VersionCannotUploadException e)
@@ -459,20 +433,28 @@ namespace Bloom.WebLibraryIntegration
                 progress.WriteError(msg2);
                 progress.WriteVerbose(e.StackTrace);
 
-                if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-                    Analytics.Track(
-                        "UploadBook-Failure",
-                        new Dictionary<string, string>()
-                        {
-                            { "url", metadata.BaseUrl },
-                            { "title", metadata.Title },
-                            { "error", e.Message }
-                        }
-                    );
+                ReportFailureToAnalytics(metadata, isNewBook, e);
                 return "";
             }
 
             return bookObjectId;
+        }
+
+        private void ReportFailureToAnalytics(BookMetaData metadata, bool isNewBook, Exception e)
+        {
+            if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
+                Analytics.Track(
+                    "UploadBook-Failure",
+                    new Dictionary<string, string>()
+                    {
+                        { "url", metadata.BaseUrl },
+                        { "title", metadata.Title },
+                        { "error", e.Message },
+                        { "uploader", UploadedBy },
+                        { "BookId", metadata.Id },
+                        { "isNewBook", isNewBook.ToString() },
+                    }
+                );
         }
 
         private List<FilePathAndHash> GetStagedFilesAndHashes(string stagingDirectory)
