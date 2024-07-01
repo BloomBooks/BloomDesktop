@@ -4,9 +4,21 @@
 
 @bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
 
-@focusBorderColor: rgba(82, 168, 236, 0.6);
+@focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
 
+.bloom-page {
+    --page-structure-color: #1d94a41a;
+    --language-tag-color: #1d94a488;
+    --selectedEdit-color: #1d94a4c2; //transparent;
+    --unselectedEdit-color: var(--page-structure-color);
+}
+
+.bloom-page.cover {
+    --page-structure-color: rgba(128, 128, 128, 0.268);
+    --language-tag-color: rgba(128, 128, 128, 0.9);
+    --selectedEdit-color: rgba(128, 128, 128, 0.9);
+}
 // This mixin simply encapsulates the logic of how we add a border on top
 // of the edge of an image container instead of adding a regular border
 // which modifies the size of the container. See BL-10268.
@@ -114,23 +126,23 @@ body {
     -height: 1px;
 }
 
-/*+}*/
-div.bloom-imageContainer {
-    // Allow book templates to define a custom borderColor, otherwise fallback to the default color
-    .borderOnTopOfElement(
-        var(--bloom-editMode-custom-image-border-color, @MediumGray)
-    );
+.bloom-page:hover,
+.bloom-page:focus-within {
+    div.bloom-imageContainer {
+        // Allow book templates to define a custom borderColor, otherwise fallback to the default color
+        .borderOnTopOfElement(var(--page-structure-color));
+        // todo: remove?                 --bloom-editMode-custom-image-border-color,
 
-    // This shows the focus border on the root (hasOverlay) image container
-    // when it has been clicked on to show its editing buttons (:not(.bloom-hideImageButtons)).
-    // Currently, something else typically actually has focus and may also show
-    // this border. But at least it gives some extra feedback that something happened
-    // by clicking the background image.
-    &.hasOverlay:not(.bloom-hideImageButtons) {
-        .borderOnTopOfElement(@focusBorderColor);
+        // This shows the focus border on the root (hasOverlay) image container
+        // when it has been clicked on to show its editing buttons (:not(.bloom-hideImageButtons)).
+        // Currently, something else typically actually has focus and may also show
+        // this border. But at least it gives some extra feedback that something happened
+        // by clicking the background image.
+        &.hasOverlay:not(.bloom-hideImageButtons) {
+            .borderOnTopOfElement(@focusBorderColor);
+        }
     }
 }
-
 // The editing buttons are hidden when this class is added (currently by motion and comic tools)
 .bloom-imageContainer.bloom-hideImageButtons,
 .bloom-imageContainer.ui-suppressImageButtons {
@@ -140,8 +152,11 @@ div.bloom-imageContainer {
     }
 }
 
-.coverColor div.bloom-imageContainer {
-    .borderOnTopOfElement(rgba(1, 1, 1, 0.2));
+.bloom-page:hover,
+.bloom-page:focus-within {
+    .coverColor div.bloom-imageContainer {
+        .borderOnTopOfElement(rgba(1, 1, 1, 0.2));
+    }
 }
 
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
@@ -531,34 +546,27 @@ button.moveButton {
     background-size: contain;
 }
 
-textarea,
-div.bloom-editable,
-div.pageLabel[contenteditable="true"] {
-    border: thin solid @MediumGray;
-    /*[disabled]min-height:34px;*/
-}
-
-// NOTE: I don't think .coverColor textarea matches anything anymore. It and many of the textarea references may be able to be removed?
-.coverColor textarea,
-/*need a darker border when we have a background color*/
-div.bloom-editable {
-    // Allow book templates to define a custom borderColor, otherwise fallback to the default color
-    border: thin solid
-        var(--bloom-editMode-custom-text-border-color, rgba(0, 0, 0, 0.2));
+.bloom-page:hover,
+.bloom-page:focus-within {
+    textarea,
+    div.bloom-editable,
+    div.pageLabel[contenteditable="true"] {
+        outline: thin solid var(--unselectedEdit-color);
+        /*[disabled]min-height:34px;*/
+    }
 }
 
 img.hoverUp {
     background-color: @bloom-buff;
-    border: 1px outset black;
+    outline: 1px outset black;
 }
 
 textarea:focus,
 div.bloom-editable:focus,
 div.pageLabel[contenteditable="true"]:focus {
-    border: 1px solid @focusBorderColor;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
-        0 0 8px rgba(82, 168, 236, 0.6);
-    outline: 0;
+    outline: 1px solid var(--selectedEdit-color) !important;
+    // box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    //     0 0 8px rgba(82, 168, 236, 0.6);
 }
 
 .bloom-editable:focus {
@@ -627,8 +635,6 @@ div.bloom-templateMode {
 .bloom-page[class*="Device"] {
     .bloom-editable.overflow {
         overflow-y: scroll;
-        display: block;
-        height: inherit; // BL-13374. This is needed to make the scroll bar work properly.
 
         // the language label at the bottom gets messed up once scrolling is on, so anchor it to the top
         &:after {
@@ -694,10 +700,17 @@ div.textWholePage ul {
     top: 45%;
 }
 
-div.marginBox {
-    border: 1px solid rgba(115, 189, 189, 0.3);
+.bloom-page:hover,
+.bloom-page:focus-within {
+    .marginBox {
+        // Put a faint border around the margin-box in edit mode.
+        // Not sure why, but it may be to give an idea of the space available for page content.
+        // Can't use border, that is controlled by appearance system
+        // Outline: 1px solid rgba(115, 189, 189, 0.3) is close, but can't make it follow border-radius
+        // This seems to do the job.
+        //box-shadow: 0 0 0 1px var(--page-structure-color);
+    }
 }
-
 .bloom-frontMatter div.marginBox {
     /*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
     border: none;
@@ -711,23 +724,63 @@ div.marginBox {
 }
 
 #formatButton {
+    visibility: hidden;
     overflow: hidden;
     position: absolute;
-    margin-left: 3px;
-    /*The font-size here is weird, but if we don't set it, the growing/shrinking font of the text will actually move the button up/down on the page*/
-    font-size: 10pt;
-    height: 20px;
-    width: 20px;
-    z-index: @formatButtonZIndex;
+}
+.bloom-page:hover,
+.bloom-page:focus-within {
+    #formatButton {
+        visibility: visible;
 
-    img {
-        position: absolute;
-        bottom: 0;
-        left: 0;
+        margin-left: 3px;
+        /*The font-size here is weird, but if we don't set it, the growing/shrinking font of the text will actually move the button up/down on the page*/
+        font-size: 10pt;
+        height: 20px;
+        width: 20px;
+        z-index: @formatButtonZIndex;
+
+        img {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        &:hover {
+            color: black;
+        }
     }
-
-    &:hover {
-        color: black;
+}
+// Now sometimes, the format button lands under the page number.
+// Changing the z-index did not help. So we allow themes to "dodge" it.
+// Kind of a hack, I know. See BL-13206.
+@container style(--pageNumber-show-multiplicand:1) {
+    .split-pane-component.position-right
+        .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton,
+    .split-pane-component.position-top
+        .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton {
+        // don't need this dodge if the page number can't be in this text area
+        --formatButton-pageNumber-dodge: 0px;
+    }
+    .split-pane-component.position-left
+        > .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton,
+    .split-pane-component.position-bottom
+        > .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton,
+    // text-only page
+    .marginBox
+        > .split-pane-component-inner
+        > .bloom-translationGroup
+        > #formatButton {
+        // this "3px" is there from long ago, nothing to do with this nudging
+        margin-left: calc(3px + var(--formatButton-pageNumber-dodge));
     }
 }
 
@@ -796,30 +849,33 @@ div.bloom-editable.Heading2-style {
     text-align: center;
 }
 
-/*Put in little grey language tooltips in the bottom-right of the editable divs*/
-.languageTip,
-.bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
-    position: absolute;
-    right: 0;
-    /*Same grey color as pageLabel*/
-    color: rgba(0, 0, 0, 0.2);
-    font-family: @UIFontStack;
-    font-size: small;
-    font-style: normal;
-    font-weight: normal;
-    line-height: 1; //else it will draw up in the box somewhere if the font is large
+.languageTip {
+    visibility: hidden;
+}
+.bloom-page:hover,
+.bloom-page:focus-within {
+    /*Put in little grey language tooltips in the bottom-right of the editable divs*/
+    .languageTip,
+    .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+        position: absolute;
+        right: 0;
+        /*Same grey color as pageLabel*/
+        color: var(--language-tag-color); //rgba(0, 0, 0, 0.2);
+        font-family: @UIFontStack;
+        font-size: small;
+        font-style: normal;
+        font-weight: normal;
+        line-height: 1; //else it will draw up in the box somewhere if the font is large
+        content: attr(data-languageTipContent);
+        bottom: 2px; // See Bl-10017
+        margin-right: 2px;
+    }
 }
 
 .languageTip {
     margin-right: 1px;
     text-align: right;
     bottom: 0;
-}
-
-.bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
-    content: attr(data-languageTipContent);
-    bottom: 2px; // See Bl-10017
-    margin-right: 2px;
 }
 
 /*Simulate the html5 placeholder attribute which is not available on divs
@@ -1121,4 +1177,58 @@ body.hideAllCKEditors .cke_chrome {
 .invisibles {
     font-family: "SymChar";
     color: @bloom-purple;
+}
+
+// --------------------------------------------------------
+// hide tips when the user clicks out of the page
+.qtip {
+    opacity: 0 !important;
+    // When the page isn't focused, the tips will go away when you move off the page.
+    // This keeps them around long enough to reach with the mouse.
+    // We're using opacity instead of visibility because visibility doesn't animate.
+    // A side benefit is that no longer how long it takes you to point at the bubble,
+    // it will still light up if you point at it.
+    transition: opacity 1s cubic-bezier(0, 0.7, 0.3, 1);
+}
+// but keep them visible when the user is interacting with them (BL-13224)
+.qtip:hover,
+.qtip:focus {
+    opacity: 1 !important;
+    transition: opacity 200ms ease-out;
+}
+body :has(.bloom-page:focus-within, .bloom-page:hover) {
+    .qtip {
+        opacity: 1 !important;
+        transition: opacity 200ms ease-out;
+    }
+}
+
+// --------------------------------------------------------
+// show some structure when the page is focused or hovered
+.bloom-page:focus-within,
+.bloom-page:hover {
+    // Show the padding, multilingual gap, etc as colored areas.
+    // The ".split-pane-component-inner >"  disables this for overlays, where it's common to have backgrounds like transparent
+    .split-pane-component-inner > .bloom-translationGroup {
+        // no: a border here will take up space, wrecking WYSIWYG
+        // border: solid thin var(--page-structure-color);
+        // box-sizing: border-box;
+        // Also, you'd think you could use outline instead, but it doesn't show on the side; the
+        // children over it up because they are the full width of this parent.
+
+        &:not(.bloom-background-gray) {
+            background-color: var(--page-structure-color) !important;
+        }
+
+        .bloom-editable {
+            outline: 1px solid var(--page-structure-color);
+            outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
+        }
+        // the parent translation group has the "page structure" color so we
+        // normally want to have the edit box be white. Note however that in the case that
+        // we have a grey box, we're giving up on structure color and just want it all to be grey.
+        &:not(.bloom-background-gray) .bloom-editable {
+            background-color: var(--marginBox-background-color) !important;
+        }
+    }
 }

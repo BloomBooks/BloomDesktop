@@ -8,41 +8,42 @@ using SIL.IO;
 
 namespace BloomTests.web
 {
-	[TestFixture]
-	public class ReadersApiTests
-	{
-		private BloomServer _server;
-		private BookSelection _bookSelection;
+    [TestFixture]
+    public class ReadersApiTests
+    {
+        private BloomServer _server;
+        private BookSelection _bookSelection;
 
-		[SetUp]
-		public void Setup()
-		{
-			_bookSelection = new BookSelection();
-			_bookSelection.SelectBook(new Bloom.Book.Book());
-			_server = new BloomServer(_bookSelection);
+        [SetUp]
+        public void Setup()
+        {
+            _bookSelection = new BookSelection();
+            _bookSelection.SelectBook(new Bloom.Book.Book());
+            _server = new BloomServer(_bookSelection);
 
-			var controller = new ReadersApi(_bookSelection, null);
-			controller.RegisterWithApiHandler(_server.ApiHandler);
-		}
+            var controller = new ReadersApi(_bookSelection, null);
+            controller.RegisterWithApiHandler(_server.ApiHandler);
+        }
 
-		[TearDown]
-		public void TearDown()
-		{
-			_server.Dispose();
-			_server = null;
-		}
+        [TearDown]
+        public void TearDown()
+        {
+            _server.Dispose();
+            _server = null;
+        }
 
-		[Test]
-		public void IsReceivingApiCalls()
-		{
-			var result = ApiTest.GetString(_server,"readers/io/test");
-			Assert.That(result, Is.EqualTo("OK"));
-		}
+        [Test]
+        public void IsReceivingApiCalls()
+        {
+            var result = ApiTest.GetString(_server, "readers/io/test");
+            Assert.That(result, Is.EqualTo("OK"));
+        }
 
-		[Test]
-		public void GetTextOfContentPagesAsJson_OmitsUnwantedPages()
-		{
-			var htmlLeveledReader = $@"<html><head><meta charset='UTF-8'></meta></head>
+        [Test]
+        public void GetTextOfContentPagesAsJson_OmitsUnwantedPages()
+        {
+            var htmlLeveledReader =
+                $@"<html><head><meta charset='UTF-8'></meta></head>
 <body class='leveled-reader' data-l1='en' data-l2='fr' data-l3='es'>
     <!-- ignore page with bloom-frontMatter class -->
     <div class='bloom-page bloom-frontMatter' id='b8408838-e9ed-4d76-bb8a-24ad0708b329' lang='fr'>
@@ -230,38 +231,57 @@ namespace BloomTests.web
     </div>
 </body></html>
 ";
-			var doc = new XmlDocument();
-			doc.LoadXml(htmlLeveledReader);
-			var dom = new HtmlDom(doc);
-			var storage = CreateMockStorage(dom, "GetPagesForReader");
-			var book = new Bloom.Book.Book(storage.Object.BookInfo, storage.Object);
-			_bookSelection.SelectBook(book);
+            var doc = new XmlDocument();
+            doc.LoadXml(htmlLeveledReader);
+            var dom = new HtmlDom(doc);
+            var storage = CreateMockStorage(dom, "GetPagesForReader");
+            var book = new Bloom.Book.Book(storage.Object.BookInfo, storage.Object);
+            _bookSelection.SelectBook(book);
 
-			var result = ApiTest.GetString(_server, "readers/io/textOfContentPages");
-			Assert.That(result, Is.EqualTo("{\"85a320a4-b73f-4149-87a1-9a1297ef04b0\":\"<p>A cat stares at you.</p>\",\"d46e4259-2a99-4197-b21d-bf97a992b7d0\":\"<p />\",\"5a424678-ec70-4c97-a547-015ff38dfd11\":\"<p>See the two kittens.</p>\",\"ebbd7f47-05fa-4e6d-a7a1-cb526bb5efb8\":\"<p>local language text</p>\"}"));
-		}
+            var result = ApiTest.GetString(_server, "readers/io/textOfContentPages");
+            Assert.That(
+                result,
+                Is.EqualTo(
+                    "{\"85a320a4-b73f-4149-87a1-9a1297ef04b0\":\"<p>A cat stares at you.</p>\",\"d46e4259-2a99-4197-b21d-bf97a992b7d0\":\"<p />\",\"5a424678-ec70-4c97-a547-015ff38dfd11\":\"<p>See the two kittens.</p>\",\"ebbd7f47-05fa-4e6d-a7a1-cb526bb5efb8\":\"<p>local language text</p>\"}"
+                )
+            );
+        }
 
-		Mock<IBookStorage> CreateMockStorage(HtmlDom htmlDom, string subfolder)
-		{
-			var tempFolderPath = Path.Combine(Path.GetTempPath(), subfolder);
-			var storage = new Mock<IBookStorage>();
-			storage.Setup(x => x.GetLooksOk()).Returns(true);
+        Mock<IBookStorage> CreateMockStorage(HtmlDom htmlDom, string subfolder)
+        {
+            var tempFolderPath = Path.Combine(Path.GetTempPath(), subfolder);
+            var storage = new Mock<IBookStorage>();
+            storage.Setup(x => x.GetLooksOk()).Returns(true);
 
-			storage.SetupGet(x => x.Dom).Returns(htmlDom);
-			storage.SetupGet(x => x.Key).Returns("testkey");
-			storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns(() => storage.Object.Dom.Clone());// review: the real thing does more than just clone
-			storage.Setup(x => x.MakeDomRelocatable(It.IsAny<HtmlDom>())).Returns(
-				(HtmlDom x) => { return x.Clone(); });// review: the real thing does more than just clone
+            storage.SetupGet(x => x.Dom).Returns(htmlDom);
+            storage.SetupGet(x => x.Key).Returns("testkey");
+            storage
+                .Setup(x => x.GetRelocatableCopyOfDom(true))
+                .Returns(() => storage.Object.Dom.Clone()); // review: the real thing does more than just clone
+            storage
+                .Setup(x => x.MakeDomRelocatable(It.IsAny<HtmlDom>()))
+                .Returns(
+                    (HtmlDom x) =>
+                    {
+                        return x.Clone();
+                    }
+                ); // review: the real thing does more than just clone
 
-			var fileLocator = new Moq.Mock<IFileLocator>();
-			storage.Setup(x => x.GetFileLocator()).Returns(() => fileLocator.Object);
+            var fileLocator = new Moq.Mock<IFileLocator>();
+            storage.Setup(x => x.GetFileLocator()).Returns(() => fileLocator.Object);
 
-			storage.SetupGet(x => x.FolderPath).Returns(tempFolderPath);// review: the real thing does more than just clone
-			var metadata = new BookInfo(tempFolderPath, true);
-			storage.SetupGet(x => x.BookInfo).Returns(metadata);
-			storage.Setup(x => x.HandleRetiredXMatterPacks(It.IsAny<HtmlDom>(), It.IsAny<string>()))
-				.Returns((HtmlDom dom, string y) => { return y == "BigBook" ? "Factory" : y; });
-			return storage;
-		}
-	}
+            storage.SetupGet(x => x.FolderPath).Returns(tempFolderPath); // review: the real thing does more than just clone
+            var metadata = new BookInfo(tempFolderPath, true);
+            storage.SetupGet(x => x.BookInfo).Returns(metadata);
+            storage
+                .Setup(x => x.HandleRetiredXMatterPacks(It.IsAny<HtmlDom>(), It.IsAny<string>()))
+                .Returns(
+                    (HtmlDom dom, string y) =>
+                    {
+                        return y == "BigBook" ? "Factory" : y;
+                    }
+                );
+            return storage;
+        }
+    }
 }

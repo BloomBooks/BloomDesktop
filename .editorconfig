@@ -7,7 +7,7 @@ insert_final_newline = true
 //charset = utf-8 (due to VS2017 bug)
 indent_size = 4
 
-[*.{cs,csproj,sln}]
+[*.{csproj,sln}]
 indent_style = tab
 
 [*.pug]

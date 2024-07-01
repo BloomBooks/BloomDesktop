@@ -7,6 +7,13 @@
 // part of the main Kyrgyztan2020-Xmatter, developed to produce exactly the result
 // we want in Bloom Player.
 
+// with a default gray background-color, these values need a bit of contrast to be visible
+.bloom-page.cover {
+    --page-structure-color: rgba(196, 196, 196, 0.268);
+    --language-tag-color: rgba(196, 196, 196, 0.9);
+    --selectedEdit-color: rgba(196, 196, 196, 0.9);
+}
+
 // we need a lot of classes here to overcome the unfortunately "!important" class put in by Bloom at runtime
 div.bloom-page.outsideFrontCover.coverColor,
 div.bloom-page.outsideBackCover.coverColor {
@@ -41,11 +48,12 @@ div.bloom-page.outsideBackCover.coverColor {
     }
 }
 
-.outsideFrontCover .marginBox {
-    top: 0;
-    left: 0 !important;
-    height: 100% !important;
-    width: 100% !important;
+.bloom-page.outsideFrontCover {
+    --cover-margin-top: 0mm;
+    --cover-margin-bottom: 0mm;
+    --cover-margin-side: 0mm;
+    --page-margin-left: 0mm;
+    --page-margin-right: 0mm;
 }
 
 .frontCover .placeholder,

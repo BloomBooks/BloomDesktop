@@ -27,7 +27,10 @@ import "../../lib/jquery.qtipSecondary.js";
 import "../../lib/long-press/jquery.longpress.js";
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { getEditTabBundleExports } from "./bloomFrames";
+import {
+    getEditTabBundleExports,
+    getToolboxBundleExports
+} from "./bloomFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
@@ -38,13 +41,13 @@ import {
     get,
     post,
     postBoolean,
+    postData,
+    postString,
     postThatMightNavigate
 } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 import { fixUpDownArrowEventHandler } from "./arrowKeyWorkaroundManager";
-import WebSocketManager, {
-    IBloomWebSocketEvent
-} from "../../utils/WebSocketManager";
+
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import {
     BloomPalette,
@@ -52,6 +55,8 @@ import {
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
+import { removeToolboxMarkup } from "../toolbox/toolbox";
+import { IBloomWebSocketEvent } from "../../utils/WebSocketManager";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -117,6 +122,10 @@ function Cleanup() {
         $(this).removeClass("ui-draggable");
         $(this).removeClass("ui-resizable");
         $(this).removeClass("hoverUp");
+    });
+    $("span").each(function() {
+        $(this).removeClass("ui-disableHighlight");
+        $(this).removeClass("ui-enableHighlight");
     });
 
     $("button")
@@ -329,41 +338,79 @@ function GetOverflowChecker() {
     return new OverflowChecker();
 }
 
-let onLoadHappenedNormally = false;
-let cancelHandle = 0;
+// this is also called by the StyleEditor
+export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
+    $(container)
+        .find(".bloom-translationGroup")
+        .each(function() {
+            // set our font size so that we can use em units when setting padding of the translation group
+            // If visibility is under the control of the appearance system for this field the child we
+            // want has bloom-contentFirst, otherwise, bloom-content1.
+            // At the time of this writing (6.0) this is only used for cover page titles.
+            let mainChild = $(this)
+                .find(".bloom-contentFirst")
+                .first();
+            if (mainChild.length === 0) {
+                mainChild = $(this)
+                    .find(".bloom-content1")
+                    .first();
+            }
+            const fontSizeOfL1 = mainChild.css("font-size");
+            $(this).css("font-size", fontSizeOfL1);
+        });
+}
 
-const windowLoadedHandler = () => {
-    onLoadHappenedNormally = true;
-    window.cancelAnimationFrame(cancelHandle);
-    post("editView/editPagePainted");
-};
+// called by C# to remove the id attribute from the image element
+export function removeImageId(imageId: string) {
+    const imgOrImageContainer = document.getElementById(imageId);
+    imgOrImageContainer?.removeAttribute("id");
+}
 
-// When we don't already have a video (either a new page, or it has been deleted),
-// and record a new one, we switchContentPage to make the new video show up.
-// And for no known reason, the window load event never fires. There may possibly be
-// other cases since I have no explanation. Rather than never sending the editPagePainted
-// notification which would prevent saving subsequent changes to the page, if the event
-// is delayed much longer than expected we just call the handler.
-// For a similar event not firing problem, see editViewFrame.switchContentPage().
-window.setTimeout(() => {
-    if (onLoadHappenedNormally) {
-        return;
-    }
-    windowLoadedHandler();
-}, 1000);
-
-window.onload = () => {
-    // onload means we have all the parts, and waiting for one more animation frame
-    // seems to mean it has actually been painted.
-    cancelHandle = window.requestAnimationFrame(windowLoadedHandler);
-};
-
-interface IChangeImageEvent extends IBloomWebSocketEvent {
-    imgIndex: number;
-    src: string;
+// called by c# so be careful about changing the signature, including names of parameters
+export function changeImage(imageInfo: {
+    imageId: string;
+    src: string; // must already appropriately URL-encoded.
     copyright: string;
     creator: string;
     license: string;
+}) {
+    const imgOrImageContainer = document.getElementById(imageInfo.imageId);
+    if (!imgOrImageContainer) {
+        throw new Error(
+            `changeImage: imageOrImageContainerId: "${imageInfo.imageId}" not found`
+        );
+    }
+    // I can't remember why, but what this is doing is saying that if the imageContainer
+    // has an <img> element, we're setting the src on that. But if it does not, we're
+    // setting the background-image on the container itself.
+    if (imgOrImageContainer.tagName === "IMG") {
+        (imgOrImageContainer as HTMLImageElement).src = imageInfo.src;
+    }
+    // else if it has class bloom-imageContainer, we need to set the background-image on the container
+    else if (imgOrImageContainer.classList.contains("bloom-imageContainer")) {
+        imgOrImageContainer.setAttribute(
+            "style",
+            "background-image:url('" + imageInfo.src + "')"
+        );
+    }
+    imgOrImageContainer.setAttribute("data-copyright", imageInfo.copyright);
+    imgOrImageContainer.setAttribute("data-creator", imageInfo.creator);
+    imgOrImageContainer.setAttribute("data-license", imageInfo.license);
+    const ancestor = imgOrImageContainer.parentElement?.parentElement;
+    if (ancestor) {
+        SetOverlayForImagesWithoutMetadata(ancestor);
+    }
+    // id is just a temporary expedient to find the right image easily in this method.
+    imgOrImageContainer.removeAttribute("id");
+}
+
+// This origami checking business is related BL-13120
+let hadOrigamiWhenWeLoadedThePage: boolean;
+function recordWhatThisPageLooksLikeForSanityCheck(container: HTMLElement) {
+    hadOrigamiWhenWeLoadedThePage = hasOrigami(container);
+}
+function hasOrigami(container: HTMLElement) {
+    return container.getElementsByClassName("split-pane-component").length > 0;
 }
 
 // Originally, all this code was in document.load and the selectors were acting
@@ -372,43 +419,14 @@ interface IChangeImageEvent extends IBloomWebSocketEvent {
 // Now document.load calls this with $('body') as the container.
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
 export function SetupElements(container: HTMLElement) {
+    recordWhatThisPageLooksLikeForSanityCheck(container);
+
     SetupImagesInContainer(container);
-    WebSocketManager.addListener("edit", (event: IChangeImageEvent) => {
-        if (event.id !== "changeImage") {
-            return;
-        }
-        const container = Array.from(
-            document.getElementsByClassName("bloom-imageContainer")
-        )[event.imgIndex];
-        const img = container.getElementsByTagName("img")[0];
-        const target = img || container;
-        // This logic mirrors HtmlDom.SetImageElementUrl, except we assume event.src is
-        // already appropriately URL-encoded.
-        if (img) {
-            img.setAttribute("src", event.src);
-        } else {
-            container.setAttribute(
-                "style",
-                "background-image:url('" + event.src + "')"
-            );
-        }
-        target.setAttribute("data-copyright", event.copyright);
-        target.setAttribute("data-creator", event.creator);
-        target.setAttribute("data-license", event.license);
-        post("edit/taskComplete");
-    });
+
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
     initializeBubbleManager();
 
-    //add a marginBox if it's missing. We introduced it early in the first beta
-    $(container)
-        .find(".bloom-page")
-        .each(function() {
-            if ($(this).find(".marginBox").length === 0) {
-                $(this).wrapInner("<div class='marginBox'></div>");
-            }
-        });
     $(container)
         .find(".bloom-editable")
         .each(function() {
@@ -477,6 +495,7 @@ export function SetupElements(container: HTMLElement) {
                 $(this).attr("data-text", this.textContent);
             });
         });
+    SetupThingsSensitiveToStyleChanges(container);
 
     $(container)
         .find(".bloom-translationGroup")
@@ -1228,9 +1247,8 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         });
 }
 
-// This is invoked from C# when we are about to change pages. The C# code will save the changes
-// to the page after we return from this (hopefully; certainly in debugging this is the case).
-export const pageSelectionChanging = () => {
+// This is invoked when we are about to change pages.
+function removeOrigami() {
     // We are mirroring the origami layoutToggleClickHandler() here, in case the user changes
     // pages while the origami toggle in on.
     // The DOM here is for just one page, so there's only ever one marginBox.
@@ -1240,11 +1258,52 @@ export const pageSelectionChanging = () => {
     for (let i = 0; i < textLabels.length; i++) {
         textLabels[i].remove();
     }
-};
+}
 
-// Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
-// editTabBundle.getEditablePageBundleExports().
-export const getBodyContentForSavePage = () => {
+// This is invoked from C# when we are about to change pages. It removes markup we don't want to save.
+// Then it calls an API with the information we need to save. This works around the lack of a
+// non-async runJavascript API in WebView2.
+export function requestPageContent() {
+    try {
+        // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
+        getToolboxBundleExports()?.removeToolboxMarkup();
+        removeOrigami(); // Enhance this makes a change when better it would only changed the
+        const content = getBodyContentForSavePage();
+        const userStylesheet = userStylesheetContent();
+        postString(
+            "editView/pageContent",
+            // We tossed up whether to use a JSON object here, but decided that it was simpler to just
+            // combine the two strings with a delimiter that we can split on in C#.
+            // For one thing, HTML requires some escaping to put in a JSON object, which would have
+            // to be done in Javascript, and then undone in C#.
+            content + "<SPLIT-DATA>" + userStylesheet
+        );
+    } catch (e) {
+        postString(
+            "editView/pageContent",
+            "ERROR: " +
+                e.message +
+                "\n" +
+                e.stack +
+                "\n\n" +
+                `document ${document ? "exists" : "does not exist"}` +
+                "\n" +
+                "body.innerHTML: " +
+                document?.body?.innerHTML
+        );
+    }
+}
+
+// Caution: We don't want this to become an async method because we don't want
+// any other event handlers running between cleaning up the page and
+// getting the content to save. (Or think hard before changing that.)
+export function getBodyContentForSavePage() {
+    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(document.body)) {
+        throw new Error(
+            "getBodyContentForSavePage(): The page had origami when it loaded, but it doesn't now (check before cleanup). BL-13120"
+        );
+    }
+
     const bubbleEditingOn = theOneBubbleManager.isComicEditingOn;
     if (bubbleEditingOn) {
         theOneBubbleManager.turnOffBubbleEditing();
@@ -1265,12 +1324,20 @@ export const getBodyContentForSavePage = () => {
     const createCkEditorBookMarks = false;
     EditableDivUtils.doCkEditorCleanup(editableDivs, createCkEditorBookMarks);
 
+    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(document.body)) {
+        throw new Error(
+            "getBodyContentForSavePage(): The page had origami when it loaded, but it doesn't now (check after cleanup). BL-13120"
+        );
+    }
+
     const result = document.body.innerHTML;
+
     if (bubbleEditingOn) {
         theOneBubbleManager.turnOnBubbleEditing();
     }
+
     return result;
-};
+}
 
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
 // editTabBundle.getEditablePageBundleExports().
@@ -1290,31 +1357,6 @@ export const pageUnloading = () => {
     if (theOneBubbleManager) {
         theOneBubbleManager.cleanUp();
     }
-};
-
-// This is invoked from C# when we are about to leave a page (often right after the previous
-// method for changing pages).  It is mainly to clean things up so that garbage collection
-// won't lose multiple megabytes of data that both the DOM (C++) and Javascript subsystems
-// think the other is still using.
-export const disconnectForGarbageCollection = () => {
-    // disconnect all event handlers
-    //review: was this, but TS didn't like it    $.find().off();
-    $("body")
-        .find("*")
-        .off();
-
-    const page = $(".bloom-page");
-    // blow away any img elements to ensure their data disappears.
-    // (the whole document is being replaced, and this happens after it's been saved to a file)
-    page.find("img").each(function() {
-        $(this).attr("src", "");
-    });
-    page.find("img").each(function() {
-        $(this).remove();
-    });
-    $("[style*='.background-image']").each(function() {
-        $(this).remove();
-    });
 };
 
 // These clipboard functions are implemented in Javascript because WebView2 doesn't seem to have

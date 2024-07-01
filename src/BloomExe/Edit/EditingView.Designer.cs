@@ -126,6 +126,7 @@ namespace Bloom.Edit
             this._topBarPanel.Name = "_topBarPanel";
             this._topBarPanel.Size = new System.Drawing.Size(724, 66);
             this._topBarPanel.TabIndex = 3;
+            this._topBarPanel.Click += new System.EventHandler(this._topBarPanel_Click);
             // 
             // _rightToolStrip
             // 
@@ -159,6 +160,7 @@ namespace Bloom.Edit
             this._bookSettingsButton.Size = new System.Drawing.Size(82, 63);
             this._bookSettingsButton.Text = "Book Settings";
             this._bookSettingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this._bookSettingsButton.Visible = true;
             this._bookSettingsButton.Click += new System.EventHandler(this._bookSettingsButton_Click);
             // 
             // _undoButton

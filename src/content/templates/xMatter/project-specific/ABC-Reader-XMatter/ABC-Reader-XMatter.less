@@ -71,12 +71,13 @@ div.bloomPlayer-page {
                     text-align: start;
                 }
 
-                // It took some doing to figure out the specificity to overrule Bloom "normal" 250% title rule
+                // It took some doing to figure out the specificity to overrule Bloom "normal" title font-size rule
                 // and yet still allow the user-adjustable inline style to work. This should set titles
                 // to default to 26pt unless overridden by the user. But actually, there is code somewhere that
                 // makes reader template styles unchangeable.
                 .Title-On-Cover-style[data-book="bookTitle"] {
                     font-size: 26pt;
+                    line-height: 1.1;
                 }
             }
         }
@@ -87,10 +88,6 @@ div.bloomPlayer-page {
 
         [data-book="cover-branding-bottom-html"] {
             margin-top: 1em;
-
-            img {
-                margin-right: 0;
-            }
         }
 
         .descriptionAndTopicRow {
@@ -103,6 +100,7 @@ div.bloomPlayer-page {
                 min-width: 50%;
                 text-align: start;
                 font-size: 14pt;
+                line-height: 1.1;
             }
         }
 
@@ -257,6 +255,8 @@ div.bloomPlayer-page {
     text-align: center;
     font-weight: bold;
     font-size: 14pt;
+    // Tight line spacing closely approximates the effective line height in Bloom 5.6.
+    line-height: 1.07;
 }
 
 /* -----------------------------------------------------------------------------
@@ -325,13 +325,26 @@ div.bloomPlayer-page {
    Rules for HalfLetterPortrait
    ----------------------------------------------------------------------------*/
 // this template is meant for half-letter portrait pages
+.HalfLetterPortrait.bloom-page {
+    --cover-margin-top: 0.5in;
+    --cover-margin-bottom: 0.4in;
+    --cover-margin-side: 0.5in;
+    --page-margin-top: 0.5in;
+    --page-margin-left: 0.5in;
+    --page-margin-right: 0.5in;
+    --page-margin-bottom: 0.4in;
+    &.frontCover {
+        --cover-margin-top: 0.4in;
+        --cover-margin-bottom: 0.5in;
+    }
+    &.numberedPage {
+        --pageNumber-bottom: 20px;
+        --pageNumber-right-margin: 0.6in;
+        --pageNumber-left-margin: 0.6in;
+    }
+}
 .HalfLetterPortrait {
     .marginBox {
-        top: 0.5in !important;
-        left: 0.5in !important;
-        width: (@halfLetterPageWidth - 1in) !important;
-        height: (@halfLetterPageHeight - 0.9in) !important;
-
         img {
             // Override a rather persistent base rule that wanted to take into account gutter
             // margins that we aren't using. This would have made the image skinnier and left-justified,
@@ -341,7 +354,7 @@ div.bloomPlayer-page {
     }
 
     &.frontCover .marginBox {
-        top: 0.4in !important; // leave room for inevitable font space above title
+        // top: 0.4in !important; // leave room for inevitable font space above title
 
         .bottomBlock,
         .bottomTextContent,
@@ -349,6 +362,19 @@ div.bloomPlayer-page {
             max-width: 100%;
         }
     }
+}
+/* -----------------------------------------------------------------------------
+   Rules for Device16x9Portrait
+   ----------------------------------------------------------------------------*/
+// Even this template uses Device16x9 portrait pages for BloomPub and ePUB publishing.
+.Device16x9Portrait .originalAcknowledgments .bloom-editable p {
+    // Tighten up the spacing a bit to allow for slightly longer and possibly fewer lines
+    // This allows the cover of https://bloomlibrary.org/book/7GoLbrW02S to look close to
+    // the same in 6.0 as 5.6 which took advantage of an accidental extra ~10px of width.
+    word-spacing: -0.03ch;
+}
+.Device16x9Portrait.frontCover [data-book="cover-branding-bottom2-html"] {
+    bottom: -10px;  // Move the final "Not for sale" message up a bit to squeeze it onto the page.
 }
 
 /* -----------------------------------------------------------------------------

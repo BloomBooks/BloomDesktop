@@ -27,13 +27,13 @@ export default class BloomNotices {
                     hide: false,
                     position: {
                         at: "right top",
-                        my: "left top"
+                        my: "left top",
+                        container: bloomQtipUtils.qtipZoomContainer()
                     },
                     style: {
                         classes: "ui-tooltip-red",
                         tip: { corner: false }
-                    },
-                    container: bloomQtipUtils.qtipZoomContainer()
+                    }
                 });
             });
     }

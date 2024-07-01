@@ -71,6 +71,8 @@ mixin img(filename)
 							+img('text_align_center.png')
 						#position-right.icon16x16
 							+img('text_align_right.png')
+						#position-justify.icon16x16
+							+img('text_align_justify.png')
 					div(style="margin-top:10px")
 						.mainBlock
 							div(data-i18n="EditTab.FormatDialog.ParagraphSpacing") Space Between Paragraphs
@@ -81,3 +83,7 @@ mixin img(filename)
 			h2.tab(data-i18n="EditTab.FormatDialog.Highlighting") Highlighting
 			.bloomDialogMainPage
 				#audioHilitePage
+		#overlay-page.tab-page
+			h2.tab(data-i18n="EditTab.FormatDialog.Overlay") Overlay
+			.bloomDialogMainPage
+				#overlayFormatPage

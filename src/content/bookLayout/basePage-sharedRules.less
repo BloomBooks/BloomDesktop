@@ -24,7 +24,8 @@ body {
 // if the elements have their default position: relative. This is overidden in
 // audioRecording.less.)
 span.ui-audioCurrent,
-div.ui-audioCurrent p {
+div.ui-audioCurrent p,
+.ui-audioCurrent .ui-enableHighlight {
     background-color: #febf00;
     color: black;
 }
@@ -141,8 +142,9 @@ textarea,
 .bloom-background-none {
     background-color: transparent;
 }
-.bloom-background-gray {
-    background-color: @preferredBackgroundGray;
+// repeated classes to increase our specificity artificially
+.bloom-translationGroup.bloom-background-gray.bloom-background-gray.bloom-background-gray {
+    background-color: @preferredBackgroundGray !important;
 }
 
 // The user can get this in by pressing shift-enter. See bloomField.ts
@@ -150,4 +152,78 @@ textarea,
 span.bloom-linebreak {
     display: block;
     text-indent: 0;
+}
+
+// Text wrapping algorithms.
+.bloom-page .bloom-editable.bloom-visibility-code-on {
+    // Very long words should just allow themselves to be broken at the end of a line if they're
+    // longer than a line.  See BL-12330.
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+    &.Title-On-Cover-style,
+    &.Cover-Default-style,
+    &.Title-On-Title-Page-style {
+        text-wrap: balance;
+    }
+    &.Bubble-style {
+        // Ensure that the text wrapping in overlays is generally stable.  See BL-13135.
+        // We would use the "stable" keyword, but that isn't implemented in most browsers.
+        text-wrap: wrap;
+        box-sizing: content-box; // keep the same space for the text when selected
+    }
+}
+
+// Rules that are shared by both the regular book front matter and the more minimalist epub front matter.
+// These rules were moved from bloom-xmatter-sharedRules.less to basePage-sharedRules.less in Bloom 6.0.
+.frontCover {
+    .bloom-translationGroup.bookTitle {
+        .bloom-editable {
+            //NB: THe order here is important. bloom-content1 should be last so that if a box is
+            // *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections),
+            // we want the bloom-content1 rule to win.
+            font-weight: bold;
+            // 1.4em is the minimum to show ทไปทั่วพื้ without clipping.
+            // Until Bloom 4.4, that was the default, but it was ugly
+            // for everyone else. 1.0 looks great for a simple latin
+            // alphabet without descenders, and 1.1 is safe with descenders. See BL-6402
+            line-height: 1.1;
+            min-height: auto; // elsewhere there is a min-height, that may or may not be a good idea, but for sure we don't want it here.
+            // These apply when not in legacy mode.  See basePage-legacy-5-6.less and baseEPUB.less for the legacy mode rules.
+            &.bloom-contentFirst {
+                //main title
+                font-size: var(--DefaultCoverTitle1FontSize, 25pt);
+                margin-bottom: var(--MarginBetweenXMatterMinorItems, 5px);
+            }
+            &.bloom-contentSecond {
+                font-size: var(--DefaultCoverTitle2FontSize, 12pt);
+                margin-bottom: var(--MarginBetweenXMatterMinorItems, 5px);
+            }
+            &.bloom-contentThird {
+                font-size: var(--DefaultCoverTitle3FontSize, 10pt);
+            }
+        }
+    }
+}
+
+.Title-On-Cover-style {
+    text-align: center;
+}
+.credits {
+    .licenseAndCopyrightBlock {
+        .copyright {
+            margin-bottom: var(--MarginBetweenXMatterBlocks, 2em);
+        }
+        .licenseBlock {
+            margin-bottom: var(--MarginBetweenXMatterBlocks, 2em);
+        }
+        img {
+            // creative commons license image
+
+            //note, if this is 93 or less, then FF29 (used to at least bloom 3.3) cuts off the right edge.
+            //It was fine if you zoomed in, fine in a more modern FF, fine in PDF, etc.
+            //I have tried changing a dozen different properties, including the image-rendering, and the
+            // only thing that helped was to make it a bit larger
+            width: 94px;
+        }
+    }
 }

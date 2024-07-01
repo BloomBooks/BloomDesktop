@@ -94,23 +94,20 @@ ENDLAYOUTS
 }
 
 @Border: 5mm;
-@DayTableWidth: @A5PageWidth - (2 * @Border);
 
 /*Since this will be calendarFold (when Publishing), we want to defeat the left page vs. right page margin shifting.
-	BL-2310 does this in basePage.css, but we need a smaller margin for these particular pages
-	which makes the 'left' rule here need the '!important' tag (since it is less 'specific';
-    we want it to apply to Edit mode too.)
+	We also need a smaller margin for these particular pages.
 */
 .A5Landscape {
 
     &.calendarMonthBottom,
     &.calendarMonthTop {
+        --page-margin-top: @Border;
+        --page-margin-bottom: @Border;
+        --page-margin-left: @Border;
+        --page-margin-right: @Border;
         .marginBox {
-            top: @Border;
-            left: @Border !important;
             margin-left: 0;
-            width: @DayTableWidth;
-            height: @A5PageHeight - (2 * @Border);
         }
 
         .bloom-imageContainer img {

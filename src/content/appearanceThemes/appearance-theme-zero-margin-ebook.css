@@ -1,0 +1,50 @@
+/* replaces the pre-v6.0 "EFL Template 1" custom CSS: which had no margins, no page numbers.
+Note that hiding the page numbers is done by a setting in appearance.json, not here. */
+
+[class*="Device"].bloom-frontMatter,
+[class*="Device"].bloom-backMatter {
+    --page-margin: 3mm;
+}
+
+/* This statement sets the margins on the numbered content pages */
+
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape,
+:not(.bloom-interactive-page).numberedPage.Device16x9Portrait {
+    --page-margin: 0mm;
+
+    /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
+    --page-verticalSplit-width: 0mm; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
+    --page-horizontalSplit-height: 0mm;
+}
+
+/* The section below controls the page number and the white circle around it.  */
+.Device16x9Landscape.numberedPage {
+    --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+}
+.Device16x9Portrait.numberedPage {
+    /* this rule will apply more generally than we'd prefer, but the common situation we're improving here
+    is picture on top, text on the bottom, we need to make room for the page number */
+    --pageNumber-extra-height: 12mm !important;
+}
+.Device16x9Landscape.numberedPage::after {
+    --pageNumber-bottom: 0mm;
+    --pageNumber-top: unset;
+    --pageNumber-font-size: 11pt;
+
+    border-radius: 50%;
+    --pageNumber-background-color: #ffffff;
+    --pageNumber-background-width: 33px;
+    --pageNumber-always-left-margin: var(--page-margin-left);
+    --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
+}
+.Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
+    --pageNumber-right-margin: var(--page-margin-right);
+    --pageNumber-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
+    --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
+}
+
+[class*="Device"].numberedPage:not(.bloom-interactive-page) {
+    --topLevel-text-padding: 0.5em;
+    /* move so that page number doesn't it hide it if the text box is in the lower left */
+    --formatButton-pageNumber-dodge: 20px;
+}

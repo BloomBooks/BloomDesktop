@@ -1,0 +1,74 @@
+/* These Little Zebra rules are used in 478 books on blorg */
+
+.A4Landscape {
+    --page-margin-top: 12mm;
+    --page-margin-bottom: 12mm;
+    --page-margin-right: 15mm;
+    --page-margin-left: 15mm;
+}
+.A5Landscape {
+    height: 124mm;
+    width: 186mm;
+    --page-margin-top: 12mm;
+    --page-margin-left: 12mm;
+}
+.A6Landscape {
+    height: 85mm;
+    width: 124mm;
+    --page-margin-top: 12mm;
+    --page-margin-left: 10mm;
+}
+.A4Portrait {
+    height: 267mm;
+    width: 186mm;
+    --page-margin-top: 15mm;
+    --page-margin-left: 12mm;
+}
+.A5Portrait {
+    height: 186mm;
+    width: 124mm;
+    --page-margin-top: 12mm;
+    --page-margin-left: 12mm;
+}
+.A6Portrait {
+    height: 124mm;
+    width: 85mm;
+    --page-margin-top: 12mm;
+    --page-margin-left: 10mm;
+}
+.A4Portrait.outsideFrontCover {
+    height: 277mm;
+    width: 186mm;
+    --page-margin-top: 10mm;
+    --page-margin-left: 12mm;
+}
+.A4Portrait.outsideBackCover {
+    height: 267mm;
+    width: 186mm;
+    --page-margin-top: 15mm;
+    --page-margin-left: 12mm;
+}
+.A5Portrait.outsideFrontCover {
+    height: 190mm;
+    width: 124mm;
+    --page-margin-top: 10mm;
+    --page-margin-left: 12mm;
+}
+.A5Portrait.outsideBackCover {
+    height: 185mm;
+    width: 124mm;
+    --page-margin-top: 10mm;
+    --page-margin-left: 12mm;
+}
+.A6Portrait.outsideFrontCover {
+    height: 128mm;
+    width: 85mm;
+    --page-margin-top: 10mm;
+    --page-margin-left: 10mm;
+}
+.A6Portrait.outsideBackCover {
+    height: 128mm;
+    width: 85mm;
+    --page-margin-top: 10mm;
+    --page-margin-left: 10mm;
+}

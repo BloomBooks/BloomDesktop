@@ -1,5 +1,5 @@
 import { css } from "@emotion/react";
-import { Slider, Typography } from "@mui/material";
+import { ListItem, Slider, Typography } from "@mui/material";
 import {
     ConfigrPane,
     ConfigrGroup,
@@ -8,7 +8,9 @@ import {
     ConfigrCustomNumberInput,
     ConfigrColorPicker,
     ConfigrInput,
-    ConfigrCustomObjectInput
+    ConfigrCustomObjectInput,
+    ConfigrBoolean,
+    ConfigrSelect
 } from "@sillsdev/config-r";
 import React = require("react");
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -33,14 +35,57 @@ import {
     DialogResult
 } from "../../react_components/color-picking/colorPickerDialog";
 import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
-import { postJson, useApiStringState } from "../../utils/bloomApi";
+import {
+    post,
+    postJson,
+    useApiObject,
+    useApiStringState
+} from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 import { useL10n } from "../../react_components/l10nHooks";
 import { Div } from "../../react_components/l10nComponents";
+import { NoteBox, WarningBox } from "../../react_components/boxes";
+import { default as TrashIcon } from "@mui/icons-material/Delete";
+import { PWithLink } from "../../react_components/pWithLink";
+import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 
 let isOpenAlready = false;
 
-export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
+type IPageStyle = { label: string; value: string };
+type IPageStyles = Array<IPageStyle>;
+type IAppearanceUIOptions = {
+    firstPossiblyLegacyCss?: string;
+    migratedTheme?: string;
+    themeNames: IPageStyles;
+};
+
+// Stuff we find in the appearance property of the object we get from the book/settings api.
+// Not yet complete
+export interface IAppearanceSettings {
+    cssThemeName: string;
+}
+
+// Stuff we get from the book/settings api.
+// Not yet complete
+export interface IBookSettings {
+    appearance: IAppearanceSettings;
+    firstPossiblyLegacyCss?: string;
+}
+
+// Stuff we get from the book/settings/overrides api.
+// The branding and xmatter objects contain the corresponding settings,
+// using the same keys as appearance.json. Currently the values are all
+// booleans.
+interface IOverrideInformation {
+    branding: object;
+    xmatter: object;
+    brandingName: string;
+    xmatterName: string;
+}
+
+export const BookSettingsDialog: React.FunctionComponent<{
+    initiallySelectedGroupIndex?: number;
+}> = props => {
     const {
         showDialog,
         closeDialog,
@@ -50,11 +95,137 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         dialogFrameProvidedExternally: false
     });
 
-    const [settingsString, setSettingsString] = useApiStringState(
+    const appearanceUIOptions: IAppearanceUIOptions = useApiObject<
+        IAppearanceUIOptions
+    >("book/settings/appearanceUIOptions", {
+        themeNames: []
+    });
+
+    const overrideInformation: IOverrideInformation | undefined = useApiObject<
+        IOverrideInformation
+    >("book/settings/overrides", {
+        xmatter: {},
+        branding: {},
+        xmatterName: "",
+        brandingName: ""
+    });
+
+    const xmatterLockedBy = useL10n(
+        "Locked by {0} Front/Back matter",
+        "BookSettings.LockedByXMatter",
+        "",
+        overrideInformation?.xmatterName
+    );
+
+    const brandingLockedBy = useL10n(
+        "Locked by {0} Branding",
+        "BookSettings.LockedByBranding",
+        "",
+        overrideInformation?.brandingName
+    );
+
+    const coverLabel = useL10n("Cover", "BookSettings.CoverGroupLabel");
+    const contentPagesLabel = useL10n(
+        "Content Pages",
+        "BookSettings.ContentPagesGroupLabel"
+    );
+    const languagesToShowNormalSubgroupLabel = useL10n(
+        "Languages to show in normal text boxes",
+        "BookSettings.NormalTextBoxLangsLabel",
+        ""
+    );
+    const themeLabel = useL10n("Page Theme", "BookSettings.PageThemeLabel", "");
+    const themeDescription = useL10n(
+        "", // will be translated or the English will come from the xliff
+        "BookSettings.Theme.Description"
+    );
+    /* can't use this yet. See https://issues.bloomlibrary.org/youtrack/issue/BL-13094/Enable-links-in-Config-r-Descriptions
+    const pageThemeDescriptionElement = (
+        <PWithLink
+            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+            l10nKey="BookSettings.Theme.Description"
+            l10nComment="The text inside the [Page Themes Catalog] will become a link to a website."
+        >
+            Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog].
+        </PWithLink>
+    );
+    */
+
+    /* unused so far
+    const coverBackgroundLabel = useL10n(
+        "Cover Background",
+        "BookSettings.CoverBackground"
+    );
+    const coverColorLabel = useL10n(
+        "Cover Color",
+        "PublishTab.Android.CoverColor" // reuse the same string localized for the Android tab
+    );
+    */
+    const whatToShowOnCoverLabel = useL10n(
+        "Front Cover",
+        "BookSettings.WhatToShowOnCover"
+    );
+
+    const showLanguageNameLabel = useL10n(
+        "Show Language Name",
+        "BookSettings.ShowLanguageName"
+    );
+    const showTopicLabel = useL10n("Show Topic", "BookSettings.ShowTopic");
+    const frontAndBackMatterLabel = useL10n(
+        "Front & Back Matter",
+        "BookSettings.FrontAndBackMatter"
+    );
+    const pageNumbersLabel = useL10n(
+        "Page Numbers",
+        "BookSettings.PageNumbers"
+    );
+    const showPageNumbersLabel = useL10n(
+        "Show Page Numbers",
+        "BookSettings.ShowPageNumbers"
+    );
+    const frontAndBackMatterDescription = useL10n(
+        "Normally, books use the front & back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.",
+        "BookSettings.FrontAndBackMatter.Description"
+    );
+    const resolutionLabel = useL10n("Resolution", "BookSettings.Resolution");
+    const bloomPubLabel = useL10n("eBooks", "PublishTab.bloomPUBButton"); // reuse the same string localized for the Publish tab
+
+    // This is a helper function to make it easier to pass the override information
+    function getAdditionalProps<T>(
+        subPath: string
+    ): {
+        path: string;
+        overrideValue: T;
+        overrideDescription?: string;
+    } {
+        // some properties will be overridden by branding and/or xmatter
+        const xmatterOverride: T | undefined =
+            overrideInformation?.xmatter?.[subPath];
+        const brandingOverride = overrideInformation?.branding?.[subPath];
+        const override = xmatterOverride ?? brandingOverride;
+        // nb: xmatterOverride can be boolean, hence the need to spell out !==undefined
+        let description =
+            xmatterOverride !== undefined ? xmatterLockedBy : undefined;
+        if (!description) {
+            // xmatter wins if both are present
+            description =
+                brandingOverride !== undefined ? brandingLockedBy : undefined;
+        }
+        // make a an object that can be spread as props in any of the Configr controls
+        return {
+            path: "appearance." + subPath,
+            overrideValue: override as T,
+            // if we're disabling all appearance controls (e.g. because we're in legacy), don't list a second reason for this overload
+            overrideDescription: appearanceDisabled ? "" : description
+        };
+    }
+
+    const [settingsString] = useApiStringState(
         "book/settings",
         "{}",
         () => propsForBloomDialog.open
     );
+
     const [settings, setSettings] = React.useState<object | undefined>(
         undefined
     );
@@ -62,6 +233,22 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState(
         ""
     );
+
+    const [appearanceDisabled, setAppearanceDisabled] = React.useState(false);
+
+    // We use state here to allow the dialog UI to update without permanently changing the settings
+    // and getting notified of  those changes. The changes are persisted when the user clicks OK
+    // (except for the button to delete customBookStyles.css, which is done immediately).
+    // A downside of this is that when we delete customBookStyles.css, we don't know whether
+    // the result will be no conflicts or that customCollectionStyles.css will now be the
+    // firstPossiblyLegacyCss. For now it just behaves as if there are now no conflicts.
+    // One possible approach is to have the server return the new firstPossiblyLegacyCss
+    // as the result of the deleteCustomBookStyles call.
+    const [theme, setTheme] = React.useState("");
+    const [firstPossiblyLegacyCss, setFirstPossiblyLegacyCss] = React.useState(
+        ""
+    );
+    const [migratedTheme, setMigratedTheme] = React.useState("");
 
     React.useEffect(() => {
         if (settingsString === "{}") {
@@ -74,17 +261,44 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         }
     }, [settingsString]);
 
+    React.useEffect(() => {
+        setFirstPossiblyLegacyCss(
+            appearanceUIOptions?.firstPossiblyLegacyCss ?? ""
+        );
+        setMigratedTheme(appearanceUIOptions?.migratedTheme ?? "");
+    }, [appearanceUIOptions]);
+
     const bookSettingsTitle = useL10n("Book Settings", "BookSettings.Title");
-    const resolutionLabel = useL10n(
-        "Resolution",
-        "BookSettings.eBook.Image.MaxResolution"
-    );
+    React.useEffect(() => {
+        if (settings && (settings as any).appearance) {
+            const liveSettings = settingsToReturnLater || settings;
+            // when we're in legacy, we're just going to disable all the appearance controls
+            setAppearanceDisabled(
+                (liveSettings as any)?.appearance?.cssThemeName === "legacy-5-6"
+            );
+            setTheme((liveSettings as IBookSettings)?.appearance?.cssThemeName);
+        }
+    }, [settings, settingsToReturnLater]);
+
+    const deleteCustomBookStyles = () => {
+        post(
+            `book/settings/deleteCustomBookStyles?file=${firstPossiblyLegacyCss}`
+        );
+        setFirstPossiblyLegacyCss("");
+        setMigratedTheme("");
+    };
 
     return (
         <BloomDialog
             css={css`
-                background-color: #fbf8ff;
+                // TODO: we would like a background color, but setting it here makes the dialog's backdrop turn that color!
+                // conceivably we could wrap the current children in a div that just provides the background color.
+                //background-color: #fbf8ff;
             `}
+            // cssForDialogContents={css`
+            //     background-color: #e4f1f3;
+            //     height: 500px;
+            // `}
             {...propsForBloomDialog}
             onClose={closeDialog}
             onCancel={() => {
@@ -101,6 +315,24 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                         margin-top: 0; // override the default that sees a lack of a title and adds a margin
                     }
                     overflow-y: auto; // This displays a scrollbar only when needed.  'scroll' always shows one.
+                    // hack might need this: overflow-y: hidden; // but I need help on the css, so we're going with this for now
+
+                    // HACK: TODO get the divs to all just maximize height until the available space is used or we don't need anymore height
+                    form {
+                        overflow-y: scroll;
+                        height: 600px;
+                        // This odd width was chosen to make the customBookStyles alert box format nicely.
+                        // See BL-12956. It's not that important, but I don't think anything else is affected
+                        // much by the exact witdh.
+                        width: 638px;
+                        #groups {
+                            margin-right: 10px; // make room for the scrollbar
+                        }
+                    }
+
+                    a {
+                        color: ${kBloomBlue};
+                    }
                 `}
             >
                 {settings && (
@@ -117,31 +349,236 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                         }}
                         showAppBar={false}
                         showJson={false}
-                        setValueOnRender={s => {
+                        onChange={s => {
                             setSettingsToReturnLater(s);
                             //setSettings(s);
                         }}
+                        selectedGroupIndex={props.initiallySelectedGroupIndex}
                     >
-                        {/* we'll bring this back later
-                            <ConfigrGroup label="Appearance" level={1}>
-                                <ConfigrCustomStringInput
-                                    path={`appearance.coverColor`}
-                                    label="Cover Color"
-                                    control={ColorPickerForConfigr}
-                                />
-                            </ConfigrGroup> */}
-                        <ConfigrGroup label="eBooks" level={1}>
-                            {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}
+                        <ConfigrGroup label={coverLabel} level={1}>
+                            {
+                                // This is not part of the group of four mutually exclusive messages above
+                            }
                             <ConfigrSubgroup
-                                label={""}
-                                path={`publish.bloomPUB.imageSettings`}
-                                // description={resolutionDescription}
+                                label={whatToShowOnCoverLabel}
+                                path={`appearance`}
                             >
-                                <BloomResolutionSlider
-                                    path={`publish.bloomPUB.imageSettings`}
-                                    label={resolutionLabel}
+                                {appearanceDisabled && (
+                                    <NoteBox
+                                        css={css`
+                                            margin-left: 20px;
+                                        `}
+                                    >
+                                        <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
+                                            The selected page theme does not
+                                            support the following settings.
+                                        </Div>
+                                    </NoteBox>
+                                )}
+                                <FieldVisibilityGroup
+                                    field="cover-title"
+                                    labelFrame="Show Title in {0}"
+                                    labelFrameL10nKey="BookSettings.ShowWrittenLanguageTitle"
+                                    settings={settings}
+                                    settingsToReturnLater={
+                                        settingsToReturnLater
+                                    }
+                                    disabled={appearanceDisabled}
+                                    L1MustBeTurnedOn={true}
+                                    getAdditionalProps={getAdditionalProps}
+                                />
+
+                                <ConfigrBoolean
+                                    label={showLanguageNameLabel}
+                                    disabled={appearanceDisabled}
+                                    {...getAdditionalProps<boolean>(
+                                        `cover-languageName-show`
+                                    )}
+                                />
+                                <ConfigrBoolean
+                                    label={showTopicLabel}
+                                    disabled={appearanceDisabled}
+                                    {...getAdditionalProps<boolean>(
+                                        `cover-topic-show`
+                                    )}
                                 />
                             </ConfigrSubgroup>
+                            {/* <ConfigrSubgroup
+                                label={
+                                    coverBackgroundLabel +
+                                    "  (Not implemented yet)"
+                                }
+                                path={`appearance`}
+                            >
+                                <ConfigrCustomStringInput
+                                    path={`appearance.coverColor`}
+                                    disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
+                                    //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
+                                    label={coverColorLabel}
+                                    control={ColorPickerForConfigr}
+                                />
+                            </ConfigrSubgroup> */}
+                            {/*
+
+                            <ConfigrSubgroup
+                                label={
+                                    frontAndBackMatterLabel +
+                                    "  (Not implemented yet)"
+                                }
+                                path={`appearance`}
+                            >
+                                <ConfigrSelect
+                                    disabled={true}
+                                    label={frontAndBackMatterLabel}
+                                    path={`appearance.TODO`}
+                                    options={[
+                                        { label: "Page Saver", value: "TODO" }
+                                    ]}
+                                    description={frontAndBackMatterDescription}
+                                />
+                            </ConfigrSubgroup> */}
+                        </ConfigrGroup>
+                        <ConfigrGroup label={contentPagesLabel} level={1}>
+                            {
+                                // This group of four possible messages...sometimes none of them shows, so there are five options...
+                                // is very similar to the one in BookInfoIndicator.tsx. If you change one, you may need to change the other.
+                                // In particular, the logic for which to show and the text of the messages should be kept in sync.
+                                // I'm not seeing a clean way to reuse the logic. Some sort of higher-order component might work,
+                                // but I don't think the logic is complex enough to be worth it, when only used in two places.
+                            }
+                            {firstPossiblyLegacyCss && theme === "legacy-5-6" && (
+                                <WarningBox>
+                                    <MessageUsingLegacyThemeWithIncompatibleCss
+                                        fileName={firstPossiblyLegacyCss}
+                                    />
+                                </WarningBox>
+                            )}
+                            {firstPossiblyLegacyCss ===
+                                "customBookStyles.css" &&
+                                theme !== "legacy-5-6" && (
+                                    <NoteBox>
+                                        <div>
+                                            {migratedTheme ? (
+                                                <MessageUsingMigratedThemeInsteadOfIncompatibleCss
+                                                    fileName={
+                                                        firstPossiblyLegacyCss
+                                                    }
+                                                />
+                                            ) : (
+                                                <MessageIgnoringIncompatibleCssCanDelete
+                                                    fileName={
+                                                        firstPossiblyLegacyCss
+                                                    }
+                                                />
+                                            )}
+                                            <div
+                                                css={css`
+                                                    display: flex;
+                                                    align-items: center;
+                                                    // The way it comes out in English, we'd be better off without this, or even
+                                                    // some negative margin. But a translation may produce a last line of the
+                                                    // main message
+                                                    margin-top: 2px;
+                                                    justify-content: flex-end;
+                                                    &:hover {
+                                                        cursor: pointer;
+                                                    }
+                                                `}
+                                                onClick={() =>
+                                                    deleteCustomBookStyles()
+                                                }
+                                            >
+                                                <TrashIcon
+                                                    id="trashIcon"
+                                                    color="primary"
+                                                />
+                                                <Div
+                                                    l10nKey="BookSettings.DeleteCustomBookStyles"
+                                                    l10nParam0={
+                                                        firstPossiblyLegacyCss
+                                                    }
+                                                    css={css`
+                                                        color: ${kBloomBlue};
+                                                    `}
+                                                >
+                                                    Delete{" "}
+                                                    {firstPossiblyLegacyCss}
+                                                </Div>
+                                            </div>
+                                        </div>
+                                    </NoteBox>
+                                )}
+                            {firstPossiblyLegacyCss &&
+                                firstPossiblyLegacyCss !==
+                                    "customBookStyles.css" &&
+                                theme !== "legacy-5-6" && (
+                                    <NoteBox>
+                                        <MessageIgnoringIncompatibleCss
+                                            fileName={firstPossiblyLegacyCss}
+                                        />
+                                    </NoteBox>
+                                )}
+                            <ConfigrSubgroup label="" path={`appearance`}>
+                                {/* Wrapping these two in a div prevents Config-R from sticking a divider between them */}
+                                <div>
+                                    <ConfigrSelect
+                                        label={themeLabel}
+                                        disabled={false}
+                                        path={`appearance.cssThemeName`}
+                                        options={appearanceUIOptions.themeNames.map(
+                                            x => {
+                                                return {
+                                                    label: x.label,
+                                                    value: x.value
+                                                };
+                                            }
+                                        )}
+                                        description={themeDescription}
+                                    />
+                                    {appearanceDisabled && (
+                                        <NoteBox
+                                            css={css`
+                                                margin-left: 20px;
+                                            `}
+                                        >
+                                            <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
+                                                The selected page theme does not
+                                                support the following settings.
+                                            </Div>
+                                        </NoteBox>
+                                    )}
+                                </div>
+                                <ConfigrBoolean
+                                    label={showPageNumbersLabel}
+                                    disabled={appearanceDisabled}
+                                    {...getAdditionalProps<boolean>(
+                                        `pageNumber-show`
+                                    )}
+                                />
+                            </ConfigrSubgroup>
+                            <ConfigrSubgroup
+                                label={languagesToShowNormalSubgroupLabel}
+                                path={`appearance`}
+                            >
+                                <FieldVisibilityGroup
+                                    field="autoTextBox"
+                                    labelFrame="Show {0}"
+                                    labelFrameL10nKey="BookSettings.ShowContentLanguage"
+                                    settings={settings}
+                                    settingsToReturnLater={
+                                        settingsToReturnLater
+                                    }
+                                    disabled={false}
+                                    getAdditionalProps={getAdditionalProps}
+                                />
+                            </ConfigrSubgroup>
+                        </ConfigrGroup>
+                        <ConfigrGroup label={bloomPubLabel} level={1}>
+                            {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}
+                            <BloomResolutionSlider
+                                label={resolutionLabel}
+                                path={`publish.bloomPUB.imageSettings`}
+                            />
                         </ConfigrGroup>
                     </ConfigrPane>
                 )}
@@ -150,7 +587,10 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                 <DialogOkButton
                     default={true}
                     onClick={() => {
-                        postJson("book/settings", settingsToReturnLater);
+                        if (settingsToReturnLater) {
+                            // If nothing changed, we don't get any...and don't need to make this call.
+                            postJson("book/settings", settingsToReturnLater);
+                        }
                         isOpenAlready = false;
                         closeDialog();
                         // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
@@ -220,7 +660,8 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
                 display: flex;
                 flex-direction: column;
                 width: 200px; // todo: what should this be?
-                padding: 0 10px; // allow space for tooltips
+                padding: 0 10px; // allow space for slider knob image
+                margin-right: 1.5em; // allow space for the slider knob tooltip (BL-13067)
             `}
         >
             <Typography
@@ -251,22 +692,103 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
     );
 };
 
-export function showBookSettingsDialog() {
+export function showBookSettingsDialog(initiallySelectedGroupIndex?: number) {
     // once Bloom's tab bar is also in react, it won't be possible
     // to open another copy of this without closing it first, but
     // for now, we need to prevent that.
     if (!isOpenAlready) {
         isOpenAlready = true;
-        ShowEditViewDialog(<BookSettingsDialog />);
+        ShowEditViewDialog(
+            <BookSettingsDialog
+                initiallySelectedGroupIndex={initiallySelectedGroupIndex}
+            />
+        );
     }
 }
 
+export const MessageUsingLegacyThemeWithIncompatibleCss: React.FunctionComponent<{
+    fileName: string;
+    className?: string;
+}> = props => {
+    return (
+        <PWithLink
+            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+            l10nKey="BookSettings.UsingLegacyThemeWithIncompatibleCss"
+            l10nParam0={props.fileName}
+            l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+            className={props.className}
+        >
+            The {0} stylesheet of this book is incompatible with modern themes.
+            Bloom is using it because the book is using the Legacy-5-6 theme.
+            Click [here] for more information.
+        </PWithLink>
+    );
+};
+
+export const MessageUsingMigratedThemeInsteadOfIncompatibleCss: React.FunctionComponent<{
+    fileName: string;
+    className?: string;
+}> = props => {
+    return (
+        <Div
+            l10nKey="BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss"
+            l10nParam0={props.fileName}
+            l10nComment="{0} is a placeholder for a filename."
+            className={props.className}
+        >
+            Bloom found a known version of {props.fileName} in this book and
+            replaced it with a modern theme. You can delete it unless you still
+            need to publish the book from an earlier version of Bloom.
+        </Div>
+    );
+};
+
+export const MessageIgnoringIncompatibleCssCanDelete: React.FunctionComponent<{
+    fileName: string;
+    className?: string;
+}> = props => {
+    return (
+        <PWithLink
+            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+            l10nKey="BookSettings.IgnoringIncompatibleCssCanDelete"
+            l10nParam0={props.fileName}
+            l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+            className={props.className}
+        >
+            The
+            {props.fileName} stylesheet of this book is incompatible with modern
+            themes. Bloom is currently ignoring it. If you don't need those
+            customizations any more, you can delete your
+            {props.fileName}. Click [here] for more information.
+        </PWithLink>
+    );
+};
+export const MessageIgnoringIncompatibleCss: React.FunctionComponent<{
+    fileName: string;
+    className?: string;
+}> = props => {
+    return (
+        <PWithLink
+            href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
+            l10nKey="BookSettings.IgnoringIncompatibleCss"
+            l10nParam0={props.fileName}
+            l10nComment="{0} is a placeholder for a filename. The text inside the [square brackets] will become a link to a website."
+        >
+            The {props.fileName} stylesheet of this book is incompatible with
+            modern themes. Bloom is currently ignoring it. Click [here] for more
+            information.
+        </PWithLink>
+    );
+};
+
 const ColorPickerForConfigr: React.FunctionComponent<{
     value: string;
+    disabled: boolean;
     onChange: (value: string) => void;
 }> = props => {
     return (
         <ColorDisplayButton
+            disabled={props.disabled}
             initialColor={props.value}
             localizedTitle={"foo"}
             transparency={false}
@@ -276,5 +798,19 @@ const ColorPickerForConfigr: React.FunctionComponent<{
                 if (dialogResult === DialogResult.OK) props.onChange(newColor);
             }}
         />
+    );
+};
+
+// TODO: move this to config-r
+const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<{}>> = props => {
+    return (
+        <ListItem
+            css={css`
+                flex-direction: column;
+                align-items: flex-start;
+            `}
+        >
+            {props.children}
+        </ListItem>
     );
 };

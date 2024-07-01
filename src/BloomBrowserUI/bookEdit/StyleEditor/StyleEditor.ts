@@ -15,7 +15,10 @@ import "../../node_modules/select2/dist/js/select2.js";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import { IsPageXMatter } from "../js/bloomEditing";
+import {
+    IsPageXMatter,
+    SetupThingsSensitiveToStyleChanges
+} from "../js/bloomEditing";
 import "../../lib/jquery.alphanum";
 import axios from "axios";
 import { get, wrapAxios } from "../../utils/bloomApi";
@@ -30,11 +33,13 @@ import {
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
+import { RenderOverlayRoot } from "./OverlayFormatPage";
+import { BubbleManager } from "../js/bubbleManager";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
-// Note: CSS text-align also has values "justify", "initial", and "inherit", which we do not support currently.
-type Alignment = "start" | "center" | "end";
+// Note: CSS text-align also has values "initial", and "inherit", which we do not support currently.
+type Alignment = "start" | "center" | "justify" | "end";
 
 interface IFormattingValues {
     ptSize: string;
@@ -57,6 +62,7 @@ interface IFormattingValues {
     // when it is not specified.
     hiliteTextColor: string | undefined;
     hiliteBgColor: string;
+    padding: string;
 }
 
 // Class provides a convenient way to group a style id and display name
@@ -71,14 +77,12 @@ class FormattingStyle {
     }
 
     public hasStyleId(name: string): boolean {
-        return this.styleId.toLowerCase() == name.toLowerCase();
+        return this.styleId.toLowerCase() === name.toLowerCase();
     }
 
     public getLocalizedName(): string {
         // null-coalesce operator would be handy here.
-        return this.localizedName
-            ? this.englishDisplayName
-            : this.localizedName;
+        return this.localizedName || this.englishDisplayName;
     }
 }
 
@@ -200,10 +204,28 @@ export default class StyleEditor {
         return styleName.substr(0, suffixIndex);
     }
 
+    // Make the specified style (which should include the trailing '-style') the style for the target element,
+    // and if it's in a translation group, for all the siblings that are bloom-editable.
     private static SetStyleNameForElement(
         target: HTMLElement,
         newStyle: string
     ) {
+        this.SetStyleNameForLeaf(target, newStyle);
+        // If this is a translation group, we need to set the style on all the siblings
+        // that are bloom-editable
+        const group = target.closest(".bloom-translationGroup");
+        if (!group) return;
+        // This will typically include the target itself, but it's not very costly to do
+        // it twice to that one element.
+        const siblings = Array.from(
+            group.getElementsByClassName("bloom-editable")
+        );
+        siblings.forEach(sibling =>
+            this.SetStyleNameForLeaf(sibling as HTMLElement, newStyle)
+        );
+    }
+
+    private static SetStyleNameForLeaf(target: HTMLElement, newStyle: string) {
         const oldStyle: string | null = this.GetStyleClassFromElement(target);
         if (oldStyle != null) $(target).removeClass(oldStyle);
         $(target).addClass(newStyle);
@@ -947,7 +969,8 @@ export default class StyleEditor {
             underline: underline,
             color: textColor,
             hiliteTextColor,
-            hiliteBgColor
+            hiliteBgColor,
+            padding: box.css("padding-left")
         };
     }
 
@@ -960,6 +983,8 @@ export default class StyleEditor {
                 return "center";
             case "end":
                 return "end";
+            case "justify":
+                return "justify";
             case "start":
             case "initial":
             default:
@@ -1208,6 +1233,16 @@ export default class StyleEditor {
                             if (this.xmatterMode) {
                                 $("#style-page").remove();
                             }
+                            // Show the overlay tab only if the box being edited is in an overlay
+                            if (
+                                !this.boxBeingEdited.closest(
+                                    ".bloom-textOverPicture"
+                                )
+                            ) {
+                                document
+                                    .getElementById("overlay-page")
+                                    ?.remove();
+                            }
 
                             const visibleTabs = $(".tab-page:visible");
                             if (visibleTabs.length === 1) {
@@ -1248,6 +1283,13 @@ export default class StyleEditor {
                             current.hiliteBgColor,
                             (textColor, bgColor) =>
                                 this.changeHiliteProps(textColor, bgColor)
+                        );
+
+                        RenderOverlayRoot(
+                            current.padding,
+                            (newPadding: string) => {
+                                this.changePadding(newPadding);
+                            }
                         );
 
                         if (!noFormatChange) {
@@ -1377,6 +1419,27 @@ export default class StyleEditor {
             );
         });
     }
+    changePadding(padding: string) {
+        if (this.ignoreControlChanges) {
+            return;
+        }
+        const oldPaddingStr = window.getComputedStyle(this.boxBeingEdited)
+            .paddingLeft;
+        BubbleManager.adjustOverlaysForPaddingChange(
+            this.boxBeingEdited.ownerDocument.body,
+            StyleEditor.GetStyleNameForElement(this.boxBeingEdited) ?? "",
+            oldPaddingStr,
+            padding
+        );
+        const rule = this.getStyleRule(true, false);
+        if (rule !== null) {
+            rule.style.setProperty("padding", padding, "important");
+            this.cleanupAfterStyleChange();
+            RenderOverlayRoot(padding, (newPadding: string) => {
+                this.changePadding(newPadding);
+            });
+        }
+    }
 
     // Since both the font list popover and the FontInformationPane use the same root class, and since
     // both are well outside the dialog in the DOM, we can search the DOM for this class to determine
@@ -1472,6 +1535,7 @@ export default class StyleEditor {
             "position-left",
             "position-center",
             "position-right",
+            "position-justify",
             "indent-none",
             "indent-indented",
             "indent-hanging"
@@ -1495,6 +1559,7 @@ export default class StyleEditor {
             (current.alignment === "end" && !isRightToLeft) ||
                 (current.alignment === "start" && isRightToLeft)
         );
+        this.selectButton("position-justify", current.alignment === "justify");
         this.selectButton("indent-" + current.paraIndent, true);
     }
 
@@ -1952,6 +2017,25 @@ export default class StyleEditor {
         }
     }
 
+    changeOverlayProps(padding: string) {
+        if (this.ignoreControlChanges) {
+            return;
+        }
+        // const styleName = StyleEditor.GetStyleNameForElement(
+        //     this.boxBeingEdited
+        // );
+        RenderOverlayRoot(padding, (newPadding: string) => {
+            this.changePadding(newPadding);
+        });
+        // if (styleName) {
+        //     this.putOverlayRulesInDom(styleName, padding);
+        // }
+    }
+
+    // putOverlayRulesInDom(styleName: string, padding: string) {
+    //     // TODO
+    // }
+
     private setColorButtonColor(id: string, color: string) {
         const colorButton = document.getElementById(id);
         colorButton?.setAttribute("style", `background-color:${color}`);
@@ -2065,7 +2149,7 @@ export default class StyleEditor {
     }
 
     /**
-     * Sets the alignment, using "start", "center", or "end"
+     * Sets the alignment, using "start", "center", "justify", or "end"
      * Clicking the align left button will cause the text to go to the left,
      * meaning "start" for left-to-right boxes and "end" for right-to-left boxes
      */
@@ -2079,6 +2163,8 @@ export default class StyleEditor {
         let position = "start";
         if (whichButtonClicked === "center") {
             position = "center";
+        } else if (whichButtonClicked === "justify") {
+            position = "justify";
         } else {
             const textBoxDirection = this.boxBeingEdited.getAttribute("dir");
             const isRightToLeft = textBoxDirection === "rtl";
@@ -2094,20 +2180,34 @@ export default class StyleEditor {
         }
 
         const rule = this.getStyleRule(true, undefined);
-        if (rule != null) {
+        if (rule !== null) {
             rule.style.setProperty("text-align", position, "important");
 
             this.cleanupAfterStyleChange();
         }
     }
 
-    private getWhichAlignmentButtonClicked(): "left" | "center" | "right" {
+    private getWhichAlignmentButtonClicked():
+        | "left"
+        | "center"
+        | "right"
+        | "justify" {
         const positionCenterButton = document.getElementById("position-center");
         if (
             positionCenterButton &&
             positionCenterButton.classList.contains("selectedIcon")
         ) {
             return "center";
+        }
+
+        const positionJustifyButton = document.getElementById(
+            "position-justify"
+        );
+        if (
+            positionJustifyButton &&
+            positionJustifyButton.classList.contains("selectedIcon")
+        ) {
+            return "justify";
         }
 
         const positionRightButton = document.getElementById("position-right");
@@ -2236,6 +2336,7 @@ export default class StyleEditor {
         this.selectButtons(current);
         this.setColorButtonColor("colorSelectButton", current.color);
         this.changeHiliteProps(current.color, current.hiliteBgColor);
+        this.changeOverlayProps(current.padding);
         this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     }
@@ -2279,6 +2380,10 @@ export default class StyleEditor {
         OverflowChecker.MarkOverflowInternal(target);
         this.updateLabelsWithStyleName();
         this.getParagraphTabDescription();
+
+        SetupThingsSensitiveToStyleChanges(
+            $(this.boxBeingEdited).closest(".bloom-page")[0]
+        );
     }
 
     // Remove any additions we made to the element for the purpose of UI alone
@@ -2313,5 +2418,24 @@ export default class StyleEditor {
             onInputFocus: () => {}
         };
         showSimpleColorPickerDialog(colorPickerDialogProps);
+    }
+
+    public static isStyleDialogOpen(): boolean {
+        // The #format-toolbar element is instantiated on the page only when the
+        // dialog is showing.
+        const page = parent.window.document.getElementById("page");
+        const contentWindow = page
+            ? (<HTMLIFrameElement>page).contentWindow
+            : null;
+
+        // possibly unit-testing
+        if (!contentWindow) {
+            const formatDialog = $(".bloom-page").find("#format-toolbar");
+            return formatDialog.length > 0;
+        }
+        const formatDialog = $("body", contentWindow.document).find(
+            "#format-toolbar"
+        );
+        return formatDialog.length > 0;
     }
 }

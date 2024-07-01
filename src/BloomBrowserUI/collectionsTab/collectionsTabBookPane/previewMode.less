@@ -1,10 +1,48 @@
 @import (reference) "../../bloomUI.less";
 
+// This is wanted only for previewing templates, not real books.
+// Real books always have a data-l1 attribute added, and the standard basePage rules work for them.
+.preview:not([data-l1]) {
+    // Get the front cover to look right in preview mode for most page sizes and layouts.
+    .bloom-frontMatter {
+        @MarginBetweenMajorItems: 15px;
+        .marginBox {
+            display: flex;
+            flex-direction: column;
+
+            .bloom-translationGroup.bookTitle {
+                min-height: 12%;
+            }
+            .bloom-imageContainer {
+                flex: 1 1 auto;
+                margin-top: @MarginBetweenMajorItems;
+                margin-bottom: @MarginBetweenMajorItems;
+            }
+            .bottomBlock {
+                min-height: 12%;
+            }
+        }
+        // This is needed for the Digital Comic Book to properly space items on the front cover.
+        &.Device16x9Landscape#ddd9b811-63d6-4d51-baf8-0a5fe88cd73d {
+            .bookTitle {
+                min-height: 10%;
+            }
+            .coverImage {
+                max-height: 65%;
+            }
+            .bottomBlock {
+                min-height: 20%;
+            }
+        }
+    }
+}
+
 @media screen {
     body {
         background-color: @bloom-darkestBackground;
     }
 }
+
 div.bloom-page.coverColor {
     background-color: @PreviewCoverColor;
 }
@@ -15,57 +53,76 @@ div.bloom-page.coverColor {
 html {
     cursor: not-allowed;
 }
+
+.disabledVisual img {
+    opacity: 0.4;
+}
+
 /* Some images, like the copyright one, have no src initially. Don't puzzle the user with a missing-image icon.''*/
 img[src=""] {
     display: none;
 }
+
+.disabledVisual div {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 input {
     border: 1px solid transparent;
 }
+
 textarea {
     /*we have javascript function which notices this border and makes it read-only
 (which isn't a style, so we can't set it ourselves*/
     border: 1px solid transparent;
 }
+
 div.bloom-page {
-    border-bottom: 15px solid @bloom-darkestBackground !important;
+    // Old bloom did this to make a gap between pages, but at some point we
+    // switched to using box-sizing: border-box, and then it changes the size
+    // of the rest of the page and interferes with the padding that positions marginBox.
+    // border-bottom: 15px solid @bloom-darkestBackground !important;
+    margin-bottom: 15px;
     /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
     background-color: white;
 }
+
 @media print {
     div.bloom-page {
-        /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
+        /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
         border: 0 none @WarningColor !important;
-        /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
     }
 }
+
 div#formatButton {
     display: none !important;
 }
+
 .bloom-page button {
     display: none;
 }
+
 /*this is the purple label in the upper-left corner above pages*/
 .pageLabel {
     display: none;
 }
+
 textarea.coverColor {
     background-color: @PreviewCoverColor;
 }
+
 input.coverColor {
     background-color: @PreviewCoverColor;
 }
+
 /*this could be placed on an element by hand, but it is notably added by jscript when the element has
 a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
 *.bloom-hideWhenPublishing,
 *.bloom-classSwitchingCombobox {
     visibility: hidden;
 }
+
 div.coverBottomBookTopic div.topicN1 {
     border: none;
 }
@@ -102,6 +159,7 @@ and as a result, the labels are shifted to this many pixels to the width. This s
         background-size: 50px 50px;
         background-position: 50px 50px;
     }
+
     .numberedPage .pageLabel {
         position: absolute;
         z-index: 10000;

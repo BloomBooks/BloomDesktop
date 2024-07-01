@@ -1,20 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-    <OutputPath>..\..\output\$(Configuration)\</OutputPath>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <AssemblyTitle>Bloom</AssemblyTitle>
-    <Company>SIL</Company>
-    <Product>Bloom</Product>
-    <Copyright>© SIL International 2012-2020</Copyright>
-    <Version>5.6.0.0</Version>
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-    <BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
-    <TargetFramework>net472</TargetFramework>
-    <LangVersion>11.0</LangVersion>
-    <PostBuildEvent>
+	<PropertyGroup>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
+		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
+		<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+		<AssemblyTitle>Bloom</AssemblyTitle>
+		<Company>SIL</Company>
+		<Product>Bloom</Product>
+		<Copyright>© SIL International 2012-2024</Copyright>
+		<Version>6.0.0.0</Version>
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
+		<TargetFramework>net472</TargetFramework>
+		<LangVersion>11.0</LangVersion>
+		<PostBuildEvent>
 copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
@@ -22,31 +22,31 @@ xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
 xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     </PostBuildEvent>
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-  </PropertyGroup>
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
-      <_Parameter1>false</_Parameter1>
-      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.InteropServices.Guid">
-      <_Parameter1>0afa7c29-4107-47a8-88cc-c15cb769f35e</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>BloomTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>BloomHarvester</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>BloomHarvesterTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
-      <_Parameter1>SquirrelAwareVersion</_Parameter1>
-      <_Parameter2>1</_Parameter2>
-    </AssemblyAttribute>
-    <!--
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	</PropertyGroup>
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
+			<_Parameter1>false</_Parameter1>
+			<_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.InteropServices.Guid">
+			<_Parameter1>0afa7c29-4107-47a8-88cc-c15cb769f35e</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>BloomTests</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>BloomHarvester</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>BloomHarvesterTests</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+			<_Parameter1>SquirrelAwareVersion</_Parameter1>
+			<_Parameter2>1</_Parameter2>
+		</AssemblyAttribute>
+		<!--
       Without explicitly disabling DPI awareness here, the subsequent loading of
       some System.Windows.Media components will cause the application to change
       from DPI "Unaware" to DPI "System Aware". The one place we know this happens
@@ -56,69 +56,69 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
       in inconsistent font/icon sizing or the whole window will shrink down.
       See BL-10981.
   	-->
-    <AssemblyAttribute Include="System.Windows.Media.DisableDpiAwareness" />
-  </ItemGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Any CPU'">
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|Any CPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>false</Optimize>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugType>full</DebugType>
-    <CodeAnalysisLogFile>..\..\output\Debug\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <DebugType>pdbonly</DebugType>
-    <CodeAnalysisLogFile>..\..\output\Release\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Optimize>false</Optimize>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RootNamespace>Bloom</RootNamespace>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>bloom.ico</ApplicationIcon>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyName>Bloom</AssemblyName>
-  </PropertyGroup>
-  <PropertyGroup>
-    <!-- Uses a LargeAddressAware nuget package to specify that this executable is large address aware.
+		<AssemblyAttribute Include="System.Windows.Media.DisableDpiAwareness" />
+	</ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Any CPU'">
+		<DebugType>full</DebugType>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|Any CPU'">
+		<DebugType>pdbonly</DebugType>
+		<Optimize>false</Optimize>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+		<DebugType>full</DebugType>
+		<CodeAnalysisLogFile>..\..\output\Debug\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+		<CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+		<CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+		<CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+		<CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+		<CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+		<CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+		<DebugType>pdbonly</DebugType>
+		<CodeAnalysisLogFile>..\..\output\Release\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+		<CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+		<CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+		<CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+		<CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+		<CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+		<CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+		<Optimize>false</Optimize>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+	</PropertyGroup>
+	<PropertyGroup>
+		<RootNamespace>Bloom</RootNamespace>
+	</PropertyGroup>
+	<PropertyGroup>
+		<ApplicationIcon>bloom.ico</ApplicationIcon>
+	</PropertyGroup>
+	<PropertyGroup>
+		<AssemblyName>Bloom</AssemblyName>
+	</PropertyGroup>
+	<PropertyGroup>
+		<!-- Uses a LargeAddressAware nuget package to specify that this executable is large address aware.
     This means that we promise to the OS that we/our dependencies handle pointers in the upper address space (from 2GB to 4GB range) correctly (hopefully!).
     In exchange, the OS allows the program to use up to 4 GB of virtual address space instead of 2 GB of virtual address space.
     This will be relevant if run on 64-bit Windows (or if the user set the 3GB/IncreaseUserVa switch on 32-bit Windows)
 
     I believe this is unnecessary on Linux, they usually already have 4 GB virtual address space available.
     -->
-    <LargeAddressAware>true</LargeAddressAware>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>
+		<LargeAddressAware>true</LargeAddressAware>
+	</PropertyGroup>
+	<PropertyGroup>
+		<StartupObject />
+	</PropertyGroup>
+	<PropertyGroup>
+		<PostBuildEvent>
 copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
@@ -126,225 +126,225 @@ xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
 xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     </PostBuildEvent>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Prefer32Bit>True</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <Prefer32Bit>True</Prefer32Bit>
-  </PropertyGroup>
-  <ItemGroup>
-    <SourceFiles Include="..\..\lib\dotnet\*.config" />
-    <LameFiles Include="..\..\lib\lame\lame*.*" />
-    <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
-    <RemoteDebugFiles Include="..\..\remoteDebugging\**" />
-    <IccFiles Include="..\..\DistFiles\ColorProfiles\CMYK\USWebCoatedSWOP.icc" />
-    <IccFiles Include="..\..\DistFiles\ColorProfiles\RGB\AdobeRGB1998.icc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="**/*.orig" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x86'">
-    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x86\*.dll" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
-    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <DeleteForSILMedia Include="$(OutDir)lib\win-x64\*.*" />
-    <DeleteForSILMedia Include="$(OutDir)lib\win-x86\*.*" />
-    <RemoveForSILMedia Include="$(OutDir)lib\win-x86" />
-    <RemoveForSILMedia Include="$(OutDir)lib\win-x64" />
-    <RemoveForSILMedia Include="$(OutDir)lib" />
-  </ItemGroup>
-  <Target Name="CopySomeFiles" AfterTargets="Build">
-    <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" />
-    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
-    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
-    <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
-    <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
-    <Message Text="CopySomeFiles target completed." Importance="high" />
-  </Target>
-  <Target Name="ReallyAfterBuild" AfterTargets="CopySomeFiles">
-    <Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
-    <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
-    <RemoveDir Directories="@(RemoveForSILMedia)" />
-    <Message Text="ReallyAfterBuild target completed." Importance="high" />
-  </Target>
-  <ItemGroup>
-    <PackageReference Include="Autofac" Version="6.0.0" />
-    <PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
-    <PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
-    <PackageReference Include="CairoSharp-signed" Version="3.22.24.37" />
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <!-- Don't let Nuget Package Manager automatically update (downgrade) this to DialogAdapters.Gtk2; it will break Bloom -->
-    <PackageReference Include="DialogAdapters" Version="0.1.11" />
-    <PackageReference Include="EPPlus" Version="6.2.4" />
-    <PackageReference Include="Fleck" Version="1.1.0" />
-    <PackageReference Include="Glob" Version="1.1.8" />
-    <PackageReference Include="L10NSharp" Version="6.0.0" />
-    <PackageReference Include="LargeAddressAware" Version="1.0.5" />
-    <PackageReference Include="Markdig.Signed" Version="0.30.4" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1518.46" />
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
-    <PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
-    <PackageReference Include="NAudio" Version="1.10.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-    <PackageReference Include="RestSharp" Version="106.12.0" />
-    <PackageReference Include="Sentry" Version="3.9.4" />
-    <PackageReference Include="SharpZipLib" Version="1.3.3" />
-    <PackageReference Include="SIL.Core" Version="13.0.0-beta0080" />
-    <PackageReference Include="SIL.Core.Desktop" Version="13.0.0-beta0080" />
-    <PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
-    <PackageReference Include="SIL.Media" Version="13.0.0-beta0080" />
-    <PackageReference Include="SIL.Windows.Forms" Version="13.0.0-beta0080" />
-    <PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="13.0.0-beta0080" />
-    <PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="13.0.0-beta0080" />
-    <PackageReference Include="SIL.WritingSystems" Version="13.0.0-beta0080" />
-    <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
-    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.3" />
-    <PackageReference Include="SQLitePCLRaw.core" Version="2.0.3" />
-    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.0.3" />
-    <PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.0.3" />
-    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Runtime" Version="4.3.0" />
-    <PackageReference Include="TagLibSharp" Version="2.3.0" />
-    <PackageReference Include="PolySharp" Version="1.13.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Printing" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="NuGet.Squirrel">
-      <HintPath>..\..\lib\dotnet\NuGet.Squirrel.dll</HintPath>
-    </Reference>
-    <Reference Include="PdfDroplet">
-      <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
-    </Reference>
-    <Reference Include="PdfSharp">
-      <HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="PodcastUtilities.PortableDevices">
-      <HintPath>..\..\lib\dotnet\PodcastUtilities.PortableDevices.dll</HintPath>
-    </Reference>
-    <Reference Include="Splat">
-      <HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
-    </Reference>
-    <Reference Include="Squirrel">
-      <HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
-    </Reference>
-    <Reference Include="TidyManaged">
-      <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.manifest">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ClassDiagram1.cd" />
-    <None Include="Properties\Settings.settings">
-      <Generator>PublicSettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\current-service-urls.json" />
-    <None Include="Resources\DeleteMessageBoxButtonImage.png" />
-    <None Include="Resources\DeleteMessageBoxImage.png" />
-    <None Include="Resources\open.png" />
-    <None Include="Resources\edit.png" />
-    <None Include="Resources\Error70x70.png" />
-    <None Include="Resources\pagePlaceHolder.png" />
-    <None Include="Resources\collection32x32.png" />
-    <None Include="Resources\settings16x16.png" />
-    <None Include="Resources\settings32x32.png" />
-    <None Include="Resources\settings24x24.png" />
-    <None Include="Resources\OpenCreateCollection24x24.png" />
-    <None Include="Resources\help24x24.png" />
-    <None Include="Resources\publish32x32.png" />
-    <None Include="Resources\coverOnly.png" />
-    <None Include="Resources\insideBookletPages.png" />
-    <None Include="Resources\simplePages.png" />
-    <None Include="Resources\deletePage16x16.png" />
-    <None Include="Resources\deletePage24x24.png" />
-    <None Include="Resources\Cut16x16.png" />
-    <None Include="Resources\Copy16x16.png" />
-    <None Include="Resources\Paste16x16.png" />
-    <None Include="Resources\Undo16x16.png" />
-    <None Include="Resources\paste24x24.png" />
-    <None Include="Resources\paste32x32.png" />
-    <None Include="Resources\undo32x32.png" />
-    <None Include="Resources\newCollection32x32.png" />
-    <None Include="Resources\BloomPack64x64.png" />
-    <None Include="Resources\copyDisable16x16.png" />
-    <None Include="Resources\pasteDisabled32x32.png" />
-    <None Include="Resources\copyDisable16x161.png" />
-    <None Include="Resources\undoDisabled32x32.png" />
-    <None Include="Resources\DeletePageDisabled24x24.png" />
-    <None Include="Resources\DeletePageDisabled32x32.png" />
-    <None Include="Resources\DeletePage32x32.png" />
-    <None Include="Resources\cutDisable16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="IWshRuntimeLibrary">
-      <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\PackageFlat48x47.png" />
-    <None Include="Resources\pdf16x16.png" />
-    <None Include="Resources\thumbnail.png" />
-    <None Include="Resources\PackageFlat.png" />
-    <None Include="Resources\placeHolderBookThumbnail.png" />
-    <None Include="Resources\upload.png" />
-    <None Include="Resources\duplicatePage32x32.png" />
-    <None Include="Resources\duplicatePageDisabled32x32.png" />
-    <None Include="Resources\videos.png" />
-    <None Include="Resources\settingsbw16x16.png" />
-    <None Include="Resources\OpenCreateCollection16x16.png" />
-    <None Include="Resources\AddPageButton.PNG" />
-    <None Include="Resources\AddPageButtonDisabled.PNG" />
-    <None Include="Resources\epubPublishButton.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="bloom.ico" />
-    <None Include="Resources\book-settings.png" />
-    <None Include="Resources\PdfPrint.png" />
-    <None Include="Resources\BloomPUB.png" />
-    <None Include="Resources\publish video.png" />
-    <None Include="Resources\Disconnected.png" />
-    <None Include="Resources\TC Button Grey Small Team.png" />
-    <None Include="Resources\TC Button Warning.png" />
-    <None Include="Resources\TC Button Updates Available.png" />
-    <None Include="Resources\Team32x32.png" />
-    <None Include="Resources\help16x16Darker.png" />
-    <None Include="Resources\sad16x16.png" />
-    <None Include="Resources\weblink.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="desktopAndTaskBar.ico" />
-    <Content Include="desktopAndTaskBar.svg.ico" />
-    <None Include="Resources\bloom.png" />
-  </ItemGroup>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<Prefer32Bit>True</Prefer32Bit>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<Prefer32Bit>True</Prefer32Bit>
+	</PropertyGroup>
+	<ItemGroup>
+		<SourceFiles Include="..\..\lib\dotnet\*.config" />
+		<LameFiles Include="..\..\lib\lame\lame*.*" />
+		<BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
+		<RemoteDebugFiles Include="..\..\remoteDebugging\**" />
+		<IccFiles Include="..\..\DistFiles\ColorProfiles\CMYK\USWebCoatedSWOP.icc" />
+		<IccFiles Include="..\..\DistFiles\ColorProfiles\RGB\AdobeRGB1998.icc" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Remove="**/*.orig" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x86'">
+		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x86\*.dll" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
+		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
+	</ItemGroup>
+	<ItemGroup>
+		<DeleteForSILMedia Include="$(OutDir)lib\win-x64\*.*" />
+		<DeleteForSILMedia Include="$(OutDir)lib\win-x86\*.*" />
+		<RemoveForSILMedia Include="$(OutDir)lib\win-x86" />
+		<RemoveForSILMedia Include="$(OutDir)lib\win-x64" />
+		<RemoveForSILMedia Include="$(OutDir)lib" />
+	</ItemGroup>
+	<Target Name="CopySomeFiles" AfterTargets="Build">
+		<Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
+		<Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" />
+		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
+		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
+		<Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
+		<Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
+		<Message Text="CopySomeFiles target completed." Importance="high" />
+	</Target>
+	<Target Name="ReallyAfterBuild" AfterTargets="CopySomeFiles">
+		<Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
+		<Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
+		<RemoveDir Directories="@(RemoveForSILMedia)" />
+		<Message Text="ReallyAfterBuild target completed." Importance="high" />
+	</Target>
+	<ItemGroup>
+		<PackageReference Include="Autofac" Version="6.0.0" />
+		<PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
+		<PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
+		<PackageReference Include="CairoSharp-signed" Version="3.22.24.37" />
+		<PackageReference Include="CommandLineParser" Version="2.8.0" />
+		<!-- Don't let Nuget Package Manager automatically update (downgrade) this to DialogAdapters.Gtk2; it will break Bloom -->
+		<PackageReference Include="DialogAdapters" Version="0.1.11" />
+		<PackageReference Include="EPPlus" Version="6.2.4" />
+		<PackageReference Include="Fleck" Version="1.1.0" />
+		<PackageReference Include="Glob" Version="1.1.8" />
+		<PackageReference Include="L10NSharp" Version="8.0.0-beta0003" />
+		<PackageReference Include="LargeAddressAware" Version="1.0.5" />
+		<PackageReference Include="Markdig.Signed" Version="0.30.4" />
+		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1518.46" />
+		<PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+		<PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
+		<PackageReference Include="NAudio" Version="1.10.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+		<PackageReference Include="RestSharp" Version="106.12.0" />
+		<PackageReference Include="Sentry" Version="3.9.4" />
+		<PackageReference Include="SharpZipLib" Version="1.3.3" />
+		<PackageReference Include="SIL.Core" Version="13.0.0-beta0084" />
+		<PackageReference Include="SIL.Core.Desktop" Version="13.0.0-beta0084" />
+		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
+		<PackageReference Include="SIL.Media" Version="13.0.0-beta0084" />
+		<PackageReference Include="SIL.Windows.Forms" Version="13.0.0-beta0084" />
+		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="13.0.0-beta0084" />
+		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="13.0.0-beta0084" />
+		<PackageReference Include="SIL.WritingSystems" Version="13.0.0-beta0084" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
+		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.3" />
+		<PackageReference Include="SQLitePCLRaw.core" Version="2.0.3" />
+		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.0.3" />
+		<PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.0.3" />
+		<PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" />
+		<PackageReference Include="System.Runtime" Version="4.3.0" />
+		<PackageReference Include="TagLibSharp" Version="2.3.0" />
+		<PackageReference Include="PolySharp" Version="1.13.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="PresentationCore" />
+		<Reference Include="System.ComponentModel.Composition" />
+		<Reference Include="System.Configuration" />
+		<Reference Include="System.Management" />
+		<Reference Include="System.Net" />
+		<Reference Include="System.Printing" />
+		<Reference Include="System.Web" />
+		<Reference Include="System.Web.Extensions" />
+		<Reference Include="System.Windows.Forms" />
+		<Reference Include="WindowsBase" />
+		<Reference Include="NuGet.Squirrel">
+			<HintPath>..\..\lib\dotnet\NuGet.Squirrel.dll</HintPath>
+		</Reference>
+		<Reference Include="PdfDroplet">
+			<HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
+		</Reference>
+		<Reference Include="PdfSharp">
+			<HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
+		</Reference>
+		<Reference Include="PodcastUtilities.PortableDevices">
+			<HintPath>..\..\lib\dotnet\PodcastUtilities.PortableDevices.dll</HintPath>
+		</Reference>
+		<Reference Include="Splat">
+			<HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
+		</Reference>
+		<Reference Include="Squirrel">
+			<HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
+		</Reference>
+		<Reference Include="TidyManaged">
+			<HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="app.manifest">
+			<SubType>Designer</SubType>
+		</None>
+		<None Include="ClassDiagram1.cd" />
+		<None Include="Properties\Settings.settings">
+			<Generator>PublicSettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Resources\current-service-urls.json" />
+		<None Include="Resources\DeleteMessageBoxButtonImage.png" />
+		<None Include="Resources\DeleteMessageBoxImage.png" />
+		<None Include="Resources\open.png" />
+		<None Include="Resources\edit.png" />
+		<None Include="Resources\Error70x70.png" />
+		<None Include="Resources\pagePlaceHolder.png" />
+		<None Include="Resources\collection32x32.png" />
+		<None Include="Resources\settings16x16.png" />
+		<None Include="Resources\settings32x32.png" />
+		<None Include="Resources\settings24x24.png" />
+		<None Include="Resources\OpenCreateCollection24x24.png" />
+		<None Include="Resources\help24x24.png" />
+		<None Include="Resources\publish32x32.png" />
+		<None Include="Resources\coverOnly.png" />
+		<None Include="Resources\insideBookletPages.png" />
+		<None Include="Resources\simplePages.png" />
+		<None Include="Resources\deletePage16x16.png" />
+		<None Include="Resources\deletePage24x24.png" />
+		<None Include="Resources\Cut16x16.png" />
+		<None Include="Resources\Copy16x16.png" />
+		<None Include="Resources\Paste16x16.png" />
+		<None Include="Resources\Undo16x16.png" />
+		<None Include="Resources\paste24x24.png" />
+		<None Include="Resources\paste32x32.png" />
+		<None Include="Resources\undo32x32.png" />
+		<None Include="Resources\newCollection32x32.png" />
+		<None Include="Resources\BloomPack64x64.png" />
+		<None Include="Resources\copyDisable16x16.png" />
+		<None Include="Resources\pasteDisabled32x32.png" />
+		<None Include="Resources\copyDisable16x161.png" />
+		<None Include="Resources\undoDisabled32x32.png" />
+		<None Include="Resources\DeletePageDisabled24x24.png" />
+		<None Include="Resources\DeletePageDisabled32x32.png" />
+		<None Include="Resources\DeletePage32x32.png" />
+		<None Include="Resources\cutDisable16x16.png" />
+	</ItemGroup>
+	<ItemGroup>
+		<COMReference Include="IWshRuntimeLibrary">
+			<Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
+			<VersionMajor>1</VersionMajor>
+			<VersionMinor>0</VersionMinor>
+			<Lcid>0</Lcid>
+			<WrapperTool>tlbimp</WrapperTool>
+			<Isolated>False</Isolated>
+			<EmbedInteropTypes>False</EmbedInteropTypes>
+		</COMReference>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Resources\PackageFlat48x47.png" />
+		<None Include="Resources\pdf16x16.png" />
+		<None Include="Resources\thumbnail.png" />
+		<None Include="Resources\PackageFlat.png" />
+		<None Include="Resources\placeHolderBookThumbnail.png" />
+		<None Include="Resources\upload.png" />
+		<None Include="Resources\duplicatePage32x32.png" />
+		<None Include="Resources\duplicatePageDisabled32x32.png" />
+		<None Include="Resources\videos.png" />
+		<None Include="Resources\settingsbw16x16.png" />
+		<None Include="Resources\OpenCreateCollection16x16.png" />
+		<None Include="Resources\AddPageButton.PNG" />
+		<None Include="Resources\AddPageButtonDisabled.PNG" />
+		<None Include="Resources\epubPublishButton.png" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="bloom.ico" />
+		<None Include="Resources\book-settings.png" />
+		<None Include="Resources\PdfPrint.png" />
+		<None Include="Resources\BloomPUB.png" />
+		<None Include="Resources\publish video.png" />
+		<None Include="Resources\Disconnected.png" />
+		<None Include="Resources\TC Button Grey Small Team.png" />
+		<None Include="Resources\TC Button Warning.png" />
+		<None Include="Resources\TC Button Updates Available.png" />
+		<None Include="Resources\Team32x32.png" />
+		<None Include="Resources\help16x16Darker.png" />
+		<None Include="Resources\sad16x16.png" />
+		<None Include="Resources\weblink.png" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="desktopAndTaskBar.ico" />
+		<Content Include="desktopAndTaskBar.svg.ico" />
+		<None Include="Resources\bloom.png" />
+	</ItemGroup>
 </Project>

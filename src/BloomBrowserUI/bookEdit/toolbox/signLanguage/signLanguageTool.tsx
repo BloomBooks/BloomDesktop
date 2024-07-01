@@ -569,7 +569,7 @@ export class SignLanguageToolControls extends React.Component<
 
     private showInFolder() {
         const path = SignLanguageTool.getSelectedVideoPath();
-        postJson("common/showInFolder", JSON.stringify({ folderPath: path }));
+        postJson("fileIO/showInFolder", JSON.stringify({ folderPath: path }));
     }
 
     public turnOnVideo() {

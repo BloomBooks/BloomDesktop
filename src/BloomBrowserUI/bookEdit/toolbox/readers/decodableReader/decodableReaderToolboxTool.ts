@@ -11,9 +11,10 @@ import {
     createToggle,
     isToggleOff
 } from "../readerTools";
-import { ITool } from "../../toolbox";
+import { isLongPressEvaluating, ITool } from "../../toolbox";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { get } from "../../../../utils/bloomApi";
+import StyleEditor from "../../../StyleEditor/StyleEditor";
 
 export class DecodableReaderToolboxTool implements ITool {
     public makeRootElement(): HTMLDivElement {
@@ -74,7 +75,21 @@ export class DecodableReaderToolboxTool implements ITool {
                     event.relatedTarget.matches(".bloom-editable")
                 )
                     createCkEditorBookMarks = false;
-
+                // If the Format (Styles) dialog is showing, then we don't want to create
+                // bookmarks.  The div#format-toolbar is instantiated only when the dialog
+                // is showing.  See BL-13043.
+                else if (StyleEditor.isStyleDialogOpen())
+                    createCkEditorBookMarks = false;
+                if (window?.top?.[isLongPressEvaluating]) {
+                    // This gets raised, for no reason I can see, when you click on one
+                    // of the longpress buttons. The bloom-editable is the target. It makes no
+                    // sense that it should be losing focus at this point, but it happens.
+                    // Markup will be sorted out when the long press is done (at keyup).
+                    // Letting it happen now seems to contribute to the insertion point jumping
+                    // back to previous locations (BL-12889), possibly because the call here
+                    // creates a bookmark but doesn't use and remove it.
+                    return;
+                }
                 getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
             });
 

@@ -1,6 +1,14 @@
-// the contents here don't matter. The unit test is just trying to find this file.
+// the contents here mostly don't matter.
+// The main unit test is just trying to find this file.
 
-@XMatterPackName: "unit-test-project-specific-xmatter";
+// But there is one other test which is reading xmatter.json in this directory.
+// And to make sure the test uses this xmatter instead of falling back to Device,
+// we have to include the string ".Device16x9" in the content of this file.
+// Silly, right?
+
+@XMatterPackName: "unit-test-project-specific";
+
+/* .Device16x9Landscape { } */
 
 @circleDiameter: 60px;
 @creditsLineSpacing: 14px;
@@ -108,7 +116,7 @@ body {
                 // css display value.
                 text-align: start;
             }
-            // It took some doing to figure out the specificity to overrule Bloom "normal" 250% title rule
+            // It took some doing to figure out the specificity to overrule Bloom "normal" title font-size rule
             // and yet still allow the user-adjustable inline style to work. This should set titles
             // to default to 26pt unless overridden by the user. But actually, there is code somewhere that
             // makes reader template styles unchangeable.

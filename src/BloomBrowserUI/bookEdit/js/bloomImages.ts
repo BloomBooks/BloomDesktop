@@ -12,6 +12,7 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import { theOneBubbleManager, updateOverlayClass } from "./bubbleManager";
 
 import { farthest } from "../../utils/elementUtils";
+import { EditableDivUtils } from "./editableDivUtils";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -195,30 +196,54 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
         return;
     }
     let img = getImgFromContainer(containerDiv);
-    if (img.length === 0)
+
+    // Enhance: remove this unused flexibility to put images as background-images on div.bloom-imageContainers.
+    // We still do it when making bloomPUBs, but that's a write-only operation (and we will retain the ability to migrate back).
+    // I (JH) think it is cognitively expensive to leave legacy cruft around.
+    if (img === undefined)
         // This case is probably a left over from some previous Bloom where
         // we were using background images instead of <img>? But it does
         // no harm so I'm leaving it in.
-        img = $(containerDiv); //using a backgroundImage
+        img = containerDiv; //using a backgroundImage
 
     const $containerDiv = $(containerDiv);
     if ($containerDiv.find(kPlaybackOrderContainerSelector).length > 0) {
         return; // Playback order controls are active, deactivate image container stuff.
+    }
+    if ($containerDiv.find("button.imageOverlayButton").length > 0) {
+        return; // already have buttons
     }
     const buttonModifier = GetButtonModifier($containerDiv);
 
     const addButtonHandler = (command: string) => {
         const button = $containerDiv.get(0)?.firstElementChild;
         button?.addEventListener("click", (e: MouseEvent) => {
-            // a rather sad api, but "detail >1" in chromium means this is a double click
+            // "detail >1" in chromium means this is a double click.
+            // Note, if we have problems with timing, this wouldn't necessarily fix them.
+            // It's only going to debounce clicks that come in close enough to count as
+            // double clicks, presumably based on the OS's double click timing setting.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((e as any).detail > 1) {
+            if ((e as any).detail > 1 || !img) {
                 return;
             }
-            const imgIndex = Array.from(
-                document.getElementsByClassName("bloom-imageContainer")
-            ).indexOf($containerDiv.get(0));
-            postJson("editView/" + command + "Image", { imgIndex });
+            // get the image id attribute. If it doesn't have one, add it before calling
+            // the server api. This is needed to properly identify the image later on in the
+            // changeImage method.  The copy command doesn't need to identify the image later,
+            // as the source url is enough for that command.
+            // (An image usually shouldn't have an id to begin with.)
+            let imageId = img.getAttribute("id");
+            const imageSrc = GetRawImageUrl(img);
+            if (command !== "copy") {
+                if (!imageId) {
+                    imageId = EditableDivUtils.createUuid();
+                    img.setAttribute("id", imageId);
+                }
+                // Note that the changeImage method (called from the C# code) will remove the id
+                // attribute after using it to find the correct image.  The C# code will call the
+                // removeImageId method if it doesn't call the changeImage method.  See BL-13619.
+            }
+
+            postJson("editView/" + command + "Image", { imageId, imageSrc });
         });
     };
 
@@ -423,7 +448,12 @@ function SetupImageContainer(containerDiv: HTMLElement) {
         .mouseenter(function() {
             addImageEditingButtons(this);
         })
-        .mouseleave(function() {
+        .mouseleave(function(e: JQueryMouseEventObject) {
+            // Page numbers displaying inside the image container must have their
+            // width and height constrained.  That way, hovering over the page number
+            // triggers the mouseleave event, and the image editing buttons are hidden
+            // before the mouse cursor actually leaves the image container, but hovering
+            // above or beside the page number does nothing.  See BL-13098 and BL-13221.
             removeImageEditingButtons(this);
         });
 }
@@ -434,15 +464,17 @@ export function getImageUrlFromImageButton(button: HTMLButtonElement): string {
     return GetRawImageUrl(getImgFromContainer(imageContainer));
 }
 
-function getImgFromContainer(imageContainer: HTMLElement) {
-    // FF60 doesn't seem to do this properly, so I'm punting and using jquery...
-    // return imageContainer.querySelector(
-    //     "img:not(.bloom-ui > img, .bloom-ui)"
-    // );
-    return $(imageContainer)
-        .find("img")
-        .not(".bloom-ui") // e.g. dragHandle.svg
-        .not(".bloom-ui img"); // e.g. cog.svg
+function getImgFromContainer(
+    imageContainer: HTMLElement
+): HTMLElement | undefined {
+    // If there is ever a case where the img we want is not a direct child of the container,
+    // be careful not to fix this in a way that might accidentally return an overlay image
+    // when we want the parent image (or accidentally return all of them, especially if
+    // you use jquery).
+    // The bloom-ui filter prevents returning controls we add to overlays.
+    return Array.from(imageContainer.children).find(
+        c => c.tagName === "IMG" && !c.classList.contains("bloom-ui")
+    ) as HTMLElement;
 }
 
 /**

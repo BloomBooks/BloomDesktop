@@ -18,6 +18,7 @@ import "./storiesApiMocks";
 import { AccessibilityCheckScreen } from "./accessibilityCheck/accessibilityCheckScreen";
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import {
+    IUploadCollisionDlgData,
     IUploadCollisionDlgProps,
     UploadCollisionDlg
 } from "./LibraryPublish/uploadCollisionDlg";
@@ -183,7 +184,7 @@ storiesOf("Publish/ePUB", module)
     ))
     .add("AccessibilityCheckScreen", () => <AccessibilityCheckScreen />);
 
-const propsObject: IUploadCollisionDlgProps = {
+const propsObject: IUploadCollisionDlgData = {
     userEmail: "testEmail@sil.org",
     newTitle: "Title of New Upload",
     newLanguages: ["Sokoro", "English"],
@@ -192,7 +193,8 @@ const propsObject: IUploadCollisionDlgProps = {
     existingLanguages: ["English", "French"],
     existingCreatedDate: "10/21/2021",
     existingUpdatedDate: "10/29/2021",
-    dialogEnvironment: normalDialogEnvironmentForStorybook
+    dialogEnvironment: normalDialogEnvironmentForStorybook,
+    count: 1
 };
 
 const lotsOfLanguages = ["Sokoro", "English", "Swahili", "Hausa"];
@@ -202,13 +204,21 @@ storiesOf("Publish/Web", module)
         React.createElement(() => <LibraryPublishScreen />)
     )
     .add("Upload Collision Dialog", () =>
-        React.createElement(() => <UploadCollisionDlg {...propsObject} />)
+        React.createElement(() => (
+            <UploadCollisionDlg
+                {...propsObject}
+                conflictIndex={0}
+                setConflictIndex={() => {}}
+            />
+        ))
     )
     .add("Upload Collision Dialog -- lots of languages", () =>
         React.createElement(() => (
             <UploadCollisionDlg
                 {...propsObject}
                 newLanguages={lotsOfLanguages}
+                conflictIndex={0}
+                setConflictIndex={() => {}}
             />
         ))
     );

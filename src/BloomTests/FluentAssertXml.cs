@@ -8,249 +8,252 @@ using SIL.Xml;
 
 namespace BloomTests
 {
-	//NB: if c# ever allows us to add static exension methods,
-	//then all this could be an extension on nunit's Assert class.
+    //NB: if c# ever allows us to add static exension methods,
+    //then all this could be an extension on nunit's Assert class.
 
-	public class AssertThatXmlIn
-	{
-		public static AssertDom Dom(XmlDocument dom)
-		{
-			return new AssertDom(dom);
-		}
-		public static AssertFile File(string path)
-		{
-			return new AssertFile(path);
-		}
-		public static AssertHtmlFile HtmlFile(string path)
-		{
-			return new AssertHtmlFile(path);
-		}
-		public static AssertXmlString String(string xmlString)
-		{
-			return new AssertXmlString(xmlString);
-		}
+    public class AssertThatXmlIn
+    {
+        public static AssertDom Dom(XmlDocument dom)
+        {
+            return new AssertDom(dom);
+        }
 
-		public static AssertElement Element(XmlElement element)
-		{
-			return new AssertElement(element);
-		}
-	}
+        public static AssertFile File(string path)
+        {
+            return new AssertFile(path);
+        }
 
-	public class AssertXmlString : AssertXmlCommands
-	{
-		private readonly string _xmlString;
+        public static AssertHtmlFile HtmlFile(string path)
+        {
+            return new AssertHtmlFile(path);
+        }
 
-		public AssertXmlString(string xmlString)
-		{
-			_xmlString = xmlString;
-		}
+        public static AssertXmlString String(string xmlString)
+        {
+            return new AssertXmlString(xmlString);
+        }
 
-		protected override XmlNode NodeOrDom
-		{
-			get
-			{
-				var dom = new XmlDocument();
-				dom.LoadXml(_xmlString);
-				return dom;
-			}
-		}
-	}
+        public static AssertElement Element(XmlElement element)
+        {
+            return new AssertElement(element);
+        }
+    }
 
-	public class AssertFile : AssertXmlCommands
-	{
-		private readonly string _path;
+    public class AssertXmlString : AssertXmlCommands
+    {
+        private readonly string _xmlString;
 
-		public AssertFile(string path)
-		{
-			_path = path;
-		}
+        public AssertXmlString(string xmlString)
+        {
+            _xmlString = xmlString;
+        }
 
-		protected override XmlNode NodeOrDom
-		{
-			get
-			{
-				var dom = new XmlDocument();
-				dom.Load(_path);
-				return dom;
-			}
-		}
-	}
+        protected override XmlNode NodeOrDom
+        {
+            get
+            {
+                var dom = new XmlDocument();
+                dom.LoadXml(_xmlString);
+                return dom;
+            }
+        }
+    }
 
-	public class AssertHtmlFile : AssertXmlCommands
-	{
-		private readonly string _path;
+    public class AssertFile : AssertXmlCommands
+    {
+        private readonly string _path;
 
-		public AssertHtmlFile(string path)
-		{
-			_path = path;
-		}
+        public AssertFile(string path)
+        {
+            _path = path;
+        }
 
-		protected override XmlNode NodeOrDom
-		{
-			get
-			{
-				return XmlHtmlConverter.GetXmlDomFromHtmlFile(_path,false);
-			}
-		}
-	}
-	public class AssertDom : AssertXmlCommands
-	{
-		private readonly XmlDocument _dom;
+        protected override XmlNode NodeOrDom
+        {
+            get
+            {
+                var dom = new XmlDocument();
+                dom.Load(_path);
+                return dom;
+            }
+        }
+    }
 
-		public AssertDom(XmlDocument dom)
-		{
-			_dom = dom;
-		}
+    public class AssertHtmlFile : AssertXmlCommands
+    {
+        private readonly string _path;
 
-		protected override XmlNode NodeOrDom
-		{
-			get
-			{
-				return _dom;
-			}
-		}
-	}
+        public AssertHtmlFile(string path)
+        {
+            _path = path;
+        }
 
-	public class AssertElement : AssertXmlCommands
-	{
-		private readonly XmlElement _element;
+        protected override XmlNode NodeOrDom
+        {
+            get { return XmlHtmlConverter.GetXmlDomFromHtmlFile(_path, false); }
+        }
+    }
 
-		public AssertElement(XmlElement element)
-		{
-			_element = element;
-		}
+    public class AssertDom : AssertXmlCommands
+    {
+        private readonly XmlDocument _dom;
 
-		protected override XmlNode NodeOrDom
-		{
-			get
-			{
-				return _element;
-			}
-		}
-	}
+        public AssertDom(XmlDocument dom)
+        {
+            _dom = dom;
+        }
 
-	public abstract class AssertXmlCommands
-	{
-		protected abstract XmlNode NodeOrDom { get; }
+        protected override XmlNode NodeOrDom
+        {
+            get { return _dom; }
+        }
+    }
 
-		public XmlNameTable NameTable
-		{
-			get
-			{
-				var doc = NodeOrDom as XmlDocument;
-				if (doc != null)
-					return doc.NameTable;
-				else
-					// review: may or may not work; I've only tried cases where it IS a document.
-					return NodeOrDom.OwnerDocument.NameTable;
-			}
-		}
+    public class AssertElement : AssertXmlCommands
+    {
+        private readonly XmlElement _element;
 
-		public void HasAtLeastOneMatchForXpath(string xpath, XmlNamespaceManager nameSpaceManager)
-		{
-			XmlNode node = GetNode(xpath, nameSpaceManager);
-			if (node == null)
-			{
-				Console.WriteLine("Could not match " + xpath);
-				PrintNodeToConsole(NodeOrDom);
-			}
-			Assert.IsNotNull(node, "Not matched: " + xpath);
-		}
+        public AssertElement(XmlElement element)
+        {
+            _element = element;
+        }
 
-		/// <summary>
-		/// Will honor default namespace
-		/// </summary>
-		public  void HasAtLeastOneMatchForXpath(string xpath)
-		{
-			XmlNode node = GetNode(xpath);
-			if (node == null)
-			{
-				Console.WriteLine("Could not match " + xpath);
-				PrintNodeToConsole(NodeOrDom);
-			}
-			Assert.IsNotNull(node, "Not matched: " + xpath);
-		}
+        protected override XmlNode NodeOrDom
+        {
+            get { return _element; }
+        }
+    }
 
-		/// <summary>
-		/// Will honor default namespace
-		/// </summary>
-		public void HasSpecifiedNumberOfMatchesForXpath(string xpath, int count)
-		{
-			var nodes = NodeOrDom.SafeSelectNodes(xpath);
-			CheckCountOfNodes(nodes, xpath, count);
-		}
+    public abstract class AssertXmlCommands
+    {
+        protected abstract XmlNode NodeOrDom { get; }
 
-		public void HasSpecifiedNumberOfMatchesForXpath(string xpath, XmlNamespaceManager nameSpaceManager, int count)
-		{
-			var nodes = NodeOrDom.SafeSelectNodes(xpath, nameSpaceManager);
-			CheckCountOfNodes(nodes, xpath, count);
-		}
+        public XmlNameTable NameTable
+        {
+            get
+            {
+                var doc = NodeOrDom as XmlDocument;
+                if (doc != null)
+                    return doc.NameTable;
+                else
+                    // review: may or may not work; I've only tried cases where it IS a document.
+                    return NodeOrDom.OwnerDocument.NameTable;
+            }
+        }
 
-		private void CheckCountOfNodes (XmlNodeList nodes, string xpath, int count)
-		{
-			int nodeCount = 0;
-			if (nodes != null)
-				nodeCount = nodes.Count;
-			if (nodeCount != count)
-			{
-				Console.WriteLine("Expected {0} but got {1} matches for {2}", count, nodeCount, xpath);
-				PrintNodeToConsole(NodeOrDom);
-				Assert.AreEqual(count, nodeCount, "matches for "+xpath);
-			}
-		}
+        public void HasAtLeastOneMatchForXpath(string xpath, XmlNamespaceManager nameSpaceManager)
+        {
+            XmlNode node = GetNode(xpath, nameSpaceManager);
+            if (node == null)
+            {
+                Console.WriteLine("Could not match " + xpath);
+                PrintNodeToConsole(NodeOrDom);
+            }
+            Assert.IsNotNull(node, "Not matched: " + xpath);
+        }
 
-		public int CountOfMatchesForXPath(string xpath)
-		{
-			return NodeOrDom.SafeSelectNodes(xpath).Count;
-		}
+        /// <summary>
+        /// Will honor default namespace
+        /// </summary>
+        public void HasAtLeastOneMatchForXpath(string xpath)
+        {
+            XmlNode node = GetNode(xpath);
+            if (node == null)
+            {
+                Console.WriteLine("Could not match " + xpath);
+                PrintNodeToConsole(NodeOrDom);
+            }
+            Assert.IsNotNull(node, "Not matched: " + xpath);
+        }
 
-		public static void PrintNodeToConsole(XmlNode node)
-		{
-			// without this, we may get "DTD is not allowed in XML fragments"
-			var doctype = ( node as XmlDocument)?.DocumentType;
-			if(doctype != null)
-				node.RemoveChild(doctype);
+        /// <summary>
+        /// Will honor default namespace
+        /// </summary>
+        public void HasSpecifiedNumberOfMatchesForXpath(string xpath, int count)
+        {
+            var nodes = NodeOrDom.SafeSelectNodes(xpath);
+            CheckCountOfNodes(nodes, xpath, count);
+        }
 
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.Indent = true;
-			settings.ConformanceLevel = ConformanceLevel.Fragment;
-			XmlWriter writer = XmlWriter.Create(Console.Out, settings);
-			node.WriteContentTo(writer);
-			writer.Flush();
-			Console.WriteLine();
-		}
+        public void HasSpecifiedNumberOfMatchesForXpath(
+            string xpath,
+            XmlNamespaceManager nameSpaceManager,
+            int count
+        )
+        {
+            var nodes = NodeOrDom.SafeSelectNodes(xpath, nameSpaceManager);
+            CheckCountOfNodes(nodes, xpath, count);
+        }
 
+        private void CheckCountOfNodes(XmlNodeList nodes, string xpath, int count)
+        {
+            int nodeCount = 0;
+            if (nodes != null)
+                nodeCount = nodes.Count;
+            if (nodeCount != count)
+            {
+                Console.WriteLine(
+                    "Expected {0} but got {1} matches for {2}",
+                    count,
+                    nodeCount,
+                    xpath
+                );
+                PrintNodeToConsole(NodeOrDom);
+                Assert.AreEqual(count, nodeCount, "matches for " + xpath);
+            }
+        }
 
-		public  void HasNoMatchForXpath(string xpath, XmlNamespaceManager nameSpaceManager)
-		{
-			XmlNode node = GetNode( xpath, nameSpaceManager);
-			if (node != null)
-			{
-				Console.WriteLine("Was not supposed to match " + xpath);
-				PrintNodeToConsole(NodeOrDom);
-			}
-			Assert.IsNull(node, "Should not have matched: " + xpath);
-		}
+        public int CountOfMatchesForXPath(string xpath)
+        {
+            return NodeOrDom.SafeSelectNodes(xpath).Count;
+        }
 
-		public  void HasNoMatchForXpath(string xpath)
-		{
-			XmlNode node = GetNode( xpath, new XmlNamespaceManager(new NameTable()));
-			if (node != null)
-			{
-				Console.WriteLine("Was not supposed to match " + xpath);
-				PrintNodeToConsole(NodeOrDom);
-			}
-			Assert.IsNull(node, "Should not have matched: " + xpath);
-		}
+        public static void PrintNodeToConsole(XmlNode node)
+        {
+            // without this, we may get "DTD is not allowed in XML fragments"
+            var doctype = (node as XmlDocument)?.DocumentType;
+            if (doctype != null)
+                node.RemoveChild(doctype);
 
-		private XmlNode GetNode(string xpath)
-		{
-			return NodeOrDom.SelectSingleNodeHonoringDefaultNS(xpath);
-		}
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Indent = true;
+            settings.ConformanceLevel = ConformanceLevel.Fragment;
+            XmlWriter writer = XmlWriter.Create(Console.Out, settings);
+            node.WriteContentTo(writer);
+            writer.Flush();
+            Console.WriteLine();
+        }
 
-		private XmlNode GetNode(string xpath, XmlNamespaceManager nameSpaceManager)
-		{
-			return NodeOrDom.SelectSingleNode(xpath, nameSpaceManager);
-		}
-	}
+        public void HasNoMatchForXpath(string xpath, XmlNamespaceManager nameSpaceManager)
+        {
+            XmlNode node = GetNode(xpath, nameSpaceManager);
+            if (node != null)
+            {
+                Console.WriteLine("Was not supposed to match " + xpath);
+                PrintNodeToConsole(NodeOrDom);
+            }
+            Assert.IsNull(node, "Should not have matched: " + xpath);
+        }
+
+        public void HasNoMatchForXpath(string xpath)
+        {
+            XmlNode node = GetNode(xpath, new XmlNamespaceManager(new NameTable()));
+            if (node != null)
+            {
+                Console.WriteLine("Was not supposed to match " + xpath);
+                PrintNodeToConsole(NodeOrDom);
+            }
+            Assert.IsNull(node, "Should not have matched: " + xpath);
+        }
+
+        private XmlNode GetNode(string xpath)
+        {
+            return NodeOrDom.SelectSingleNodeHonoringDefaultNS(xpath);
+        }
+
+        private XmlNode GetNode(string xpath, XmlNamespaceManager nameSpaceManager)
+        {
+            return NodeOrDom.SelectSingleNode(xpath, nameSpaceManager);
+        }
+    }
 }

@@ -509,6 +509,7 @@ export default class AudioRecording {
     // Called by TalkingBookModel.detachFromPage(), which is called when changing tools, hiding the toolbox,
     // or saving (leaving) pages.
     public removeRecordingSetup() {
+        this.removeAudioCurrentFromPageDocBody();
         const page = this.getPageDocBodyJQuery();
         page.find(kAudioCurrentClassSelector)
             .removeClass(kAudioCurrent)
@@ -1012,7 +1013,21 @@ export default class AudioRecording {
                 );
                 iconHolder.classList.add("bloom-ui-current-audio-marker");
                 iconHolder.classList.add("bloom-ui"); // makes sure it never becomes part of saved document.
-                newElement.parentElement?.insertBefore(iconHolder, newElement);
+                // If we're recording by text-box, we want the icon to be at the beginning of the text box,
+                // but we also want it inside the text-box div.  Otherwise, the appearance system introduced
+                // by Bloom 6.0 will cause a gap to appear between the invisible icon and the text, shifting
+                // the text down while it is being recorded.  See BL-13128.
+                // (The icon doesn't actually display for whole text box recording or for the first sentence
+                // of sentence-by-sentence recording, but that's a separate issue that makes the text shift
+                // even more mysterious.)
+                if (newElement.tagName === "DIV") {
+                    newElement.insertBefore(iconHolder, newElement.firstChild);
+                } else {
+                    newElement.parentElement?.insertBefore(
+                        iconHolder,
+                        newElement
+                    );
+                }
             }
         }
 
@@ -2974,22 +2989,6 @@ export default class AudioRecording {
         }
     }
 
-    // from http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-    private static createUuid(): string {
-        // http://www.ietf.org/rfc/rfc4122.txt
-        const s: string[] = [];
-        const hexDigits = "0123456789abcdef";
-        for (let i = 0; i < 36; i++) {
-            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-        }
-        s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
-        s[19] = hexDigits.substr((s[19].charCodeAt(0) & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
-        s[8] = s[13] = s[18] = s[23] = "-";
-
-        const uuid = s.join("");
-        return uuid;
-    }
-
     public static getChecksum(message: string): string {
         // Vertical line character ("|") acts as a phrase delimiter in Talking Books.
         // To perform phrase-level recording, the user can insert a temporary "|" character where he wants a phrase split to happen.
@@ -3365,7 +3364,7 @@ export default class AudioRecording {
     }
 
     public static createValidXhtmlUniqueId(): string {
-        let newId = AudioRecording.createUuid();
+        let newId = EditableDivUtils.createUuid();
         if (/^\d/.test(newId)) newId = "i" + newId; // valid ID in XHTML can't start with digit
 
         return newId;
@@ -4395,9 +4394,9 @@ export default class AudioRecording {
         return allMatches;
     }
 
-    // Match space or &nbsp; (\u00a0). Must have three or more in a row to match.
-    // Note: Multi whitespace text probably contains a bunch of &nbsp; followed by a single normal space at the end.
-    private multiSpaceRegex = /[ \u00a0]{3,}/;
+    // Match space or &nbsp; (\u00a0) or &ZeroWidthSpace; (\u200b). Must have three or more in a row to match.
+    // Geckofx would typically give something like `&nbsp;&nbsp;&nbsp; ` but wv2 usually gives something like `&nbsp; &nbsp; `
+    private multiSpaceRegex = /[ \u00a0\u200b]{3,}/;
     private multiSpaceRegexGlobal = new RegExp(this.multiSpaceRegex, "g");
 
     /**
@@ -4410,7 +4409,7 @@ export default class AudioRecording {
         audioElements.forEach(audioElement => {
             // FYI, don't need to process the bloom-linebreak spans. Nothing bad happens, just unnecessary.
             const matches = this.findAll(
-                "span:not(.bloom-linebreak)",
+                "span[id]:not(.bloom-linebreak)",
                 audioElement,
                 true
             );
@@ -4522,7 +4521,8 @@ export default class AudioRecording {
                     match.startIndex
                 );
                 lastMatchEndIndex = match.endIndex;
-                newNodes.push(this.makeHighlightedSpan(preMatchText));
+                if (preMatchText)
+                    newNodes.push(this.makeHighlightedSpan(preMatchText));
 
                 newNodes.push(document.createTextNode(match.text));
 
@@ -4568,7 +4568,6 @@ export default class AudioRecording {
     /**
      * This function will undo in BloomDesktop the modifications made by fixHighlighting()
      */
-
     public revertFixHighlighting() {
         this.nodesToRestoreAfterPlayEnded.forEach((htmlToRestore, id) => {
             const pageDocBody = this.getPageDocBody();

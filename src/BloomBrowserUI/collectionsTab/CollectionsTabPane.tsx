@@ -214,6 +214,15 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             }
         });
     }, []);
+    const haveNoSources = collections && collections.length === 1;
+    useEffect(() => {
+        // If we've got the list of collections and there are no source collections,
+        // we want to set the splitter to hide the bottom pane.
+        if (haveNoSources) {
+            setSplitHeights([1, 0]);
+            setGeneration(old => old + 1);
+        }
+    }, [haveNoSources]);
 
     if (!collections) {
         return <div />;
@@ -258,7 +267,6 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             l10nId: "CollectionTab.MakeBloomPackOfShellBooks",
             command: "collections/makeShellBooksBloompack",
             addEllipsis: true
-            // BL-11761: Always show
         },
         {
             label: "Make Reader Template Bloom Pack...",
@@ -269,7 +277,6 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         {
             label: "Troubleshooting",
             l10nId: "CollectionTab.ContextMenu.Troubleshooting",
-            shouldShow: () => true, // show for all collections (except factory)
             submenu: [
                 {
                     label: "Do Checks of All Books",
@@ -336,6 +343,8 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
 
     const collectionsHeaderKey = "CollectionTab.BookSourceHeading";
     const collectionsHeaderText = "Sources For New Books";
+
+    const lockedToOneDownloadedBook = sourcesCollections.length === 0;
 
     return (
         <div
@@ -469,44 +478,52 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             isSpreadsheetFeatureActive={
                                 isSpreadsheetFeatureActive
                             }
+                            lockedToOneDownloadedBook={
+                                lockedToOneDownloadedBook
+                            }
                         />
                     </div>
 
-                    <Transition in={true} appear={true} timeout={2000}>
-                        {state => (
-                            <div
-                                css={css`
-                                    margin: 10px;
-                                `}
-                                className={`group fade-${state}`}
-                            >
-                                <H1
-                                    l10nKey={collectionsHeaderKey}
+                    {lockedToOneDownloadedBook || (
+                        <Transition in={true} appear={true} timeout={2000}>
+                            {state => (
+                                <div
                                     css={css`
-                                        padding-bottom: 20px;
+                                        margin: 10px;
                                     `}
+                                    className={`group fade-${state}`}
                                 >
-                                    {collectionsHeaderText}
-                                </H1>
+                                    <H1
+                                        l10nKey={collectionsHeaderKey}
+                                        css={css`
+                                            padding-bottom: 20px;
+                                        `}
+                                    >
+                                        {collectionsHeaderText}
+                                    </H1>
 
-                                <ShowAfterDelay
-                                    waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
-                                >
-                                    {collectionComponents}
-                                </ShowAfterDelay>
-                                <Link
-                                    l10nKey="CollectionTab.AddSourceCollection"
-                                    css={css`
-                                        text-transform: uppercase;
-                                        padding-bottom: 10px;
-                                    `}
-                                    onClick={() => addSourceCollection()}
-                                >
-                                    Show another collection...
-                                </Link>
-                            </div>
-                        )}
-                    </Transition>
+                                    <ShowAfterDelay
+                                        waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
+                                    >
+                                        {collectionComponents}
+                                    </ShowAfterDelay>
+                                    <Link
+                                        l10nKey="CollectionTab.AddSourceCollection"
+                                        css={css`
+                                            text-transform: uppercase;
+                                            padding-bottom: 10px;
+                                        `}
+                                        onClick={() => addSourceCollection()}
+                                    >
+                                        Show another collection...
+                                    </Link>
+                                </div>
+                            )}
+                        </Transition>
+                    )
+                    // Enhance:possibly if we're NOT showing the Sources for new Books stuff,
+                    // we could have a message saying why and to pick an Enterprise subscription to fix it.
+                    }
                 </SplitPane>
                 {/* This wrapper is used to... fix up some margin/color stuff I was having trouble with from SplitPane */}
                 <div
@@ -556,13 +573,9 @@ export interface MenuItemSpec {
     // which invokes the corresponding API call to C# code.
     command?: string;
     onClick?: React.MouseEventHandler<HTMLElement>;
-    // If this is defined (rare), it determines whether the menu item should be shown
-    // (except in factory collections, where we never show any).
-    // If it's not defined, a menu item is shown if we're in the editable collection and
-    // other requirements are satisfied, and not otherwise.
-    shouldShow?: () => boolean;
+    hide?: () => boolean; // if not provided, always show
     // Involves making changes to the book; therefore, can only be done in the one editable collection
-    // (unless shouldInclude returns true), and if we're in a Team Collection, the book must be checked out.
+    // and if we're in a Team Collection, the book must be checked out.
     requiresSavePermission?: boolean;
     submenu?: MenuItemSpec[];
     icon?: React.ReactNode;
@@ -619,12 +632,8 @@ export const makeMenuItems = (
                     undefined
                 );
             }
-            // Default logic for whether to show a command at all
-            // Outside the editable collection, we only show commands that have a shouldShow function.
-            if (
-                (spec.shouldShow && !spec.shouldShow()) ||
-                (!spec.shouldShow && !isEditableCollection)
-            ) {
+
+            if (spec.hide && spec.hide()) {
                 return undefined;
             }
             // If we have determined that a command should be shown, this logic determines whether it should be
@@ -750,6 +759,7 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
                 manager={props.manager}
                 lazyLoadCollection={true}
                 isSpreadsheetFeatureActive={props.isSpreadsheetFeatureActive}
+                lockedToOneDownloadedBook={false}
             />
         </div>
     );

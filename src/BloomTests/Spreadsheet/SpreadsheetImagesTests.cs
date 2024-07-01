@@ -12,15 +12,16 @@ using SIL.IO;
 
 namespace BloomTests.Spreadsheet
 {
-	/// <summary>
-	/// This class tests exporting a book with images to a spreadsheet and
-	/// verifying that image related information appears properly.
-	/// </summary>
-	public class SpreadsheetImagesTests
-	{
-		// re-use the images from another test (added empty file empty-file.jpg for these tests)
-		private const string _pathToTestImages = "src/BloomTests/ImageProcessing/images";
-		public const string imageBook = @"
+    /// <summary>
+    /// This class tests exporting a book with images to a spreadsheet and
+    /// verifying that image related information appears properly.
+    /// </summary>
+    public class SpreadsheetImagesTests
+    {
+        // re-use the images from another test (added empty file empty-file.jpg for these tests)
+        private const string _pathToTestImages = "src/BloomTests/ImageProcessing/images";
+        public const string imageBook =
+            @"
 
 <html>
 <head>
@@ -156,193 +157,292 @@ namespace BloomTests.Spreadsheet
 </body>
 </html>
 ";
-		private SpreadsheetExporter _exporter;
-		// The tests are all written in terms of _sheet and _rows, the output
-		// of an export operation. But we create two sheets, one by export, and
-		// one by writing the first to file and reading it back. We want to apply
-		// the same tests to each. This is currently achieved by using the test
-		// case to select one pair (_sheetFromExport, _rowsFromExport)
-		// or (_sheetFromFile, _rowsFromFile) to set as _sheet and _rows.
-		private InternalSpreadsheet _sheet;
-		private List<ContentRow> _rows;
-		private List<ContentRow> _pageContentRows;
-		private InternalSpreadsheet _sheetFromExport;
-		private List<ContentRow> _rowsFromExport;
-		private InternalSpreadsheet _sheetFromFile;
-		private List<ContentRow> _rowsFromFile;
-		private TemporaryFolder _spreadsheetFolder;
-		private TemporaryFolder _bookFolder;
-		private ProgressSpy _progressSpy;
+        private SpreadsheetExporter _exporter;
 
-		[OneTimeSetUp]
-		public void OneTimeSetUp()
-		{
-			var dom = new HtmlDom(imageBook, true);
+        // The tests are all written in terms of _sheet and _rows, the output
+        // of an export operation. But we create two sheets, one by export, and
+        // one by writing the first to file and reading it back. We want to apply
+        // the same tests to each. This is currently achieved by using the test
+        // case to select one pair (_sheetFromExport, _rowsFromExport)
+        // or (_sheetFromFile, _rowsFromFile) to set as _sheet and _rows.
+        private InternalSpreadsheet _sheet;
+        private List<ContentRow> _rows;
+        private List<ContentRow> _pageContentRows;
+        private InternalSpreadsheet _sheetFromExport;
+        private List<ContentRow> _rowsFromExport;
+        private InternalSpreadsheet _sheetFromFile;
+        private List<ContentRow> _rowsFromFile;
+        private TemporaryFolder _spreadsheetFolder;
+        private TemporaryFolder _bookFolder;
+        private ProgressSpy _progressSpy;
 
-			_spreadsheetFolder = new TemporaryFolder("SpreadsheetImagesTests");
-			_bookFolder = new TemporaryFolder("SpreadsheetImagesTests_Book");
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            var dom = new HtmlDom(imageBook, true);
 
-			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
-			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
+            _spreadsheetFolder = new TemporaryFolder("SpreadsheetImagesTests");
+            _bookFolder = new TemporaryFolder("SpreadsheetImagesTests_Book");
 
-			_exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
-			var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(_pathToTestImages);
+            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("en"))
+                .Returns("English");
 
-			// We need all these files in one place so we can verify that all of them get copied except placeHolder.png
-			foreach (var name in new []{ "BloomWithTaglineAgainstLight.svg", "man.jpg", "Mars 2.png", "lady24b.png", "empty-file.jpg" })
-				RobustFile.Copy(Path.Combine(path, name), Path.Combine(_bookFolder.FolderPath, name));
-			var placeHolderSource = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books", "Basic Book", "placeHolder.png");
-			RobustFile.Copy(placeHolderSource, Path.Combine(_bookFolder.FolderPath, "placeHolder.png"));
+            _exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+            var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                _pathToTestImages
+            );
 
-			_progressSpy = new ProgressSpy();
-			_sheetFromExport =
-				_exporter.ExportToFolder(dom, _bookFolder.FolderPath, _spreadsheetFolder.FolderPath, out string outputPath, _progressSpy, OverwriteOptions.Overwrite);
-			_rowsFromExport = _sheetFromExport.ContentRows.ToList();
-			_sheetFromFile = InternalSpreadsheet.ReadFromFile(outputPath);
-			_rowsFromFile = _sheetFromFile.ContentRows.ToList();
-		}
+            // We need all these files in one place so we can verify that all of them get copied except placeHolder.png
+            foreach (
+                var name in new[]
+                {
+                    "BloomWithTaglineAgainstLight.svg",
+                    "man.jpg",
+                    "Mars 2.png",
+                    "lady24b.png",
+                    "empty-file.jpg"
+                }
+            )
+                RobustFile.Copy(
+                    Path.Combine(path, name),
+                    Path.Combine(_bookFolder.FolderPath, name)
+                );
+            var placeHolderSource = Path.Combine(
+                BloomFileLocator.FactoryCollectionsDirectory,
+                "template books",
+                "Basic Book",
+                "placeHolder.png"
+            );
+            RobustFile.Copy(
+                placeHolderSource,
+                Path.Combine(_bookFolder.FolderPath, "placeHolder.png")
+            );
 
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
-		{
-			_spreadsheetFolder?.Dispose();
-			_bookFolder?.Dispose();
-		}
+            _progressSpy = new ProgressSpy();
+            _sheetFromExport = _exporter.ExportToFolder(
+                dom,
+                _bookFolder.FolderPath,
+                _spreadsheetFolder.FolderPath,
+                out string outputPath,
+                _progressSpy,
+                OverwriteOptions.Overwrite
+            );
+            _rowsFromExport = _sheetFromExport.ContentRows.ToList();
+            _sheetFromFile = InternalSpreadsheet.ReadFromFile(outputPath);
+            _rowsFromFile = _sheetFromFile.ContentRows.ToList();
+        }
 
-		void SetupFor(string source)
-		{
-			switch (source)
-			{
-				case "fromExport":
-					_sheet = _sheetFromExport;
-					_rows = _rowsFromExport;
-					break;
-				case "fromFile":
-					_sheet = _sheetFromFile;
-					_rows = _rowsFromFile;
-					break;
-				default:
-					// Whatever's going on needs to fail
-					Assert.That(source, Is.Not.EqualTo(source));
-					break;
-			}
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _spreadsheetFolder?.Dispose();
+            _bookFolder?.Dispose();
+        }
 
-			_pageContentRows = _rows.Where(r => r.MetadataKey == InternalSpreadsheet.PageContentRowLabel).ToList();			
-		}
+        void SetupFor(string source)
+        {
+            switch (source)
+            {
+                case "fromExport":
+                    _sheet = _sheetFromExport;
+                    _rows = _rowsFromExport;
+                    break;
+                case "fromFile":
+                    _sheet = _sheetFromFile;
+                    _rows = _rowsFromFile;
+                    break;
+                default:
+                    // Whatever's going on needs to fail
+                    Assert.That(source, Is.Not.EqualTo(source));
+                    break;
+            }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void AddsImagePageNumbers(string source)
-		{
-			SetupFor(source);
-			var pageNumberIndex = _sheet.GetColumnForTag(InternalSpreadsheet.PageNumberColumnLabel);
-			Assert.That(_pageContentRows[0].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
-			Assert.That(_pageContentRows[1].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
-			Assert.That(_pageContentRows[2].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
-			Assert.That(_pageContentRows[3].GetCell(pageNumberIndex).Content, Is.EqualTo("2"));
-		}
+            _pageContentRows = _rows
+                .Where(r => r.MetadataKey == InternalSpreadsheet.PageContentRowLabel)
+                .ToList();
+        }
 
-		// This case doesn't really 'belong' here but it's a convenient place to check that
-		// we don't create audio columns unless the document has audio, without creating another whole
-		// DOM to test in the audio tests.
-		[TestCase("fromExport")]
-		public void HasNoAudioColumns(string source)
-		{
-			SetupFor(source);
-			Assert.That(_sheet.Header.GetRow(0).CellContents, Has.None.Match(".*audio.*"));
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void AddsImagePageNumbers(string source)
+        {
+            SetupFor(source);
+            var pageNumberIndex = _sheet.GetColumnForTag(InternalSpreadsheet.PageNumberColumnLabel);
+            Assert.That(_pageContentRows[0].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
+            Assert.That(_pageContentRows[1].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
+            Assert.That(_pageContentRows[2].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
+            Assert.That(_pageContentRows[3].GetCell(pageNumberIndex).Content, Is.EqualTo("2"));
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void AddsRowLabels(string source)
-		{
-			SetupFor(source);
-			Assert.That(_pageContentRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
-			Assert.That(_pageContentRows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
-			Assert.That(_pageContentRows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
-		}
+        // This case doesn't really 'belong' here but it's a convenient place to check that
+        // we don't create audio columns unless the document has audio, without creating another whole
+        // DOM to test in the audio tests.
+        [TestCase("fromExport")]
+        public void HasNoAudioColumns(string source)
+        {
+            SetupFor(source);
+            Assert.That(_sheet.Header.GetRow(0).CellContents, Has.None.Match(".*audio.*"));
+        }
 
-		[Test]
-		public void CopiesImagesToDestFolder()
-		{
-			var destImageFolder = Path.Combine(_spreadsheetFolder.FolderPath, "images");
-			Assert.That(Directory.Exists(destImageFolder));
-			Assert.That(File.Exists(Path.Combine(destImageFolder, "BloomWithTaglineAgainstLight.svg")));
-			Assert.That(File.Exists(Path.Combine(destImageFolder, "man.jpg")));
-			Assert.That(File.Exists(Path.Combine(destImageFolder, "Mars 2.png")));
-			Assert.That(File.Exists(Path.Combine(destImageFolder, "lady24b.png")));
-			Assert.That(File.Exists(Path.Combine(destImageFolder, "placeHolder.png")), Is.False);
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void AddsRowLabels(string source)
+        {
+            SetupFor(source);
+            Assert.That(
+                _pageContentRows[0].GetCell(0).Content,
+                Is.EqualTo(InternalSpreadsheet.PageContentRowLabel)
+            );
+            Assert.That(
+                _pageContentRows[1].GetCell(0).Content,
+                Is.EqualTo(InternalSpreadsheet.PageContentRowLabel)
+            );
+            Assert.That(
+                _pageContentRows[2].GetCell(0).Content,
+                Is.EqualTo(InternalSpreadsheet.PageContentRowLabel)
+            );
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void SavesImageSources(string source)
-		{
-			SetupFor(source);
-			var imageSourceColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
-			var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(_pathToTestImages);
-			var manImagePath = Path.Combine("images", "man.jpg");
-			Assert.That(_pageContentRows[0].GetCell(imageSourceColumn).Text, Is.EqualTo(manImagePath));
-			var marsImagePath = Path.Combine("images", "Mars 2.png");
-			Assert.That(_pageContentRows[1].GetCell(imageSourceColumn).Text, Is.EqualTo(marsImagePath));
-			var missingFileImagePath = Path.Combine("images", "missing file.jpg");
-			Assert.That(_pageContentRows[2].GetCell(imageSourceColumn).Text, Is.EqualTo(missingFileImagePath));
-			var emptyFileImagePath = Path.Combine("images", "empty-file.jpg");
-			Assert.That(_pageContentRows[3].GetCell(imageSourceColumn).Text, Is.EqualTo(emptyFileImagePath));
-			Assert.That(_pageContentRows[4].GetCell(imageSourceColumn).Text, Is.EqualTo("")); // no more images, but a second text group on P2
-			Assert.That(_pageContentRows[5].GetCell(imageSourceColumn).Text, Is.EqualTo("")); // no images, but there is text on P3
-			var ladyImagePath = Path.Combine("images", "lady24b.png");
-			Assert.That(_pageContentRows[6].GetCell(imageSourceColumn).Text, Is.EqualTo(ladyImagePath));
-			Assert.That(_pageContentRows[7].GetCell(imageSourceColumn).Text, Is.EqualTo(InternalSpreadsheet.BlankContentIndicator));
-		}
+        [Test]
+        public void CopiesImagesToDestFolder()
+        {
+            var destImageFolder = Path.Combine(_spreadsheetFolder.FolderPath, "images");
+            Assert.That(Directory.Exists(destImageFolder));
+            Assert.That(
+                File.Exists(Path.Combine(destImageFolder, "BloomWithTaglineAgainstLight.svg"))
+            );
+            Assert.That(File.Exists(Path.Combine(destImageFolder, "man.jpg")));
+            Assert.That(File.Exists(Path.Combine(destImageFolder, "Mars 2.png")));
+            Assert.That(File.Exists(Path.Combine(destImageFolder, "lady24b.png")));
+            Assert.That(File.Exists(Path.Combine(destImageFolder, "placeHolder.png")), Is.False);
+        }
 
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
-		public void PutsTextWithImages(string source)
-		{
-			SetupFor(source);
-			Assert.That(_pageContentRows[0].GetCell("[en]").Text, Is.EqualTo("I am going to outer space."));
-			Assert.That(_pageContentRows[1].GetCell("[en]").Text, Is.EqualTo("")); // two images on P1, but no more text
-			Assert.That(_pageContentRows[2].GetCell("[en]").Text, Is.EqualTo("")); // two images on P1, but no more text
-			Assert.That(_pageContentRows[3].GetCell("[en]").Text, Is.EqualTo("Outer space is fascinating."));
-			Assert.That(_pageContentRows[4].GetCell("[en]").Text, Is.EqualTo("Outer space is very scary."));
-			Assert.That(_pageContentRows[5].GetCell("[en]").Text, Is.EqualTo("This page has only text"));
-			Assert.That(_pageContentRows[6].GetCell("[en]").Text, Is.EqualTo("")); // no text on P4
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void SavesImageSources(string source)
+        {
+            SetupFor(source);
+            var imageSourceColumn = _sheet.GetColumnForTag(
+                InternalSpreadsheet.ImageSourceColumnLabel
+            );
+            var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                _pathToTestImages
+            );
+            var manImagePath = Path.Combine("images", "man.jpg");
+            Assert.That(
+                _pageContentRows[0].GetCell(imageSourceColumn).Text,
+                Is.EqualTo(manImagePath)
+            );
+            var marsImagePath = Path.Combine("images", "Mars 2.png");
+            Assert.That(
+                _pageContentRows[1].GetCell(imageSourceColumn).Text,
+                Is.EqualTo(marsImagePath)
+            );
+            var missingFileImagePath = Path.Combine("images", "missing file.jpg");
+            Assert.That(
+                _pageContentRows[2].GetCell(imageSourceColumn).Text,
+                Is.EqualTo(missingFileImagePath)
+            );
+            var emptyFileImagePath = Path.Combine("images", "empty-file.jpg");
+            Assert.That(
+                _pageContentRows[3].GetCell(imageSourceColumn).Text,
+                Is.EqualTo(emptyFileImagePath)
+            );
+            Assert.That(_pageContentRows[4].GetCell(imageSourceColumn).Text, Is.EqualTo("")); // no more images, but a second text group on P2
+            Assert.That(_pageContentRows[5].GetCell(imageSourceColumn).Text, Is.EqualTo("")); // no images, but there is text on P3
+            var ladyImagePath = Path.Combine("images", "lady24b.png");
+            Assert.That(
+                _pageContentRows[6].GetCell(imageSourceColumn).Text,
+                Is.EqualTo(ladyImagePath)
+            );
+            Assert.That(
+                _pageContentRows[7].GetCell(imageSourceColumn).Text,
+                Is.EqualTo(InternalSpreadsheet.BlankContentIndicator)
+            );
+        }
 
-		[TestCase("fromFile")] //Images are embedded during writing of .xlsx file
-		public void displayThumbnail_imageFilePresent_noErrorMessage(string source)
-		{
-			SetupFor(source);
-			var thumbnailColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
-			var goodImageFileRow = _pageContentRows.First(x => x.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Text.Contains("man.jpg"));
-			Assert.That(goodImageFileRow.GetCell(thumbnailColumn).Text, Is.EqualTo(""));
-		}
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void PutsTextWithImages(string source)
+        {
+            SetupFor(source);
+            Assert.That(
+                _pageContentRows[0].GetCell("[en]").Text,
+                Is.EqualTo("I am going to outer space.")
+            );
+            Assert.That(_pageContentRows[1].GetCell("[en]").Text, Is.EqualTo("")); // two images on P1, but no more text
+            Assert.That(_pageContentRows[2].GetCell("[en]").Text, Is.EqualTo("")); // two images on P1, but no more text
+            Assert.That(
+                _pageContentRows[3].GetCell("[en]").Text,
+                Is.EqualTo("Outer space is fascinating.")
+            );
+            Assert.That(
+                _pageContentRows[4].GetCell("[en]").Text,
+                Is.EqualTo("Outer space is very scary.")
+            );
+            Assert.That(
+                _pageContentRows[5].GetCell("[en]").Text,
+                Is.EqualTo("This page has only text")
+            );
+            Assert.That(_pageContentRows[6].GetCell("[en]").Text, Is.EqualTo("")); // no text on P4
+        }
 
-		[TestCase("fromFile")] 
-		public void displayThumbnail_imageMissing_ErrorMessageForMissingFile(string source)
-		{
-			SetupFor(source);
-			var thumbnailColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
-			var missingFileRow = _pageContentRows.First(x => x.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Text.Contains("missing file.jpg"));
-			Assert.That(missingFileRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Missing"));
-		}
+        [TestCase("fromFile")] //Images are embedded during writing of .xlsx file
+        public void displayThumbnail_imageFilePresent_noErrorMessage(string source)
+        {
+            SetupFor(source);
+            var thumbnailColumn = _sheet.GetColumnForTag(
+                InternalSpreadsheet.ImageThumbnailColumnLabel
+            );
+            var goodImageFileRow = _pageContentRows.First(
+                x => x.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Text.Contains("man.jpg")
+            );
+            Assert.That(goodImageFileRow.GetCell(thumbnailColumn).Text, Is.EqualTo(""));
+        }
 
-		[TestCase("fromFile")]
-		public void displayThumbnail_imageEmpty_ErrorMessage(string source)
-		{
-			SetupFor(source);
-			var thumbnailColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
-			Assert.That(_pageContentRows[3].GetCell(thumbnailColumn).Text, Is.EqualTo("Bad image file"));
-		}
+        [TestCase("fromFile")]
+        public void displayThumbnail_imageMissing_ErrorMessageForMissingFile(string source)
+        {
+            SetupFor(source);
+            var thumbnailColumn = _sheet.GetColumnForTag(
+                InternalSpreadsheet.ImageThumbnailColumnLabel
+            );
+            var missingFileRow = _pageContentRows.First(
+                x =>
+                    x.GetCell(InternalSpreadsheet.ImageSourceColumnLabel)
+                        .Text.Contains("missing file.jpg")
+            );
+            Assert.That(missingFileRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Missing"));
+        }
 
-		[TestCase("fromFile")]
-		public void displayThumbnail_svg_svgErrorMessage(string source)
-		{
-			SetupFor(source);
-			var thumbnailColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
-			var svgRow = _rows.First(x => x.GetCell(InternalSpreadsheet.RowTypeColumnLabel).Text.Equals("[outside-back-cover-bottom-html]"));
-			Assert.That(svgRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Can't display SVG"));
-		}
-	}
+        [TestCase("fromFile")]
+        public void displayThumbnail_imageEmpty_ErrorMessage(string source)
+        {
+            SetupFor(source);
+            var thumbnailColumn = _sheet.GetColumnForTag(
+                InternalSpreadsheet.ImageThumbnailColumnLabel
+            );
+            Assert.That(
+                _pageContentRows[3].GetCell(thumbnailColumn).Text,
+                Is.EqualTo("Bad image file")
+            );
+        }
+
+        [TestCase("fromFile")]
+        public void displayThumbnail_svg_svgErrorMessage(string source)
+        {
+            SetupFor(source);
+            var thumbnailColumn = _sheet.GetColumnForTag(
+                InternalSpreadsheet.ImageThumbnailColumnLabel
+            );
+            var svgRow = _rows.First(
+                x =>
+                    x.GetCell(InternalSpreadsheet.RowTypeColumnLabel)
+                        .Text.Equals("[outside-back-cover-bottom-html]")
+            );
+            Assert.That(svgRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Can't display SVG"));
+        }
+    }
 }

@@ -1,0 +1,80 @@
+.Device16x9Portrait .creditsRow {
+  display: none;
+}
+
+.Device16x9Portrait:not(.numberedPage):not(.outsideFrontCover)  {
+  --cover-margin-top: 10mm;
+  --cover-margin-bottom: 39.8mm;
+  --page-margin-left: 7mm;
+  --page-margin-right: 8;
+}
+
+/* The below statements control the size and color of the marginbox. The marginbox holds the text and picture of that page. The top and left numbers determine the position of the margin box on the page.   */
+
+.Device16x9Portrait:not(.bloom-interactive-page).numberedPage  {
+  --page-margin-top: 5mm;
+  --page-margin-bottom: 5mm;
+  --page-margin-left: 3mm;
+  --page-margin-right: 8;
+  --marginBox-background-color: #FFFFFF;
+  --marginBox-border-radius: 15px;
+  --marginBox-border-width: 0.9mm;
+  --marginBox-border-style: solid;
+  --marginBox-border-color: #1F3985;
+  --marginBox-padding: 1.5mm;
+  --pageNumber-extra-height: 0mm !important;
+  /* move so that page number doesn't it hide it if the text box is in the lower left */
+  --formatButton-pageNumber-dodge: 10px;
+
+  --padding-bottom-addition: 0mm;
+}
+
+.Device16x9Portrait:not(.bloom-interactive-page).numberedPage.side-left .marginBox .bloom-imageContainer {
+  border-radius: 15px 15px 0px 0px;
+}
+
+.Device16x9Portrait:not(.bloom-interactive-page).numberedPage.side-right .marginBox .bloom-imageContainer {
+  border-radius: 15px 15px 0px 0px;
+}
+
+/* The below statements control margins on the Outside Back and front Cover. */
+
+.Device16x9Portrait.outsideFrontCover,
+.Device16x9Portrait.outsideBackCover {
+  --cover-margin-top: 10mm;
+  --cover-margin-bottom: 7.8mm;
+  --page-margin-left: 7mm;
+  --page-margin-right: 7mm;
+}
+
+/* The section below controls the pagenumber and the white circle around it.  */
+
+.Device16x9Portrait.numberedPage::after {
+  --pageNumber-bottom: 2.5mm !important;
+  --pageNumber-font-size: 8pt;
+  --pageNumber-color: black;
+  --pageNumber-display: inline-block;
+  --pageNumber-border-radius: 50% !important;
+  --pageNumber-background-color: #ffffff;
+  --pageNumber-background-width: 15px;
+  z-index: 100;
+  border: #1F3985 solid;
+  border-width: 0.9mm;
+  padding: 4px;
+  margin: auto;
+  text-align: center !important;
+}
+
+/* The following two statements control the position of the page number   */
+
+.Device16x9Portrait.numberedPage.side-left::after {
+  --pageNumber-always-left-margin: calc(50% - 48mm);
+  --pageNumber-right-margin: deliberately-invalid;
+  --pageNumber-left-margin: deliberately-invalid;
+}
+
+.Device16x9Portrait.numberedPage.side-right::after {
+  --pageNumber-right-margin: calc(50% - 48mm);
+  --pageNumber-left-margin: deliberately-invalid;
+  --pageNumber-always-left-margin: deliberately-invalid;
+}

@@ -22,7 +22,7 @@ block append stylesheets
 	+stylesheets('StoryProducer-XMatter.css')
 
 block cover-title
-	+field-prototypeDeclaredExplicity("V,N1").bookTitle
+	+field-prototypeDeclaredExplicitly-appearance("V,N1", "cover-title-LN-show").bookTitle
 		label.bubble Story number plus short title or index label
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
 

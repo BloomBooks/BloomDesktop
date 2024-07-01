@@ -5,42 +5,37 @@ using System.Net;
 
 namespace Bloom.Api
 {
-	/// <summary>
-	/// the base class waits for 30 seconds, which is too long for local thing like we are doing
-	/// </summary>
-	public class WebClientWithTimeout : WebClient
-	{
-		private int _timeout;
-		/// <summary>
-		/// Time in milliseconds
-		/// </summary>
-		public int Timeout
-		{
-			get
-			{
-				return _timeout;
-			}
-			set
-			{
-				_timeout = value;
-			}
-		}
+    /// <summary>
+    /// the base class waits for 30 seconds, which is too long for local thing like we are doing
+    /// </summary>
+    public class WebClientWithTimeout : WebClient
+    {
+        private int _timeout;
 
-		public WebClientWithTimeout()
-		{
-			this._timeout = 60000;
-		}
+        /// <summary>
+        /// Time in milliseconds
+        /// </summary>
+        public int Timeout
+        {
+            get { return _timeout; }
+            set { _timeout = value; }
+        }
 
-		public WebClientWithTimeout(int timeout)
-		{
-			this._timeout = timeout;
-		}
+        public WebClientWithTimeout()
+        {
+            this._timeout = 60000;
+        }
 
-		protected override WebRequest GetWebRequest(Uri address)
-		{
-			var result = base.GetWebRequest(address);
-			result.Timeout = this._timeout;
-			return result;
-		}
-	}
+        public WebClientWithTimeout(int timeout)
+        {
+            this._timeout = timeout;
+        }
+
+        protected override WebRequest GetWebRequest(Uri address)
+        {
+            var result = base.GetWebRequest(address);
+            result.Timeout = this._timeout;
+            return result;
+        }
+    }
 }

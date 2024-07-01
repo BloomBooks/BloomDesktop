@@ -1,0 +1,45 @@
+/* Below you find the settings of this custom Bloom design. This book only has custom designs for "Device 16x9 Landscape". */
+
+/* The below statement controls the space between the image and the title on the frontcover. */
+
+.Device16x9Landscape.frontCover .bloom-imageContainer {
+  order: 1;
+  flex: 1 1 auto;
+  margin-top: 1px !important;
+  margin-bottom: 1px;
+}
+
+.Device16x9Landscape.numberedPage:not(.bloom-interactive-page)  {
+  --page-margin-top: 2.5mm;
+  --page-margin-bottom: 6.5mm;
+  --page-margin-left: 2.5mm ;
+  --page-margin-right: 6.5mm;
+  --page-background-color: #4E4E4E;
+  --marginBox-border-radius: 9px;
+  --marginBox-padding: 2mm;
+  --pageNumber-extra-height: 0mm !important;
+  /* move so that page number doesn't it hide it if the text box is in the lower left */
+  --formatButton-pageNumber-dodge: 20px;
+}
+
+/* The section below controls the pagenumber and the white circle around it.  */
+
+.Device16x9Landscape.numberedPage:not(.bloom-interactive-page)::after {
+  --pageNumber-always-left-margin: var(--page-margin-left);
+  --pageNumber-left-margin: deliberately-undefined;
+  --pageNumber-right-margin: deliberately-undefined;
+  --pageNumber-bottom: var(--page-margin-bottom);
+  --pageNumber-font-size: 10pt;
+  --pageNumber-color: black;
+  --pageNumber-background-color: #ffffff;
+  --pageNumber-background-width: 4mm;
+  border-radius: 50%;
+  z-index: 1000;
+  padding: 1.5mm;
+  text-align: center !important;
+  margin: auto;
+}
+
+.Device16x9Landscape.bloom-interactive-page::after {
+  display: none;
+}

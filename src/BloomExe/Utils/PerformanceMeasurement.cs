@@ -14,386 +14,383 @@ using SIL.Reporting;
 
 namespace Bloom.Utils
 {
-	delegate void EndOfLifeCallback(Measurement step);
+    delegate void EndOfLifeCallback(Measurement step);
 
-	// usage:
-	// using (PerformanceMeasurement.Global.Measure("select page")) { ..do something }
-	public class PerformanceMeasurement :IDisposable
-	{
-		private readonly BloomWebSocketServer _webSocketServer;
-		public static PerformanceMeasurement Global;
+    // usage:
+    // using (PerformanceMeasurement.Global.Measure("select page")) { ..do something }
+    public class PerformanceMeasurement : IDisposable
+    {
+        private readonly BloomWebSocketServer _webSocketServer;
+        public static PerformanceMeasurement Global;
 
-		private string _csvFilePath;
-		private StreamWriter _stream;
-		private const string kWebsocketContext = "performance";
-		public bool CurrentlyMeasuring { get; private set; }
-		private Measurement _measurement;
-		private Measurement _previousMeasurement;
-		private List<Measurement> _measurements = new List<Measurement>();
+        private string _csvFilePath;
+        private StreamWriter _stream;
+        private const string kWebsocketContext = "performance";
+        public bool CurrentlyMeasuring { get; private set; }
+        private Measurement _measurement;
+        private Measurement _previousMeasurement;
+        private List<Measurement> _measurements = new List<Measurement>();
 
-		// The only instance of this is created by autofac
-		public PerformanceMeasurement(BloomWebSocketServer webSocketServer)
-		{
-			_webSocketServer = webSocketServer;
-			Global = this; // note, this is changed if we change collections and the ProjectContext makes a new one
-		}
-		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
-		{
-			apiHandler.RegisterEndpointLegacy("performance/showCsvFile", (request) =>
-			{
-				ProcessExtra.SafeStartInFront(_csvFilePath);
-				request.PostSucceeded();
-			}, false);
-			apiHandler.RegisterEndpointLegacy("performance/applicationInfo", (request) =>
-			{
-				request.ReplyWithText($"Bloom {Shell.GetShortVersionInfo()} {ApplicationUpdateSupport.ChannelName}");
-				
-			}, false);
-			apiHandler.RegisterEndpointLegacy("performance/allMeasurements", (request) =>
-			{
-				List<object> l = new List<object>();
-				foreach (var measurement in _measurements)
-				{
-					l.Add(measurement.GetSummary());
-				}
-				request.ReplyWithJson(l.ToArray());
-				
-			}, false);
-		}
+        // The only instance of this is created by autofac
+        public PerformanceMeasurement(BloomWebSocketServer webSocketServer)
+        {
+            _webSocketServer = webSocketServer;
+            Global = this; // note, this is changed if we change collections and the ProjectContext makes a new one
+        }
 
-		public void StartMeasuring()
-		{
-			CurrentlyMeasuring = true;
+        public void RegisterWithApiHandler(BloomApiHandler apiHandler)
+        {
+            apiHandler.RegisterEndpointLegacy(
+                "performance/showCsvFile",
+                (request) =>
+                {
+                    ProcessExtra.SafeStartInFront(_csvFilePath);
+                    request.PostSucceeded();
+                },
+                false
+            );
+            apiHandler.RegisterEndpointLegacy(
+                "performance/applicationInfo",
+                (request) =>
+                {
+                    request.ReplyWithText(
+                        $"Bloom {Shell.GetShortVersionInfo()} {ApplicationUpdateSupport.ChannelName}"
+                    );
+                },
+                false
+            );
+            apiHandler.RegisterEndpointLegacy(
+                "performance/allMeasurements",
+                (request) =>
+                {
+                    List<object> l = new List<object>();
+                    foreach (var measurement in _measurements)
+                    {
+                        l.Add(measurement.GetSummary());
+                    }
+                    request.ReplyWithJson(l.ToArray());
+                },
+                false
+            );
+        }
 
-			if (_stream != null)
-			{
-				_stream.Close();
-				_stream.Dispose();
-				// no, leave it and its contents around: _folder.Dispose();
-			}
+        public void StartMeasuring()
+        {
+            CurrentlyMeasuring = true;
 
-			_csvFilePath = TempFileUtils.GetTempFilepathWithExtension(".csv");
-			_stream = RobustFile.CreateText(_csvFilePath);
-			_stream.AutoFlush = true;
+            if (_stream != null)
+            {
+                _stream.Close();
+                _stream.Dispose();
+                // no, leave it and its contents around: _folder.Dispose();
+            }
 
-			try
-			{
-				_stream.WriteLine(Form.ActiveForm.Text);
-			}
-			catch (Exception)
-			{
-				// swallow. This happens when we call from a browser, while debugging.
-			}
-			using (Measure("Initial Memory Reading"))
-			{
-			}
-		}
+            _csvFilePath = TempFileUtils.GetTempFilepathWithExtension(".csv");
+            _stream = RobustFile.CreateText(_csvFilePath);
+            _stream.AutoFlush = true;
 
-		/// <summary>
-		/// If this is never called, that's fine.
-		/// </summary>
-		public void StopMeasuring()
-		{
-			CurrentlyMeasuring = false;
-			if (_stream != null)
-			{
-				_stream.Close();
-				_stream.Dispose();
-				// no, leave it and its contents around: _folder.Dispose();
-				_stream = null;
-			}
-		}
+            try
+            {
+                _stream.WriteLine(Form.ActiveForm.Text);
+            }
+            catch (Exception)
+            {
+                // swallow. This happens when we call from a browser, while debugging.
+            }
+            using (Measure("Initial Memory Reading", refreshSubprocessList: true)) { }
+        }
 
-		/// <summary>
-		/// This is the main public method, called anywhere in the c# code that we want to measure something.
-		/// What we're measuring is the memory used and the time it took from when this is called until
-		/// the return value is disposed.
-		/// </summary>
-		/// <returns>an object that should be disposed of to end the measurement</returns>
-		public IDisposable MeasureMaybe(Boolean doMeasure, string actionLabel, string actionDetails = "")
-		{
-			if (doMeasure) return Measure(actionLabel, actionDetails);
-			else return new Lifespan(null,null);
-		}
-		public IDisposable Measure(string actionLabel, string actionDetails = "")
-		{
-			if (!CurrentlyMeasuring)
-				return null;
+        /// <summary>
+        /// If this is never called, that's fine.
+        /// </summary>
+        public void StopMeasuring()
+        {
+            CurrentlyMeasuring = false;
+            if (_stream != null)
+            {
+                _stream.Close();
+                _stream.Dispose();
+                // no, leave it and its contents around: _folder.Dispose();
+                _stream = null;
+            }
+            Measurement.PerfPoint.CleanupSubprocessList();
+        }
 
-			// skip nested measurements
-			if (_measurement !=null)
-			{
-				// there are too many of these to keep bugging us
+        readonly string[] _majorActions = new string[] { "EditBookCommand", "SelectedTabChangedEvent" };
 
-				//NonFatalProblem.Report(ModalIf.None, PassiveIf.All,$"Performance measurement cannot handle nested actions ('{action}' inside of '{_measurement._action}')");
+        /// <summary>
+        /// This is the main public method, called anywhere in the c# code that we want to measure something.
+        /// What we're measuring is the memory used and the time it took from when this is called until
+        /// the return value is disposed.
+        /// </summary>
+        /// <returns>an object that should be disposed of to end the measurement</returns>
+        public IDisposable MeasureMaybe(
+            Boolean doMeasure,
+            string actionLabel,
+            string actionDetails = ""
+        )
+        {
+            if (doMeasure)
+                return Measure(actionLabel, actionDetails, refreshSubprocessList: _majorActions.Contains(actionLabel));
+            else
+                return new Lifespan(null, null);
+        }
 
-				return new Lifespan(null,null);
-			}
+        public IDisposable Measure(string actionLabel, string actionDetails = "", bool refreshSubprocessList = false)
+        {
+            if (!CurrentlyMeasuring)
+                return null;
 
-			var previousSize = _previousMeasurement?.LastKnownSize ?? 0L;
-			Measurement m = null;
-			m = new Measurement(actionLabel, actionDetails, previousSize);
+            // skip nested measurements
+            if (_measurement != null)
+            {
+                // there are too many of these to keep bugging us
 
-			_previousMeasurement = m;
-			_measurement = m;
-			return new Lifespan(m, MeasurementEnded);
-		}
+                //NonFatalProblem.Report(ModalIf.None, PassiveIf.All,$"Performance measurement cannot handle nested actions ('{action}' inside of '{_measurement._action}')");
 
-		// This is only called if there is a Lifespan generated (and it gets disposed) and that will only happen
-		// if Measure() decided that we are in measuring mode.
-		private void MeasurementEnded(Measurement measure)
-		{
-			_stream.WriteLine(measure.GetCsv());
-			_webSocketServer.SendString(kWebsocketContext, "event", JsonConvert.SerializeObject(measure.GetSummary()));
-			_measurement = null;
-			_measurements.Add(measure);
-		}
+                return new Lifespan(null, null);
+            }
 
-		public void Dispose()
-		{
-			_stream?.Close();
-			_stream = null;
-			CurrentlyMeasuring = false;
-		}
-	}
+            var previousSize = _previousMeasurement?.LastKnownSize ?? 0L;
+            Measurement m = null;
+            m = new Measurement(actionLabel, actionDetails, previousSize, refreshSubprocessList);
 
-	/// <summary>
-	/// Just something to stop a particular measurement at the end of a using() block.
-	/// </summary>
-	class Lifespan : IDisposable
-	{
-		private readonly Measurement _measurement;
-		private readonly EndOfLifeCallback _callback;
+            _previousMeasurement = m;
+            _measurement = m;
+            return new Lifespan(m, MeasurementEnded);
+        }
 
-		public Lifespan(Measurement measurement, EndOfLifeCallback callback)
-		{
-			_measurement = measurement;
-			_callback = callback;
-		}
-		public void Dispose()
-		{
-			_measurement?.Finish();
-			_callback?.Invoke(_measurement);
-		}
-	}
+        // This is only called if there is a Lifespan generated (and it gets disposed) and that will only happen
+        // if Measure() decided that we are in measuring mode.
+        private void MeasurementEnded(Measurement measure)
+        {
+            _stream.WriteLine(measure.GetCsv());
+            _webSocketServer.SendString(
+                kWebsocketContext,
+                "event",
+                JsonConvert.SerializeObject(measure.GetSummary())
+            );
+            _measurement = null;
+            _measurements.Add(measure);
+        }
 
-	public class Measurement
-	{
-		public readonly string _actionLabel;
-		private readonly string _actionDetails;
-		private readonly PerfPoint _start;
-		private PerfPoint _end;
-		private readonly long _previousPrivateBytesKb;
+        public void Dispose()
+        {
+            _stream?.Close();
+            _stream = null;
+            CurrentlyMeasuring = false;
+        }
+    }
 
-		public long LastKnownSize => _end?.privateBytesKb ?? _start?.privateBytesKb ?? 0L;
+    /// <summary>
+    /// Just something to stop a particular measurement at the end of a using() block.
+    /// </summary>
+    class Lifespan : IDisposable
+    {
+        private readonly Measurement _measurement;
+        private readonly EndOfLifeCallback _callback;
 
-		public Measurement(string actionLabel, string actionDetails, long previousPrivateBytesKb)
-		{
-			_actionLabel = actionLabel;
-			_actionDetails = actionDetails;
-			_previousPrivateBytesKb = previousPrivateBytesKb;
-			try
-			{
-				_start = new PerfPoint();
-			}
-			catch (Exception e)
-			{
-				// The OS can get into a state where we can't load performance counters (BL-10689).
-				// If we're in such a state, just don't report performance.
-				Logger.WriteError("Failed to create PerfPoint", e);
-				// Reporting will do the right thing if _start is null
-			}
-		}
+        public Lifespan(Measurement measurement, EndOfLifeCallback callback)
+        {
+            _measurement = measurement;
+            _callback = callback;
+        }
 
-		public void Finish()
-		{
-			try
-			{
-				_end = new PerfPoint();
-			}
-			catch (Exception e)
-			{
-				// The OS can get into a state where we can't load performance counters (BL-10689).
-				// If we're in such a state, just don't report performance.
-				Logger.WriteError("Failed to create Measurement", e);
-				// Reporting on the measurement will indicate failure if _end stays null
-			}
-		}
+        public void Dispose()
+        {
+            _measurement?.Finish();
+            _callback?.Invoke(_measurement);
+        }
+    }
 
-		public object GetSummary()
-		{
-			if (!IsComplete)
-			{
-				return new
-				{
-					action = _actionLabel + " measurement failed",
-					details = _actionDetails,
-					privateBytes = 0,
-					duration = 0
-				};
-			}
-			return new
-			{
-				action = _actionLabel,
-				details = _actionDetails,
-				privateBytes = _end.privateBytesKb,
-				duration = Duration
-			};
-		}
+    public class Measurement
+    {
+        public readonly string _actionLabel;
+        private readonly string _actionDetails;
+        private readonly PerfPoint _start;
+        private PerfPoint _end;
+        private readonly long _previousPrivateBytesKb;
+        private readonly bool _refreshSubprocessList;
 
-		public double Duration
-		{
-			get
-			{
-				if (!IsComplete)
-					return 0;
+        public long LastKnownSize => _end?.privateBytesKb ?? _start?.privateBytesKb ?? 0L;
 
-				TimeSpan diff = _end.when - _start.when;
-				
-				return Math.Round(diff.TotalMilliseconds / 1000, 2);
-			}
-		}
+        public Measurement(string actionLabel, string actionDetails, long previousPrivateBytesKb, bool refreshSubprocessList = false)
+        {
+            _actionLabel = actionLabel;
+            _actionDetails = actionDetails;
+            _previousPrivateBytesKb = previousPrivateBytesKb;
+            _refreshSubprocessList = refreshSubprocessList;
+            try
+            {
+                _start = new PerfPoint(false);  // Use the old list of subprocesses, if any, for the starting point.
+            }
+            catch (Exception e)
+            {
+                // The OS can get into a state where we can't load performance counters (BL-10689).
+                // If we're in such a state, just don't report performance.
+                Logger.WriteError("Failed to create PerfPoint", e);
+                // Reporting will do the right thing if _start is null
+            }
+        }
 
-		public bool IsComplete => _start != null && _end != null;
+        public void Finish()
+        {
+            try
+            {
+                _end = new PerfPoint(_refreshSubprocessList);
+            }
+            catch (Exception e)
+            {
+                // The OS can get into a state where we can't load performance counters (BL-10689).
+                // If we're in such a state, just don't report performance.
+                Logger.WriteError("Failed to create Measurement", e);
+                // Reporting on the measurement will indicate failure if _end stays null
+            }
+        }
 
-		public string GetCsv()
-		{
-			if (!IsComplete)
-			{
-				// I'm trying to make this look enough like the usual message to indicate something went wrong,
-				// but not to crash any Javascript looking for the usual message.
-				return $"{_actionLabel} measurement failed,{_actionDetails},0:00,0,0";
-			}
-			TimeSpan diff = _end.when - _start.when;
-			var time = diff.ToString(@"ss\.ff");
-			return $"{_actionLabel},{_actionDetails},{time},{_end.privateBytesKb},{(_end.privateBytesKb - _previousPrivateBytesKb)}";
-		}
+        public object GetSummary()
+        {
+            if (!IsComplete)
+            {
+                return new
+                {
+                    action = _actionLabel + " measurement failed",
+                    details = _actionDetails,
+                    privateBytes = 0,
+                    duration = 0
+                };
+            }
+            return new
+            {
+                action = _actionLabel,
+                details = _actionDetails,
+                privateBytes = _end.privateBytesKb,
+                duration = Duration
+            };
+        }
 
-		public override string ToString()
-		{
-			if (!IsComplete)
-				return $"Measurement: details=\"{_actionDetails}\"; measurement failed";
+        public double Duration
+        {
+            get
+            {
+                if (!IsComplete)
+                    return 0;
 
-			// For a ToString() summary, the delta/previousSizeKb is not important.
-			return $"Measurement: details=\"{_actionDetails}\"; start={_start.privateBytesKb}KB ({_start.when}); end={_end?.privateBytesKb}KB ({_end?.when})";
-		}
+                TimeSpan diff = _end.when - _start.whenReady;
 
-		public class PerfPoint
-		{
-			const int bytesPerMegabyte = 1048576;
-			public long pagedMemoryMb;
-			public long workingSetKb;
-			public DateTime when;
-			public long workingSetPrivateKb;
-			public long privateBytesKb;
+                return Math.Round(diff.TotalMilliseconds / 1000, 2);
+            }
+        }
 
-			public PerfPoint()
-			{
-				this.when = DateTime.Now;
-				using (var proc = Process.GetCurrentProcess())
-				{
-					pagedMemoryMb = proc.PagedMemorySize64 / bytesPerMegabyte;
-					workingSetKb = GetWorkingSetInKB(proc);
-					workingSetPrivateKb = GetWorkingSetPrivateInKB(proc);
-					privateBytesKb = GetPrivateBytesInKB(proc);
+        public bool IsComplete => _start != null && _end != null;
 
-					var subProcesses = new List<Process>();
-					try
-					{
-						var subsubProcs = GetSubProcesses(new List<Process> { proc });
-						while (subsubProcs.Any())
-						{
-							subProcesses.AddRange(subsubProcs);
-							subsubProcs = GetSubProcesses(subsubProcs);
-						}
-						// Enhance: we could report the bytes of each sub-process, but that would be a lot of data.
-						// Or: we could report the total bytes of all sub-processes, but would that be helpful?
-						// Or: we could report the maximum bytes of all sub-processes, but would that be helpful?
-						pagedMemoryMb += subProcesses.Sum(p => p.PagedMemorySize64 / bytesPerMegabyte);
-						workingSetKb += subProcesses.Sum(p => GetWorkingSetInKB(p));
-						workingSetPrivateKb += subProcesses.Sum(p => GetWorkingSetPrivateInKB(p));
-						privateBytesKb += subProcesses.Sum(p => GetPrivateBytesInKB(p));
-					}
-					finally
-					{
-						foreach (var subProc in subProcesses)
-							subProc.Dispose();
-					}
-				}
-			}
+        public string GetCsv()
+        {
+            if (!IsComplete)
+            {
+                // I'm trying to make this look enough like the usual message to indicate something went wrong,
+                // but not to crash any Javascript looking for the usual message.
+                return $"{_actionLabel} measurement failed,{_actionDetails},0:00,0,0";
+            }
+            TimeSpan diff = _end.when - _start.whenReady;
+            var time = diff.ToString(@"ss\.ff");
+            return $"{_actionLabel},{_actionDetails},{time},{_end.privateBytesKb},{(_end.privateBytesKb - _previousPrivateBytesKb)}";
+        }
 
-			private static List<Process> GetSubProcesses(List<Process> processes)
-			{
-				var subProcesses = new List<Process>();
-				foreach (var proc in processes)
-				{
-					var listMOs = new List<ManagementObject>();
-					try
-					{
-						listMOs.AddRange(new ManagementObjectSearcher($"Select * From Win32_Process Where ParentProcessID={proc.Id}")
-							.Get()
-							.Cast<ManagementObject>());
-						var subProcs = listMOs.Select(mo => Process.GetProcessById(Convert.ToInt32(mo["ProcessID"])));
-						if (subProcs.Any())
-							subProcesses.AddRange(subProcs);
-					}
-					finally
-					{
-						foreach (var mo in listMOs)
-							mo.Dispose();
-					}
-				}
-				return subProcesses;
-			}
+        public override string ToString()
+        {
+            if (!IsComplete)
+                return $"Measurement: details=\"{_actionDetails}\"; measurement failed";
 
-			// Significance: This counter indicates the current number of bytes allocated to this process that cannot be shared with
-			// other processes.This counter is used for identifying memory leaks.
-			private long GetPrivateBytesInKB(Process proc)
-			{
-				if (SIL.PlatformUtilities.Platform.IsLinux)
-				{
-					return proc.PrivateMemorySize64 / 1024;
-				}
-				using (var perfCounter = new PerformanceCounter("Process", "Private Bytes", proc.ProcessName))
-				{
-					return perfCounter.RawValue / 1024;
-				}
-			}
+            // For a ToString() summary, the delta/previousSizeKb is not important.
+            return $"Measurement: details=\"{_actionDetails}\"; start={_start.privateBytesKb}KB ({_start.whenReady}); end={_end?.privateBytesKb}KB ({_end?.when})";
+        }
 
-			// Significance: The working set is the set of memory pages currently loaded in RAM.
-			// If the system has sufficient memory, it can maintain enough space in the working
-			// set so that it does not need to perform the disk operations.
-			// However, if there is insufficient memory, the system tries to reduce the working
-			// set by taking away the memory from the processes which results in an increase in page faults.
-			// When the rate of page faults rises, the system tries to increase the working set of the process.
-			// If you observe wide fluctuations in the working set, it might indicate a memory shortage.
-			// Higher values in the working set may also be due to multiple assemblies in your application.
-			// You can improve the working set by using assemblies shared in the global assembly cache.
-			private long GetWorkingSetInKB(Process proc)
-			{
-				if (SIL.PlatformUtilities.Platform.IsLinux)
-				{
-					return proc.WorkingSet64 / 1024;
-				}
-				using (var perfCounter = new PerformanceCounter("Process", "Working Set", proc.ProcessName))
-				{
-					return perfCounter.RawValue / 1024;
-				}
-			}
+        public class PerfPoint
+        {
+            public long pagedMemoryKb;
+            public long workingSetKb;
+            public DateTime when;
+            public DateTime whenReady;
+            public long privateBytesKb;
 
-			private long GetWorkingSetPrivateInKB(Process proc)
-			{
-				if (SIL.PlatformUtilities.Platform.IsLinux)
-				{
-					// Can't get "private" working set on Linux.
-					return proc.WorkingSet64 / 1024;
-				}
-				using (var perfCounter = new PerformanceCounter("Process", "Working Set - Private",
-					proc.ProcessName))
-				{
-					return perfCounter.RawValue / 1024;
-				}
-			}
-		}
-	}
+            static readonly List<Process> _subProcesses = new List<Process>();
+
+            public PerfPoint(bool refreshSubprocessList)
+            {
+                this.when = DateTime.Now;
+                using (var proc = Process.GetCurrentProcess())
+                {
+                    var afterGetProcess = DateTime.Now;
+                    proc.Refresh(); // ensure current measurements
+                    // From observation, PagedMemorySize64, WorkingSet64, and PrivateMemorySize64 are all multiples of 1024,
+                    // so we don't actually lose any information by these divisions.
+                    pagedMemoryKb = proc.PagedMemorySize64 / 1024;
+                    workingSetKb = proc.WorkingSet64 / 1024;
+                    privateBytesKb = proc.PrivateMemorySize64 / 1024;
+                    if (refreshSubprocessList)
+                    {
+                        CleanupSubprocessList();
+                        var subsubProcs = GetSubProcesses(new List<Process> { proc });
+                        while (subsubProcs.Any())
+                        {
+                            _subProcesses.AddRange(subsubProcs);
+                            subsubProcs = GetSubProcesses(subsubProcs);
+                        }
+                    }
+                    // Enhance: we could report the bytes of each sub-process, but that would be a lot of data.
+                    // Or: we could report the total bytes of all sub-processes, but would that be helpful?
+                    // Or: we could report the maximum bytes of all sub-processes, but would that be helpful?
+                    foreach (var p in _subProcesses)
+                    {
+                        if (p.HasExited)
+                            continue;
+                        p.Refresh();    // ensure current measurements
+                        pagedMemoryKb += p.PagedMemorySize64 / 1024;
+                        workingSetKb += p.WorkingSet64 / 1024;
+                        privateBytesKb += p.PrivateMemorySize64 / 1024;
+                    }
+                }
+                this.whenReady = DateTime.Now;
+                Debug.WriteLine($"PerfPoint created in {(whenReady - when).TotalMilliseconds}ms");
+            }
+
+            private static List<Process> GetSubProcesses(List<Process> processes)
+            {
+                var subProcesses = new List<Process>();
+                foreach (var proc in processes)
+                {
+                    var listMOs = new List<ManagementObject>();
+                    try
+                    {
+                        listMOs.AddRange(
+                            new ManagementObjectSearcher(
+                                $"Select * From Win32_Process Where ParentProcessID={proc.Id}"
+                            )
+                                .Get()
+                                .Cast<ManagementObject>()
+                        );
+                        var subProcs = listMOs.Select(
+                            mo => Process.GetProcessById(Convert.ToInt32(mo["ProcessID"]))
+                        );
+                        if (subProcs.Any())
+                            subProcesses.AddRange(subProcs);
+                    }
+                    finally
+                    {
+                        foreach (var mo in listMOs)
+                            mo.Dispose();
+                    }
+                }
+                return subProcesses;
+            }
+
+            internal static void CleanupSubprocessList()
+            {
+                foreach (var subProc in _subProcesses)
+                    subProc.Dispose();
+                _subProcesses.Clear();
+            }
+        }
+    }
 }

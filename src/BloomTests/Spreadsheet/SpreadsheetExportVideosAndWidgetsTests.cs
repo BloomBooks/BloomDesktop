@@ -15,9 +15,10 @@ using SIL.IO;
 
 namespace BloomTests.Spreadsheet
 {
-	public class SpreadsheetExportVideosAndWidgetsTests
-	{
-		public const string videoAndWidgetBook = @"
+    public class SpreadsheetExportVideosAndWidgetsTests
+    {
+        public const string videoAndWidgetBook =
+            @"
 
 <html>
 <head>
@@ -227,93 +228,133 @@ namespace BloomTests.Spreadsheet
 </body>
 </html>
 ";
-		private SpreadsheetExporter _exporter;
-		private InternalSpreadsheet _sheet;
-		private List<ContentRow> _rows;
-		private List<ContentRow> _pageContentRows;
+        private SpreadsheetExporter _exporter;
+        private InternalSpreadsheet _sheet;
+        private List<ContentRow> _rows;
+        private List<ContentRow> _pageContentRows;
 
-		private TemporaryFolder _spreadsheetFolder;
-		private TemporaryFolder _bookFolder;
-		private ProgressSpy _progressSpy;
+        private TemporaryFolder _spreadsheetFolder;
+        private TemporaryFolder _bookFolder;
+        private ProgressSpy _progressSpy;
 
-		[OneTimeSetUp]
-		public void OneTimeSetUp()
-		{
-			var dom = new HtmlDom(videoAndWidgetBook, true);
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            var dom = new HtmlDom(videoAndWidgetBook, true);
 
-			_spreadsheetFolder = new TemporaryFolder("SpreadsheetVideoWidgetsTests");
-			_bookFolder = new TemporaryFolder("SpreadsheetVideoWidgetsTests_Book");
+            _spreadsheetFolder = new TemporaryFolder("SpreadsheetVideoWidgetsTests");
+            _bookFolder = new TemporaryFolder("SpreadsheetVideoWidgetsTests_Book");
 
-			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
-			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
+            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("en"))
+                .Returns("English");
 
-			_exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+            _exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
 
-			// We need all these files in place so we can verify that all of them get copied
-			var videoFolder = Path.Combine(_bookFolder.FolderPath, "video");
-			Directory.CreateDirectory(videoFolder);
-			RobustFile.WriteAllText(Path.Combine(videoFolder, "ac2e237a-140f-45e4-b3e8-257dd12f4793.mp4"), "this is a fake video");
+            // We need all these files in place so we can verify that all of them get copied
+            var videoFolder = Path.Combine(_bookFolder.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            RobustFile.WriteAllText(
+                Path.Combine(videoFolder, "ac2e237a-140f-45e4-b3e8-257dd12f4793.mp4"),
+                "this is a fake video"
+            );
 
-			var htmlPath = Path.Combine(_bookFolder.FolderPath, "activities", "balldragTouch", "sub","index.html");
-			Directory.CreateDirectory(Path.GetDirectoryName(htmlPath));
-			RobustFile.WriteAllText(htmlPath, "<html><body>This is a fake</body></html>");
-			RobustFile.WriteAllText(Path.Combine(_bookFolder.FolderPath, "activities", "balldragTouch", "junk.png"), "This is a fake image");
+            var htmlPath = Path.Combine(
+                _bookFolder.FolderPath,
+                "activities",
+                "balldragTouch",
+                "sub",
+                "index.html"
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(htmlPath));
+            RobustFile.WriteAllText(htmlPath, "<html><body>This is a fake</body></html>");
+            RobustFile.WriteAllText(
+                Path.Combine(_bookFolder.FolderPath, "activities", "balldragTouch", "junk.png"),
+                "This is a fake image"
+            );
 
-			_progressSpy = new ProgressSpy();
-			_sheet =
-				_exporter.ExportToFolder(dom, _bookFolder.FolderPath, _spreadsheetFolder.FolderPath, out string outputPath, _progressSpy, OverwriteOptions.Overwrite);
-			_rows = _sheet.ContentRows.ToList();
-			_pageContentRows = _rows.Where(r => r.MetadataKey == InternalSpreadsheet.PageContentRowLabel).ToList();
-		}
+            _progressSpy = new ProgressSpy();
+            _sheet = _exporter.ExportToFolder(
+                dom,
+                _bookFolder.FolderPath,
+                _spreadsheetFolder.FolderPath,
+                out string outputPath,
+                _progressSpy,
+                OverwriteOptions.Overwrite
+            );
+            _rows = _sheet.ContentRows.ToList();
+            _pageContentRows = _rows
+                .Where(r => r.MetadataKey == InternalSpreadsheet.PageContentRowLabel)
+                .ToList();
+        }
 
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
-		{
-			_spreadsheetFolder?.Dispose();
-			_bookFolder?.Dispose();
-		}
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _spreadsheetFolder?.Dispose();
+            _bookFolder?.Dispose();
+        }
 
-		[Test]
-		public void CopiesVideoToDestFolder()
-		{
-			var destVideoFolder = Path.Combine(_spreadsheetFolder.FolderPath, "video");
-			Assert.That(Directory.Exists(destVideoFolder));
-			Assert.That(File.Exists(Path.Combine(destVideoFolder, "ac2e237a-140f-45e4-b3e8-257dd12f4793.mp4")));
-		}
+        [Test]
+        public void CopiesVideoToDestFolder()
+        {
+            var destVideoFolder = Path.Combine(_spreadsheetFolder.FolderPath, "video");
+            Assert.That(Directory.Exists(destVideoFolder));
+            Assert.That(
+                File.Exists(
+                    Path.Combine(destVideoFolder, "ac2e237a-140f-45e4-b3e8-257dd12f4793.mp4")
+                )
+            );
+        }
 
-		[Test]
-		public void CopiesWidgetFilesToDestFolder()
-		{
-			var destWidgetFolder = Path.Combine(_spreadsheetFolder.FolderPath, "activities");
-			Assert.That(Directory.Exists(destWidgetFolder));
-			Assert.That(File.Exists(Path.Combine(destWidgetFolder, "balldragTouch", "sub", "index.html")));
-			Assert.That(File.Exists(Path.Combine(destWidgetFolder, "balldragTouch", "junk.png")));
-		}
+        [Test]
+        public void CopiesWidgetFilesToDestFolder()
+        {
+            var destWidgetFolder = Path.Combine(_spreadsheetFolder.FolderPath, "activities");
+            Assert.That(Directory.Exists(destWidgetFolder));
+            Assert.That(
+                File.Exists(Path.Combine(destWidgetFolder, "balldragTouch", "sub", "index.html"))
+            );
+            Assert.That(File.Exists(Path.Combine(destWidgetFolder, "balldragTouch", "junk.png")));
+        }
 
-		[Test]
-		public void PutsTextWithVideoAndWidget()
-		{
-			Assert.That(_pageContentRows[0].GetCell("[en]").Text, Is.EqualTo("A castle with a very big flag"));
-		}
+        [Test]
+        public void PutsTextWithVideoAndWidget()
+        {
+            Assert.That(
+                _pageContentRows[0].GetCell("[en]").Text,
+                Is.EqualTo("A castle with a very big flag")
+            );
+        }
 
-		[Test]
-		public void MarksCorrectQuizAnswer()
-		{
-			var attributeIndex = _sheet.GetColumnForTag(InternalSpreadsheet.AttributeColumnLabel);
-			Assert.That(attributeIndex >= 0);
-			Assert.That(_pageContentRows[4].GetCell(attributeIndex).Content, Is.EqualTo("../class=correct-answer"));
-		}
+        [Test]
+        public void MarksCorrectQuizAnswer()
+        {
+            var attributeIndex = _sheet.GetColumnForTag(InternalSpreadsheet.AttributeColumnLabel);
+            Assert.That(attributeIndex >= 0);
+            Assert.That(
+                _pageContentRows[4].GetCell(attributeIndex).Content,
+                Is.EqualTo("../class=correct-answer")
+            );
+        }
 
-		[Test]
-		public void AddsPageTypes()
-		{
-			var pageTypeIndex = _sheet.GetColumnForTag(InternalSpreadsheet.PageTypeColumnLabel);
+        [Test]
+        public void AddsPageTypes()
+        {
+            var pageTypeIndex = _sheet.GetColumnForTag(InternalSpreadsheet.PageTypeColumnLabel);
 
-			Assert.That(_pageContentRows[0].GetCell(pageTypeIndex).Content, Is.EqualTo("Big Text Diglot"));
-			Assert.That(_pageContentRows[1].GetCell(pageTypeIndex).Content, Is.EqualTo("Quiz Page"));
-			Assert.That(_pageContentRows[2].GetCell(pageTypeIndex).Content, Is.EqualTo(""));
-			Assert.That(_pageContentRows[3].GetCell(pageTypeIndex).Content, Is.EqualTo(""));
-			Assert.That(_pageContentRows[4].GetCell(pageTypeIndex).Content, Is.EqualTo(""));
-		}
-	}
+            Assert.That(
+                _pageContentRows[0].GetCell(pageTypeIndex).Content,
+                Is.EqualTo("Big Text Diglot")
+            );
+            Assert.That(
+                _pageContentRows[1].GetCell(pageTypeIndex).Content,
+                Is.EqualTo("Quiz Page")
+            );
+            Assert.That(_pageContentRows[2].GetCell(pageTypeIndex).Content, Is.EqualTo(""));
+            Assert.That(_pageContentRows[3].GetCell(pageTypeIndex).Content, Is.EqualTo(""));
+            Assert.That(_pageContentRows[4].GetCell(pageTypeIndex).Content, Is.EqualTo(""));
+        }
+    }
 }

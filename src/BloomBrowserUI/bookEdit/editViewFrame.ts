@@ -34,13 +34,15 @@ import { getEditablePageBundleExports } from "./js/bloomFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
+
 import "../lib/errorHandler";
+import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
+export { showBookSettingsDialog };
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import ReactDOM = require("react-dom");
-import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
 import { FunctionComponentElement } from "react";
 export { getImageUrlFromImageButton } from "./js/bloomImages";
 
@@ -91,6 +93,7 @@ export function switchContentPage(newSource: string) {
     // The normal way to deal with this is to wait and call the function after the new
     // page is loaded. But sometimes (see comment below) the load event doesn't get
     // raised, so we have a fall-back.
+    // Enhance: Should this use DOMContentLoaded instead of load?
     let handlerCalled = false;
     const handler = () => {
         handlerCalled = true;
@@ -106,7 +109,6 @@ export function switchContentPage(newSource: string) {
     // other cases since I have no explanation. Rather than leaving control state
     // permanently wrong, if the event is delayed much longer than expected we just
     // call the handler.
-    // For a similar event not firing problem, see bloomEditing.ts.
     window.setTimeout(() => {
         if (!handlerCalled) {
             handler();
@@ -211,6 +213,8 @@ export function showCopyrightAndLicenseDialog(imageUrl?: string) {
 export function showEditViewTopicChooserDialog() {
     showTopicChooserDialog();
 }
-export function showEditViewBookSettingsDialog() {
-    showBookSettingsDialog();
+export function showEditViewBookSettingsDialog(
+    initiallySelectedGroupIndex?: number
+) {
+    showBookSettingsDialog(initiallySelectedGroupIndex);
 }

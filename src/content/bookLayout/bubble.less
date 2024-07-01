@@ -238,8 +238,7 @@
 
         // Note: Needs a bit of specificity to beat display: block rule in langVisibility.css
         // However, also need to make sure you don't accidentall change display: none to display: flex
-        .bloom-editable.bloom-visibility-code-on,
-        .bloom-editable.bloom-visibility-user-on {
+        .bloom-editable.bloom-visibility-code-on {
             display: flex;
 
             // We use direction=row, wrap, and item's basis=100% in order to layout the paragraphs (flex-item)
@@ -254,6 +253,9 @@
             align-items: center;
             // the default for align-content is stretch, but that overrides our Paragraph Spacing setting and can create big gaps between the flex-items (paragraphs).
             align-content: center;
+
+            // This is set 100% elsewhere, but that doesn't work for bubbles with padding.  (BL-13604)
+            width: auto;
 
             // Paragraphs are the expected flex-items
             p {

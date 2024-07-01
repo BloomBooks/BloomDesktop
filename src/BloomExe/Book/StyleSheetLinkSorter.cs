@@ -1,82 +1,92 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using System.Xml;
+using SIL.Linq;
 using SIL.Xml;
 
 namespace Bloom.Book
 {
-	/// <summary>
-	/// Since the precedence of stylesheet rules is influence by the their order (and thus the order of
-	/// the various stylesheet declarations), we sort them to in a way that make sense and is consistent
-	/// </summary>
-	public class StyleSheetLinkSorter : IComparer<XmlElement>
-	{
-		const int kDefaultValueForStyleSheetsThatShouldListInTheMiddle = 100;
-		private static Dictionary<string, int> _values;
+    /// <summary>
+    /// Since the precedence of stylesheet rules is influence by the their order (and thus the order of
+    /// the various stylesheet declarations), we sort them to in a way that make sense and is consistent
+    /// </summary>
+    public class StyleSheetLinkSorter : IComparer<XmlElement>
+    {
+        public static readonly string[] KnownCssFilePrefixesInOrder =
+            BookStorage.OrderedPrefixesOfCssFilesToSortBeforeUnknownStylesheets
+                .Append("UNKNOWN_STYLESHEETS_HERE")
+                .Concat(BookStorage.OrderedPrefixesOfCssFilesToSortAfterUnknownStylesheets)
+                .Append("pageControls.css")
+                .Append("pageThumbnailList.css")
+                .ToArray();
 
-		private static void Init()
-		{
-			if(_values==null)
-			{
-				_values = new Dictionary<string, int>();
-				_values.Add("basepage.css", 10); // the opening bid
-				_values.Add("editmode.css", 20);
-				_values.Add("editoriginalmode.css", 30);
-				_values.Add("previewmode.css", 40);
-				_values.Add("origami.css", 50);
-				_values.Add("branding.css", 60);
+        const int kDefaultValueForStyleSheetsThatShouldListInTheMiddle = 100;
 
+        // This is set up as a dictionary, but it's really just a list of pairs.
+        // The value is the order in which the stylesheets should appear in the list.
+        // The key can be a prefix of a filename directly in the book folder
+        // (e.g., basePage, which matches basePage.css or basePage-legacy-5-6.css)
+        // or a complete filename, which matches hrefs that have a path with exactly
+        // that as the last component (e.g., ../customCollectionStyles.css).
+        // The need to do prefix matching rules out actually using it as a map.
+        private static Dictionary<string, int> _values;
 
-				//Note that kDefaultValueForStyleSheetsThatShouldListInTheMiddle should fall in between here
-				//for the template-specific stuff, but we don't know those names
+        private static void Init()
+        {
+            if (_values == null)
+            {
+                _values = new Dictionary<string, int>();
+                var weight = 0;
+                KnownCssFilePrefixesInOrder.ForEach(x =>
+                {
+                    if (x == "UNKNOWN_STYLESHEETS_HERE")
+                        weight = kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1000;
+                    else
+                        _values.Add(x.ToLowerInvariant(), weight++);
+                });
+            }
+        }
 
-				//NB: I (JH) don't for sure know yet what the order of this should be. I think it should be last-ish.
-				_values.Add("langVisibility.css".ToLowerInvariant(), 1000);
-				_values.Add("defaultLangStyles.css".ToLowerInvariant(), 1500);
-				_values.Add("customCollectionStyles.css".ToLowerInvariant(), 2000); // the almost last word
-				_values.Add("customBookStyles.css".ToLowerInvariant(), 3000); // the very last word
-			}
-		}
+        public int Compare(XmlElement a, XmlElement b)
+        {
+            Init();
 
-		public int Compare(XmlElement a, XmlElement b)
-		{
-			Init();
+            var x = a.GetStringAttribute("href").ToLowerInvariant();
+            var y = b.GetStringAttribute("href").ToLowerInvariant();
 
-			var x = a.GetStringAttribute("href").ToLowerInvariant();
-			var y = b.GetStringAttribute("href").ToLowerInvariant();
+            int xValue = GetValue(x);
+            int yValue = GetValue(y);
 
-			int xValue = GetValue(x);
-			int yValue = GetValue(y);
+            // Debug.WriteLine(string.Format("Comparing {0}({1}) and {2}({3})", x,xValue,y,yValue));
+            if (xValue == yValue)
+                return String.Compare(x, y);
 
-		   // Debug.WriteLine(string.Format("Comparing {0}({1}) and {2}({3})", x,xValue,y,yValue));
-			if (xValue == yValue)
-				return String.Compare(x, y);
+            if (xValue < yValue)
+                return -1;
+            return 1;
+        }
 
-			if (xValue < yValue)
-				return -1;
-			return 1;
+        private int GetValue(string s)
+        {
+            foreach (var pair in _values)
+            {
+                var key = pair.Key.ToLowerInvariant();
+                if (
+                    s.StartsWith(key) //no path in there
+                    || (s.EndsWith("/" + key))
+                    || (s.EndsWith("\\" + key))
+                )
+                    return pair.Value;
+            }
 
-		}
+            // "SHRP Labels.css" is used by the SIL LEAD SHRP project to inject vernacular labels for sections of the book
+            // we just need it to always come after the other stylesheet(s) of the book, which may supply default
+            // labels
+            if (s.EndsWith("labels.css"))
+                return kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1;
 
-		private int GetValue(string s)
-		{
-			foreach (var pair in _values)
-			{
-				if (s.ToLowerInvariant() == pair.Key	//no path in there
-					|| (s.ToLowerInvariant().EndsWith("/" + pair.Key))
-					|| (s.ToLowerInvariant().EndsWith("\\" + pair.Key)))
-					return pair.Value;
-			}
-
-
-			// "SHRP Labels.css" is used by the SIL LEAD SHRP project to inject vernacular labels for sections of the book
-			// we just need it to always come after the other stylesheet(s) of the book, which may supply default
-			// labels
-			if (s.ToLowerInvariant().EndsWith("labels.css"))
-				return kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1;
-
-			return kDefaultValueForStyleSheetsThatShouldListInTheMiddle;
-		}
-	}
+            return kDefaultValueForStyleSheetsThatShouldListInTheMiddle;
+        }
+    }
 }

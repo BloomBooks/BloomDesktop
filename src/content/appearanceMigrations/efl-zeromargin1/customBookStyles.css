@@ -1,0 +1,39 @@
+.Device16x9Landscape.bloom-frontMatter,
+.Device16x9Landscape.bloom-backMatter {
+    --page-margin: 3mm;
+}
+
+.Device16x9Landscape.frontCover .bloom-imageContainer {
+  order: 1;
+  flex: 1 1 auto;
+  margin-top: 1px;
+  margin-bottom: 1px;
+}
+
+.Device16x9Landscape.numberedPage:not(.bloom-interactive-page)  {
+  --page-margin: 0mm;
+
+  /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
+  --page-verticalSplit-width: 0; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
+  --page-horizontalSplit-height: 0;
+
+  --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+}
+
+.Device16x9Landscape.numberedPage.numberedPage.numberedPage::after {
+  --pageNumber-always-left-margin: calc(100% / 2 - 8.5px);
+  --pageNumber-right-margin: deliberately-invalid;
+  --pageNumber-bottom: 9px;
+  --pageNumber-font-size: 9pt;
+  --pageNumber-color: black;
+  --pageNumber-background-width: 17px;
+  --pageNumber-border-radius: 50%;
+  --pageNumber-background-color: #ffffff;
+
+  font-family: 'ABeeZee';
+  z-index: 1000;
+  padding: 2px;
+  text-align: center !important;
+  margin: auto;
+  direction: ltr;
+}

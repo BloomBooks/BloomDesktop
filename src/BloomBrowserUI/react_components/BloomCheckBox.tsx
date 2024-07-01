@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useTheme, Checkbox, FormControlLabel } from "@mui/material";
 import { useL10n } from "./l10nHooks";
 import { LightTooltip } from "./lightTooltip";
-import { Check } from "@mui/icons-material";
+import { default as Check } from "@mui/icons-material/Check";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { DisabledContext } from "./BloomToolTip";
 

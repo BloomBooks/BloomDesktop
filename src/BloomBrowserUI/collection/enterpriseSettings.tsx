@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { Label } from "../react_components/l10nComponents";
+import { Div, Label } from "../react_components/l10nComponents";
 import { Markdown } from "../react_components/markdown";
 import { Link } from "../react_components/link";
 import { HelpLink } from "../react_components/helpLink";
@@ -31,6 +31,9 @@ import { WireUpForWinforms } from "../utils/WireUpWinform";
 // SubscriptionLegacy: a special case where the subscription code is typically empty,
 // or just possibly otherwise incomplete, and this has been detected at startup
 //      We show a special message in an orange box and a red ! icon
+// SubscriptionDownload: a special case where a subscription code is incomplete
+//      beccause we are using a branding permitted in a special collection made by
+//      downloading a book for editing from BloomLibrary. We show a special message.
 
 interface IState {
     enterpriseStatus: string; // which radio button is active, controls the radio group
@@ -64,12 +67,21 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             get("settings/subscriptionCode", result => {
                 const code = result.data;
                 get("settings/legacyBrandingName", result => {
-                    this.setState({ legacyBrandingName: result.data });
-                    this.setControlState(status, code, result.data);
+                    const legacyBrandingName = result.data;
+                    get("settings/lockedToOneDownloadedBook", result => {
+                        this.setState({ legacyBrandingName });
+                        this.setControlState(
+                            status,
+                            code,
+                            legacyBrandingName,
+                            result.data
+                        );
+                    });
                 });
             });
         });
     }
+
     // I don't understand why this is necessary but without it the selection
     // moves to the end of the subscription code after every keystroke.
     private oldSelectionPosition: number | null = 0;
@@ -138,13 +150,22 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                 l10nParam1={this.codesUrl}
                                 className={"legacyBrandingName"}
                             >
-                                In an older version of Bloom, this project used
-                                **%0**. To continue to use this you will need to
-                                enter a current subscription code. Codes for SIL
-                                brandings can be found [here](%1). For other
-                                subscriptions, contact your project
-                                administrator.
+                                This project previously used **%0**. To continue
+                                to use this you will need to enter a current
+                                subscription code. Codes for SIL brandings can
+                                be found [here](%1). For other subscriptions,
+                                contact your project administrator.
                             </Markdown>
+                        )}
+                        {this.state.controlState === "SubscriptionDownload" && (
+                            <Div
+                                l10nKey="Settings.Enterprise.DownloadForEdit"
+                                className={"legacyBrandingName"}
+                            >
+                                This collection is in "Download for Edit" mode.
+                                The book has the same Bloom Enterprise branding
+                                as when it was last uploaded.
+                            </Div>
                         )}
                         <div
                             id="enterpriseMain"
@@ -352,7 +373,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
 
     private setStatus(status: string) {
         postJson("settings/enterpriseStatus", status);
-        this.setControlState(status, this.state.subscriptionCode, "");
+        this.setControlState(status, this.state.subscriptionCode, "", false);
 
         if (status !== "None") {
             get("settings/enterpriseSummary", result => {
@@ -384,14 +405,17 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     private setControlState(
         status: string,
         code: string,
-        legacyBrandingName: string
+        legacyBrandingName: string,
+        lockedToOneDownloadedBook: boolean
     ) {
         if (legacyBrandingName) {
             this.setState({
                 enterpriseStatus: "Subscription",
                 subscriptionCode: code,
                 subscriptionExpiry: null,
-                controlState: "SubscriptionLegacy",
+                controlState: lockedToOneDownloadedBook
+                    ? "SubscriptionDownload"
+                    : "SubscriptionLegacy",
                 subscriptionSummary: ""
             });
             get("settings/enterpriseSummary", result => {
@@ -492,7 +516,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             subscriptionCode: code.trim()
         });
         this.setState({ legacyBrandingName: "" });
-        this.setControlState(this.state.enterpriseStatus, code, "");
+        this.setControlState(this.state.enterpriseStatus, code, "", false);
     }
 }
 

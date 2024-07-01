@@ -11,12 +11,12 @@ html
 		//- Eventually, we'll remove Bloom's need for this.
 		meta(name='pageTemplateSource', content='Basic Book')
 		title 'Template Starter'
-		+stylesheets('Basic Book.css')
-		+core-stylesheets()
+		+stylesheets('Basic Book.css') // includes core-stylesheets()
 		+standardStyles
 	body
 		+dataDiv
 			+bookVariable-title('en', 'My Template')
 			+bookVariable('styleNumberSequence', '*', '0')
 			+bookVariable('licenseUrl','*', 'http://creativecommons.org/publicdomain/zero/1.0/')
+		+preview-outsideFrontCover
 		+standardPage-Custom
