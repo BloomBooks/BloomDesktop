@@ -12,6 +12,7 @@ using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.Publish.BloomPub;
+using Bloom.SafeXml;
 using Bloom.web;
 using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
@@ -21,7 +22,6 @@ using SIL.PlatformUtilities;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using Color = System.Drawing.Color;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 
@@ -433,27 +433,27 @@ namespace BloomTests.Publish
                     var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
                     var body = htmlDom.DocumentElement.GetElementsByTagName("body")[0];
                     Assert.That(
-                        body.Attributes["data-bfautoadvance"]?.Value,
+                        body.GetAttribute("data-bfautoadvance"),
                         Is.EqualTo("landscape;bloomReader")
                     );
                     Assert.That(
-                        body.Attributes["data-bfcanrotate"]?.Value,
+                        body.GetAttribute("data-bfcanrotate"),
                         Is.EqualTo("allOrientations;bloomReader")
                     );
                     Assert.That(
-                        body.Attributes["data-bfplayanimations"]?.Value,
+                        body.GetAttribute("data-bfplayanimations"),
                         Is.EqualTo("landscape;bloomReader")
                     );
                     Assert.That(
-                        body.Attributes["data-bfplaymusic"]?.Value,
+                        body.GetAttribute("data-bfplaymusic"),
                         Is.EqualTo("landscape;bloomReader")
                     );
                     Assert.That(
-                        body.Attributes["data-bfplaynarration"]?.Value,
+                        body.GetAttribute("data-bfplaynarration"),
                         Is.EqualTo("landscape;bloomReader")
                     );
                     Assert.That(
-                        body.Attributes["data-bffullscreenpicture"]?.Value,
+                        body.GetAttribute("data-bffullscreenpicture"),
                         Is.EqualTo("landscape;bloomReader")
                     );
                 },
@@ -1130,8 +1130,8 @@ namespace BloomTests.Publish
                         "Expected to find untrimmed video"
                     );
                     var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(paramObj.Html);
-                    var secondSource = htmlDom.SelectNodes("//source")[1];
-                    var srcAttr = secondSource.Attributes["src"].Value;
+                    var secondSource = htmlDom.SafeSelectNodes("//source")[1] as SafeXmlElement;
+                    var srcAttr = secondSource.GetAttribute("src");
                     Assert.AreNotEqual(
                         -1,
                         zip.FindEntry(srcAttr, false),

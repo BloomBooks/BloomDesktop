@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Utils;
+using Bloom.SafeXml;
 
 namespace Bloom.Book
 {
@@ -319,18 +320,18 @@ namespace Bloom.Book
         /// </remarks>
         private static string GetBloomCollectionModifiedForTemplate(string filePath)
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.PreserveWhitespace = true;
             dom.Load(filePath);
             foreach (
-                var node in dom.SafeSelectNodes("//SubscriptionCode").Cast<XmlElement>().ToArray()
+                var node in dom.SafeSelectNodes("//SubscriptionCode").Cast<SafeXmlElement>().ToArray()
             )
             {
                 node.RemoveAll(); // should happen at most once
             }
             foreach (
                 var node in dom.SafeSelectNodes("//BrandingProjectName")
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
                     .ToArray()
             )
             {

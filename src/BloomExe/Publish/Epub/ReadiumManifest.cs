@@ -4,8 +4,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
+using Bloom.SafeXml;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Xml;
@@ -24,7 +24,7 @@ namespace Bloom.Publish.Epub
         private static ReadiumManifestRoot _manifest;
         private static XmlNamespaceManager _ns;
         private static string _outputPath;
-        private static XmlDocument _opfDoc;
+        private static SafeXmlDocument _opfDoc;
         private static string _rootFolderPath;
         private static string _contentPath; // rootfolder/content
 
@@ -34,7 +34,7 @@ namespace Bloom.Publish.Epub
             _contentPath = Path.Combine(_rootFolderPath, "content");
             var opfPath = Path.Combine(_contentPath, "content.opf");
             var opfData = RobustFile.ReadAllText(opfPath, Encoding.UTF8);
-            _opfDoc = new XmlDocument();
+            _opfDoc = SafeXmlDocument.Create();
             _opfDoc.LoadXml(opfData);
 
             _manifest = new ReadiumManifestRoot();
@@ -101,27 +101,27 @@ namespace Bloom.Publish.Epub
         private static void MakeReadingOrder()
         {
             var itemElts = _opfDoc.SafeSelectNodes("//manifest/item");
-            var itemDict = new Dictionary<string, XmlElement>();
-            foreach (XmlElement item in itemElts)
+            var itemDict = new Dictionary<string, SafeXmlElement>();
+            foreach (SafeXmlElement item in itemElts)
             {
-                itemDict[item.Attributes["id"].Value] = item;
+                itemDict[item.GetAttribute("id")] = item;
             }
 
-            var spineElts = _opfDoc.SafeSelectNodes("//spine/itemref").Cast<XmlElement>();
+            var spineElts = _opfDoc.SafeSelectNodes("//spine/itemref").Cast<SafeXmlElement>();
             _manifest.readingOrder = spineElts
                 .Select(spineElt =>
                 {
-                    var spineManifestItem = itemDict[spineElt.Attributes["idref"].Value];
+                    var spineManifestItem = itemDict[spineElt.GetAttribute("idref")];
                     var roItem = new ReadiumItem()
                     {
                         type = "application/xhtml+xml",
-                        href = "content/" + spineManifestItem.Attributes["href"].Value
+                        href = "content/" + spineManifestItem.GetAttribute("href")
                     };
-                    var mediaOverlayId = spineManifestItem.Attributes["media-overlay"]?.Value;
+                    var mediaOverlayId = spineManifestItem.GetAttribute("media-overlay");
                     if (!string.IsNullOrEmpty(mediaOverlayId))
                     {
                         var overlayElt = itemDict[mediaOverlayId];
-                        var overlayFileName = overlayElt.Attributes["href"].Value;
+                        var overlayFileName = overlayElt.GetAttribute("href");
                         var overlayPath = Path.Combine(_contentPath, overlayFileName);
                         // Typically, something like 2_overlay.smil becomes "2".
                         var namePrefix = Path.GetFileNameWithoutExtension(overlayFileName)
@@ -135,17 +135,14 @@ namespace Bloom.Publish.Epub
                             MediaOverlay = readiumMediaName
                         };
                         var smilContent = RobustFile.ReadAllText(overlayPath, Encoding.UTF8);
-                        var smilDoc = new XmlDocument();
+                        var smilDoc = SafeXmlDocument.Create();
                         smilDoc.LoadXml(smilContent);
-                        var seqElt = smilDoc.SelectSingleNode("//smil:seq", _ns);
-                        var textRef = seqElt.Attributes[
-                            "textref",
-                            "http://www.idpf.org/2007/ops"
-                        ].Value;
+                        var seqElt = smilDoc.SelectSingleNode("//smil:seq", _ns) as SafeXmlElement;
+                        var textRef = seqElt.GetAttribute("textref", "http://www.idpf.org/2007/ops");
 
                         var readiumOverlay = new ReadiumMediaOverlay();
 
-                        var parElts = smilDoc.SafeSelectNodes("//par").Cast<XmlElement>().ToArray();
+                        var parElts = smilDoc.SafeSelectNodes("//par").Cast<SafeXmlElement>().ToArray();
                         var maxClipEnd = 0m;
                         var narrations = new ReadiumInnerNarrationBlock[parElts.Length];
                         readiumOverlay.role = "section";
@@ -158,26 +155,22 @@ namespace Bloom.Publish.Epub
                         };
                         for (int i = 0; i < parElts.Length; i++)
                         {
-                            XmlElement parElt = parElts[i];
+                            var parElt = parElts[i];
                             var audioElt = parElt
                                 .GetElementsByTagName("audio")
-                                .Cast<XmlElement>()
+                                .Cast<SafeXmlElement>()
                                 .First();
-                            var clipEnd = TimeToDecimal(audioElt.Attributes["clipEnd"].Value);
+                            var clipEnd = TimeToDecimal(audioElt.GetAttribute("clipEnd"));
                             maxClipEnd = Math.Max(maxClipEnd, clipEnd);
-                            var clipStart = TimeToDecimal(audioElt.Attributes["clipBegin"].Value);
+                            var clipStart = TimeToDecimal(audioElt.GetAttribute("clipBegin"));
                             narrations[i] = new ReadiumInnerNarrationBlock()
                             {
                                 text =
                                     "content/"
-                                    + parElt.GetElementsByTagName("text")[0].Attributes[
-                                        "src"
-                                    ].Value,
+                                    + parElt.GetElementsByTagName("text")[0].GetAttribute("src"),
                                 audio =
                                     "content/"
-                                    + parElt.GetElementsByTagName("audio")[0].Attributes[
-                                        "src"
-                                    ].Value
+                                    + parElt.GetElementsByTagName("audio")[0].GetAttribute("src")
                                     + "#t="
                                     + clipStart.ToString(CultureInfo.InvariantCulture)
                                     + ","

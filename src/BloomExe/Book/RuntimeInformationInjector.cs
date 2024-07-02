@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Bloom.Properties;
+using Bloom.SafeXml;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -29,8 +30,8 @@ namespace Bloom.Book
             CheckDynamicStrings();
 
             // add dictionary script to the page
-            XmlElement dictionaryScriptElement =
-                pageDom.RawDom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
+            var dictionaryScriptElement =
+                pageDom.RawDom.SelectSingleNode("//script[@id='ui-dictionary']") as SafeXmlElement;
             if (dictionaryScriptElement != null)
                 dictionaryScriptElement.ParentNode.RemoveChild(dictionaryScriptElement);
 
@@ -122,14 +123,14 @@ namespace Bloom.Book
         /// <param name="xmlDocument"></param>
         /// <param name="mapOriginalToLocalized"></param>
         internal static void AddLanguagesUsedInPage(
-            XmlDocument xmlDocument,
+            SafeXmlDocument xmlDocument,
             Dictionary<string, string> mapOriginalToLocalized
         )
         {
             var langs = xmlDocument
                 .SafeSelectNodes("//*[@lang]")
-                .Cast<XmlElement>()
-                .Select(e => e.Attributes["lang"].Value)
+                .Cast<SafeXmlElement>()
+                .Select(e => e.GetAttribute("lang"))
                 .Distinct()
                 .Where(lang => !mapOriginalToLocalized.ContainsKey(lang))
                 .ToList();
@@ -155,30 +156,6 @@ namespace Bloom.Book
                 _collectDynamicStrings = true;
             }
         }
-
-        /// <summary>
-        /// Adds a script to the page that triggers i18n after the page is fully loaded.
-        /// </summary>
-        /// <param name="pageDom"></param>
-        //		private static void AddLocalizationTriggerToDom(HtmlDom pageDom)
-        //		{
-        //			XmlElement i18nScriptElement = pageDom.RawDom.SelectSingleNode("//script[@id='ui-i18n']") as XmlElement;
-        //			if (i18nScriptElement != null)
-        //				i18nScriptElement.ParentNode.RemoveChild(i18nScriptElement);
-        //
-        //			i18nScriptElement = pageDom.RawDom.CreateElement("script");
-        //			i18nScriptElement.SetAttribute("type", "text/javascript");
-        //			i18nScriptElement.SetAttribute("id", "ui-i18n");
-        //
-        //			// Explanation of the JavaScript:
-        //			//   $(document).ready(function() {...}) tells the browser to run the code inside the braces after the document has completed loading.
-        //			//   $('body') is a jQuery function that selects the contents of the body tag.
-        //			//   .find('*[data-i18n]') instructs jQuery to return a collection of all elements inside the body tag that have a "data-i18n" attribute.
-        //			//   .localize() runs the jQuery.fn.localize() method, which loops through the above collection of elements and attempts to localize the text.
-        //			i18nScriptElement.InnerText = "$(document).ready(function() { $('body').find('*[data-i18n]').localize(); });";
-        //
-        //			pageDom.Head.InsertAfter(i18nScriptElement, pageDom.Head.LastChild);
-        //		}
 
         private static void AddSomeCommonNationalLanguages(Dictionary<string, string> d)
         {
@@ -411,12 +388,12 @@ namespace Bloom.Book
         }
 
         private static void AddLabelTranslations(
-            XmlElement root,
+            SafeXmlElement root,
             Dictionary<string, string> dictionary
         )
         {
             var labels = root.SafeSelectNodes("//label[@data-i18n]");
-            foreach (XmlElement label in labels)
+            foreach (SafeXmlElement label in labels)
             {
                 var key = label.GetAttribute("data-i18n");
                 // In similar code in AddTranslationToDictionaryUsingEnglishAsKey, we call GetDynamicString if
@@ -465,10 +442,10 @@ namespace Bloom.Book
         {
             CheckDynamicStrings();
 
-            XmlElement existingElement =
-                pageDom.RawDom.SelectSingleNode("//script[@id='ui-settings']") as XmlElement;
+            var existingElement =
+                pageDom.RawDom.SelectSingleNode("//script[@id='ui-settings']") as SafeXmlElement;
 
-            XmlElement element = pageDom.RawDom.CreateElement("script");
+            var element = pageDom.RawDom.CreateElement("script");
             element.SetAttribute("type", "text/javascript");
             element.SetAttribute("id", "ui-settings");
             var d = new Dictionary<string, string>();

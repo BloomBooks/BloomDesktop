@@ -3,6 +3,7 @@ using System.IO;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
+using Bloom.SafeXml;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.Linq;
@@ -125,7 +126,7 @@ namespace BloomTests.Book
             var id1 = _dom.SelectSingleNode("//div[contains(@class,'cover')]").GetAttribute("id");
             var idSource = (
                 paperSaverHelper.XMatterDom.SelectSingleNode("//div[contains(@class,'cover')]")
-                as XmlElement
+                as SafeXmlElement
             ).GetAttribute("id");
             var oldIds = new List<string>();
             XMatterHelper.RemoveExistingXMatter(_dom, oldIds);
@@ -142,7 +143,7 @@ namespace BloomTests.Book
         [Test]
         public void InjectXMatter_SpanWithNameOfLanguage2_GetsLang()
         {
-            var frontMatterDom = new XmlDocument();
+            var frontMatterDom = SafeXmlDocument.Create();
             frontMatterDom.LoadXml(
                 @"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body>
 						 <div class='bloom-page cover coverColor bloom-frontMatter' data-page='required'>
@@ -162,7 +163,7 @@ namespace BloomTests.Book
         [Test]
         public void InjectXMatter_HasBackMatter_BackMatterInjectedAtEnd()
         {
-            var xMatterDom = new XmlDocument();
+            var xMatterDom = SafeXmlDocument.Create();
             xMatterDom.LoadXml(
                 @"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body>
 						 <div class='bloom-page cover coverColor bloom-frontMatter' data-page='required'>
@@ -207,7 +208,7 @@ namespace BloomTests.Book
         [Test]
         public void InjectXMatter_GenericLanguageFieldsHaveCorrectEffectiveLangAttribute()
         {
-            var xMatterDom = new XmlDocument();
+            var xMatterDom = SafeXmlDocument.Create();
             var dom = new HtmlDom(
                 @"<html><head></head><body>
 					<div class='bloom-page titlePage bloom-frontMatter'>
@@ -247,28 +248,28 @@ namespace BloomTests.Book
             helper.InjectXMatter(_dataSet, Layout.A5Portrait, false, "ru");
 
             // The closest parent with a meaningful lang needs to have language2. Then we get the proper font. See BL-8545.
-            XmlElement languageLocationDiv = dom.SelectSingleNode(
+            var languageLocationDiv = dom.SelectSingleNode(
                 "//div[@data-library='languageLocation']"
             );
-            XmlElement originalCopyrightAndLicenseDiv = dom.SelectSingleNode(
+            var originalCopyrightAndLicenseDiv = dom.SelectSingleNode(
                 "//div[@data-derived='originalCopyrightAndLicense']"
             );
-            XmlElement[] elementsToCheck = { languageLocationDiv, originalCopyrightAndLicenseDiv };
+            SafeXmlElement[] elementsToCheck = { languageLocationDiv, originalCopyrightAndLicenseDiv };
             elementsToCheck.ForEach(elementToCheck =>
             {
-                string lang = languageLocationDiv.Attributes["lang"]?.Value;
+                string lang = languageLocationDiv.GetAttribute("lang");
                 while (string.IsNullOrEmpty(lang) || lang == "*")
                 {
-                    elementToCheck = (XmlElement)elementToCheck.ParentNode;
-                    lang = elementToCheck.Attributes["lang"]?.Value;
+                    elementToCheck = (SafeXmlElement)elementToCheck.ParentNode;
+                    lang = elementToCheck.GetAttribute("lang");
                 }
 
                 Assert.That(lang, Is.EqualTo("ru"));
             });
 
             // Verify we didn't break other fields
-            XmlElement titleDiv = dom.SelectSingleNode("//div[@data-book='bookTitle']");
-            Assert.That(titleDiv.Attributes["lang"]?.Value, Is.EqualTo("en"));
+            var titleDiv = dom.SelectSingleNode("//div[@data-book='bookTitle']");
+            Assert.That(titleDiv.GetAttribute("lang"), Is.EqualTo("en"));
         }
 
         [Test]

@@ -13,17 +13,15 @@ using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.SafeXml;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
-using Newtonsoft.Json;
 #if __MonoCS__
 using SIL.CommandLineProcessing;
-#else
-using NAudio.Wave;
 #endif
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -149,14 +147,14 @@ namespace Bloom.Publish.Epub
 
         // Maps bloom page to a back link that needs to point to it once we know its name.
         // The back link must be later in the document, otherwise, it will get output incomplete.
-        private Dictionary<XmlElement, List<Tuple<XmlElement, string>>> _pendingBackLinks;
+        private Dictionary<SafeXmlElement, List<Tuple<SafeXmlElement, string>>> _pendingBackLinks;
 
         // Maps bloom-page elements to the file name we would like to use for that page.
         // Used for image description pages which we want out of the usual naming sequence.
         // One reason is that we want to know the file name in advance when we create the
         // link to the image description, and at that point we don't know what page number
         // it will have because we haven't finished evaluating which pages to omit as blank.
-        private Dictionary<XmlElement, string> _desiredNameMap;
+        private Dictionary<SafeXmlElement, string> _desiredNameMap;
 
         // Counter for creating output page files.
         int _pageIndex;
@@ -369,8 +367,8 @@ namespace Bloom.Publish.Epub
             _manifestItems = new List<string>();
             _spineItems = new List<string>();
             _nonLinearSpineItems = new HashSet<string>();
-            _pendingBackLinks = new Dictionary<XmlElement, List<Tuple<XmlElement, string>>>();
-            _desiredNameMap = new Dictionary<XmlElement, string>();
+            _pendingBackLinks = new Dictionary<SafeXmlElement, List<Tuple<SafeXmlElement, string>>>();
+            _desiredNameMap = new Dictionary<SafeXmlElement, string>();
             _scriptedItems = new List<string>();
             _svgItems = new List<string>();
             _firstContentPageItem = null;
@@ -407,13 +405,13 @@ namespace Bloom.Publish.Epub
 
             FixInternalHyperlinks(progress);
 
-            var nsManager = new XmlNamespaceManager(Book.RawDom.NameTable);
+            var nsManager = Book.RawDom.GetNewNamespaceManager();
             nsManager.AddNamespace("svg", "http://www.w3.org/2000/svg");
 
             var imageSettings = Book.BookInfo.PublishSettings.BloomPub.ImageSettings;
 
             var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");
-            foreach (XmlElement pageElement in Book.GetPageElements())
+            foreach (SafeXmlElement pageElement in Book.GetPageElements())
             {
                 var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
 
@@ -421,7 +419,7 @@ namespace Bloom.Publish.Epub
                     ".//svg:svg[contains(@class, 'comical-generated')]",
                     nsManager
                 );
-                if (comicalMatches.Count > 0 && Unpaginated)
+                if (comicalMatches.Length > 0 && Unpaginated)
                 {
                     progress.Message("Common.Error", "Error", ProgressKind.Error, false);
                     progress.MessageWithParams(
@@ -599,14 +597,14 @@ namespace Bloom.Publish.Epub
             var internalHyperlinks = Book.OurHtmlDom.SafeSelectNodes(
                 "//a[starts-with(@href, '#')]"
             );
-            if (internalHyperlinks.Count > 0)
+            if (internalHyperlinks.Length > 0)
             {
                 var msg = LocalizationManager.GetString(
                     "PublishTab.Epub.LocalLinksProblem",
                     "Links to other pages do not work in epubs. They will be changed to plain text that does not look like a link."
                 );
                 progress.MessageWithoutLocalizing(msg, ProgressKind.Warning);
-                foreach (var link in internalHyperlinks.Cast<XmlElement>().ToArray())
+                foreach (var link in internalHyperlinks.Cast<SafeXmlElement>().ToArray())
                 {
                     link.UnwrapElement();
                 }
@@ -1196,14 +1194,14 @@ namespace Bloom.Publish.Epub
             // These elements are marked as audio-sentence but we're not sure yet if the user actually recorded them yet
             var audioSentenceElements = HtmlDom
                 .SelectAudioSentenceElements(pageDom.RawDom.DocumentElement)
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
 
             // Now check if the audio recordings actually exist for them
             var audioSentenceElementsWithRecordedAudio = audioSentenceElements.Where(
                 x =>
                     AudioProcessor.GetOrCreateCompressedAudio(
                         Storage.FolderPath,
-                        x.Attributes["id"].Value
+                        x.GetAttribute("id")
                     ) != null
             );
             if (!audioSentenceElementsWithRecordedAudio.Any())
@@ -1235,26 +1233,26 @@ namespace Bloom.Publish.Epub
             foreach (var audioSentenceElement in sortedElements)
             {
                 // These are going to be the same regardless of whether this audio sentence has sub-elements to highlight.
-                var audioId = audioSentenceElement.Attributes["id"].Value;
+                var audioId = audioSentenceElement.GetAttribute("id");
                 var path = AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, audioId);
                 string epubPath = mergedAudioPath ?? CopyFileToEpub(path, subfolder: kAudioFolder);
                 var newSrc = epubPath.Substring(_contentFolder.Length + 1).Replace('\\', '/');
 
-                var highlightSegments = audioSentenceElement.SelectNodes(
+                var highlightSegments = audioSentenceElement.SafeSelectNodes(
                     ".//*[contains(concat(' ', normalize-space(@class), ' '),' bloom-highlightSegment ')]"
                 );
-                if (highlightSegments.Count == 0)
+                if (highlightSegments.Length == 0)
                 {
                     // Traditional approach, no sub-elements.
-                    var dataDurationAttr = audioSentenceElement.Attributes["data-duration"];
+                    var dataDurationAttr = audioSentenceElement.GetAttribute("data-duration");
                     TimeSpan clipTimeSpan;
-                    if (dataDurationAttr != null)
+                    if (!string.IsNullOrEmpty(dataDurationAttr))
                     {
                         // Make sure we parse "3.14159" properly since that's the form we'll see regardless of current locale.
                         // (See http://issues.bloomlibrary.org/youtrack/issue/BL-4374.)
                         clipTimeSpan = TimeSpan.FromSeconds(
                             Double.Parse(
-                                dataDurationAttr.Value,
+                                dataDurationAttr,
                                 System.Globalization.CultureInfo.InvariantCulture
                             )
                         );
@@ -1314,7 +1312,7 @@ namespace Bloom.Publish.Epub
 
                     for (
                         int i = 0;
-                        i < highlightSegments.Count && i < segmentEndTimesSecs.Count;
+                        i < highlightSegments.Length && i < segmentEndTimesSecs.Count;
                         ++i
                     )
                     {
@@ -1418,7 +1416,7 @@ namespace Bloom.Publish.Epub
             );
         }
 
-        private XmlElement[] SortAudioElements(IEnumerable<XmlElement> elementsWithAudio)
+        private SafeXmlElement[] SortAudioElements(IEnumerable<SafeXmlElement> elementsWithAudio)
         {
             // The elementsWithAudio need to be ordered the same way as in bloom-player
             // (narrationUtils.ts): by data-audio-order if it exists, or by document order
@@ -1445,14 +1443,14 @@ namespace Bloom.Publish.Epub
         /// Merge the audio files corresponding to the specified elements. Returns the path to the merged MP3 if all is well, null if
         /// we somehow failed to merge.
         /// </summary>
-        private string MergeAudioElements(XmlElement[] elementArray, ISet<string> warningMessages)
+        private string MergeAudioElements(SafeXmlElement[] elementArray, ISet<string> warningMessages)
         {
             var mergeFiles = elementArray
                 .Select(
                     s =>
                         AudioProcessor.GetOrCreateCompressedAudio(
                             Storage.FolderPath,
-                            s.Attributes["id"]?.Value
+                            s.GetAttribute("id")
                         )
                 )
                 .Where(s => !string.IsNullOrEmpty(s));
@@ -1549,7 +1547,7 @@ namespace Bloom.Publish.Epub
 
         private void CopyStyleSheets(HtmlDom pageDom)
         {
-            foreach (XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+            foreach (SafeXmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
             {
                 var href = Path.Combine(Book.FolderPath, link.GetAttribute("href"));
                 var name = Path.GetFileName(href);
@@ -1607,7 +1605,7 @@ namespace Bloom.Publish.Epub
             if (!_directionSettings.TryGetValue("body", out bodyDir))
                 return;
             bodyDir = bodyDir.ToLowerInvariant();
-            foreach (XmlElement body in pageDom.SafeSelectNodes("//body"))
+            foreach (SafeXmlElement body in pageDom.SafeSelectNodes("//body"))
             {
                 body.SetAttribute("dir", bodyDir);
                 break; // only one body element anyway
@@ -1628,7 +1626,7 @@ namespace Bloom.Publish.Epub
                 if (key == "body")
                     continue;
                 var dir = _directionSettings[key];
-                foreach (XmlElement div in pageDom.SafeSelectNodes("//div[@lang='" + key + "']"))
+                foreach (SafeXmlElement div in pageDom.SafeSelectNodes("//div[@lang='" + key + "']"))
                     div.SetAttribute("dir", dir);
             }
         }
@@ -1641,7 +1639,7 @@ namespace Bloom.Publish.Epub
         /// See http://issues.bloomlibrary.org/youtrack/issue/BL-4288 for discussion of blank pages.
         /// </remarks>
         private bool MakePageFile(
-            XmlElement pageElement,
+            SafeXmlElement pageElement,
             ISet<string> warningMessages,
             ImagePublishSettings imageSettings
         )
@@ -1652,11 +1650,8 @@ namespace Bloom.Publish.Epub
             // javascript, so even if the player supports all those things perfectly, they're not likely
             // to work properly.
             if (
-                (pageElement.Attributes["class"]?.Value?.Contains("bloom-nonprinting") ?? false)
-                || (
-                    pageElement.Attributes["class"]?.Value?.Contains("bloom-interactive-page")
-                    ?? false
-                )
+                pageElement.GetAttribute("class").Contains("bloom-nonprinting")
+                || pageElement.GetAttribute("class").Contains("bloom-interactive-page")
             )
             {
                 PublishHelper.CollectPageLabel(pageElement, _omittedPageLabels);
@@ -1749,7 +1744,7 @@ namespace Bloom.Publish.Epub
             if (_pageIndex == 1)
                 CopyStyleSheets(pageDom);
             // But we always need to adjust the stylesheets to be in the css folder
-            foreach (XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+            foreach (SafeXmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
             {
                 var name = Path.GetFileName(link.GetAttribute("href"));
                 link.SetAttribute("href", kCssFolder + "/" + name);
@@ -1765,7 +1760,7 @@ namespace Bloom.Publish.Epub
                 Path.Combine(_contentFolder, pageDocName),
                 pageDom.RawDom.OuterXml
             );
-            List<Tuple<XmlElement, string>> pendingBackLinks;
+            List<Tuple<SafeXmlElement, string>> pendingBackLinks;
             if (_pendingBackLinks.TryGetValue(pageElement, out pendingBackLinks))
             {
                 foreach (var pendingBackLink in pendingBackLinks)
@@ -1783,7 +1778,7 @@ namespace Bloom.Publish.Epub
         /// </summary>
         /// <param name="pageElement">a &lt;div&gt; with a class attribute that contains page level formatting information</param>
         /// <param name="pageDocName">filename of the page's html file</param>
-        private void StoreTableOfContentInfo(XmlElement pageElement, string pageDocName)
+        private void StoreTableOfContentInfo(SafeXmlElement pageElement, string pageDocName)
         {
             var pageClasses = pageElement
                 .GetAttribute("class")
@@ -1823,11 +1818,11 @@ namespace Bloom.Publish.Epub
             foreach (
                 var div in pageDom
                     .SafeSelectNodes(".//div[contains(@class, 'Heading')]")
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
                     .ToArray()
             )
             {
-                var classes = div.Attributes["class"].Value;
+                var classes = div.GetAttribute("class");
                 var regex = new Regex(@"\bHeading([0-9])\b");
                 var match = regex.Match(classes);
                 if (!match.Success)
@@ -1835,13 +1830,13 @@ namespace Bloom.Publish.Epub
                 var level = match.Groups[1]; // the number
                 var tag = "h" + level;
                 var replacement = div.OwnerDocument.CreateElement(tag);
-                foreach (var attr in div.Attributes.Cast<XmlAttribute>().ToArray())
+                foreach (var attr in div.AttributePairs)
                 {
-                    replacement.Attributes.Append(attr);
+                    replacement.SetAttribute(attr.Name, attr.Value);
                 }
 
                 var paragraphSeen = false;
-                foreach (var child in div.ChildNodes.Cast<XmlNode>().ToArray())
+                foreach (var child in div.ChildNodes)
                 {
                     // paragraph elements are not valid inside heading elements, so we need to
                     // remove any paragraph markup by copying only the content, not the markup
@@ -1851,7 +1846,7 @@ namespace Bloom.Publish.Epub
                         // the paragraph markup, so insert line breaks instead.
                         if (paragraphSeen)
                             replacement.AppendChild(div.OwnerDocument.CreateElement("br"));
-                        foreach (var grandchild in child.ChildNodes.Cast<XmlNode>().ToArray())
+                        foreach (var grandchild in child.ChildNodes)
                             replacement.AppendChild(grandchild);
                         paragraphSeen = true;
                     }
@@ -1871,14 +1866,12 @@ namespace Bloom.Publish.Epub
             // These are the only elements I can find that set explicit font sizes.
             // A few of our css rules apply percentage sizes, but that should be OK.
             var userStyles = pageDom.Head.ChildNodes
-                .Cast<XmlNode>()
-                .Where(x => x is XmlElement && x.Attributes["title"]?.Value == "userModifiedStyles")
+                .Where(x => x is SafeXmlElement && x.GetAttribute("title") == "userModifiedStyles")
                 .FirstOrDefault();
             if (userStyles != null)
             {
                 var userStylesCData = userStyles.ChildNodes
-                    .Cast<XmlNode>()
-                    .Where(x => x is XmlCDataSection)
+                    .Where(x => x is SafeXmlCDataSection)
                     .FirstOrDefault();
                 if (userStylesCData != null)
                 {
@@ -1890,14 +1883,14 @@ namespace Bloom.Publish.Epub
             }
         }
 
-        public static bool IsBranding(XmlElement element)
+        public static bool IsBranding(SafeXmlElement element)
         {
             if (element == null)
             {
                 return false;
             }
 
-            if (PublishHelper.HasClass(element, "branding"))
+            if (element.HasClass("branding"))
             {
                 return true;
             }
@@ -1912,10 +1905,10 @@ namespace Bloom.Publish.Epub
                 }
                 else
                 {
-                    XmlNode parentNode = element.ParentNode; // Might be an XmlDocument up the chain
-                    if (parentNode is XmlElement)
+                    var parentNode = element.ParentNode; // Might be a SafeXmlDocument up the chain
+                    if (parentNode is SafeXmlElement)
                     {
-                        element = (XmlElement)parentNode;
+                        element = (SafeXmlElement)parentNode;
                     }
                     else
                     {
@@ -1931,9 +1924,9 @@ namespace Bloom.Publish.Epub
         private void HandleImageDescriptions(HtmlDom bookDom)
         {
             // Set img alt attributes to the description, or erase them if no description (BL-6035)
-            foreach (var img in bookDom.Body.SelectNodes("//img[@src]").Cast<XmlElement>())
+            foreach (SafeXmlElement img in bookDom.Body.SafeSelectNodes("//img[@src]"))
             {
-                bool isLicense = PublishHelper.HasClass(img, "licenseImage");
+                bool isLicense = img.HasClass("licenseImage");
                 bool isBranding = IsBranding(img);
                 if (isLicense || isBranding)
                 {
@@ -1962,7 +1955,7 @@ namespace Bloom.Publish.Epub
                     img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes DAISY checker happy
                     continue;
                 }
-                if ((img.ParentNode as XmlElement).GetAttribute("aria-hidden") == "true")
+                if ((img.ParentNode as SafeXmlElement).GetAttribute("aria-hidden") == "true")
                 {
                     img.SetAttribute("role", "presentation"); // may not be needed, but doesn't hurt anything.
                     continue;
@@ -1970,7 +1963,7 @@ namespace Bloom.Publish.Epub
                 var desc =
                     img.SelectSingleNode(
                         "following-sibling::div[contains(@class, 'bloom-imageDescription')]/div[contains(@class, 'bloom-content1')]"
-                    ) as XmlElement;
+                    ) as SafeXmlElement;
                 var text = desc?.InnerText.Trim();
                 if (!string.IsNullOrEmpty(text))
                 {
@@ -1985,12 +1978,12 @@ namespace Bloom.Publish.Epub
                 var imageDescriptions = bookDom.SafeSelectNodes(
                     "//div[contains(@class, 'bloom-imageDescription')]"
                 );
-                foreach (XmlElement description in imageDescriptions)
+                foreach (SafeXmlElement description in imageDescriptions)
                 {
                     var activeDescriptions = description.SafeSelectNodes(
                         "div[contains(@class, 'bloom-visibility-code-on')]"
                     );
-                    if (activeDescriptions.Count == 0)
+                    if (activeDescriptions.Length == 0)
                         continue;
                     // Now that we need multiple asides (BL-6314), I'm putting them in a separate div.
                     // Insert the div after the image container, thus not interfering with the
@@ -2001,7 +1994,7 @@ namespace Bloom.Publish.Epub
                         asideContainer,
                         description.ParentNode
                     );
-                    foreach (XmlNode activeDescription in activeDescriptions)
+                    foreach (var activeDescription in activeDescriptions)
                     {
                         // If the inner xml is only an audioSentence recording, it will still create the aside.
                         // But if there really isn't anything here, skip it.
@@ -2011,10 +2004,10 @@ namespace Bloom.Publish.Epub
                         // We want to preserve all the inner markup, especially the audio spans.
                         aside.InnerXml = activeDescription.InnerXml;
                         // We also need the language attribute to get the style to work right.
-                        var langAttr = activeDescription.Attributes["lang"];
-                        if (langAttr != null)
+                        var langAttr = activeDescription.GetAttribute("lang");
+                        if (!string.IsNullOrEmpty(langAttr))
                         {
-                            aside.SetAttribute("lang", langAttr.Value);
+                            aside.SetAttribute("lang", langAttr);
                         }
 
                         // As well as potentially being used by stylesheets, 'imageDescription' is used by the
@@ -2032,9 +2025,7 @@ namespace Bloom.Publish.Epub
                                 "data-audiorecordingmode",
                                 null
                             ) == "TextBox"
-                            && activeDescription
-                                .GetStringAttribute("class")
-                                .Contains("audio-sentence")
+                            && activeDescription.GetAttribute("class").Contains("audio-sentence")
                         )
                         {
                             var duration = activeDescription.GetOptionalStringAttribute(
@@ -2085,9 +2076,9 @@ namespace Bloom.Publish.Epub
         /// Note that this method is called after RemoveUnwantedContent(), RemoveBloomUiElements(),
         /// RemoveSpuriousLinks(), and RemoveScripts() have all been called.
         /// </remarks>
-        private bool IsBlankPage(XmlElement pageElement)
+        private bool IsBlankPage(SafeXmlElement pageElement)
         {
-            foreach (XmlElement body in pageElement.GetElementsByTagName("body"))
+            foreach (SafeXmlElement body in pageElement.GetElementsByTagName("body"))
             {
                 // This may not be fool proof, but it works okay on an empty basic book.  It also works on a test
                 // book with an empty page in the middle of the book, and on the two sample shell books shipped
@@ -2099,7 +2090,7 @@ namespace Bloom.Publish.Epub
             // Any real image will be displayed.  Image only pages are allowed in Bloom.
             // (This includes background images.)
             foreach (
-                XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageElement)
+                SafeXmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageElement)
             )
             {
                 bool isBrandingFile; // not used here, but part of method signature
@@ -2108,7 +2099,7 @@ namespace Bloom.Publish.Epub
                     return false;
             }
             foreach (
-                XmlElement vid in HtmlDom.SelectChildVideoElements(pageElement).Cast<XmlElement>()
+                SafeXmlElement vid in HtmlDom.SelectChildVideoElements(pageElement).Cast<SafeXmlElement>()
             )
             {
                 var src = FindVideoFileIfPossible(vid);
@@ -2122,7 +2113,7 @@ namespace Bloom.Publish.Epub
             // Some elements we mark with this class because their content comes from CSS and will
             // not be detected by normal algorithms.
             if (
-                pageElement.SafeSelectNodes(".//div[contains(@class, 'bloom-force-publish')]").Count
+                pageElement.SafeSelectNodes(".//div[contains(@class, 'bloom-force-publish')]").Length
                 > 0
             )
                 return false;
@@ -2133,7 +2124,7 @@ namespace Bloom.Publish.Epub
         {
             // Manifest has to include all referenced files
             foreach (
-                XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(
+                SafeXmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(
                     pageDom.RawDom.DocumentElement
                 )
             )
@@ -2152,7 +2143,7 @@ namespace Bloom.Publish.Epub
                         img.SafeSelectNodes(
                                 "parent::div[contains(@class, 'bloom-imageContainer')]/ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]"
                             )
-                            .Cast<XmlElement>()
+                            .Cast<SafeXmlElement>()
                             .Count() != 0;
                     var dstPath = CopyFileToEpub(
                         srcPath,
@@ -2174,9 +2165,9 @@ namespace Bloom.Publish.Epub
         private void CopyVideos(HtmlDom pageDom)
         {
             foreach (
-                XmlElement videoContainerElement in HtmlDom
+                var videoContainerElement in HtmlDom
                     .SelectChildVideoElements(pageDom.RawDom.DocumentElement)
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
             )
             {
                 var trimmedFilePath = SignLanguageApi.PrepareVideoForPublishing(
@@ -2202,7 +2193,7 @@ namespace Bloom.Publish.Epub
         /// Return String.Empty if the image file does not exist in the file system.
         /// Also return a flag to indicate whether the image file is a branding api image file.
         /// </summary>
-        private string FindRealImageFileIfPossible(XmlElement img, out bool isBrandingFile)
+        private string FindRealImageFileIfPossible(SafeXmlElement img, out bool isBrandingFile)
         {
             isBrandingFile = false;
             var url = HtmlDom.GetImageElementUrl(img);
@@ -2221,7 +2212,7 @@ namespace Bloom.Publish.Epub
             return String.Empty;
         }
 
-        private string FindVideoFileIfPossible(XmlElement vid)
+        private string FindVideoFileIfPossible(SafeXmlElement vid)
         {
             var url = HtmlDom.GetVideoElementUrl(vid);
             if (url == null || String.IsNullOrEmpty(url.PathOnly.NotEncoded))
@@ -2278,7 +2269,7 @@ namespace Bloom.Publish.Epub
         {
             var body = pageDom.Body;
             var div = body.FirstChild;
-            var divClass = div.GetStringAttribute("class");
+            var divClass = div.GetAttribute("class");
             var classes = divClass.Split(' ');
             System.Diagnostics.Debug.Assert(classes.Contains("bloom-page"));
             var page = String.Empty;
@@ -2286,7 +2277,7 @@ namespace Bloom.Publish.Epub
             if (classes.Contains("numberedPage"))
             {
                 // This page number value is not localized.
-                page = div.GetStringAttribute("data-page-number");
+                page = div.GetAttribute("data-page-number");
             }
             else if (div.GetOptionalStringAttribute("data-page", "") == "required singleton")
             {
@@ -2363,34 +2354,34 @@ namespace Bloom.Publish.Epub
             // NB: very few epub:type values seem to be valid in conjunction with the aria role attribute.  Conformance
             // checking seems to imply that every epub:type attribute must be matched with a role attribute.
             var body = pageDom.Body;
-            var div = body.SelectSingleNode("div[@class]") as XmlElement;
+            var div = body.SelectSingleNode("div[@class]") as SafeXmlElement;
             if (div.GetOptionalStringAttribute("data-page", "") == "required singleton")
             {
-                if (PublishHelper.HasClass(div, "titlePage"))
+                if (div.HasClass("titlePage"))
                 {
                     div.SetAttribute("type", kEpubNamespace, "titlepage");
                 }
                 // Possibly on title page
                 var divOrigContrib =
-                    div.SelectSingleNode(".//div[@id='originalContributions']") as XmlElement;
+                    div.SelectSingleNode(".//div[@id='originalContributions']") as SafeXmlElement;
                 if (divOrigContrib != null && !String.IsNullOrWhiteSpace(divOrigContrib.InnerText))
                     divOrigContrib.SetAttribute("type", kEpubNamespace, "contributors");
-                var divFunding = div.SelectSingleNode("../div[@id='funding']") as XmlElement;
+                var divFunding = div.SelectSingleNode("../div[@id='funding']") as SafeXmlElement;
                 if (divFunding != null && !String.IsNullOrWhiteSpace(divFunding.InnerText))
                     divFunding.SetAttribute("type", kEpubNamespace, "acknowledgements");
                 // Possibly on general credits page
                 var divCopyright =
-                    div.SelectSingleNode(".//div[@data-derived='copyright']") as XmlElement;
+                    div.SelectSingleNode(".//div[@data-derived='copyright']") as SafeXmlElement;
                 if (divCopyright != null && !String.IsNullOrWhiteSpace(divCopyright.InnerText))
                     divCopyright.SetAttribute("type", kEpubNamespace, "copyright-page");
                 var divAck =
                     div.SelectSingleNode(".//div[@data-derived='versionAcknowledgments']")
-                    as XmlElement;
+                    as SafeXmlElement;
                 if (divAck != null && !String.IsNullOrWhiteSpace(divAck.InnerText))
                     divAck.SetAttribute("type", kEpubNamespace, "acknowledgements");
                 var divOrigCopyright =
                     div.SelectSingleNode(".//div[@data-derived='originalCopyrightAndLicense']")
-                    as XmlElement;
+                    as SafeXmlElement;
                 if (
                     divOrigCopyright != null
                     && !String.IsNullOrWhiteSpace(divOrigCopyright.InnerText)
@@ -2398,7 +2389,7 @@ namespace Bloom.Publish.Epub
                     divOrigCopyright.SetAttribute("type", kEpubNamespace, "other-credits");
                 var divOrigAck =
                     div.SelectSingleNode(".//div[@data-derived='originalAcknowledgments']")
-                    as XmlElement;
+                    as SafeXmlElement;
                 if (divOrigAck != null && !String.IsNullOrWhiteSpace(divOrigAck.InnerText))
                     divOrigAck.SetAttribute("type", kEpubNamespace, "contributors");
             }
@@ -2418,7 +2409,7 @@ namespace Bloom.Publish.Epub
         {
             var div =
                 pageDom.Body.SelectSingleNode("//div[@data-page='required singleton']")
-                as XmlElement;
+                as SafeXmlElement;
             if (div != null)
             {
                 // MUST do these outer elements first, as inner ones are prevented from getting the contentinfo role if
@@ -2483,10 +2474,10 @@ namespace Bloom.Publish.Epub
             else
             {
                 // tests at least don't always start content on page 1
-                div = pageDom.Body.SelectSingleNode("//div[@data-page-number]") as XmlElement;
+                div = pageDom.Body.SelectSingleNode("//div[@data-page-number]") as SafeXmlElement;
                 if (
                     div != null
-                    && PublishHelper.HasClass(div, "numberedPage")
+                    && div.HasClass("numberedPage")
                     && !_firstNumberedPageSeen
                 )
                 {
@@ -2504,23 +2495,20 @@ namespace Bloom.Publish.Epub
                 }
             }
             // Note that the alt attribute is handled in HandleImageDescriptions().
-            foreach (var img in pageDom.Body.SelectNodes("//img[@src]").Cast<XmlElement>())
+            foreach (var img in pageDom.Body.SafeSelectNodes("//img[@src]").Cast<SafeXmlElement>())
             {
-                if (
-                    PublishHelper.HasClass(img, "licenseImage")
-                    || PublishHelper.HasClass(img, "branding")
-                )
+                if (img.HasClass("licenseImage") || img.HasClass("branding"))
                     continue;
                 div =
                     img.SelectSingleNode(
                         "parent::div[contains(concat(' ',@class,' '),' bloom-imageContainer ')]"
-                    ) as XmlElement;
+                    ) as SafeXmlElement;
                 // Typically by this point we've converted the image descriptions into asides whose container is the next
                 // sibling of the image container. Set Aria Accessibility stuff for them.
-                var asideContainer = div?.NextSibling as XmlElement;
+                var asideContainer = div?.NextSibling as SafeXmlElement;
                 if (
                     asideContainer != null
-                    && asideContainer.Attributes["class"]?.Value == "asideContainer"
+                    && asideContainer.GetAttribute("class") == "asideContainer"
                 )
                 {
                     ++_imgCount;
@@ -2528,7 +2516,7 @@ namespace Bloom.Publish.Epub
                     var bookFigId = "bookfig" + _imgCount.ToString(CultureInfo.InvariantCulture);
                     img.SetAttribute("id", bookFigId);
                     const string period = ".";
-                    foreach (XmlElement asideNode in asideContainer.ChildNodes)
+                    foreach (SafeXmlElement asideNode in asideContainer.ChildNodes)
                     {
                         var figDescId =
                             "figdesc"
@@ -2551,19 +2539,19 @@ namespace Bloom.Publish.Epub
             }
             // Provide the general language of this document.
             // (Required for intermediate (AA) conformance with WCAG 2.0.)
-            div = pageDom.RawDom.SelectSingleNode("/html") as XmlElement;
+            div = pageDom.RawDom.SelectSingleNode("/html") as SafeXmlElement;
             div.SetAttribute("lang", Book.BookData.Language1.Tag);
             div.SetAttribute("xml:lang", Book.BookData.Language1.Tag);
         }
 
         private bool SetRoleAndLabelForMatchingDiv(
-            XmlElement div,
+            SafeXmlElement div,
             string attributeValue,
             string labelId,
             string labelEnglish
         )
         {
-            var divInternal = div.SelectSingleNode(".//div[" + attributeValue + "]") as XmlElement;
+            var divInternal = div.SelectSingleNode(".//div[" + attributeValue + "]") as SafeXmlElement;
             // ACE by DAISY for epub 3.2 says contentinfo should not be nested. That makes some sense...if you're skipping the
             // whole title page as being info about the content rather than actual content, you don't need to skip
             // elements within it as well. That means this function will rarely do anything, as these elements are usually
@@ -2591,14 +2579,14 @@ namespace Bloom.Publish.Epub
         }
 
         private bool SetRoleAndLabelForClass(
-            XmlElement div,
+            SafeXmlElement div,
             string desiredClass,
             string labelId,
             string labelEnglish
         )
         {
             // ACE by DAISY for epub 3.2 says contentinfo should not be nested. (Also not more than one... but see comment in SetRoleAndLabelForMatchingDiv).
-            if (PublishHelper.HasClass(div, desiredClass))
+            if (div.HasClass(desiredClass))
             {
                 string languageIdUsed;
                 if (div.AncestorWithAttributeValue("role", "contentinfo") == null)
@@ -2620,7 +2608,7 @@ namespace Bloom.Publish.Epub
         {
             // check for any script elements in the DOM
             var scripts = pageDom.SafeSelectNodes("//script");
-            if (scripts.Count > 0)
+            if (scripts.Length > 0)
             {
                 _scriptedItems.Add(filename);
             }
@@ -2628,7 +2616,7 @@ namespace Bloom.Publish.Epub
             {
                 // Check for any of the HTML event attributes in the DOM.  They would each contain a script.
                 bool foundEventAttr = false;
-                foreach (var attr in pageDom.SafeSelectNodes("//*/@*").Cast<XmlAttribute>())
+                foreach (var attr in pageDom.SafeSelectNodes("//*/@*").Cast<SafeXmlAttribute>())
                 {
                     switch (attr.Name)
                     {
@@ -2658,7 +2646,7 @@ namespace Bloom.Publish.Epub
                 }
                 // Check for any embedded SVG images.  (Bloom doesn't have any yet, but who knows? someday?)
                 var svgs = pageDom.SafeSelectNodes("//svg");
-                if (svgs.Count > 0)
+                if (svgs.Length > 0)
                 {
                     _svgItems.Add(filename);
                 }
@@ -2667,11 +2655,11 @@ namespace Bloom.Publish.Epub
                     // check for any references to SVG image files.  (If we miss one, it's not critical: files with
                     // only references to SVG images are optionally marked in the opf file.)
                     foreach (
-                        var imgsrc in pageDom.SafeSelectNodes("//img/@src").Cast<XmlAttribute>()
+                        var img in pageDom.SafeSelectNodes("//img[@src]").Cast<SafeXmlElement>()
                     )
                     {
                         if (
-                            imgsrc.Value
+                            img.GetAttribute("src")
                                 .ToLowerInvariant()
                                 .EndsWith(".svg", StringComparison.InvariantCulture)
                         )
@@ -2834,10 +2822,10 @@ namespace Bloom.Publish.Epub
             {
                 if (Path.GetFileName(xhtmlFileName) == "nav.xhtml")
                     continue;
-                var bookDoc = new XmlDocument();
+                var bookDoc = SafeXmlDocument.Create();
                 bookDoc.PreserveWhitespace = true;
                 bookDoc.Load(xhtmlFileName);
-                var nsmgr = new XmlNamespaceManager(bookDoc.NameTable);
+                var nsmgr = bookDoc.GetNewNamespaceManager();
                 nsmgr.AddNamespace("x", "http://www.w3.org/1999/xhtml");
                 if (
                     PublishHelper.FixXmlDomReferencesForBadFonts(
@@ -2902,24 +2890,23 @@ namespace Bloom.Publish.Epub
             bool firstTime = true;
             double pageWidthMm = 210; // assume A5 Portrait if not specified
             foreach (
-                XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(
+                SafeXmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(
                     pageDom.RawDom.DocumentElement
                 )
             )
             {
-                var parent = img.ParentNode.ParentNode as XmlElement;
+                var parent = img.ParentNode.ParentNode as SafeXmlElement;
                 var mulitplier = 1.0;
                 // For now we only attempt to adjust pictures contained in the marginBox.
                 // To do better than this we will probably need to actually load the HTML into
                 // a browser; even then it will be complex.
-                while (parent != null && !PublishHelper.HasClass(parent, "marginBox"))
+                while (parent != null && !parent.HasClass("marginBox"))
                 {
                     // 'marginBox' is not yet the margin box...it is some parent div.
                     // If it has an explicit percent width style, adjust for this.
-                    var styleAttr = parent.Attributes["style"];
-                    if (styleAttr != null)
+                    var style = parent.GetAttribute("style");
+                    if (!string.IsNullOrEmpty(style))
                     {
-                        var style = styleAttr.Value;
                         var match = new Regex("width:\\s*(\\d+(\\.\\d+)?)%").Match(style);
                         if (match.Success)
                         {
@@ -2937,17 +2924,16 @@ namespace Bloom.Publish.Epub
                             }
                         }
                     }
-                    parent = parent.ParentNode as XmlElement;
+                    parent = parent.ParentNode as SafeXmlElement;
                 }
                 if (parent == null)
                     continue;
-                var page = parent.ParentNode as XmlElement;
-                if (!PublishHelper.HasClass(page, "bloom-page"))
+                var page = parent.ParentNode as SafeXmlElement;
+                if (!page.HasClass("bloom-page"))
                     continue; // or return? marginBox should be child of page!
                 if (firstTime)
                 {
-                    var pageClass = HtmlDom
-                        .GetAttributeValue(page, "class")
+                    var pageClass = page.GetAttribute("class")
                         .Split()
                         .FirstOrDefault(c => c.Contains("Portrait") || c.Contains("Landscape"));
                     // This calculation unfortunately duplicates information from basePage.less.
@@ -3013,7 +2999,7 @@ namespace Bloom.Publish.Epub
                     }
                     firstTime = false;
                 }
-                var imgStyle = HtmlDom.GetAttributeValue(img, "style");
+                var imgStyle = img.GetAttribute("style");
                 // We want to take something like 'width:334px; height:220px; margin-left: 34px; margin-top: 0px;'
                 // and change it to something like 'width:75%; height:auto; margin-left: 10%; margin-top: 0px;'
                 // This first pass deals with width.
@@ -3066,11 +3052,12 @@ namespace Bloom.Publish.Epub
         /// </remarks>
         private void PruneSvgFileOfCruft(string filename)
         {
-            var xdoc = new XmlDocument();
+            var xdoc = SafeXmlDocument.Create();
             xdoc.Load(filename);
-            var unwantedElements = new List<XmlElement>();
+            var unwantedElements = new List<SafeXmlElement>();
             var unwantedAttrsCount = 0;
-            foreach (var xel in xdoc.SelectNodes("//*").Cast<XmlElement>())
+			// The SVG has namespaces, but we don't want them used to change the xpath expression.
+			foreach (var xel in xdoc.SafeSelectNodes("//*", null).Cast<SafeXmlElement>())
             {
                 if (
                     xel.Name.StartsWith("inkscape:")
@@ -3087,9 +3074,9 @@ namespace Bloom.Publish.Epub
                 else
                 {
                     // Removing the attribute here requires working from the end of the list of attributes.
-                    for (int i = xel.Attributes.Count - 1; i >= 0; --i)
+                    for (int i = xel.AttributePairs.Length - 1; i >= 0; --i)
                     {
-                        var attr = xel.Attributes[i];
+                        var attr = xel.AttributePairs[i];
                         if (
                             attr.Name.StartsWith("inkscape:")
                             || attr.Name.StartsWith("sodipodi:")
@@ -3097,7 +3084,7 @@ namespace Bloom.Publish.Epub
                             || attr.Name == "overflow"
                         ) // epubcheck for epub 3.2 reports error: SVG version 2 doesn't have this attribute
                         {
-                            xel.RemoveAttributeAt(i);
+                            xel.RemoveAttribute(attr.Name);
                             ++unwantedAttrsCount;
                         }
                     }
@@ -3105,7 +3092,7 @@ namespace Bloom.Publish.Epub
             }
             foreach (var xel in unwantedElements)
             {
-                var parent = (XmlElement)xel.ParentNode;
+                var parent = (SafeXmlElement)xel.ParentNode;
                 parent.RemoveChild(xel);
             }
             //System.Diagnostics.Debug.WriteLine($"PruneSvgFileOfCruft(\"{filename}\"): removed {unwantedElements.Count} elements and {unwantedAttrsCount} attributes");
@@ -3133,9 +3120,9 @@ namespace Bloom.Publish.Epub
             headNode.AppendChild(epubVisibilityStylesheet);
 
             var bodyNode = dom.SelectSingleNodeHonoringDefaultNS("/html/body");
-            var classAttribute = bodyNode.Attributes["class"];
-            if (classAttribute != null)
-                bodyNode.SetAttribute("class", classAttribute.Value + " epub-visibility");
+            var classAttribute = bodyNode.GetAttribute("class");
+            if (!string.IsNullOrEmpty(classAttribute))
+                bodyNode.SetAttribute("class", classAttribute + " epub-visibility");
             else
                 bodyNode.SetAttribute("class", "epub-visibility");
         }
@@ -3143,16 +3130,16 @@ namespace Bloom.Publish.Epub
         private void RemoveRegularStylesheets(HtmlDom pageDom)
         {
             foreach (
-                XmlElement link in pageDom.RawDom
+                SafeXmlElement link in pageDom.RawDom
                     .SafeSelectNodes("//head/link")
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
                     .ToArray()
             )
             {
-                var href = link.Attributes["href"];
-                if (href != null && Path.GetFileName(href.Value).StartsWith("custom"))
+                var href = link.GetAttribute("href");
+                if (!string.IsNullOrEmpty(href) && Path.GetFileName(href).StartsWith("custom"))
                     continue;
-                if (href != null && Path.GetFileName(href.Value) == "defaultLangStyles.css")
+                if (!string.IsNullOrEmpty(href) && Path.GetFileName(href) == "defaultLangStyles.css")
                     continue;
                 // BL-9844, BL-10080 We need some special style rules for Kyrgyzstan2020
                 // Xmatter even in epubs, but including the whole standard stylesheet
@@ -3161,7 +3148,7 @@ namespace Bloom.Publish.Epub
                 // flexbox. So we have a custom Kyrgyzstan2020 style sheet for epubs.
                 // In 5.1 there will be a more general approach to supporting custom
                 // xmatter stylesheets for epubs.
-                if (href != null && Path.GetFileName(href.Value).StartsWith("Kyrgyzstan2020"))
+                if (!string.IsNullOrEmpty(href) && Path.GetFileName(href).StartsWith("Kyrgyzstan2020"))
                 {
                     // We need to get rid of the link to the standard Kyrgz xmatter and
                     // add a link to the special epub-specific one. We can conveniently
@@ -3336,11 +3323,11 @@ namespace Bloom.Publish.Epub
         // I don't think we actually use these IDs in the ePUB so maybe we should just remove them?
         private void FixIllegalIds(HtmlDom pageDom)
         {
-            // Xpath results are things that have an id attribute, so MUST be XmlElements (though the signature
-            // of SafeSelectNodes allows other XmlNode types).
-            foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@id]"))
+            // Xpath results are things that have an id attribute, so MUST be SafeXmlElements (though the signature
+            // of SafeSelectNodes allows other SafeXmlNode types).
+            foreach (SafeXmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@id]"))
             {
-                var id = elt.Attributes["id"].Value;
+                var id = elt.GetAttribute("id");
                 var first = id[0];
                 if (first >= '0' && first <= '9')
                     elt.SetAttribute("id", "i" + id);
@@ -3408,7 +3395,7 @@ namespace Bloom.Publish.Epub
         private void RemoveScripts(HtmlDom pageDom)
         {
             foreach (
-                var elt in pageDom.RawDom.SafeSelectNodes("//script").Cast<XmlElement>().ToArray()
+                var elt in pageDom.RawDom.SafeSelectNodes("//script").Cast<SafeXmlElement>().ToArray()
             )
             {
                 elt.ParentNode.RemoveChild(elt);
@@ -3422,7 +3409,7 @@ namespace Bloom.Publish.Epub
             foreach (
                 var elt in pageDom.RawDom
                     .SafeSelectNodes("//*[@tabindex]")
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
                     .ToArray()
             )
             {
@@ -3431,7 +3418,7 @@ namespace Bloom.Publish.Epub
                 if (tabIndex != "0" && classes.Contains("bloom-translationGroup"))
                 {
                     foreach (
-                        var audioElt in HtmlDom.SelectAudioSentenceElements(elt).Cast<XmlElement>()
+                        var audioElt in HtmlDom.SelectAudioSentenceElements(elt).Cast<SafeXmlElement>()
                     )
                         audioElt.SetAttribute("data-audio-order", tabIndex);
                 }
@@ -3447,18 +3434,18 @@ namespace Bloom.Publish.Epub
         {
             // The validator has complained about area-describedby where the id is not found.
             // I don't think we will do qtips at all in books so let's just remove these altogether for now.
-            foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@aria-describedby]"))
+            foreach (SafeXmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@aria-describedby]"))
             {
                 elt.RemoveAttribute("aria-describedby");
             }
 
             // Validator doesn't like empty lang attributes, and they don't convey anything useful, so remove.
-            foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='']"))
+            foreach (SafeXmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='']"))
             {
                 elt.RemoveAttribute("lang");
             }
             // Validator doesn't like '*' as value of lang attributes, and they don't convey anything useful, so remove.
-            foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='*']"))
+            foreach (SafeXmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='*']"))
             {
                 elt.RemoveAttribute("lang");
             }
@@ -3473,7 +3460,7 @@ namespace Bloom.Publish.Epub
             foreach (
                 var elt in pageDom.RawDom
                     .SafeSelectNodes("//*[contains(concat(' ',@class,' '),' bloom-ui ')]")
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
                     .ToList()
             )
             {
@@ -3583,7 +3570,7 @@ namespace Bloom.Publish.Epub
             dom.RemoveDirectorySpecificationFromStyleSheetLinks();
         }
 
-        private HtmlDom GetEpubFriendlyHtmlDomForPage(XmlElement page)
+        private HtmlDom GetEpubFriendlyHtmlDomForPage(SafeXmlElement page)
         {
             var headXml = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
             var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");

@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Xml;
+using Bloom.SafeXml;
 
 namespace Bloom.Book
 {
@@ -81,9 +82,9 @@ namespace Bloom.Book
         )
         {
             //here we walk through all the stylesheets, looking for one with the special comment which tells us which page/orientations it supports
-            foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+            foreach (SafeXmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
             {
-                var fileName = link.GetStringAttribute("href");
+                var fileName = link.GetAttribute("href");
                 if (
                     fileName.ToLowerInvariant().Contains("mode")
                     || fileName.ToLowerInvariant().Contains("page")
@@ -189,7 +190,7 @@ namespace Bloom.Book
         }
 
         public static SizeAndOrientation GetSizeAndOrientation(
-            XmlDocument dom,
+            SafeXmlDocument dom,
             string defaultIfMissing
         )
         {
@@ -199,7 +200,7 @@ namespace Bloom.Book
             if (firstPage == null)
                 return FromString(defaultIfMissing);
             string sao = defaultIfMissing;
-            foreach (var part in firstPage.GetStringAttribute("class").SplitTrimmed(' '))
+            foreach (var part in firstPage.GetAttribute("class").SplitTrimmed(' '))
             {
                 if (
                     part.ToLowerInvariant().Contains("portrait")
@@ -213,10 +214,10 @@ namespace Bloom.Book
             return FromString(sao);
         }
 
-        public static void UpdatePageSizeAndOrientationClasses(XmlNode node, Layout layout)
+        public static void UpdatePageSizeAndOrientationClasses(SafeXmlNode node, Layout layout)
         {
             foreach (
-                XmlElement pageDiv in node.SafeSelectNodes(
+                SafeXmlElement pageDiv in node.SafeSelectNodes(
                     "descendant-or-self::div[contains(@class,'bloom-page')]"
                 )
             )
@@ -227,7 +228,7 @@ namespace Bloom.Book
 
                 foreach (var cssClassName in layout.ClassNames)
                 {
-                    AddClass(pageDiv, cssClassName);
+                    pageDiv.AddClass(cssClassName);
                 }
             }
         }
@@ -237,7 +238,7 @@ namespace Bloom.Book
             get { return PageSizeName + (IsLandScape ? "Landscape" : "Portrait"); }
         }
 
-        private static void RemoveClassesContaining(XmlElement xmlElement, string substring)
+        private static void RemoveClassesContaining(SafeXmlElement xmlElement, string substring)
         {
             var classes = xmlElement.GetAttribute("class");
             if (string.IsNullOrEmpty(classes))
@@ -251,11 +252,6 @@ namespace Bloom.Book
                     classes += part + " ";
             }
             xmlElement.SetAttribute("class", classes.Trim());
-        }
-
-        private static void AddClass(XmlElement e, string className)
-        {
-            e.SetAttribute("class", (e.GetAttribute("class") + " " + className).Trim());
         }
     }
 }

@@ -1,28 +1,17 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Xml;
 using Bloom;
+using Bloom.SafeXml;
 using NUnit.Framework;
 using SIL.Xml;
 
 namespace BloomTests
 {
-    //NB: if c# ever allows us to add static exension methods,
+    //NB: if c# ever allows us to add static extension methods,
     //then all this could be an extension on nunit's Assert class.
 
     public class AssertThatXmlIn
     {
-        public static AssertDom Dom(XmlDocument dom)
-        {
-            return new AssertDom(dom);
-        }
-
-        public static AssertFile File(string path)
-        {
-            return new AssertFile(path);
-        }
-
         public static AssertHtmlFile HtmlFile(string path)
         {
             return new AssertHtmlFile(path);
@@ -33,9 +22,14 @@ namespace BloomTests
             return new AssertXmlString(xmlString);
         }
 
-        public static AssertElement Element(XmlElement element)
+        public static AssertDom Dom(SafeXmlDocument dom)
         {
-            return new AssertElement(element);
+            return new AssertDom(dom.UnsafePrivateWrappedXmlDocument_ForTestsOnly);
+        }
+
+        public static AssertElement Element(SafeXmlElement element)
+        {
+            return new AssertElement(element.UnsafePrivateWrappedXmlElement_ForTestsOnly);
         }
     }
 
@@ -90,7 +84,7 @@ namespace BloomTests
 
         protected override XmlNode NodeOrDom
         {
-            get { return XmlHtmlConverter.GetXmlDomFromHtmlFile(_path, false); }
+            get { return XmlHtmlConverter.GetXmlDomFromHtmlFile(_path, false).UnsafePrivateWrappedXmlDocument_ForTestsOnly; }
         }
     }
 

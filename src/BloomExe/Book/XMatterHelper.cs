@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Collection;
+using Bloom.SafeXml;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
@@ -279,7 +280,7 @@ namespace Bloom.Book
         /// <summary>
         /// this is separated out to ease unit testing
         /// </summary>
-        public XmlDocument XMatterDom { get; set; }
+        public SafeXmlDocument XMatterDom { get; set; }
 
         /// <summary>
         /// Add any default user styles defined in xmatter that are not already defined in the book.
@@ -347,17 +348,17 @@ namespace Bloom.Book
 
             _bookDom.EnsureStylesheetLinks(Path.GetFileName(PathToXMatterStylesheet));
 
-            XmlNode divBeforeNextFrontMatterPage = _bookDom.RawDom.SelectSingleNode(
+            var divBeforeNextFrontMatterPage = _bookDom.RawDom.SelectSingleNode(
                 "//body/div[@id='bloomDataDiv']"
             );
 
             foreach (
-                XmlElement xmatterPage in XMatterDom.SafeSelectNodes(
+                SafeXmlElement xmatterPage in XMatterDom.SafeSelectNodes(
                     "/html/body/div[contains(@data-page,'required')]"
                 )
             )
             {
-                var newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as XmlElement;
+                var newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as SafeXmlElement;
                 // If we're updating an existing book, we want to keep the IDs (as much as possible; sometimes
                 // the number of xmatter pages changes and we have to add IDs). In this case, oldIds is obtained
                 // while running RemoveExistingXMatter.
@@ -416,7 +417,7 @@ namespace Bloom.Book
                 //any @lang attributes that have a metalanguage code (N1, N2, V) get filled with the actual code.
                 //note that this older method is crude, as you're in trouble if the user changes one of those to
                 //a different language. Instead, use data-metalanguage.
-                foreach (XmlElement node in newPageDiv.SafeSelectNodes("//*[@lang]"))
+                foreach (SafeXmlElement node in newPageDiv.SafeSelectNodes("//*[@lang]"))
                 {
                     var lang = node.GetAttribute("lang");
                     if (writingSystemCodes.ContainsKey(lang))
@@ -431,11 +432,11 @@ namespace Bloom.Book
                 divBeforeNextFrontMatterPage = newPageDiv;
 
                 //enhance... this is really ugly. I'm just trying to clear out any remaining "{blah}" left over from the template
-                foreach (XmlElement e in newPageDiv.SafeSelectNodes("//*[starts-with(text(),'{')]"))
+                foreach (SafeXmlElement e in newPageDiv.SafeSelectNodes("//*[starts-with(text(),'{')]"))
                 {
                     foreach (var node in e.ChildNodes)
                     {
-                        XmlText t = node as XmlText;
+                        var t = node as SafeXmlText;
                         if (t != null && t.Value.StartsWith("{"))
                             t.Value = ""; //otherwise html tidy will through away span's (at least) that are empty, so we never get a chance to fill in the values.
                     }
@@ -455,7 +456,7 @@ namespace Bloom.Book
         {
             // the "inside" here means "not counting the cover"
             var numberOfFrontMatterPagesInside =
-                XMatterDom.SafeSelectNodes("//div[contains(@class,'bloom-frontMatter')]").Count - 1;
+                XMatterDom.SafeSelectNodes("//div[contains(@class,'bloom-frontMatter')]").Length - 1;
             var firstPageWouldNotBePartOfASpread = numberOfFrontMatterPagesInside % 2 != 0;
 
             if (firstPageWouldNotBePartOfASpread)
@@ -471,7 +472,7 @@ namespace Bloom.Book
                 // page after that says it needs to be facing the next page
                 if (firstContentPageAndAlsoStartsSpread != null)
                 {
-                    var flyDom = new XmlDocument();
+                    var flyDom = SafeXmlDocument.Create();
                     flyDom.LoadXml(
                         @"
 						<div class='bloom-flyleaf bloom-frontMatter bloom-page' data-page='required singleton'>
@@ -483,7 +484,7 @@ namespace Bloom.Book
                             </div>
 						</div>"
                     );
-                    var flyleaf = _bookDom.RawDom.ImportNode(flyDom.FirstChild, true) as XmlElement;
+                    var flyleaf = _bookDom.RawDom.ImportNode(flyDom.FirstChild, true) as SafeXmlElement;
                     flyleaf.SetAttribute("id", Guid.NewGuid().ToString());
                     lastFrontMatterPage.ParentNode.InsertAfter(flyleaf, lastFrontMatterPage);
                     SizeAndOrientation.UpdatePageSizeAndOrientationClasses(flyleaf, layout);
@@ -491,42 +492,31 @@ namespace Bloom.Book
             }
         }
 
-        //		//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
-        //		//page of every book. This screws up thumbnail caching.
-        //		private void FixPageId(XmlDocument bookDom)
-        //		{
-        //			XmlElement page = bookDom.SelectSingleNode("//div[@id='74731b2d-18b0-420f-ac96-6de20f659810']") as XmlElement;
-        //			if (page != null)
-        //			{
-        //				page.SetAttribute("id", Guid.NewGuid().ToString());
-        //			}
-        //		}
-
-        public static bool IsFrontMatterPage(XmlElement pageDiv)
+        public static bool IsFrontMatterPage(SafeXmlElement pageDiv)
         {
             return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-frontMatter')]")
                 != null;
         }
 
-        public static bool IsBackMatterPage(XmlElement pageDiv)
+        public static bool IsBackMatterPage(SafeXmlElement pageDiv)
         {
             return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-backMatter')]")
                 != null;
         }
 
-        public static bool IsXMatterPage(XmlElement pageDiv)
+        public static bool IsXMatterPage(SafeXmlElement pageDiv)
         {
             return pageDiv.SelectSingleNode(
                     "self::div[contains(@class, 'bloom-frontMatter') or contains(@class, 'bloom-backMatter')]"
                 ) != null;
         }
 
-        public static bool IsCoverPage(XmlElement pageDiv)
+        public static bool IsCoverPage(SafeXmlElement pageDiv)
         {
             return pageDiv.SelectSingleNode("self::div[contains(@class, 'cover')]") != null;
         }
 
-        public static bool ShouldBeInBackForDeviceUse(XmlElement pageDiv)
+        public static bool ShouldBeInBackForDeviceUse(SafeXmlElement pageDiv)
         {
             return pageDiv.SelectSingleNode("self::div[contains(@class, 'frontCover')]") == null;
         }
@@ -537,7 +527,7 @@ namespace Bloom.Book
         public static void RemoveExistingXMatter(HtmlDom dom, List<string> oldPageIds)
         {
             foreach (
-                XmlElement div in dom.SafeSelectNodes(
+                SafeXmlElement div in dom.SafeSelectNodes(
                     "//div[contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter')]"
                 )
             )

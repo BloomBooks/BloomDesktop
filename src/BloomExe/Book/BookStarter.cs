@@ -7,18 +7,18 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Collection;
+using Bloom.SafeXml;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
-using SIL.Xml;
 
 namespace Bloom.Book
 {
-    /// <summary>
-    /// Creates the files for a new blank book from a template book
-    /// </summary>
-    public class BookStarter
+	/// <summary>
+	/// Creates the files for a new blank book from a template book
+	/// </summary>
+	public class BookStarter
     {
         private readonly IFileLocator _fileLocator;
         private readonly BookStorage.Factory _bookStorageFactory;
@@ -152,12 +152,12 @@ namespace Bloom.Book
             return Regex.IsMatch(Path.GetFileName(path), "^ReadMe-[a-z]{2,3}(-[A-Z]{2})?\\.htm$");
         }
 
-        private string GetMetaValue(XmlDocument Dom, string name, string defaultValue)
+        private string GetMetaValue(SafeXmlDocument Dom, string name, string defaultValue)
         {
             var nameSuggestion = Dom.SafeSelectNodes("//head/meta[@name='" + name + "']");
-            if (nameSuggestion.Count > 0)
+            if (nameSuggestion.Length > 0)
             {
-                return ((XmlElement)nameSuggestion[0]).GetAttribute("content");
+                return (nameSuggestion[0]).GetAttribute("content");
             }
             return defaultValue;
         }
@@ -212,7 +212,7 @@ namespace Bloom.Book
                     var initialPageDivs = storage.Dom.SafeSelectNodes(
                         "/html/body/div[contains(@data-page,'extra')]"
                     );
-                    initialPageDivs.Count > 0;
+                    initialPageDivs.Length > 0;
                     initialPageDivs = storage.Dom.SafeSelectNodes(
                             "/html/body/div[contains(@data-page,'extra')]"
                         )
@@ -302,14 +302,14 @@ namespace Bloom.Book
 
             //If this is a shell book, make elements to hold the vernacular
             foreach (
-                XmlElement div in storage.Dom.RawDom.SafeSelectNodes(
+                SafeXmlElement div in storage.Dom.RawDom.SafeSelectNodes(
                     "//div[contains(@class,'bloom-page')]"
                 )
             )
             {
-                XmlElement sourceDiv =
+                var sourceDiv =
                     sourceDom.SelectSingleNode("//div[@id='" + div.GetAttribute("id") + "']")
-                    as XmlElement;
+                    as SafeXmlElement;
                 SetupIdAndLineage(sourceDiv, div);
                 SetupPage(div, bookData);
             }
@@ -350,12 +350,12 @@ namespace Bloom.Book
             var groupsToEmpty = dom.RawDom.SafeSelectNodes(
                 "//div[contains(@class,'bloom-clearWhenMakingDerivative')]"
             );
-            foreach (XmlElement translationGroup in groupsToEmpty)
+            foreach (SafeXmlElement translationGroup in groupsToEmpty)
             {
                 var dataBookEl = translationGroup.SelectSingleNode(
                     "div[@data-book and contains(@class,'bloom-editable')]"
                 );
-                var dataBookKey = dataBookEl?.GetStringAttribute("data-book");
+                var dataBookKey = dataBookEl?.GetAttribute("data-book");
                 if (dataBookKey != null)
                 {
                     bookData.RemoveAllForms(dataBookKey);
@@ -368,13 +368,13 @@ namespace Bloom.Book
         private void StripBloomEnterpriseClassFromComicPages(BookStorage storage)
         {
             foreach (
-                XmlElement pageDiv in storage.Dom.RawDom.SafeSelectNodes(
+                SafeXmlElement pageDiv in storage.Dom.RawDom.SafeSelectNodes(
                     "//div[contains(@class,'bloom-page')]"
                 )
             )
             {
-                if (HtmlDom.HasClass(pageDiv, "comic"))
-                    HtmlDom.RemoveClass(pageDiv, "enterprise-only");
+                if (pageDiv.HasClass("comic"))
+                    pageDiv.RemoveClass("enterprise-only");
             }
         }
 
@@ -444,48 +444,19 @@ namespace Bloom.Book
             storage.Dom.RemoveMetaElement("bookLineage"); // even older name
         }
 
-        //		private static void ClearAwayAllTranslations(XmlNode element)
-        //		{
-        //
-        //			foreach (XmlNode node in element.ChildNodes)//.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Tag)))
-        //            {
-        //                if (node.NodeType == XmlNodeType.Text)
-        //                {
-        //                    node.InnerText = String.Empty;
-        //                }
-        //                else
-        //                {
-        //					ClearAwayAllTranslations(node);
-        //                }
-        //            }
-        //			//after removing text, we could still be left with the line breaks between them
-        //			if (element.ChildNodes != null)
-        //			{
-        //				var possibleBrNodes = new List<XmlNode>();
-        //				possibleBrNodes.AddRange(from XmlNode x in element.ChildNodes select x);
-        //				foreach (XmlNode node in possibleBrNodes)
-        //				{
-        //					if (node.NodeType == XmlNodeType.Element && node.Name.ToLower() == "br")
-        //					{
-        //						node.ParentNode.RemoveChild(node);
-        //					}
-        //				}
-        //			}
-        //		}
-
         /// <summary>
         /// When building on templates, we usually want to have some sample text, but don't let them bleed through to what the user sees
         /// </summary>
         /// <param name="element"></param>
-        private static void ClearAwayDraftText(XmlNode element)
+        private static void ClearAwayDraftText(SafeXmlNode element)
         {
             //clear away everything done in language "x"
-            var nodesInLangX = new List<XmlNode>();
+            var nodesInLangX = new List<SafeXmlNode>();
             nodesInLangX.AddRange(
-                from XmlNode x in element.SafeSelectNodes(String.Format("//*[@lang='x']"))
+                from SafeXmlNode x in element.SafeSelectNodes(String.Format("//*[@lang='x']"))
                 select x
             );
-            foreach (XmlNode node in nodesInLangX)
+            foreach (var node in nodesInLangX)
             {
                 node.ParentNode.RemoveChild(node);
             }
@@ -506,12 +477,12 @@ namespace Bloom.Book
         /// it's still an alphabet chart. This is a judgment call, which is worse.
         /// I'm judging that it's worse to have an out-of-date description than a missing one.
         /// </remarks>
-        private static void ClearAwayPageDescription(XmlNode pageDiv)
+        private static void ClearAwayPageDescription(SafeXmlNode pageDiv)
         {
             //clear away all pageDescription divs except the English one
-            var nonEnglishDescriptions = new List<XmlNode>();
+            var nonEnglishDescriptions = new List<SafeXmlNode>();
             nonEnglishDescriptions.AddRange(
-                from XmlNode x in pageDiv.SafeSelectNodes(
+                from SafeXmlNode x in pageDiv.SafeSelectNodes(
                     "//div[contains(@class, 'pageDescription') and @lang != 'en']"
                 )
                 select x
@@ -612,17 +583,6 @@ namespace Bloom.Book
             }
         }
 
-        private void RemoveDataDivElement(XmlNode dom, string key)
-        {
-            var dataDiv = HtmlDom.GetOrCreateDataDiv(dom);
-            foreach (
-                XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}']", key))
-            )
-            {
-                dataDiv.RemoveChild(e);
-            }
-        }
-
         private void UpdateEditabilityMetadata(BookStorage storage)
         {
             storage.BookInfo.IsSuitableForMakingShells = storage
@@ -637,7 +597,7 @@ namespace Bloom.Book
             storage.BookInfo.FileNameLocked = false;
         }
 
-        public static void SetupPage(XmlElement pageDiv, BookData bookData) //, bool inShellMode)
+        public static void SetupPage(SafeXmlElement pageDiv, BookData bookData) //, bool inShellMode)
         {
             TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, bookData);
 
@@ -662,14 +622,14 @@ namespace Bloom.Book
         /// bloom-translationGroup elements.
         /// </remarks>
         public static void SetLanguageForElementsWithMetaLanguage(
-            XmlNode elementOrDom,
+            SafeXmlNode elementOrDom,
             BookData bookData
         )
         {
-            //			foreach (XmlElement element in elementOrDom.SafeSelectNodes(".//*[@data-metalanguage]"))
+            //			foreach (SafeXmlElement element in elementOrDom.SafeSelectNodes(".//*[@data-metalanguage]"))
             //			{
             //				string lang = "";
-            //				string metaLanguage = element.GetStringAttribute("data-metalanguage").Trim();
+            //				string metaLanguage = element.GetAttribute("data-metalanguage").Trim();
             //				switch (metaLanguage)
             //				{
             //					case "V":
@@ -696,7 +656,7 @@ namespace Bloom.Book
             //			}
         }
 
-        public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
+        public static void SetupIdAndLineage(SafeXmlElement parentPageDiv, SafeXmlElement childPageDiv)
         {
             //NB: this works even if the parent and child are the same, which is the case when making a new book
             //but not when we're adding an individual template page. (Later: Huh?)
@@ -839,12 +799,12 @@ namespace Bloom.Book
             );
         }
 
-        internal static void UniqueifyIds(XmlElement pageDiv)
+        internal static void UniqueifyIds(SafeXmlElement pageDiv)
         {
             // find any img.id attributes and replace them with new ids, because we cannot have two elements with the same id in a book
             // we might want to do this for other elements as well, but audio file names may be tied to the id, and would have already
             // been uniquified by the time we get here.
-            foreach (XmlElement element in pageDiv.SafeSelectNodes(".//img[@id]"))
+            foreach (SafeXmlElement element in pageDiv.SafeSelectNodes(".//img[@id]"))
             {
                 element.SetAttribute("id", Guid.NewGuid().ToString());
             }

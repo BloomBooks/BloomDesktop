@@ -14,6 +14,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish;
+using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -553,7 +554,7 @@ namespace Bloom.WebLibraryIntegration
             var domForVideoProcessing = new HtmlDom(xmlDomFromHtmlFile);
             var videoContainerElements = HtmlDom
                 .SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement)
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             if (!videoContainerElements.Any())
                 return;
             SignLanguageApi.ProcessVideos(videoContainerElements, destDirName);
@@ -575,7 +576,7 @@ namespace Bloom.WebLibraryIntegration
             if (String.IsNullOrEmpty(settingsPath) || !RobustFile.Exists(settingsPath))
                 return;
             var settingsText = RobustFile.ReadAllText(settingsPath);
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.PreserveWhitespace = true;
             doc.LoadXml(settingsText);
             var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
@@ -797,8 +798,8 @@ namespace Bloom.WebLibraryIntegration
             var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext());
             var copiedBook = bookServer.GetBookFromBookInfo(bookInfo);
             copiedBook.BringBookUpToDate(new NullProgress(), true);
-            var pages = new List<XmlElement>();
-            foreach (XmlElement page in copiedBook.GetPageElements())
+            var pages = new List<SafeXmlElement>();
+            foreach (SafeXmlElement page in copiedBook.GetPageElements())
                 pages.Add(page);
             ISet<string> warningMessages = new HashSet<string>();
             PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);

@@ -2,12 +2,11 @@
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.SafeXml;
 using L10NSharp;
-using Moq;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.Reporting;
-using SIL.Xml;
 
 namespace BloomTests.Book
 {
@@ -63,12 +62,11 @@ namespace BloomTests.Book
 							<textarea lang='en'></textarea>
 							</div>
 						</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
-            var pageDiv = (XmlElement)
-                dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+            var pageDiv = (SafeXmlElement)
+                dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
                 bookData,
@@ -78,13 +76,13 @@ namespace BloomTests.Book
                 "333"
             );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-bilingual')]",
                     0
                 ); //should remove that one
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-trilingual')]",
                     1
@@ -102,17 +100,16 @@ namespace BloomTests.Book
 						</td>
 						</table>
 					</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
             TranslationGroupManager.PrepareElementsInPageOrDocument(
-                (XmlElement)dom.SafeSelectNodes("//div[@class='bloom-page']")[0],
+                (SafeXmlElement)dom.RawDom.SafeSelectNodes("//div[@class='bloom-page']")[0],
                 bookData
             );
 
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//td/div", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//td/div[@lang='en']", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//td/div", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//td/div[@lang='en']", 1);
         }
 
         [Test]
@@ -122,27 +119,26 @@ namespace BloomTests.Book
                 @"<html><body><div class='bloom-page bloom-translationGroup'>
 						<textarea lang='en'>This is some English</textarea>
 					</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
             TranslationGroupManager.PrepareElementsInPageOrDocument(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
 
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 4);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 4);
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en']", 1);
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='fr']", 1);
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='es']", 1);
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz']", 1);
         }
 
@@ -156,36 +152,35 @@ namespace BloomTests.Book
             var contents =
                 @"<html><body><div class='bloom-page bloom-translationGroup'>
 					</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
             TranslationGroupManager.PrepareElementsInPageOrDocument(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]",
                     3
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'normal-style') and contains(@class, 'bloom-editable')]",
                     3
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]",
                     0
                 );
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
         }
 
         /// <summary>
@@ -213,59 +208,58 @@ namespace BloomTests.Book
 			Sista i tok: Bai mi stori long yu.</div>
   </div>
 </div></div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
             TranslationGroupManager.PrepareElementsInPageOrDocument(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]",
                     5
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'normal-style') and contains(@class, 'bloom-editable')]",
                     5
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]",
                     0
                 );
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='en' and contains(., 'The Mother')]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='tpi' and contains(., 'Mama i tok')]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasNoMatchForXpath("//div[@lang='xyz' and contains(., 'The Mother')]");
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasNoMatchForXpath("//div[@lang='xyz' and contains(., 'Mama i tok')]");
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasNoMatchForXpath("//div[@lang='fr' and contains(., 'The Mother')]");
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasNoMatchForXpath("//div[@lang='fr' and contains(., 'Mama i tok')]");
         }
 
@@ -288,12 +282,11 @@ namespace BloomTests.Book
 							<div class='bloom-editable' lang='es'></div>
 							</div>
 						</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
-            var pageDiv = (XmlElement)
-                dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+            var pageDiv = (SafeXmlElement)
+                dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
 
             // Here the arguments don't matter much. data-default-languages specifies N1, which means the Metadata1Language should
             // be visible, and N2, which currently turns on L3.
@@ -307,19 +300,19 @@ namespace BloomTests.Book
             );
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-visibility-code-on')]",
                     2
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr' and contains(@class, 'bloom-visibility-code-on')]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='es' and contains(@class, 'bloom-visibility-code-on')]",
                     1
@@ -337,11 +330,10 @@ namespace BloomTests.Book
 							<div class='bloom-editable' lang='es'></div>
 							</div>
 						</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
-            var pageDiv = (XmlElement)
+            var pageDiv = (SafeXmlElement)
                 dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
 
             // Here the arguments don't matter much. data-default-languages specifies N1, which means the Metadata1Language should
@@ -356,19 +348,19 @@ namespace BloomTests.Book
             );
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-visibility-code-on')]",
                     2
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr' and contains(@class, 'bloom-visibility-code-on')]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='es' and contains(@class, 'bloom-visibility-code-on')]",
                     1
@@ -389,14 +381,13 @@ namespace BloomTests.Book
 							</div>
 						</div></body></html>";
             var contents = string.Format(contentsPattern, "V,N1");
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
             // Note that we deliberately don't do this: we leave bookData.Language2Tag and Language3Tag null.
             // The appearance system variables called L2 and L3 refer to Metadata1Language and Metadata2Language.
             //bookData.SetMultilingualContentLanguages("xyz", "fr", "es");
 
-            var pageDiv = (XmlElement)
+            var pageDiv = (SafeXmlElement)
                 dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
 
             var settings = new AppearanceSettings();
@@ -426,19 +417,19 @@ namespace BloomTests.Book
             // The settings say that L3 should be visible, so it should be on
             // The settings have nothing to say about L1, so it should be on based on V being in data-default-languages
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-visibility-code-on')]",
                     2
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='es' and contains(@class, 'bloom-visibility-code-on')]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='xyz' and contains(@class, 'bloom-visibility-code-on')]",
                     1
@@ -449,8 +440,8 @@ namespace BloomTests.Book
             // Now we have settings for all three languages so that fall-back is never used.
             // I just updated the test to the new behavior.
             contents = string.Format(contentsPattern, "N1,N2");
-            dom.LoadXml(contents);
-            pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+            dom.RawDom.LoadXml(contents);
+            pageDiv = (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
             settings.UpdateFromJson(
                 @"{
   ""cssThemeName"": ""default"",
@@ -476,13 +467,13 @@ namespace BloomTests.Book
             // The settings say that L2 should be visible, so it should be on.
             // By default they also say L1 should be.
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-visibility-code-on')]",
                     2
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr' and contains(@class, 'bloom-visibility-code-on')]",
                     1
@@ -501,10 +492,9 @@ namespace BloomTests.Book
 							<div class='bloom-editable' lang='es'></div>
 							</div>
 						</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
-            var pageDiv = (XmlElement)
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var pageDiv = (SafeXmlElement)
                 dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
@@ -515,25 +505,25 @@ namespace BloomTests.Book
                 "es"
             );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-visibility-code-on')]",
                     3
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr' and contains(@class, 'bloom-visibility-code-on')]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='es' and contains(@class, 'bloom-visibility-code-on')]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='xyz' and contains(@class, 'bloom-visibility-code-on')]",
                     1
@@ -552,10 +542,9 @@ namespace BloomTests.Book
 							<div class='bloom-editable' lang='es'></div>
 							</div>
 						</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
-            var pageDiv = (XmlElement)
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var pageDiv = (SafeXmlElement)
                 dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
@@ -566,19 +555,19 @@ namespace BloomTests.Book
                 ""
             );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-visibility-code-on')]",
                     2
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr' and contains(@class, 'bloom-visibility-code-on')]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='xyz' and contains(@class, 'bloom-visibility-code-on')]",
                     1
@@ -594,10 +583,9 @@ namespace BloomTests.Book
 							<textarea lang='en'></textarea>
 							</div>
 						</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
-            var pageDiv = (XmlElement)
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var pageDiv = (SafeXmlElement)
                 dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
@@ -608,13 +596,13 @@ namespace BloomTests.Book
                 null
             );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-bilingual')]",
                     0
                 ); //should remove that one
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-monolingual')]",
                     1
@@ -630,10 +618,9 @@ namespace BloomTests.Book
 							<textarea lang='en'></textarea>
 							</div>
 						</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
-            var pageDiv = (XmlElement)
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var pageDiv = (SafeXmlElement)
                 dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
             TranslationGroupManager.UpdateContentLanguageClasses(
                 pageDiv,
@@ -644,13 +631,13 @@ namespace BloomTests.Book
                 null
             );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-monolingual')]",
                     0
                 ); //should remove that one
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-bilingual')]",
                     1
@@ -705,10 +692,9 @@ namespace BloomTests.Book
 	</div>
 </body>";
 
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
-            var bodyDiv = (XmlElement)dom.SafeSelectNodes("//body")[0];
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var bodyDiv = (SafeXmlElement)dom.SafeSelectNodes("//body")[0];
 
             // System under test
             TranslationGroupManager.UpdateContentLanguageClasses(
@@ -721,7 +707,7 @@ namespace BloomTests.Book
             );
 
             // Verification
-            var bloomDataDivImageDescription = (XmlElement)
+            var bloomDataDivImageDescription = (SafeXmlElement)
                 dom.SafeSelectNodes(
                     "//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[@lang='pt']"
                 )[0];
@@ -731,7 +717,7 @@ namespace BloomTests.Book
                 "Div should have out-of-date bloom-content1 class removed"
             );
 
-            var pageNonL1ImageDescription = (XmlElement)
+            var pageNonL1ImageDescription = (SafeXmlElement)
                 dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]/div/div[@lang='pt']")[0];
             classString = pageNonL1ImageDescription.GetAttribute("class");
             Assert.IsFalse(
@@ -739,7 +725,7 @@ namespace BloomTests.Book
                 "Div should have out-of-date bloom-content1 class removed"
             );
 
-            var pageL1ImageDescription = (XmlElement)
+            var pageL1ImageDescription = (SafeXmlElement)
                 dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]/div/div[@lang='xyz']")[
                     0
                 ];
@@ -750,7 +736,7 @@ namespace BloomTests.Book
             );
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-content1')]",
                     2
@@ -770,48 +756,47 @@ namespace BloomTests.Book
 								<div class='bloom-translationGroup normal-style' data-placeholder='copy me' >
 								</div>
 						</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
             bookData.SetMultilingualContentLanguages("xyz", "fr", "es");
 
             TranslationGroupManager.PrepareElementsInPageOrDocument(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]",
                     3
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'normal-style') and contains(@class, 'bloom-editable')]",
                     3
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]",
                     0
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='xyz' and @data-placeholder='copy me']",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr' and @data-placeholder='copy me']",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='es' and @data-placeholder='copy me']",
                     1
@@ -825,20 +810,19 @@ namespace BloomTests.Book
                 @"<html><body><div class='bloom-page bloom-translationGroup'>
 						<label class='bloom-bubble'>something helpful</label>
 					</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
             TranslationGroupManager.PrepareElementsInPageOrDocument(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//label[@class='bloom-bubble']", 1);
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//label[@class='bloom-bubble' and text()='something helpful']",
                     1
@@ -857,39 +841,38 @@ namespace BloomTests.Book
 									lang='en'>The <i>Mother</i> said, <u>Nurse!</u>
 										The Nurse <b>answered</b>.</div>
 							</div></div></div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
             TranslationGroupManager.PrepareElementsInPageOrDocument(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'plain-style') and contains(@class, 'bloom-editable')]",
                     4
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]",
                     0
                 );
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='en' and contains(., 'The Mother')]",
                     1
                 );
-            AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='fr']/u");
-            AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='fr']/b");
-            AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='fr']/i");
+            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@lang='fr']/u");
+            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@lang='fr']/b");
+            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@lang='fr']/i");
         }
 
         [Test]
@@ -912,70 +895,69 @@ namespace BloomTests.Book
 											</div>
 										</div>
 									</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
             TranslationGroupManager.PrepareElementsInPageOrDocument(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'plain-style') and contains(@class, 'bloom-editable')]",
                     4
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]",
                     0
                 );
             //the added french should have all the structure including a copy of the image container div, but none of the text except from the bloom-cloneToOtherLanguages paragraph
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr']/div/img[@src='foo.png']",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr']/div/div[@contentEditable='true']",
                     1
                 );
             //should clear out the caption text (using a raw contentEditable for the caption just becuase bloom-editables inside of bloom-editables is beyond my ambitions at the moment.
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr']/div/div[contains(@class,'caption') and @contentEditable='true' and not(text())]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr']/*[contains(text(),'Do not')]",
                     0
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']//br", 0);
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr']//p[not(contains(@class,'bloom-cloneToOtherLanguages'))]",
                     0
                 ); // get rid of all paragraphs, except for...
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr']//p[contains(@class,'bloom-cloneToOtherLanguages')]",
                     1
                 ); // the one with "bloom-cloneToOtherLanguages"
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@lang='fr']/*[contains(text(),'Do copy me')]",
                     1
@@ -991,12 +973,12 @@ namespace BloomTests.Book
 										<div class='bloom-editable' data-book='bookTitle' lang='en'>Some English</div>
 								</div>
 						</div></body></html>";
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
 
             var languages = new string[] { "en", "es", "fr" };
             TranslationGroupManager.PrepareDataBookTranslationGroups(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 languages
             );
 
@@ -1375,51 +1357,50 @@ namespace BloomTests.Book
 							<div lang='pt'>not editable</div>
 						</div>
 					</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
             TranslationGroupManager.PrepareElementsInPageOrDocument(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'normal-style') and contains(@class, 'bloom-editable')]",
                     2
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'plain-style') and contains(@class, 'bloom-editable')]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'fancy-style') and contains(@class, 'bloom-editable')]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@class='bloom-translationGroup']/div",
                     5
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@class='bloom-translationGroup']/div[not(contains(@class, 'bloom-editable') or contains(@class, 'normal-style'))]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]",
                     0
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-translationGroup']", 1);
         }
 
@@ -1432,67 +1413,66 @@ namespace BloomTests.Book
 							<div class='bloom-editable' lang='en' data-generate-translations='true' data-i18n='Test.L10N.ID'>English Text</div>
 						</div>
 					</div></body></html>";
-            var dom = new XmlDocument();
-            dom.LoadXml(contents);
-            var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@data-generate-translations]", 1);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-i18n]", 1);
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-i18n]", 1);
 
             //SUT
             TranslationGroupManager.PrepareElementsInPageOrDocument(
-                (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
 
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-translationGroup']", 1);
-            AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@data-generate-translations]");
-            AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@data-i18n]");
+            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-generate-translations]");
+            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-i18n]");
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@class='bloom-translationGroup']/div",
                     5
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable')]",
                     5
                 );
             // We start with an English div
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable') and @lang='en' and text()='English Text']",
                     1
                 );
             // These three are included because they are languages of the collection. (We also have a translation for French.)
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable') and @lang='fr' and not(text())]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable') and @lang='xyz' and not(text())]",
                     1
                 );
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable') and @lang='es' and text()='Spanish Text']",
                     1
                 );
             // This one is included because we have a translation available
             AssertThatXmlIn
-                .Dom(dom)
+                .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div/div[contains(@class, 'bloom-editable') and @lang='zh-CN' and text()='Chinese Text']",
                     1
@@ -1511,10 +1491,10 @@ namespace BloomTests.Book
 				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'></div>
 			</div>
 		</div>";
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
             TranslationGroupManager.FixDuplicateLanguageDivs(
-                (XmlElement)
+                (SafeXmlElement)
                     dom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[0],
                 "xyz"
             );
@@ -1559,10 +1539,10 @@ namespace BloomTests.Book
 				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'></div>
 			</div>
 		</div>";
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
             TranslationGroupManager.FixDuplicateLanguageDivs(
-                (XmlElement)
+                (SafeXmlElement)
                     dom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[0],
                 "xyz"
             );
@@ -1607,10 +1587,10 @@ namespace BloomTests.Book
 				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'>Xyz text</div>
 			</div>
 		</div>";
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
             TranslationGroupManager.FixDuplicateLanguageDivs(
-                (XmlElement)
+                (SafeXmlElement)
                     dom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[0],
                 "xyz"
             );
@@ -1655,10 +1635,10 @@ namespace BloomTests.Book
 				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'>Second Xyz text</div>
 			</div>
 		</div>";
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
             TranslationGroupManager.FixDuplicateLanguageDivs(
-                (XmlElement)
+                (SafeXmlElement)
                     dom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[0],
                 "xyz"
             );
@@ -1696,8 +1676,8 @@ namespace BloomTests.Book
         [Test]
         public void SortTranslationGroups_YieldsExpectedOrder()
         {
-            var doc = new XmlDocument();
-            var input = new List<XmlElement>();
+            var doc = SafeXmlDocument.Create();
+            var input = new List<SafeXmlElement>();
             for (int i = 0; i < 7; i++)
             {
                 var div = doc.CreateElement("div");
@@ -1724,7 +1704,7 @@ namespace BloomTests.Book
         [Test]
         public void AddThemeVisibleOrderClass_NoSiblings_AddsContentFirst()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             var tg = doc.CreateElement("div");
             tg.SetAttribute("class", "bloom-translationGroup");
             doc.AppendChild(tg);
@@ -1773,7 +1753,7 @@ namespace BloomTests.Book
         [Test]
         public void AddThemeVisibleOrderClass_SiblingL1_AddsContentSecond()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             var tg = doc.CreateElement("div");
             tg.SetAttribute("class", "bloom-translationGroup");
             doc.AppendChild(tg);
@@ -1786,8 +1766,10 @@ namespace BloomTests.Book
             editableFirst.SetAttribute("class", "bloom-editable bloom-visibility-code-on");
             tg.AppendChild(editableFirst);
             editableFirst.SetAttribute("lang", "fr");
-            // No fair trying "fr" since that occurs on sibling
-            TranslationGroupManager.AddThemeVisibleOrderClass(
+            // We don't want to have to implement SafeXmlDocument.CreateWhitespace, so we'll just
+            // wrap the editable element instead of creating a SafeXmlDocument to start with.
+			// No fair trying "fr" since that occurs on sibling
+			TranslationGroupManager.AddThemeVisibleOrderClass(
                 editable,
                 false,
                 "en",
@@ -1819,7 +1801,7 @@ namespace BloomTests.Book
         [Test]
         public void UpdateContentLanguageClasses_SiblingL1AndL2_AddsContentThird()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             var body = doc.CreateElement("body");
             doc.AppendChild(body);
             var tg = doc.CreateElement("div");
@@ -1857,7 +1839,9 @@ namespace BloomTests.Book
 }"
             );
             settings.SetConsistentWithFiles();
-            TranslationGroupManager.UpdateContentLanguageClasses(
+			// We don't want to have to implement SafeXmlDocument.CreateWhitespace, so we'll just
+			// wrap the body element instead of creating a SafeXmlDocument to start with.
+			TranslationGroupManager.UpdateContentLanguageClasses(
                 body,
                 bookData,
                 settings,
@@ -1922,7 +1906,7 @@ namespace BloomTests.Book
         [Test]
         public void AddThemeVisibleOrderClass_NotVisible_Or_Irrelevant_AddsNothing()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             var tg = doc.CreateElement("div");
             tg.SetAttribute("class", "bloom-translationGroup");
             doc.AppendChild(tg);
@@ -1992,9 +1976,9 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasNoTextBlock_False()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml("<html><body><div class='bloom-page'></div></body></html>");
-            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            var page = (SafeXmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
             Assert.That(
                 TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false),
                 Is.False
@@ -2004,7 +1988,7 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithNoDataDefaultLangs_True()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2013,14 +1997,14 @@ namespace BloomTests.Book
    </div>
 </div></body></html>"
             );
-            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            var page = (SafeXmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
             Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false), Is.True);
         }
 
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithN1_False()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2029,7 +2013,7 @@ namespace BloomTests.Book
    </div>
 </div></body></html>"
             );
-            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            var page = (SafeXmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
             Assert.That(
                 TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false),
                 Is.False
@@ -2039,7 +2023,7 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_True()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2048,14 +2032,14 @@ namespace BloomTests.Book
    </div>
 </div></body></html>"
             );
-            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            var page = (SafeXmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
             Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false), Is.True);
         }
 
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_AndDataVisibilityVariable_False()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2064,7 +2048,7 @@ namespace BloomTests.Book
    </div>
 </div></body></html>"
             );
-            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            var page = (SafeXmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
             Assert.That(
                 TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false),
                 Is.False
@@ -2074,7 +2058,7 @@ namespace BloomTests.Book
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithVN1_AndDataVisibilityVariable_Legacy_True()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2083,14 +2067,14 @@ namespace BloomTests.Book
    </div>
 </div></body></html>"
             );
-            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            var page = (SafeXmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
             Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, true), Is.True);
         }
 
         [Test]
         public void IsPageAffectedByLanguageMenu_HasTextBlockWithN1_AndOneWithAuto_True()
         {
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"
 <html><body><div class='bloom-page'>
@@ -2102,7 +2086,7 @@ namespace BloomTests.Book
    </div>
 </div></body></html>"
             );
-            var page = (XmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            var page = (SafeXmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
             Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false), Is.True);
         }
     }

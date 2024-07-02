@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Bloom.SafeXml;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
-using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -183,9 +182,9 @@ namespace Bloom.Book
             return FromPage(firstPage, layout);
         }
 
-        public static Layout FromPage(XmlElement page, Layout layout)
+        public static Layout FromPage(SafeXmlElement page, Layout layout)
         {
-            foreach (var part in page.GetStringAttribute("class").SplitTrimmed(' '))
+            foreach (var part in page.GetAttribute("class").SplitTrimmed(' '))
             {
                 if (
                     part.ToLowerInvariant().Contains("portrait")
@@ -246,53 +245,37 @@ namespace Bloom.Book
 
             contents = "{\"root\": " + contents + "}";
             //I found it really hard to work with the json libraries, so I just convert it to xml. It's weird xml, but at least it's not like trying to mold smoke.
-            XmlDocument doc = (XmlDocument)JsonConvert.DeserializeXmlNode(contents);
+            var doc = new SafeXmlDocument(JsonConvert.DeserializeXmlNode(contents));
             var root = doc.SelectSingleNode("root");
 
-            foreach (XmlElement element in root.SelectNodes("layouts"))
+            foreach (SafeXmlElement element in root.SafeSelectNodes("layouts"))
             {
                 foreach (var sizeAndOrientation in element.ChildNodes)
                 {
-                    if (sizeAndOrientation is XmlText)
+                    if (sizeAndOrientation is SafeXmlText)
                     {
                         layouts.Add(
                             new Layout()
                             {
                                 SizeAndOrientation = SizeAndOrientation.FromString(
-                                    ((XmlText)sizeAndOrientation).InnerText
+                                    ((SafeXmlText)sizeAndOrientation).InnerText
                                 )
                             }
                         );
                     }
-                    else if (sizeAndOrientation is XmlElement)
+                    else if (sizeAndOrientation is SafeXmlElement)
                     {
-                        SizeAndOrientation soa = SizeAndOrientation.FromString(
-                            ((XmlElement)sizeAndOrientation).Name
+                        var soa = SizeAndOrientation.FromString(
+                            ((SafeXmlElement)sizeAndOrientation).Name
                         );
-                        foreach (XmlElement option in ((XmlElement)sizeAndOrientation).ChildNodes)
+                        foreach (SafeXmlElement option in ((SafeXmlElement)sizeAndOrientation).ChildNodes)
                         {
                             if (option.Name.ToLowerInvariant() != "styles")
                                 continue; //we don't handle anything else yet
                             layouts.Add(
                                 new Layout() { SizeAndOrientation = soa, Style = option.InnerText }
                             );
-                            //								List<string> choices = null;
-                            //								if (!soa.Options.TryGetValue(option.Name, out choices))
-                            //								{
-                            //									choices = new List<string>();
-                            //								}
-                            //								else
-                            //								{
-                            //									soa.Options.Remove(option.Name);
-                            //								}
-                            //
-                            //								foreach (XmlText choice in option.ChildNodes)
-                            //								{
-                            //									choices.Add(choice.Value);
-                            //								}
-                            //								soa.Options.Add(option.Name, choices);
                         }
-                        //							layouts.Add(soa);
                     }
                 }
             }
@@ -300,7 +283,7 @@ namespace Bloom.Book
             return layouts;
         }
 
-        public void UpdatePageSplitMode(XmlNode node)
+        public void UpdatePageSplitMode(SafeXmlNode node)
         {
             //NB: this can currently only split pages, not move them together. Doable, just not called for by the UI or unit tested yet.
 
@@ -310,9 +293,9 @@ namespace Bloom.Book
             var combinedPages = node.SafeSelectNodes(
                 "descendant-or-self::div[contains(@class,'bloom-combinedPage')]"
             );
-            foreach (XmlElement pageDiv in combinedPages)
+            foreach (SafeXmlElement pageDiv in combinedPages)
             {
-                XmlElement trailer = (XmlElement)pageDiv.CloneNode(true);
+                SafeXmlElement trailer = (SafeXmlElement)pageDiv.CloneNode(true);
                 pageDiv.ParentNode.InsertAfter(trailer, pageDiv);
 
                 pageDiv.SetAttribute(

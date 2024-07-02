@@ -8,6 +8,7 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.SafeXml;
 using Moq;
 using NUnit.Framework;
 using SIL.Code;
@@ -350,9 +351,9 @@ namespace BloomTests.Book
             }
         }
 
-        private XmlDocument GetThreePageDom()
+        private SafeXmlDocument GetThreePageDom()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(ThreePageHtml);
             return dom;
         }

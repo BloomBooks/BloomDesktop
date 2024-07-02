@@ -11,7 +11,7 @@ using Bloom;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Edit;
+using Bloom.SafeXml;
 using Moq;
 using NUnit.Framework;
 using SIL.Extensions;
@@ -19,7 +19,6 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.TestUtilities;
-using SIL.Xml;
 
 namespace BloomTests.Book
 {
@@ -100,16 +99,16 @@ namespace BloomTests.Book
             );
             storage.RepairEmptyPages();
             var pages = storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]");
-            Assert.That(pages.Count, Is.EqualTo(3));
-            foreach (XmlElement repairedPage in pages)
+            Assert.That(pages.Length, Is.EqualTo(3));
+            foreach (SafeXmlElement repairedPage in pages)
             {
                 var tgs = repairedPage.SafeSelectNodes(
                     ".//div[contains(@class,'bloom-translationGroup')]"
                 );
-                Assert.That(tgs.Count, Is.EqualTo(1));
+                Assert.That(tgs.Length, Is.EqualTo(1));
                 var editables = tgs[0]
                     .SafeSelectNodes(".//div[contains(@class,'bloom-editable')]")
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
                     .ToList();
                 Assert.That(editables.Count, Is.EqualTo(1));
                 var L1Editable = editables.FirstOrDefault(e => e.GetAttribute("lang") == "de");
@@ -1835,9 +1834,9 @@ namespace BloomTests.Book
             var container = storage.Dom.SelectSingleNode("//*[@class='bloom-imageContainer']");
             Assert.That(container, Is.Not.Null);
             var firstChild =
-                container.ChildNodes.Cast<XmlNode>().FirstOrDefault(x => x is XmlElement)
-                as XmlElement;
-            Assert.That(firstChild.Attributes["id"]?.Value, Is.EqualTo("moveMe"));
+                container.ChildNodes.FirstOrDefault(x => x is SafeXmlElement)
+                as SafeXmlElement;
+            Assert.That(firstChild.GetAttribute("id"), Is.EqualTo("moveMe"));
             Assert.That(maintLevel, Is.GreaterThanOrEqualTo("3"));
         }
 
