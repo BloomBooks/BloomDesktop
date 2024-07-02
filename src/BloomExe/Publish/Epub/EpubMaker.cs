@@ -1905,7 +1905,7 @@ namespace Bloom.Publish.Epub
                 }
                 else
                 {
-                    var parentNode = element.ParentNode; // Might be an XmlDocument up the chain
+                    var parentNode = element.ParentNode; // Might be a SafeXmlDocument up the chain
                     if (parentNode is SafeXmlElement)
                     {
                         element = (SafeXmlElement)parentNode;
@@ -3323,8 +3323,8 @@ namespace Bloom.Publish.Epub
         // I don't think we actually use these IDs in the ePUB so maybe we should just remove them?
         private void FixIllegalIds(HtmlDom pageDom)
         {
-            // Xpath results are things that have an id attribute, so MUST be XmlElements (though the signature
-            // of SafeSelectNodes allows other XmlNode types).
+            // Xpath results are things that have an id attribute, so MUST be SafeXmlElements (though the signature
+            // of SafeSelectNodes allows other SafeXmlNode types).
             foreach (SafeXmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@id]"))
             {
                 var id = elt.GetAttribute("id");

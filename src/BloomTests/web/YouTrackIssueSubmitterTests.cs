@@ -168,7 +168,7 @@ Class: System.ApplicationException
 Source: Bloom
 Assembly: Bloom, Version=4.7.108.0, Culture=neutral, PublicKeyToken=null
 Stack:    at Bloom.ImageProcessing.ImageUtils.ProcessAndSaveImageIntoFolder(PalasoImage imageInfo, String bookFolderPath, Boolean isSameFile) in C:\BuildAgent\work\36d5c051eb50ceb8\src\BloomExe\ImageProcessing\ImageUtils.cs:line 152
-   at Bloom.Edit.PageEditingModel.ChangePicture(String bookFolderPath, XmlElement imgOrDivWithBackgroundImage, PalasoImage imageInfo, IProgress progress) in C:\BuildAgent\work\36d5c051eb50ceb8\src\BloomExe\Edit\PageEditingModel.cs:line 24
+   at Bloom.Edit.PageEditingModel.ChangePicture(String bookFolderPath, SafeXmlElement imgOrDivWithBackgroundImage, PalasoImage imageInfo, IProgress progress) in C:\BuildAgent\work\36d5c051eb50ceb8\src\BloomExe\Edit\PageEditingModel.cs:line 24
    at Bloom.Edit.EditingModel.ChangePicture(GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress) in C:\BuildAgent\work\36d5c051eb50ceb8\src\BloomExe\Edit\EditingModel.cs:line 1121
 Thread: 
 Thread UI culture: en-US

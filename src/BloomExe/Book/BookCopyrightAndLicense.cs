@@ -345,12 +345,12 @@ namespace Bloom.Book
                     var form = source.GetBestAlternative(languagePreferences);
                     if (form != null && !string.IsNullOrWhiteSpace(form.Form))
                     {
-                        // HtmlDom.GetBookSetting(key) returns the result of XmlNode.InnerXml which will be Html encoded (&amp; &lt; etc).
-                        // HtmlDom.SetElementFromUserStringPreservingLineBreaks() calls XmlNode.InnerText, which Html encodes if necessary.
-                        // So we need to decode here to prevent double encoding.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
-                        // Note that HtmlDom.SetElementFromUserStringPreservingLineBreaks() handles embedded <br/> elements, but makes no
-                        // effort to handle p or div elements.
-                        var decoded = System.Web.HttpUtility.HtmlDecode(form.Form);
+						// HtmlDom.GetBookSetting(key) returns the result of SafeXmlNode.InnerXml which will be Html encoded (&amp; &lt; etc).
+						// HtmlDom.SetElementFromUserStringSafely() calls SafeXmlNode.InnerXml, which Html encodes if necessary.
+						// So we need to decode here to prevent double encoding.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
+						// Note that HtmlDom.SetElementFromUserStringSafely() handles embedded <br/> elements, but makes no
+						// effort to handle p or div elements.
+						var decoded = System.Web.HttpUtility.HtmlDecode(form.Form);
                         HtmlDom.SetElementFromUserStringSafely(target, decoded);
                         target.SetAttribute("lang", form.WritingSystemId); //this allows us to set the font to suit the language
                     }

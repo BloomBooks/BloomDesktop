@@ -271,7 +271,8 @@ namespace Bloom.SafeXml
 
         public bool HasMetaElement(string name)
         {
-            return SafeSelectNodes("//head/meta[@name='" + name + "']").Length > 0;
+            lock (Lock)
+                return SafeSelectNodes("//head/meta[@name='" + name + "']").Length > 0;
         }
 
         /// <summary>

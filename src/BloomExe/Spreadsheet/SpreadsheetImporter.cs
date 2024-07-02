@@ -420,7 +420,7 @@ namespace Bloom.Spreadsheet
         // This dictionary is progressively built from our collection of possible template books
         // as we need to process them in order to find a page with a requested label.
         // For each label we've encountered in one of the processed template books, it contains
-        // the page XmlElement and a note of which book it came from.
+        // the page SafeXmlElement and a note of which book it came from.
         Dictionary<string, PageRecord> _labelToPageRecord = new Dictionary<string, PageRecord>();
 
         // A list of books in which we will look for template pages referred to in page types
