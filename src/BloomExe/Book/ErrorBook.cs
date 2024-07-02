@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Xml;
+using Bloom.SafeXml;
 using SIL.Reporting;
 
 namespace Bloom.Book
@@ -71,7 +72,7 @@ namespace Bloom.Book
         //		private HtmlDom GetErrorDOM()
         //		{
         //
-        //			var dom = new XmlDocument();
+        //			var dom = SafeXmlDocument.Create();
         //			var builder = new StringBuilder();
         //			builder.Append("<html><body>");
         //			builder.AppendLine("<p>This book (" + FolderPath + ") has errors.");
@@ -89,7 +90,7 @@ namespace Bloom.Book
         //			return GetErrorDOM();
         //		}
 
-        public override XmlDocument RawDom
+        public override SafeXmlDocument RawDom
         {
             get
             {

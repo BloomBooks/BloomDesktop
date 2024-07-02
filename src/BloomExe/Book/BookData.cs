@@ -17,18 +17,18 @@ using SIL.Linq;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.WritingSystems;
-using SIL.Xml;
 using SIL.IO;
+using Bloom.SafeXml;
 
 namespace Bloom.Book
 {
-    /// <summary>
-    /// This class manages the "data-*" elements of a bloom document.
-    /// </summary>
-    /// <remarks>
-    /// At the beginning of the document, we have a special div for holding book-wide data.
-    /// It may hosts all manner of data about the book, including copyright, what languages are currently visible, etc.Here's a sample of a simple one:
-    /*<div id="bloomDataDiv">
+	/// <summary>
+	/// This class manages the "data-*" elements of a bloom document.
+	/// </summary>
+	/// <remarks>
+	/// At the beginning of the document, we have a special div for holding book-wide data.
+	/// It may hosts all manner of data about the book, including copyright, what languages are currently visible, etc.Here's a sample of a simple one:
+	/*<div id="bloomDataDiv">
               <div data-book="bookTitle" lang="en">Awito Builds a toilet</div>
               <div data-book="bookTitle" lang="tpi">Awito i wokim haus</div>
               <div data-book="coverImage" lang="*">tmpABDB.png</div>
@@ -42,19 +42,19 @@ namespace Bloom.Book
               <div data-book="originalAcknowledgments" lang="tpi">Book Development by:  Curriculum Development Division</div>
             </div>
             */
-    /// After the bloomDataDiv, elements with "data-*" attributes can occur throughout a book, for example on the cover page:
-    /*    <div class="bloom-page">
+	/// After the bloomDataDiv, elements with "data-*" attributes can occur throughout a book, for example on the cover page:
+	/*    <div class="bloom-page">
         <div class="bloom-translationGroup coverTitle">
           <div data-book="bookTitle" lang="en">Awito Builds a house</div>
           <div data-book="bookTitle" lang="tpi">Awito i wokim haus</div>
         </div>
     */
-    /// This class must keep these in sync
-    /// There is also a file meta.json which contains data that is also kept online to aid in searching for books. Some of this must also be kept
-    /// in sync with data in the html, for example, metadata.volumeInfo.title should match (currently the English alternative of) the content of the
-    /// bloomDataDiv bookTitle div.
-    /// </remarks>
-    public class BookData
+	/// This class must keep these in sync
+	/// There is also a file meta.json which contains data that is also kept online to aid in searching for books. Some of this must also be kept
+	/// in sync with data in the html, for example, metadata.volumeInfo.title should match (currently the English alternative of) the content of the
+	/// bloomDataDiv bookTitle div.
+	/// </remarks>
+	public class BookData
     {
         /// <summary>
         /// This is the attribute name used in the data div for a rather complex data-model.
@@ -75,10 +75,10 @@ namespace Bloom.Book
         private const string kDataXmatterPage = "data-xmatter-page";
 
         private readonly HtmlDom _dom;
-        private readonly Action<XmlElement> _updateImgNode;
+        private readonly Action<SafeXmlElement> _updateImgNode;
         internal readonly CollectionSettings CollectionSettings;
         private readonly DataSet _dataset;
-        private XmlElement _dataDiv;
+        private SafeXmlElement _dataDiv;
         private Object thisLock = new Object();
 
         // At one point we used XmlString for these, but language tags cannot actually
@@ -106,7 +106,7 @@ namespace Bloom.Book
         public BookData(
             HtmlDom dom,
             CollectionSettings collectionSettings,
-            Action<XmlElement> updateImgNodeCallback
+            Action<SafeXmlElement> updateImgNodeCallback
         )
         {
             _dom = dom;
@@ -378,7 +378,7 @@ namespace Bloom.Book
         {
             // For some reason, cleaning up the anchor elements in the div#bloomDataDiv doesn't work
             // when called from HtmlDom.ProcessPageAfterEditing.  Doing it here works.
-            var div = _dom.Body.SelectSingleNode("div[@id='bloomDataDiv']") as XmlElement;
+            var div = _dom.Body.SelectSingleNode("div[@id='bloomDataDiv']") as SafeXmlElement;
             if (div != null)
                 HtmlDom.CleanupAnchorElements(div);
             UpdateVariablesAndDataDiv(_dom.RawDom.FirstChild, info);
@@ -403,7 +403,7 @@ namespace Bloom.Book
         /// Create or update the data div with all the data-book values in the document
         /// </summary>
         /// <param name="elementToReadFrom">This is either the whole document, or a page div that we just edited and want to read from.</param>
-        private void UpdateVariablesAndDataDiv(XmlNode elementToReadFrom, BookInfo info = null)
+        private void UpdateVariablesAndDataDiv(SafeXmlNode elementToReadFrom, BookInfo info = null)
         {
             //Debug.WriteLine("before update: " + _dataDiv.OuterXml);
 
@@ -464,7 +464,7 @@ namespace Bloom.Book
             if (info == null)
                 return; // only in tests
             var tools = info.Tools;
-            var bookClass = _dom.Body.Attributes["class"]?.Value ?? "";
+            var bookClass = _dom.Body.GetAttribute("class");
 
             if (!bookClass.Contains("leveled-reader") && !bookClass.Contains("decodable-reader"))
             {
@@ -563,7 +563,7 @@ namespace Bloom.Book
             KeyValuePair<string, ISet<KeyValuePair<string, string>>> attributeSet
         )
         {
-            XmlElement dataDivElementForThisXmatterPage = (XmlElement)
+            var dataDivElementForThisXmatterPage = (SafeXmlElement)
                 _dataDiv.SelectSingleNode($"div[@{kDataXmatterPage}='{attributeSet.Key}']");
 
             if (dataDivElementForThisXmatterPage != null)
@@ -631,7 +631,7 @@ namespace Bloom.Book
                 _dom.SafeSelectNodes(
                         "//div[@id='bloomDataDiv']/div[@data-book='topic' and not(@lang='en')]"
                     )
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
                     .ForEach(e => e.ParentNode.RemoveChild(e));
             }
 		}
@@ -737,14 +737,14 @@ namespace Bloom.Book
 
             // Normally, this doesn't happen because xmatter pages should get updated to have data-derived.
             // But some custom xmatters don't contain this field.
-            if (elements == null || elements.Count == 0)
+            if (elements == null || elements.Length == 0)
                 elements = this._dom.SafeSelectNodes(
                     "//div[not(@id='bloomDataDiv')]//div[@data-book='languagesOfBook']"
                 );
 
-            if (elements == null || elements.Count == 0)
+            if (elements == null || elements.Length == 0)
                 return; // must be in a test...
-            foreach (var element in elements.Cast<XmlElement>().ToList())
+            foreach (var element in elements.Cast<SafeXmlElement>())
             {
                 element.SetAttribute("lang", MetadataLanguage1Tag);
                 SetNodeXml("languagesOfBook", XmlString.FromXml(languagesXml), element);
@@ -784,7 +784,7 @@ namespace Bloom.Book
 
             DataSetElementValue topicData;
 
-            var parentOfTopicDisplayElement = ((XmlElement)(topicPageElement.ParentNode));
+            var parentOfTopicDisplayElement = ((SafeXmlElement)(topicPageElement.ParentNode));
             //this just lets us have css rules that vary if there is a topic (allows other text to be centered instead left-aligned)
             //we'll change it later if we find there is a topic
             parentOfTopicDisplayElement.SetAttribute("data-have-topic", "false");
@@ -894,7 +894,7 @@ namespace Bloom.Book
             List<Tuple<string, XmlString>> attrs = null
         )
         {
-            XmlNode node = _dataDiv.SelectSingleNode(
+            var node = _dataDiv.SelectSingleNode(
                 String.Format("div[@data-book='{0}' and @lang='{1}']", key, writingSystemId)
             );
 
@@ -928,7 +928,7 @@ namespace Bloom.Book
                 else
                 {
                     SetNodeXml(key, form, node);
-                    MergeAttrsIntoElement(attrs, node as XmlElement);
+                    MergeAttrsIntoElement(attrs, node as SafeXmlElement);
                 }
                 //Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
                 //				languageForm.Form);
@@ -936,7 +936,7 @@ namespace Bloom.Book
             }
         }
 
-        private void SetNodeXml(string key, XmlString form, XmlNode node)
+        private void SetNodeXml(string key, XmlString form, SafeXmlNode node)
         {
             if (KeysOfVariablesThatAreUrlEncoded.Contains(key))
             {
@@ -947,7 +947,7 @@ namespace Bloom.Book
                 form = XmlString.FromUnencoded(decodedUrlStr);
             }
             node.InnerXml = form.Xml;
-            if (node.Attributes["data-textonly"]?.Value == "true")
+            if (node.GetAttribute("data-textonly") == "true")
             {
                 // In most contexts, it's fine for Bloom to wrap the content of a div in P elements and so forth.
                 // If we want to synchronize to something like a text element in an SVG, the result must be only
@@ -958,7 +958,7 @@ namespace Bloom.Book
             }
         }
 
-        public XmlElement AddDataDivElementContainingBookVariable(
+        public SafeXmlElement AddDataDivElementContainingBookVariable(
             string key,
             string lang,
             string form
@@ -967,7 +967,7 @@ namespace Bloom.Book
             return AddDataDivElement("data-book", key, lang, XmlString.FromXml(form));
         }
 
-        public XmlElement AddDataDivElement(
+        public SafeXmlElement AddDataDivElement(
             string type,
             string key,
             string lang = null,
@@ -977,7 +977,7 @@ namespace Bloom.Book
             if (form == null)
                 form = XmlString.Empty;
 
-            XmlElement newDiv = _dom.RawDom.CreateElement("div");
+            var newDiv = _dom.RawDom.CreateElement("div");
             newDiv.SetAttribute(type, key);
             if (lang != null)
                 newDiv.SetAttribute("lang", lang);
@@ -1069,9 +1069,9 @@ namespace Bloom.Book
 
         public void RemoveAllForms(string key)
         {
-            XmlElement dataDiv = GetOrCreateDataDiv();
+            var dataDiv = GetOrCreateDataDiv();
             foreach (
-                XmlNode e in dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key))
+                var e in dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key))
             )
             {
                 dataDiv.RemoveChild(e);
@@ -1082,11 +1082,11 @@ namespace Bloom.Book
             }
         }
 
-        private XmlElement GetOrCreateDataDiv()
+        private SafeXmlElement GetOrCreateDataDiv()
         {
             if (_dataDiv != null)
                 return _dataDiv;
-            _dataDiv = _dom.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
+            _dataDiv = _dom.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as SafeXmlElement;
             if (_dataDiv == null)
             {
                 _dataDiv = _dom.RawDom.CreateElement("div");
@@ -1103,7 +1103,7 @@ namespace Bloom.Book
         /// </summary>
         /// <param name="elementToReadFrom"> </param>
         private DataSet SynchronizeDataItemsFromContentsOfElement(
-            XmlNode elementToReadFrom,
+            SafeXmlNode elementToReadFrom,
             HashSet<Tuple<string, string>> itemsToDelete
         )
         {
@@ -1252,7 +1252,7 @@ namespace Bloom.Book
         /// </summary>
         public void GatherDataItemsFromXElement(
             DataSet data,
-            XmlNode sourceElement, // can be the whole sourceDom or just a page
+            SafeXmlNode sourceElement, // can be the whole sourceDom or just a page
             HashSet<Tuple<string, string>> itemsToDelete = null
         ) // records key, lang pairs for which we found an empty element in the source.
         {
@@ -1262,9 +1262,9 @@ namespace Bloom.Book
                 string query =
                     $".//{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage}) and not(contains(@class,'bloom-writeOnly'))]";
 
-                XmlNodeList nodesOfInterest = sourceElement.SafeSelectNodes(query);
+                var nodesOfInterest = sourceElement.SafeSelectNodes(query);
 
-                foreach (XmlElement node in nodesOfInterest)
+                foreach (SafeXmlElement node in nodesOfInterest)
                 {
                     bool isCollectionValue = false;
 
@@ -1305,7 +1305,7 @@ namespace Bloom.Book
                         // of the content we want to replicate, they are just information for the user, and
                         // specific to one context. Also, including them causes them to get repeated in each location;
                         // SetInnerXmlPreservingLabel() assumes data set content does not include label elements.
-                        var labels = node1.SafeSelectNodes(".//label").Cast<XmlElement>().ToList();
+                        var labels = node1.SafeSelectNodes(".//label");
                         foreach (var label in labels)
                             label.ParentNode.RemoveChild(label);
                         value = node1.InnerXml.Trim(); //may contain formatting
@@ -1481,10 +1481,10 @@ namespace Bloom.Book
             new[] { "bloom-postAudioSplit" }
         );
 
-        private List<Tuple<string, XmlString>> GetAttributesToSave(XmlElement node)
+        private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
         {
             var result = new List<Tuple<string, XmlString>>();
-            foreach (XmlAttribute attr in node.Attributes)
+            foreach (var attr in node.AttributePairs)
             {
                 if (_attributesNotToCopy.Contains(attr.Name))
                     continue;
@@ -1509,14 +1509,14 @@ namespace Bloom.Book
         /// <param name="element">Could be the xmatter page element or the related div inside the data div</param>
         private void GatherXmatterPageDataAttributeSetIntoDataSet(
             DataSet dataSet,
-            XmlElement element
+            SafeXmlElement element
         )
         {
             var xmatterPageKey = element.GetAttribute(kDataXmatterPage).Trim();
 
             ISet<KeyValuePair<string, string>> attributes =
                 new HashSet<KeyValuePair<string, string>>();
-            foreach (XmlAttribute attribute in element.Attributes)
+            foreach (var attribute in element.AttributePairs)
             {
                 if (attribute.Name != kDataXmatterPage && attribute.Name.StartsWith("data-"))
                 {
@@ -1554,7 +1554,7 @@ namespace Bloom.Book
         private void UpdateDomFromDataSet(
             DataSet data,
             string elementName,
-            XmlDocument targetDom,
+            SafeXmlDocument targetDom,
             HashSet<Tuple<string, string>> itemsToDelete
         )
         {
@@ -1564,7 +1564,7 @@ namespace Bloom.Book
                     $"//{elementName}[(@data-book or @data-collection or @data-library or @{kDataXmatterPage})]";
                 var nodesOfInterest = targetDom.SafeSelectNodes(query);
 
-                foreach (XmlElement node in nodesOfInterest)
+                foreach (SafeXmlElement node in nodesOfInterest)
                 {
                     var key = node.GetAttribute("data-book").Trim();
 
@@ -1684,7 +1684,7 @@ namespace Bloom.Book
             }
         }
 
-        internal void MergeAttrsIntoElement(List<Tuple<string, XmlString>> attrs, XmlElement node)
+        internal void MergeAttrsIntoElement(List<Tuple<string, XmlString>> attrs, SafeXmlElement node)
         {
             if (attrs == null)
                 return;
@@ -1701,7 +1701,7 @@ namespace Bloom.Book
                     // There's probably a HashSet union function we could use here a little more concisely.
                     // I prefer not to disturb the order of the classes more than we have to.
                     var newClasses = tuple.Item2.Unencoded.Split();
-                    var classes = node.GetAttribute("class", "").Split().ToList();
+                    var classes = node.GetAttribute("class").Split().ToList();
                     var currentSet = new HashSet<string>(classes);
                     foreach (var newClass in newClasses)
                     {
@@ -1757,7 +1757,7 @@ namespace Bloom.Book
         /// For example, setting background music. This method sets those attributes from the given dataset into the dom.
         /// </summary>
         /// <param name="element">Could be the xmatter page element or the related div inside the data div</param>
-        private void UpdateXmatterPageDataAttributeSets(DataSet dataset, XmlElement element)
+        private void UpdateXmatterPageDataAttributeSets(DataSet dataset, SafeXmlElement element)
         {
             var xmatterPageKey = element.GetAttribute(kDataXmatterPage).Trim();
             ISet<KeyValuePair<string, string>> attributes;
@@ -1776,7 +1776,7 @@ namespace Bloom.Book
         /// <param name="key"></param>
         /// <param name="node"></param>
         /// <param name="form"></param>
-        private void SetInnerXmlPreservingLabel(string key, XmlElement node, XmlString form)
+        private void SetInnerXmlPreservingLabel(string key, SafeXmlElement node, XmlString form)
         {
             var labelElement = node.SelectSingleNode("label");
             SetNodeXml(key, form, node);
@@ -1797,7 +1797,7 @@ namespace Bloom.Book
         /// blank xmatter, then push the values back into the xmatter.
         /// </summary>
         /// <returns>true if this node is an image holder of some sort.</returns>
-        private bool UpdateImageFromDataSet(DataSet data, XmlElement node, string key)
+        private bool UpdateImageFromDataSet(DataSet data, SafeXmlElement node, string key)
         {
             if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
                 return false;
@@ -1864,7 +1864,7 @@ namespace Bloom.Book
         /// For now, I *think* this won't do any harm, and if it does, it's adding data, not losing it. Users had complained about "losing" the contributor data before.
         ///</remarks>
         private string PossiblyCopyFromAnotherLanguage(
-            XmlElement element,
+            SafeXmlElement element,
             string languageCodeOfTargetField,
             DataSet data,
             string key
@@ -1951,7 +1951,7 @@ namespace Bloom.Book
             if (XmlString.IsNullOrEmpty(value))
             {
                 foreach (
-                    XmlElement node in _dom.SafeSelectNodes(
+                    SafeXmlElement node in _dom.SafeSelectNodes(
                         "//div[@id='bloomDataDiv']//div[@data-book='" + key + "']"
                     )
                 )

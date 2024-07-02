@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom;
+using Bloom.SafeXml;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -56,7 +57,7 @@ namespace BloomTests
         [Test]
         public void SaveAsHTML_HasXHTMLSelfClosingDiv_ChangesToHTMLStandard()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<html><body><div data-book='test'/></body></html>");
             using (var temp = new TempFile())
             {
@@ -91,7 +92,7 @@ namespace BloomTests
         [Test]
         public void SaveAsHTML_EmptyUbi_Removed()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 "<html><body><div data-book='test'/>Text with <u></u> and <b></b> and <i></i> works</body></html>"
             );
@@ -115,7 +116,7 @@ namespace BloomTests
         [Test]
         public void SaveAsHTML_MinimalUbiSpan_DoesNotContractOrRemove()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 "<html><body><div data-book='test'/>Text with <u /><u attr=\"1\" /> and <b/><b attr=\"1\" /><span /><span attr=\"1\" /> and <i /><i attr=\"1\" />  <em /><em attr=\"1\" />  <strong /><strong attr=\"1\" /> works</body></html>"
             );
@@ -147,7 +148,7 @@ namespace BloomTests
         [Test, Ignore("Will fix in BL-2558")]
         public void SaveAsHTML_HasEmUpAgainstStrong_DoesNotInsertSpace()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             var original = "<p><em>one</em><strong>two</strong></p>";
             dom.LoadXml("<html><body><div data-book='test'/>" + original + "</body></html>");
             using (var temp = new TempFile())
@@ -162,7 +163,7 @@ namespace BloomTests
         [Test]
         public void SaveAsHTML_EmptySpan_DoesNotRemove()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 "<html><body><p>first line <span class='bloom-linebreak'></span>second line</p></body></html>"
             );
@@ -179,7 +180,7 @@ namespace BloomTests
         {
             var pattern =
                 "<p></p><p></p><p>a</p><p></p><p>b</p><p/><cite></cite><cite /><cite data-book='originalTitle'></cite><cite data-book='originalTitle'/>";
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<!DOCTYPE html><html><body>" + pattern + "</body></html>");
             using (var temp = new TempFile())
             {
@@ -200,7 +201,7 @@ namespace BloomTests
         public void SaveDOMAsHtml5_DoesNotMessUpPaths()
         {
             var pattern = "<svg whatever='whatever'><path something='rubbish' /></svg>";
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<!DOCTYPE html><html><body>" + pattern + "</body></html>");
             using (var temp = new TempFile())
             {
@@ -235,7 +236,7 @@ namespace BloomTests
         [Test]
         public void SaveDOMAsHtml5_SavesBrCorrectly()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<html><body><br /></body></html>");
             using (var temp = new TempFile())
             {

@@ -13,6 +13,7 @@ using BloomTemp;
 using BloomTests.TeamCollection;
 using SIL.IO;
 using Bloom.Collection;
+using Bloom.SafeXml;
 
 namespace BloomTests.Spreadsheet
 {
@@ -818,10 +819,10 @@ namespace BloomTests.Spreadsheet
 </html>
 ";
 
-        private List<XmlElement> _contentPages;
-        private XmlElement _firstPage;
-        private XmlElement _lastPage;
-        private XmlElement _secondLastPage;
+        private List<SafeXmlElement> _contentPages;
+        private SafeXmlElement _firstPage;
+        private SafeXmlElement _lastPage;
+        private SafeXmlElement _secondLastPage;
         private List<string> _warnings;
         private string _spreadsheetFolder;
 
@@ -1000,7 +1001,7 @@ namespace BloomTests.Spreadsheet
             _warnings = await importer.ImportAsync(ss, _progressSpy);
 
             _contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
 
             // Remove the xmatter to get just the content pages, but save so we can test that too.
@@ -1109,11 +1110,11 @@ namespace BloomTests.Spreadsheet
                 );
             // This is the ID for the standard "Just a picture" page
             Assert.That(
-                _contentPages[n].Attributes["data-pagelineage"].Value,
+                _contentPages[n].GetAttribute("data-pagelineage"),
                 Does.Contain(Bloom.Book.Book.JustPictureGuid)
             );
             Assert.That(
-                _contentPages[n].Attributes["id"].Value,
+                _contentPages[n].GetAttribute("id"),
                 Is.Not.EqualTo(Bloom.Book.Book.JustPictureGuid)
             );
         }
@@ -1147,15 +1148,15 @@ namespace BloomTests.Spreadsheet
                 );
             // This is the ID for the standard "Basic text and picture" page
             Assert.That(
-                _contentPages[n].Attributes["data-pagelineage"].Value,
+                _contentPages[n].GetAttribute("data-pagelineage"),
                 Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398382")
             );
             Assert.That(
-                _contentPages[n].Attributes["id"].Value,
+                _contentPages[n].GetAttribute("id"),
                 Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398382")
             );
             var imgElt = _contentPages[n].SelectSingleNode(".//img");
-            Assert.That(imgElt.Attributes["data-copyright"]?.Value, Is.EqualTo(copyright));
+            Assert.That(imgElt.GetAttribute("data-copyright"), Is.EqualTo(copyright));
             // Could check other metadata here, but we're basically checking that one call was made which sets it all up.
         }
 
@@ -1171,11 +1172,11 @@ namespace BloomTests.Spreadsheet
                 );
             // This is the ID for the standard "Just text" page
             Assert.That(
-                _contentPages[n].Attributes["data-pagelineage"].Value,
+                _contentPages[n].GetAttribute("data-pagelineage"),
                 Does.Contain(Bloom.Book.Book.JustTextGuid)
             );
             Assert.That(
-                _contentPages[n].Attributes["id"].Value,
+                _contentPages[n].GetAttribute("id"),
                 Is.Not.EqualTo(Bloom.Book.Book.JustTextGuid)
             );
         }
@@ -1302,10 +1303,10 @@ namespace BloomTests.Spreadsheet
             );
         }
 
-        private List<XmlElement> _contentPages;
-        private XmlElement _firstPage;
-        private XmlElement _lastPage;
-        private XmlElement _secondLastPage;
+        private List<SafeXmlElement> _contentPages;
+        private SafeXmlElement _firstPage;
+        private SafeXmlElement _lastPage;
+        private SafeXmlElement _secondLastPage;
         private List<string> _warnings;
         private string _spreadsheetFolder;
 
@@ -1366,7 +1367,7 @@ namespace BloomTests.Spreadsheet
             _warnings = await importer.ImportAsync(ss);
 
             _contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
 
             // Remove the xmatter to get just the content pages, but save so we can test that too.
@@ -1397,14 +1398,14 @@ namespace BloomTests.Spreadsheet
                 );
             // This is the ID for the standard "Just a picture" page
             Assert.That(
-                _contentPages[n].Attributes["data-pagelineage"].Value,
+                _contentPages[n].GetAttribute("data-pagelineage"),
                 Does.Contain(Bloom.Book.Book.JustPictureGuid)
             );
             Assert.That(
-                _contentPages[n].Attributes["id"].Value,
+                _contentPages[n].GetAttribute("id"),
                 Is.Not.EqualTo(Bloom.Book.Book.JustPictureGuid)
             );
-            Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
+            Assert.That(_contentPages[n].GetAttribute("class"), Does.Contain("A4Landscape"));
         }
 
         [TestCase(1, "this is page 2", "lady24b.png")]
@@ -1424,14 +1425,14 @@ namespace BloomTests.Spreadsheet
                 );
             // This is the ID for the standard "Basic text and picture" page
             Assert.That(
-                _contentPages[n].Attributes["data-pagelineage"].Value,
+                _contentPages[n].GetAttribute("data-pagelineage"),
                 Does.Contain(Bloom.Book.Book.PictureOnLeftGuid)
             );
             Assert.That(
-                _contentPages[n].Attributes["id"].Value,
+                _contentPages[n].GetAttribute("id"),
                 Is.Not.EqualTo(Bloom.Book.Book.PictureOnLeftGuid)
             );
-            Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
+            Assert.That(_contentPages[n].GetAttribute("class"), Does.Contain("A4Landscape"));
         }
 
         [TestCase(0, "this is page 1")]
@@ -1445,14 +1446,14 @@ namespace BloomTests.Spreadsheet
                 );
             // This is the ID for the standard "Just text" page
             Assert.That(
-                _contentPages[n].Attributes["data-pagelineage"].Value,
+                _contentPages[n].GetAttribute("data-pagelineage"),
                 Does.Contain(Bloom.Book.Book.JustTextGuid)
             );
             Assert.That(
-                _contentPages[n].Attributes["id"].Value,
+                _contentPages[n].GetAttribute("id"),
                 Is.Not.EqualTo(Bloom.Book.Book.JustTextGuid)
             );
-            Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
+            Assert.That(_contentPages[n].GetAttribute("class"), Does.Contain("A4Landscape"));
         }
 
         [Test]
@@ -1488,7 +1489,7 @@ namespace BloomTests.Spreadsheet
         private HtmlDom _dom;
 
         private TemporaryFolder _bookFolder;
-        private List<XmlElement> _contentPages;
+        private List<SafeXmlElement> _contentPages;
         private string _spreadsheetFolder;
 
         [OneTimeSetUp]
@@ -1542,7 +1543,7 @@ namespace BloomTests.Spreadsheet
             await importer.ImportAsync(ss);
 
             _contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
 
             // Remove the front matter to get just the pages of interest.
@@ -1580,10 +1581,10 @@ namespace BloomTests.Spreadsheet
 
         private TemporaryFolder _bookFolder;
 
-        private List<XmlElement> _contentPages;
-        private XmlElement _firstPage;
-        private XmlElement _lastPage;
-        private XmlElement _secondLastPage;
+        private List<SafeXmlElement> _contentPages;
+        private SafeXmlElement _firstPage;
+        private SafeXmlElement _lastPage;
+        private SafeXmlElement _secondLastPage;
         private List<string> _warnings;
         private string _spreadsheetFolder;
 
@@ -1646,7 +1647,7 @@ namespace BloomTests.Spreadsheet
             _warnings = await importer.ImportAsync(ss);
 
             _contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
 
             // Remove the xmatter to get just the content pages, but save so we can test that too.
@@ -1721,10 +1722,10 @@ namespace BloomTests.Spreadsheet
 
         private TemporaryFolder _bookFolder;
 
-        private List<XmlElement> _contentPages;
-        private XmlElement _firstPage;
-        private XmlElement _lastPage;
-        private XmlElement _secondLastPage;
+        private List<SafeXmlElement> _contentPages;
+        private SafeXmlElement _firstPage;
+        private SafeXmlElement _lastPage;
+        private SafeXmlElement _secondLastPage;
         private List<string> _warnings;
         private string _spreadsheetFolder;
 
@@ -1776,7 +1777,7 @@ namespace BloomTests.Spreadsheet
             _warnings = await importer.ImportAsync(ss);
 
             _contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
 
             // Remove the xmatter to get just the content pages, but save so we can test that too.
@@ -1806,8 +1807,8 @@ namespace BloomTests.Spreadsheet
         [Test]
         public void CoverPagesSurvive()
         {
-            Assert.That(_lastPage.Attributes["class"].Value, Does.Match("outsideBackCover"));
-            Assert.That(_secondLastPage.Attributes["class"].Value, Does.Match("insideBackCover"));
+            Assert.That(_lastPage.GetAttribute("class"), Does.Match("outsideBackCover"));
+            Assert.That(_secondLastPage.GetAttribute("class"), Does.Match("insideBackCover"));
         }
 
         [TestCase(0, "tg1", "this is page 1")]

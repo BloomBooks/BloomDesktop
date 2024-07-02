@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.SafeXml;
 using Bloom.Spreadsheet;
 using BloomTemp;
 using BloomTests.TeamCollection;
 using NUnit.Framework;
-using SIL.Extensions;
 using SIL.IO;
 using SIL.Xml;
 
@@ -27,8 +25,8 @@ namespace BloomTests.Spreadsheet
         private ProgressSpy _progressSpy;
         private TemporaryFolder _spreadsheetFolder;
         private List<string> _warnings;
-        private List<XmlElement> _contentPages;
-        private XmlElement _firstPage;
+        private List<SafeXmlElement> _contentPages;
+        private SafeXmlElement _firstPage;
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
@@ -345,7 +343,7 @@ namespace BloomTests.Spreadsheet
             _warnings = await importer.ImportAsync(ss, _progressSpy);
 
             _contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
 
             // Remove the xmatter to get just the content pages.
@@ -416,9 +414,9 @@ namespace BloomTests.Spreadsheet
         {
             var target = _contentPages[pageIndex]
                 .SafeSelectNodes($".//{elt}[@id='{id}']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First();
-            var durationStr = target.Attributes["data-duration"]?.Value;
+            var durationStr = target.GetAttribute("data-duration");
             // NumberStyles and CultureInfo - make test robust enough to run if in English(Sweden) region.
             Assert.That(
                 double.TryParse(
@@ -431,8 +429,8 @@ namespace BloomTests.Spreadsheet
                 $"Failed to parse '{durationStr}' as double"
             );
             Assert.That(duration, Is.EqualTo(expectedDuration).Within(0.01));
-            Assert.That(target.Attributes["class"]?.Value, Does.Contain("audio-sentence"));
-            Assert.That(target.Attributes["recordingmd5"]?.Value, Is.Not.Empty.And.Not.Null);
+            Assert.That(target.GetAttribute("class"), Does.Contain("audio-sentence"));
+            Assert.That(target.GetAttribute("recordingmd5"), Is.Not.Empty.And.Not.Null);
         }
 
         [TestCase(0, "i9c7f4e02-4685-48fc-8653-71d88f218706", "", 3.996735)]
@@ -447,9 +445,9 @@ namespace BloomTests.Spreadsheet
         {
             var target = _contentPages[pageIndex]
                 .SafeSelectNodes($".//div[@id='{id}']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First();
-            var times = target.Attributes["data-audiorecordingendtimes"]?.Value ?? "";
+            var times = target.GetAttribute("data-audiorecordingendtimes") ?? "";
             var index = times.LastIndexOf(" "); // not found produces -1, which happens to work just right.
             var durationStr = times.Substring(index + 1, times.Length - index - 1);
             // NumberStyles and CultureInfo - make test robust enough to run if in English(Sweden) region.
@@ -465,7 +463,7 @@ namespace BloomTests.Spreadsheet
             );
             Assert.That(duration, Is.EqualTo(expectedDuration).Within(0.01));
             Assert.That(times.Substring(0, index + 1).Trim(), Is.EqualTo(otherSplits));
-            Assert.That(target.Attributes["class"].Value, Does.Contain("bloom-postAudioSplit"));
+            Assert.That(target.GetAttribute("class"), Does.Contain("bloom-postAudioSplit"));
         }
 
         [TestCase(2)] // Page 3 is an unsplit TextBox
@@ -525,7 +523,7 @@ namespace BloomTests.Spreadsheet
         {
             var target = _contentPages[pageIndex]
                 .SafeSelectNodes($".//{elt}[@id='{id}']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First();
             foreach (var s in sentences)
             {
@@ -559,7 +557,7 @@ namespace BloomTests.Spreadsheet
             };
             var target = _contentPages[17]
                 .SafeSelectNodes($".//div[@id='i4b3ef0cf-213c-4fad-82f3-6341bf415707']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First();
             var innerXml = target.InnerXml;
             foreach (var raw in rawSpans)
@@ -572,11 +570,11 @@ namespace BloomTests.Spreadsheet
         public void TitleAudioImported()
         {
             var titleDiv = _dom.SafeSelectNodes(".//div[@data-book='bookTitle' and @lang='fr']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First();
             Assert.That(titleDiv, Is.Not.Null);
             Assert.That(
-                titleDiv.Attributes["id"].Value,
+                titleDiv.GetAttribute("id"),
                 Is.EqualTo("i9c7f4e02-4685-48fc-8653-71d88f218706t")
             );
         }
@@ -620,9 +618,9 @@ namespace BloomTests.Spreadsheet
         {
             var target = _contentPages[6]
                 .SafeSelectNodes(".//div[contains(@class, bloom-editable) and @lang='fr']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First();
-            var id = target.Attributes["id"].Value;
+            var id = target.GetAttribute("id");
             Assert.That(id, Is.EqualTo("abadproblematicname")); // name corrected to something valid
             var path = Path.Combine(_bookFolder.FolderPath, "audio", id + ".mp3");
             Assert.That(RobustFile.Exists(path));
@@ -639,9 +637,9 @@ namespace BloomTests.Spreadsheet
         {
             var target = _contentPages[7]
                 .SafeSelectNodes(".//div[contains(@class, bloom-editable) and @lang='fr']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First();
-            var id = target.Attributes["id"].Value;
+            var id = target.GetAttribute("id");
             Assert.That(id, Is.Not.EqualTo("abadproblematicname")); // the ID we'd expect but for the duplication
             var path = Path.Combine(_bookFolder.FolderPath, "audio", id + ".mp3");
             Assert.That(RobustFile.Exists(path));
@@ -817,7 +815,7 @@ namespace BloomTests.Spreadsheet
         private ProgressSpy _progressSpy;
         private TemporaryFolder _spreadsheetFolder;
         private List<string> _warnings;
-        private List<XmlElement> _contentPages;
+        private List<SafeXmlElement> _contentPages;
 
         public static string PageWithJustText(
             int pageNumber,
@@ -1057,7 +1055,7 @@ namespace BloomTests.Spreadsheet
             _warnings = await importer.ImportAsync(ss, _progressSpy);
 
             _contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
 
             // Remove the xmatter to get just the content pages.
@@ -1147,9 +1145,9 @@ namespace BloomTests.Spreadsheet
         {
             var target = _contentPages[pageIndex]
                 .SafeSelectNodes($".//{elt}[@id='{id}']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First();
-            var durationStr = target.Attributes["data-duration"]?.Value;
+            var durationStr = target.GetAttribute("data-duration");
             // NumberStyles and CultureInfo - make test robust enough to run if in English(Sweden) region.
             Assert.That(
                 double.TryParse(
@@ -1162,8 +1160,8 @@ namespace BloomTests.Spreadsheet
                 $"Failed to parse '{durationStr}' as double"
             );
             Assert.That(duration, Is.EqualTo(expectedDuration).Within(0.01));
-            Assert.That(target.Attributes["class"]?.Value, Does.Contain("audio-sentence"));
-            Assert.That(target.Attributes["recordingmd5"]?.Value, Is.Not.Empty.And.Not.Null);
+            Assert.That(target.GetAttribute("class"), Does.Contain("audio-sentence"));
+            Assert.That(target.GetAttribute("recordingmd5"), Is.Not.Empty.And.Not.Null);
         }
 
         [TestCase(0, "i9c7f4e02-4685-48fc-8653-71d88f218706", "div", new[] { "This is page 1" })]
@@ -1184,7 +1182,7 @@ namespace BloomTests.Spreadsheet
         {
             var target = _contentPages[pageIndex]
                 .SafeSelectNodes($".//{elt}[@id='{id}']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First();
             foreach (var s in sentences)
             {

@@ -15,6 +15,7 @@ using SIL.Reporting;
 using Bloom.Book;
 using Bloom.Properties;
 using SIL.IO;
+using Bloom.SafeXml;
 
 namespace Bloom
 {
@@ -386,7 +387,7 @@ const page = document.getElementsByClassName('bloom-page')[0]; page.clientHeight
                 order.WaitHandle.Set();
         }
 
-        private Browser GetBrowserForPaperSize(XmlDocument document)
+        private Browser GetBrowserForPaperSize(SafeXmlDocument document)
         {
             var paperSizeName = GetPaperSizeName(document);
 
@@ -406,7 +407,7 @@ const page = document.getElementsByClassName('bloom-page')[0]; page.clientHeight
             return b;
         }
 
-        private static string GetPaperSizeName(XmlDocument document)
+        private static string GetPaperSizeName(SafeXmlDocument document)
         {
             string paperSizeName = SizeAndOrientation
                 .GetSizeAndOrientation(document, "A5Portrait")

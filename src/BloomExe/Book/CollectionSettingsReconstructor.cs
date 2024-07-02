@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Api;
+using Bloom.SafeXml;
 using SIL.IO;
 using SIL.Xml;
 
@@ -194,10 +195,10 @@ namespace Bloom.Book
             // and contentLanguage3 may match either contentNational1 or contentNational2. We need
             // to check for these possibilities to reconstruct the collection language settings.
             var htmlDiv = GetDivForLanguageUseFromHtml(x);
-            var langFromHtml = htmlDiv?.Attributes["lang"]?.Value;
-            if (dataDivNodes.Count == 0)
+            var langFromHtml = htmlDiv?.GetAttribute("lang");
+            if (dataDivNodes.Length == 0)
                 return langFromHtml;
-            string langFromDataDiv = dataDivNodes.Item(0).InnerText.Trim();
+            string langFromDataDiv = dataDivNodes[0].InnerText.Trim();
             if (String.IsNullOrEmpty(langFromHtml) || langFromDataDiv == langFromHtml)
                 return langFromDataDiv;
             // We have a mismatch between the dataDivNodes[0] and the htmlDiv. htmlDiv wins because it has more
@@ -205,7 +206,7 @@ namespace Bloom.Book
             return langFromHtml;
         }
 
-        private XmlElement GetDivForLanguageUseFromHtml(int languageNumber)
+        private SafeXmlElement GetDivForLanguageUseFromHtml(int languageNumber)
         {
             // Sign language codes don't accompany videos in the Html.
             if (languageNumber < 0)
@@ -215,7 +216,7 @@ namespace Bloom.Book
             var xpathString =
                 $"//div[contains(@class, '{classToLookFor}') and @data-book='bookTitle' and @lang]";
             var titleDiv = _dom.SelectSingleNode(xpathString);
-            var lang = titleDiv?.Attributes["lang"]?.Value;
+            var lang = titleDiv?.GetAttribute("lang");
             if (!String.IsNullOrEmpty(lang))
                 return titleDiv;
             // Look for a visible div/p that has text in the designated national language.
@@ -224,7 +225,7 @@ namespace Bloom.Book
                 $"//div[contains(@class,'bloom-visibility-code-on') and contains(@class,'{classToLookFor}') and @lang]/p[normalize-space(text())!='']";
             var para = _dom.SelectSingleNode(xpathString);
             if (para != null)
-                return para.ParentNode as XmlElement;
+                return para.ParentNode as SafeXmlElement;
             return null;
         }
 
@@ -255,9 +256,9 @@ namespace Bloom.Book
         {
             string xpathString = "//*[@data-xmatter-page]//*[@data-library='languageLocation']";
             var matchingNodes = _dom.SafeSelectNodes(xpathString);
-            if (matchingNodes.Count < 1)
+            if (matchingNodes.Length < 1)
                 return;
-            var matchedNode = matchingNodes.Item(0);
+            var matchedNode = matchingNodes[0];
             var rawData = matchedNode.InnerText.Trim();
             if (String.IsNullOrEmpty(rawData))
                 return;

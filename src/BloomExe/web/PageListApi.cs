@@ -8,6 +8,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.SafeXml;
 using Bloom.Utils;
 using SIL.Xml;
 
@@ -208,8 +209,8 @@ namespace Bloom.web
             }
             else
             {
-                var pageElement = page.GetDivNodeForThisPage().CloneNode(true) as XmlElement;
-                var videos = pageElement.SafeSelectNodes(".//video").Cast<XmlElement>().ToArray();
+                var pageElement = page.GetDivNodeForThisPage().CloneNode(true) as SafeXmlElement;
+                var videos = pageElement.SafeSelectNodes(".//video").Cast<SafeXmlElement>().ToArray();
                 foreach (var video in videos)
                     video.ParentNode.RemoveChild(video); // minimize memory use, thumb just shows placeholder
                 MarkImageNodesForThumbnail(pageElement);
@@ -230,14 +231,14 @@ namespace Bloom.web
 
         // As a further form of optimization, mark img elements as being thumbnails. The server
         // produces miniatures that take up less memory.
-        private static void MarkImageNodesForThumbnail(XmlElement pageElementForThumbnail)
+        private static void MarkImageNodesForThumbnail(SafeXmlElement pageElementForThumbnail)
         {
             var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(
                 pageElementForThumbnail
             );
             if (imgNodes != null)
             {
-                foreach (XmlElement imgNode in imgNodes)
+                foreach (SafeXmlElement imgNode in imgNodes)
                 {
                     //We can't handle doing anything special with these /api/branding/ images yet, they get mangled.
                     var imageElementUrl = HtmlDom.GetImageElementUrl(imgNode);

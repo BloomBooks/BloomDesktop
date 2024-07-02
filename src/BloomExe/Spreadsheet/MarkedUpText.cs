@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Bloom.SafeXml;
 using SIL.Xml;
 
 namespace Bloom.Spreadsheet
@@ -97,23 +98,23 @@ namespace Bloom.Spreadsheet
         /// </summary>
         public static MarkedUpText ParseXml(string xmlString)
         {
-            XmlDocument doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.PreserveWhitespace = true;
 
             var wrappedXmlString = "<wrapper>" + xmlString + "</wrapper>";
             doc.LoadXml(wrappedXmlString);
-            XmlNode root = doc.DocumentElement;
+            var root = doc.DocumentElement;
 
             MarkedUpText result = new MarkedUpText();
             MarkedUpText pending = new MarkedUpText();
 
             //There are no paragraph elements, just keep all whitespace
-            if (((XmlElement)root).GetElementsByTagName("p").Count == 0)
+            if (((SafeXmlElement)root).GetElementsByTagName("p").Length == 0)
             {
                 return ParseXmlRecursive(root);
             }
 
-            foreach (XmlNode x in root.ChildNodes.Cast<XmlNode>())
+            foreach (var x in root.ChildNodes.Cast<SafeXmlNode>())
             {
                 if (x.Name == "#whitespace")
                 {
@@ -149,14 +150,14 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private static MarkedUpText ParseXmlRecursive(XmlNode node)
+        private static MarkedUpText ParseXmlRecursive(SafeXmlNode node)
         {
             MarkedUpText markedUpText;
             if (
                 (node.Name == "br")
                 || (
                     node.Name == "span"
-                    && (node.Attributes["class"]?.Value ?? "").Equals("bloom-linebreak")
+                    && (node.GetAttribute("class") ?? "").Equals("bloom-linebreak")
                 )
             )
             {
@@ -168,7 +169,7 @@ namespace Bloom.Spreadsheet
             // replace audio split markers with pipes to retain audio segment markers
             else if (
                 node.Name == "span"
-                && (node.Attributes["class"]?.Value ?? "").Equals("bloom-audio-split-marker")
+                && (node.GetAttribute("class") ?? "").Equals("bloom-audio-split-marker")
             )
             {
                 MarkedUpTextRun run = new MarkedUpTextRun("|");
@@ -184,7 +185,7 @@ namespace Bloom.Spreadsheet
             else
             {
                 markedUpText = new MarkedUpText();
-                foreach (XmlNode child in node.ChildNodes)
+                foreach (SafeXmlNode child in node.ChildNodes)
                 {
                     MarkedUpText markedUpChild = ParseXmlRecursive(child);
                     ApplyFormatting(

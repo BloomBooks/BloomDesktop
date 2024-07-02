@@ -1,10 +1,8 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Xml;
 using Bloom.Book;
+using Bloom.SafeXml;
 using NUnit.Framework;
-using SIL.Xml;
 
 namespace BloomTests.Publish
 {
@@ -268,19 +266,19 @@ namespace BloomTests.Publish
         public void CheckPageWithVideoAndText()
         {
             var pageData = GetPageNData(2);
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(pageData);
             var list = doc.SafeSelectNodes(
                     "//div[contains(@class,'bloom-videoContainer')]/video/source"
                 )
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(1, list.Count());
             Assert.AreEqual(
                 kVideoSlash + "a0c5c8dd-d84b-4bf6-9f53-c4bb5caf38d0.mp4",
                 list.First().GetAttribute("src")
             );
             list = doc.SafeSelectNodes("//div[contains(@class,'bloom-trailingElement')]")
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(1, list.Count());
             Assert.AreEqual(
                 "This video shows me counting to five on my fingers.",
@@ -293,19 +291,19 @@ namespace BloomTests.Publish
         public void CheckPageWithTextButNoVideo()
         {
             var pageData = GetPageNData(3);
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(pageData);
             var list = doc.SafeSelectNodes(
                     "//div[contains(@class,'bloom-videoContainer')]/video/source"
                 )
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(0, list.Count());
             list = doc.SafeSelectNodes("//div[contains(@class,'bloom-videoContainer')]")
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(1, list.Count());
             Assert.Contains("bloom-noVideoSelected", list.First().GetAttribute("class").Split(' '));
             list = doc.SafeSelectNodes("//div[contains(@class,'bloom-trailingElement')]")
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(1, list.Count());
             Assert.AreEqual(
                 "This page has an empty spot for a video.  None has been selected yet.",
@@ -317,16 +315,16 @@ namespace BloomTests.Publish
         public void CheckPageWithVideoButNoText()
         {
             var pageData = GetPageNData(4);
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(pageData);
             var list = doc.SafeSelectNodes(
                     "//div[contains(@class,'bloom-videoContainer')]/video/source"
                 )
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(1, list.Count());
             Assert.AreEqual(kVideoSlash + "importedvideo.mp4", list.First().GetAttribute("src"));
             list = doc.SafeSelectNodes("//div[contains(@class,'bloom-trailingElement')]")
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(1, list.Count());
             Assert.AreEqual("", list.First().InnerText.Trim());
             CheckAccessibilityInManifest(false, true, true, _defaultSourceValue, false); // no sound files, but some image and video files
@@ -336,16 +334,16 @@ namespace BloomTests.Publish
         public void CheckPageWithTextAndDeletedVideo()
         {
             var pageData = GetPageNData(5);
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(pageData);
             var list = doc.SafeSelectNodes(
                     "//div[contains(@class,'bloom-videoContainer')]/video/source"
                 )
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(1, list.Count());
             Assert.AreEqual(kVideoSlash + "deletedvideo.mp4", list.First().GetAttribute("src"));
             list = doc.SafeSelectNodes("//div[contains(@class,'bloom-trailingElement')]")
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(1, list.Count());
             Assert.AreEqual(
                 "This page had a video selected, but it is now missing.",
@@ -358,18 +356,18 @@ namespace BloomTests.Publish
         {
             // This page should not exist.  There should be a title page in its spot.
             var pageData = GetPageNData(6);
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(pageData);
             var list = doc.SafeSelectNodes(
                     "//div[contains(@class,'bloom-page') and contains(@class,'titlePage') and contains(@class,'bloom-backMatter')]"
                 )
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(1, list.Count());
             Assert.AreEqual("Title Page", list.First().GetAttribute("aria-label"));
             Assert.AreEqual("contentinfo", list.First().GetAttribute("role"));
 
             var list2 = doc.SafeSelectNodes("//div[contains(@class, 'numberedPage')]")
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(0, list2.Count());
         }
     }

@@ -1,4 +1,5 @@
 using Bloom.Book;
+using Bloom.SafeXml;
 using Bloom.Spreadsheet;
 using Moq;
 using NUnit.Framework;
@@ -415,9 +416,9 @@ namespace BloomTests.Spreadsheet
         }
 
         //Remove the whitespace between <p> tags that was originally there just for readability
-        private void RemoveTopLevelWhitespace(XmlNode node)
+        private void RemoveTopLevelWhitespace(SafeXmlNode node)
         {
-            foreach (XmlNode childNode in node.ChildNodes.Cast<XmlNode>().ToArray())
+            foreach (var childNode in node.ChildNodes)
             {
                 if (childNode.Name.Equals("#whitespace"))
                 {
@@ -435,7 +436,7 @@ namespace BloomTests.Spreadsheet
             RemoveTopLevelWhitespace(node);
             var children = node.ChildNodes;
             Assert.That(children.Count, Is.EqualTo(6));
-            foreach (XmlNode child in children)
+            foreach (var child in children)
             {
                 Assert.That(child.Name, Is.EqualTo("p"));
             }
@@ -554,7 +555,7 @@ namespace BloomTests.Spreadsheet
 
         private bool FormatNodeContainsText(string xPath, string text)
         {
-            IEnumerable<XmlNode> nodeList = _roundtrippedDom.SafeSelectNodes(xPath).Cast<XmlNode>();
+            var nodeList = _roundtrippedDom.SafeSelectNodes(xPath);
             return Enumerable.Any(nodeList, x => x.InnerText.Contains(text));
         }
 

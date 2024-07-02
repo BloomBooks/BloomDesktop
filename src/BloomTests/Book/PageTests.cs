@@ -1,14 +1,12 @@
-﻿using System.Xml;
-using Bloom.Book;
+﻿using Bloom.SafeXml;
 using NUnit.Framework;
-using SIL.Xml;
 
 namespace BloomTests.Book
 {
     [TestFixture]
     public sealed class PageTests
     {
-        private XmlDocument GetDom()
+        private SafeXmlDocument GetDom()
         {
             var content =
                 @"<?xml version='1.0' encoding='utf-8' ?>
@@ -33,7 +31,7 @@ namespace BloomTests.Book
 				</body>
 				</html>
 		";
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(content);
             return dom;
         }

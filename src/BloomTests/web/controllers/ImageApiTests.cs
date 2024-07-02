@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
+using Bloom.SafeXml;
 using Bloom.web.controllers;
 using NUnit.Framework;
 
@@ -172,7 +173,7 @@ namespace BloomTests.web.controllers
 	</div>
 </body>";
 
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(xhtml);
             var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(
                 dom.SelectSingleNode("//body")
@@ -343,7 +344,7 @@ namespace BloomTests.web.controllers
 	</div>
 </body>";
 
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(xhtml);
             var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(
                 dom.SelectSingleNode("//body")
@@ -380,7 +381,7 @@ namespace BloomTests.web.controllers
 	</div>
 </body>";
 
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(xhtml);
             var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(
                 dom.SelectSingleNode("//body")

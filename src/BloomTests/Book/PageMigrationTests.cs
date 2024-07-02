@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Text;
-using System.Xml;
 using Bloom.Book;
+using Bloom.SafeXml;
 using NUnit.Framework;
-using SIL.Xml;
 
 namespace BloomTests.Book
 {
@@ -35,10 +34,10 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
 
-            var newPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
             CheckPageIsCustomizable(newPage);
             CheckPageLineage(
@@ -61,7 +60,7 @@ namespace BloomTests.Book
             CheckEditableText(newPage, "z", "");
             Assert.That(
                 newPage.SafeSelectNodes("//div[@lang='z' and contains(@class,'bloom-editable')]"),
-                Has.Count.EqualTo(1),
+                Has.Length.EqualTo(1),
                 "Failed to remove old child element"
             );
             Assert.That(newPage.GetAttribute("data-page-number"), Is.EqualTo("3"));
@@ -94,10 +93,10 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
 
-            var newPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
             CheckPageIsCustomizable(newPage);
             CheckPageLineage(
@@ -127,7 +126,7 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//img", 1);
             Assert.That(
                 newPage.SafeSelectNodes("//div[@lang='z' and contains(@class,'bloom-editable')]"),
-                Has.Count.EqualTo(1),
+                Has.Length.EqualTo(1),
                 "Failed to remove old child element"
             );
         }
@@ -167,10 +166,10 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
 
-            var newPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
             CheckPageIsCustomizable(newPage);
             CheckPageLineage(
@@ -204,7 +203,7 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//img", 1);
             Assert.That(
                 newPage.SafeSelectNodes("//div[@lang='z' and contains(@class,'bloom-editable')]"),
-                Has.Count.EqualTo(1),
+                Has.Length.EqualTo(1),
                 "Failed to remove old child element"
             );
         }
@@ -222,10 +221,10 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
 
-            var newPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
             CheckPageIsCustomizable(newPage);
             CheckPageLineage(
@@ -261,11 +260,11 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             var oldContent = page.OuterXml;
             book.BringPageUpToDate(page);
 
-            var newPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.That(newPage.OuterXml, Is.EqualTo(oldContent), "should not have modified page");
             Assert.That(newPage, Is.EqualTo(page), "should not have copied, just kept");
         }
@@ -288,11 +287,11 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             var oldContent = page.OuterXml;
             book.BringPageUpToDate(page);
 
-            var newPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.That(newPage.OuterXml, Is.EqualTo(oldContent), "should not have modified page");
             Assert.That(newPage, Is.EqualTo(page), "should not have copied, just kept");
         }
@@ -365,10 +364,10 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
 
-            var updatedPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var updatedPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.IsTrue(
                 updatedPage.OuterXml.Contains("A4Landscape"),
                 "the old page was in A4Landscape, so the migrated page should be, too."
@@ -392,10 +391,10 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
 
-            var updatedPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var updatedPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.IsTrue(
                 updatedPage.OuterXml.Contains("foobar"),
                 "foobar, a class in the old page, should be added to the newly constructed page"
@@ -415,10 +414,10 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
 
-            var updatedPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var updatedPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.IsTrue(
                 updatedPage.OuterXml.Contains("bloom-page"),
                 "we expect that the new template page will have this class, which we've omitted from the old page"
@@ -438,10 +437,10 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
 
-            var updatedPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var updatedPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.IsFalse(
                 updatedPage.OuterXml.Contains("imageOnTop"),
                 "imageOnTop refers to the old fixed-stylesheet way of showing pages"
@@ -466,7 +465,7 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
             //The source template page has data-page='extra', but the migrated page *must not* have this.
             AssertThatXmlIn
@@ -493,7 +492,7 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
             //The source template page has data-page='extra', but the migrated page *must not* have this.
             AssertThatXmlIn
@@ -504,7 +503,7 @@ namespace BloomTests.Book
 
         // Common code for tests of adding needed styles. The main difference between the tests is the state of the stylesheet
         // (if any) inserted by the modifyHead action.
-        private XmlDocument CreateAndMigrateBigWordsPage(Action<XmlElement> modifyHead)
+        private SafeXmlDocument CreateAndMigrateBigWordsPage(Action<SafeXmlElement> modifyHead)
         {
             SetDom(
                 @"<div class='bloom-page' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
@@ -523,12 +522,12 @@ namespace BloomTests.Book
             var dom = book.RawDom;
             if (modifyHead != null)
             {
-                modifyHead((XmlElement)dom.DocumentElement.ChildNodes[0]);
+                modifyHead((SafeXmlElement)dom.DocumentElement.ChildNodes[0]);
             }
-            var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             book.BringPageUpToDate(page);
 
-            var newPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+            var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
             CheckPageIsCustomizable(newPage);
             return dom;
@@ -614,7 +613,7 @@ namespace BloomTests.Book
 	</div>"
                 )
             );
-            var template = (XmlElement)newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
+            var template = (SafeXmlElement)newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
             var templatePage = new Page(
                 book,
                 template,
@@ -627,14 +626,14 @@ namespace BloomTests.Book
             );
             book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, "thePage");
 
-            var newPage = (XmlElement)dom.SafeSelectNodes(".//div[@id='thePage']")[0];
+            var newPage = (SafeXmlElement)dom.SafeSelectNodes(".//div[@id='thePage']")[0];
             Assert.That(
-                newPage.Attributes["class"].Value,
+                newPage.GetAttribute("class"),
                 Is.EqualTo(
                     "DeviceLandscape bloom-page numberedPage customPage bloom-combinedPage side-left bloom-monolingual"
                 )
             );
-            Assert.That(newPage.Attributes["data-pagelineage"].Value, Is.EqualTo("newTemplate"));
+            Assert.That(newPage.GetAttribute("data-pagelineage"), Is.EqualTo("newTemplate"));
             // We kept the image
             AssertThatXmlIn
                 .Dom(dom)
@@ -786,25 +785,25 @@ namespace BloomTests.Book
             params DivContent[] content
         )
         {
-            var group = book.RawDom.SelectNodes(
+            var group = book.RawDom.SafeSelectNodes(
                 ".//div[contains(@class, 'bloom-translationGroup')]"
             )[index];
-            var editDivs = group.SelectNodes("./div[contains(@class, 'bloom-editable')]");
-            Assert.That(editDivs.Count, Is.GreaterThanOrEqualTo(content.Length)); // may keep 'z'?
+            var editDivs = group.SafeSelectNodes("./div[contains(@class, 'bloom-editable')]");
+            Assert.That(editDivs.Length, Is.GreaterThanOrEqualTo(content.Length)); // may keep 'z'?
             foreach (var item in content)
             {
                 CheckEditDiv(style, editDivs, item);
             }
         }
 
-        private static void CheckEditDiv(string style, XmlNodeList editDivs, DivContent item)
+        private static void CheckEditDiv(string style, SafeXmlNode[] editDivs, DivContent item)
         {
-            foreach (XmlElement div in editDivs)
+            foreach (SafeXmlElement div in editDivs)
             {
-                if (div.Attributes["lang"].Value != item.Lang)
+                if (div.GetAttribute("lang") != item.Lang)
                     continue;
                 Assert.That(div.InnerText.Trim(), Is.EqualTo(item.Content.Trim()));
-                Assert.That(div.Attributes["class"].Value, Does.Contain(style));
+                Assert.That(div.GetAttribute("class"), Does.Contain(style));
                 return;
             }
             Assert.Fail("no matching div found for " + item.Lang);
@@ -818,20 +817,20 @@ namespace BloomTests.Book
             int height
         )
         {
-            var div = book.RawDom.SelectNodes(".//div[contains(@class, 'bloom-imageContainer')]")[
+            var div = book.RawDom.SafeSelectNodes(".//div[contains(@class, 'bloom-imageContainer')]")[
                 index
             ];
-            var images = div.SelectNodes("img");
+            var images = div.SafeSelectNodes("img");
             Assert.That(
                 images,
-                Has.Count.EqualTo(1),
+                Has.Length.EqualTo(1),
                 "should only be one image in an image container"
             );
-            var img = (XmlElement)images[0];
-            Assert.That(img.Attributes["src"].Value, Is.EqualTo(imageName));
-            Assert.That(img.Attributes["alt"].Value, Does.Contain(imageName));
-            Assert.That(img.Attributes["width"].Value, Is.EqualTo(width.ToString()));
-            Assert.That(img.Attributes["height"].Value, Is.EqualTo(height.ToString()));
+            var img = (SafeXmlElement)images[0];
+            Assert.That(img.GetAttribute("src"), Is.EqualTo(imageName));
+            Assert.That(img.GetAttribute("alt"), Does.Contain(imageName));
+            Assert.That(img.GetAttribute("width"), Is.EqualTo(width.ToString()));
+            Assert.That(img.GetAttribute("height"), Is.EqualTo(height.ToString()));
         }
 
         class DivContent
@@ -921,7 +920,7 @@ namespace BloomTests.Book
 	</div>"
                 )
             );
-            var template = (XmlElement)newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
+            var template = (SafeXmlElement)newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
             var templatePage = new Page(
                 book,
                 template,
@@ -944,35 +943,35 @@ namespace BloomTests.Book
         // source maps to which destination.
 
         // some attempt at verifying that it updated the page structure
-        private void CheckPageIsCustomizable(XmlElement newPage)
+        private void CheckPageIsCustomizable(SafeXmlElement newPage)
         {
-            Assert.That(newPage.Attributes["class"].Value, Does.Contain("customPage"));
+            Assert.That(newPage.GetAttribute("class"), Does.Contain("customPage"));
         }
 
         private void CheckPageLineage(
-            XmlElement oldPage,
-            XmlElement newPage,
+            SafeXmlElement oldPage,
+            SafeXmlElement newPage,
             string oldGuid,
             string newGuid
         )
         {
-            var oldLineage = oldPage.Attributes["data-pagelineage"].Value;
-            var newLineage = newPage.Attributes["data-pagelineage"].Value;
+            var oldLineage = oldPage.GetAttribute("data-pagelineage");
+            var newLineage = newPage.GetAttribute("data-pagelineage");
             Assert.That(newLineage, Is.EqualTo(oldLineage.Replace(oldGuid, newGuid)));
         }
 
         private void CheckEditableText(
-            XmlElement page,
+            SafeXmlElement page,
             string lang,
             string text,
             int groupIndex = 0
         )
         {
-            var transGroup = (XmlElement)
+            var transGroup = (SafeXmlElement)
                 page.SafeSelectNodes(".//div[contains(@class,'bloom-translationGroup')]")[
                     groupIndex
                 ];
-            var editDiv = (XmlElement)
+            var editDiv = (SafeXmlElement)
                 transGroup.SafeSelectNodes(
                     "div[@lang='" + lang + "' and contains(@class,'bloom-editable')]"
                 )[0];

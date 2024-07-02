@@ -46,7 +46,7 @@ namespace Bloom.Book
             );
             if (meta == null)
                 return inputLangs;
-            var key = meta.GetStringAttribute("content");
+            var key = meta.GetAttribute("content");
             // For this method we can ignore didCheck. See remarks above.
             var problems = GetProblemLanguages(inputLangs, key, out bool didCheck);
             return inputLangs.Except(problems);
@@ -250,7 +250,7 @@ namespace Bloom.Book
             bool didCheck;
             var problems = GetProblemLanguages(
                 languages,
-                meta.GetStringAttribute("content"),
+                meta.GetAttribute("content"),
                 out didCheck
             );
             if (problems.Count() == 0)

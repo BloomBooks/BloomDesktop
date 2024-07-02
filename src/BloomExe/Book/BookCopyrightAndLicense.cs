@@ -8,6 +8,7 @@ using System.Text;
 using System.Web;
 using System.Xml;
 using Bloom.ImageProcessing;
+using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.Extensions;
@@ -295,7 +296,7 @@ namespace Bloom.Book
             string lang
         )
         {
-            foreach (XmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
+            foreach (SafeXmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
             {
                 if (target == null) // don't think this can happen, but something like it seemed to in one test...
                     continue;
@@ -332,7 +333,7 @@ namespace Bloom.Book
                     source = new MultiTextBase();
             }
 
-            foreach (XmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
+            foreach (SafeXmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
             {
                 //just put value into the text of the element
                 if (string.IsNullOrEmpty(valueAttribute))

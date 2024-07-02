@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
 using Bloom.Book;
 using Bloom.Publish.Epub;
+using Bloom.SafeXml;
 using NUnit.Framework;
-using SIL.Xml;
 using Assert = NUnit.Framework.Assert;
 
 namespace BloomTests.Publish
@@ -115,10 +115,10 @@ namespace BloomTests.Publish
 
             var imgNodes = htmlDom.SafeSelectNodes("//img[@src='a.png']");
             Assert.That(imgNodes, Is.Not.Null);
-            Assert.That(imgNodes.Count, Is.EqualTo(1));
-            var img = imgNodes[0] as System.Xml.XmlElement;
+            Assert.That(imgNodes.Length, Is.EqualTo(1));
+            var img = imgNodes[0] as SafeXmlElement;
             Assert.That(img, Is.Not.Null);
-            Assert.That(img.Attributes.Count, Is.EqualTo(2));
+            Assert.That(img.AttributeNames.Length, Is.EqualTo(2));
             Assert.That(img.GetAttribute("role"), Is.EqualTo("presentation"));
         }
 
@@ -147,10 +147,10 @@ namespace BloomTests.Publish
 
             var imgNodes = htmlDom.SafeSelectNodes("//img[@src='a.png']");
             Assert.That(imgNodes, Is.Not.Null);
-            Assert.That(imgNodes.Count, Is.EqualTo(1));
-            var img = imgNodes[0] as System.Xml.XmlElement;
+            Assert.That(imgNodes.Length, Is.EqualTo(1));
+            var img = imgNodes[0] as SafeXmlElement;
             Assert.That(img, Is.Not.Null);
-            Assert.That(img.Attributes.Count, Is.EqualTo(2));
+            Assert.That(img.AttributeNames.Length, Is.EqualTo(2));
             Assert.That(img.GetAttribute("role"), Is.EqualTo(""));
             Assert.That(img.GetAttribute("alt"), Is.EqualTo("This is a test."));
         }
@@ -180,28 +180,28 @@ namespace BloomTests.Publish
 
             var divList = htmlDom.SafeSelectNodes("//div[@class='marginBox']/div");
             Assert.That(divList, Is.Not.Null);
-            Assert.That(divList.Count, Is.EqualTo(2));
+            Assert.That(divList.Length, Is.EqualTo(2));
 
-            var divImage = divList[0] as System.Xml.XmlElement;
+            var divImage = divList[0] as SafeXmlElement;
             Assert.That(divImage.GetAttribute("class"), Is.EqualTo("bloom-imageContainer"));
             var imgNodes = divImage.SafeSelectNodes("./*");
             Assert.That(imgNodes, Is.Not.Null);
-            Assert.That(imgNodes.Count, Is.EqualTo(1));
-            var img = imgNodes[0] as System.Xml.XmlElement;
+            Assert.That(imgNodes.Length, Is.EqualTo(1));
+            var img = imgNodes[0] as SafeXmlElement;
             Assert.That(img.LocalName, Is.EqualTo("img"));
             Assert.That(img.GetAttribute("alt"), Is.EqualTo("This is a test."));
 
-            var divAside = divList[1] as System.Xml.XmlElement;
+            var divAside = divList[1] as SafeXmlElement;
             Assert.That(divAside.GetAttribute("class"), Is.EqualTo("asideContainer"));
             var asideNodes = divAside.SafeSelectNodes("./*");
             Assert.That(asideNodes, Is.Not.Null);
-            Assert.That(asideNodes.Count, Is.EqualTo(1));
-            var aside = asideNodes[0] as System.Xml.XmlElement;
+            Assert.That(asideNodes.Length, Is.EqualTo(1));
+            var aside = asideNodes[0] as SafeXmlElement;
             Assert.That(aside.LocalName, Is.EqualTo("aside"));
             var paraNodes = aside.SafeSelectNodes("./*");
             Assert.That(paraNodes, Is.Not.Null);
-            Assert.That(paraNodes.Count, Is.EqualTo(1));
-            var para = paraNodes[0] as System.Xml.XmlElement;
+            Assert.That(paraNodes.Length, Is.EqualTo(1));
+            var para = paraNodes[0] as SafeXmlElement;
             Assert.That(para.LocalName, Is.EqualTo("p"));
             Assert.That(para.InnerText, Is.EqualTo("This is a test."));
             Assert.That(para.InnerXml, Is.EqualTo("This is a test."));
@@ -232,18 +232,18 @@ namespace BloomTests.Publish
 
             var divList = htmlDom.SafeSelectNodes("//div[@class='marginBox']/div");
             Assert.That(divList, Is.Not.Null);
-            Assert.That(divList.Count, Is.EqualTo(1));
-            var divImage = divList[0] as System.Xml.XmlElement;
+            Assert.That(divList.Length, Is.EqualTo(1));
+            var divImage = divList[0] as SafeXmlElement;
             Assert.That(divImage.GetAttribute("class"), Is.EqualTo("bloom-imageContainer"));
             var imgNodes = divImage.SafeSelectNodes("./*");
             Assert.That(imgNodes, Is.Not.Null);
-            Assert.That(imgNodes.Count, Is.EqualTo(2));
+            Assert.That(imgNodes.Length, Is.EqualTo(2));
 
-            var img = imgNodes[0] as System.Xml.XmlElement;
+            var img = imgNodes[0] as SafeXmlElement;
             Assert.That(img.LocalName, Is.EqualTo("img"));
             Assert.That(img.GetAttribute("alt"), Is.EqualTo("This is a test."));
 
-            var div = imgNodes[1] as System.Xml.XmlElement;
+            var div = imgNodes[1] as SafeXmlElement;
             Assert.That(div.LocalName, Is.EqualTo("div"));
             Assert.That(
                 div.GetAttribute("class"),
@@ -251,14 +251,14 @@ namespace BloomTests.Publish
             );
             var divDescList = div.SafeSelectNodes("./*");
             Assert.That(divDescList, Is.Not.Null);
-            Assert.That(divDescList.Count, Is.EqualTo(1));
-            var divDesc = divDescList[0] as System.Xml.XmlElement;
+            Assert.That(divDescList.Length, Is.EqualTo(1));
+            var divDesc = divDescList[0] as SafeXmlElement;
             Assert.That(divDesc.LocalName, Is.EqualTo("div"));
             Assert.That(divDesc.GetAttribute("lang"), Is.EqualTo("en"));
             var paraNodes = divDesc.SafeSelectNodes("./*");
             Assert.That(paraNodes, Is.Not.Null);
-            Assert.That(paraNodes.Count, Is.EqualTo(1));
-            var para = paraNodes[0] as System.Xml.XmlElement;
+            Assert.That(paraNodes.Length, Is.EqualTo(1));
+            var para = paraNodes[0] as SafeXmlElement;
             Assert.That(para.LocalName, Is.EqualTo("p"));
             Assert.That(para.InnerText, Is.EqualTo("This is a test."));
             Assert.That(para.InnerXml, Is.EqualTo("This is a test."));

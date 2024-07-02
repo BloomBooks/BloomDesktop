@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Xml;
+using Bloom.SafeXml;
 
 namespace Bloom.Edit
 {
@@ -81,9 +82,9 @@ namespace Bloom.Edit
             }
         }
 
-        public static void AddScriptFile(XmlDocument doc, string src)
+        public static void AddScriptFile(SafeXmlDocument doc, string src)
         {
-            var head = doc.SelectSingleNode("//head") as XmlElement;
+            var head = doc.SelectSingleNode("//head") as SafeXmlElement;
             if (
                 head.SelectSingleNode($"./script[@type='text/javascript' and @src='{src}']") != null
             )
@@ -94,12 +95,12 @@ namespace Bloom.Edit
             head.AppendChild(script);
         }
 
-        public static void AddScriptText(XmlDocument doc, string id, string text)
+        public static void AddScriptText(SafeXmlDocument doc, string id, string text)
         {
-            var head = doc.SelectSingleNode("//head") as XmlElement;
+            var head = doc.SelectSingleNode("//head") as SafeXmlElement;
             var script =
                 head.SelectSingleNode($"./script[@type='text/javascript' and @id='{id}']")
-                as XmlElement;
+                as SafeXmlElement;
             if (script == null)
             {
                 script = doc.CreateElement("script");
@@ -198,7 +199,7 @@ namespace Bloom.Edit
             // all the stylesheet links here and remove everything except the bare filenames.
             // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3573 for what happens without this fix.
             foreach (
-                System.Xml.XmlElement link in sanityCheckDom.SafeSelectNodes(
+                SafeXmlElement link in sanityCheckDom.SafeSelectNodes(
                     "//link[@rel='stylesheet']"
                 )
             )
@@ -217,7 +218,7 @@ namespace Bloom.Edit
             // If/when we use this for something else, this
             //won't work. But by then, we should be using a version of geckofx that can reliably tell us
             //when it is done with the previous navigation.
-            if (sanityCheckDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count < 24) //should be 24 pages
+            if (sanityCheckDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Length < 24) //should be 24 pages
             {
                 Logger.WriteMinorEvent(RobustFile.ReadAllText(bookPath)); //this will come to us if they report it
                 throw new ApplicationException(

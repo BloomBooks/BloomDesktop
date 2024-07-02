@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.SafeXml;
 using Bloom.Spreadsheet;
 using Bloom.web;
 
@@ -39,7 +38,7 @@ namespace BloomTests.Spreadsheet
         }
 
         // A dreadfully crude approximation, but good enough for these tests.
-        protected override Task<string> GetMd5Async(XmlElement elt)
+        protected override Task<string> GetMd5Async(SafeXmlElement elt)
         {
             return Task.FromResult(elt.InnerText.GetHashCode().ToString());
         }

@@ -11,9 +11,9 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
+using Bloom.SafeXml;
 using SIL.IO;
 using SIL.Windows.Forms.ImageToolbox;
-using SIL.Xml;
 
 namespace Bloom
 {
@@ -381,7 +381,7 @@ namespace Bloom
             };
             var pageDiv = pageDom.RawDom
                 .SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             // The actual page size is rather arbitrary, but we want the right ratio for A4.
             // Using the actual A4 sizes in mm makes a big enough image to look good in the larger
@@ -416,7 +416,7 @@ namespace Bloom
             );
         }
 
-        private void SetSizeAndOrientationClass(XmlElement pageDiv, string sizeOrientationClass)
+        private void SetSizeAndOrientationClass(SafeXmlElement pageDiv, string sizeOrientationClass)
         {
             var classes = pageDiv.GetAttribute("class");
             if (string.IsNullOrWhiteSpace(classes))

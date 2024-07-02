@@ -9,6 +9,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
+using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -148,7 +149,7 @@ namespace Bloom.Publish.BloomPub
             SignLanguageApi.ProcessVideos(
                 HtmlDom
                     .SelectChildVideoElements(modifiedBook.RawDom.DocumentElement)
-                    .Cast<XmlElement>(),
+                    .Cast<SafeXmlElement>(),
                 modifiedBook.FolderPath
             );
             var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
@@ -190,16 +191,16 @@ namespace Bloom.Publish.BloomPub
         public static void CompressImages(
             string modifiedBookFolderPath,
             ImagePublishSettings imagePublishSettings,
-            XmlDocument dom
+            SafeXmlDocument dom
         )
         {
             List<string> imagesToPreserveResolution;
             List<string> coverImages;
 
             var fullScreenAttr = dom.GetElementsByTagName("body")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First()
-                .Attributes["data-bffullscreenpicture"]?.Value;
+                .GetAttribute("data-bffullscreenpicture");
             if (
                 fullScreenAttr != null
                 && fullScreenAttr.IndexOf("bloomReader", StringComparison.InvariantCulture) >= 0
@@ -271,7 +272,7 @@ namespace Bloom.Publish.BloomPub
 
         private const string kBackgroundImage = "background-image:url('"; // must match format string in HtmlDom.SetImageElementUrl()
 
-        private static List<string> FindCoverImages(XmlDocument xmlDom)
+        private static List<string> FindCoverImages(SafeXmlDocument xmlDom)
         {
             var transparentImageFiles = new List<string>();
             foreach (
@@ -279,14 +280,14 @@ namespace Bloom.Publish.BloomPub
                     .SafeSelectNodes(
                         "//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]"
                     )
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
             )
             {
                 var style = div.GetAttribute("style");
                 if (!String.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
                 {
                     System.Diagnostics.Debug.Assert(
-                        div.GetStringAttribute("class").Contains("bloom-backgroundImage")
+                        div.GetAttribute("class").Contains("bloom-backgroundImage")
                     );
                     // extract filename from the background-image style
                     transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
@@ -297,28 +298,28 @@ namespace Bloom.Publish.BloomPub
                     var img = div.SelectSingleNode("//img[@src]");
                     if (img != null)
                         transparentImageFiles.Add(
-                            System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src"))
+                            System.Web.HttpUtility.UrlDecode(img.GetAttribute("src"))
                         );
                 }
             }
             return transparentImageFiles;
         }
 
-        private static List<string> FindImagesToPreserveResolution(XmlDocument dom)
+        private static List<string> FindImagesToPreserveResolution(SafeXmlDocument dom)
         {
             var preservedImages = new List<string>();
             foreach (
                 var div in dom.SafeSelectNodes(
                         "//div[contains(@class,'marginBox')]//div[contains(@class,'bloom-preserveResolution')]"
                     )
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
             )
             {
                 var style = div.GetAttribute("style");
                 if (!string.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
                 {
                     System.Diagnostics.Debug.Assert(
-                        div.GetStringAttribute("class").Contains("bloom-backgroundImage")
+                        div.GetAttribute("class").Contains("bloom-backgroundImage")
                     );
                     preservedImages.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
                 }
@@ -327,12 +328,10 @@ namespace Bloom.Publish.BloomPub
                 var img in dom.SafeSelectNodes(
                         "//div[contains(@class,'marginBox')]//img[contains(@class,'bloom-preserveResolution')]"
                     )
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
             )
             {
-                preservedImages.Add(
-                    System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src"))
-                );
+                preservedImages.Add(System.Web.HttpUtility.UrlDecode(img.GetAttribute("src")));
             }
             return preservedImages;
         }
@@ -429,8 +428,7 @@ namespace Bloom.Publish.BloomPub
             {
                 var activities = modifiedBook
                     .GetPageElements()
-                    .Cast<XmlNode>()
-                    .Where(x => x is XmlElement elt && HtmlDom.IsActivityPage(elt))
+                    .Where(x => x is SafeXmlElement elt && HtmlDom.IsActivityPage(elt))
                     .ToArray();
                 foreach (var page in activities)
                     page.ParentNode.RemoveChild(page);
@@ -599,14 +597,14 @@ namespace Bloom.Publish.BloomPub
             );
         }
 
-        private static void ProcessQuizzes(string bookFolderPath, XmlDocument bookDom)
+        private static void ProcessQuizzes(string bookFolderPath, SafeXmlDocument bookDom)
         {
             var jsonPath = Path.Combine(bookFolderPath, kQuestionFileName);
             var questionPages = bookDom.SafeSelectNodes(
                 "//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]"
             );
             var questions = new List<QuestionGroup>();
-            foreach (var page in questionPages.Cast<XmlElement>().ToArray())
+            foreach (var page in questionPages.Cast<SafeXmlElement>().ToArray())
             {
                 ExtractQuestionGroups(page, questions);
                 page.ParentNode.RemoveChild(page);
@@ -615,7 +613,7 @@ namespace Bloom.Publish.BloomPub
             var quizPages = bookDom.SafeSelectNodes(
                 "//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]"
             );
-            foreach (var page in quizPages.Cast<XmlElement>().ToArray())
+            foreach (var page in quizPages.Cast<SafeXmlElement>().ToArray())
                 AddQuizQuestionGroup(page, questions);
             var builder = new StringBuilder("[");
             foreach (var question in questions)
@@ -632,7 +630,7 @@ namespace Bloom.Publish.BloomPub
         // Given a page built using the new simple-comprehension-quiz template, generate JSON to produce the same
         // effect (more-or-less) in BloomReader 1.x. These pages are NOT deleted like the old question pages,
         // so we need to mark the JSON onlyForBloomReader1 to prevent BR2 from duplicating them.
-        private static void AddQuizQuestionGroup(XmlElement page, List<QuestionGroup> questions)
+        private static void AddQuizQuestionGroup(SafeXmlElement page, List<QuestionGroup> questions)
         {
             var questionElts = page.SafeSelectNodes(
                 ".//div[contains(@class, 'bloom-editable') and contains(@class, 'bloom-content1') and contains(@class, 'QuizQuestion-style')]"
@@ -640,9 +638,9 @@ namespace Bloom.Publish.BloomPub
             var answerElts = page.SafeSelectNodes(
                     ".//div[contains(@class, 'bloom-editable') and contains(@class, 'bloom-content1') and contains(@class, 'QuizAnswer-style')]"
                 )
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .Where(a => !string.IsNullOrWhiteSpace(a.InnerText));
-            if (questionElts.Count == 0 || !answerElts.Any())
+            if (questionElts.Length == 0 || !answerElts.Any())
             {
                 return;
             }
@@ -650,7 +648,7 @@ namespace Bloom.Publish.BloomPub
             var questionElt = questionElts[0];
             if (string.IsNullOrWhiteSpace(questionElt.InnerText))
                 return;
-            var lang = questionElt.Attributes["lang"]?.Value ?? "";
+            var lang = questionElt.GetAttribute("lang");
             if (string.IsNullOrEmpty(lang))
                 return; // paranoia, bloom-editable without lang should not be content1
 
@@ -665,9 +663,8 @@ namespace Bloom.Publish.BloomPub
                             {
                                 text = a.InnerText.Trim(),
                                 correct = (
-                                    (a.ParentNode?.ParentNode as XmlElement)
-                                        ?.Attributes["class"]
-                                        ?.Value ?? ""
+                                    (a.ParentNode?.ParentNode as SafeXmlElement)
+                                        ?.GetAttribute("class") ?? ""
                                 ).Contains("correct-answer")
                             }
                     )
@@ -678,13 +675,13 @@ namespace Bloom.Publish.BloomPub
             questions.Add(group);
         }
 
-        private static void StripImgIfWeCannotFindFile(XmlDocument dom, string bookFile)
+        private static void StripImgIfWeCannotFindFile(SafeXmlDocument dom, string bookFile)
         {
             var folderPath = Path.GetDirectoryName(bookFile);
-            foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())
+            foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<SafeXmlElement>().ToArray())
             {
                 var file = UrlPathString
-                    .CreateFromUrlEncodedString(imgElt.Attributes["src"].Value)
+                    .CreateFromUrlEncodedString(imgElt.GetAttribute("src"))
                     .PathOnly.NotEncoded;
                 if (!RobustFile.Exists(Path.Combine(folderPath, file)))
                 {
@@ -693,10 +690,10 @@ namespace Bloom.Publish.BloomPub
             }
         }
 
-        private static void StripContentEditableAndTabIndex(XmlDocument dom)
+        private static void StripContentEditableAndTabIndex(SafeXmlDocument dom)
         {
             foreach (
-                var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>()
+                var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<SafeXmlElement>()
             )
                 editableElt.RemoveAttribute("contenteditable");
 
@@ -705,7 +702,7 @@ namespace Bloom.Publish.BloomPub
             // we need to keep the tabindex on translationGroups so we preserve audio playback order.
             const string tabindexXpath =
                 "//div[@tabindex and not(contains(concat(' ', @class, ' '), ' bloom-translationGroup '))]";
-            foreach (var tabIndexDiv in dom.SafeSelectNodes(tabindexXpath).Cast<XmlElement>())
+            foreach (var tabIndexDiv in dom.SafeSelectNodes(tabindexXpath).Cast<SafeXmlElement>())
                 tabIndexDiv.RemoveAttribute("tabindex");
         }
 
@@ -722,28 +719,27 @@ namespace Bloom.Publish.BloomPub
         /// </summary>
         /// <param name="wholeBookHtml"></param>
         /// <returns></returns>
-        private static void ConvertImagesToBackground(XmlDocument dom)
+        private static void ConvertImagesToBackground(SafeXmlDocument dom)
         {
             foreach (
                 var imgContainer in dom.SafeSelectNodes(
                         "//div[contains(@class, 'bloom-imageContainer')]"
                     )
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
                     .ToArray()
             )
             {
                 var img = imgContainer.ChildNodes
-                    .Cast<XmlNode>()
-                    .FirstOrDefault(n => n is XmlElement && n.Name == "img");
-                if (img == null || img.Attributes["src"] == null)
+                    .FirstOrDefault(n => n is SafeXmlElement && n.Name == "img");
+                if (img == null || string.IsNullOrEmpty(img.GetAttribute("src")))
                     continue;
                 // The filename should be already urlencoded since src is a url.
-                var src = img.Attributes["src"].Value;
+                var src = img.GetAttribute("src");
                 HtmlDom.SetImageElementUrl(
                     imgContainer,
                     UrlPathString.CreateFromUrlEncodedString(src)
                 );
-                foreach (XmlAttribute attr in img.Attributes)
+                foreach (var attr in img.AttributePairs)
                 {
                     if (attr.Name.StartsWith("data-"))
                         imgContainer.SetAttribute(attr.Name, attr.Value);
@@ -756,21 +752,21 @@ namespace Bloom.Publish.BloomPub
                 // and again have two equivalent rules. Maybe we can eventually get rid of converting
                 // to background image? Why did we want to, anyway?? Maybe we can copy all classes from
                 // the img? But we'd still need duplicate rules.
-                if ((img.Attributes["class"]?.Value ?? "").Contains("bloom-imageObjectFit-cover"))
+                if ((img.GetAttribute("class") ?? "").Contains("bloom-imageObjectFit-cover"))
                     classesToAdd += " bloom-imageObjectFit-cover";
 
                 imgContainer.SetAttribute(
                     "class",
-                    imgContainer.Attributes["class"].Value + classesToAdd
+                    imgContainer.GetAttribute("class") + classesToAdd
                 );
                 imgContainer.RemoveChild(img);
             }
         }
 
-        private static void InsertReaderStylesheet(XmlDocument dom)
+        private static void InsertReaderStylesheet(SafeXmlDocument dom)
         {
             var link = dom.CreateElement("link");
-            XmlUtils.GetOrCreateElement(dom, "html", "head").AppendChild(link);
+            dom.GetOrCreateElement("html", "head").AppendChild(link);
             link.SetAttribute("rel", "stylesheet");
             link.SetAttribute("href", "readerStyles.css");
             link.SetAttribute("type", "text/css");
@@ -787,12 +783,12 @@ namespace Bloom.Publish.BloomPub
         private static void RemoveInvisibleImageElements(Book.Book book)
         {
             var isLandscape = book.GetLayout().SizeAndOrientation.IsLandScape;
-            foreach (var img in book.RawDom.SafeSelectNodes("//img").Cast<XmlElement>().ToArray())
+            foreach (var img in book.RawDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray())
             {
-                var src = img.Attributes["src"]?.Value;
+                var src = img.GetAttribute("src");
                 if (string.IsNullOrEmpty(src))
                     continue;
-                var classes = img.Attributes["class"]?.Value;
+                var classes = img.GetAttribute("class");
                 if (string.IsNullOrEmpty(classes))
                     continue;
                 if (
@@ -889,17 +885,17 @@ namespace Bloom.Publish.BloomPub
         /// {"question":"Question", "answers": [{"text":"answer1"}, {"text":"correct answer", "correct":true}, {"text":"answer2"}]},
         /// </summary>
         public static void ExtractQuestionGroups(
-            XmlElement page,
+            SafeXmlElement page,
             List<QuestionGroup> questionGroups
         )
         {
             foreach (
-                XmlElement source in page.SafeSelectNodes(
+                SafeXmlElement source in page.SafeSelectNodes(
                     ".//div[contains(@class, 'bloom-editable')]"
                 )
             )
             {
-                var lang = source.Attributes["lang"]?.Value ?? "";
+                var lang = source.GetAttribute("lang") ?? "";
                 if (String.IsNullOrEmpty(lang) || lang == "z")
                     continue;
                 var group = new QuestionGroup() { lang = lang };

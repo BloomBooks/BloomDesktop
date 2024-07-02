@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Publish;
+using Bloom.SafeXml;
 using GlobExpressions;
 
 namespace Bloom.web.controllers
@@ -39,7 +40,7 @@ namespace Bloom.web.controllers
             // Note that we intentionally are not dealing with unusual hypothetical situations like where
             // someone might want the language of the description to be something other than language1.
             foreach (
-                XmlElement imageContainer in book.OurHtmlDom.SafeSelectNodes(
+                SafeXmlElement imageContainer in book.OurHtmlDom.SafeSelectNodes(
                     "//div[contains(@class, 'bloom-imageContainer')]"
                 )
             )
@@ -51,7 +52,7 @@ namespace Bloom.web.controllers
                         $@"./div[contains(@class,'bloom-imageDescription')]
 								/div[contains(@class,'bloom-editable')
 								and @lang='{book.BookData.Language1.Tag}']"
-                    ) as XmlElement;
+                    ) as SafeXmlElement;
                 if (visibleElements == null || (visibleElements.InnerText.Trim().Length == 0))
                 {
                     var page = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(imageContainer);
@@ -115,7 +116,7 @@ namespace Bloom.web.controllers
 
             var audioFolderInfo = new DirectoryInfo(audioFolderPath);
             foreach (
-                XmlElement page in book.OurHtmlDom.SafeSelectNodes(
+                SafeXmlElement page in book.OurHtmlDom.SafeSelectNodes(
                     "//div[contains(@class,'bloom-page')]"
                 )
             )
@@ -137,20 +138,20 @@ namespace Bloom.web.controllers
 
         private static string GetFirstTextOnPageWithMissingAudio(
             Book.Book book,
-            XmlElement page,
+            SafeXmlElement page,
             DirectoryInfo audioFolderInfo,
             string translationGroupConstraint
         )
         {
             // NB: we're selecting for bloom-visibility-code-on instead of @lang
-            var visibleElements = page.SelectNodes(
+            var visibleElements = page.SafeSelectNodes(
                     $".//div[contains(@class, 'bloom-translationGroup') "
                         + "and not(contains(@class, 'bloom-recording-optional')) "
                         + $"and {translationGroupConstraint}]/div[contains(@class, 'bloom-editable') "
                         + "and contains(@class, 'bloom-visibility-code-on')]"
                 )
                 //$"and @lang='{book.CollectionSettings.Language1Tag}']")
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
 
             foreach (var editable in visibleElements)
             {
@@ -166,11 +167,11 @@ namespace Bloom.web.controllers
         // of its children) for missing audio. Return the text of the first child, if any,
         // that is missing a recording, or null if all is well.
         private static string ElementContainsMissingAudio(
-            XmlNode node,
+            SafeXmlNode node,
             DirectoryInfo audioFolderInfo
         )
         {
-            var childElement = node as XmlElement;
+            var childElement = node as SafeXmlElement;
             switch (node.NodeType)
             {
                 case XmlNodeType.Text:
@@ -190,7 +191,7 @@ namespace Bloom.web.controllers
                         var id = childElement.GetAttribute("id");
                         //Whatever the audio extension, here we assume other parts of Bloom are taking care of that,
                         // and just want to see some file with a base name that matches the id.
-                        // Note: GlobFiles handles the case of the audioFolder being non-existant just fine.
+                        // Note: GlobFiles handles the case of the audioFolder being non-existent just fine.
                         if (
                             !Directory.Exists(audioFolderInfo.FullName)
                             || !audioFolderInfo.GlobFiles(id + ".*").Any()
@@ -205,7 +206,7 @@ namespace Bloom.web.controllers
                     else if (node.HasChildNodes)
                     {
                         // recurse down the tree, if we find a problem return it.
-                        foreach (XmlNode child in node.ChildNodes)
+                        foreach (var child in node.ChildNodes)
                         {
                             var problemText = ElementContainsMissingAudio(child, audioFolderInfo);
                             if (!string.IsNullOrEmpty(problemText))

@@ -2,6 +2,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
+using Bloom.SafeXml;
 using Bloom.web;
 using L10NSharp;
 using SIL.IO;
@@ -132,7 +133,7 @@ namespace Bloom.Spreadsheet
                 // We ignore all xmatter pages, which were handled above by exporting data div data.
                 if (XMatterHelper.IsXMatterPage(page))
                     continue;
-                var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
+                var pageNumber = page.GetAttribute("data-page-number") ?? "";
                 //Each page alternates colors
                 var colorForPage =
                     iContentPage++ % 2 == 0
@@ -147,7 +148,7 @@ namespace Bloom.Spreadsheet
         private bool _reportedImageDescription;
 
         private void AddContentRows(
-            XmlElement page,
+            SafeXmlElement page,
             string pageNumber,
             string bookFolderPath,
             Color colorForPage
@@ -156,17 +157,17 @@ namespace Bloom.Spreadsheet
             var imageContainers = GetImageContainers(page);
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(page, true);
             var groups = allGroups
-                .Where(x => !x.Attributes["class"].Value.Contains("bloom-imageDescription"))
+                .Where(x => !x.GetAttribute("class").Contains("bloom-imageDescription"))
                 .ToList();
             var videoContainers = page.SafeSelectNodes(
                     ".//*[contains(@class,'bloom-videoContainer')]"
                 )
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
             var widgetContainers = page.SafeSelectNodes(
                     ".//*[contains(@class,'bloom-widgetContainer')]"
                 )
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
 
             var pageType = SpreadsheetImporter.GetLabelFromPage(page);
@@ -201,7 +202,7 @@ namespace Bloom.Spreadsheet
 
                 if (imageContainer != null)
                 {
-                    var image = (XmlElement)imageContainer.SafeSelectNodes(".//img").Item(0);
+                    var image = (SafeXmlElement)imageContainer.SafeSelectNodes(".//img")[0];
                     var imagePath = ImagePath(
                         bookFolderPath,
                         image?.GetAttribute("src") ?? "placeHolder.png"
@@ -214,8 +215,7 @@ namespace Bloom.Spreadsheet
                     CopyImageFileToSpreadsheetFolder(imagePath);
                     var descriptions = imageContainer
                         .GetElementsByTagName("div")
-                        .Cast<XmlElement>()
-                        .Where(e => e.Attributes["class"].Value.Contains("bloom-imageDescription"));
+                        .Where(e => e.GetAttribute("class").Contains("bloom-imageDescription"));
                     foreach (var description in descriptions) // typically at most one
                     {
                         var descriptionRow = new ContentRow(_spreadsheet);
@@ -252,15 +252,14 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private void WriteWidget(XmlElement widgetContainer, ContentRow row, string bookFolderPath)
+        private void WriteWidget(SafeXmlElement widgetContainer, ContentRow row, string bookFolderPath)
         {
             var source = UrlPathString
                 .CreateFromUrlEncodedString(
                     widgetContainer
                         .GetElementsByTagName("iframe")
-                        .Cast<XmlElement>()
                         .FirstOrDefault()
-                        ?.Attributes["src"]?.Value ?? ""
+                        ?.GetAttribute("src") ?? ""
                 )
                 .NotEncoded;
             var index = _spreadsheet.AddColumnForTag(
@@ -303,15 +302,15 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private void WriteVideo(XmlElement videoContainer, ContentRow row, string bookFolderPath)
+        private void WriteVideo(SafeXmlElement videoContainer, ContentRow row, string bookFolderPath)
         {
             var source = UrlPathString
                 .CreateFromUrlEncodedString(
                     videoContainer
                         .GetElementsByTagName("source")
-                        .Cast<XmlElement>()
+                        .Cast<SafeXmlElement>()
                         .FirstOrDefault()
-                        ?.Attributes["src"]?.Value ?? ""
+                        ?.GetAttribute("src") ?? ""
                 )
                 .NotEncoded;
             var index = _spreadsheet.AddColumnForTag(
@@ -347,7 +346,7 @@ namespace Bloom.Spreadsheet
         }
 
         private void WriteTranslationGroup(
-            XmlElement translationGroup,
+            SafeXmlElement translationGroup,
             ContentRow row,
             string bookFolderPath
         )
@@ -355,10 +354,10 @@ namespace Bloom.Spreadsheet
             foreach (
                 var editable in translationGroup
                     .SafeSelectNodes("./*[contains(@class, 'bloom-editable')]")
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
             )
             {
-                var langCode = editable.Attributes["lang"]?.Value ?? "";
+                var langCode = editable.GetAttribute("lang") ?? "";
                 if (langCode == "z" || langCode == "")
                     continue;
                 var index = GetOrAddColumnForLang(langCode);
@@ -377,7 +376,7 @@ namespace Bloom.Spreadsheet
             }
             // A special case just for Quiz pages.
             if (
-                ((XmlElement)translationGroup.ParentNode).Attributes["class"]?.Value?.Contains(
+                ((SafeXmlElement)translationGroup.ParentNode).GetAttribute("class")?.Contains(
                     "correct-answer"
                 ) ?? false
             )
@@ -394,7 +393,7 @@ namespace Bloom.Spreadsheet
             // and export it into the attributes column.
         }
 
-        private void ExportAudio(XmlElement editable, SpreadsheetRow row, string bookFolderPath)
+        private void ExportAudio(SafeXmlElement editable, SpreadsheetRow row, string bookFolderPath)
         {
             // There are four possible states for a bloom-Editable in regard to audio.
             // 1. Audio recorded by block and not split.
@@ -461,18 +460,18 @@ namespace Bloom.Spreadsheet
             // of figuring out what it should be if the text is edited. It seems better
             // to assume that any recordings provided on import are current, and set the
             // recordingmd5 to the appropriate value for the imported text.
-            var lang = editable.Attributes["lang"].Value;
-            if (HtmlDom.HasClass(editable, "audio-sentence"))
+            var lang = editable.GetAttribute("lang");
+            if (editable.HasClass("audio-sentence"))
             {
                 var path = HandleAudioFile(editable, bookFolderPath);
                 if (path == "missing")
                     return; // no real recording, so don't put anything in the file.
                 var audioColIndex = GetOrAddColumnForLangAudio(lang);
                 var alignmentIndex = GetOrAddColumnForAudioAlignment(lang);
-                var endTimes = editable.Attributes["data-audiorecordingendtimes"]?.Value;
+                var endTimes = editable.GetAttribute("data-audiorecordingendtimes");
                 if (string.IsNullOrEmpty(endTimes))
                 {
-                    var duration = editable.Attributes["data-duration"]?.Value;
+                    var duration = editable.GetAttribute("data-duration");
                     row.SetCell(alignmentIndex, duration);
                 }
                 else
@@ -487,7 +486,7 @@ namespace Bloom.Spreadsheet
                 // look for sentence-level
                 var audioSentences = editable
                     .SafeSelectNodes(".//span[@class='audio-sentence']")
-                    .Cast<XmlElement>();
+                    .Cast<SafeXmlElement>();
                 var fileList = new StringBuilder();
                 var gotRealRecording = false;
                 foreach (var sentence in audioSentences)
@@ -508,9 +507,9 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private string HandleAudioFile(XmlElement elt, string bookFolderPath)
+        private string HandleAudioFile(SafeXmlElement elt, string bookFolderPath)
         {
-            var id = elt.Attributes["id"]?.Value ?? "";
+            var id = elt.GetAttribute("id") ?? "";
             // Some of our early unit tests don't set an output folder, yet the data we happened to choose
             // has some audio annotations, so we need to just ignore audio output if there's nowhere to put it.
             if (_outputFolder != null)
@@ -541,19 +540,19 @@ namespace Bloom.Spreadsheet
             return $"./audio/{id}.mp3";
         }
 
-        private XmlElement GetDataDiv(HtmlDom elementOrDom)
+        private SafeXmlElement GetDataDiv(HtmlDom elementOrDom)
         {
             return elementOrDom
                 .SafeSelectNodes(".//div[@id='bloomDataDiv']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .First();
         }
 
-        private List<XmlElement> GetImageContainers(XmlElement elementOrDom)
+        private List<SafeXmlElement> GetImageContainers(SafeXmlElement elementOrDom)
         {
             return elementOrDom
                 .SafeSelectNodes(".//*[contains(@class,'bloom-imageContainer')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
         }
 
@@ -617,10 +616,10 @@ namespace Bloom.Spreadsheet
             return _spreadsheet.AddColumnForAudioAlignment(langCode, langFriendlyName);
         }
 
-        private void AddDataDivData(XmlNode node, string bookFolderPath)
+        private void AddDataDivData(SafeXmlNode node, string bookFolderPath)
         {
             var dataBookNodeList = node.SafeSelectNodes("./div[@data-book]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
             //Bring the ones with the same data-book value together so we can easily make a single row for each data-book value
             dataBookNodeList.Sort(
@@ -628,7 +627,7 @@ namespace Bloom.Spreadsheet
             );
             string prevDataBookLabel = null;
             SpreadsheetRow row = null;
-            foreach (XmlElement dataBookElement in dataBookNodeList)
+            foreach (SafeXmlElement dataBookElement in dataBookNodeList)
             {
                 var langCode = dataBookElement.GetAttribute("lang");
                 if (langCode == "z")
@@ -706,12 +705,12 @@ namespace Bloom.Spreadsheet
                             // I think it's worth warning the user that we don't handle it.
                             if (
                                 dataBookElement.ChildNodes
-                                    .Cast<XmlNode>()
+                                    .Cast<SafeXmlNode>()
                                     .Count(
                                         n =>
                                             n.Name == "img"
                                             && string.IsNullOrEmpty(
-                                                ((XmlElement)n).GetAttribute("src")
+                                                ((SafeXmlElement)n).GetAttribute("src")
                                             )
                                     ) > 1
                             )
@@ -787,7 +786,7 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private bool IsDataDivImageElement(XmlElement dataBookElement, string dataBookLabel)
+        private bool IsDataDivImageElement(SafeXmlElement dataBookElement, string dataBookLabel)
         {
             var imageSrc = dataBookElement.GetAttribute("src").Trim();
             //Unfortunately, in the current state of Bloom, we have at least three ways of representing in the bloomDataDiv things that are
@@ -798,13 +797,13 @@ namespace Bloom.Spreadsheet
                 || DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel);
         }
 
-        private string ChildImgElementSrc(XmlElement node)
+        private string ChildImgElementSrc(SafeXmlElement node)
         {
-            foreach (XmlNode childNode in node.ChildNodes)
+            foreach (SafeXmlNode childNode in node.ChildNodes)
             {
-                if (childNode.Name.Equals("img") && ((XmlElement)childNode).HasAttribute("src"))
+                if (childNode.Name.Equals("img") && ((SafeXmlElement)childNode).HasAttribute("src"))
                 {
-                    return ((XmlElement)childNode).GetAttribute("src");
+                    return ((SafeXmlElement)childNode).GetAttribute("src");
                 }
             }
 

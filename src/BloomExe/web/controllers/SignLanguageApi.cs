@@ -9,6 +9,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.SafeXml;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using L10NSharp;
@@ -583,7 +584,7 @@ namespace Bloom.web.controllers
                         var videoElts = CurrentBook.RawDom.SafeSelectNodes(
                             $"//video/source[contains(@src,'{expectedSrcAttr.UrlEncodedForHttpPath}')]"
                         );
-                        if (videoElts.Count == 0)
+                        if (videoElts.Length == 0)
                             continue; // not used in book, ignore
 
                         // OK, the user has modified the file outside of Bloom. Something is determined to cache video.
@@ -597,7 +598,7 @@ namespace Bloom.web.controllers
                         );
                         HtmlDom.SetSrcOfVideoElement(
                             newSrcAttr,
-                            (XmlElement)videoElts[0],
+                            (SafeXmlElement)videoElts[0],
                             true,
                             "?now=" + DateTime.Now.Ticks
                         );
@@ -619,21 +620,21 @@ namespace Bloom.web.controllers
         /// <param name="sourceBookFolder">This is assumed to be a staging folder, we may replace videos here!</param>
         /// <returns>the new filepath if a video file exists and was copied, empty string if no video file was found</returns>
         public static string PrepareVideoForPublishing(
-            XmlElement videoContainerElement,
+            SafeXmlElement videoContainerElement,
             string sourceBookFolder,
             bool videoControls
         )
         {
             var videoFolder = Path.Combine(sourceBookFolder, "video");
 
-            var videoElement = videoContainerElement.SelectSingleNode("video") as XmlElement;
+            var videoElement = videoContainerElement.SelectSingleNode("video") as SafeXmlElement;
             if (videoElement == null)
                 return string.Empty;
 
             // In each valid video element, we remove any timings in the 'src' attribute of the source element.
-            var sourceElement = videoElement.SelectSingleNode("source") as XmlElement;
-            var srcAttrVal = sourceElement?.Attributes["src"]?.Value;
-            if (srcAttrVal == null)
+            var sourceElement = videoElement.SelectSingleNode("source") as SafeXmlElement;
+            var srcAttrVal = sourceElement?.GetAttribute("src");
+            if (string.IsNullOrEmpty(srcAttrVal))
                 return string.Empty;
 
             string timings;
@@ -689,7 +690,7 @@ namespace Bloom.web.controllers
         /// but BookCompressor.CompressDirectory() for BloomPUB and BloomS3Client.UploadBook() for Upload use this method.
         /// </summary>
         public static void ProcessVideos(
-            IEnumerable<XmlElement> videoContainerElements,
+            IEnumerable<SafeXmlElement> videoContainerElements,
             string sourceFolder
         )
         {

@@ -4,8 +4,8 @@ using NUnit.Framework;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System.Text.RegularExpressions;
-using System.Xml;
 using System.Drawing;
+using Bloom.SafeXml;
 
 namespace BloomTests.Spreadsheet
 {
@@ -722,7 +722,7 @@ namespace BloomTests.Spreadsheet
 
         private bool IsValidXml(string s)
         {
-            XmlDocument doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             var wrappedXmlString = "<wrapper>" + s + "</wrapper>";
             try
             {

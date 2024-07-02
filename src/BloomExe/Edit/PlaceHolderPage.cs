@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Xml;
 using Bloom.Book;
+using Bloom.SafeXml;
 
 namespace Bloom.Edit
 {
@@ -30,7 +31,7 @@ namespace Bloom.Edit
             get { return null; }
         }
 
-        public XmlElement GetDivNodeForThisPage()
+        public SafeXmlElement GetDivNodeForThisPage()
         {
             return null;
         }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using Bloom.SafeXml;
 using SIL.Linq;
 using SIL.Xml;
 
@@ -11,7 +12,7 @@ namespace Bloom.Book
     /// Since the precedence of stylesheet rules is influence by the their order (and thus the order of
     /// the various stylesheet declarations), we sort them to in a way that make sense and is consistent
     /// </summary>
-    public class StyleSheetLinkSorter : IComparer<XmlElement>
+    public class StyleSheetLinkSorter : IComparer<SafeXmlElement>
     {
         public static readonly string[] KnownCssFilePrefixesInOrder =
             BookStorage.OrderedPrefixesOfCssFilesToSortBeforeUnknownStylesheets
@@ -48,12 +49,12 @@ namespace Bloom.Book
             }
         }
 
-        public int Compare(XmlElement a, XmlElement b)
+        public int Compare(SafeXmlElement a, SafeXmlElement b)
         {
             Init();
 
-            var x = a.GetStringAttribute("href").ToLowerInvariant();
-            var y = b.GetStringAttribute("href").ToLowerInvariant();
+            var x = a.GetAttribute("href").ToLowerInvariant();
+            var y = b.GetAttribute("href").ToLowerInvariant();
 
             int xValue = GetValue(x);
             int yValue = GetValue(y);
