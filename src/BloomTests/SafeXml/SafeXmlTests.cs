@@ -17,7 +17,7 @@ namespace BloomTests.SafeXml
 		{
 			var tasks = new List<Task>();
 			var doc = new XmlDocument();
-			doc.LoadXml("<root><child>0</child></root>");
+			doc.LoadXml("<root i=\"0\"><child>0</child></root>");
 
 			Assert.Throws<AggregateException>(() =>
 			{
@@ -57,7 +57,7 @@ namespace BloomTests.SafeXml
 		{
 			var tasks = new List<Task>();
 			var doc = SafeXmlDocument.Create();
-			doc.LoadXml("<root><child>0</child></root>");
+			doc.LoadXml("<root i=\"0\"><child>0</child></root>");
 
 			tasks.Add(Task.Run(() =>
 			{
