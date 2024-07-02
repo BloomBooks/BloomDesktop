@@ -492,17 +492,6 @@ namespace Bloom.Book
             }
         }
 
-        //		//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
-        //		//page of every book. This screws up thumbnail caching.
-        //		private void FixPageId(XmlDocument bookDom)
-        //		{
-        //			XmlElement page = bookDom.SelectSingleNode("//div[@id='74731b2d-18b0-420f-ac96-6de20f659810']") as XmlElement;
-        //			if (page != null)
-        //			{
-        //				page.SetAttribute("id", Guid.NewGuid().ToString());
-        //			}
-        //		}
-
         public static bool IsFrontMatterPage(SafeXmlElement pageDiv)
         {
             return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-frontMatter')]")

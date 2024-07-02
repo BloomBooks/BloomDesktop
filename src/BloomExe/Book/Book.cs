@@ -2568,29 +2568,6 @@ namespace Bloom.Book
             Save();
         }
 
-        private static void UpdateDivInsidePage(
-            int zeroBasedCount,
-            XmlElement templateElement,
-            XmlElement targetPage,
-            IProgress progress
-        )
-        {
-            XmlElement targetElement =
-                targetPage.SelectSingleNode(
-                    "div/div[" + (zeroBasedCount + 1).ToString(CultureInfo.InvariantCulture) + "]"
-                ) as XmlElement;
-            if (targetElement == null)
-            {
-                progress.WriteError(
-                    "Book had less than the expected number of divs on page "
-                        + targetPage.GetAttribute("id")
-                        + ", so it cannot be completely updated."
-                );
-                return;
-            }
-            targetElement.SetAttribute("class", templateElement.GetAttribute("class"));
-        }
-
         public bool HasOriginalCopyrightInfo
         {
             get

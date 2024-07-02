@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml;
 using Bloom;
 using Bloom.SafeXml;
 using NUnit.Framework;
@@ -19,7 +18,7 @@ namespace BloomTests
         {
             var dom = XmlHtmlConverter.GetXmlDomFromHtml("<!DOCTYPE html><html></html>", false);
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1); //makes sure no namespace was inserted (or does it? what if that assert is too smart))
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             var xml = dom.OuterXml;
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<html><head><title></title></head><body></body></html>", xml);
@@ -33,7 +32,7 @@ namespace BloomTests
                 false
             );
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1); //makes sure no namespace was inserted (or does it? what if that assert is too smart))
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             var xml = dom.OuterXml;
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual(
@@ -323,7 +322,7 @@ namespace BloomTests
             var html = "<!DOCTYPE html><html><head></head><body><div><u></u></div></body></html>";
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<div></div>", xml);
         }
@@ -334,7 +333,7 @@ namespace BloomTests
             var html = "<!DOCTYPE html><html><head></head><body><div><u> </u></div></body></html>";
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<div><u> </u></div>", xml);
         }
@@ -346,7 +345,7 @@ namespace BloomTests
                 "<!DOCTYPE html><html><head></head><body><div><u><i /></u></div></body></html>";
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<div></div>", xml);
         }
@@ -358,7 +357,7 @@ namespace BloomTests
                 "<!DOCTYPE html><html><head></head><body><div><u style=\"test\"> </u></div></body></html>";
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<div><u style=\"test\"> </u></div>", xml);
 
@@ -367,7 +366,7 @@ namespace BloomTests
             dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
             xml = xml.Replace(Environment.NewLine, "");
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
         }
 

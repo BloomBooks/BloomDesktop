@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.SafeXml;
@@ -9,7 +8,7 @@ using NUnit.Framework;
 
 namespace BloomTests.Book
 {
-    [TestFixture]
+	[TestFixture]
     public sealed class HtmlDomTests
     {
         [Test]
@@ -2368,7 +2367,7 @@ p {
 	</body>
 </html>"
             );
-            // Continue setting up test: Go from an ID to the corresonding XmlElement instance for that ID.
+            // Continue setting up test: Go from an ID to the corresponding SafeXmlElement instance for that ID.
             var element = htmlDom
                 .SafeSelectNodes($"//*[@id='{id}']")
                 .Cast<SafeXmlElement>()

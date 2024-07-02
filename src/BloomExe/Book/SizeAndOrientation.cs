@@ -253,10 +253,5 @@ namespace Bloom.Book
             }
             xmlElement.SetAttribute("class", classes.Trim());
         }
-
-        private static void AddClass(XmlElement e, string className)
-        {
-            e.SetAttribute("class", (e.GetAttribute("class") + " " + className).Trim());
-        }
     }
 }

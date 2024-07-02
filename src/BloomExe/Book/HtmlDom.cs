@@ -1992,7 +1992,7 @@ namespace Bloom.Book
                 for (var i = 0; i < countOfChildren; i++)
                 {
                     var childNode = element.ChildNodes[i];
-                    if (childNode is XmlText)
+                    if (childNode is SafeXmlText)
                         continue;
 
                     StripUnwantedTagsPreservingText(dom, childNode, tagsToPreserve);
@@ -3226,7 +3226,7 @@ namespace Bloom.Book
         /// <summary>
         /// Returns the first node, starting from {startNode} and going up toward the earliest ancestor, that matchesthe condition (i.e. the provided {matcher} function returns true
         /// </summary>
-        /// <param name="startNode">The XmlNode to start the search from. The search is inclusive.</param>
+        /// <param name="startNode">The SafeXmlNode to start the search from. The search is inclusive.</param>
         /// <param name="matcher">A function that, given a node in the tree, returns true if it matches the desired condition</param>
         /// <returns></returns>
         public static SafeXmlNode FindSelfOrAncestorMatchingCondition(

@@ -84,14 +84,6 @@ namespace Bloom.Book
             return id;
         }
 
-        //
-        //    	private void ReadPageLabel(XmlElement sourcePage)
-        //    	{
-        //    		PageLabel = "Foobar";
-        //    	}
-
-        //    	protected string PageLabel { get; set; }
-
         private void ReadClasses(SafeXmlElement sourcePage)
         {
             _classes = sourcePage.GetClasses().ToList(); // Enhance: can we just make it an array?

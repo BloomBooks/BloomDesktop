@@ -444,35 +444,6 @@ namespace Bloom.Book
             storage.Dom.RemoveMetaElement("bookLineage"); // even older name
         }
 
-        //		private static void ClearAwayAllTranslations(XmlNode element)
-        //		{
-        //
-        //			foreach (XmlNode node in element.ChildNodes)//.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Tag)))
-        //            {
-        //                if (node.NodeType == XmlNodeType.Text)
-        //                {
-        //                    node.InnerText = String.Empty;
-        //                }
-        //                else
-        //                {
-        //					ClearAwayAllTranslations(node);
-        //                }
-        //            }
-        //			//after removing text, we could still be left with the line breaks between them
-        //			if (element.ChildNodes != null)
-        //			{
-        //				var possibleBrNodes = new List<XmlNode>();
-        //				possibleBrNodes.AddRange(from XmlNode x in element.ChildNodes select x);
-        //				foreach (XmlNode node in possibleBrNodes)
-        //				{
-        //					if (node.NodeType == XmlNodeType.Element && node.Name.ToLower() == "br")
-        //					{
-        //						node.ParentNode.RemoveChild(node);
-        //					}
-        //				}
-        //			}
-        //		}
-
         /// <summary>
         /// When building on templates, we usually want to have some sample text, but don't let them bleed through to what the user sees
         /// </summary>
@@ -655,7 +626,7 @@ namespace Bloom.Book
             BookData bookData
         )
         {
-            //			foreach (XmlElement element in elementOrDom.SafeSelectNodes(".//*[@data-metalanguage]"))
+            //			foreach (SafeXmlElement element in elementOrDom.SafeSelectNodes(".//*[@data-metalanguage]"))
             //			{
             //				string lang = "";
             //				string metaLanguage = element.GetAttribute("data-metalanguage").Trim();

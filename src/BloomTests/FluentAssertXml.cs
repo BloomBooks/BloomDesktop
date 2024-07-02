@@ -7,7 +7,7 @@ using SIL.Xml;
 
 namespace BloomTests
 {
-    //NB: if c# ever allows us to add static exension methods,
+    //NB: if c# ever allows us to add static extension methods,
     //then all this could be an extension on nunit's Assert class.
 
     public class AssertThatXmlIn
