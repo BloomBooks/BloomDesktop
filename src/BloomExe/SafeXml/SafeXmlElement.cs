@@ -12,44 +12,44 @@ namespace Bloom.SafeXml
         public SafeXmlElement(XmlElement element, SafeXmlDocument doc)
             : base(element, doc) { }
 
-        // In this class, _node is always an XmlElement, since it is readonly and set by our constructor, which requires that.
-        // This saves us from having to cast it in every method.
-        private XmlElement Element => (XmlElement)_node;
+        // In this class, _wrappedNode is always an XmlElement, since it is readonly and set by our constructor,
+        // which requires that.  This saves us from having to cast it in every method.
+        private XmlElement WrappedElement => (XmlElement)_wrappedNode;
 
         public override string GetAttribute(string name)
         {
             lock (_doc.Lock)
-                return Element.GetAttribute(name);
+                return WrappedElement.GetAttribute(name);
         }
 
         public string GetAttribute(string name, string namespaceURI)
         {
             lock (_doc.Lock)
-                return Element.GetAttribute(name, namespaceURI);
+                return WrappedElement.GetAttribute(name, namespaceURI);
         }
 
         public override void SetAttribute(string name, string value)
         {
             lock (_doc.Lock)
-                Element.SetAttribute(name, value);
+                WrappedElement.SetAttribute(name, value);
         }
 
         public void SetAttribute(string name, string ns, string value)
         {
             lock (_doc.Lock)
-                Element.SetAttribute(name, ns, value);
+                WrappedElement.SetAttribute(name, ns, value);
         }
 
         public void RemoveAttribute(string name)
         {
             lock (_doc.Lock)
-                Element.RemoveAttribute(name);
+                WrappedElement.RemoveAttribute(name);
         }
 
         public override void WriteTo(XmlWriter writer)
         {
             lock (_doc.Lock)
-                Element.WriteTo(writer);
+                WrappedElement.WriteTo(writer);
         }
 
         /// <summary>
@@ -61,25 +61,25 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return Element.IsEmpty;
+                    return WrappedElement.IsEmpty;
             }
             set
             {
                 lock (_doc.Lock)
-                    Element.IsEmpty = value;
+                    WrappedElement.IsEmpty = value;
             }
         }
 
         public override bool HasAttribute(string name)
         {
             lock (_doc.Lock)
-                return Element.HasAttribute(name);
+                return WrappedElement.HasAttribute(name);
         }
 
         public SafeXmlElement[] GetElementsByTagName(string name)
         {
             lock (_doc.Lock)
-                return WrapElements(Element.GetElementsByTagName(name), _doc);
+                return WrapElements(WrappedElement.GetElementsByTagName(name), _doc);
         }
 
         public SafeXmlNode NextSibling
@@ -87,7 +87,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return WrapNode(Element.NextSibling, _doc);
+                    return WrapNode(WrappedElement.NextSibling, _doc);
             }
         }
 
@@ -139,7 +139,7 @@ namespace Bloom.SafeXml
         public override string GetOptionalStringAttribute(string name, string defaultValue)
         {
             lock (_doc.Lock)
-                return Element.GetOptionalStringAttribute(name, defaultValue);
+                return WrappedElement.GetOptionalStringAttribute(name, defaultValue);
         }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node as XmlElement;
+                    return _wrappedNode as XmlElement;
             }
         }
 

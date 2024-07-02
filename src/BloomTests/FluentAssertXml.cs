@@ -12,16 +12,6 @@ namespace BloomTests
 
     public class AssertThatXmlIn
     {
-        public static AssertDom Dom(XmlDocument dom)
-        {
-            return new AssertDom(dom);
-        }
-
-        public static AssertFile File(string path)
-        {
-            return new AssertFile(path);
-        }
-
         public static AssertHtmlFile HtmlFile(string path)
         {
             return new AssertHtmlFile(path);
@@ -30,11 +20,6 @@ namespace BloomTests
         public static AssertXmlString String(string xmlString)
         {
             return new AssertXmlString(xmlString);
-        }
-
-        public static AssertElement Element(XmlElement element)
-        {
-            return new AssertElement(element);
         }
 
         public static AssertDom Dom(SafeXmlDocument dom)

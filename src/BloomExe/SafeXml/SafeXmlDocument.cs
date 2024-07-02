@@ -7,17 +7,18 @@ namespace Bloom.SafeXml
     /// <summary>
     /// A wrapper around XmlDocument to make it thread-safe.
     /// Methods of this and its related classes have much of the API of XmlDocument and its friends,
-    /// but anything that returns something like XmlElement in the original API will instead return and appropriate
-    /// SafeXmlElement (unless it is making a clone).
-    /// Where relevant, if an object that can be wrapped is an input argument, we will provide overloads
-    /// that take either the wrapped or unwrapped version.
+    /// but anything that returns something like XmlElement in the original API will instead return an appropriate
+    /// SafeXmlElement.
+    /// Constructors may take an XmlNode based object, and will wrap it in an appropriate SafeXmlNode object.
     /// It's also convenient to add some methods of our own, and to make ones that return the annoying
     /// XmlNodeList type return an array (which also ensures the entire process of enumerating
     /// happens inside the lock).
     /// </summary>
     public class SafeXmlDocument : SafeXmlNode
     {
-        private XmlDocument Doc => (XmlDocument)_node;
+        // In this class, _wrappedNode is always an XmlDocument, since it is readonly and set by our constructor,
+        // which requires that.  This saves us from having to cast it in every method.
+        private XmlDocument WrappedDocument => (XmlDocument)_wrappedNode;
         internal object Lock = new object();
 
         internal static SafeXmlDocument Create()
@@ -34,13 +35,13 @@ namespace Bloom.SafeXml
         public void LoadXml(string xml)
         {
             lock (Lock)
-                Doc.LoadXml(xml);
+                WrappedDocument.LoadXml(xml);
         }
 
         public void Load(string filename)
         {
             lock (Lock)
-                Doc.Load(filename);
+                WrappedDocument.Load(filename);
         }
 
         public bool PreserveWhitespace
@@ -48,69 +49,66 @@ namespace Bloom.SafeXml
             get
             {
                 lock (Lock)
-                    return Doc.PreserveWhitespace;
+                    return WrappedDocument.PreserveWhitespace;
             }
             set
             {
                 lock (Lock)
-                    Doc.PreserveWhitespace = value;
+                    WrappedDocument.PreserveWhitespace = value;
             }
         }
 
         public new SafeXmlDocument Clone()
         {
             lock (Lock)
-                return new SafeXmlDocument((XmlDocument)Doc.Clone());
+                return new SafeXmlDocument((XmlDocument)WrappedDocument.Clone());
         }
 
         public SafeXmlElement CreateElement(string name)
         {
             lock (Lock)
-                return new SafeXmlElement(Doc.CreateElement(name), this);
+                return new SafeXmlElement(WrappedDocument.CreateElement(name), this);
         }
 
-        /// <summary>
-        /// Review: do we need a locked wrapper for these?
-        /// </summary>
         public SafeXmlText CreateTextNode(string text)
         {
             lock (Lock)
-                return new SafeXmlText(Doc.CreateTextNode(text), this);
+                return new SafeXmlText(WrappedDocument.CreateTextNode(text), this);
         }
 
         public SafeXmlWhitespace CreateWhitespace(string text)
         {
             lock (Lock)
-                return new SafeXmlWhitespace(Doc.CreateWhitespace(text), this);
+                return new SafeXmlWhitespace(WrappedDocument.CreateWhitespace(text), this);
         }
 
         public override void WriteTo(XmlWriter writer)
         {
             lock (Lock)
-                Doc.WriteTo(writer);
+                WrappedDocument.WriteTo(writer);
         }
 
         public void Save(string path)
         {
             lock (Lock)
-                Doc.Save(path);
+                WrappedDocument.Save(path);
         }
 
         public void Save(XmlWriter writer)
         {
             lock (Lock)
-                Doc.Save(writer);
+                WrappedDocument.Save(writer);
         }
 
         internal SafeXmlNode[] GetElementsByTagName(string name)
         {
             lock (Lock)
-                return WrapNodes(Doc.GetElementsByTagName(name), this);
+                return WrapNodes(WrappedDocument.GetElementsByTagName(name), this);
         }
         public override int GetHashCode()
         {
             lock (Lock)
-                return _node.GetHashCode() + Lock.GetHashCode();
+                return _wrappedNode.GetHashCode() + Lock.GetHashCode();
         }
 
 
@@ -119,13 +117,13 @@ namespace Bloom.SafeXml
         public SafeXmlElement GetOrCreateElement(string parentPath, string name)
         {
             lock (Lock)
-                return new SafeXmlElement(XmlUtils.GetOrCreateElement(Doc, parentPath, name), this);
+                return new SafeXmlElement(XmlUtils.GetOrCreateElement(WrappedDocument, parentPath, name), this);
         }
 
         public string GetTitleOfHtml(string defaultIfMissing)
         {
             lock (Lock)
-                return XmlUtils.GetTitleOfHtml(Doc, defaultIfMissing);
+                return XmlUtils.GetTitleOfHtml(WrappedDocument, defaultIfMissing);
         }
 
         public SafeXmlElement DocumentElement
@@ -133,20 +131,20 @@ namespace Bloom.SafeXml
             get
             {
                 lock (Lock)
-                    return new SafeXmlElement(Doc.DocumentElement, this);
+                    return new SafeXmlElement(WrappedDocument.DocumentElement, this);
             }
         }
 
         public SafeXmlNode ImportNode(SafeXmlNode node, bool deep)
         {
             lock (Lock)
-                return WrapNode(Doc.ImportNode(node._node, deep), this);
+                return WrapNode(WrappedDocument.ImportNode(node._wrappedNode, deep), this);
         }
 
         public void WriteContentTo(XmlWriter writer)
         {
             lock (Lock)
-                Doc.WriteContentTo(writer);
+                WrappedDocument.WriteContentTo(writer);
         }
 
         public SafeXmlElement Body
@@ -183,7 +181,7 @@ namespace Bloom.SafeXml
         {
             lock (Lock)
             {
-                XmlDomExtensions.RemoveStyleSheetIfFound(Doc, path);
+                XmlDomExtensions.RemoveStyleSheetIfFound(WrappedDocument, path);
             }
         }
 
@@ -196,7 +194,7 @@ namespace Bloom.SafeXml
         public XmlNamespaceManager GetNewNamespaceManager()
         {
             lock (Lock)
-                return new XmlNamespaceManager(Doc.NameTable);
+                return new XmlNamespaceManager(WrappedDocument.NameTable);
         }
 
         public SafeXmlDocument StripXHtmlNameSpace()
@@ -209,6 +207,73 @@ namespace Bloom.SafeXml
             }
         }
 
+        public string GetMetaValue(string name, string defaultValue)
+        {
+            lock (Lock)
+            {
+                var node = SelectSingleNode(
+                    "//head/meta[@name='" + name + "' or @name='" + name.ToLowerInvariant() + "']"
+                );
+                if (node != null)
+                    return node.GetAttribute("content");
+                return defaultValue;
+            }
+        }
+
+        public void UpdateMetaElement(string name, string value)
+        {
+            lock (Lock)
+            {
+                var n = SelectSingleNode("//meta[@name='" + name + "']") as SafeXmlElement;
+                if (n == null)
+                {
+                    n = CreateElement("meta");
+                    n.SetAttribute("name", name);
+                    SelectSingleNode("//head").AppendChild(n);
+                }
+                n.SetAttribute("content", value);
+            }
+        }
+
+        public void RemoveMetaElement(string name)
+        {
+            lock (Lock)
+            {
+                foreach (var n in SafeSelectNodes("//head/meta[@name='" + name + "']"))
+                    n.ParentNode.RemoveChild(n);
+            }
+        }
+
+        public void RemoveMetaElement(string oldName, Func<string> read, Action<string> write)
+        {
+            lock (Lock)
+            {
+                if (!HasMetaElement(oldName))
+                    return;
+
+                if (!String.IsNullOrEmpty(read()))
+                {
+                    RemoveMetaElement(oldName);
+                    return;
+                }
+
+                //ok, so we do have to transfer the value over
+
+                write(GetMetaValue(oldName, ""));
+
+                //and remove any of the old name
+                foreach (var node in SafeSelectNodes("//head/meta[@name='" + oldName + "']"))
+                {
+                    node.ParentNode.RemoveChild(node);
+                }
+            }
+        }
+
+        public bool HasMetaElement(string name)
+        {
+            return SafeSelectNodes("//head/meta[@name='" + name + "']").Length > 0;
+        }
+
         /// <summary>
         /// Use this only for tests!
         /// </summary>
@@ -217,7 +282,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (Lock)
-                    return Doc;
+                    return WrappedDocument;
             }
         }
 

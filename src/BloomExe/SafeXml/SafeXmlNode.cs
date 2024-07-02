@@ -9,15 +9,15 @@ namespace Bloom.SafeXml
 {
     public class SafeXmlNode
     {
-        internal readonly XmlNode _node;
+        internal readonly XmlNode _wrappedNode; // cannot be protected due to SafeXmlDocument.ImportNode method.
 
         // I want this to be readonly, but can't find a way to make the constructor of SafeXmlDocument work.
-        internal SafeXmlDocument _doc;
+        protected SafeXmlDocument _doc;
 
         // Usually should instead call WrapNode; only for subclass constructors
         protected SafeXmlNode(XmlNode node, SafeXmlDocument doc)
         {
-            _node = node;
+            _wrappedNode = node;
             _doc = doc;
         }
 
@@ -26,7 +26,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return WrapNode(_node.ParentNode, _doc);
+                    return WrapNode(_wrappedNode.ParentNode, _doc);
             }
         }
 
@@ -34,7 +34,7 @@ namespace Bloom.SafeXml
         {
             lock (_doc.Lock)
             {
-                _node.RemoveChild(child._node);
+                _wrappedNode.RemoveChild(child._wrappedNode);
                 return child; // what the original does; we don't need to make a new one.
             }
         }
@@ -43,7 +43,7 @@ namespace Bloom.SafeXml
         {
             lock (_doc.Lock)
             {
-                _node.ReplaceChild(newChild._node, oldChild._node);
+                _wrappedNode.ReplaceChild(newChild._wrappedNode, oldChild._wrappedNode);
                 return oldChild; // what the original does; we don't need to make a new one.
             }
         }
@@ -52,7 +52,7 @@ namespace Bloom.SafeXml
         {
             lock (_doc.Lock)
             {
-                _node.InsertBefore(newChild._node, refChild?._node);
+                _wrappedNode.InsertBefore(newChild._wrappedNode, refChild?._wrappedNode);
                 return newChild; // what the original does; we don't need to make a new one.
             }
         }
@@ -61,7 +61,7 @@ namespace Bloom.SafeXml
         {
             lock (_doc.Lock)
             {
-                _node.InsertAfter(newChild._node, refChild?._node);
+                _wrappedNode.InsertAfter(newChild._wrappedNode, refChild?._wrappedNode);
                 return newChild; // what the original does; we don't need to make a new one.
             }
         }
@@ -71,7 +71,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node.NodeType;
+                    return _wrappedNode.NodeType;
             }
         }
         public string Name
@@ -79,7 +79,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node.Name;
+                    return _wrappedNode.Name;
             }
         }
 
@@ -88,7 +88,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node.LocalName;
+                    return _wrappedNode.LocalName;
             }
         }
 
@@ -97,7 +97,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node.OuterXml;
+                    return _wrappedNode.OuterXml;
             }
         }
 
@@ -105,7 +105,7 @@ namespace Bloom.SafeXml
         {
             lock (_doc.Lock)
             {
-                _node.AppendChild(newChild._node);
+                _wrappedNode.AppendChild(newChild._wrappedNode);
                 return newChild; // what the original does; we don't need to make a new one.
             }
         }
@@ -114,7 +114,7 @@ namespace Bloom.SafeXml
         {
             lock (_doc.Lock)
             {
-                _node.PrependChild(newChild._node);
+                _wrappedNode.PrependChild(newChild._wrappedNode);
                 return newChild; // what the original does; we don't need to make a new one.
             }
         }
@@ -124,12 +124,12 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node.InnerText;
+                    return _wrappedNode.InnerText;
             }
             set
             {
                 lock (_doc.Lock)
-                    _node.InnerText = value;
+                    _wrappedNode.InnerText = value;
             }
         }
 
@@ -138,12 +138,12 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node.InnerXml;
+                    return _wrappedNode.InnerXml;
             }
             set
             {
                 lock (_doc.Lock)
-                    _node.InnerXml = value;
+                    _wrappedNode.InnerXml = value;
             }
         }
 
@@ -152,12 +152,12 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node.Value;
+                    return _wrappedNode.Value;
             }
             set
             {
                 lock (_doc.Lock)
-                    _node.Value = value;
+                    _wrappedNode.Value = value;
             }
         }
 
@@ -166,7 +166,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return WrapNodes(_node.ChildNodes, _doc);
+                    return WrapNodes(_wrappedNode.ChildNodes, _doc);
             }
         }
 
@@ -175,7 +175,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return WrapNode(_node.FirstChild, _doc);
+                    return WrapNode(_wrappedNode.FirstChild, _doc);
             }
         }
 
@@ -184,7 +184,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return WrapNode(_node.LastChild, _doc);
+                    return WrapNode(_wrappedNode.LastChild, _doc);
             }
         }
 
@@ -193,13 +193,13 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node.HasChildNodes;
+                    return _wrappedNode.HasChildNodes;
             }
         }
 
         public virtual void WriteTo(XmlWriter w)
         {
-            throw new NotImplementedException("Only Elements can write to XmlWriter");
+            throw new NotImplementedException("Only SafeXmlElement and SafeXmlDocument can write to XmlWriter");
         }
 
         public SafeXmlDocument OwnerDocument => _doc;
@@ -207,19 +207,19 @@ namespace Bloom.SafeXml
         public SafeXmlNode Clone()
         {
             lock (_doc.Lock)
-                return WrapNode(_node.Clone(), _doc);
+                return WrapNode(_wrappedNode.Clone(), _doc);
         }
 
         public SafeXmlNode CloneNode(bool deep)
         {
             lock (_doc.Lock)
-                return WrapNode(_node.CloneNode(deep), _doc);
+                return WrapNode(_wrappedNode.CloneNode(deep), _doc);
         }
 
         public void RemoveAll()
         {
             lock (_doc.Lock)
-                _node.RemoveAll();
+                _wrappedNode.RemoveAll();
         }
 
         public static bool operator ==(SafeXmlNode a, SafeXmlNode b)
@@ -227,7 +227,7 @@ namespace Bloom.SafeXml
             if (a != null)
             {
                 lock (a._doc.Lock)
-                    return a._node == b?._node;
+                    return a._wrappedNode == b?._wrappedNode;
             }
             return (object)b == null;
         }
@@ -237,7 +237,7 @@ namespace Bloom.SafeXml
             if ((object)a != null)
             {
                 lock (a._doc.Lock)
-                    return a._node != b?._node;
+                    return a._wrappedNode != b?._wrappedNode;
             }
             return (object)b != null;
         }
@@ -247,7 +247,7 @@ namespace Bloom.SafeXml
             lock (_doc.Lock)
             {
                 if (obj is SafeXmlNode)
-                    return _node.Equals((obj as SafeXmlNode)._node);
+                    return _wrappedNode.Equals((obj as SafeXmlNode)._wrappedNode);
                 else
                     return false;
             }
@@ -256,7 +256,7 @@ namespace Bloom.SafeXml
         public override int GetHashCode()
         {
             lock (_doc.Lock)
-                return _node.GetHashCode() + _doc.GetHashCode();
+                return _wrappedNode.GetHashCode() + _doc.GetHashCode();
         }
 
         #region Additional Methods
@@ -287,13 +287,13 @@ namespace Bloom.SafeXml
         public SafeXmlNode[] SafeSelectNodes(string xpath)
         {
             lock (_doc.Lock)
-                return WrapNodes(_node.SafeSelectNodes(xpath), _doc);
+                return WrapNodes(_wrappedNode.SafeSelectNodes(xpath), _doc);
         }
 
         public SafeXmlNode[] SafeSelectNodes(string xpath, XmlNamespaceManager ns)
         {
             lock (_doc.Lock)
-                return WrapNodes(_node.SafeSelectNodes(xpath, ns), _doc);
+                return WrapNodes(_wrappedNode.SafeSelectNodes(xpath, ns), _doc);
         }
 
         /// <summary>
@@ -339,13 +339,13 @@ namespace Bloom.SafeXml
         public SafeXmlNode SelectSingleNode(string xpath)
         {
             lock (_doc.Lock)
-                return WrapNode(_node.SelectSingleNode(xpath), _doc);
+                return WrapNode(_wrappedNode.SelectSingleNode(xpath), _doc);
         }
 
         public SafeXmlNode SelectSingleNode(string xpath, XmlNamespaceManager nsmgr)
         {
             lock (_doc.Lock)
-                return WrapNode(_node.SelectSingleNode(xpath, nsmgr), _doc);
+                return WrapNode(_wrappedNode.SelectSingleNode(xpath, nsmgr), _doc);
         }
 
         /// <summary>
@@ -357,7 +357,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node.Attributes?
+                    return _wrappedNode.Attributes?
                         .Cast<XmlAttribute>()
                         .Select(attr => attr.Name)
                         .ToArray();
@@ -373,7 +373,7 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _node.Attributes?
+                    return _wrappedNode.Attributes?
                         .Cast<XmlAttribute>()
                         .Select(attr => new NameValue(attr.Name, attr.Value))
                         .ToArray();
@@ -388,7 +388,7 @@ namespace Bloom.SafeXml
         public void DeleteNodes(string path)
         {
             lock (_doc.Lock)
-                foreach (var toDelete in _node.SafeSelectNodes(path).OfType<XmlElement>().ToArray())
+                foreach (var toDelete in _wrappedNode.SafeSelectNodes(path).OfType<XmlElement>().ToArray())
                     toDelete.ParentNode.RemoveChild(toDelete);
         }
 
@@ -399,7 +399,7 @@ namespace Bloom.SafeXml
         public SafeXmlNode SelectSingleNodeHonoringDefaultNS(string path)
         {
             lock (_doc.Lock)
-                return WrapNode(_node.SelectSingleNodeHonoringDefaultNS(path), _doc);
+                return WrapNode(_wrappedNode.SelectSingleNodeHonoringDefaultNS(path), _doc);
         }
 
         #endregion

@@ -46,11 +46,6 @@ namespace Bloom.Book
             _dom.LoadXml("<html><head></head><body></body></html>");
         }
 
-        public HtmlDom(XmlDocument domToClone)
-        {
-            _dom = new SafeXmlDocument((XmlDocument)domToClone.Clone());
-        }
-
         public HtmlDom(SafeXmlDocument domToWrap)
         {
             _dom = domToWrap.Clone();
@@ -522,7 +517,6 @@ namespace Bloom.Book
             e.RemoveAttribute("dir");
         }
 
-        // Review SafeXml
         public static void RemoveClassesBeginningWith(SafeXmlElement xmlElement, string classPrefix)
         {
             var oldClasses = xmlElement.GetClasses();
@@ -543,25 +537,12 @@ namespace Bloom.Book
 
         public string GetMetaValue(string name, string defaultValue)
         {
-            var node = _dom.SelectSingleNode(
-                "//head/meta[@name='" + name + "' or @name='" + name.ToLowerInvariant() + "']"
-            );
-            if (node != null)
-            {
-                return node.GetAttribute("content");
-            }
-            return defaultValue;
+            return _dom.GetMetaValue(name, defaultValue);
         }
 
         public void RemoveMetaElement(string name)
         {
-            lock (_dom.Lock)
-            {
-                foreach (var n in _dom.SafeSelectNodes("//head/meta[@name='" + name + "']"))
-                {
-                    n.ParentNode.RemoveChild(n);
-                }
-            }
+            _dom.RemoveMetaElement(name);
         }
 
         /// <summary>
@@ -569,14 +550,7 @@ namespace Bloom.Book
         /// </summary>
         public void UpdateMetaElement(string name, string value)
         {
-            var n = _dom.SelectSingleNode("//meta[@name='" + name + "']") as SafeXmlElement;
-            if (n == null)
-            {
-                n = _dom.CreateElement("meta");
-                n.SetAttribute("name", name);
-                _dom.SelectSingleNode("//head").AppendChild(n);
-            }
-            n.SetAttribute("content", value);
+            _dom.UpdateMetaElement(name, value);
         }
 
         /// <summary>
@@ -586,32 +560,12 @@ namespace Bloom.Book
         /// </summary>
         public void RemoveMetaElement(string oldName, Func<string> read, Action<string> write)
         {
-            lock (_dom.Lock)
-            {
-                if (!HasMetaElement(oldName))
-                    return;
-
-                if (!String.IsNullOrEmpty(read()))
-                {
-                    RemoveMetaElement(oldName);
-                    return;
-                }
-
-                //ok, so we do have to transfer the value over
-
-                write(GetMetaValue(oldName, ""));
-
-                //and remove any of the old name
-                foreach (var node in _dom.SafeSelectNodes("//head/meta[@name='" + oldName + "']"))
-                {
-                    node.ParentNode.RemoveChild(node);
-                }
-            }
+            _dom.RemoveMetaElement(oldName, read, write);
         }
 
         public bool HasMetaElement(string name)
         {
-            return _dom.SafeSelectNodes("//head/meta[@name='" + name + "']").Length > 0;
+            return _dom.HasMetaElement(name);
         }
 
         /// <summary>
