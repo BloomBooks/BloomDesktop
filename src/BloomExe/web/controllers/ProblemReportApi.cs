@@ -219,7 +219,7 @@ namespace Bloom.web.controllers
                 "problemReport/emailAddress",
                 (ApiRequest request) =>
                 {
-                    request.ReplyWithText(_reportInfo.UserEmail);
+                    request.ReplyWithText(_reportInfo.UserEmail ?? "");
                 },
                 true
             );
