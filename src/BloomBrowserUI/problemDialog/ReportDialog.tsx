@@ -57,6 +57,8 @@ export const ReportDialog: React.FunctionComponent<{
     const [issueLink, setIssueLink] = useState("");
     const [howMuch, setHowMuch] = useState(1); // 0, 1 or 2
 
+    const [zippedReportPath, setZippedReportPath] = useState("");
+
     useEffect(() => {
         setIncludeBook(bookName !== "??");
     }, [bookName]);
@@ -105,12 +107,9 @@ export const ReportDialog: React.FunctionComponent<{
                     includeScreenshot
                 },
                 result => {
-                    const failureResponseString = "failed:";
-                    const link = result.data.issueLink;
-                    if (link.startsWith(failureResponseString)) {
-                        setIssueLink(
-                            link.substring(failureResponseString.length)
-                        );
+                    if (result.data.failed) {
+                        // result.data.zippedReportPath may or may not be set; we deal with that elsewhere.
+                        setZippedReportPath(result.data.zippedReportPath);
                         setMode(Mode.submissionFailed);
                     } else {
                         setIssueLink(result.data.issueLink);
@@ -148,13 +147,16 @@ export const ReportDialog: React.FunctionComponent<{
         "ReportProblemDialog.Submitting",
         "This is shown while Bloom is sending the problem report to our server."
     );
-    const localizedFailureMsg = useL10n(
+    const localizedFailureWithZipMsg = useL10n(
         "Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.",
         "ReportProblemDialog.CouldNotSendToServer",
         undefined,
-        issueLink,
+        zippedReportPath,
         "issues@bloomlibrary.org"
     );
+    // This general failure message without a zip path should be extremely rare, and it isn't worth localizing.
+    const generalFailureMsg =
+        "Bloom was not able to submit your report to our server. Please retry or email issues@bloomlibrary.org.";
     const localizedDone = useL10n("Done", "Common.Done");
 
     // Gives us a Cancel, Close, or Quit button.
@@ -268,13 +270,11 @@ export const ReportDialog: React.FunctionComponent<{
                                     );
                                 case Mode.submissionFailed:
                                     return (
-                                        <>
-                                            {issueLink !== "" && (
-                                                <Typography className="allowSelect">
-                                                    {localizedFailureMsg}
-                                                </Typography>
-                                            )}
-                                        </>
+                                        <Typography className="allowSelect">
+                                            {zippedReportPath
+                                                ? localizedFailureWithZipMsg
+                                                : generalFailureMsg}
+                                        </Typography>
                                     );
                                 case Mode.showPrivacyDetails:
                                     return (
@@ -326,7 +326,7 @@ export const ReportDialog: React.FunctionComponent<{
                                                             submitAttempts >
                                                                 0 &&
                                                             whatDoing.trim()
-                                                                .length == 0
+                                                                .length === 0
                                                         }
                                                         value={whatDoing}
                                                     />
