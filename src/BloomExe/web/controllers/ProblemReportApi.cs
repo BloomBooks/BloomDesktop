@@ -245,19 +245,40 @@ namespace Bloom.web.controllers
                 "problemReport/submit",
                 (ApiRequest request) =>
                 {
-                    var report = DynamicJson.Parse(request.RequiredPostJson());
+                    try
+                    {
+                        var report = DynamicJson.Parse(request.RequiredPostJson());
 
-                    string issueLink = SubmitToYouTrack(
-                        report.kind,
-                        report.userInput,
-                        report.email,
-                        report.includeBook,
-                        report.includeScreenshot,
-                        null
-                    );
+                        string issueLinkOrFailureWithZipPath = SubmitToYouTrack(
+                            report.kind,
+                            report.userInput,
+                            report.email,
+                            report.includeBook,
+                            report.includeScreenshot,
+                            null
+                        );
 
-                    object linkToNewIssue = new { issueLink };
-                    request.ReplyWithJson(linkToNewIssue);
+                        if (issueLinkOrFailureWithZipPath.StartsWith(kFailureResult))
+                        {
+                            bool failed = true;
+                            string zippedReportPath = issueLinkOrFailureWithZipPath.Substring(
+                                kFailureResult.Length + 1 // + 1 for the colon
+                            );
+                            request.ReplyWithJson(new { failed, zippedReportPath });
+                        }
+                        else
+                        {
+                            string issueLink = issueLinkOrFailureWithZipPath;
+                            request.ReplyWithJson(new { issueLink });
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.WriteError("'problemReport/submit' endpoint failed", e);
+
+                        bool failed = true;
+                        request.ReplyWithJson(new { failed });
+                    }
                 },
                 true
             );
@@ -272,43 +293,48 @@ namespace Bloom.web.controllers
             IEnumerable<string> additionalPathsToInclude
         )
         {
-            var subject =
-                reportKind == "User"
-                    ? "User Problem"
-                    : reportKind == "Fatal"
-                        ? "Crash Report"
-                        : "Error Report";
-
-            var issueSubmission = new YouTrackIssueSubmitter(YouTrackProjectKey);
-            if (
-                includeScreenshot
-                && _reportInfo?.ScreenshotTempFile != null
-                && RobustFile.Exists(_reportInfo.ScreenshotTempFile.Path)
-            )
-            {
-                issueSubmission.AddAttachmentWhenWeHaveAnIssue(_reportInfo.ScreenshotTempFile.Path);
-            }
-            if (additionalPathsToInclude != null)
-            {
-                foreach (var path in additionalPathsToInclude)
-                {
-                    issueSubmission.AddAttachmentWhenWeHaveAnIssue(path);
-                }
-            }
-            string diagnosticInfo = GetDiagnosticInfo(includeBook, userDesc, userEmail);
-            if (!string.IsNullOrWhiteSpace(userEmail))
-            {
-                // remember their email
-                SIL.Windows.Forms.Registration.Registration.Default.Email = userEmail;
-            }
-
             string issueId;
+            string diagnosticInfo = "";
+            YouTrackIssueSubmitter issueSubmission = null;
             try
             {
+                var subject =
+                    reportKind == "User"
+                        ? "User Problem"
+                        : reportKind == "Fatal"
+                            ? "Crash Report"
+                            : "Error Report";
+
+                issueSubmission = new YouTrackIssueSubmitter(YouTrackProjectKey);
+                if (
+                    includeScreenshot
+                    && _reportInfo?.ScreenshotTempFile != null
+                    && RobustFile.Exists(_reportInfo.ScreenshotTempFile.Path)
+                )
+                {
+                    issueSubmission.AddAttachmentWhenWeHaveAnIssue(
+                        _reportInfo.ScreenshotTempFile.Path
+                    );
+                }
+                if (additionalPathsToInclude != null)
+                {
+                    foreach (var path in additionalPathsToInclude)
+                    {
+                        issueSubmission.AddAttachmentWhenWeHaveAnIssue(path);
+                    }
+                }
+                diagnosticInfo = GetDiagnosticInfo(includeBook, userDesc, userEmail);
+                if (!string.IsNullOrWhiteSpace(userEmail))
+                {
+                    // remember their email
+                    SIL.Windows.Forms.Registration.Registration.Default.Email = userEmail;
+                }
+
                 issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
             }
             catch (Exception e)
             {
+                Logger.WriteError("Submitting problem report to YouTrack failed", e);
                 Debug.Fail(
                     "Submitting problem report to YouTrack failed with '" + e.Message + "'."
                 );
@@ -329,7 +355,10 @@ namespace Bloom.web.controllers
             else
             {
                 issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
-                if (includeBook || _additionalPathsToInclude?.Any() == true)
+                if (
+                    issueSubmission != null
+                    && (includeBook || _additionalPathsToInclude?.Any() == true)
+                )
                 {
                     try
                     {
