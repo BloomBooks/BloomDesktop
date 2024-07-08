@@ -17,13 +17,13 @@ export function setupOrigami() {
         const customPages = document.getElementsByClassName("customPage");
         if (customPages.length > 0) {
             const width = customPages[0].clientWidth;
-            const origamiControl = getOrigamiControl()
+            const origamiControl = getAbovePageControlContainer()
                 .append(createTypeSelectors(isEnterpriseEnabled))
                 .append(createTextBoxIdentifier());
             $("#page-scaling-container").append(origamiControl);
             // The container width is set to 100% in the CSS, but we need to
             // limit it to no more than the actual width of the page.
-            const toggleContainer = $(".origami-toggle-container").get(0);
+            const toggleContainer = $(".above-page-control-container").get(0);
             toggleContainer.style.maxWidth = width + "px";
         }
         // I'm not clear why the rest of this needs to wait until we have
@@ -36,7 +36,7 @@ export function setupOrigami() {
             $("#myonoffswitch").prop("checked", true);
         }
 
-        $(".customPage, .origami-toggle-container")
+        $(".customPage, .above-page-control-container")
             .find("*[data-i18n]")
             .localize();
     });
@@ -309,10 +309,19 @@ function getSplitPaneComponentInner() {
     return spci;
 }
 
-function getOrigamiControl(): JQuery {
+function getAbovePageControlContainer(): JQuery {
+    // for dragActivities we don't want the origami control, but we still make the
+    // wrapper so that the dragActivity can put a different control in it.
+    if (
+        document
+            .getElementsByClassName("bloom-page")[0]
+            ?.getAttribute("data-tool-id") === "dragActivity"
+    ) {
+        return $("<div class='above-page-control-container bloom-ui'></div>");
+    }
     return $(
         "\
-<div class='origami-toggle-container bloom-ui'> \
+<div class='above-page-control-container bloom-ui'> \
 <div class='origami-toggle bloom-ui'> \
     <div data-i18n='EditTab.CustomPage.ChangeLayout'>Change Layout</div> \
     <div class='onoffswitch'> \

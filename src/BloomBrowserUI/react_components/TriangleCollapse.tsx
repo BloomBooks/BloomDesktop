@@ -4,10 +4,14 @@ import React = require("react");
 import { Span } from "./l10nComponents";
 
 // Shows a triangle that can be clicked to expand a section
-// Currently hardwired to "Advanced" because that's all we envision using it for
+// Defaults to "Advanced" as the label.
 export const TriangleCollapse: React.FC<{
     initiallyOpen: boolean;
+    labelL10nKey?: string;
+    indented?: boolean;
     children: React.ReactNode;
+    className?: string;
+    buttonColor?: string;
 }> = props => {
     const [open, setOpen] = React.useState(props.initiallyOpen);
 
@@ -22,6 +26,7 @@ export const TriangleCollapse: React.FC<{
                 flex-direction: column;
                 gap: 5px;
             `}
+            className={props.className}
         >
             <Button
                 onClick={handleClick}
@@ -29,6 +34,7 @@ export const TriangleCollapse: React.FC<{
                     justify-content: start;
                     text-transform: none;
                     padding-left: 0;
+                    ${props.indented ? "padding-bottom: 0;" : ""}
                 `}
             >
                 <svg
@@ -39,13 +45,21 @@ export const TriangleCollapse: React.FC<{
                         transform: ${open ? "rotate(135deg)" : "rotate(90deg)"};
                     `}
                 >
-                    <path d="M 0 10 L 5 0 L 10 10 Z" fill="white" />
+                    <path
+                        d="M 0 10 L 5 0 L 10 10 Z"
+                        fill={props.buttonColor ?? "white"}
+                    />
                 </svg>
                 <Span
                     css={css`
                         margin-left: 5px;
+                        // maybe the alternative should be white; but before I added
+                        // the buttonColor prop, it was unspecified, so I'll leave it that way for now
+                        ${props.buttonColor
+                            ? "color:" + props.buttonColor + ";"
+                            : ""}
                     `}
-                    l10nKey="Common.Advanced"
+                    l10nKey={props.labelL10nKey ?? "Common.Advanced"}
                 ></Span>
             </Button>
             <Collapse
@@ -54,7 +68,8 @@ export const TriangleCollapse: React.FC<{
                     .MuiCollapse-wrapperInner {
                         display: flex;
                         flex-direction: column;
-                        gap: 5px;
+                        gap: ${props.indented ? "0" : "5px"};
+                        ${props.indented ? "padding-left: 14px;" : ""}
                     }
                 `}
             >

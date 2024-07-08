@@ -57,6 +57,7 @@ import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
 import { removeToolboxMarkup } from "../toolbox/toolbox";
 import { IBloomWebSocketEvent } from "../../utils/WebSocketManager";
+import { setupDragActivityTabControl } from "../toolbox/dragActivity/dragActivityTool";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -477,6 +478,18 @@ export function SetupElements(container: HTMLElement) {
 
         if (toolbox) {
             toolbox.configureElementsForTools(container);
+            const page = container.getElementsByClassName(
+                "bloom-page"
+            )[0] as HTMLElement;
+            // When this is called initially on page load, container is the body,
+            // and we will find a bloom-page and adjust the tool list.
+            // If it is called later to adjust something like an image container,
+            // the toolbox should already be set for this page.
+            // In that case we won't find a page inside it, which is fine since
+            // we don't need to adjust the tool list again.
+            if (page) {
+                toolbox.adjustToolListForPage(page);
+            }
         }
     });
 
@@ -1099,6 +1112,7 @@ function AddXMatterLabelAfterPageLabel(container) {
 function OneTimeSetup() {
     setupOrigami();
     hookupLinkHandler();
+    setupDragActivityTabControl();
 }
 
 interface String {

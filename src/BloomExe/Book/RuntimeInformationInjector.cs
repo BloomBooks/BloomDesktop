@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
@@ -369,6 +369,12 @@ namespace Bloom.Book
 
             // "No Topic" localization for Topic Chooser
             AddTranslationToDictionaryUsingKey(d, "Topics.NoTopic", "No Topic");
+            // Used in Drag Activity
+            AddTranslationToDictionaryUsingKey(
+                d,
+                "EditTab.Toolbox.DragActivity.CheckHint",
+                "Clicking this validates the positions things have been dragged to."
+            );
         }
 
         private static void AddTranslationToDictionaryUsingKey(

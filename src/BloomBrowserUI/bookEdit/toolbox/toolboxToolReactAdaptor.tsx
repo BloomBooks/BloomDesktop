@@ -10,6 +10,10 @@ export default abstract class ToolboxToolReactAdaptor
     public abstract makeRootElement(): HTMLDivElement;
     public abstract id(): string;
 
+    public requiresToolId(): boolean {
+        return false;
+    }
+
     protected adaptReactElement(element: ReactElement<any>): HTMLDivElement {
         // We need a wrapperDiv to hand back to our the toolbox because react wants some freedom to render asynchronously.
         // So we just create empty div now to hand back to the toolbox, and ask React to render into it eventually.

@@ -198,6 +198,8 @@
     --page-margin-right: 0px;
     --page-margin-left: 0px;
     --pageNumber-font-size: 0px; /* review will this work to hide it? */
+    --pageNumber-show-multiplicand: 0; /* no extra space for suppressed page number */
+    --pageNumber-extra-height: 0mm !important;
 }
 
 /*****************************************************************************
