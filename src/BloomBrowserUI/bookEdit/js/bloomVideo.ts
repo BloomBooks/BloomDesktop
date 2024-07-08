@@ -148,11 +148,17 @@ function resetToStartAfterPlayingToEndPoint(
     window.setTimeout(() => {
         if (video.currentTime > endPoint) {
             video.pause();
+            // For some unknown reason, this video seems to have passed its end point without
+            // reaching the end and raising the ended event.
+            // Raise the ended event in case anything is listening for it.
+            const endedEvent = new Event("ended");
+            video.dispatchEvent(endedEvent);
             SignLanguageTool.setCurrentVideoPoint(
                 getVideoStartSeconds(video),
                 video
             );
         } else {
+            // Check again in another 100ms.
             resetToStartAfterPlayingToEndPoint(video, endPoint);
         }
     }, 100);

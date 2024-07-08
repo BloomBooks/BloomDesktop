@@ -1,0 +1,1 @@
+This file exists as a flag to prevent the Game template being shown in the lower left of the Collections tab.

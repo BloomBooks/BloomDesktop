@@ -863,7 +863,10 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // when we come back to the page. This is especially important when refreshing the
         // page after selecting or recording a video.
         const containers = SignLanguageTool.getVideoContainers(false);
-        if (containers) {
+        if (containers && containers.length > 0) {
+            containers[0].ownerDocument.body.classList.remove(
+                "bloom-videoTool"
+            );
             for (let i = 0; i < containers.length; i++) {
                 containers[i].removeEventListener(
                     "click",
@@ -940,6 +943,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 });
             }
         } else {
+            // currently this class is not used (it was temporarily added to reveal drag-activity video overlays
+            // that might otherwise be hidden because the corect tab is not selected in that tool, but we decided
+            // to always show all of them when not in the drag activity tool).
+            // I decided to keep it in case we find other uses for the page knowing which tool we are in.
+            containers[0].ownerDocument.body.classList.add("bloom-videoTool");
             // We want one video container to be selected, so pick the first.
             // If one is already marked selected, presumably from a previous use of this page,
             // we'll leave that one active.

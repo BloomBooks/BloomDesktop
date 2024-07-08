@@ -9,6 +9,7 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "../js/editableDivUtils";
+import { DragActivityTool } from "./dragActivity/dragActivityTool";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -49,6 +50,8 @@ export interface ITool {
     hasRestoredSettings: boolean;
     isAlwaysEnabled(): boolean;
     isExperimental(): boolean;
+    // If this is true, the tool may only be selected on pages that have data-tool-id matching this tool's id.
+    requiresToolId(): boolean;
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
@@ -81,6 +84,53 @@ export class ToolBox {
         (<HTMLInputElement>$(parent.window.document)
             .find("#pure-toggle-right")
             .get(0)).click();
+    }
+    private builtToolbox: boolean = false;
+    public adjustToolListForPage(page: HTMLElement) {
+        const requiredToolId = page.getAttribute("data-tool-id");
+
+        // This function is the main task of adjustToolListForPage. It may have to be postponed
+        // until we've finished otherwise setting up the toolbox; in particular, we can't refresh
+        // the accordion before we first set it up.
+        // It's possible there will be a tiny bit of flicker if the book opens on a page that
+        // has a required tool as we first initialize the toolbox without that tool and then
+        // add it. But this is fairly rare and I have not found it noticeable.
+        const doAdjustment = () => {
+            if (!this.builtToolbox) {
+                setTimeout(doAdjustment, 100);
+                return;
+            }
+            const toolbox = document.getElementById("toolbox") as HTMLElement;
+
+            for (let i = 0; i < masterToolList.length; i++) {
+                if (masterToolList[i].requiresToolId()) {
+                    // We may need to add or remove the specified tool
+
+                    // Adapt the tool object id to the value used as the ID of the element
+                    // for that tool in the toolbox.
+                    const toolId = ToolBox.addToolToString(
+                        masterToolList[i].id()
+                    );
+                    // Get the header element that represents the tool in the DOM.
+                    const toolHeader = toolbox.querySelector(
+                        "[data-toolid='" +
+                            ToolBox.addToolToString(toolId) +
+                            "']"
+                    ) as HTMLElement;
+                    const haveTool = !!toolHeader;
+                    const wantTool = requiredToolId === masterToolList[i].id();
+                    if (haveTool !== wantTool) {
+                        // add or remove as needed.
+                        showOrHideTool(
+                            "dummy", // required tools don't have check boxes.
+                            ToolBox.addToolToString(masterToolList[i].id()),
+                            wantTool
+                        );
+                    }
+                }
+            }
+        };
+        doAdjustment();
     }
     public configureElementsForTools(container: HTMLElement) {
         for (let i = 0; i < masterToolList.length; i++) {
@@ -157,7 +207,13 @@ export class ToolBox {
         }
     }
 
-    public static addStringTool(
+    public getTheOneDragActivityTool(): DragActivityTool | undefined {
+        return DragActivityTool.theOneDragActivityTool;
+    }
+
+    // Append "Tool" to the tool name if it's not already there.
+    // Put a space between the name and "Tool" if addSpace is true.
+    public static addToolToString(
         toolName: string,
         addSpace: boolean = false
     ): string {
@@ -257,8 +313,9 @@ export class ToolBox {
                                 toolsToLoad.splice(i, 1);
                             }
                         }
-                        // add any tools we always show
+
                         for (let j = 0; j < masterToolList.length; j++) {
+                            // add any tools we always show
                             if (
                                 masterToolList[j].isAlwaysEnabled() &&
                                 !toolsToLoad.includes(masterToolList[j].id())
@@ -266,6 +323,7 @@ export class ToolBox {
                                 toolsToLoad.push(masterToolList[j].id());
                             }
                         }
+
                         // for correct positioning and so we can find check boxes when adding others must load this one first,
                         // which means putting it last in the array.
                         toolsToLoad.push("settings");
@@ -335,6 +393,7 @@ export class ToolBox {
                                         100
                                     );
                                 });
+                                this.builtToolbox = true;
                                 // loaded them all, now we can deal with settings.
                                 restoreToolboxSettings();
                                 $("#toolbox").show();
@@ -345,7 +404,7 @@ export class ToolBox {
                                 // optimize: maybe we can overlap these?
                                 const nextToolId = toolsToLoad.pop();
                                 const checkBoxId = nextToolId + "Check";
-                                const toolId = ToolBox.addStringTool(
+                                const toolId = ToolBox.addToolToString(
                                     nextToolId
                                 );
                                 beginAddTool(checkBoxId, toolId, false, () =>
@@ -424,13 +483,27 @@ export class ToolBox {
             this.toggleToolbox();
         }
         const checkBox = $("#" + toolId + "Check").get(0) as HTMLDivElement;
-        // if it was an actual "input" element, we would just check for "checked",
-        // but it's actually a div with possibly a checkmark character inside,
-        // so just check string length.
-        if (checkBox.innerText.length === 0) {
-            checkBox.click(); // will also activate
+        if (checkBox) {
+            // if it was an actual "input" element, we would just check for "checked",
+            // but it's actually a div with possibly a checkmark character inside,
+            // so just check string length.
+            if (checkBox.innerText.length === 0) {
+                checkBox.click(); // will also activate
+            } else {
+                setCurrentTool(toolId);
+            }
         } else {
-            setCurrentTool(toolId);
+            // no corresponding checkbox, probably a required tool for this page type
+            const toolbox = document.getElementById("toolbox") as HTMLElement;
+            const toolHeader = toolbox.querySelector(
+                "[data-toolid='" + ToolBox.addToolToString(toolId) + "']"
+            ) as HTMLElement;
+            if (toolHeader) {
+                // Review: do we want to force the tool to be current?
+                //setCurrentTool(toolId);
+            } else {
+                showOrHideTool("dummy", ToolBox.addToolToString(toolId), true);
+            }
         }
     }
 
@@ -456,29 +529,33 @@ let currentTool: ITool | undefined = undefined;
  */
 export function showOrHideTool_click(chkbox) {
     const tool = $(chkbox).data("tool");
-
-    if (chkbox.innerHTML === "") {
+    const turnOn = chkbox.innerHTML === "";
+    if (turnOn) {
         chkbox.innerHTML = checkMarkString;
         postString(
             "editView/saveToolboxSetting",
             "active\t" + chkbox.id + "\t1"
         );
-        if (tool) {
-            beginAddTool(chkbox.id, tool, true);
-        }
     } else {
         chkbox.innerHTML = "";
         postString(
             "editView/saveToolboxSetting",
             "active\t" + chkbox.id + "\t0"
         );
+    }
+    showOrHideTool(chkbox.id, tool, turnOn);
+}
+
+function showOrHideTool(chkboxId: string, tool: string, turnOn: boolean) {
+    if (turnOn) {
+        beginAddTool(chkboxId, tool, true);
+    } else {
         $("*[data-toolId]")
             .filter(function() {
                 return $(this).attr("data-toolId") === tool;
             })
             .remove();
     }
-
     resizeToolbox();
 }
 
@@ -665,7 +742,7 @@ function activateTool(newTool: ITool) {
 function getToolElement(tool: ITool): HTMLElement | null {
     let toolElement: HTMLElement | null = null;
     if (tool) {
-        const toolName = ToolBox.addStringTool(tool.id());
+        const toolName = ToolBox.addToolToString(tool.id());
         $("#toolbox")
             .find("> h3")
             .each(function() {
@@ -713,7 +790,7 @@ function setCurrentTool(toolID: string) {
     // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
     // For now I'm just making functions work with either form.
 
-    toolID = ToolBox.addStringTool(toolID);
+    toolID = ToolBox.addToolToString(toolID);
     const accordionHeaders = toolbox.find("> h3");
     if (toolID) {
         let foundTool = false;
@@ -838,7 +915,7 @@ function beginAddTool(
             return;
         }
         const content = $(tool.makeRootElement());
-        const toolName = ToolBox.addStringTool(tool.id());
+        const toolName = ToolBox.addToolToString(tool.id());
         // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
         //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
 
@@ -853,7 +930,7 @@ function beginAddTool(
         // on ITool...if we need it. Note that this is just a way to come up with the English,
         // we don't do it to localizations. But in English, the code value beats the xlf one.
         let toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
-        toolLabel = ToolBox.addStringTool(toolLabel, true);
+        toolLabel = ToolBox.addToolToString(toolLabel, true);
         const header = $(
             "<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>"
         );

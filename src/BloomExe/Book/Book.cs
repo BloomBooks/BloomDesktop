@@ -3457,6 +3457,15 @@ namespace Bloom.Book
             //similarly, if the page has stylesheet files we don't have, copy them
             CopyMissingStylesheetFiles(templatePage);
 
+            // Copy correct and wrong sound files, if any, and if we don't already have them.
+            // Review: do we want to copy anyway and rename if already found? It guards against the
+            // possibility of two different sounds with the same name, but this seems unlikely,
+            // and it's a waste to have lots of copies of the same file when there is no built-in
+            // way to edit it, unlike sound recordings that can be re-recorded or pictures that
+            // can be clipped.
+            CopyMissingSoundFile(templatePage, "data-correct-sound");
+            CopyMissingSoundFile(templatePage, "data-wrong-sound");
+
             // and again for scripts (but we currently only worry about ones in the page itself)
             foreach (SafeXmlElement scriptElt in newPageDiv.SafeSelectNodes(".//script[@src]"))
             {
@@ -3567,6 +3576,35 @@ namespace Bloom.Book
             var sourceFolder = templatePage.Book.FolderPath;
             var destFolder = FolderPath;
             HtmlDom.CopyMissingStylesheetFiles(sourceDom, sourceFolder, destFolder);
+        }
+
+        private void CopyMissingSoundFile(IPage templatePage, string attrName)
+        {
+            var fileName = templatePage.GetDivNodeForThisPage().GetAttribute(attrName);
+            if (string.IsNullOrEmpty(fileName))
+                return;
+            var destPath = Path.Combine(FolderPath, "audio", fileName);
+            if (RobustFile.Exists(destPath))
+                return;
+            var sourcePath = Path.Combine(templatePage.Book.FolderPath, "audio", fileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+            if (RobustFile.Exists(sourcePath))
+                RobustFile.Copy(sourcePath, destPath);
+            else
+            {
+                // maybe a built-in sound? We could build these into BloomPlayer so we don't
+                // need to embed them in books, but then BP's sound list has to be kept up-to-date,
+                // and it costs us space in the BP installer instead of in books, and extra complexity
+                // in BP and when playing games here.
+                sourcePath = Path.Combine(
+                    FileLocationUtilities.DirectoryOfApplicationOrSolution,
+                    BloomFileLocator.BrowserRoot,
+                    "sounds",
+                    fileName
+                );
+                if (RobustFile.Exists(sourcePath))
+                    RobustFile.Copy(sourcePath, destPath);
+            }
         }
 
         /// <summary>

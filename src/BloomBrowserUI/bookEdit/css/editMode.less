@@ -866,6 +866,7 @@ div.bloom-editable.Heading2-style {
         font-style: normal;
         font-weight: normal;
         line-height: 1; //else it will draw up in the box somewhere if the font is large
+        text-shadow: none;
         content: attr(data-languageTipContent);
         bottom: 2px; // See Bl-10017
         margin-right: 2px;
@@ -1172,6 +1173,16 @@ body {
 body.hideAllCKEditors .cke_chrome {
     // "display" is manipulated on the `style` element by ckeditor, so we can't use that
     visibility: hidden;
+}
+
+// We have all kinds of code that knows placeHolder.png is special. So it's nontrivial to
+// switch and use a different placeholder image for GIFs. However, some of that code we
+// already have prevents showing the placeholder except while editing. So we can get the
+// effect we want (a different placeholder for GIFs) by just making the placeholder src
+// and changing the content of the image.
+.bloom-gif img[src="placeHolder.png"] {
+    content: url("/bloom/images/Gif.svg");
+    opacity: 0.4;
 }
 
 .invisibles {

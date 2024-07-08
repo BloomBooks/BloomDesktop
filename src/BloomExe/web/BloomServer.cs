@@ -895,6 +895,7 @@ namespace Bloom.Api
         }
 
         private int _missingMapFileCount = 0;
+
         private bool ProcessAnyFileContent(IRequestInfo info, string localPath)
         {
             string modPath = localPath;
@@ -974,7 +975,6 @@ namespace Bloom.Api
                     return false;
                 }
             }
-            
 
             if (
                 !RobustFileExistsWithCaseCheck(path)

@@ -61,6 +61,13 @@ body {
                 display: none;
             }
         }
+        // hide placeholders to make the page look more like it will in production if an image
+        // is not added. The newer bloom games are one place that it is particularly likely that
+        // a background image for the whole page is omitted. We need the prefix selector because
+        // in this panel the url gets adjusted to something like "placeHolder.png%3fthumbnail%3d1".
+        img[src^="placeHolder.png"] {
+            visibility: hidden;
+        }
     }
 }
 
