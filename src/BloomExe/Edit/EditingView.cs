@@ -1041,7 +1041,7 @@ namespace Bloom.Edit
                         _gifDirectory ?? Environment.SpecialFolder.MyPictures.ToString(),
                     Multiselect = false,
                     CheckFileExists = true,
-                    Filter = "gif|*.gif",
+                    Filter = "gif|*.gif"
                 };
                 var result = dlg.ShowDialog();
                 if (result != DialogResult.OK)
@@ -1323,9 +1323,6 @@ namespace Bloom.Edit
                 creator = ""
             };
             _model.UpdateImageInBrowser(args);
-
-            // still needed? May have to save before it works...
-            //UpdateThumbnailAsync(_model.CurrentPage);
         }
 
         /// <summary>

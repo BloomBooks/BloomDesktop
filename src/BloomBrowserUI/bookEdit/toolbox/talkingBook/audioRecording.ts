@@ -2549,7 +2549,8 @@ export default class AudioRecording {
                 attributes: true,
                 // Currently, the only elements that change causing visibility issues are
                 // the keywords associated with slider items and the parent of the page,
-                // changes to which can cause correct and wrong items to appear and disappear.
+                // changes to which can cause correct and wrong items to appear and disappear
+                // in Bloom Games as we change modes or check answers (etc).
                 // In all these cases, the only attribute that affects visibility
                 // is currently class. If that changes, we'll need to add more attributes.
                 attributeFilter: ["class"]
@@ -2564,7 +2565,10 @@ export default class AudioRecording {
         }
         const result = Array.from(
             // I don't much like that this function knows about this class, which belongs to a particular kind
-            // of drag-activity game. But I don't see how to encapsulate it better.
+            // of item in a particular kind of game. But I don't see how to encapsulate it better.
+            // Slider: this line is only neded for the drag-word-slider game, which is mostly commented
+            // out for now. But if we remove it here we have to further complicate things by providing
+            // an alternative to convert to an array. I decided to just leave it in.
             pageBody.getElementsByClassName("bloom-wordChoice")
         );
         result.push(pageBody.parentElement!);

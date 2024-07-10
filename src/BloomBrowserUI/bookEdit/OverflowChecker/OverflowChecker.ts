@@ -6,6 +6,7 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
 import { BubbleManager, theOneBubbleManager } from "../js/bubbleManager";
+import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -384,7 +385,7 @@ export default class OverflowChecker {
                         offsetY <=
                             $overflowingAncestor.outerHeight(false) + 10 &&
                         // I don't like this module knowing about this, but how else to hide it?
-                        !overflowingAncestor.closest(".drag-activity-play");
+                        !playingBloomGame(overflowingAncestor);
                     if (shouldShow && !showing) {
                         showing = true;
                         $overflowingAncestor.trigger("enterBorder");
