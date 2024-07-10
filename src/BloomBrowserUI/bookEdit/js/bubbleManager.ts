@@ -3245,7 +3245,8 @@ export class BubbleManager {
     // Notes that comic editing either has not been suspended...isComicEditingOn might be true or false...
     // or that it was suspended because of a drag in progress that might affect page layout
     // (current example: mouse is down over an origami splitter), or because some longer running
-    // process that affects layout is happening (current example: origami layout tool is active).
+    // process that affects layout is happening (current example: origami layout tool is active),
+    // or because we're testing a bloom game.
     // When in one of the latter states, it may be inferred that isComicEditingOn was true when
     // suspendComicEditing was called, that it is now false, and that resumeComicEditing should
     // turn it on again.
@@ -3253,9 +3254,11 @@ export class BubbleManager {
         | "none"
         | "forDrag"
         | "forTool"
-        | "forTest" = "none";
+        | "forGamePlayMode" = "none";
 
-    public suspendComicEditing(forWhat: "forDrag" | "forTool" | "forTest") {
+    public suspendComicEditing(
+        forWhat: "forDrag" | "forTool" | "forGamePlayMode"
+    ) {
         if (!this.isComicEditingOn) {
             // Note that this prevents us from getting into one of the suspended states
             // unless it was on to begin with. Therefore a subsequent resume won't turn
@@ -3264,10 +3267,15 @@ export class BubbleManager {
         }
         this.turnOffBubbleEditing();
 
-        if (forWhat === "forTest") {
+        if (forWhat === "forGamePlayMode") {
             const allOverPictureElements = Array.from(
                 document.getElementsByClassName(kTextOverPictureClass)
             );
+            // Game play has its own form of dragging and doesn't allow resizing or editing
+            // bubble content. Possibly removing contenteditable would be better
+            // in dragActivitRuntime's prepareActivity method, but cleaning up the
+            // handles is better here because this classs has the code to recreate
+            // them in restoreBubbleEditing.
             allOverPictureElements.forEach(element => {
                 $(element).draggable("destroy");
                 $(element).resizable("destroy");
@@ -3296,7 +3304,7 @@ export class BubbleManager {
             // after a forTool suspense, we might have new dividers to put handlers on.
             this.setupSplitterEventHandling();
         }
-        if (this.comicEditingSuspendedState === "forTest") {
+        if (this.comicEditingSuspendedState === "forGamePlayMode") {
             const allOverPictureElements = Array.from(
                 document.getElementsByClassName(kTextOverPictureClass)
             );
@@ -3305,7 +3313,7 @@ export class BubbleManager {
                     element.getElementsByClassName("bloom-editable")
                 );
                 editables.forEach(editable => {
-                    editable.setAttribute("contenteditable", "true"); // Review: even the ones that are hidden?
+                    editable.setAttribute("contenteditable", "true");
                 });
             });
             this.makeOverPictureElementsDraggableClickableAndResizable();
@@ -3347,12 +3355,13 @@ export class BubbleManager {
 
     // on ANY mouse up, if comic editing was turned off by an origami click, turn it back on.
     // (This is attached to the document because I don't want it missed if the mouseUp
-    // doesn't happen inside the slider.)
+    // doesn't happen inside the origami slider.)
+    // We don't want it turned back on for a tool or in game play mode, because we'll
+    // still be in that state after the mouseup.
     private documentMouseUp = (ev: Event) => {
-        // ignore mouseup events while suspended for a tool or drag activity test
         if (
             this.comicEditingSuspendedState === "forTool" ||
-            this.comicEditingSuspendedState === "forTest"
+            this.comicEditingSuspendedState === "forGamePlayMode"
         ) {
             return;
         }
@@ -3638,15 +3647,15 @@ export class BubbleManager {
             .css("width", textBox.width() + "px")
             .css("height", textBox.height() + "px");
 
-        if (textBox.get(0).getAttribute("data-txt-img")) {
-            // Only one of these is ever visible; move them together.
-            Array.from(
-                textBox.get(0).ownerDocument.querySelectorAll("[data-txt-img]")
-            ).forEach((tbox: HTMLElement) => {
-                tbox.style.left = unscaledRelativeLeft + "px";
-                tbox.style.top = unscaledRelativeTop + "px";
-            });
-        }
+        //Slider: if (textBox.get(0).getAttribute("data-txt-img")) {
+        //     // Only one of these is ever visible; move them together.
+        //     Array.from(
+        //         textBox.get(0).ownerDocument.querySelectorAll("[data-txt-img]")
+        //     ).forEach((tbox: HTMLElement) => {
+        //         tbox.style.left = unscaledRelativeLeft + "px";
+        //         tbox.style.top = unscaledRelativeTop + "px";
+        //     });
+        // }
     }
 
     // Determines the unrounded width/height of the content of an element (i.e, excluding its margin, border, padding)

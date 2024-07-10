@@ -7,7 +7,8 @@ import { Div, Span } from "../../../react_components/l10nComponents";
 import { kBloomBlue, kBloomGray } from "../../../utils/colorUtils";
 import {
     adjustTarget,
-    enableDraggingTargets
+    enableDraggingTargets,
+    makeTargetForBubble
 } from "../dragActivity/dragActivityTool";
 import {
     ImagePlaceholderIcon,
@@ -35,11 +36,6 @@ const ondragstart = (
     ev.dataTransfer.setData("text/x-bloomdraggable", "true");
 };
 
-function getDimension(dist: string): number {
-    const num = dist.substring(0, dist.length - 2); // strip off "px"
-    return parseFloat(num);
-}
-
 // When a template bubble is dropped on the image, we create a new bubble
 const ondragend = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
@@ -54,154 +50,142 @@ const ondragend = (
     userDefinedStyleName?: string // bubble should get this plus "-style" (or Bubble-style) in class list
 ) => {
     const bubbleManager = OverlayTool.bubbleManager();
-    // The Linux/Mono/Geckofx environment does not produce the dragenter, dragover,
-    // and drop events for the targeted element.  It does produce the dragend event
-    // for the source element with screen coordinates of where the mouse was released.
-    // This can be used to simulate the drop event with coordinate transformation.
-    // See https://issues.bloomlibrary.org/youtrack/issue/BL-7958.
-    if (bubbleManager) {
-        const bubble = bubbleManager.addOverPictureElementWithScreenCoords(
-            ev.screenX,
-            ev.screenY,
-            style,
-            userDefinedStyleName
-        );
-        if (!bubble) return;
-        if (extraAction) {
-            extraAction(bubble);
+    if (!bubbleManager) {
+        // This check is mainly to keep lint happy. We should never get here.
+        console.error("No bubble manager at end of drag.");
+        return;
+    }
+    const bubble = bubbleManager.addOverPictureElementWithScreenCoords(
+        ev.screenX,
+        ev.screenY,
+        style,
+        userDefinedStyleName
+    );
+    if (!bubble) return;
+    if (extraAction) {
+        extraAction(bubble);
+    }
+    if (addClasses) {
+        // trim because an exception is thrown if we try to add a class that is empty,
+        // which we will otherwise do if there is a leading or trailing space.
+        bubble.classList.add(...addClasses.trim().split(" "));
+    }
+    //Slider: if (makeMatchingTextBox) {
+    //     // Currently only true for drag-word-chooser-slider. The new element is a picture box.
+    //     // We want a corresponding text box, a clone of an existing bloom-wordChoice.
+    //     // The two should be linked by a unique value for data-img-txt on the image
+    //     // and data-txt-img on the text.
+    //     const existing = Array.from(
+    //         bubble.ownerDocument.getElementsByClassName("bloom-wordChoice")
+    //     );
+    //     const pattern = existing[0];
+    //     if (pattern) {
+    //         // should always be one, it's on the template. Unless the user deletes them all!
+    //         // That will just mess things up for now. Eventually, we might make code to
+    //         // re-create it, but where?
+    //         // Note that this duplication causes it to be in the same place as the pattern.
+    //         // It will be invisible until we select the corresponding bubble.
+    //         const newTextBox = pattern.cloneNode(true) as HTMLElement;
+    //         // Enhance: do something about the value pathologically not parsing
+    //         const existingIds = existing.map(el =>
+    //             parseInt(el.getAttribute("data-txt-img") ?? "1")
+    //         );
+    //         const newId = "" + (Math.max(...existingIds) + 1);
+    //         bubble.setAttribute("data-img-txt", newId);
+    //         newTextBox.setAttribute("data-txt-img", newId);
+    //         // The order doesn't matter much, but keeping them in the order created feels right,
+    //         // and makes sure we will find the original when making the next clone.
+    //         bubble.parentElement?.insertBefore(
+    //             newTextBox,
+    //             existing[existing.length - 1].nextElementSibling
+    //         );
+    //         // remove any copied content (do we have a common function to do this somewhere?)
+    //         Array.from(
+    //             newTextBox.getElementsByClassName("bloom-editable")
+    //         ).forEach(editable => (editable.innerHTML = "<p></p>"));
+    //     }
+    // }
+    let langsToWaitFor = 0;
+    if (contentL10nKey) {
+        const settings = bubbleManager.getSettings();
+        const langs = [settings.languageForNewTextBoxes];
+        if (
+            settings.currentCollectionLanguage2 &&
+            !langs.includes(settings.currentCollectionLanguage2)
+        ) {
+            langs.push(settings.currentCollectionLanguage2);
         }
-        if (addClasses) {
-            // trim because an exception is thrown if we try to add a class that is empty,
-            // which we will otherwise do if there is a leading or trailing space.
-            bubble.classList.add(...addClasses.trim().split(" "));
+        if (
+            settings.currentCollectionLanguage3 &&
+            !langs.includes(settings.currentCollectionLanguage3)
+        ) {
+            langs.push(settings.currentCollectionLanguage3);
         }
-        if (makeMatchingTextBox) {
-            // Currently only true for drag-word-chooser-slider. The new element is a picture box.
-            // We want a corresponding text box, a clone of an existing bloom-wordChoice.
-            // The two should be linked by a unique value for data-img-txt on the image
-            // and data-txt-img on the text.
-            const existing = Array.from(
-                bubble.ownerDocument.getElementsByClassName("bloom-wordChoice")
-            );
-            const pattern = existing[0];
-            if (pattern) {
-                // should always be one, it's on the template. Unless the user deletes them all!
-                // That will just mess things up for now. Eventually, we might make code to
-                // re-create it, but where?
-                // Note that this duplication causes it to be in the same place as the pattern.
-                // It will be invisible until we select the corresponding bubble.
-                const newTextBox = pattern.cloneNode(true) as HTMLElement;
-                // Enhance: do something about the value pathologically not parsing
-                const existingIds = existing.map(el =>
-                    parseInt(el.getAttribute("data-txt-img") ?? "1")
-                );
-                const newId = "" + (Math.max(...existingIds) + 1);
-                bubble.setAttribute("data-img-txt", newId);
-                newTextBox.setAttribute("data-txt-img", newId);
-                // The order doesn't matter much, but keeping them in the order created feels right,
-                // and makes sure we will find the original when making the next clone.
-                bubble.parentElement?.insertBefore(
-                    newTextBox,
-                    existing[existing.length - 1].nextElementSibling
-                );
-                // remove any copied content (do we have a common function to do this somewhere?)
-                Array.from(
-                    newTextBox.getElementsByClassName("bloom-editable")
-                ).forEach(editable => (editable.innerHTML = "<p></p>"));
-            }
+        if (!langs.includes("en")) {
+            langs.push("en");
         }
-        let langsToWaitFor = 0;
-        if (contentL10nKey) {
-            const settings = bubbleManager.getSettings();
-            const langs = [settings.languageForNewTextBoxes];
-            if (
-                settings.currentCollectionLanguage2 &&
-                !langs.includes(settings.currentCollectionLanguage2)
-            ) {
-                langs.push(settings.currentCollectionLanguage2);
-            }
-            if (
-                settings.currentCollectionLanguage3 &&
-                !langs.includes(settings.currentCollectionLanguage3)
-            ) {
-                langs.push(settings.currentCollectionLanguage3);
-            }
-            if (!langs.includes("en")) {
-                langs.push("en");
-            }
-            langsToWaitFor = langs.length;
-            langs.forEach(lang => {
-                theOneLocalizationManager
-                    .asyncGetTextInLang(contentL10nKey!, "", lang, "")
-                    .then(text => {
-                        const editables = Array.from(
-                            bubble.getElementsByClassName("bloom-editable")
+        langsToWaitFor = langs.length;
+        langs.forEach(lang => {
+            theOneLocalizationManager
+                .asyncGetTextInLang(contentL10nKey!, "", lang, "")
+                .then(text => {
+                    const editables = Array.from(
+                        bubble.getElementsByClassName("bloom-editable")
+                    );
+                    const prototype = editables[0];
+                    let editableInLang = editables.find(
+                        e => e.getAttribute("lang") === lang
+                    );
+                    if (!editableInLang) {
+                        editableInLang = prototype.cloneNode(
+                            true
+                        ) as HTMLElement;
+                        editableInLang.setAttribute("lang", lang);
+                        // only the primary language should be visible  in the bubble, and it should
+                        // be present already, so we won't be adding it. But it will be the prototype,
+                        // so we need to get rid of these classes. We'll get a more exactly correct
+                        // set of visibility classes when the page next loads, but we'd prefer not
+                        // to go through that rather time-consuming process right now.
+                        editableInLang.classList.remove(
+                            "bloom-visibility-code-on",
+                            "bloom-content1"
                         );
-                        const prototype = editables[0];
-                        let editableInLang = editables.find(
-                            e => e.getAttribute("lang") === lang
-                        );
-                        if (!editableInLang) {
-                            editableInLang = prototype.cloneNode(
-                                true
-                            ) as HTMLElement;
-                            editableInLang.setAttribute("lang", lang);
-                            // only the primary language should be visible  in the bubble, and it should
-                            // be present already, so we won't be adding it. But it will be the prototype,
-                            // so we need to get rid of these classes. We'll get a more exactly correct
-                            // set of visibility classes when the page next loads, but we'd prefer not
-                            // to go through that rather time-consuming process right now.
-                            editableInLang.classList.remove(
-                                "bloom-visibility-code-on",
-                                "bloom-content1"
-                            );
-                            prototype.parentElement!.appendChild(
-                                editableInLang
-                            );
-                        }
-                        editableInLang.getElementsByTagName(
-                            "p"
-                        )[0].textContent = text;
-                        langsToWaitFor--;
-                    });
-            });
-        }
-        if (hintL10nKey) {
-            // const label = bubble.ownerDocument.createElement("label");
-            // label.classList.add("bubble");
+                        prototype.parentElement!.appendChild(editableInLang);
+                    }
+                    editableInLang.getElementsByTagName(
+                        "p"
+                    )[0].textContent = text;
+                    langsToWaitFor--;
+                });
+        });
+    }
+    if (hintL10nKey) {
+        const tg = bubble.getElementsByClassName("bloom-translationGroup")[0];
+        tg.setAttribute("data-hint", hintL10nKey);
+    }
+    if (contentL10nKey || hintL10nKey) {
+        // This is to allow for the possibility of the toolbox containing a template
+        // that has some known content for which we might want to provide a hint,
+        // or which might already have content in several languages. I don't think
+        // there are any current examples, but early in the development of Bloom games,
+        // There were several text buttons (Check, Try Again, Show Answer) for which
+        // this was useful, and it could happen again.
+        const addBubbles = () => {
+            if (langsToWaitFor) {
+                setTimeout(addBubbles, 100);
+                return;
+            }
             const tg = bubble.getElementsByClassName(
                 "bloom-translationGroup"
-            )[0];
-            // tg.insertBefore(label, tg.firstChild);
-            // label.setAttribute("data-hint", hintL10nKey);
-            tg.setAttribute("data-hint", hintL10nKey);
-        }
-        if (contentL10nKey || hintL10nKey) {
-            // This is to allow for the possibility of the toolbox containing a template
-            // that has some known content for which we might want to provide a hint,
-            // or which might already have content in several languages. I don't think
-            // there are any current examples, but early in the development of Bloom games,
-            // There were several text buttons (Check, Try Again, Show Answer) for which
-            // this was useful, and it could happen again.
-            const addBubbles = () => {
-                if (langsToWaitFor) {
-                    setTimeout(addBubbles, 100);
-                    return;
-                }
-                const tg = bubble.getElementsByClassName(
-                    "bloom-translationGroup"
-                )[0] as HTMLElement;
-                bubbleManager.addSourceAndHintBubbles(tg);
-            };
-            addBubbles(); // Do now if we can, if not, sometime when we've gotten all the localizations.
-        }
-        if (makeTarget) {
-            //setTimeout(() => {
-            setGeneratedBubbleId(bubble);
-            bubble.style.width = ev.currentTarget.clientWidth + "px";
-            makeTargetForBubble(bubble);
-            // }, 1000);
-        }
+            )[0] as HTMLElement;
+            bubbleManager.addSourceAndHintBubbles(tg);
+        };
+        addBubbles(); // Do now if we can, if not, sometime when we've gotten all the localizations.
+    }
+    if (makeTarget) {
+        setGeneratedBubbleId(bubble);
+        bubble.style.width = ev.currentTarget.clientWidth + "px";
+        makeTargetForBubble(bubble);
     }
 };
 
@@ -219,44 +203,6 @@ export const setGeneratedBubbleId = (bubble: HTMLElement): string => {
     }
     bubble.setAttribute("data-bubble-id", id);
     return id;
-};
-
-export const makeTargetForBubble = (bubble: HTMLElement): HTMLElement => {
-    const id = bubble.getAttribute("data-bubble-id");
-    if (!id) {
-        throw new Error("Bubble does not have a data-bubble-id attribute");
-    }
-    // don't simplify to 'document.createElement'; may be in a different iframe
-    const target = bubble.ownerDocument.createElement("div");
-    target.setAttribute("data-target-of", id);
-    const left = getDimension(bubble.style.left);
-    const top = getDimension(bubble.style.top);
-    const width = getDimension(bubble.style.width);
-    const height = getDimension(bubble.style.height);
-    let newLeft = left + 20;
-    let newTop = top + height + 30;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    if (newTop + height > bubble.parentElement!.clientHeight) {
-        newTop = Math.max(0, top - height - 30);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    if (newLeft + width > bubble.parentElement!.clientWidth) {
-        newLeft = Math.max(0, left - width - 30);
-    }
-    // Review: can we do any more to make sure it's visible and not overlapping bubble?
-    // Should we try to avoid overlapping other bubbles and/or targets?
-    target.style.left = `${newLeft}px`;
-    target.style.top = `${newTop}px`;
-    target.style.width = `${width}px`;
-    target.style.height = `${height}px`;
-    // This allows it to get focus, which allows it to get the shadow effect we want when
-    // clicked. But is that really right? We can't actually type there.
-    target.setAttribute("tabindex", "0");
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    bubble.parentElement!.appendChild(target);
-    enableDraggingTargets(target);
-    adjustTarget(bubble, target);
-    return target;
 };
 
 // A wrapper for something that is an overlay source icon, typically an SVG.

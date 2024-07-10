@@ -138,7 +138,7 @@ namespace Bloom.Book
         /// The specified path (starting from the book folder) should always be
         /// accepted (or always be rejected, if the second argument is false).
         /// This is useful for special cases that don't seem to fit any particular
-        /// pattern, like passing a BloomBookOrder for upload.
+        /// pattern.
         /// </summary>
         private void AddException(string path, bool accept = true)
         {
