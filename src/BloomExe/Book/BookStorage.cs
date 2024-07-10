@@ -1048,11 +1048,12 @@ namespace Bloom.Book
             },
             new Feature()
             {
-                FeatureId = "bloomGames",
-                FeaturePhrase = "Games that require dragging",
+                FeatureId = "bloomGames6.1",
+                FeaturePhrase = "Bloom Games added in 6.1",
                 BloomDesktopMinVersion = "6.1",
                 BloomReaderMinVersion = "3.3",
-                XPath = "//div[starts-with(@data-activity,'drag-')]"
+                XPath =
+                    "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
             }
         };
 
@@ -1312,8 +1313,8 @@ namespace Bloom.Book
             var backgroundMusicFileNames = GetBackgroundMusicFileNamesReferencedInBook();
             usedAudioFileNames.AddRange(backgroundMusicFileNames);
 
-            var dragActivitypages = Dom.SafeSelectNodes("//div[@data-activity]");
-            foreach (SafeXmlElement dap in dragActivitypages)
+            var activityPages = Dom.SafeSelectNodes("//div[@data-activity]");
+            foreach (SafeXmlElement dap in activityPages)
             {
                 var correctSound = dap.GetAttribute("data-correct-sound");
                 var wrongSound = dap.GetAttribute("data-wrong-sound");

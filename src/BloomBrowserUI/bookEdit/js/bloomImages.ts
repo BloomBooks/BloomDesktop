@@ -13,6 +13,7 @@ import { theOneBubbleManager, updateOverlayClass } from "./bubbleManager";
 
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
+import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -195,12 +196,18 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     if (!containerDiv || containerDiv.classList.contains("hoverUp")) {
         return;
     }
-    if (containerDiv.closest(".drag-activity-play")) {
+    if (playingBloomGame(containerDiv)) {
         // I wish this knowledge was not here, but I don't see a better way to prevent image editing
         // and hover effects when in test mode.
         return;
     }
     const topDiv = containerDiv.closest(".bloom-textOverPicture");
+    // Currently Gifs can only be added using the Drag Activity tool (Bloom Games).
+    // A gif is always an img in an overlay (textOverPicture, even though it is
+    // not actually text) div, and we put a special class on the TOP element
+    // and use it in various ways where GIFs need to behave differently from
+    // other imgs. (For example, currently, they can only be cut/copied as file
+    // paths, we don't support metadata, they can't be cropped,...)
     const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
     let img = getImgFromContainer(containerDiv);
 
@@ -514,7 +521,7 @@ export function UpdateImageTooltipVisibility(container: HTMLElement) {
     if (
         container.classList.contains("bloom-hideImageButtons") ||
         container.classList.contains("ui-suppressImageButtons") ||
-        container.closest(".drag-activity-play")
+        playingBloomGame(container)
     ) {
         // Since the image buttons aren't visible, hide the image tooltip too
         DisableImageTooltip(container);
