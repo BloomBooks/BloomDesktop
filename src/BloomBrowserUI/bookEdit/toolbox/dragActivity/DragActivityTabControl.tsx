@@ -1,4 +1,5 @@
-import { jsx, css, ThemeProvider } from "@emotion/react";
+import { jsx, css } from "@emotion/react";
+import { ThemeProvider } from "@mui/material/styles";
 import * as React from "react";
 import {
     kBloomBlue,
@@ -41,6 +42,9 @@ export const DragActivityTabControl: React.FunctionComponent<{
                     // The mockup seems to have this a little dimmer than white, but I haven't found an existing constant
                     // that seems appropriate. This will do for a first approximation.
                     color: lightgray;
+                    font-family: ${toolboxTheme.typography.fontFamily};
+                    font-size: ${toolboxTheme.typography.fontSize}px;
+                    margin-top: 2px;
                 `}
             >
                 <div
@@ -82,7 +86,7 @@ export const Tabs: React.FunctionComponent<{
     value: number;
     onChange: (newValue: number) => void;
     labels: string[];
-    classNane?: string;
+    className?: string;
 }> = props => {
     const changeHandler = (index: number) => {
         props.onChange(index);
@@ -92,15 +96,15 @@ export const Tabs: React.FunctionComponent<{
             css={css`
                 display: flex;
                 background-color: ${kDarkestBackground};
-                padding: 7px 8px 7px 0px;
+                padding: 8px 8px 7px 0px;
             `}
-            className={props.classNane}
+            className={props.className}
         >
-            {props.labels.map((child, index) => {
+            {props.labels.map((label, index) => {
                 const selected = index === props.value;
                 return (
                     <button
-                        key={child}
+                        key={label}
                         onClick={() => changeHandler(index)}
                         css={css`
                             font-family: ${kUiFontStack};
@@ -114,10 +118,16 @@ export const Tabs: React.FunctionComponent<{
                             border-radius: 3px;
                         `}
                     >
-                        {child}
+                        {label}
                     </button>
                 );
             })}
         </div>
     );
 };
+
+// return true if the element is part of the content of a drag activity
+// (or similar Bloom game that has start/correct/wrong/play) that is currently being played
+export function playingBloomGame(element: HTMLElement): boolean {
+    return !!element.closest(".drag-activity-play");
+}

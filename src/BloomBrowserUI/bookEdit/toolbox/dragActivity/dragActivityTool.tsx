@@ -20,7 +20,6 @@ import {
     OverlayItemRow,
     OverlayTextItem,
     OverlayVideoItem,
-    makeTargetForBubble,
     setGeneratedBubbleId
 } from "../overlay/overlayItem";
 import {
@@ -651,6 +650,11 @@ const DragActivityControls: React.FunctionComponent<{
         // The only use of this is to force a re-render when the bubble changes.
         // We will get a different result from getActiveElement, and various things may need
         // to update as a result.
+        // For better or worse, I'm currently not bothering to detach from these
+        // requests. I'm not entirely sure we we don't need the notifications, even if the tool is
+        // hidden, at least to make sure things are right if it is shown again.
+        // At worst, bubbleManager is a singleton, and we only allow one
+        // requester with the key dragActivityTool, so it won't be a large leak.
         bubbleManager?.requestBubbleChangeNotification("dragActivityTool", b =>
             setBubble(b)
         );
@@ -1434,6 +1438,37 @@ const soundSelect = (
             sx={{
                 width: 170
             }}
+            MenuProps={{ className: "sound-select-dropdown-menu" }}
+            // Something like this ought to work but doesn't; the rules don't take effect.
+            // so there are some rules in toolbox.less activated by the class above
+            // to do it.
+            // If reinstating this, note that I've used extreme colors here for testing;
+            // once it works, switch to the right ones from toolbox.less.
+            // Note that unless you get the zIndex rule to take effect, nothing else matters:
+            // the pop-up menu won't be visible at all.
+            // MenuProps={{
+            //     sx: {
+            //         "& .MuiPopover-root": {
+            //             zIndex: "18001 !important"
+            //         },
+            //         "& .MuiMenu-paper": {
+            //             zIndex: "18001 !important",
+            //             backgroundColor: "red",
+            //             color: "white"
+            //         },
+            //         "& .MuiMenu-root": {
+            //             zIndex: "18001 !important"
+            //         },
+            //         "& .MuiMenuItem-root:hover": {
+            //             backgroundColor: "blue",
+            //             color: "text.white"
+            //         },
+            //         "& .Mui-selected": {
+            //             backgroundColor: "yellow",
+            //             color: "text.white"
+            //         }
+            //     }
+            // }}
             onChange={event => {
                 const newSoundId = event.target.value as string;
                 setValue(forCorrect, newSoundId);
@@ -1759,7 +1794,7 @@ export function setActiveDragActivityTab(tab: number) {
     // )[0] as HTMLElement;
 
     if (tab === playTabIndex) {
-        bubbleManager?.suspendComicEditing("forTest");
+        bubbleManager?.suspendComicEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
         prepareActivity(page, _next => {});
@@ -1845,3 +1880,49 @@ function removeContentFromTarget(draggable: HTMLElement) {
         target.innerHTML = "";
     }
 }
+
+// dimension is assumed to end with "px" (as we use for positioning and dimensioning bubbles).
+// Technically it would get a result for other two-character units, but the result might not be
+// what we want, since we use the resulting number assuming it means px.
+function pxToNumber(dimension: string): number {
+    const num = dimension.substring(0, dimension.length - 2); // strip off "px"
+    return parseFloat(num);
+}
+
+export const makeTargetForBubble = (bubble: HTMLElement): HTMLElement => {
+    const id = bubble.getAttribute("data-bubble-id");
+    if (!id) {
+        throw new Error("Bubble does not have a data-bubble-id attribute");
+    }
+    // don't simplify to 'document.createElement'; may be in a different iframe
+    const target = bubble.ownerDocument.createElement("div");
+    target.setAttribute("data-target-of", id);
+    const left = pxToNumber(bubble.style.left);
+    const top = pxToNumber(bubble.style.top);
+    const width = pxToNumber(bubble.style.width);
+    const height = pxToNumber(bubble.style.height);
+    let newLeft = left + 20;
+    let newTop = top + height + 30;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (newTop + height > bubble.parentElement!.clientHeight) {
+        newTop = Math.max(0, top - height - 30);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (newLeft + width > bubble.parentElement!.clientWidth) {
+        newLeft = Math.max(0, left - width - 30);
+    }
+    // Review: can we do any more to make sure it's visible and not overlapping bubble?
+    // Should we try to avoid overlapping other bubbles and/or targets?
+    target.style.left = `${newLeft}px`;
+    target.style.top = `${newTop}px`;
+    target.style.width = `${width}px`;
+    target.style.height = `${height}px`;
+    // This allows it to get focus, which allows it to get the shadow effect we want when
+    // clicked. But is that really right? We can't actually type there.
+    target.setAttribute("tabindex", "0");
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    bubble.parentElement!.appendChild(target);
+    enableDraggingTargets(target);
+    adjustTarget(bubble, target);
+    return target;
+};

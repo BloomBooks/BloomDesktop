@@ -60,7 +60,7 @@ export const deleteBubble = () => {
     }
 };
 
-export const duplicateBubble = () => {
+export const duplicateBubble = (): HTMLElement | undefined => {
     const bubbleManager = OverlayTool.bubbleManager();
     if (bubbleManager) {
         const active = bubbleManager.getActiveElement();
@@ -86,8 +86,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
         false
     );
     const [isXmatter, setIsXmatter] = useState(true);
-    // If the book is locked, we don't want users dragging things onto the page.
-    const [isBookLocked, setIsBookLocked] = useState(false);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
@@ -154,7 +152,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
         // The callback function is (currently) called when switching between bubbles, but is not called
         // if the tail spec changes, or for style and similar changes to the bubble that are initiated by React.
         bubbleManager.requestBubbleChangeNotification(
-            "drag",
+            "overlay",
             (bubble: BubbleSpec | undefined) => {
                 setCurrentFamilySpec(bubble);
             }
@@ -219,15 +217,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
         }
         return mgr.isActiveElementVideoOverPicture() ? "video" : "text";
     };
-
-    useEffect(() => {
-        // Get the lock/unlock state from C#-land. We have to do this every time the page is refreshed
-        // (see 'callOnNewPageReady') in case the user temporarily unlocks the book.
-        get("edit/pageControls/requestState", result => {
-            const jsonObj = result.data;
-            setIsBookLocked(jsonObj.BookLockedState === "BookLocked");
-        });
-    }, [pageRefreshIndicator]);
 
     // Callback for style changed
     const handleStyleChanged = event => {
@@ -411,36 +400,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
                 parentElement,
                 offsetX,
                 offsetY
-            );
-        }
-    };
-
-    const ondragstart = (ev: React.DragEvent<HTMLElement>, style: string) => {
-        // Here "text/x-bloombubble" is a unique, private data type recognised
-        // by ondragover and ondragdrop methods that BubbleManager
-        // attaches to bloom image containers. It doesn't make sense to
-        // drag these objects anywhere else, so they don't need any of
-        // the common data types. Using a private type means that other drop handlers
-        // will not accept them. It is often recommended to include a text/plain value,
-        // but it really doesn't make sense to drop the text associated with these
-        // bubbles anywhere outside Bloom. I believe the text/x- prefix makes these
-        // valid (unregistered) mime types, which technically this argument is supposed
-        // to be.
-        ev.dataTransfer.setData("text/x-bloombubble", style);
-    };
-
-    const ondragend = (ev: React.DragEvent<HTMLElement>, style: string) => {
-        const bubbleManager = OverlayTool.bubbleManager();
-        // The Linux/Mono/Geckofx environment does not produce the dragenter, dragover,
-        // and drop events for the targeted element.  It does produce the dragend event
-        // for the source element with screen coordinates of where the mouse was released.
-        // This can be used to simulate the drop event with coordinate transformation.
-        // See https://issues.bloomlibrary.org/youtrack/issue/BL-7958.
-        if (isLinux() && bubbleManager && !isBookLocked) {
-            bubbleManager.addOverPictureElementWithScreenCoords(
-                ev.screenX,
-                ev.screenY,
-                style
             );
         }
     };
@@ -800,7 +759,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                         `}
                     >
                         <span>
-                            The overlay tool cannot currently be used on Bloom
+                            The Overlay Tool cannot currently be used on Bloom
                             Games pages. Some of the functions are duplicated in
                             the Drag Activity Tool.
                         </span>
