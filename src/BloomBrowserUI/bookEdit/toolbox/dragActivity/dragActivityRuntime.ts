@@ -1,5 +1,15 @@
 // This is the code that is shared between the Play tab of the bloom games
 // (also known as drag activities) and bloom-player.
+// It wants to live in the dragActivity folder because it is specific to drag activities.
+// However, it also wants to live in the same place relative to narration.ts both in
+// bloom player and bloom desktop. For now that's a stronger requirement.
+// For now, in Bloom desktop, this file is only used in the Play tab of drag activities,
+// so both live there. In Bloom player, both live in the root src directory.
+// In the long run, the answer is probably a folder, or even an npm package, for all
+// the stuff that the two progams share...or maybe we can make bloom player publish
+// these files along with the output bundle and have bloom desktop use them from there.
+// For now, though, it's much easier to just edit them and have them built automatically
+// than to have this code in another repo.
 
 import { get } from "jquery";
 import {
@@ -7,7 +17,7 @@ import {
     playAllAudio,
     playAllVideo,
     urlPrefix
-} from "./dragActivityNarration";
+} from "./narration";
 
 let targetPositions: { x: number; y: number }[] = [];
 let originalPositions = new Map<HTMLElement, { x: number; y: number }>();
@@ -238,7 +248,7 @@ const playAudioOfTarget = (e: PointerEvent) => {
 const playAudioOf = (element: HTMLElement) => {
     const possibleElements = getVisibleEditables(element);
     const playables = getAudioSentences(possibleElements);
-    playAllAudio(playables);
+    playAllAudio(playables, element.closest(".bloom-page") as HTMLElement);
 };
 
 function makeWordItems(
@@ -316,7 +326,7 @@ function playInitialElements(page: HTMLElement) {
     //     audioElements.push(activeTextBox);
     // }
     const playables = getAudioSentences(audioElements);
-    playAllVideo(videoElements, () => playAllAudio(playables));
+    playAllVideo(videoElements, () => playAllAudio(playables, page));
 }
 
 function getAudioSentences(editables: HTMLElement[]) {
@@ -572,7 +582,7 @@ function showCorrectOrWrongItems(page: HTMLElement, correct: boolean) {
             videoElements.push(...Array.from(e.getElementsByTagName("video")));
         });
         const playables = getAudioSentences(possibleNarrationElements);
-        playAllVideo(videoElements, () => playAllAudio(playables));
+        playAllVideo(videoElements, () => playAllAudio(playables, page));
     };
     if (soundFile) {
         const audio = new Audio(urlPrefix() + "/audio/" + soundFile);

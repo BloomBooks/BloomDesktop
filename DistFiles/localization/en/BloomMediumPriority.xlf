@@ -6,10 +6,6 @@
     </header>
     <body>
       <!-- Drag Activity Tool -->
-      <trans-unit id="EditTab.Toolbox.DragActivity.AllItemsSameSizeTooltip" translate="no">
-        <source xml:lang="en">Keep all items and targets the same size</source>
-        <note>ID: EditTab.Toolbox.DragActivity.AllItemsSameSizeTooltip</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Check" translate="no">
         <source xml:lang="en">Check</source>
         <note>ID: EditTab.Toolbox.DragActivity.Check</note>
@@ -124,6 +120,10 @@
         <source xml:lang="en">None</source>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
         <note>Used as the label of a button that is otherwise the name of a sound file, indicating that no sound has been chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.SameSize" translate="no">
+        <source xml:lang="en">Keep all items and targets the same size</source>
+        <note>ID: EditTab.Toolbox.DragActivity.SameSize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions" translate="no">
         <source xml:lang="en">Properties of the Scene</source>

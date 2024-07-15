@@ -63,6 +63,28 @@ namespace Bloom.web.controllers
                 HandleShowInFolderRequest,
                 true
             ); // Common
+
+            apiHandler.RegisterEndpointHandler("fileIO/listFiles", HandleListFiles, true);
+        }
+
+        // Return a list of files in the specified subfolder of the browser root.
+        // param subPath: the subfolder to list files in
+        // param match: optional, a pattern to match files against (in the style of Directory.GetFiles)
+        private void HandleListFiles(ApiRequest request)
+        {
+            var subPath = request.RequiredParam("subPath");
+            var match = request.GetParamOrNull("match");
+            var files = Directory.GetFiles(
+                Path.Combine(
+                    FileLocationUtilities.DirectoryOfApplicationOrSolution,
+                    BloomFileLocator.BrowserRoot,
+                    subPath
+                ),
+                match ?? "*",
+                SearchOption.TopDirectoryOnly
+            );
+            var result = new { files = files.Select(f => Path.GetFileName(f)).ToArray() };
+            request.ReplyWithJson(JsonConvert.SerializeObject(result));
         }
 
         private void ChooseFile(ApiRequest request)
@@ -190,7 +212,10 @@ namespace Bloom.web.controllers
                 var source = jsonData.from;
                 if (
                     !Path.IsPathRooted(source)
-                    && Path.GetExtension(source).ToLowerInvariant() == ".mp3"
+                    && (
+                        Path.GetExtension(source).ToLowerInvariant() == ".mp3"
+                        || Path.GetExtension(source).ToLowerInvariant() == ".webm"
+                    )
                 )
                 {
                     // MP3 files in the sounds folder can be found automatically.
