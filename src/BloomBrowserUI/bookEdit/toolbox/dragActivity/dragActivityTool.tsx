@@ -647,6 +647,19 @@ const getSoundOptionsAsync = async (
     return soundOptions;
 };
 
+const doShowAnswersInTargets = (showNow: boolean, page: HTMLElement) => {
+    const draggables = Array.from(page.querySelectorAll("[data-bubble-id]"));
+    if (showNow) {
+        draggables.forEach(draggable => {
+            copyContentToTarget(draggable as HTMLElement);
+        });
+    } else {
+        draggables.forEach(draggable => {
+            removeContentFromTarget(draggable as HTMLElement);
+        });
+    }
+};
+
 // The core of the drag activity tool.
 const DragActivityControls: React.FunctionComponent<{
     activeTab: number;
@@ -984,18 +997,8 @@ const DragActivityControls: React.FunctionComponent<{
             "data-show-answers-in-targets",
             newShowAnswersInTargets ? "true" : "false"
         );
-        const draggables = Array.from(
-            page.querySelectorAll("[data-bubble-id]")
-        );
-        if (newShowAnswersInTargets) {
-            draggables.forEach(draggable => {
-                copyContentToTarget(draggable as HTMLElement);
-            });
-        } else {
-            draggables.forEach(draggable => {
-                removeContentFromTarget(draggable as HTMLElement);
-            });
-        }
+
+        doShowAnswersInTargets(newShowAnswersInTargets, page);
     };
 
     const toggleShowTargetsDuringPlay = () => {
@@ -1653,6 +1656,14 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
             setActiveDragActivityTab(0);
         }
         this.observeElementsWhereBlankMatters();
+        // Make sure showing targets is in the right state. It might not be, for example,
+        // if we just switched to a page that was saved with it in the other state,
+        // of if we just set an image and saved and reloaded the page before the observer
+        // updated the target.
+        doShowAnswersInTargets(
+            page.getAttribute("data-show-answers-in-targets") === "true",
+            page
+        );
     }
 
     // Set the bloom-blank class iff the element contains nothing that regex recognizes as a non-whitespace character.
@@ -1907,15 +1918,36 @@ function copyContentToTarget(draggable: HTMLElement) {
     if (!target) {
         return;
     }
-    target.innerHTML = draggable.innerHTML;
+    // We want to copy the content of the draggale, with several exceptions.
+    // To reduce flicker, we do the manipulations on a temporary element, and
+    // only copy into the actual target if there is actually a change.
+    // (Flicker is particularly likely with changes that don't affect the
+    // target, like adding and removing the image editing buttons.)
+    const temp = target.ownerDocument.createElement("div");
+    temp.innerHTML = draggable.innerHTML;
+
     // Don't need the bubble controls
-    Array.from(target.getElementsByClassName("bloom-ui")).forEach(e => {
+    Array.from(temp.getElementsByClassName("bloom-ui")).forEach(e => {
+        e.remove();
+    });
+    // Nor the image editing controls.
+    Array.from(temp.getElementsByClassName("imageOverlayButton")).forEach(e => {
+        e.remove();
+    });
+    Array.from(temp.getElementsByClassName("imageButton")).forEach(e => {
         e.remove();
     });
     // Bloom has integrity checks for duplicate ids, and we don't need them in the duplicate content.
-    Array.from(target.querySelectorAll("[id]")).forEach(e => {
+    Array.from(temp.querySelectorAll("[id]")).forEach(e => {
         e.removeAttribute("id");
     });
+    Array.from(temp.getElementsByClassName("hoverUp")).forEach(e => {
+        // Produces at least a change in background color that we don't want.
+        e.classList.remove("hoverUp");
+    });
+    if (target.innerHTML !== temp.innerHTML) {
+        target.innerHTML = temp.innerHTML;
+    }
 }
 
 function removeContentFromTarget(draggable: HTMLElement) {
