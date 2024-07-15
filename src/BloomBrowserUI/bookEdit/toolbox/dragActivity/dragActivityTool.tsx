@@ -730,7 +730,25 @@ const DragActivityControls: React.FunctionComponent<{
                 `[data-target-of="${currentBubbleTargetId}"]`
             ) as HTMLElement
         );
-    }, [currentBubbleTargetId]);
+        // We need to re-evaluate when changing pages, it's possible the initially selected item
+        // on a new page has the same currentBubbleTargetId.
+    }, [props.pageGeneration, currentBubbleTargetId]);
+    // The main point of this is to make the visibility of the arrow consistent with whether
+    // a draggable is actually selected when changing pages. As far as I know, we don't need to do it when the
+    // draggable or target change otherwise...other code handles target adjustment for those changes...
+    // but it's fairly harmless to do it an extra time, and makes lint happy, and maybe will
+    // catch some inconsistency that would otherwise be missed.
+    useEffect(() => {
+        if (currentBubbleElement) {
+            adjustTarget(currentBubbleElement, currentBubbleTarget);
+        } else {
+            const page = getPage();
+            const arrow = page?.querySelector("#target-arrow") as HTMLElement;
+            if (arrow) {
+                arrow.remove();
+            }
+        }
+    }, [currentBubbleElement, currentBubbleTarget, props.pageGeneration]);
     // If applicable, set up an observer to copy changes to the current bubble to its target,
     // whenever the target (or other relevant factors) changes. I don't think there's any
     // way an unselected bubble can change in a way that requires the target to do so.
