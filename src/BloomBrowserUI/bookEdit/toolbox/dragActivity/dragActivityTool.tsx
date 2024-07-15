@@ -35,7 +35,7 @@ import {
     undoPrepareActivity
 } from "./dragActivityRuntime";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
-import { postData, postJson } from "../../../utils/bloomApi";
+import { getWithPromise, postData, postJson } from "../../../utils/bloomApi";
 import {
     getEditablePageBundleExports,
     getToolboxBundleExports
@@ -45,7 +45,7 @@ import { useL10n } from "../../../react_components/l10nHooks";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { BubbleSpec } from "comicaljs";
-import { setPlayerUrlPrefixFromWindowLocationHref } from "./dragActivityNarration";
+import { setPlayerUrlPrefixFromWindowLocationHref } from "./narration";
 
 // This is the main code that manages the Bloom Games or Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -600,6 +600,53 @@ const getTarget = (draggable: HTMLElement): HTMLElement | undefined => {
 const disabledCss = enabled =>
     enabled ? "" : "opacity:0.4; pointer-events:none;";
 
+const getSoundFiles = async (prefix: string): Promise<string[]> => {
+    const result = await getWithPromise(
+        `fileIO/listFiles?subPath=sounds&match=${prefix}_*`
+    );
+    if (!result || !result.data) {
+        return []; // huh?
+    }
+    return result.data.files as string[];
+};
+
+const getSoundOptions = async (
+    prefix: string,
+    files: string[],
+    current: string,
+    noneSound: string,
+    chooseSound: string
+): Promise<{ label: string; id: string; divider: boolean }[]> => {
+    const soundOptions = [{ label: noneSound, id: "none", divider: false }];
+    const idToLabel = label =>
+        label
+            .replace(new RegExp(`^${prefix}_`), "") // don't use substring, for own sounds prefix might not be found
+            .replace(/\.mp3$/i, "")
+            .replace(/\.webm/i, "")
+            .replace("_", " ")
+            .replace("-", " ")
+            .replace(/ pixabay/i, "");
+
+    files.forEach(file => {
+        soundOptions.push({ label: idToLabel(file), id: file, divider: false });
+    });
+    soundOptions[soundOptions.length - 1].divider = true;
+
+    soundOptions.push({ label: chooseSound, id: "choose", divider: false });
+
+    if (
+        soundOptions.find(opt => opt.id === prefix + "-" + current) ===
+        undefined
+    ) {
+        soundOptions.splice(0, 0, {
+            label: idToLabel(current),
+            id: current,
+            divider: false
+        });
+    }
+    return soundOptions;
+};
+
 // The core of the drag activity tool.
 const DragActivityControls: React.FunctionComponent<{
     activeTab: number;
@@ -758,46 +805,37 @@ const DragActivityControls: React.FunctionComponent<{
         }
         playSound(result.data, page);
     };
+    const [correctFiles, setCorrectFiles] = useState<string[]>([]);
+    const [wrongFiles, setWrongFiles] = useState<string[]>([]);
+    useEffect(() => {
+        getSoundFiles("correct").then(setCorrectFiles);
+        getSoundFiles("wrong").then(setWrongFiles);
+    }, []);
 
-    // Souns "Yay", and below "Awww", "Oh-oh". amd "Waah" were taken from https://bloomlibrary.org/EFL-education-for-life-org/EFL-CatandDog/book/8ItXq7Rp5s.
-    // We need to investigate licensing before we ship. The book (10 - Cat and Dog and the egg) is CC-BY-NC, and the activities, to which the
-    // sounds presumably belong, are CC-BY-NC-SA. This may mean they are copyright by the owners of Active Presenter 8 or SIL-PNG
-    // and we can't use them for just any book that wants them, therefore probably not at all. Also, if we can use them, we may need
-    // (based on NC) to determine how the source should be acknowledged.
-    // It's not clear from the credits page of the book, unfortunately.
-    // I don't know the source of "Ding-a-ling" or "Sad Drum", but I think they are sounds we were already using for activities, so
-    // presumably they are OK to use.
-    const correctSoundOptions = [
-        { label: noneSound, id: "none", divider: false },
-        { label: "Ding-a-ling", id: "ding-a-ling.mp3", divider: false },
-        { label: "Yay", id: "yay.mp3", divider: true },
-        { label: chooseSound, id: "choose", divider: false }
-    ];
-    if (
-        correctSoundOptions.find(opt => opt.id === correctSound) === undefined
-    ) {
-        correctSoundOptions.splice(0, 0, {
-            label: correctSound.replace(/\.mp3$/i, ""),
-            id: correctSound,
-            divider: false
-        });
-    }
-
-    const wrongSoundOptions = [
-        { label: noneSound, id: "none", divider: false },
-        { label: "Awww", id: "awww.mp3", divider: false },
-        { label: "Oh-oh", id: "oh-oh.mp3", divider: false },
-        { label: "Sad Drum", id: "sad drum.mp3", divider: false },
-        { label: "Waah", id: "waah.mp3", divider: true },
-        { label: chooseSound, id: "choose", divider: false }
-    ];
-    if (wrongSoundOptions.find(opt => opt.id === wrongSound) === undefined) {
-        wrongSoundOptions.splice(0, 0, {
-            label: wrongSound.replace(/\.mp3$/i, ""),
-            id: wrongSound,
-            divider: false
-        });
-    }
+    const [correctSoundOptions, setCorrectSoundOptions] = useState<
+        { label: string; id: string; divider: boolean }[]
+    >([]);
+    const [wrongSoundOptions, setWrongSoundOptions] = useState<
+        { label: string; id: string; divider: boolean }[]
+    >([]);
+    useEffect(() => {
+        getSoundOptions(
+            "correct",
+            correctFiles,
+            correctSound,
+            noneSound,
+            chooseSound
+        ).then(setCorrectSoundOptions);
+    }, [correctFiles, correctSound, noneSound, chooseSound]);
+    useEffect(() => {
+        getSoundOptions(
+            "wrong",
+            wrongFiles,
+            wrongSound,
+            noneSound,
+            chooseSound
+        ).then(setWrongSoundOptions);
+    }, [wrongFiles, wrongSound, noneSound, chooseSound]);
 
     // const [dragObjectType, setDragObjectType] = useState("text");
     // Todo: something has to call setDragObjectType when a draggable is selected.
