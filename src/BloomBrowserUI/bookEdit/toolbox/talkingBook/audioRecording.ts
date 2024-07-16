@@ -1910,7 +1910,7 @@ export default class AudioRecording {
         }
 
         // Remove the recording md5(s)
-        const current = this.getCurrentTextBoxSync();
+        const current = this.getAudioCurrentElement();
         if (current) {
             const recordable = new Recordable(current);
             recordable.unsetChecksum();
@@ -2417,6 +2417,23 @@ export default class AudioRecording {
         return <HTMLElement | null>(
             this.getTextBoxOfElement(audioCurrentElements[0])
         );
+    }
+
+    public getAudioCurrentElement(): HTMLElement | null {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) {
+            return null;
+        }
+
+        const audioCurrentElements = pageBody.getElementsByClassName(
+            kAudioCurrent
+        );
+
+        if (audioCurrentElements.length === 0) {
+            return null;
+        }
+
+        return audioCurrentElements.item(0) as HTMLElement;
     }
 
     // Gets the current text box. If none exists, immediately returns null.
