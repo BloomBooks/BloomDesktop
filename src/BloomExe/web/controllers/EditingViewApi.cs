@@ -174,7 +174,8 @@ namespace Bloom.web.controllers
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
             View.OnPasteImage(
                 data.imageId,
-                UrlPathString.CreateFromUrlEncodedString(data.imageSrc)
+                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                data.imageIsGif
             );
             request.PostSucceeded();
         }
@@ -182,14 +183,21 @@ namespace Bloom.web.controllers
         private void HandleCopyImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            View.OnCopyImage(UrlPathString.CreateFromUrlEncodedString(data.imageSrc));
+            View.OnCopyImage(
+                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                data.imageIsGif
+            );
             request.PostSucceeded();
         }
 
         private void HandleCutImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            View.OnCutImage(data.imageId, UrlPathString.CreateFromUrlEncodedString(data.imageSrc));
+            View.OnCutImage(
+                data.imageId,
+                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                data.imageIsGif
+            );
             request.PostSucceeded();
         }
 
@@ -201,7 +209,8 @@ namespace Bloom.web.controllers
             {
                 View.OnChangeImage(
                     data.imageId,
-                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc)
+                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                    data.imageIsGif
                 );
             });
             request.PostSucceeded();

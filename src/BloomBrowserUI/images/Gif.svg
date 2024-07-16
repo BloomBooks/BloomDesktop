@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="121.94573mm"
+   height="116.45483mm"
+   viewBox="0 0 121.94573 116.45483"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer1"
+     transform="translate(-1.38124,-2.1065131)">
+    <ellipse
+       style="fill:#000000;fill-opacity:0.00414937;stroke:#000000;stroke-width:2.71467;stroke-dasharray:none;stroke-opacity:1"
+       id="path1"
+       cx="62.354107"
+       cy="60.333931"
+       rx="59.615532"
+       ry="56.870083" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.175px;fill:#000000;fill-opacity:0.00414937;stroke:#000000;stroke-width:3.76499;stroke-dasharray:none;stroke-opacity:1"
+       x="42.065937"
+       y="55.12088"
+       id="text2"><tspan
+         id="tspan2"
+         style="stroke-width:3.765"
+         x="42.065937"
+         y="55.12088"></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50.8px;line-height:1.25;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI';fill:#000000;fill-opacity:0.00414937;stroke:#000000;stroke-width:0;stroke-dasharray:none;stroke-opacity:1"
+       x="25.453087"
+       y="75.806305"
+       id="text3"><tspan
+         id="tspan3"
+         style="font-size:50.8px;fill:#000000;fill-opacity:0.979253;stroke-width:0;stroke-dasharray:none"
+         x="25.453087"
+         y="75.806305">GIF</tspan></text>
+  </g>
+</svg>

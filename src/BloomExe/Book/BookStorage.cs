@@ -1045,6 +1045,15 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "5.5",
                 BloomReaderMinVersion = "1.0",
                 XPath = "//span[contains(@class,'bloom-audio-split-marker')]"
+            },
+            new Feature()
+            {
+                FeatureId = "bloomGames6.1",
+                FeaturePhrase = "Bloom Games added in 6.1",
+                BloomDesktopMinVersion = "6.1",
+                BloomReaderMinVersion = "3.3",
+                XPath =
+                    "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
             }
         };
 
@@ -1304,6 +1313,17 @@ namespace Bloom.Book
             var backgroundMusicFileNames = GetBackgroundMusicFileNamesReferencedInBook();
             usedAudioFileNames.AddRange(backgroundMusicFileNames);
 
+            var activityPages = Dom.SafeSelectNodes("//div[@data-activity]");
+            foreach (SafeXmlElement dap in activityPages)
+            {
+                var correctSound = dap.GetAttribute("data-correct-sound");
+                var wrongSound = dap.GetAttribute("data-wrong-sound");
+                if (correctSound != null)
+                    usedAudioFileNames.Add(correctSound);
+                if (wrongSound != null)
+                    usedAudioFileNames.Add(wrongSound);
+            }
+
             // Don't get too trigger-happy with the delete button if you're not in publish mode
             if (!isForPublish)
             {
@@ -1385,12 +1405,11 @@ namespace Bloom.Book
             HashSet<string> langsToExclude
         )
         {
-            var narrationElements = HtmlDom
-                .SelectChildNarrationAudioElements(
-                    Dom.RawDom.DocumentElement,
-                    includeSplitTextBoxAudio,
-                    langsToExclude
-                );
+            var narrationElements = HtmlDom.SelectChildNarrationAudioElements(
+                Dom.RawDom.DocumentElement,
+                includeSplitTextBoxAudio,
+                langsToExclude
+            );
             var narrationIds = narrationElements
                 .Select(node => node.GetOptionalStringAttribute("id", null))
                 .Where(id => id != null);
@@ -1543,7 +1562,9 @@ namespace Bloom.Book
         internal static List<string> GetVideoPathsRelativeToBook(SafeXmlElement element)
         {
             return (
-                from SafeXmlElement videoContainerElements in HtmlDom.SelectChildVideoElements(element)
+                from SafeXmlElement videoContainerElements in HtmlDom.SelectChildVideoElements(
+                    element
+                )
                 select HtmlDom.GetVideoElementUrl(videoContainerElements).PathOnly.NotEncoded
             )
                 .Where(path => !String.IsNullOrEmpty(path))
@@ -2400,7 +2421,10 @@ namespace Bloom.Book
             InitialLoadErrors = "";
         }
 
-        private bool TryGetValidXmlDomFromHtmlFile(string path, out SafeXmlDocument xmlDomFromHtmlFile)
+        private bool TryGetValidXmlDomFromHtmlFile(
+            string path,
+            out SafeXmlDocument xmlDomFromHtmlFile
+        )
         {
             xmlDomFromHtmlFile = null;
             if (!RobustFile.Exists(path))
@@ -2852,7 +2876,10 @@ namespace Bloom.Book
                 // var documentTime = RobustFile.GetLastWriteTimeUtc(documentPath);
                 if (Platform.IsWindows) // See BL-13577.
                 {
-                    if (sourcePathIncludingFileName.ToLowerInvariant() == documentPath.ToLowerInvariant())
+                    if (
+                        sourcePathIncludingFileName.ToLowerInvariant()
+                        == documentPath.ToLowerInvariant()
+                    )
                         return; // no point in trying to update self!
                 }
                 else
@@ -3555,12 +3582,12 @@ namespace Bloom.Book
                 .Cast<SafeXmlElement>();
             foreach (var ic in imageContainers)
             {
-                var firstImage = ic.ChildNodes
-                    .FirstOrDefault(x => x is SafeXmlElement && ((SafeXmlElement)x).Name == "img");
+                var firstImage = ic.ChildNodes.FirstOrDefault(
+                    x => x is SafeXmlElement && ((SafeXmlElement)x).Name == "img"
+                );
                 if (firstImage == null)
                     continue;
-                var firstElement = ic.ChildNodes
-                    .FirstOrDefault(x => x is SafeXmlElement);
+                var firstElement = ic.ChildNodes.FirstOrDefault(x => x is SafeXmlElement);
                 if (firstElement != firstImage)
                 {
                     ic.InsertBefore(firstImage, firstElement);
@@ -3970,9 +3997,7 @@ namespace Bloom.Book
             var marginBox = GetMarginBox(page);
             if (marginBox == null)
                 return true; // marginBox should not be missing
-            var internalNodes = marginBox.ChildNodes
-                .Where(x => x is SafeXmlElement)
-                .ToList();
+            var internalNodes = marginBox.ChildNodes.Where(x => x is SafeXmlElement).ToList();
             if (internalNodes.Count == 0)
             {
                 return true; // marginBox should not be empty
@@ -3996,9 +4021,7 @@ namespace Bloom.Book
         static SafeXmlElement GetMarginBox(SafeXmlElement parent)
         {
             foreach (
-                SafeXmlElement child in parent.ChildNodes
-                    .Where(x => x is SafeXmlElement)
-                    .Reverse()
+                SafeXmlElement child in parent.ChildNodes.Where(x => x is SafeXmlElement).Reverse()
             )
             {
                 if (child.GetAttribute("class").Contains("marginBox"))

@@ -1637,36 +1637,7 @@ namespace Bloom.Edit
                     priorImageSrc,
                     imageInfo
                 );
-                // we don't need to wait. Even if our caller kicks off a save, its call to RunJavascriptAsync() will come in after ours.
-                GetEditingBrowser()
-                    .RunJavascriptFireAndForget(
-                        $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
-                    );
-
-                /* We're Saving to the DOM here:
-                 * 1) Makes it transparent if it should be:
-                 *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,
-                 *        so the check to see if we need to make it tranparent says "no".
-                 *        This could probably be done in a smarter way that isn't occuring to me at the moment.
-                 * 2) It is needed if we're going to update the thumbnail (we could live without this)
-                 */
-                SaveThen(
-                    doAfterSaving: () =>
-                    {
-                        _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
-
-                        Logger.WriteMinorEvent(
-                            "Finished ChangePicture {0}",
-                            (object)imageInfo.FileName
-                        );
-                        Analytics.Track("Change Picture");
-                        Logger.WriteEvent("ChangePicture {0}...", (object)imageInfo.FileName);
-                        return _pageSelection.CurrentSelection.Id; // we're not changing pages
-                    },
-                    doIfNotInRightStateToSave: () => { },
-                    forceFullSave: false,
-                    skipSaveToDisk: false // we can wait for the normal save to disk
-                );
+                UpdateImageInBrowser(args);
             }
             catch (Exception e)
             {
@@ -1677,6 +1648,49 @@ namespace Bloom.Edit
                 e.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
                 ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
             }
+        }
+
+        public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
+        {
+            // we don't need to wait. Even if our caller kicks off a save, its call to RunJavascriptAsync() will come in after ours.
+            GetEditingBrowser()
+                .RunJavascriptFireAndForget(
+                    $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
+                );
+
+            /* We're Saving to the DOM here:
+             * 1) Makes it transparent if it should be:
+             *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,
+             *        so the check to see if we need to make it tranparent says "no".
+             *        This could probably be done in a smarter way that isn't occuring to me at the moment.
+             * 2) It is needed if we're going to update the thumbnail (we could live without this)
+             */
+            SaveThen(
+                doAfterSaving: () =>
+                {
+                    try
+                    {
+                        _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+
+                        Logger.WriteMinorEvent("Finished ChangePicture {0}", (object)args.src);
+                        Analytics.Track("Change Picture");
+                        Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
+                    }
+                    catch (Exception e)
+                    {
+                        var msg = LocalizationManager.GetString(
+                            "Errors.ProblemImportingPicture",
+                            "Bloom had a problem importing this picture."
+                        );
+                        e.Data["ProblemImagePath"] = args.src;
+                        ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+                    }
+                    return _pageSelection.CurrentSelection.Id; // we're not changing pages
+                },
+                doIfNotInRightStateToSave: () => { },
+                forceFullSave: false,
+                skipSaveToDisk: false // we can wait for the normal save to disk
+            );
         }
 
         public void SetView(EditingView view)

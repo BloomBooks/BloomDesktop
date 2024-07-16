@@ -5,7 +5,8 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
-import { BubbleManager } from "../js/bubbleManager";
+import { BubbleManager, theOneBubbleManager } from "../js/bubbleManager";
+import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -268,7 +269,7 @@ export default class OverflowChecker {
         const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(box);
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
-        if (BubbleManager.growOverflowingBox(box, overflowY)) {
+        if (theOneBubbleManager.growOverflowingBox(box, overflowY)) {
             overflowY = 0;
         }
         if (preventOverflowY) {
@@ -381,7 +382,10 @@ export default class OverflowChecker {
                     // show the tooltip.
                     const shouldShow =
                         offsetY >= $overflowingAncestor.innerHeight() - 10 &&
-                        offsetY <= $overflowingAncestor.outerHeight(false) + 10;
+                        offsetY <=
+                            $overflowingAncestor.outerHeight(false) + 10 &&
+                        // I don't like this module knowing about this, but how else to hide it?
+                        !playingBloomGame(overflowingAncestor);
                     if (shouldShow && !showing) {
                         showing = true;
                         $overflowingAncestor.trigger("enterBorder");

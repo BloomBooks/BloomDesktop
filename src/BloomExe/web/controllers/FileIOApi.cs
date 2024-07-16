@@ -1,4 +1,4 @@
-﻿using Bloom.Api;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish;
 using Bloom.ToPalaso;
@@ -27,6 +27,9 @@ namespace Bloom.web.controllers
         public string title;
         public FileTypeForFileDialog[] fileTypes;
         public string defaultPath;
+
+        // If specified, the file will be copied to this sub folder in the book folder, and just the name returned.
+        public string destFolder;
     }
 
     public class FileIOApi
@@ -60,6 +63,28 @@ namespace Bloom.web.controllers
                 HandleShowInFolderRequest,
                 true
             ); // Common
+
+            apiHandler.RegisterEndpointHandler("fileIO/listFiles", HandleListFiles, true);
+        }
+
+        // Return a list of files in the specified subfolder of the browser root.
+        // param subPath: the subfolder to list files in
+        // param match: optional, a pattern to match files against (in the style of Directory.GetFiles)
+        private void HandleListFiles(ApiRequest request)
+        {
+            var subPath = request.RequiredParam("subPath");
+            var match = request.GetParamOrNull("match");
+            var files = Directory.GetFiles(
+                Path.Combine(
+                    FileLocationUtilities.DirectoryOfApplicationOrSolution,
+                    BloomFileLocator.BrowserRoot,
+                    subPath
+                ),
+                match ?? "*",
+                SearchOption.TopDirectoryOnly
+            );
+            var result = new { files = files.Select(f => Path.GetFileName(f)).ToArray() };
+            request.ReplyWithJson(JsonConvert.SerializeObject(result));
         }
 
         private void ChooseFile(ApiRequest request)
@@ -77,10 +102,13 @@ namespace Bloom.web.controllers
 
         private string SelectFileUsingDialog(OpenFileRequest requestParameters)
         {
+            var initialDirectory = string.IsNullOrEmpty(requestParameters.defaultPath)
+                ? System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments)
+                : Path.GetDirectoryName(requestParameters.defaultPath); // enhance would be better to actually select the file, not just the Dir?
             var dlg = new DialogAdapters.OpenFileDialogAdapter
             {
                 Title = requestParameters.title,
-                InitialDirectory = Path.GetDirectoryName(requestParameters.defaultPath), // enhance would be better to actually select the file, not just the Dir?
+                InitialDirectory = initialDirectory,
                 FileName = Path.GetFileName(requestParameters.defaultPath),
                 Multiselect = false,
                 CheckFileExists = true,
@@ -97,6 +125,20 @@ namespace Bloom.web.controllers
             {
                 // We are not trying get a memory or time diff, just a point measure.
                 PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
+
+                if (!string.IsNullOrEmpty(requestParameters.destFolder))
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(dlg.FileName);
+                    var ext = Path.GetExtension(dlg.FileName);
+                    var destFolder = Path.Combine(
+                        CurrentBook.FolderPath,
+                        requestParameters.destFolder
+                    );
+                    var destPath = BookStorage.GetUniqueFileName(destFolder, fileName, ext);
+                    Directory.CreateDirectory(destFolder);
+                    RobustFile.Copy(dlg.FileName, destPath);
+                    return Path.GetFileName(destPath);
+                }
 
                 return dlg.FileName.Replace("\\", "/");
             }
@@ -167,7 +209,26 @@ namespace Bloom.web.controllers
 
             try
             {
-                RobustFile.Copy(jsonData.from, jsonData.to, true);
+                var source = jsonData.from;
+                if (
+                    !Path.IsPathRooted(source)
+                    && (
+                        Path.GetExtension(source).ToLowerInvariant() == ".mp3"
+                        || Path.GetExtension(source).ToLowerInvariant() == ".webm"
+                    )
+                )
+                {
+                    // MP3 files in the sounds folder can be found automatically.
+                    // We can extend this as necessary if there are other built-in files
+                    // we want to be easily able to copy like this.
+                    source = Path.Combine(
+                        FileLocationUtilities.DirectoryOfApplicationOrSolution,
+                        BloomFileLocator.BrowserRoot,
+                        "sounds",
+                        source
+                    );
+                }
+                RobustFile.Copy(source, jsonData.to, true);
             }
             catch (Exception e)
             {

@@ -866,6 +866,7 @@ div.bloom-editable.Heading2-style {
         font-style: normal;
         font-weight: normal;
         line-height: 1; //else it will draw up in the box somewhere if the font is large
+        text-shadow: none;
         content: attr(data-languageTipContent);
         bottom: 2px; // See Bl-10017
         margin-right: 2px;
@@ -1174,6 +1175,16 @@ body.hideAllCKEditors .cke_chrome {
     visibility: hidden;
 }
 
+// We have all kinds of code that knows placeHolder.png is special. So it's nontrivial to
+// switch and use a different placeholder image for GIFs. However, some of that code we
+// already have prevents showing the placeholder except while editing. So we can get the
+// effect we want (a different placeholder for GIFs) by just making the placeholder src
+// and changing the content of the image.
+.bloom-gif img[src="placeHolder.png"] {
+    content: url("/bloom/images/Gif.svg");
+    opacity: 0.4;
+}
+
 .invisibles {
     font-family: "SymChar";
     color: @bloom-purple;
@@ -1231,4 +1242,34 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
             background-color: var(--marginBox-background-color) !important;
         }
     }
+}
+
+// ----- Bloom Games ----
+// Tweak the position of the Start/Correct/Wrong/Play control
+#drag-activity-tab-control {
+    position: relative;
+    top: -8px;
+}
+
+// we want :blank, but it's not in browsers yet. So we simulate it by a mutation observer
+// that adds a class to the editable when it is empty.
+// In theory, the first rule handles an English editable that is followed by a blank bloom-content1,
+// while the second handles the case where the blank is before the English.
+// I have not been able to test the former because Bloom seems to reorder the bloom-content1 first.
+// Enhance: possibly we could add a class that would let us identify the language that is the current
+// default for the source bubble, rather than fixing on English. But the main thing is to see that
+// there is a block there that should get some attention. The source bubble provides all the options.
+.drag-activity-start
+    .bloom-show-en-when-blank
+    .bloom-editable[lang="en"]:has(~ .bloom-content1.bloom-blank),
+.drag-activity-start
+    .bloom-show-en-when-blank
+    .bloom-content1.bloom-blank
+    ~ .bloom-editable[lang="en"] {
+    display: block; // overcomes rule that usually hides it (since it's not content1)
+    position: absolute; // put it over the space where the bloom-content1 usually is
+    top: 0;
+    left: 0;
+    pointer-events: none; // We can click right through it to the bloom-content1
+    opacity: 40%; // dim a bit to make it look like a prompt.
 }

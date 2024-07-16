@@ -17,7 +17,7 @@
         "build:less-inner": "npm-run-all --parallel build:branding:less build:templates:less build:layout:less",
         "// there is no current way to exclude node_modules, so we can't just do the whole directory.": "https://github.com/jonycheung/deadsimple-less-watch-compiler/issues/72",
         "watch:less": "npm-run-all --parallel watch:branding:less watch:templates:less watch:layout:less",
-        "build:templates:files": "cpx \"templates/**/!(tsconfig).{png,jpg,svg,css,json,htm,html,txt,js}\" \"../../output/browser/templates\" -v",
+        "build:templates:files": "cpx \"templates/**/!(tsconfig).{png,jpg,svg,css,json,htm,html,txt,js,gif}\" \"../../output/browser/templates\" -v",
         "build:templates:typescript": "cd \"templates/template books/Activity\" && npx tsc && echo \"typescript build done\"",
         "build:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" ../../output/browser/branding -v",
         "build:branding:less": "less-watch-compiler --source-map --run-once branding ../../output/browser/branding",

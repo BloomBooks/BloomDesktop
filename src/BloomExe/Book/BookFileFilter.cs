@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -226,6 +226,7 @@ namespace Bloom.Book
                 ".png",
                 ".jpg",
                 ".jpeg",
+                ".gif",
                 ".tif",
                 ".tiff",
                 ".bmp",
