@@ -1,6 +1,7 @@
 // This file contains code for playing audio in a bloom page, including a draggable page.
 // The file is designed to be shared between Bloom Desktop and Bloom Player. Maybe eventually
 // as an npm module, but for now, just copied into both projects. See comments in dragActivityRuntime.ts.
+// Until that day, changes must be copied manually, and care taken to avoid conflicts.
 
 // It is quite difficult to know how to handle audio in a drag activity page.
 // We need to be able to play it both during "Play" and when showing the page in BP.
@@ -205,7 +206,10 @@ let startPause: Date;
 // Gets canceled if we pause and restarted if we resume.
 let fakeNarrationTimer: number;
 
-let segments: HTMLElement[];
+// List of segments that are currently being played, or will be resumed (or restarted) when play resumes.
+// Typically the output of getPageAudioElements, but Bloom Games sometimes gives a different list.
+// Unlike elementsToPlayConsecutivelyStack, this list is not reversed, nor do we remove items from it as we play them.
+let segmentsWeArePlaying: HTMLElement[];
 
 let currentAudioId = "";
 
@@ -256,15 +260,19 @@ export function playAllSentences(page: HTMLElement | null): void {
 
 export function playAllAudio(elements: HTMLElement[], page: HTMLElement): void {
     setCurrentPage(page);
-    segments = getPageAudioElements(page);
+    segmentsWeArePlaying = elements;
     startPlay = new Date();
     const mediaPlayer = getPlayer();
     if (mediaPlayer) {
-        // This felt like a good idea. But we are about to set a new src on the media player and play that,
+        // This felt like a good idea to do always. But we are about to set a new src on the media player and play that,
         // which will deal with any sound that is still playing.
         // And if we explicitly pause it now, that actually starts an async process of getting it paused, which
         // may not have completed by the time we attempt to play the new audio. And then play() fails.
-        //mediaPlayer.pause();
+        // OTOH, if there is nothing new to play, we should terminate anything that is playing
+        // (perhaps from a previous page).
+        if (elements.length == 0) {
+            mediaPlayer.pause();
+        }
         mediaPlayer.currentTime = 0;
     }
 
@@ -713,12 +721,12 @@ function onSubElementHighlightTimeEnded(originalSessionNum: number) {
 
 // Removes the .ui-audioCurrent class from all elements (also ui-audioCurrentImg)
 // Equivalent of removeAudioCurrentFromPageDocBody() in BloomDesktop.
+// "around" might be the element that has the highlight, or the one getting it;
+// the important thing is that it belongs to the right document (which is in question
+// with multiple iframes in Bloom desktop).
 function removeAudioCurrent(around: HTMLElement = document.body) {
     // Note that HTMLCollectionOf's length can change if you change the number of elements matching the selector.
-    // For safety we get rid of all existing ones. But we do take a starting point element
-    // (might be the one that has the higlight, or the one getting it)
-    // to make sure we're cleaning up in the right document, which is in question when used in
-    // Bloom Editor.
+    // For safety we get rid of all existing ones.
     const audioCurrentArray = Array.from(
         around.ownerDocument.getElementsByClassName("ui-audioCurrent")
     );
@@ -726,7 +734,9 @@ function removeAudioCurrent(around: HTMLElement = document.body) {
     for (let i = 0; i < audioCurrentArray.length; i++) {
         audioCurrentArray[i].classList.remove("ui-audioCurrent");
     }
-    const currentImg = document.getElementsByClassName("ui-audioCurrentImg")[0];
+    const currentImg = around.ownerDocument.getElementsByClassName(
+        "ui-audioCurrentImg"
+    )[0];
     if (currentImg) {
         currentImg.classList.remove("ui-audioCurrentImg");
     }
@@ -1104,6 +1114,12 @@ export function pageHasAudio(page: HTMLElement): boolean {
     return getPageAudioElements(page).length ? true : false;
 }
 
+// Called when the user clicks the play/pause button, and we want to resume playing.
+// If we're in the middle of playing, we resume it.
+// If we have finished playing, we start over.
+// If the page nas no audio, we assume the user paused as long as wanted on
+// the page, and raise the PageNarrationComplete event at once (to move to the
+// next page if we are in autoplay).
 export function play() {
     if (currentPlaybackMode === PlaybackMode.AudioPlaying) {
         return; // no change.
@@ -1111,7 +1127,7 @@ export function play() {
     setCurrentPlaybackMode(PlaybackMode.AudioPlaying);
     // I'm not sure how getPlayer() can return null/undefined, but have seen it happen
     // typically when doing something odd like trying to go back from the first page.
-    if (segments.length && getPlayer()) {
+    if (segmentsWeArePlaying.length && getPlayer()) {
         if (elementsToPlayConsecutivelyStack.length) {
             handlePlayPromise(getPlayer().play());
 
@@ -1128,24 +1144,9 @@ export function play() {
         }
     }
     // Nothing real to play on this page, so PageNarrationComplete depends on a timeout.
-    // adjust startPlay by the elapsed pause. From this compute how much of durationOfPagesWithoutNarration
-    // remains. (I don't think this is quite right. It seems to always jump straight to the next page
-    // when resumed. But at least it is possible to pause on a page with no narration, which is better than
-    // the previous version.)
-    const pause = new Date().getTime() - startPause.getTime();
-    startPlay = new Date(startPlay.getTime() + pause);
-    const remaining =
-        durationOfPagesWithoutNarration -
-        (new Date().getTime() - startPlay.getTime());
-    if (remaining > 0) {
-        fakeNarrationTimer = window.setTimeout(() => {
-            setCurrentPlaybackMode(PlaybackMode.MediaFinished);
-            PageNarrationComplete?.raise(currentPlayPage!);
-        }, remaining);
-    } else {
-        // Somehow we already reached the limit.
-        PageNarrationComplete?.raise(currentPlayPage!);
-    }
+    // We only get here following a pause, so assume the reader has paused as long as wanted,
+    // and move on.
+    PageNarrationComplete?.raise(currentPlayPage!);
 }
 
 export function pause() {
@@ -1170,7 +1171,7 @@ function pausePlaying() {
     const player = getPlayer();
     // We're paused, so if we have a timer running to switch pages after a certain time, cancel it.
     clearTimeout(fakeNarrationTimer);
-    if (segments && segments.length && player) {
+    if (segmentsWeArePlaying && segmentsWeArePlaying.length && player) {
         // Before reporting duration, try to check that we really are playing.
         // a separate report is sent if play ends.
         if (player.currentTime > 0 && !player.paused && !player.ended) {
@@ -1209,18 +1210,20 @@ export function hidingPage() {
 // Play the specified elements, one after the other. When the last completes (or at once if the array is empty),
 // perform the 'then' action (typically used to play narration, which we put after videos).
 // Todo: Bloom Player version, at least, should work with play/pause/resume/change page architecture.
+// (This function would be more natural in video.ts. But at least for now I'm trying to minimize the
+// number of source files shared with Bloom Desktop, and we need this for Bloom Games.)
 export function playAllVideo(elements: HTMLVideoElement[], then: () => void) {
     if (elements.length === 0) {
         then();
         return;
     }
     const video = elements[0];
-    // Note: sometimes this event does not fire normally, even when the video is played to the end.
+    // Note: in Bloom Desktop, sometimes this event does not fire normally, even when the video is played to the end.
     // I have not figured out why. It may be something to do with how we are trimming them.
-    // In Bloom, this is worked around by raising the ended event when we detect that it has paused past the end point
+    // In Bloom Desktop, this is worked around by raising the ended event when we detect that it has paused past the end point
     // in resetToStartAfterPlayingToEndPoint.
-    // In BloomPlayer, we may need to do something similar. Or possibly it's not a problem because export
-    // really shortens videos rather than just having BP limit the playback time.
+    // In BloomPlayer,I don't think this is a problem. Videos are trimmed when published, so we always play to the
+    // real end (unless the user pauses). So one way or another, we should get the ended event.
     video.addEventListener(
         "ended",
         () => {
