@@ -600,7 +600,7 @@ const getTarget = (draggable: HTMLElement): HTMLElement | undefined => {
 const disabledCss = enabled =>
     enabled ? "" : "opacity:0.4; pointer-events:none;";
 
-const getSoundFiles = async (prefix: string): Promise<string[]> => {
+const getSoundFilesAsync = async (prefix: string): Promise<string[]> => {
     const result = await getWithPromise(
         `fileIO/listFiles?subPath=sounds&match=${prefix}_*`
     );
@@ -610,14 +610,14 @@ const getSoundFiles = async (prefix: string): Promise<string[]> => {
     return result.data.files as string[];
 };
 
-const getSoundOptions = async (
+const getSoundOptionsAsync = async (
     prefix: string,
     files: string[],
     current: string,
-    noneSound: string,
-    chooseSound: string
+    noneLabel: string,
+    chooseLabel: string
 ): Promise<{ label: string; id: string; divider: boolean }[]> => {
-    const soundOptions = [{ label: noneSound, id: "none", divider: false }];
+    const soundOptions = [{ label: noneLabel, id: "none", divider: false }];
     const idToLabel = label =>
         label
             .replace(new RegExp(`^${prefix}_`), "") // don't use substring, for own sounds prefix might not be found
@@ -632,7 +632,7 @@ const getSoundOptions = async (
     });
     soundOptions[soundOptions.length - 1].divider = true;
 
-    soundOptions.push({ label: chooseSound, id: "choose", divider: false });
+    soundOptions.push({ label: chooseLabel, id: "choose", divider: false });
 
     if (
         soundOptions.find(opt => opt.id === prefix + "-" + current) ===
@@ -671,8 +671,8 @@ const DragActivityControls: React.FunctionComponent<{
     const bubbleToTargetObserver = React.useRef<MutationObserver | null>(null);
 
     // Menu item names for 'none' and "Choose...", options in both the correct and wrong sound menus.
-    const noneSound = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
-    const chooseSound = useL10n(
+    const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
+    const chooseLabel = useL10n(
         "Choose...",
         "EditTab.Toolbox.DragActivity.ChooseSound",
         ""
@@ -805,11 +805,17 @@ const DragActivityControls: React.FunctionComponent<{
         }
         playSound(result.data, page);
     };
+
+    // There's a lot of async stuff here, and a lot of arguments passed. Some of the argument-passing
+    // could be avoided by making getSoundFilesAsync and/or getSoundOptionsAsync local functions.
+    // My goal in breaking things up like this was that we clearly only need to do the server queries
+    // (to localize None and Choose and get the lists of files) once each, while makeing it very clear
+    // when the list of options must be recomputed.
     const [correctFiles, setCorrectFiles] = useState<string[]>([]);
     const [wrongFiles, setWrongFiles] = useState<string[]>([]);
     useEffect(() => {
-        getSoundFiles("correct").then(setCorrectFiles);
-        getSoundFiles("wrong").then(setWrongFiles);
+        getSoundFilesAsync("correct").then(setCorrectFiles);
+        getSoundFilesAsync("wrong").then(setWrongFiles);
     }, []);
 
     const [correctSoundOptions, setCorrectSoundOptions] = useState<
@@ -819,23 +825,23 @@ const DragActivityControls: React.FunctionComponent<{
         { label: string; id: string; divider: boolean }[]
     >([]);
     useEffect(() => {
-        getSoundOptions(
+        getSoundOptionsAsync(
             "correct",
             correctFiles,
             correctSound,
-            noneSound,
-            chooseSound
+            noneLabel,
+            chooseLabel
         ).then(setCorrectSoundOptions);
-    }, [correctFiles, correctSound, noneSound, chooseSound]);
+    }, [correctFiles, correctSound, noneLabel, chooseLabel]);
     useEffect(() => {
-        getSoundOptions(
+        getSoundOptionsAsync(
             "wrong",
             wrongFiles,
             wrongSound,
-            noneSound,
-            chooseSound
+            noneLabel,
+            chooseLabel
         ).then(setWrongSoundOptions);
-    }, [wrongFiles, wrongSound, noneSound, chooseSound]);
+    }, [wrongFiles, wrongSound, noneLabel, chooseLabel]);
 
     // const [dragObjectType, setDragObjectType] = useState("text");
     // Todo: something has to call setDragObjectType when a draggable is selected.
