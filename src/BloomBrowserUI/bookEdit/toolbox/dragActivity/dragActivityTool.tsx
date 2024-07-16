@@ -1241,14 +1241,24 @@ const DragActivityControls: React.FunctionComponent<{
                             </BloomTooltip>
                             <BloomTooltip
                                 // enable if there's an active bubble that has a data-bubble-id indicating it is draggable in Play mode
+                                // Don't disable pointer events because we need them to get the disabled tooltip.
                                 css={css`
-                                    ${disabledCss(currentBubbleTargetId)}
+                                    ${currentBubbleTargetId
+                                        ? ""
+                                        : "opacity:0.4; "}
                                 `}
+                                showDisabled={!currentBubbleTargetId}
                                 id="partOfRightAnswer"
                                 placement="top-end"
                                 tip={
                                     <Div l10nKey="EditTab.Toolbox.DragActivity.PartOfRightAnswer"></Div>
                                 }
+                                tipWhenDisabled={{
+                                    l10nKey:
+                                        "EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled",
+                                    english:
+                                        "Disabled…nothing that could be part of the answer is selected"
+                                }}
                             >
                                 <div
                                     // it's part of the right answer iff it has a target
