@@ -107,6 +107,10 @@
         <source xml:lang="en">Selected element is part of right answer</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled" translate="no">
+        <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
+        <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Play" translate="no">
         <source xml:lang="en">Play</source>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
@@ -145,12 +149,8 @@
         <source xml:lang="en">Order Circle</source>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswer" translate="no">
-        <source xml:lang="en">Show answer in each drag target. Use this to make the activity easier.</source>
-        <note>ID: EditTab.Toolbox.DragActivity.ShowAnswer</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets" translate="no">
-        <source xml:lang="en">Show Answer</source>
+        <source xml:lang="en">Show Answer even during Play</source>
         <note>ID: EditTab.Toolbox.DragActivity.ShowAnswersInTargets</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Start" translate="no">

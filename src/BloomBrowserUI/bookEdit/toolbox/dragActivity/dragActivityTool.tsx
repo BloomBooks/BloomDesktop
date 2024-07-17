@@ -30,7 +30,10 @@ import {
 import { ToolBox } from "../toolbox";
 import {
     classSetter,
+    copyContentToTarget,
+    doShowAnswersInTargets,
     draggingSlider,
+    getTarget,
     prepareActivity,
     undoPrepareActivity
 } from "./dragActivityRuntime";
@@ -585,16 +588,6 @@ const getPage = () => {
     return pageBody?.getElementsByClassName("bloom-page")[0] as HTMLElement;
 };
 
-const getTarget = (draggable: HTMLElement): HTMLElement | undefined => {
-    const targetId = draggable.getAttribute("data-bubble-id");
-    if (!targetId) {
-        return undefined;
-    }
-    return getPage()?.querySelector(
-        `[data-target-of="${targetId}"]`
-    ) as HTMLElement;
-};
-
 // like definition of .disabled in toolbox.less"
 // if argument is false returns CSS to make the element look disabled and ignore pointer events.
 const disabledCss = enabled =>
@@ -717,18 +710,39 @@ const DragActivityControls: React.FunctionComponent<{
                 `[data-target-of="${currentBubbleTargetId}"]`
             ) as HTMLElement
         );
-    }, [currentBubbleTargetId]);
+        // We need to re-evaluate when changing pages, it's possible the initially selected item
+        // on a new page has the same currentBubbleTargetId.
+    }, [props.pageGeneration, currentBubbleTargetId]);
+    // The main point of this is to make the visibility of the arrow consistent with whether
+    // a draggable is actually selected when changing pages. As far as I know, we don't need to do it when the
+    // draggable or target change otherwise...other code handles target adjustment for those changes...
+    // but it's fairly harmless to do it an extra time, and makes lint happy, and maybe will
+    // catch some inconsistency that would otherwise be missed.
+    useEffect(() => {
+        if (currentBubbleElement) {
+            adjustTarget(currentBubbleElement, currentBubbleTarget);
+        } else {
+            const page = getPage();
+            const arrow = page?.querySelector("#target-arrow") as HTMLElement;
+            if (arrow) {
+                arrow.remove();
+            }
+        }
+    }, [currentBubbleElement, currentBubbleTarget, props.pageGeneration]);
     // If applicable, set up an observer to copy changes to the current bubble to its target,
     // whenever the target (or other relevant factors) changes. I don't think there's any
     // way an unselected bubble can change in a way that requires the target to do so.
     // (For example, a style change might affect it, but would have the same effect on the target.)
+    // We don't need this when the active tab is the play tab, because the content of the
+    // draggable can't change, and also, we don't want to copy the content to the target
+    // if in that mode unless showAnswersInTargets is true.
     useEffect(() => {
         if (bubbleToTargetObserver.current) {
             bubbleToTargetObserver.current.disconnect();
             bubbleToTargetObserver.current = null;
         }
         if (
-            showAnswersInTargets &&
+            props.activeTab !== playTabIndex &&
             currentBubbleElement &&
             currentBubbleTarget
         ) {
@@ -740,7 +754,7 @@ const DragActivityControls: React.FunctionComponent<{
                 subtree: true
             });
         }
-    }, [currentBubbleElement, currentBubbleTarget, showAnswersInTargets]);
+    }, [currentBubbleElement, currentBubbleTarget, props.activeTab]);
     // Get various state values from the current page, initially and whenever it changes.
     useEffect(() => {
         const getStateFromPage = () => {
@@ -984,18 +998,7 @@ const DragActivityControls: React.FunctionComponent<{
             "data-show-answers-in-targets",
             newShowAnswersInTargets ? "true" : "false"
         );
-        const draggables = Array.from(
-            page.querySelectorAll("[data-bubble-id]")
-        );
-        if (newShowAnswersInTargets) {
-            draggables.forEach(draggable => {
-                copyContentToTarget(draggable as HTMLElement);
-            });
-        } else {
-            draggables.forEach(draggable => {
-                removeContentFromTarget(draggable as HTMLElement);
-            });
-        }
+        // Don't actually change it. Answers always show in Start mode.
     };
 
     const toggleShowTargetsDuringPlay = () => {
@@ -1220,14 +1223,24 @@ const DragActivityControls: React.FunctionComponent<{
                             </BloomTooltip>
                             <BloomTooltip
                                 // enable if there's an active bubble that has a data-bubble-id indicating it is draggable in Play mode
+                                // Don't disable pointer events because we need them to get the disabled tooltip.
                                 css={css`
-                                    ${disabledCss(currentBubbleTargetId)}
+                                    ${currentBubbleTargetId
+                                        ? ""
+                                        : "opacity:0.4; "}
                                 `}
+                                showDisabled={!currentBubbleTargetId}
                                 id="partOfRightAnswer"
                                 placement="top-end"
                                 tip={
                                     <Div l10nKey="EditTab.Toolbox.DragActivity.PartOfRightAnswer"></Div>
                                 }
+                                tipWhenDisabled={{
+                                    l10nKey:
+                                        "EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled",
+                                    english:
+                                        "Disabled…nothing that could be part of the answer is selected"
+                                }}
                             >
                                 <div
                                     // it's part of the right answer iff it has a target
@@ -1725,6 +1738,8 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
         const page = DragActivityTool.getBloomPage();
         if (page) {
             undoPrepareActivity(page);
+            // May as well save a little space in the stored version.
+            doShowAnswersInTargets(false, page);
         }
     }
 }
@@ -1900,29 +1915,6 @@ export function setupDragActivityTabControl() {
     // get the correct page alignment) and have already arranged to delete before saving the page.
     abovePageControlContainer.appendChild(tabControl);
     setActiveDragActivityTab(getActiveDragActivityTab());
-}
-
-function copyContentToTarget(draggable: HTMLElement) {
-    const target = getTarget(draggable);
-    if (!target) {
-        return;
-    }
-    target.innerHTML = draggable.innerHTML;
-    // Don't need the bubble controls
-    Array.from(target.getElementsByClassName("bloom-ui")).forEach(e => {
-        e.remove();
-    });
-    // Bloom has integrity checks for duplicate ids, and we don't need them in the duplicate content.
-    Array.from(target.querySelectorAll("[id]")).forEach(e => {
-        e.removeAttribute("id");
-    });
-}
-
-function removeContentFromTarget(draggable: HTMLElement) {
-    const target = getTarget(draggable);
-    if (target) {
-        target.innerHTML = "";
-    }
 }
 
 // dimension is assumed to end with "px" (as we use for positioning and dimensioning bubbles).
