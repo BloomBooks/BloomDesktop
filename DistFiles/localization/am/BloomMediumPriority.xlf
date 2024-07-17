@@ -128,6 +128,11 @@
         <target xml:lang="am" state="needs-translation">Selected element is part of right answer</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled" translate="no">
+        <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
+        <target xml:lang="am" state="needs-translation">Nothing that can be part of the right answer is selected</target>
+        <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Play" translate="no">
         <source xml:lang="en">Play</source>
         <target xml:lang="am" state="needs-translation">Play</target>
@@ -173,14 +178,9 @@
         <target xml:lang="am" state="needs-translation">Order Circle</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswer" translate="no">
-        <source xml:lang="en">Show answer in each drag target. Use this to make the activity easier.</source>
-        <target xml:lang="am" state="needs-translation">Show answer in each drag target. Use this to make the activity easier.</target>
-        <note>ID: EditTab.Toolbox.DragActivity.ShowAnswer</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets" translate="no">
-        <source xml:lang="en">Show Answer</source>
-        <target xml:lang="am" state="needs-translation">Show Answer</target>
+        <source xml:lang="en">Show Answer even during Play</source>
+        <target xml:lang="am" state="needs-translation">Show Answer even during Play</target>
         <note>ID: EditTab.Toolbox.DragActivity.ShowAnswersInTargets</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Start" translate="no">
