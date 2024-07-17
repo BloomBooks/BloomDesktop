@@ -108,7 +108,7 @@
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled" translate="no">
-        <source xml:lang="en">Disabled…nothing that could be part of the answer is selected</source>
+        <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Play" translate="no">
