@@ -61,6 +61,10 @@ export function prepareActivity(
 ) {
     currentPage = page;
     currentChangePageAction = changePageAction;
+    doShowAnswersInTargets(
+        page.getAttribute("data-show-answers-in-targets") === "true",
+        page
+    );
     // not sure we need this in BP, but definitely for when Bloom desktop goes to another tab.
     savePositions(page);
 
@@ -234,6 +238,7 @@ export function undoPrepareActivity(page: HTMLElement) {
     ).forEach((elt: HTMLElement) => {
         elt.parentElement?.removeChild(elt);
     });
+    doShowAnswersInTargets(true, page);
     //Slider: setSlideablesVisibility(page, true);
     // Array.from(page.getElementsByTagName("img")).forEach((img: HTMLElement) => {
     //     img.removeEventListener("click", clickSliderImage);
@@ -894,6 +899,73 @@ function checkRandomSentences(page: HTMLElement) {
         }
     }
     return true;
+}
+
+export const doShowAnswersInTargets = (showNow: boolean, page: HTMLElement) => {
+    const draggables = Array.from(page.querySelectorAll("[data-bubble-id]"));
+    if (showNow) {
+        draggables.forEach(draggable => {
+            copyContentToTarget(draggable as HTMLElement);
+        });
+    } else {
+        draggables.forEach(draggable => {
+            removeContentFromTarget(draggable as HTMLElement);
+        });
+    }
+};
+
+export function copyContentToTarget(draggable: HTMLElement) {
+    const target = getTarget(draggable);
+    if (!target) {
+        return;
+    }
+    // We want to copy the content of the draggale, with several exceptions.
+    // To reduce flicker, we do the manipulations on a temporary element, and
+    // only copy into the actual target if there is actually a change.
+    // (Flicker is particularly likely with changes that don't affect the
+    // target, like adding and removing the image editing buttons.)
+    const temp = target.ownerDocument.createElement("div");
+    temp.innerHTML = draggable.innerHTML;
+
+    // Don't need the bubble controls
+    Array.from(temp.getElementsByClassName("bloom-ui")).forEach(e => {
+        e.remove();
+    });
+    // Nor the image editing controls.
+    Array.from(temp.getElementsByClassName("imageOverlayButton")).forEach(e => {
+        e.remove();
+    });
+    Array.from(temp.getElementsByClassName("imageButton")).forEach(e => {
+        e.remove();
+    });
+    // Bloom has integrity checks for duplicate ids, and we don't need them in the duplicate content.
+    Array.from(temp.querySelectorAll("[id]")).forEach(e => {
+        e.removeAttribute("id");
+    });
+    Array.from(temp.getElementsByClassName("hoverUp")).forEach(e => {
+        // Produces at least a change in background color that we don't want.
+        e.classList.remove("hoverUp");
+    });
+    if (target.innerHTML !== temp.innerHTML) {
+        target.innerHTML = temp.innerHTML;
+    }
+}
+
+export const getTarget = (draggable: HTMLElement): HTMLElement | undefined => {
+    const targetId = draggable.getAttribute("data-bubble-id");
+    if (!targetId) {
+        return undefined;
+    }
+    return draggable.ownerDocument.querySelector(
+        `[data-target-of="${targetId}"]`
+    ) as HTMLElement;
+};
+
+function removeContentFromTarget(draggable: HTMLElement) {
+    const target = getTarget(draggable);
+    if (target) {
+        target.innerHTML = "";
+    }
 }
 
 export let draggingSlider = false;

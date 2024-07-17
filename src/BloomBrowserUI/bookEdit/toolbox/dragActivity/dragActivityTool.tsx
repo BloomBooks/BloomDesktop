@@ -30,7 +30,10 @@ import {
 import { ToolBox } from "../toolbox";
 import {
     classSetter,
+    copyContentToTarget,
+    doShowAnswersInTargets,
     draggingSlider,
+    getTarget,
     prepareActivity,
     undoPrepareActivity
 } from "./dragActivityRuntime";
@@ -585,16 +588,6 @@ const getPage = () => {
     return pageBody?.getElementsByClassName("bloom-page")[0] as HTMLElement;
 };
 
-const getTarget = (draggable: HTMLElement): HTMLElement | undefined => {
-    const targetId = draggable.getAttribute("data-bubble-id");
-    if (!targetId) {
-        return undefined;
-    }
-    return getPage()?.querySelector(
-        `[data-target-of="${targetId}"]`
-    ) as HTMLElement;
-};
-
 // like definition of .disabled in toolbox.less"
 // if argument is false returns CSS to make the element look disabled and ignore pointer events.
 const disabledCss = enabled =>
@@ -645,19 +638,6 @@ const getSoundOptionsAsync = async (
         });
     }
     return soundOptions;
-};
-
-const doShowAnswersInTargets = (showNow: boolean, page: HTMLElement) => {
-    const draggables = Array.from(page.querySelectorAll("[data-bubble-id]"));
-    if (showNow) {
-        draggables.forEach(draggable => {
-            copyContentToTarget(draggable as HTMLElement);
-        });
-    } else {
-        draggables.forEach(draggable => {
-            removeContentFromTarget(draggable as HTMLElement);
-        });
-    }
 };
 
 // The core of the drag activity tool.
@@ -753,13 +733,16 @@ const DragActivityControls: React.FunctionComponent<{
     // whenever the target (or other relevant factors) changes. I don't think there's any
     // way an unselected bubble can change in a way that requires the target to do so.
     // (For example, a style change might affect it, but would have the same effect on the target.)
+    // We don't need this when the active tab is the play tab, because the content of the
+    // draggable can't change, and also, we don't want to copy the content to the target
+    // if in that mode unless showAnswersInTargets is true.
     useEffect(() => {
         if (bubbleToTargetObserver.current) {
             bubbleToTargetObserver.current.disconnect();
             bubbleToTargetObserver.current = null;
         }
         if (
-            showAnswersInTargets &&
+            props.activeTab !== playTabIndex &&
             currentBubbleElement &&
             currentBubbleTarget
         ) {
@@ -771,7 +754,7 @@ const DragActivityControls: React.FunctionComponent<{
                 subtree: true
             });
         }
-    }, [currentBubbleElement, currentBubbleTarget, showAnswersInTargets]);
+    }, [currentBubbleElement, currentBubbleTarget, props.activeTab]);
     // Get various state values from the current page, initially and whenever it changes.
     useEffect(() => {
         const getStateFromPage = () => {
@@ -1015,8 +998,7 @@ const DragActivityControls: React.FunctionComponent<{
             "data-show-answers-in-targets",
             newShowAnswersInTargets ? "true" : "false"
         );
-
-        doShowAnswersInTargets(newShowAnswersInTargets, page);
+        // Don't actually change it. Answers always show in Start mode.
     };
 
     const toggleShowTargetsDuringPlay = () => {
@@ -1684,14 +1666,6 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
             setActiveDragActivityTab(0);
         }
         this.observeElementsWhereBlankMatters();
-        // Make sure showing targets is in the right state. It might not be, for example,
-        // if we just switched to a page that was saved with it in the other state,
-        // of if we just set an image and saved and reloaded the page before the observer
-        // updated the target.
-        doShowAnswersInTargets(
-            page.getAttribute("data-show-answers-in-targets") === "true",
-            page
-        );
     }
 
     // Set the bloom-blank class iff the element contains nothing that regex recognizes as a non-whitespace character.
@@ -1764,6 +1738,8 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
         const page = DragActivityTool.getBloomPage();
         if (page) {
             undoPrepareActivity(page);
+            // May as well save a little space in the stored version.
+            doShowAnswersInTargets(false, page);
         }
     }
 }
@@ -1939,50 +1915,6 @@ export function setupDragActivityTabControl() {
     // get the correct page alignment) and have already arranged to delete before saving the page.
     abovePageControlContainer.appendChild(tabControl);
     setActiveDragActivityTab(getActiveDragActivityTab());
-}
-
-function copyContentToTarget(draggable: HTMLElement) {
-    const target = getTarget(draggable);
-    if (!target) {
-        return;
-    }
-    // We want to copy the content of the draggale, with several exceptions.
-    // To reduce flicker, we do the manipulations on a temporary element, and
-    // only copy into the actual target if there is actually a change.
-    // (Flicker is particularly likely with changes that don't affect the
-    // target, like adding and removing the image editing buttons.)
-    const temp = target.ownerDocument.createElement("div");
-    temp.innerHTML = draggable.innerHTML;
-
-    // Don't need the bubble controls
-    Array.from(temp.getElementsByClassName("bloom-ui")).forEach(e => {
-        e.remove();
-    });
-    // Nor the image editing controls.
-    Array.from(temp.getElementsByClassName("imageOverlayButton")).forEach(e => {
-        e.remove();
-    });
-    Array.from(temp.getElementsByClassName("imageButton")).forEach(e => {
-        e.remove();
-    });
-    // Bloom has integrity checks for duplicate ids, and we don't need them in the duplicate content.
-    Array.from(temp.querySelectorAll("[id]")).forEach(e => {
-        e.removeAttribute("id");
-    });
-    Array.from(temp.getElementsByClassName("hoverUp")).forEach(e => {
-        // Produces at least a change in background color that we don't want.
-        e.classList.remove("hoverUp");
-    });
-    if (target.innerHTML !== temp.innerHTML) {
-        target.innerHTML = temp.innerHTML;
-    }
-}
-
-function removeContentFromTarget(draggable: HTMLElement) {
-    const target = getTarget(draggable);
-    if (target) {
-        target.innerHTML = "";
-    }
 }
 
 // dimension is assumed to end with "px" (as we use for positioning and dimensioning bubbles).
