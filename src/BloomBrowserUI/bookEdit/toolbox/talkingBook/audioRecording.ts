@@ -651,7 +651,7 @@ export default class AudioRecording {
         elem: Element,
         includeCheckForTempHidden: boolean = true
     ) {
-        if (this.isInHiddenLanguageBlock(elem)) {
+        if (isInHiddenLanguageBlock(elem)) {
             return false;
         }
         if (!includeCheckForTempHidden) {
@@ -679,40 +679,6 @@ export default class AudioRecording {
             }
         }
         return true;
-    }
-    private isInHiddenLanguageBlock(elem: Element) {
-        // Spans (and probably other inline elements?) can have display=inline even if they're inside a div that's display=none
-        let elemToCheck: Element | null = elem;
-
-        if (elem.tagName === "SPAN") {
-            const parentEditable = elem.closest(".bloom-editable");
-
-            // Really not wanting this scenario to happen, because we may get inaccurate results, but...
-            // We ought to be able to continue on without anything terrible happening
-            console.assert(
-                parentEditable,
-                "isVisible(): Unexpected span that is not inside a bloom-editable. span = " +
-                    elem
-            );
-            elemToCheck = parentEditable || elem;
-        }
-        // elemToCheck is typically a bloom-editable. Originally, we were just looking to consider
-        // which languages were hidden. But with drag-activity, there are cases where a containing
-        // text-over-picture element is hidden. That's two levels above the bloom-editable.
-        // Looking up four levels should be enough, and may make this computationally less
-        // expensive than looking all the way up to the document. (I think getComputedStyle is
-        // quite slow.)
-        for (let i = 0; i < 4; i++) {
-            const style = window.getComputedStyle(elemToCheck);
-            if (style.display === "none") {
-                return true;
-            }
-            elemToCheck = elemToCheck.parentElement;
-            if (!elemToCheck) {
-                return false;
-            }
-        }
-        return false;
     }
 
     private containsAnyAudioElements(): boolean {
@@ -4695,4 +4661,40 @@ export function bumpDown(whichPositionToBump: number) {
         return; // paranoia
     }
     theOneAudioRecorder.bumpDown(whichPositionToBump);
+}
+
+// Review: is there a better place for this??
+export function isInHiddenLanguageBlock(elem: Element) {
+    // Spans (and probably other inline elements?) can have display=inline even if they're inside a div that's display=none
+    let elemToCheck: Element | null = elem;
+
+    if (elem.tagName === "SPAN") {
+        const parentEditable = elem.closest(".bloom-editable");
+
+        // Really not wanting this scenario to happen, because we may get inaccurate results, but...
+        // We ought to be able to continue on without anything terrible happening
+        console.assert(
+            parentEditable,
+            "isVisible(): Unexpected span that is not inside a bloom-editable. span = " +
+                elem
+        );
+        elemToCheck = parentEditable || elem;
+    }
+    // elemToCheck is typically a bloom-editable. Originally, we were just looking to consider
+    // which languages were hidden. But with drag-activity, there are cases where a containing
+    // text-over-picture element is hidden. That's two levels above the bloom-editable.
+    // Looking up four levels should be enough, and may make this computationally less
+    // expensive than looking all the way up to the document. (I think getComputedStyle is
+    // quite slow.)
+    for (let i = 0; i < 4; i++) {
+        const style = window.getComputedStyle(elemToCheck);
+        if (style.display === "none") {
+            return true;
+        }
+        elemToCheck = elemToCheck.parentElement;
+        if (!elemToCheck) {
+            return false;
+        }
+    }
+    return false;
 }
