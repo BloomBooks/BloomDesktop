@@ -3476,6 +3476,10 @@ namespace Bloom.Book
             // can be clipped.
             CopyMissingSoundFile(templatePage, "data-correct-sound");
             CopyMissingSoundFile(templatePage, "data-wrong-sound");
+            foreach (SafeXmlElement soundElt in newPageDiv.SafeSelectNodes(".//div[@data-sound]"))
+            {
+                CopyMissingSoundFile(soundElt, "data-sound", templatePage.Book.FolderPath);
+            }
 
             // and again for scripts (but we currently only worry about ones in the page itself)
             foreach (SafeXmlElement scriptElt in newPageDiv.SafeSelectNodes(".//script[@src]"))
@@ -3591,13 +3595,27 @@ namespace Bloom.Book
 
         private void CopyMissingSoundFile(IPage templatePage, string attrName)
         {
-            var fileName = templatePage.GetDivNodeForThisPage().GetAttribute(attrName);
+            CopyMissingSoundFile(
+                templatePage.GetDivNodeForThisPage(),
+                attrName,
+                templatePage.Book.FolderPath
+            );
+        }
+
+        private void CopyMissingSoundFile(
+            SafeXmlElement sourceElt,
+            string attrName,
+            string templateBookFolderPath
+        )
+        {
+            var fileName = sourceElt.GetAttribute(attrName);
             if (string.IsNullOrEmpty(fileName))
                 return;
             var destPath = Path.Combine(FolderPath, "audio", fileName);
             if (RobustFile.Exists(destPath))
                 return;
-            var sourcePath = Path.Combine(templatePage.Book.FolderPath, "audio", fileName);
+
+            var sourcePath = Path.Combine(templateBookFolderPath, "audio", fileName);
             Directory.CreateDirectory(Path.GetDirectoryName(destPath));
             if (RobustFile.Exists(sourcePath))
                 RobustFile.Copy(sourcePath, destPath);

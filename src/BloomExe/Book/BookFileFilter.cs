@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Bloom.SafeXml;
 using Bloom.ToPalaso;
 using SIL.IO;
 using SIL.Xml;
@@ -278,6 +279,8 @@ namespace Bloom.Book
                 {
                     if (NarrationFiles.Contains(path[1]))
                         return true;
+                    if (IncludeFilesNeededForBloomPlayer && SpecialAudioFiles.Contains(path[1]))
+                        return true;
                     return WantMusic && MusicFiles.Contains(path[1]);
                 }
                 if (path[0] == "video" && path.Length == 2 && WantVideo)
@@ -298,6 +301,7 @@ namespace Bloom.Book
 
         private HashSet<string> _narrationFiles;
         private string[] _narrationLanguages = Array.Empty<string>();
+        private HashSet<string> _specialAudioFiles;
 
         HashSet<string> NarrationFiles
         {
@@ -335,6 +339,37 @@ namespace Bloom.Book
                 }
                 return _narrationFiles;
             }
+        }
+
+        HashSet<string> SpecialAudioFiles
+        {
+            get
+            {
+                if (_specialAudioFiles == null)
+                {
+                    _specialAudioFiles = new HashSet<string>();
+                    foreach (
+                        SafeXmlElement soundElt in Dom.Body.SafeSelectNodes(".//div[@data-sound]")
+                    )
+                    {
+                        _specialAudioFiles.Add(soundElt.GetAttribute("data-sound"));
+                    }
+
+                    foreach (var page in Dom.GetPageElements())
+                    {
+                        AddAttrValueToSet(page, "data-correct-sound", _specialAudioFiles);
+                        AddAttrValueToSet(page, "data-wrong-sound", _specialAudioFiles);
+                    }
+                }
+                return _specialAudioFiles;
+            }
+        }
+
+        void AddAttrValueToSet(SafeXmlElement elt, string attrName, HashSet<string> set)
+        {
+            var value = elt.GetAttribute(attrName);
+            if (value != null)
+                set.Add(value);
         }
 
         private HashSet<string> _musicFiles;
