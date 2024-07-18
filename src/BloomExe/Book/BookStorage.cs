@@ -95,7 +95,7 @@ namespace Bloom.Book
         string Duplicate();
         IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav);
         IEnumerable<string> GetBackgroundMusicFileNamesReferencedInBook();
-        string GetSupportingFile(string relativePath);
+        string GetSupportingFile(string relativePath, bool useInstalledBranding = false);
         void EnsureOriginalTitle();
         bool LinkToLocalCollectionStyles { get; set; }
 
@@ -252,11 +252,18 @@ namespace Bloom.Book
         private string _cachedFolderPath;
         private string _cachedPathToHtml;
 
-        public string GetSupportingFile(string relativePath)
+        public string GetSupportingFile(string relativePath, bool useInstalledBranding = false)
         {
-            var localPath = Path.Combine(FolderPath, relativePath);
+            if (useInstalledBranding && relativePath == "branding.css")
+            {
+                return BloomFileLocator.GetOptionalBrandingFile(
+                    _collectionSettings.BrandingProjectKey,
+                    "branding.css"
+                );
+            }
             if (BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(relativePath))
             {
+                var localPath = Path.Combine(FolderPath, relativePath);
                 if (RobustFile.Exists(localPath))
                 {
                     return localPath;
@@ -2853,7 +2860,10 @@ namespace Bloom.Book
                 // var documentTime = RobustFile.GetLastWriteTimeUtc(documentPath);
                 if (Platform.IsWindows) // See BL-13577.
                 {
-                    if (sourcePathIncludingFileName.ToLowerInvariant() == documentPath.ToLowerInvariant())
+                    if (
+                        sourcePathIncludingFileName.ToLowerInvariant()
+                        == documentPath.ToLowerInvariant()
+                    )
                         return; // no point in trying to update self!
                 }
                 else
@@ -3766,10 +3776,14 @@ namespace Bloom.Book
 
             if (!justOldCustomFiles)
             {
+                // We want to check the branding.css file from the Bloom installation, not the one in the book folder.
+                // The one in the book folder may still be from a previous version of Bloom.
+                // After the compatibility check, we will copy the one from the Bloom installation into the book folder.
+                // (xmatter below follows a similar pattern since GetSupportFile always returns the installed xmatter.)
                 result.Add(
                     Tuple.Create(
-                        GetSupportingFile("branding.css"),
-                        GetSupportingFileString("branding.css")
+                        GetSupportingFile("branding.css", useInstalledBranding: true),
+                        GetSupportingFileString("branding.css", useInstalledBranding: true)
                     )
                 );
                 result.Add(
@@ -3796,11 +3810,11 @@ namespace Bloom.Book
             return result.ToArray();
         }
 
-        private string GetSupportingFileString(string file)
+        private string GetSupportingFileString(string file, bool useInstalledBranding = false)
         {
             // Do the search for the file that UpdateSupportingFiles will copy into the book
             // folder, since this is called BEFORE we do that.
-            var path = GetSupportingFile(file);
+            var path = GetSupportingFile(file, useInstalledBranding);
             if (RobustFile.Exists(path))
                 return RobustFile.ReadAllText(path);
             return null;
