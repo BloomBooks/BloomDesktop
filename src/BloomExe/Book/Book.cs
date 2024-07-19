@@ -725,7 +725,9 @@ namespace Bloom.Book
             // Seems safest to make a list so we're not modifying the document while iterating through it.
             var pagesToDelete = new List<SafeXmlElement>();
             foreach (
-                SafeXmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
+                SafeXmlElement node in bookDom.SafeSelectNodes(
+                    "//div[contains(@class, 'bloom-page')]"
+                )
             )
             {
                 if (pageSelectingPredicate(node))
@@ -1504,7 +1506,9 @@ namespace Bloom.Book
             var layoutOfThisBook = GetLayout();
             var bookPath = BloomFileLocator.GetFactoryBookTemplateDirectory(updateTo.Path);
             var templateDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
-            var newPage = templateDoc.SafeSelectNodes("//div[@id='" + updateTo.Guid + "']")[0] as SafeXmlElement;
+            var newPage =
+                templateDoc.SafeSelectNodes("//div[@id='" + updateTo.Guid + "']")[0]
+                as SafeXmlElement;
             var classesToDrop = new[]
             {
                 "imageWholePage",
@@ -2109,7 +2113,9 @@ namespace Bloom.Book
             const string classNoStyleMods = "bloom-userCannotModifyStyles";
             const string classNoAudio = "bloom-noAudio";
 
-            var questionNodes = bookDOM.Body.SafeSelectNodes("//div[contains(@class,'quizContents')]");
+            var questionNodes = bookDOM.Body.SafeSelectNodes(
+                "//div[contains(@class,'quizContents')]"
+            );
             foreach (SafeXmlElement quizContentsElement in questionNodes)
             {
                 if (!quizContentsElement.HasClass("bloom-noAudio")) // Needs migration
@@ -2965,7 +2971,9 @@ namespace Bloom.Book
         public bool HasFullAudioCoverage()
         {
             // REVIEW: should any of the xmatter pages be checked (front cover, title, credits?)
-            foreach (var divWantPage in RawDom.SafeSelectNodes("//div[@class]").Cast<SafeXmlElement>())
+            foreach (
+                var divWantPage in RawDom.SafeSelectNodes("//div[@class]").Cast<SafeXmlElement>()
+            )
             {
                 if (!divWantPage.HasClass("numberedPage"))
                     continue;
@@ -3365,7 +3373,10 @@ namespace Bloom.Book
         {
             //review: could move to page
             var pageElement = OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv);
-            Require.That(pageElement != null, "FindPageDiv could not find page: " + page.XPathToDiv);
+            Require.That(
+                pageElement != null,
+                "FindPageDiv could not find page: " + page.XPathToDiv
+            );
 
             return pageElement as SafeXmlElement;
         }
@@ -3680,11 +3691,7 @@ namespace Bloom.Book
 
         private void CopyAndRenameAudioFiles(SafeXmlElement newpageDiv, string sourceBookFolder)
         {
-            foreach (
-                var audioElement in HtmlDom
-                    .SelectRecordableDivOrSpans(newpageDiv)
-                    .ToList()
-            )
+            foreach (var audioElement in HtmlDom.SelectRecordableDivOrSpans(newpageDiv).ToList())
             {
                 var oldId = audioElement.GetAttribute("id");
                 var id = HtmlDom.SetNewHtmlIdValue(audioElement);
@@ -3713,11 +3720,7 @@ namespace Bloom.Book
 
         private void CopyAndRenameVideoFiles(SafeXmlElement newpageDiv, string sourceBookFolder)
         {
-            foreach (
-                var source in newpageDiv
-                    .SafeSelectNodes(".//video/source")
-                    .ToList()
-            )
+            foreach (var source in newpageDiv.SafeSelectNodes(".//video/source").ToList())
             {
                 var src = source.GetAttribute("src");
                 // old source may have a param, too, but we don't currently need to keep it.
@@ -4229,8 +4232,7 @@ namespace Bloom.Book
                     )
                 )
                 {
-                    var importedPage = (SafeXmlElement)
-                        printingDom.RawDom.ImportNode(pageDiv, true);
+                    var importedPage = (SafeXmlElement)printingDom.RawDom.ImportNode(pageDiv, true);
 
                     if (!String.IsNullOrWhiteSpace(importedPage.GetAttribute("data-page-number")))
                     {
@@ -4360,7 +4362,9 @@ namespace Bloom.Book
             var language1Tag = Language1Tag;
             var language2Tag = Language2Tag;
             var language3Tag = Language3Tag;
-            foreach (SafeXmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+            foreach (
+                SafeXmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+            )
             {
                 TranslationGroupManager.PrepareElementsInPageOrDocument(div, _bookData);
                 TranslationGroupManager.UpdateContentLanguageClasses(
@@ -5065,7 +5069,9 @@ namespace Bloom.Book
         public void SetAnimationDurationsFromAudioDurations()
         {
             foreach (
-                SafeXmlElement page in RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                SafeXmlElement page in RawDom.SafeSelectNodes(
+                    "//div[contains(@class,'bloom-page')]"
+                )
             )
             {
                 // For now we only apply this to the first image container.
