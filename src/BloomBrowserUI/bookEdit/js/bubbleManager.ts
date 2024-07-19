@@ -307,11 +307,15 @@ export class BubbleManager {
         // can only have one of three types of content and each are mutually exclusive.
         // bloom-editable or bloom-videoContainer or bloom-imageContainer. It doesn't even really
         // matter which order we look for them.
-        let focusableDivs = Array.from(
+        const editables = Array.from(
             overPictureContainerElement.getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             )
-        ).filter(
+        );
+        let focusableDivs = editables
+            // At least in Bloom games, some elements with visibility code on are nevertheless hidden
+            .filter(e => !EditableDivUtils.isInHiddenLanguageBlock(e));
+        focusableDivs = focusableDivs.filter(
             el =>
                 !(
                     el.parentElement!.classList.contains("box-header-off") ||
@@ -325,7 +329,7 @@ export class BubbleManager {
                 overPictureContainerElement.getElementsByClassName(
                     kVideoContainerClass
                 )
-            );
+            ).filter(x => !EditableDivUtils.isInHiddenLanguageBlock(x));
         }
         if (focusableDivs.length === 0) {
             // This could be a bit tricky, since the whole canvas is in a 'bloom-imageContainer'.
@@ -335,7 +339,7 @@ export class BubbleManager {
                 overPictureContainerElement.getElementsByClassName(
                     kImageContainerClass
                 )
-            );
+            ).filter(x => !EditableDivUtils.isInHiddenLanguageBlock(x));
         }
         return focusableDivs;
     }
@@ -410,9 +414,11 @@ export class BubbleManager {
         // the first image.
         // todo: make sure comical is turned on for the right parent, in case there's more than one
         // image on the page?
-        const overPictureElements: HTMLElement[] = Array.from(
-            document.getElementsByClassName(kTextOverPictureClass) as any
-        );
+        const overPictureElements = Array.from(
+            document.getElementsByClassName(kTextOverPictureClass)
+        ).filter(
+            x => !EditableDivUtils.isInHiddenLanguageBlock(x)
+        ) as HTMLElement[];
         if (overPictureElements.length > 0) {
             this.activeElement = overPictureElements[
                 overPictureElements.length - 1

@@ -61,9 +61,17 @@
         <source xml:lang="en">Fixed In Place</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableShape" translate="no">
+        <source xml:lang="en">Draggable Shape</source>
+        <note>ID: EditTab.Toolbox.DragActivity.DraggableShape</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions" translate="no">
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.FixedShape" translate="no">
+        <source xml:lang="en">Fixed Shape</source>
+        <note>ID: EditTab.Toolbox.DragActivity.FixedShape</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Instructions" translate="no">
         <source xml:lang="en">Instructions</source>
@@ -72,6 +80,10 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.InstructionsOrLabels" translate="no">
         <source xml:lang="en">Instructions or other labels</source>
         <note>ID: EditTab.Toolbox.DragActivity.InstructionsOrLabels</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.Item" translate="no">
+        <source xml:lang="en">Item:</source>
+        <note>ID: EditTab.Toolbox.DragActivity.Item</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter" translate="no">
         <source xml:lang="en">M</source>
@@ -107,10 +119,10 @@
         <source xml:lang="en">Selected element is part of right answer</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled" translate="no">
+      <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled" translate="no">
         <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled</note>
-      </trans-unit>
+      </trans-unit-->
       <trans-unit id="EditTab.Toolbox.DragActivity.Play" translate="no">
         <source xml:lang="en">Play</source>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>

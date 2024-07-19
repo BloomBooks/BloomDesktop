@@ -41,9 +41,9 @@ namespace BloomTests.Book
             _otherHtmlPath = Path.Combine(_normalBookFolderPath, "other.html");
             var normalHtmlContent =
                 $@"<html><head></head><body>
-					<div class='bloom-page numberedPage' id='page1' data-page-number='1' data-backgroundaudio='Abcdefg.mp3'>
+					<div class='bloom-page numberedPage' id='page1' data-page-number='1' data-backgroundaudio='Abcdefg.mp3' data-correct-sound='right.mp3' data-wrong-sound='bad.mp3'>
 						<div class='marginBox'>
-							<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+							<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-sound='playme.mp3'>
 	                            <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" style=""min-height: 44px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" lang=""akl"" contenteditable=""true"" data-languagetipcontent=""Aklanon"" data-audiorecordingmode=""Sentence"">
 	                                <p><span id=""i1083a390-c1ef-41d2-a55d-815eacb5c08c"" class=""audio-sentence"" recordingmd5=""5b5efdab7f705554614a6383ae6d9469"" data-duration=""3.004082"">This is some akl data</span></p>
 	                            </div>
@@ -231,6 +231,30 @@ namespace BloomTests.Book
         {
             Assert.That(_normalFilter.FilterRelative("something.md"), Is.False);
             Assert.That(_filterForEdit.FilterRelative("something.md"), Is.True);
+        }
+
+        [Test]
+        public void Filter_ForBloomPlayer_PassesSpecialAudioFiles()
+        {
+            Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "right.mp3")), Is.False);
+            Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "wrong.mp3")), Is.False);
+            Assert.That(
+                _normalFilter.FilterRelative(Path.Combine("audio", "playme.mp3")),
+                Is.False
+            );
+
+            Assert.That(
+                _filterForInteractive.FilterRelative(Path.Combine("audio", "right.mp3")),
+                Is.True
+            );
+            Assert.That(
+                _filterForInteractive.FilterRelative(Path.Combine("audio", "bad.mp3")),
+                Is.True
+            );
+            Assert.That(
+                _filterForInteractive.FilterRelative(Path.Combine("audio", "playme.mp3")),
+                Is.True
+            );
         }
 
         // For this we need a BookStorage. Possibly make a new constructor that just initializes the DOM, which is all many methods need.

@@ -147,6 +147,11 @@ export function prepareActivity(
         elt.addEventListener("click", showCorrect);
     });
 
+    const soundItems = Array.from(page.querySelectorAll("[data-sound]"));
+    soundItems.forEach((elt: HTMLElement) => {
+        elt.addEventListener("click", playSoundOf);
+    });
+
     prepareOrderSentenceActivity(page);
 
     // Slider:     // for drag-word-chooser-slider
@@ -233,6 +238,11 @@ export function undoPrepareActivity(page: HTMLElement) {
         elt.removeEventListener("click", performTryAgain);
     });
 
+    const soundItems = Array.from(page.querySelectorAll("[data-sound]"));
+    soundItems.forEach((elt: HTMLElement) => {
+        elt.removeEventListener("click", playSoundOf);
+    });
+
     Array.from(
         page.getElementsByClassName("drag-item-random-sentence")
     ).forEach((elt: HTMLElement) => {
@@ -244,6 +254,14 @@ export function undoPrepareActivity(page: HTMLElement) {
     //     img.removeEventListener("click", clickSliderImage);
     // });
 }
+
+const playSoundOf = (e: MouseEvent) => {
+    const elt = e.currentTarget as HTMLElement;
+    const soundFile = elt.getAttribute("data-sound");
+    if (soundFile) {
+        playSound(elt, soundFile);
+    }
+};
 
 const playAudioOfTarget = (e: PointerEvent) => {
     const target = e.currentTarget as HTMLElement;
@@ -590,27 +608,30 @@ function showCorrectOrWrongItems(page: HTMLElement, correct: boolean) {
         playAllVideo(videoElements, () => playAllAudio(playables, page));
     };
     if (soundFile) {
-        const audio = new Audio(urlPrefix() + "/audio/" + soundFile);
-        audio.style.visibility = "hidden";
-        // To my surprise, in BP storybook it works without adding the audio to any document.
-        // But in Bloom proper, it does not. I think it is because this code is part of the toolbox,
-        // so the audio element doesn't have the right context to interpret the relative URL.
-        page.append(audio);
-        // It feels cleaner if we remove it when done. This could fail, e.g., if the user
-        // switches tabs or pages before we get done playing. Removing it immediately
-        // prevents the sound being played. It's not a big deal if it doesn't get removed.
-        audio.play();
-        audio.addEventListener(
-            "ended",
-            () => {
-                page.removeChild(audio);
-                playOtherStuff();
-            },
-            { once: true }
-        );
+        playSound(page, soundFile);
     } else {
         playOtherStuff();
     }
+}
+
+function playSound(someElt: HTMLElement, soundFile: string) {
+    const audio = new Audio(urlPrefix() + "/audio/" + soundFile);
+    audio.style.visibility = "hidden";
+    // To my surprise, in BP storybook it works without adding the audio to any document.
+    // But in Bloom proper, it does not. I think it is because this code is part of the toolbox,
+    // so the audio element doesn't have the right context to interpret the relative URL.
+    someElt.append(audio);
+    audio.play();
+    // It feels cleaner if we remove it when done. This could fail, e.g., if the user
+    // switches tabs or pages before we get done playing. Removing it immediately
+    // prevents the sound being played. It's not a big deal if it doesn't get removed.
+    audio.addEventListener(
+        "ended",
+        () => {
+            someElt.removeChild(audio);
+        },
+        { once: true }
+    );
 }
 
 function checkDraggables(page: HTMLElement) {

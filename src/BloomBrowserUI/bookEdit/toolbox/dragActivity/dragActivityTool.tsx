@@ -5,14 +5,14 @@ import ReactDOM = require("react-dom");
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { kDragActivityToolId } from "../toolIds";
 //import Tabs from "@mui/material/Tabs";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     kBloomBlue,
     kOptionPanelBackgroundColor,
     toolboxTheme
 } from "../../../bloomMaterialUITheme";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
-import { Div } from "../../../react_components/l10nComponents";
+import { Div, Span } from "../../../react_components/l10nComponents";
 import {
     OverlayGifItem,
     OverlayImageItem,
@@ -521,29 +521,37 @@ const stopDraggingTarget = (e: MouseEvent) => {
     page.removeEventListener("mousemove", dragTarget);
 };
 
-// An element that displays a triangle and optionally a title next to it,
+// An earlier version used TriangleCollapse to display a triangle and optionally a title next to it,
 // where the triangle can be clicked to collapse or expand the main content.
-// If a different title is not supplied, it will use a localized form of "Instructions".
+// If a different title is not supplied, it used a localized form of "Instructions".
+// Later we decided to show the instructions all the time, without the heading.
 const Instructions: React.FunctionComponent<{
     l10nKey: string;
     l10nTitleKey?: string;
 }> = props => {
     return (
-        <TriangleCollapse
+        <Div
             css={css`
-                padding-left: 5px;
+                margin-top: 5px;
+                font-style: italic;
             `}
-            initiallyOpen={true}
-            labelL10nKey={
-                props.l10nTitleKey ??
-                "EditTab.Toolbox.DragActivity.Instructions"
-            }
-            indented={true}
-        >
-            <Div
-                l10nKey={"EditTab.Toolbox.DragActivity." + props.l10nKey}
-            ></Div>
-        </TriangleCollapse>
+            l10nKey={"EditTab.Toolbox.DragActivity." + props.l10nKey}
+        ></Div>
+        // <TriangleCollapse
+        //     css={css`
+        //         padding-left: 5px;
+        //     `}
+        //     initiallyOpen={true}
+        //     labelL10nKey={
+        //         props.l10nTitleKey ??
+        //         "EditTab.Toolbox.DragActivity.Instructions"
+        //     }
+        //     indented={true}
+        // >
+        //     <Div
+        //         l10nKey={"EditTab.Toolbox.DragActivity." + props.l10nKey}
+        //     ></Div>
+        // </TriangleCollapse>
     );
 };
 
@@ -603,13 +611,13 @@ const getSoundFilesAsync = async (prefix: string): Promise<string[]> => {
     return result.data.files as string[];
 };
 
-const getSoundOptionsAsync = async (
+const getSoundOptions = (
     prefix: string,
     files: string[],
     current: string,
     noneLabel: string,
     chooseLabel: string
-): Promise<{ label: string; id: string; divider: boolean }[]> => {
+): { label: string; id: string; divider: boolean }[] => {
     const soundOptions = [{ label: noneLabel, id: "none", divider: false }];
     const idToLabel = label =>
         label
@@ -628,8 +636,9 @@ const getSoundOptionsAsync = async (
     soundOptions.push({ label: chooseLabel, id: "choose", divider: false });
 
     if (
+        current !== "none" &&
         soundOptions.find(opt => opt.id === prefix + "-" + current) ===
-        undefined
+            undefined
     ) {
         soundOptions.splice(0, 0, {
             label: idToLabel(current),
@@ -770,8 +779,6 @@ const DragActivityControls: React.FunctionComponent<{
                 return;
             }
 
-            const correctSound = page.getAttribute("data-correct-sound");
-            const wrongSound = page.getAttribute("data-wrong-sound");
             setAllItemsSameSize(
                 page.getAttribute("data-same-size") !== "false"
             );
@@ -781,18 +788,14 @@ const DragActivityControls: React.FunctionComponent<{
             setShowAnswersInTargets(
                 page.getAttribute("data-show-answers-in-targets") === "true"
             );
-            theOneLocalizationManager
-                .asyncGetText("EditTab.Toolbox.DragActivity.None", "None", "")
-                .then(none => {
-                    setCorrectSound(correctSound || none);
-                    setWrongSound(wrongSound || none);
-                });
+            setCorrectSound(page.getAttribute("data-correct-sound") || "none");
+            setWrongSound(page.getAttribute("data-wrong-sound") || "none");
             setActivityType(page.getAttribute("data-activity") ?? "");
         };
         getStateFromPage();
     }, [props.pageGeneration]);
 
-    const showDialogToChooseSoundFileAsync = async forCorrect => {
+    const showDialogToChooseSoundFileAsync = async (soundType: SoundType) => {
         const result = await postJson("fileIO/chooseFile", {
             // Todo: use something with a callback that can't timeout
             title: "Choose Sound File", // Todo: localize
@@ -808,15 +811,11 @@ const DragActivityControls: React.FunctionComponent<{
         if (!result || !result.data) {
             return;
         }
+
         const page = getPage();
         setSoundFolder(result.data);
-        if (forCorrect) {
-            setCorrectSound(result.data);
-            page.setAttribute("data-correct-sound", result.data);
-        } else {
-            setWrongSound(result.data);
-            page.setAttribute("data-wrong-sound", result.data);
-        }
+        const copyBuiltIn = false; // already copied, and not in our sounds folder
+        setSound(soundType, result.data, copyBuiltIn);
         playSound(result.data, page);
     };
 
@@ -831,31 +830,61 @@ const DragActivityControls: React.FunctionComponent<{
         getSoundFilesAsync("correct").then(setCorrectFiles);
         getSoundFilesAsync("wrong").then(setWrongFiles);
     }, []);
+    // If we decide to have some built-in ones, these can be obtained like correctFiles and wrongFiles,
+    // with a new prefix. (useMemo is to prevent [] being a new and hence changed object on each render)
+    const imageFiles: string[] = useMemo(() => [], []);
 
-    const [correctSoundOptions, setCorrectSoundOptions] = useState<
-        { label: string; id: string; divider: boolean }[]
-    >([]);
-    const [wrongSoundOptions, setWrongSoundOptions] = useState<
-        { label: string; id: string; divider: boolean }[]
-    >([]);
+    const correctSoundOptions = useMemo(
+        () =>
+            getSoundOptions(
+                "correct",
+                correctFiles,
+                correctSound,
+                noneLabel,
+                chooseLabel
+            ),
+        [correctFiles, correctSound, noneLabel, chooseLabel]
+    );
+    const wrongSoundOptions = useMemo(
+        () =>
+            getSoundOptions(
+                "wrong",
+                wrongFiles,
+                wrongSound,
+                noneLabel,
+                chooseLabel
+            ),
+        [wrongFiles, wrongSound, noneLabel, chooseLabel]
+    );
+    const [imageSound, setImageSound] = useState("none");
     useEffect(() => {
-        getSoundOptionsAsync(
-            "correct",
-            correctFiles,
-            correctSound,
-            noneLabel,
-            chooseLabel
-        ).then(setCorrectSoundOptions);
-    }, [correctFiles, correctSound, noneLabel, chooseLabel]);
-    useEffect(() => {
-        getSoundOptionsAsync(
-            "wrong",
-            wrongFiles,
-            wrongSound,
-            noneLabel,
-            chooseLabel
-        ).then(setWrongSoundOptions);
-    }, [wrongFiles, wrongSound, noneLabel, chooseLabel]);
+        setImageSound(
+            currentBubbleElement?.getAttribute("data-sound") ?? "none"
+        );
+    }, [currentBubbleElement]);
+    const imageSoundOptions = useMemo(
+        () =>
+            getSoundOptions(
+                "image",
+                imageFiles,
+                imageSound,
+                noneLabel,
+                chooseLabel
+            ),
+        [imageFiles, imageSound, noneLabel, chooseLabel]
+    );
+
+    // Currently we only allow associating an extra audio with images (and gifs), which have
+    // no other audio (except possibly image descriptions?). If we get an actual user request
+    // it may be clearer how attaching one to a text or video would work, given that they
+    // can already have narration or an audio channel.
+    const canChooseAudioForElement = useMemo(
+        () =>
+            currentBubbleElement &&
+            currentBubbleElement.getElementsByClassName("bloom-imageContainer")
+                .length > 0,
+        [currentBubbleElement]
+    );
 
     // const [dragObjectType, setDragObjectType] = useState("text");
     // Todo: something has to call setDragObjectType when a draggable is selected.
@@ -867,47 +896,73 @@ const DragActivityControls: React.FunctionComponent<{
     //     titleId = "EditTab.Toolbox.DragActivity.OrderCircle";
     // }
 
-    const onSoundItemChosen = (forCorrect: boolean, newSoundId: string) => {
+    const onSoundItemChosen = (soundType: SoundType, newSoundId: string) => {
         if (newSoundId === "choose") {
-            showDialogToChooseSoundFileAsync(forCorrect);
+            showDialogToChooseSoundFileAsync(soundType);
             return;
         }
         if (
-            (newSoundId === correctSound && forCorrect) ||
-            (newSoundId === wrongSound && !forCorrect)
+            (newSoundId === correctSound && soundType === "correct") ||
+            (newSoundId === wrongSound && soundType === "wrong") ||
+            (newSoundId === imageSound && soundType === "image")
         ) {
             // Nothing is changing; also, we don't want to try to copy the sound file again, especially if it
             // is a user-chosen one that we won't find in our sounds folder.
             return;
         }
+        const copyBuiltIn = true; // built-in sound needs to be copied to the book's audio folder
+        setSound(soundType, newSoundId, copyBuiltIn);
+    };
+    const setSound = (
+        soundType: SoundType,
+        newSoundId: string,
+        copyBuiltIn: boolean
+    ) => {
         const page = getPage();
-        if (forCorrect) {
-            setCorrectSound(newSoundId);
-            if (newSoundId === "none") {
-                page.removeAttribute("data-correct-sound");
-            } else {
-                page.setAttribute("data-correct-sound", newSoundId);
-            }
-        } else {
-            setWrongSound(newSoundId);
-            if (newSoundId === "none") {
-                page.removeAttribute("data-wrong-sound");
-            } else {
-                page.setAttribute("data-wrong-sound", newSoundId);
-            }
+        switch (soundType) {
+            case "correct":
+                setCorrectSound(newSoundId);
+                if (newSoundId === "none") {
+                    page.removeAttribute("data-correct-sound");
+                } else {
+                    page.setAttribute("data-correct-sound", newSoundId);
+                }
+                break;
+            case "wrong":
+                setWrongSound(newSoundId);
+                if (newSoundId === "none") {
+                    page.removeAttribute("data-wrong-sound");
+                } else {
+                    page.setAttribute("data-wrong-sound", newSoundId);
+                }
+                break;
+            case "image":
+                setImageSound(newSoundId);
+                if (!currentBubbleElement) {
+                    return;
+                }
+                if (newSoundId === "none") {
+                    currentBubbleElement.removeAttribute("data-sound");
+                } else {
+                    currentBubbleElement.setAttribute("data-sound", newSoundId);
+                }
+                break;
         }
         if (newSoundId !== "none") {
             // I think this can be fire-and-forget. But if you add something else that
             // needs the file to be there,you should await this, or add it to copyAndPlaySound.
-            copyAndPlaySoundAsync(newSoundId, page);
+            copyAndPlaySoundAsync(newSoundId, page, copyBuiltIn);
         }
     };
 
     const copyAndPlaySoundAsync = async (
         newSoundId: string,
-        page: HTMLElement
+        page: HTMLElement,
+        copyBuiltIn: boolean
     ) => {
-        await copyBuiltInSoundAsync(newSoundId);
+        if (copyBuiltIn) {
+            await copyBuiltInSoundAsync(newSoundId);
+        }
         playSound(newSoundId, page);
     };
 
@@ -1015,6 +1070,7 @@ const DragActivityControls: React.FunctionComponent<{
     const anyDraggables = activityType !== "drag-sort-sentence";
     // Does this activity type have a row of options buttons in Start mode?
     const anyOptions = anyDraggables; // but they might diverge as we do more?
+    const anyItemOptions = currentBubbleTargetId || canChooseAudioForElement;
     // which controls to show?
     const showLetterDraggable =
         activityType !== "drag-word-chooser-slider" &&
@@ -1221,37 +1277,7 @@ const DragActivityControls: React.FunctionComponent<{
                                     <img src="images/Show Targets During Play.svg"></img>
                                 </div>
                             </BloomTooltip>
-                            <BloomTooltip
-                                // enable if there's an active bubble that has a data-bubble-id indicating it is draggable in Play mode
-                                // Don't disable pointer events because we need them to get the disabled tooltip.
-                                css={css`
-                                    ${currentBubbleTargetId
-                                        ? ""
-                                        : "opacity:0.4; "}
-                                `}
-                                showDisabled={!currentBubbleTargetId}
-                                id="partOfRightAnswer"
-                                placement="top-end"
-                                tip={
-                                    <Div l10nKey="EditTab.Toolbox.DragActivity.PartOfRightAnswer"></Div>
-                                }
-                                tipWhenDisabled={{
-                                    l10nKey:
-                                        "EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled",
-                                    english:
-                                        "Disabled…nothing that could be part of the answer is selected"
-                                }}
-                            >
-                                <div
-                                    // it's part of the right answer iff it has a target
-                                    css={css`
-                                        ${optionCss(currentBubbleTarget)}
-                                    `}
-                                    onClick={toggleIsPartOfRightAnswer}
-                                >
-                                    <img src="images/Is part of right answer.svg"></img>
-                                </div>
-                            </BloomTooltip>
+
                             <BloomTooltip
                                 id="showAnswersInTargets"
                                 placement="top"
@@ -1275,7 +1301,7 @@ const DragActivityControls: React.FunctionComponent<{
 
             {props.activeTab === correctTabIndex && (
                 <CorrectWrongControls
-                    forCorrect={true}
+                    soundType="correct"
                     instructionsSubKey="CorrectInstructions"
                     whenTheAnswerIsSubKey="WhenCorrect"
                     classToAddToItems="drag-item-correct"
@@ -1289,7 +1315,7 @@ const DragActivityControls: React.FunctionComponent<{
             // but decided to build those in.
             props.activeTab === wrongTabIndex && (
                 <CorrectWrongControls
-                    forCorrect={false}
+                    soundType="wrong"
                     instructionsSubKey="WrongInstructions"
                     whenTheAnswerIsSubKey="WhenWrong"
                     classToAddToItems="drag-item-wrong"
@@ -1310,38 +1336,148 @@ const DragActivityControls: React.FunctionComponent<{
                 </div>
             )}
             {props.activeTab !== playTabIndex && (
-                <div
-                    css={css`
-                        display: flex;
-                        justify-content: space-between;
-                    `}
-                >
+                <div>
                     <div
-                        title={deleteTooltip}
                         css={css`
-                            margin: 10px;
-                            ${disabledCss(currentBubbleElement)};
+                            display: flex;
+                            font-weight: bold;
+                            padding-top: 5px;
+                            border-top: 1px solid grey;
+                            margin: 0 5px 0 10px;
+                            font-size: larger;
                         `}
                     >
-                        <TrashIcon
-                            id="trashIcon"
-                            color="primary"
-                            onClick={() => deleteBubble()}
+                        <Span
+                            css={css`
+                                margin-right: 5px;
+                            `}
+                            l10nKey="EditTab.Toolbox.DragActivity.Item"
                         />
+                        {currentBubbleTargetId && (
+                            <Span l10nKey="EditTab.Toolbox.DragActivity.DraggableShape" />
+                        )}
+                        {currentBubbleElement && !currentBubbleTargetId && (
+                            <Span l10nKey="EditTab.Toolbox.DragActivity.FixedShape" />
+                        )}
                     </div>
                     <div
-                        title={duplicateTooltip}
                         css={css`
-                            margin: 10px;
-                            ${disabledCss(currentBubbleElement)};
+                            display: flex;
+                            justify-content: space-between;
                         `}
                     >
-                        <img
-                            className="duplicate-bubble-icon"
-                            src="/bloom/bookEdit/toolbox/overlay/duplicate-bubble.svg"
-                            onClick={() => makeDuplicateOfDragBubble()}
-                        />
+                        <div
+                            title={deleteTooltip}
+                            css={css`
+                                margin: 10px;
+                                ${disabledCss(currentBubbleElement)};
+                            `}
+                        >
+                            <TrashIcon
+                                id="trashIcon"
+                                color="primary"
+                                onClick={() => deleteBubble()}
+                            />
+                        </div>
+                        <div
+                            title={duplicateTooltip}
+                            css={css`
+                                margin: 10px;
+                                ${disabledCss(currentBubbleElement)};
+                            `}
+                        >
+                            <img
+                                className="duplicate-bubble-icon"
+                                src="/bloom/bookEdit/toolbox/overlay/duplicate-bubble.svg"
+                                onClick={() => makeDuplicateOfDragBubble()}
+                            />
+                        </div>
                     </div>
+                    {props.activeTab === startTabIndex && anyItemOptions && (
+                        <div
+                            css={css`
+                                margin-left: 10px;
+                            `}
+                        >
+                            <Div
+                                css={css`
+                                    margin-top: 5px;
+                                `}
+                                l10nKey="EditTab.Toolbox.DragActivity.Options"
+                            ></Div>
+
+                            {// The tooltip is set up for display as disabled, but our latest theory
+                            // is that it's better not to show this control at all when it does not apply.
+                            currentBubbleTargetId && (
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        margin-top: 5px;
+                                    `}
+                                >
+                                    <BloomTooltip
+                                        // reinstate if we decide not to hid altogether if there's no targetId.
+                                        // enable if there's an active bubble that has a data-bubble-id indicating it is draggable in Play mode
+                                        // Don't disable pointer events because we need them to get the disabled tooltip.
+                                        // css={css`
+                                        //     ${currentBubbleTargetId
+                                        //         ? ""
+                                        //         : "opacity:0.4; "}
+                                        // `}
+                                        showDisabled={!currentBubbleTargetId}
+                                        id="partOfRightAnswer"
+                                        placement="top-end"
+                                        tip={
+                                            <Div l10nKey="EditTab.Toolbox.DragActivity.PartOfRightAnswer"></Div>
+                                        }
+                                        // If we decide not to hide it we might want to restore this and the corresponding
+                                        // element in BloomMediumPriority.xlf
+                                        // tipWhenDisabled={{
+                                        //     l10nKey:
+                                        //         "EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled",
+                                        //     english:
+                                        //         "Nothing that can be part of the right answer is selected"
+                                        // }}
+                                    >
+                                        <div
+                                            // it's part of the right answer iff it has a target
+                                            css={css`
+                                                ${optionCss(
+                                                    currentBubbleTarget
+                                                )}
+                                            `}
+                                            onClick={toggleIsPartOfRightAnswer}
+                                        >
+                                            <img src="images/Is part of right answer.svg"></img>
+                                        </div>
+                                    </BloomTooltip>
+                                </div>
+                            )}
+                            {canChooseAudioForElement && (
+                                <div
+                                    css={css`
+                                        margin-top: 5px;
+                                        display: flex;
+                                        ${disabledCss(
+                                            canChooseAudioForElement
+                                        )};
+                                        gap: 5px;
+                                    `}
+                                >
+                                    <img
+                                        width="24px"
+                                        src="/bloom/bookEdit/toolbox/music/speaker-volume.svg"
+                                    />
+                                    {soundSelect(
+                                        "image",
+                                        imageSoundOptions,
+                                        imageSound,
+                                        onSoundItemChosen
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
         </ThemeProvider>
@@ -1364,13 +1500,13 @@ const playAudioCss = css`
 `;
 
 const CorrectWrongControls: React.FunctionComponent<{
-    forCorrect: boolean;
+    soundType: SoundType;
     instructionsSubKey: string;
     whenTheAnswerIsSubKey: string;
     classToAddToItems: string;
     soundOptions: { label: string; id: string; divider: boolean }[];
     currentSound: string;
-    onSoundItemChosen: (fc: boolean, value: string) => void;
+    onSoundItemChosen: (soundType: SoundType, value: string) => void;
 }> = props => {
     return (
         <div>
@@ -1420,7 +1556,7 @@ const CorrectWrongControls: React.FunctionComponent<{
                 />
 
                 {soundSelect(
-                    props.forCorrect,
+                    props.soundType,
                     props.soundOptions,
                     props.currentSound,
                     props.onSoundItemChosen
@@ -1470,12 +1606,16 @@ const makeDuplicateOfDragBubble = () => {
     }
 };
 
-// Make a <Select> for choosing a sound file. The arguments allow reusing this both for the correct and wrong sound.
+// Three kinds of sound we can set with a dropdown.
+type SoundType = "correct" | "wrong" | "image";
+
+// Make a <Select> for choosing a sound file. The arguments allow reusing this for various sounds;
+// the "which" argument is only used to pass to the setValue function.
 const soundSelect = (
-    forCorrect: boolean,
+    soundType: SoundType,
     options: { label: string; id: string; divider: boolean }[],
     value: string,
-    setValue: (fc: boolean, value: string) => void
+    setValue: (soundType: SoundType, value: string) => void
 ) => {
     return (
         <Select
@@ -1528,7 +1668,7 @@ const soundSelect = (
             // }}
             onChange={event => {
                 const newSoundId = event.target.value as string;
-                setValue(forCorrect, newSoundId);
+                setValue(soundType, newSoundId);
             }}
             disabled={false}
         >
