@@ -1329,6 +1329,11 @@ namespace Bloom.Book
                     usedAudioFileNames.Add(correctSound);
                 if (wrongSound != null)
                     usedAudioFileNames.Add(wrongSound);
+                var dataSoundElts = dap.SafeSelectNodes(".//div[@data-sound]");
+                foreach (var ds in dataSoundElts)
+                {
+                    usedAudioFileNames.Add(ds.GetAttribute("data-sound"));
+                }
             }
 
             // Don't get too trigger-happy with the delete button if you're not in publish mode
