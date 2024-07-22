@@ -346,6 +346,7 @@ namespace Bloom.Collection
             copy.FontName = this.FontName;
             copy.BreaksLinesOnlyAtSpaces = this.BreaksLinesOnlyAtSpaces;
             copy.BaseUIFontSizeInPoints = this.BaseUIFontSizeInPoints;
+            copy.IsRightToLeft = this.IsRightToLeft;
             return copy;
         }
 
