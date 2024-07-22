@@ -3,13 +3,13 @@
         {
             "data-book": "copyright",
             "lang": "*",
-            "content": "Copyright © 2023 Ministerio de Educación de Guatemala y USAID",
+            "content": "Copyright © 2024 Ministerio de Educación de Guatemala y USAID",
             "condition": "always"
         },
         {
             "data-book": "credits-page-branding-top-html",
             "lang": "*",
-            "content": "<div class='credits-page-branding-top-block'><div class='credits-page-branding-top-logo-block'><div class='credits-page-branding-top-logo-left'><img class='branding' src='LOGO_MINEDUC_2023.svg'/></div><div class='credits-page-branding-top-logo-right'><img class='branding' src='USAID_Horiz_Spanish_CMYK.svg'/></div></div><div class='credits-page-branding-top-text-block' lang='en'><p>Este libro fue posible gracias al generoso apoyo del pueblo de los Estados Unidos, a través de la Agencia de los Estados Unidos para el Desarrollo Internacional (USAID). El contenido de este documento es responsabilidad de los autores y no necesariamente refleja el punto de vista de USAID o del gobierno de los Estados Unidos.</p><p>La producción de este libro fue realizada bajo el programa Educación Básica de Calidad para la Transición, de RTI International y USAID.</p></div></div>",
+            "content": "<div class='credits-page-branding-top-block'><div class='credits-page-branding-top-logo-block'><div class='credits-page-branding-top-logo-left'><img class='branding' src='MINEDUC-2024-2028.svg'/></div><div class='credits-page-branding-top-logo-right'><img class='branding' src='USAID_Horiz_Spanish_CMYK.svg'/></div></div><div class='credits-page-branding-top-text-block' lang='en'><p>Este libro fue posible gracias al generoso apoyo del pueblo de los Estados Unidos, a través de la Agencia de los Estados Unidos para el Desarrollo Internacional (USAID). El contenido de este documento es responsabilidad de los autores y no necesariamente refleja el punto de vista de USAID o del gobierno de los Estados Unidos.</p><p>La producción de este libro fue realizada bajo el programa Educación Básica de Calidad para la Transición, de RTI International y USAID.</p></div></div>",
             "condition": "always"
         },
         {
