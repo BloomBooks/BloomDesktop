@@ -767,7 +767,7 @@ export class BubbleManager {
     }
 
     // This should not return any .bloom-imageContainers that have imageContainer ancestors.
-    private getAllPrimaryImageContainersOnPage() {
+    public getAllPrimaryImageContainersOnPage() {
         const unfilteredContainers = document.getElementsByClassName(
             kImageContainerClass
         );

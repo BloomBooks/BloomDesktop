@@ -20,6 +20,7 @@ import {
     OverlayItemRow,
     OverlayTextItem,
     OverlayVideoItem,
+    adjustBubbleOrdering,
     setGeneratedBubbleId
 } from "../overlay/overlayItem";
 import {
@@ -680,12 +681,6 @@ const DragActivityControls: React.FunctionComponent<{
         "EditTab.Toolbox.DragActivity.ChooseSound",
         ""
     );
-    // Tooltips for the delete and duplicate buttons.
-    const deleteTooltip = useL10n("Delete", "Common.Delete");
-    const duplicateTooltip = useL10n(
-        "Duplicate",
-        "EditTab.Toolbox.ComicTool.Options.Duplicate"
-    );
 
     const bubbleManager = OverlayTool.bubbleManager();
     const currentBubbleElement = bubbleManager?.getActiveElement();
@@ -1344,7 +1339,7 @@ const DragActivityControls: React.FunctionComponent<{
                             font-weight: bold;
                             padding-top: 5px;
                             border-top: 1px solid grey;
-                            margin: 0 5px 0 10px;
+                            margin: 10px 5px 0 10px;
                             font-size: larger;
                         `}
                     >
@@ -1367,32 +1362,50 @@ const DragActivityControls: React.FunctionComponent<{
                             justify-content: space-between;
                         `}
                     >
-                        <div
-                            title={deleteTooltip}
+                        <BloomTooltip
+                            // This tooltip comes out nearly the full width of the toolbox, because of
+                            // a fixed-width setting for tooltips in our material-ui theme.
+                            // I tried changing it, but could not find a combination of settings
+                            // that works better. Without a fixed width, the tooltip tends to extend off
+                            // the screen and cause the toolbox to scroll horizontally. A fixed width
+                            // suitable for "Delete" would not work well for some localizations.
+                            id="delete"
+                            placement="top"
+                            tip={{ l10nKey: "Common.Delete" }}
                             css={css`
                                 margin: 10px;
                                 ${disabledCss(currentBubbleElement)};
                             `}
                         >
                             <TrashIcon
+                                css={css`
+                                    font-size: 35px;
+                                `}
                                 id="trashIcon"
                                 color="primary"
+                                fontSize="large"
                                 onClick={() => deleteBubble()}
                             />
-                        </div>
-                        <div
-                            title={duplicateTooltip}
+                        </BloomTooltip>
+                        <BloomTooltip
+                            id="duplicate"
+                            placement="top"
+                            tip={{
+                                l10nKey:
+                                    "EditTab.Toolbox.ComicTool.Options.Duplicate"
+                            }}
                             css={css`
                                 margin: 10px;
                                 ${disabledCss(currentBubbleElement)};
                             `}
                         >
                             <img
+                                height="30px"
                                 className="duplicate-bubble-icon"
                                 src="/bloom/bookEdit/toolbox/overlay/duplicate-bubble.svg"
                                 onClick={() => makeDuplicateOfDragBubble()}
                             />
-                        </div>
+                        </BloomTooltip>
                     </div>
                     {props.activeTab === startTabIndex && anyItemOptions && (
                         <div
@@ -1457,7 +1470,7 @@ const DragActivityControls: React.FunctionComponent<{
                             {canChooseAudioForElement && (
                                 <div
                                     css={css`
-                                        margin-top: 5px;
+                                        margin: 5px 10px 0 0;
                                         display: flex;
                                         ${disabledCss(
                                             canChooseAudioForElement
@@ -1800,6 +1813,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
             this.lastPageId = pageId;
             // useful during development, MAY not need in production.
             bubbleManager.removeDetachedTargets();
+            adjustBubbleOrdering();
 
             // Force things to Start tab as we change page.
             // If we decide not to do this, we should probably at least find a way to do it

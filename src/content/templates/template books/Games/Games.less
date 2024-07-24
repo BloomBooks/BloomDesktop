@@ -59,6 +59,7 @@
 
 .activeButton {
     opacity: 1;
+    pointer-events: unset;
 }
 
 //Slider: // The slider can go away at runtime once everything is correctly placed.
@@ -218,6 +219,9 @@
 .drag-activity-play {
     .bloom-textOverPicture[data-bubble-id] {
         z-index: @bubbleCanvasZIndex + 2;
+        &.bloom-ui-dragging {
+            z-index: @bubbleCanvasZIndex + 3;
+        }
     }
     // Buttons for editing images and formatting text should not show in test mode.
     // Review: should we instead make special cases in the code that makes these buttons?
@@ -344,12 +348,14 @@
     position: absolute;
     z-index: @imageEditingButtonZIndex;
     border-color: transparent;
+    pointer-events: none;
 }
 
 .game-button {
     height: 36px;
     width: 50px;
     opacity: 0.3;
+    pointer-events: none;
 }
 .page-turn-button {
     background-color: transparent;

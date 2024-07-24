@@ -465,6 +465,7 @@ const startDrag = (e: PointerEvent) => {
     target.addEventListener("pointerup", stopDrag);
     target.addEventListener("pointermove", elementDrag);
     playAudioOf(target);
+    target.classList.add("bloom-ui-dragging");
 };
 
 const elementDrag = (e: PointerEvent) => {
@@ -504,6 +505,7 @@ const stopDrag = (e: PointerEvent) => {
         dragTarget.style.top = oldPosition?.y + "px";
         dragTarget.style.left = oldPosition?.x + "px";
     }
+    dragTarget.classList.remove("bloom-ui-dragging");
     dragTarget.removeEventListener("pointerup", stopDrag);
     dragTarget.removeEventListener("pointermove", elementDrag);
 
