@@ -112,6 +112,7 @@ const kAudioCurrentClassSelector = "." + kAudioCurrent;
 const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
 const kBloomTranslationGroupClass = "bloom-translationGroup";
+const kBloomVisibleClass = "bloom-visibility-code-on";
 
 const kAudioSplitId = "audio-split";
 
@@ -567,12 +568,22 @@ export default class AudioRecording {
             return []; // shouldn't happen
         }
         const editableDivs = Array.from(
-            pageBody.querySelectorAll(
-                ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
+            // requiring the visible class reduces the filtering we need to do, but also,
+            // some elements (currently in Bloom Games) are visible as placeholders
+            // when the main element is empty, and we don't want to record those.
+            pageBody.getElementsByClassName(
+                kBloomEditableTextBoxClass + " " + kBloomVisibleClass
             ),
             elem => <HTMLElement>elem
         );
         const recordableDivs = editableDivs.filter(elt => {
+            if (elt.parentElement?.classList.contains("bloom-noAudio")) {
+                return false;
+            }
+            // Copies in game targets are not recordable
+            if (elt.closest("[data-target-of]")) {
+                return false;
+            }
             if (!$this.isVisible(elt, includeCheckForTempHidden)) {
                 return false;
             }
@@ -2943,19 +2954,7 @@ export default class AudioRecording {
         // Find the relevant audioSentences
         // Note that we check they're descendants of bloom-translationGroup
         // so that we exclude the qTip versions of these
-        const audioSentenceElems = Array.from(
-            pageDocBody.querySelectorAll(
-                `.bloom-translationGroup .${kAudioSentence}`
-            ),
-            elem => <HTMLElement>elem
-        );
-
-        const visibleAudioSentenceElems = audioSentenceElems.filter(elem => {
-            if (!this.isVisible(elem)) {
-                return false;
-            }
-            return true;
-        });
+        const visibleAudioSentenceElems = this.getAudioElements();
         const firstSentenceArray = this.sortByTabindex(
             visibleAudioSentenceElems
         );

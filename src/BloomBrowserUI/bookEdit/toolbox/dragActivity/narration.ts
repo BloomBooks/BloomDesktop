@@ -307,12 +307,19 @@ export function playAllAudio(elements: HTMLElement[], page: HTMLElement): void {
     }
 
     const firstElementToPlay = elementsToPlayConsecutivelyStack[stackSize - 1]; // Remember to pop it when you're done playing it. (i.e., in playEnded)
-    // I didn't comment this at the time, but my recollection is that making a new player
-    // each time helps with some cases where the old one was in a bad state,
-    // such as in the middle of pausing. Don't do this between setting highlight and playing, though,
+    // At one point it seemed to help something to delete the media player and make a new one each time.
+    // I didn't comment this at the time, but my recollection is that this could help with some cases
+    // where the old one was in a bad state, such as in the middle of pausing.
+    // Currently, though, we're being more careful not to pause except when there is nothing more to play currently,
+    // (or when the user clicks the button),
+    // since changing the src will stop any old play, but pausing right before setting a new src and calling play()
+    // can cause the play() to fail. And somehow, deleting the media player here before we set up for a new play
+    // was causing play to fail, reporting an abort because the media was removed from the document.
+    // I don't fully understand why that was happening, but for now, things seem to be working best by just
+    // continuing to use the same player as long as it can be found.
+    // For sure, don't delete the player and make a new one between setting highlight and playing,
     // or the handler that removes the highlight suppression will be lost.
-    const src = mediaPlayer.getAttribute("src") ?? "";
-    mediaPlayer.remove();
+    //mediaPlayer.remove();
 
     setSoundAndHighlight(firstElementToPlay, true);
     // Review: do we need to do something to let the rest of the world know about this?
@@ -1203,7 +1210,10 @@ export function computeDuration(page: HTMLElement): number {
 }
 
 export function hidingPage() {
-    pausePlaying(); // Doesn't set AudioPaused state.  Caller sets NewPage state.
+    // This causes problems. When we're hiding one page, we immediately show another.
+    // If that page has no audio, we pause the player then.
+    // If it DOES have audio, a pause here can interfere with playing it.
+    //pausePlaying(); // Doesn't set AudioPaused state.  Caller sets NewPage state.
     clearTimeout(fakeNarrationTimer);
 }
 
