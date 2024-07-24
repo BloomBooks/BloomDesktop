@@ -105,19 +105,22 @@ namespace Bloom.SafeXml
             lock (Lock)
                 return WrapNodes(WrappedDocument.GetElementsByTagName(name), this);
         }
+
         public override int GetHashCode()
         {
             lock (Lock)
                 return _wrappedNode.GetHashCode() + Lock.GetHashCode();
         }
 
-
         #region Additional Methods
 
         public SafeXmlElement GetOrCreateElement(string parentPath, string name)
         {
             lock (Lock)
-                return new SafeXmlElement(XmlUtils.GetOrCreateElement(WrappedDocument, parentPath, name), this);
+                return new SafeXmlElement(
+                    XmlUtils.GetOrCreateElement(WrappedDocument, parentPath, name),
+                    this
+                );
         }
 
         public string GetTitleOfHtml(string defaultIfMissing)

@@ -64,7 +64,11 @@ namespace Bloom.web.controllers
             // current book and other state.
             apiHandler.RegisterEndpointHandler("pageTemplates", HandleTemplatesRequest, true);
             // Being on the UI thread causes a deadlock on Linux/Mono.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3818.
-            apiHandler.RegisterEndpointHandler("pageTemplateThumbnail", HandleThumbnailRequest, false);
+            apiHandler.RegisterEndpointHandler(
+                "pageTemplateThumbnail",
+                HandleThumbnailRequest,
+                false
+            );
         }
 
         /// <summary>

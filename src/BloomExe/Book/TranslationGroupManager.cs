@@ -82,7 +82,9 @@ namespace Bloom.Book
             var findRestrictedFields =
                 "descendant-or-self::*[contains(@class,'bloom-translationGroup') and descendant::div[(@data-book='bookTitle' or @data-book='smallCoverCredits') and contains(@class,'bloom-editable')]]";
             foreach (
-                SafeXmlElement groupElement in pageOrDocumentNode.SafeSelectNodes(findRestrictedFields)
+                SafeXmlElement groupElement in pageOrDocumentNode.SafeSelectNodes(
+                    findRestrictedFields
+                )
             )
             {
                 foreach (var lang in languageCodes)
@@ -632,7 +634,11 @@ namespace Bloom.Book
             );
         }
 
-        private static void UpdateRightToLeftSetting(BookData bookData, SafeXmlElement e, string lang)
+        private static void UpdateRightToLeftSetting(
+            BookData bookData,
+            SafeXmlElement e,
+            string lang
+        )
         {
             HtmlDom.RemoveRtlDir(e);
             if (
@@ -894,10 +900,10 @@ namespace Bloom.Book
             )
                 return null;
 
-			SafeXmlElement prototype = null;
+            SafeXmlElement prototype = null;
             if (editableChildrenOfTheGroup.Length > 0)
-				prototype = editableChildrenOfTheGroup[0] as SafeXmlElement;
-			SafeXmlElement newElementInThisLanguage;
+                prototype = editableChildrenOfTheGroup[0] as SafeXmlElement;
+            SafeXmlElement newElementInThisLanguage;
             if (prototype == null) //this was an empty translation-group (unusual, but we can cope)
             {
                 newElementInThisLanguage = groupElement.OwnerDocument.CreateElement("div");

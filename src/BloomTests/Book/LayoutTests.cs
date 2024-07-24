@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace BloomTests.Book
 {
-	[TestFixture]
+    [TestFixture]
     public class LayoutTests
     {
         [Test]

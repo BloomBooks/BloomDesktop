@@ -139,7 +139,12 @@ namespace Bloom.Edit
                 false,
                 true
             );
-            apiHandler.RegisterEndpointHandler("audio/wavFile", HandleAudioFileRequest, false, true);
+            apiHandler.RegisterEndpointHandler(
+                "audio/wavFile",
+                HandleAudioFileRequest,
+                false,
+                true
+            );
 
             // Doesn't matter whether these are on UI thread or not, so using the old default which was true
             apiHandler.RegisterEndpointHandler(

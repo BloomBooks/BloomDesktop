@@ -1514,7 +1514,8 @@ namespace BloomTests.Book
             var bookData = new BookData(dom, _defaultCollectionSettings, null);
 
             BookStarter.SetupPage(
-                (SafeXmlElement)dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                (SafeXmlElement)
+                    dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
                 bookData
             );
             AssertThatXmlIn

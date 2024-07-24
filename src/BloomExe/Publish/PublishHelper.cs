@@ -240,7 +240,9 @@ namespace Bloom.Publish
                 elt.RemoveAttribute("contenteditable");
             }
 
-            foreach (var div in dom.Body.SafeSelectNodes("//div[@role='textbox']").Cast<SafeXmlElement>())
+            foreach (
+                var div in dom.Body.SafeSelectNodes("//div[@role='textbox']").Cast<SafeXmlElement>()
+            )
             {
                 div.RemoveAttribute("role"); // this isn't an editable textbox in an ebook
                 div.RemoveAttribute("aria-label"); // don't want this without a role
@@ -292,7 +294,9 @@ namespace Bloom.Publish
             // exists, it probably has a style attribute (position:fixed) that epubcheck won't like.
             // (fixed position way off the screen to hide it)
             foreach (
-                var div in dom.Body.SafeSelectNodes("//*[@data-cke-hidden-sel]").Cast<SafeXmlElement>()
+                var div in dom.Body
+                    .SafeSelectNodes("//*[@data-cke-hidden-sel]")
+                    .Cast<SafeXmlElement>()
             )
             {
                 div.ParentNode.RemoveChild(div);

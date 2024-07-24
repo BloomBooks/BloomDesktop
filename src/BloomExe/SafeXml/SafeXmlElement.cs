@@ -203,10 +203,7 @@ namespace Bloom.SafeXml
         /// Find the closest ancestor (not the element itself) that has the specified value for the specified attribute.
         /// If no parent does, answer null.
         /// </summary>
-        public SafeXmlElement AncestorWithAttributeValue(
-            string targetAttr,
-            string targetVal
-        )
+        public SafeXmlElement AncestorWithAttributeValue(string targetAttr, string targetVal)
         {
             var current = ParentNode as SafeXmlElement;
             while (current != null && current.GetAttribute(targetAttr) != targetVal)

@@ -50,7 +50,8 @@ namespace Bloom.ErrorReporter
         {
             DefaultReportLabel = L10NSharp.LocalizationManager.GetString(
                 "ErrorReportDialog.Report",
-                "Report");
+                "Report"
+            );
         }
 
         static object _lock = new object();

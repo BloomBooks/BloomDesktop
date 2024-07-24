@@ -53,7 +53,8 @@ namespace Bloom.web.controllers
         {
             // Must not require sync, because it launches a Bloom dialog, which will make other api requests
             // that will be blocked if this is locked.
-            apiHandler.RegisterEndpointHandler("bookCommand/exportToSpreadsheet",
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/exportToSpreadsheet",
                 (request) =>
                 {
                     _spreadsheetApi.ShowExportToSpreadsheetUI(GetBookObjectFromPost(request));
@@ -62,7 +63,8 @@ namespace Bloom.web.controllers
                 true,
                 false
             );
-            apiHandler.RegisterEndpointHandler("bookCommand/enhanceLabel",
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/enhanceLabel",
                 (request) =>
                 {
                     // We want this to be fast...many things are competing for api handling threads while
@@ -76,7 +78,8 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
-            apiHandler.RegisterEndpointHandler("bookCommand/makeBloompack",
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/makeBloompack",
                 (request) =>
                 {
                     var book = GetBookObjectFromPost(request);
@@ -85,7 +88,8 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler("bookCommand/openFolderOnDisk",
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/openFolderOnDisk",
                 (request) =>
                 {
                     // Currently, the request comes with data to let us identify which book,
@@ -95,7 +99,8 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler("bookCommand/exportToWord",
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/exportToWord",
                 (request) =>
                 {
                     var book = GetBookObjectFromPost(request);
@@ -104,7 +109,8 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler("bookCommand/importSpreadsheetContent",
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/importSpreadsheetContent",
                 (request) =>
                 {
                     // As currently implemented this would more naturally go in CollectionApi, since it adds a book
@@ -116,7 +122,8 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler("bookCommand/saveAsDotBloomSource",
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/saveAsDotBloomSource",
                 (request) =>
                 {
                     var book = GetBookObjectFromPost(request);
@@ -125,7 +132,8 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler("bookCommand/updateThumbnail",
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/updateThumbnail",
                 (request) =>
                 {
                     var book = GetBookObjectFromPost(request);
@@ -134,7 +142,8 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler("bookCommand/updateBook",
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/updateBook",
                 (request) =>
                 {
                     var book = GetBookObjectFromPost(request);
@@ -143,7 +152,8 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler("bookCommand/rename",
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/rename",
                 (request) =>
                 {
                     var book = GetBookObjectFromPost(request);

@@ -252,7 +252,11 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private void WriteWidget(SafeXmlElement widgetContainer, ContentRow row, string bookFolderPath)
+        private void WriteWidget(
+            SafeXmlElement widgetContainer,
+            ContentRow row,
+            string bookFolderPath
+        )
         {
             var source = UrlPathString
                 .CreateFromUrlEncodedString(
@@ -302,7 +306,11 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private void WriteVideo(SafeXmlElement videoContainer, ContentRow row, string bookFolderPath)
+        private void WriteVideo(
+            SafeXmlElement videoContainer,
+            ContentRow row,
+            string bookFolderPath
+        )
         {
             var source = UrlPathString
                 .CreateFromUrlEncodedString(
@@ -376,9 +384,9 @@ namespace Bloom.Spreadsheet
             }
             // A special case just for Quiz pages.
             if (
-                ((SafeXmlElement)translationGroup.ParentNode).GetAttribute("class")?.Contains(
-                    "correct-answer"
-                ) ?? false
+                ((SafeXmlElement)translationGroup.ParentNode)
+                    .GetAttribute("class")
+                    ?.Contains("correct-answer") ?? false
             )
             {
                 var indexAttr = _spreadsheet.AddColumnForTag(

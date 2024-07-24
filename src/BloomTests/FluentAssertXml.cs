@@ -84,7 +84,12 @@ namespace BloomTests
 
         protected override XmlNode NodeOrDom
         {
-            get { return XmlHtmlConverter.GetXmlDomFromHtmlFile(_path, false).UnsafePrivateWrappedXmlDocument_ForTestsOnly; }
+            get
+            {
+                return XmlHtmlConverter
+                    .GetXmlDomFromHtmlFile(_path, false)
+                    .UnsafePrivateWrappedXmlDocument_ForTestsOnly;
+            }
         }
     }
 

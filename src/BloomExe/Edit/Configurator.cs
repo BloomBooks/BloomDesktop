@@ -199,9 +199,7 @@ namespace Bloom.Edit
             // all the stylesheet links here and remove everything except the bare filenames.
             // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3573 for what happens without this fix.
             foreach (
-                SafeXmlElement link in sanityCheckDom.SafeSelectNodes(
-                    "//link[@rel='stylesheet']"
-                )
+                SafeXmlElement link in sanityCheckDom.SafeSelectNodes("//link[@rel='stylesheet']")
             )
             {
                 var href = link.GetAttribute("href");

@@ -210,7 +210,10 @@ namespace Bloom.web
             else
             {
                 var pageElement = page.GetDivNodeForThisPage().CloneNode(true) as SafeXmlElement;
-                var videos = pageElement.SafeSelectNodes(".//video").Cast<SafeXmlElement>().ToArray();
+                var videos = pageElement
+                    .SafeSelectNodes(".//video")
+                    .Cast<SafeXmlElement>()
+                    .ToArray();
                 foreach (var video in videos)
                     video.ParentNode.RemoveChild(video); // minimize memory use, thumb just shows placeholder
                 MarkImageNodesForThumbnail(pageElement);

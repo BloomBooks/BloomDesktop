@@ -15,10 +15,10 @@ using SIL.Reporting;
 
 namespace Bloom.Book
 {
-	/// <summary>
-	/// Creates the files for a new blank book from a template book
-	/// </summary>
-	public class BookStarter
+    /// <summary>
+    /// Creates the files for a new blank book from a template book
+    /// </summary>
+    public class BookStarter
     {
         private readonly IFileLocator _fileLocator;
         private readonly BookStorage.Factory _bookStorageFactory;
@@ -656,7 +656,10 @@ namespace Bloom.Book
             //			}
         }
 
-        public static void SetupIdAndLineage(SafeXmlElement parentPageDiv, SafeXmlElement childPageDiv)
+        public static void SetupIdAndLineage(
+            SafeXmlElement parentPageDiv,
+            SafeXmlElement childPageDiv
+        )
         {
             //NB: this works even if the parent and child are the same, which is the case when making a new book
             //but not when we're adding an individual template page. (Later: Huh?)

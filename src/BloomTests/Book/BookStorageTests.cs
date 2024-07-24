@@ -1834,8 +1834,7 @@ namespace BloomTests.Book
             var container = storage.Dom.SelectSingleNode("//*[@class='bloom-imageContainer']");
             Assert.That(container, Is.Not.Null);
             var firstChild =
-                container.ChildNodes.FirstOrDefault(x => x is SafeXmlElement)
-                as SafeXmlElement;
+                container.ChildNodes.FirstOrDefault(x => x is SafeXmlElement) as SafeXmlElement;
             Assert.That(firstChild.GetAttribute("id"), Is.EqualTo("moveMe"));
             Assert.That(maintLevel, Is.GreaterThanOrEqualTo("3"));
         }

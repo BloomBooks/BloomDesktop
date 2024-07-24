@@ -691,7 +691,7 @@ namespace Bloom.Workspace
             if (onlyActiveItem)
             {
                 if (String.IsNullOrEmpty(Settings.Default.UserInterfaceLanguage))
-                    Settings.Default.UserInterfaceLanguage = "en";  // See BL-13545.
+                    Settings.Default.UserInterfaceLanguage = "en"; // See BL-13545.
                 items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
             }
             else

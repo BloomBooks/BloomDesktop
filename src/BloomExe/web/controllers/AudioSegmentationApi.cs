@@ -309,7 +309,6 @@ namespace Bloom.web.controllers
             return request;
         }
 
-
 #if OBSOLETEAPI
         /// API Handler when the Auto Segment button is clicked
         ///

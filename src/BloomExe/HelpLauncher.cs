@@ -56,7 +56,8 @@ namespace Bloom
 
         public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointHandler("help",
+            apiHandler.RegisterEndpointHandler(
+                "help",
                 (request) =>
                 {
                     var topic = request.RequiredParam("topic");

@@ -367,7 +367,8 @@ namespace Bloom.Publish.Epub
             _manifestItems = new List<string>();
             _spineItems = new List<string>();
             _nonLinearSpineItems = new HashSet<string>();
-            _pendingBackLinks = new Dictionary<SafeXmlElement, List<Tuple<SafeXmlElement, string>>>();
+            _pendingBackLinks =
+                new Dictionary<SafeXmlElement, List<Tuple<SafeXmlElement, string>>>();
             _desiredNameMap = new Dictionary<SafeXmlElement, string>();
             _scriptedItems = new List<string>();
             _svgItems = new List<string>();
@@ -1443,7 +1444,10 @@ namespace Bloom.Publish.Epub
         /// Merge the audio files corresponding to the specified elements. Returns the path to the merged MP3 if all is well, null if
         /// we somehow failed to merge.
         /// </summary>
-        private string MergeAudioElements(SafeXmlElement[] elementArray, ISet<string> warningMessages)
+        private string MergeAudioElements(
+            SafeXmlElement[] elementArray,
+            ISet<string> warningMessages
+        )
         {
             var mergeFiles = elementArray
                 .Select(
@@ -1626,7 +1630,9 @@ namespace Bloom.Publish.Epub
                 if (key == "body")
                     continue;
                 var dir = _directionSettings[key];
-                foreach (SafeXmlElement div in pageDom.SafeSelectNodes("//div[@lang='" + key + "']"))
+                foreach (
+                    SafeXmlElement div in pageDom.SafeSelectNodes("//div[@lang='" + key + "']")
+                )
                     div.SetAttribute("dir", dir);
             }
         }
@@ -2099,7 +2105,9 @@ namespace Bloom.Publish.Epub
                     return false;
             }
             foreach (
-                SafeXmlElement vid in HtmlDom.SelectChildVideoElements(pageElement).Cast<SafeXmlElement>()
+                SafeXmlElement vid in HtmlDom
+                    .SelectChildVideoElements(pageElement)
+                    .Cast<SafeXmlElement>()
             )
             {
                 var src = FindVideoFileIfPossible(vid);
@@ -2113,8 +2121,9 @@ namespace Bloom.Publish.Epub
             // Some elements we mark with this class because their content comes from CSS and will
             // not be detected by normal algorithms.
             if (
-                pageElement.SafeSelectNodes(".//div[contains(@class, 'bloom-force-publish')]").Length
-                > 0
+                pageElement
+                    .SafeSelectNodes(".//div[contains(@class, 'bloom-force-publish')]")
+                    .Length > 0
             )
                 return false;
             return true;
@@ -2475,11 +2484,7 @@ namespace Bloom.Publish.Epub
             {
                 // tests at least don't always start content on page 1
                 div = pageDom.Body.SelectSingleNode("//div[@data-page-number]") as SafeXmlElement;
-                if (
-                    div != null
-                    && div.HasClass("numberedPage")
-                    && !_firstNumberedPageSeen
-                )
+                if (div != null && div.HasClass("numberedPage") && !_firstNumberedPageSeen)
                 {
                     div.SetAttribute("role", "main");
                     string languageIdUsed;
@@ -2551,7 +2556,8 @@ namespace Bloom.Publish.Epub
             string labelEnglish
         )
         {
-            var divInternal = div.SelectSingleNode(".//div[" + attributeValue + "]") as SafeXmlElement;
+            var divInternal =
+                div.SelectSingleNode(".//div[" + attributeValue + "]") as SafeXmlElement;
             // ACE by DAISY for epub 3.2 says contentinfo should not be nested. That makes some sense...if you're skipping the
             // whole title page as being info about the content rather than actual content, you don't need to skip
             // elements within it as well. That means this function will rarely do anything, as these elements are usually
@@ -3056,8 +3062,8 @@ namespace Bloom.Publish.Epub
             xdoc.Load(filename);
             var unwantedElements = new List<SafeXmlElement>();
             var unwantedAttrsCount = 0;
-			// The SVG has namespaces, but we don't want them used to change the xpath expression.
-			foreach (var xel in xdoc.SafeSelectNodes("//*", null).Cast<SafeXmlElement>())
+            // The SVG has namespaces, but we don't want them used to change the xpath expression.
+            foreach (var xel in xdoc.SafeSelectNodes("//*", null).Cast<SafeXmlElement>())
             {
                 if (
                     xel.Name.StartsWith("inkscape:")
@@ -3139,7 +3145,9 @@ namespace Bloom.Publish.Epub
                 var href = link.GetAttribute("href");
                 if (!string.IsNullOrEmpty(href) && Path.GetFileName(href).StartsWith("custom"))
                     continue;
-                if (!string.IsNullOrEmpty(href) && Path.GetFileName(href) == "defaultLangStyles.css")
+                if (
+                    !string.IsNullOrEmpty(href) && Path.GetFileName(href) == "defaultLangStyles.css"
+                )
                     continue;
                 // BL-9844, BL-10080 We need some special style rules for Kyrgyzstan2020
                 // Xmatter even in epubs, but including the whole standard stylesheet
@@ -3148,7 +3156,10 @@ namespace Bloom.Publish.Epub
                 // flexbox. So we have a custom Kyrgyzstan2020 style sheet for epubs.
                 // In 5.1 there will be a more general approach to supporting custom
                 // xmatter stylesheets for epubs.
-                if (!string.IsNullOrEmpty(href) && Path.GetFileName(href).StartsWith("Kyrgyzstan2020"))
+                if (
+                    !string.IsNullOrEmpty(href)
+                    && Path.GetFileName(href).StartsWith("Kyrgyzstan2020")
+                )
                 {
                     // We need to get rid of the link to the standard Kyrgz xmatter and
                     // add a link to the special epub-specific one. We can conveniently
@@ -3395,7 +3406,10 @@ namespace Bloom.Publish.Epub
         private void RemoveScripts(HtmlDom pageDom)
         {
             foreach (
-                var elt in pageDom.RawDom.SafeSelectNodes("//script").Cast<SafeXmlElement>().ToArray()
+                var elt in pageDom.RawDom
+                    .SafeSelectNodes("//script")
+                    .Cast<SafeXmlElement>()
+                    .ToArray()
             )
             {
                 elt.ParentNode.RemoveChild(elt);
@@ -3418,7 +3432,9 @@ namespace Bloom.Publish.Epub
                 if (tabIndex != "0" && classes.Contains("bloom-translationGroup"))
                 {
                     foreach (
-                        var audioElt in HtmlDom.SelectAudioSentenceElements(elt).Cast<SafeXmlElement>()
+                        var audioElt in HtmlDom
+                            .SelectAudioSentenceElements(elt)
+                            .Cast<SafeXmlElement>()
                     )
                         audioElt.SetAttribute("data-audio-order", tabIndex);
                 }

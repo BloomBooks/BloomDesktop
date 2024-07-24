@@ -138,11 +138,17 @@ namespace Bloom.Publish.Epub
                         var smilDoc = SafeXmlDocument.Create();
                         smilDoc.LoadXml(smilContent);
                         var seqElt = smilDoc.SelectSingleNode("//smil:seq", _ns) as SafeXmlElement;
-                        var textRef = seqElt.GetAttribute("textref", "http://www.idpf.org/2007/ops");
+                        var textRef = seqElt.GetAttribute(
+                            "textref",
+                            "http://www.idpf.org/2007/ops"
+                        );
 
                         var readiumOverlay = new ReadiumMediaOverlay();
 
-                        var parElts = smilDoc.SafeSelectNodes("//par").Cast<SafeXmlElement>().ToArray();
+                        var parElts = smilDoc
+                            .SafeSelectNodes("//par")
+                            .Cast<SafeXmlElement>()
+                            .ToArray();
                         var maxClipEnd = 0m;
                         var narrations = new ReadiumInnerNarrationBlock[parElts.Length];
                         readiumOverlay.role = "section";

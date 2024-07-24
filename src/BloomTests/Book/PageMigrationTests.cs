@@ -613,7 +613,8 @@ namespace BloomTests.Book
 	</div>"
                 )
             );
-            var template = (SafeXmlElement)newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
+            var template = (SafeXmlElement)
+                newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
             var templatePage = new Page(
                 book,
                 template,
@@ -817,9 +818,9 @@ namespace BloomTests.Book
             int height
         )
         {
-            var div = book.RawDom.SafeSelectNodes(".//div[contains(@class, 'bloom-imageContainer')]")[
-                index
-            ];
+            var div = book.RawDom.SafeSelectNodes(
+                ".//div[contains(@class, 'bloom-imageContainer')]"
+            )[index];
             var images = div.SafeSelectNodes("img");
             Assert.That(
                 images,
@@ -920,7 +921,8 @@ namespace BloomTests.Book
 	</div>"
                 )
             );
-            var template = (SafeXmlElement)newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
+            var template = (SafeXmlElement)
+                newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
             var templatePage = new Page(
                 book,
                 template,

@@ -560,18 +560,14 @@ namespace Bloom.Spreadsheet
             );
             var videoFile = Path.GetFileName(source);
 
-            var videoElt = videoContainer
-                .GetElementsByTagName("video")
-                .FirstOrDefault();
+            var videoElt = videoContainer.GetElementsByTagName("video").FirstOrDefault();
             if (videoElt == null)
             {
                 // pathological
                 videoElt = videoContainer.OwnerDocument.CreateElement("video");
                 videoContainer.AppendChild(videoElt);
             }
-            var srcElt = videoElt
-                .GetElementsByTagName("source")
-                .FirstOrDefault();
+            var srcElt = videoElt.GetElementsByTagName("source").FirstOrDefault();
             if (srcElt == null)
             {
                 // pathological?
@@ -659,9 +655,7 @@ namespace Bloom.Spreadsheet
             while (!string.IsNullOrEmpty(Path.GetDirectoryName(sourceDir)))
                 sourceDir = Path.GetDirectoryName(sourceDir);
 
-            var iframeElt = widgetContainer
-                .GetElementsByTagName("iframe")
-                .FirstOrDefault();
+            var iframeElt = widgetContainer.GetElementsByTagName("iframe").FirstOrDefault();
             if (iframeElt == null)
             {
                 // pathological
@@ -892,8 +886,7 @@ namespace Bloom.Spreadsheet
 
         private SafeXmlElement GetImgFromContainer(SafeXmlElement container)
         {
-            return container.ChildNodes.FirstOrDefault(x => x.Name == "img")
-                as SafeXmlElement;
+            return container.ChildNodes.FirstOrDefault(x => x.Name == "img") as SafeXmlElement;
         }
 
         private bool _foundCopyright;
@@ -1243,7 +1236,9 @@ namespace Bloom.Spreadsheet
 
             // This is not tested yet, but we want to remove video content if any from whatever last page we're copying.
             foreach (
-                var v in page.SafeSelectNodes(".//div[contains(@class, 'bloom-videoContainer')]/video")
+                var v in page.SafeSelectNodes(
+                        ".//div[contains(@class, 'bloom-videoContainer')]/video"
+                    )
                     .Cast<SafeXmlElement>()
                     .ToList()
             )
@@ -1845,7 +1840,10 @@ namespace Bloom.Spreadsheet
             editable.RemoveAttribute("data-audiorecordingmode");
             editable.RemoveClass("audio-sentence");
             foreach (
-                var span in editable.SafeSelectNodes("span[@class]").Cast<SafeXmlElement>().ToArray()
+                var span in editable
+                    .SafeSelectNodes("span[@class]")
+                    .Cast<SafeXmlElement>()
+                    .ToArray()
             )
             {
                 var className = span.GetAttribute("class");
