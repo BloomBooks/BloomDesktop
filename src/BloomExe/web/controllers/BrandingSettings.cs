@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Newtonsoft.Json;
@@ -102,10 +103,12 @@ namespace Bloom.Api
         /// <param name="fullBrandingName">the full key</param>
         /// <param name="folderName">the name before any branding; this will match the folder holding all the files.</param>
         /// <param name="flavor">a name or empty string</param>
+        /// <param name="subUnitName">a name (normally a country) or empty string</param>
         public static void ParseBrandingKey(
             String fullBrandingName,
             out String folderName,
-            out String flavor
+            out String flavor,
+            out String subUnitName
         )
         {
             // A Branding may optionally have a suffix of the form "[FLAVOR]" where flavor is typically
@@ -115,6 +118,13 @@ namespace Bloom.Api
             var parts = fullBrandingName.Split('[');
             folderName = parts[0];
             flavor = parts.Length > 1 ? parts[1].Replace("]", "") : "";
+
+            // A Branding may optionally have a suffix of the form "(SUBUNIT)" where subUnitName is typically
+            // a country name. This is useful when the project wants different codes, but wants *exactly*
+            // the same branding.
+            parts = folderName.Split('(');
+            folderName = parts[0];
+            subUnitName = parts.Length > 1 ? parts[1].Replace(")", "") : "";
         }
 
         /// <summary>
@@ -130,7 +140,8 @@ namespace Bloom.Api
                 ParseBrandingKey(
                     brandingNameOrFolderPath,
                     out var brandingFolderName,
-                    out var flavor
+                    out var flavor,
+                    out var subUnitName
                 );
 
                 // check to see if we have a special branding.json just for this flavor.
