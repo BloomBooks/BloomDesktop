@@ -165,8 +165,6 @@ export function prepareActivity(
 
     //     showARandomWord(page, false);
     //     setupSliderImageEvents(page);
-
-    playInitialElements(page);
 }
 
 // Break any order-sentence element into words and
@@ -308,7 +306,7 @@ function changePageButtonClicked(e: MouseEvent) {
     currentChangePageAction?.(next);
 }
 
-function playInitialElements(page: HTMLElement) {
+export function playInitialElements(page: HTMLElement) {
     const initialFilter = e => {
         const top = e.closest(".bloom-textOverPicture") as HTMLElement;
         if (!top) {
@@ -966,6 +964,14 @@ export function copyContentToTarget(draggable: HTMLElement) {
     Array.from(temp.getElementsByClassName("hoverUp")).forEach(e => {
         // Produces at least a change in background color that we don't want.
         e.classList.remove("hoverUp");
+    });
+    // Content is not editable inside the target.
+    Array.from(temp.querySelectorAll("[contenteditable]")).forEach(e => {
+        e.removeAttribute("contenteditable");
+    });
+    // Nor should we able to tab to it, or focus it.
+    Array.from(temp.querySelectorAll("[tabindex]")).forEach(e => {
+        e.removeAttribute("tabindex");
     });
     if (target.innerHTML !== temp.innerHTML) {
         target.innerHTML = temp.innerHTML;

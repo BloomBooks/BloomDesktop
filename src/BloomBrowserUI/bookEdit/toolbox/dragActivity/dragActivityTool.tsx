@@ -34,6 +34,7 @@ import {
     doShowAnswersInTargets,
     draggingSlider,
     getTarget,
+    playInitialElements,
     prepareActivity,
     undoPrepareActivity
 } from "./dragActivityRuntime";
@@ -1335,7 +1336,7 @@ const DragActivityControls: React.FunctionComponent<{
                     />
                 </div>
             )}
-            {props.activeTab !== playTabIndex && (
+            {props.activeTab !== playTabIndex && currentBubbleElement && (
                 <div>
                     <div
                         css={css`
@@ -1356,7 +1357,7 @@ const DragActivityControls: React.FunctionComponent<{
                         {currentBubbleTargetId && (
                             <Span l10nKey="EditTab.Toolbox.DragActivity.DraggableShape" />
                         )}
-                        {currentBubbleElement && !currentBubbleTargetId && (
+                        {!currentBubbleTargetId && (
                             <Span l10nKey="EditTab.Toolbox.DragActivity.FixedShape" />
                         )}
                     </div>
@@ -1997,6 +1998,7 @@ export function setActiveDragActivityTab(tab: number) {
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
         prepareActivity(page, _next => {});
+        playInitialElements(page);
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
         undoPrepareActivity(page);

@@ -4526,6 +4526,9 @@ namespace Bloom.Book
             }
 
             RemoveObsoleteSoundAttributes(OurHtmlDom);
+            // Note that at this point _bookData has already been updated with the edited page's data, if any.
+            // This will take priority over other data it finds in the book, even earlier in the book
+            // than the edited page.
             _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo); //will update the title if needed
             if (OkToChangeFileAndFolderName)
             {

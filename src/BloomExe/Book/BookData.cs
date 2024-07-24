@@ -22,13 +22,13 @@ using Bloom.SafeXml;
 
 namespace Bloom.Book
 {
-	/// <summary>
-	/// This class manages the "data-*" elements of a bloom document.
-	/// </summary>
-	/// <remarks>
-	/// At the beginning of the document, we have a special div for holding book-wide data.
-	/// It may hosts all manner of data about the book, including copyright, what languages are currently visible, etc.Here's a sample of a simple one:
-	/*<div id="bloomDataDiv">
+    /// <summary>
+    /// This class manages the "data-*" elements of a bloom document.
+    /// </summary>
+    /// <remarks>
+    /// At the beginning of the document, we have a special div for holding book-wide data.
+    /// It may hosts all manner of data about the book, including copyright, what languages are currently visible, etc.Here's a sample of a simple one:
+    /*<div id="bloomDataDiv">
               <div data-book="bookTitle" lang="en">Awito Builds a toilet</div>
               <div data-book="bookTitle" lang="tpi">Awito i wokim haus</div>
               <div data-book="coverImage" lang="*">tmpABDB.png</div>
@@ -42,19 +42,19 @@ namespace Bloom.Book
               <div data-book="originalAcknowledgments" lang="tpi">Book Development by:  Curriculum Development Division</div>
             </div>
             */
-	/// After the bloomDataDiv, elements with "data-*" attributes can occur throughout a book, for example on the cover page:
-	/*    <div class="bloom-page">
+    /// After the bloomDataDiv, elements with "data-*" attributes can occur throughout a book, for example on the cover page:
+    /*    <div class="bloom-page">
         <div class="bloom-translationGroup coverTitle">
           <div data-book="bookTitle" lang="en">Awito Builds a house</div>
           <div data-book="bookTitle" lang="tpi">Awito i wokim haus</div>
         </div>
     */
-	/// This class must keep these in sync
-	/// There is also a file meta.json which contains data that is also kept online to aid in searching for books. Some of this must also be kept
-	/// in sync with data in the html, for example, metadata.volumeInfo.title should match (currently the English alternative of) the content of the
-	/// bloomDataDiv bookTitle div.
-	/// </remarks>
-	public class BookData
+    /// This class must keep these in sync
+    /// There is also a file meta.json which contains data that is also kept online to aid in searching for books. Some of this must also be kept
+    /// in sync with data in the html, for example, metadata.volumeInfo.title should match (currently the English alternative of) the content of the
+    /// bloomDataDiv bookTitle div.
+    /// </remarks>
+    public class BookData
     {
         /// <summary>
         /// This is the attribute name used in the data div for a rather complex data-model.
@@ -583,28 +583,28 @@ namespace Bloom.Book
 
         private void MigrateData(DataSet data)
         {
-			MigrateTopic(data);
-		}
+            MigrateTopic(data);
+        }
 
-		private void MigrateTopic(DataSet data)
-		{
-			DataSetElementValue topic;
-			if (!data.TextVariables.TryGetValue("topic", out topic))
-				return;
+        private void MigrateTopic(DataSet data)
+        {
+            DataSetElementValue topic;
+            if (!data.TextVariables.TryGetValue("topic", out topic))
+                return;
 
-			CleanupTopic(topic);
+            CleanupTopic(topic);
 
-			MigrateSpiritualTopic(data, topic);
-		}
+            MigrateSpiritualTopic(data, topic);
+        }
 
-		//Until late in Bloom 3, we collected the topic in the National language, which is messy because then we would have to know how to
-		//translate from all those languages to all other languages. Now, we just save English, and translate from English to whatever.
-		//By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
-		//an English word as their value for "topic", so there we just switch it over to English.
-		private void CleanupTopic(DataSetElementValue topic)
-		{
+        //Until late in Bloom 3, we collected the topic in the National language, which is messy because then we would have to know how to
+        //translate from all those languages to all other languages. Now, we just save English, and translate from English to whatever.
+        //By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
+        //an English word as their value for "topic", so there we just switch it over to English.
+        private void CleanupTopic(DataSetElementValue topic)
+        {
             var topicStrings = topic.TextAlternatives;
-			if (string.IsNullOrEmpty(topicStrings["en"]) && topicStrings["tpi"] != null)
+            if (string.IsNullOrEmpty(topicStrings["en"]) && topicStrings["tpi"] != null)
             {
                 topicStrings["en"] = topicStrings["tpi"];
 
@@ -634,41 +634,55 @@ namespace Bloom.Book
                     .Cast<SafeXmlElement>()
                     .ForEach(e => e.ParentNode.RemoveChild(e));
             }
-		}
+        }
 
-		// In 5.6, we removed the Spiritual topic and added the Bible topic.
-		// We can auto-migrate from Spiritual to Bible if the copyright
-		// (or original copyright) indicates it is appropriate.
-		// Otherwise, we just remove the Spiritual topic.
-		private void MigrateSpiritualTopic(DataSet data, DataSetElementValue topic)
-		{
-			var topicStr = topic.TextAlternatives["en"];
-			if (topicStr != "Spiritual")
-				return;
+        // In 5.6, we removed the Spiritual topic and added the Bible topic.
+        // We can auto-migrate from Spiritual to Bible if the copyright
+        // (or original copyright) indicates it is appropriate.
+        // Otherwise, we just remove the Spiritual topic.
+        private void MigrateSpiritualTopic(DataSet data, DataSetElementValue topic)
+        {
+            var topicStr = topic.TextAlternatives["en"];
+            if (topicStr != "Spiritual")
+                return;
 
-			string copyrightStr = null;
-			if (data.TextVariables.TryGetValue("copyright", out var copyright))
-			{
-				copyrightStr = copyright.TextAlternatives["*"];
-			}
-			if (string.IsNullOrEmpty(copyrightStr) && data.TextVariables.TryGetValue("originalCopyright", out var originalCopyright))
-			{
-				copyrightStr = originalCopyright.TextAlternatives["*"];
-			}
-			if (!string.IsNullOrEmpty(copyrightStr))
-			{
-				foreach (var bibleCopyright in new[] { "Bible", "SIL", "Global Recordings", "Kartidaya", "Little Zebra", "JMPBK", "WPS" })
-				{
-					if (copyrightStr.Contains(bibleCopyright))
-					{
-						topic.TextAlternatives["en"] = "Bible";
-						return;
-					}
-				}
-			}
+            string copyrightStr = null;
+            if (data.TextVariables.TryGetValue("copyright", out var copyright))
+            {
+                copyrightStr = copyright.TextAlternatives["*"];
+            }
+            if (
+                string.IsNullOrEmpty(copyrightStr)
+                && data.TextVariables.TryGetValue("originalCopyright", out var originalCopyright)
+            )
+            {
+                copyrightStr = originalCopyright.TextAlternatives["*"];
+            }
+            if (!string.IsNullOrEmpty(copyrightStr))
+            {
+                foreach (
+                    var bibleCopyright in new[]
+                    {
+                        "Bible",
+                        "SIL",
+                        "Global Recordings",
+                        "Kartidaya",
+                        "Little Zebra",
+                        "JMPBK",
+                        "WPS"
+                    }
+                )
+                {
+                    if (copyrightStr.Contains(bibleCopyright))
+                    {
+                        topic.TextAlternatives["en"] = "Bible";
+                        return;
+                    }
+                }
+            }
 
-			// We didn't find a Bible-related copyright; just remove the Spiritual topic from the book.
-			data.TextVariables.Remove("topic");
+            // We didn't find a Bible-related copyright; just remove the Spiritual topic from the book.
+            data.TextVariables.Remove("topic");
         }
 
         private void UpdateCredits(BookInfo info)
@@ -1070,9 +1084,7 @@ namespace Bloom.Book
         public void RemoveAllForms(string key)
         {
             var dataDiv = GetOrCreateDataDiv();
-            foreach (
-                var e in dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key))
-            )
+            foreach (var e in dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key)))
             {
                 dataDiv.RemoveChild(e);
             }
@@ -1476,9 +1488,10 @@ namespace Bloom.Book
         );
 
         // These bloom-managed classes must actually be removed from the destination if the element we're copying from
-        // doesn't have them.
+        // doesn't have them. (ui-suppressHighlight should never get into the DOM at all, but if it somehow sneaks by,
+        // at least the next Save should be able to remove it.)
         static HashSet<string> _classesToRemoveIfAbsent = new HashSet<string>(
-            new[] { "bloom-postAudioSplit" }
+            new[] { "bloom-postAudioSplit", "ui-suppressHighlight" }
         );
 
         private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
@@ -1684,7 +1697,10 @@ namespace Bloom.Book
             }
         }
 
-        internal void MergeAttrsIntoElement(List<Tuple<string, XmlString>> attrs, SafeXmlElement node)
+        internal void MergeAttrsIntoElement(
+            List<Tuple<string, XmlString>> attrs,
+            SafeXmlElement node
+        )
         {
             if (attrs == null)
                 return;
