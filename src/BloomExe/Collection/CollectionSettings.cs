@@ -757,7 +757,12 @@ namespace Bloom.Collection
 
         public string GetBrandingFlavor()
         {
-            BrandingSettings.ParseBrandingKey(BrandingProjectKey, out var baseKey, out var flavor);
+            BrandingSettings.ParseBrandingKey(
+                BrandingProjectKey,
+                out var baseKey,
+                out var flavor,
+                out var subUnitName
+            );
             return flavor;
         }
 
@@ -766,7 +771,8 @@ namespace Bloom.Collection
             BrandingSettings.ParseBrandingKey(
                 BrandingProjectKey,
                 out var folderName,
-                out var flavor
+                out var flavor,
+                out var subUnitName
             );
             return folderName;
         }

@@ -369,7 +369,8 @@ namespace Bloom
             BrandingSettings.ParseBrandingKey(
                 fullBrandingName,
                 out var brandingFolderName,
-                out var flavor
+                out var flavor,
+                out var subUnitName
             );
             return BloomFileLocator.GetOptionalBrowserDirectory("branding", brandingFolderName);
         }
