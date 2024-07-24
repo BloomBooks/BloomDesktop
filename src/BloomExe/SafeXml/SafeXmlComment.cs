@@ -6,8 +6,7 @@ namespace Bloom.SafeXml
     // which don't need more than this bare skeleton.
     public class SafeXmlComment : SafeXmlCharacterData
     {
-        public SafeXmlComment(XmlComment node, SafeXmlDocument doc) : base(node, doc)
-        {
-        }
+        public SafeXmlComment(XmlComment node, SafeXmlDocument doc)
+            : base(node, doc) { }
     }
 }

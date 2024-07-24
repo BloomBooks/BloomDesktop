@@ -193,7 +193,10 @@ namespace Bloom
             }
         }
 
-        private static void ShowProblemInMessageBox(string fullDetailedMessage, Form formForSynchronizing)
+        private static void ShowProblemInMessageBox(
+            string fullDetailedMessage,
+            Form formForSynchronizing
+        )
         {
             if (formForSynchronizing == null)
                 return; // could be on wrong thread
@@ -213,11 +216,7 @@ namespace Bloom
             // We'll keep the form if it's not a ProgressDialog in order to center our message properly.
             if (formForSynchronizing is ProgressDialog)
             {
-                MessageBox.Show(
-                    fullDetailedMessage,
-                    string.Empty,
-                    MessageBoxButtons.OK
-                );
+                MessageBox.Show(fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
             }
             else
             {

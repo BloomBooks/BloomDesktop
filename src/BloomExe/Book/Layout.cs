@@ -268,7 +268,9 @@ namespace Bloom.Book
                         var soa = SizeAndOrientation.FromString(
                             ((SafeXmlElement)sizeAndOrientation).Name
                         );
-                        foreach (SafeXmlElement option in ((SafeXmlElement)sizeAndOrientation).ChildNodes)
+                        foreach (
+                            SafeXmlElement option in ((SafeXmlElement)sizeAndOrientation).ChildNodes
+                        )
                         {
                             if (option.Name.ToLowerInvariant() != "styles")
                                 continue; //we don't handle anything else yet

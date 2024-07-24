@@ -199,7 +199,9 @@ namespace Bloom.SafeXml
 
         public virtual void WriteTo(XmlWriter w)
         {
-            throw new NotImplementedException("Only SafeXmlElement and SafeXmlDocument can write to XmlWriter");
+            throw new NotImplementedException(
+                "Only SafeXmlElement and SafeXmlDocument can write to XmlWriter"
+            );
         }
 
         public SafeXmlDocument OwnerDocument => _doc;
@@ -357,8 +359,8 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _wrappedNode.Attributes?
-                        .Cast<XmlAttribute>()
+                    return _wrappedNode.Attributes
+                        ?.Cast<XmlAttribute>()
                         .Select(attr => attr.Name)
                         .ToArray();
             }
@@ -373,8 +375,8 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _wrappedNode.Attributes?
-                        .Cast<XmlAttribute>()
+                    return _wrappedNode.Attributes
+                        ?.Cast<XmlAttribute>()
                         .Select(attr => new NameValue(attr.Name, attr.Value))
                         .ToArray();
             }
@@ -388,7 +390,12 @@ namespace Bloom.SafeXml
         public void DeleteNodes(string path)
         {
             lock (_doc.Lock)
-                foreach (var toDelete in _wrappedNode.SafeSelectNodes(path).OfType<XmlElement>().ToArray())
+                foreach (
+                    var toDelete in _wrappedNode
+                        .SafeSelectNodes(path)
+                        .OfType<XmlElement>()
+                        .ToArray()
+                )
                     toDelete.ParentNode.RemoveChild(toDelete);
         }
 

@@ -18,7 +18,12 @@ namespace Bloom.Api
         {
             // We get lots of these requests, and they don't use any non-local data except the LocalizationManager,
             // which is designed to be thread-safe for lookup functions. So we can take advantage of parallelism here.
-            apiHandler.RegisterEndpointHandler("i18n/loadStrings", HandleI18nLoadStrings, false, false);
+            apiHandler.RegisterEndpointHandler(
+                "i18n/loadStrings",
+                HandleI18nLoadStrings,
+                false,
+                false
+            );
             apiHandler.RegisterEndpointHandler("i18n/translate", HandleI18nTranslate, false, false);
             apiHandler.RegisterEndpointHandler("i18n/uilang", HandleI18nUiLang, false, false);
         }
@@ -36,10 +41,7 @@ namespace Bloom.Api
                         if (d.ContainsKey(key))
                             continue;
 
-                        var translation = GetTranslationDefaultMayNotBeEnglish(
-                            key,
-                            post[key]
-                        );
+                        var translation = GetTranslationDefaultMayNotBeEnglish(key, post[key]);
                         d.Add(key, translation);
                     }
                     catch (Exception error)
@@ -122,9 +124,7 @@ namespace Bloom.Api
                                     id,
                                     englishText,
                                     UrlPathString
-                                        .CreateFromUrlEncodedString(
-                                            parameters["comment"] ?? ""
-                                        )
+                                        .CreateFromUrlEncodedString(parameters["comment"] ?? "")
                                         .NotEncoded
                                 );
                             idFound = false;

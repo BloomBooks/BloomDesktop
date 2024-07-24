@@ -1479,9 +1479,7 @@ namespace BloomTests.Book
 
             var newFirstPara = newDivNode.GetElementsByTagName("p").Last();
             Assert.That(newFirstPara.InnerText, Is.EqualTo("This was a sentence span")); // kept the text
-            var newSpan = newFirstPara
-                .GetElementsByTagName("span")
-                .FirstOrDefault();
+            var newSpan = newFirstPara.GetElementsByTagName("span").FirstOrDefault();
             Assert.That(newSpan, Is.Not.Null);
             var id = newSpan.GetAttribute("id");
             Assert.That(id, Is.Not.Null.And.Not.Empty);
@@ -1706,8 +1704,10 @@ namespace BloomTests.Book
                 Assert.That(File.ReadAllText(newMp3Path), Is.EqualTo("This is a fake mp3"));
 
                 var newVideoContainer = newDivNode.GetElementsByTagName("div")[1] as SafeXmlElement;
-                var newVideoDiv = newVideoContainer.GetElementsByTagName("video")[0] as SafeXmlElement;
-                var newVideoSource = newVideoDiv.GetElementsByTagName("source")[0] as SafeXmlElement;
+                var newVideoDiv =
+                    newVideoContainer.GetElementsByTagName("video")[0] as SafeXmlElement;
+                var newVideoSource =
+                    newVideoDiv.GetElementsByTagName("source")[0] as SafeXmlElement;
                 var source = newVideoSource.GetAttribute("src");
                 Assert.That(source, Does.StartWith("video/"));
                 Assert.That(source, Does.EndWith(".mp4#t=1.2,5.7"));
@@ -1814,7 +1814,8 @@ namespace BloomTests.Book
                 Assert.AreNotEqual(existingPage, newPage);
                 Assert.AreNotEqual(existingPage.Id, newPage.Id);
                 var newDivNode = newPage.GetDivNodeForThisPage();
-                var newWidgetContainer = newDivNode.GetElementsByTagName("div")[0] as SafeXmlElement;
+                var newWidgetContainer =
+                    newDivNode.GetElementsByTagName("div")[0] as SafeXmlElement;
                 var newWidgetIframe =
                     newWidgetContainer.GetElementsByTagName("iframe")[0] as SafeXmlElement;
                 var src = newWidgetIframe.GetAttribute("src");
@@ -2729,10 +2730,9 @@ namespace BloomTests.Book
                 ); // fixed!
 
             // Check that all the audio ids outside the data-div are unique.
-            var audioNodes = book.RawDom
-                .SafeSelectNodes(
-                    "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
-                );
+            var audioNodes = book.RawDom.SafeSelectNodes(
+                "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
+            );
             HashSet<string> uniqueIds = new HashSet<string>();
             foreach (var node in audioNodes)
             {
@@ -2919,10 +2919,9 @@ namespace BloomTests.Book
                 ); // fixed!
 
             // Check that all the audio ids outside the data-div are unique.
-            var audioNodes = book.RawDom
-                .SafeSelectNodes(
-                    "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
-                );
+            var audioNodes = book.RawDom.SafeSelectNodes(
+                "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
+            );
             HashSet<string> uniqueIds = new HashSet<string>();
             foreach (var node in audioNodes)
             {
@@ -3169,10 +3168,9 @@ namespace BloomTests.Book
                 ); // fixed!
 
             // Check that all the audio ids outside the data-div are unique.
-            var audioNodes = book.RawDom
-                .SafeSelectNodes(
-                    "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
-                );
+            var audioNodes = book.RawDom.SafeSelectNodes(
+                "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
+            );
             HashSet<string> uniqueIds = new HashSet<string>();
             foreach (var node in audioNodes)
             {
@@ -3394,10 +3392,9 @@ namespace BloomTests.Book
             ); // 2 more files created
 
             // Check that all the audio ids outside the data-div are unique (except bookTitle is used twice).
-            var audioNodes = book.RawDom
-                .SafeSelectNodes(
-                    "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
-                );
+            var audioNodes = book.RawDom.SafeSelectNodes(
+                "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
+            );
             var uniqueIds = new HashSet<string>();
             foreach (var node in audioNodes)
             {
@@ -3407,10 +3404,9 @@ namespace BloomTests.Book
             Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1)); // bookTitle shared by two xMatter pages
 
             // Check that all the audio ids inside the data-div are unique.
-            audioNodes = book.RawDom
-                .SafeSelectNodes(
-                    "(//div[@id='bloomDataDiv']//div|//div[@id='bloomDataDiv']//span)[contains(@class,'audio-sentence') and @id]"
-                );
+            audioNodes = book.RawDom.SafeSelectNodes(
+                "(//div[@id='bloomDataDiv']//div|//div[@id='bloomDataDiv']//span)[contains(@class,'audio-sentence') and @id]"
+            );
             uniqueIds.Clear();
             foreach (var node in audioNodes)
             {

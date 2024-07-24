@@ -2205,7 +2205,7 @@ namespace BloomTests.Book
         }
 
         [Test]
-		public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangToEnglish()
+        public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangToEnglish()
         {
             var bookDom = new HtmlDom(
                 @"<html ><head></head><body>
@@ -2218,70 +2218,86 @@ namespace BloomTests.Book
             var data = new BookData(bookDom, _collectionSettings, null);
             Assert.AreEqual("health", data.GetVariableOrNull("topic", "en").Xml);
             Assert.IsNull(data.GetVariableOrNull("topic", "tpi").Xml);
-		}
+        }
 
-		private BookData CreateBookDom(string topic, string copyright = null, string originalCopyright = null)
-		{
-			var topicDiv = topic != null ? $"<div data-book='topic' lang='en'>{topic}</div>" : "";
-			var copyrightDiv = copyright != null ? $"<div data-book='copyright' lang='*'>{copyright}</div>" : "";
-			var originalCopyrightDiv = originalCopyright != null ? $"<div data-book='originalCopyright' lang='*'>{originalCopyright}</div>" : "";
+        private BookData CreateBookDom(
+            string topic,
+            string copyright = null,
+            string originalCopyright = null
+        )
+        {
+            var topicDiv = topic != null ? $"<div data-book='topic' lang='en'>{topic}</div>" : "";
+            var copyrightDiv =
+                copyright != null ? $"<div data-book='copyright' lang='*'>{copyright}</div>" : "";
+            var originalCopyrightDiv =
+                originalCopyright != null
+                    ? $"<div data-book='originalCopyright' lang='*'>{originalCopyright}</div>"
+                    : "";
 
-			var bookDom = new HtmlDom(
-@$"<html><head></head><body>
+            var bookDom = new HtmlDom(
+                @$"<html><head></head><body>
 	<div id='bloomDataDiv'>
 		{topicDiv}
 		{copyrightDiv}
 		{originalCopyrightDiv}
 	</div>
- </body></html>");
+ </body></html>"
+            );
 
-			return new BookData(bookDom, _collectionSettings, null);
-		}
+            return new BookData(bookDom, _collectionSettings, null);
+        }
 
-		[Test]
-		public void MigrateSpiritualTopic_TopicIsNotSpiritual_NoChange()
-		{
-			var data = CreateBookDom(topic: "Dictionary", copyright: "Bible Society");
-			Assert.AreEqual("Dictionary", data.GetVariableOrNull("topic", "en").Xml);
-		}
+        [Test]
+        public void MigrateSpiritualTopic_TopicIsNotSpiritual_NoChange()
+        {
+            var data = CreateBookDom(topic: "Dictionary", copyright: "Bible Society");
+            Assert.AreEqual("Dictionary", data.GetVariableOrNull("topic", "en").Xml);
+        }
 
-		[TestCase("Bible Society")]
-		[TestCase("Group of Bible Translators")]
-		[TestCase("SIL International")]
-		[TestCase("Kartidaya")]
-		[TestCase("WPS")]
-		public void MigrateSpiritualTopic_TopicIsSpiritual_CopyrightIsForBible_MigratesTopicToBible(string copyright)
-		{
-			var data = CreateBookDom(topic: "Spiritual", copyright);
-			Assert.AreEqual("Bible", data.GetVariableOrNull("topic", "en").Xml);
-		}
+        [TestCase("Bible Society")]
+        [TestCase("Group of Bible Translators")]
+        [TestCase("SIL International")]
+        [TestCase("Kartidaya")]
+        [TestCase("WPS")]
+        public void MigrateSpiritualTopic_TopicIsSpiritual_CopyrightIsForBible_MigratesTopicToBible(
+            string copyright
+        )
+        {
+            var data = CreateBookDom(topic: "Spiritual", copyright);
+            Assert.AreEqual("Bible", data.GetVariableOrNull("topic", "en").Xml);
+        }
 
-		[TestCase("Some Guy", null)]
-		[TestCase("Clearasil", null)] // Doesn't find "SIL"
-		[TestCase("Some Guy", "Bible Society")]
-		[TestCase("Clearasil", "Bible Society")] // Doesn't find "SIL"
-		public void MigrateSpiritualTopic_TopicIsSpiritual_CopyrightIsNotForBible_RemovesTopic(string copyright, string originalCopyright)
-		{
-			var data = CreateBookDom(topic: "Spiritual", copyright, originalCopyright);
-			Assert.AreEqual(new MultiTextBase(), data.GetMultiTextVariableOrEmpty("topic"));
-		}
+        [TestCase("Some Guy", null)]
+        [TestCase("Clearasil", null)] // Doesn't find "SIL"
+        [TestCase("Some Guy", "Bible Society")]
+        [TestCase("Clearasil", "Bible Society")] // Doesn't find "SIL"
+        public void MigrateSpiritualTopic_TopicIsSpiritual_CopyrightIsNotForBible_RemovesTopic(
+            string copyright,
+            string originalCopyright
+        )
+        {
+            var data = CreateBookDom(topic: "Spiritual", copyright, originalCopyright);
+            Assert.AreEqual(new MultiTextBase(), data.GetMultiTextVariableOrEmpty("topic"));
+        }
 
-		[TestCase("Bible Society")]
-		[TestCase("Group of Bible Translators")]
-		[TestCase("SIL International")]
-		[TestCase("Kartidaya")]
-		[TestCase("WPS")]
-		public void MigrateSpiritualTopic_TopicIsSpiritual_NoCopyright_OriginalCopyrightIsForBible_MigratesTopicToBible(string originalCopyright)
-		{
-			var data = CreateBookDom(topic: "Spiritual", originalCopyright: originalCopyright);
-			Assert.AreEqual("Bible", data.GetVariableOrNull("topic", "en").Xml);
-		}
+        [TestCase("Bible Society")]
+        [TestCase("Group of Bible Translators")]
+        [TestCase("SIL International")]
+        [TestCase("Kartidaya")]
+        [TestCase("WPS")]
+        public void MigrateSpiritualTopic_TopicIsSpiritual_NoCopyright_OriginalCopyrightIsForBible_MigratesTopicToBible(
+            string originalCopyright
+        )
+        {
+            var data = CreateBookDom(topic: "Spiritual", originalCopyright: originalCopyright);
+            Assert.AreEqual("Bible", data.GetVariableOrNull("topic", "en").Xml);
+        }
 
-		[Test]
-		public void MigrateSpiritualTopic_TopicIsSpiritual_NoCopyrightOrOriginalCopyright_RemovesTopic()
-		{
-			var data = CreateBookDom(topic: "Spiritual");
-			Assert.AreEqual(new MultiTextBase(), data.GetMultiTextVariableOrEmpty("topic"));
+        [Test]
+        public void MigrateSpiritualTopic_TopicIsSpiritual_NoCopyrightOrOriginalCopyright_RemovesTopic()
+        {
+            var data = CreateBookDom(topic: "Spiritual");
+            Assert.AreEqual(new MultiTextBase(), data.GetMultiTextVariableOrEmpty("topic"));
         }
 
         [Test]
@@ -2955,7 +2971,10 @@ namespace BloomTests.Book
             // One that should not be copied
             Assert.That(foo.GetOptionalStringAttribute("tabindex", null), Is.Null);
             // One that should be removed
-            Assert.That(foo.GetOptionalStringAttribute("data-audiorecordingendtimes", null), Is.Null);
+            Assert.That(
+                foo.GetOptionalStringAttribute("data-audiorecordingendtimes", null),
+                Is.Null
+            );
             // One that should not be overwritten (though more commonly it wouldn't be in the destination)
             Assert.That(foo.GetAttribute("aria-describedby"), Is.EqualTo("qtip-5"));
             // One that is not in the source and should be left alone

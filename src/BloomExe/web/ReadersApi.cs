@@ -78,22 +78,78 @@ namespace Bloom.Api
                 handleOnUiThread: false
             );
 
-            apiHandler.RegisterEndpointHandler("readers/ui/chooseAllowedWordsListFile", HandleChooseAllowedWordsListFile, true);
-            apiHandler.RegisterEndpointHandler("readers/ui/copyBookStatsToClipboard", HandleCopyBookStatsToClipboard, true);
-            apiHandler.RegisterEndpointHandler("readers/ui/makeLetterAndWordList", HandleMakeLetterAndWordList, true);
-            apiHandler.RegisterEndpointHandler("readers/ui/openTextsFolder", HandleOpenTextsFolder, true);
-            apiHandler.RegisterEndpointHandler("readers/ui/sampleTextsList", HandleSampleTextsList, true);  // why overlap with the io one?
+            apiHandler.RegisterEndpointHandler(
+                "readers/ui/chooseAllowedWordsListFile",
+                HandleChooseAllowedWordsListFile,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/ui/copyBookStatsToClipboard",
+                HandleCopyBookStatsToClipboard,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/ui/makeLetterAndWordList",
+                HandleMakeLetterAndWordList,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/ui/openTextsFolder",
+                HandleOpenTextsFolder,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/ui/sampleTextsList",
+                HandleSampleTextsList,
+                true
+            ); // why overlap with the io one?
 
-            apiHandler.RegisterEndpointHandler("readers/io/allowedWordsList", HandleAllowedWordsList, false);
-            apiHandler.RegisterEndpointHandler("readers/io/defaultLevel", HandleDefaultLevel, false);
-            apiHandler.RegisterEndpointHandler("readers/io/defaultStage", HandleDefaultStage, false);
-            apiHandler.RegisterEndpointHandler("readers/io/readerSettingsEditForbidden", HandleReaderSettingsEditForbidden, false);
-            apiHandler.RegisterEndpointHandler("readers/io/readerToolSettings", HandleReaderToolSettings, false);
-            apiHandler.RegisterEndpointHandler("readers/io/sampleFileContents", HandleSampleFileContents, false);
-            apiHandler.RegisterEndpointHandler("readers/io/sampleTextsList", HandleSampleTextsList, false); // why overlap with the ui one?
-            apiHandler.RegisterEndpointHandler("readers/io/synphonyLanguageData", HandleSynphonyLanguageData, false);
-            apiHandler.RegisterEndpointHandler("readers/io/textOfContentPages", HandleTextOfContentPages, false);
-            apiHandler.RegisterEndpointHandler("readers/io/test", r => r.PostSucceeded(), false);   // used by unit test
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/allowedWordsList",
+                HandleAllowedWordsList,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/defaultLevel",
+                HandleDefaultLevel,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/defaultStage",
+                HandleDefaultStage,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/readerSettingsEditForbidden",
+                HandleReaderSettingsEditForbidden,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/readerToolSettings",
+                HandleReaderToolSettings,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/sampleFileContents",
+                HandleSampleFileContents,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/sampleTextsList",
+                HandleSampleTextsList,
+                false
+            ); // why overlap with the ui one?
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/synphonyLanguageData",
+                HandleSynphonyLanguageData,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/textOfContentPages",
+                HandleTextOfContentPages,
+                false
+            );
+            apiHandler.RegisterEndpointHandler("readers/io/test", r => r.PostSucceeded(), false); // used by unit test
 
             apiHandler.RegisterEndpointHandler("directoryWatcher", ProcessDirectoryWatcher, false);
 
@@ -127,6 +183,7 @@ namespace Bloom.Api
             }
             return false;
         }
+
         private void HandleChooseAllowedWordsListFile(ApiRequest request)
         {
             if (IsRequestInvalid(request))
@@ -164,19 +221,13 @@ namespace Bloom.Api
                 headerBldr.Append("\tAverage No of Words per Page with Text");
                 dataBldr.AppendFormat("\t{0:0.#}", bookStats["actualAverageWordsPerPage"]);
                 headerBldr.Append("\tAverage No of Sentences per Page with Text");
-                dataBldr.AppendFormat(
-                    "\t{0:0.#}",
-                    bookStats["actualAverageSentencesPerPage"]
-                );
+                dataBldr.AppendFormat("\t{0:0.#}", bookStats["actualAverageSentencesPerPage"]);
                 headerBldr.Append("\tNumber of Unique Words");
                 dataBldr.AppendFormat("\t{0}", bookStats["actualUniqueWords"]);
                 headerBldr.Append("\tAverage Word Length");
                 dataBldr.AppendFormat("\t{0:0.#}", bookStats["actualAverageGlyphsPerWord"]);
                 headerBldr.Append("\tAverage Sentence Length");
-                dataBldr.AppendFormat(
-                    "\t{0:0.#}",
-                    bookStats["actualAverageWordsPerSentence"]
-                );
+                dataBldr.AppendFormat("\t{0:0.#}", bookStats["actualAverageWordsPerSentence"]);
                 headerBldr.Append("\tMaximum Word Length");
                 dataBldr.AppendFormat("\t{0}", bookStats["actualMaxGlyphsPerWord"]);
                 headerBldr.Append("\tMaximum Sentence Length");
@@ -334,10 +385,7 @@ namespace Bloom.Api
             if (IsRequestInvalid(request))
                 return;
             request.ReplyWithText(
-                GetTextFileContents(
-                    request.RequiredParam("fileName"),
-                    WordFileType.SampleFile
-                )
+                GetTextFileContents(request.RequiredParam("fileName"), WordFileType.SampleFile)
             );
         }
 

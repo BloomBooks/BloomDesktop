@@ -324,7 +324,9 @@ namespace Bloom.Book
             dom.PreserveWhitespace = true;
             dom.Load(filePath);
             foreach (
-                var node in dom.SafeSelectNodes("//SubscriptionCode").Cast<SafeXmlElement>().ToArray()
+                var node in dom.SafeSelectNodes("//SubscriptionCode")
+                    .Cast<SafeXmlElement>()
+                    .ToArray()
             )
             {
                 node.RemoveAll(); // should happen at most once

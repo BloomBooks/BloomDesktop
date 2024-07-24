@@ -663,8 +663,9 @@ namespace Bloom.Publish.BloomPub
                             {
                                 text = a.InnerText.Trim(),
                                 correct = (
-                                    (a.ParentNode?.ParentNode as SafeXmlElement)
-                                        ?.GetAttribute("class") ?? ""
+                                    (a.ParentNode?.ParentNode as SafeXmlElement)?.GetAttribute(
+                                        "class"
+                                    ) ?? ""
                                 ).Contains("correct-answer")
                             }
                     )
@@ -678,7 +679,9 @@ namespace Bloom.Publish.BloomPub
         private static void StripImgIfWeCannotFindFile(SafeXmlDocument dom, string bookFile)
         {
             var folderPath = Path.GetDirectoryName(bookFile);
-            foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<SafeXmlElement>().ToArray())
+            foreach (
+                var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<SafeXmlElement>().ToArray()
+            )
             {
                 var file = UrlPathString
                     .CreateFromUrlEncodedString(imgElt.GetAttribute("src"))
@@ -693,7 +696,8 @@ namespace Bloom.Publish.BloomPub
         private static void StripContentEditableAndTabIndex(SafeXmlDocument dom)
         {
             foreach (
-                var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<SafeXmlElement>()
+                var editableElt in dom.SafeSelectNodes("//div[@contenteditable]")
+                    .Cast<SafeXmlElement>()
             )
                 editableElt.RemoveAttribute("contenteditable");
 
@@ -729,8 +733,9 @@ namespace Bloom.Publish.BloomPub
                     .ToArray()
             )
             {
-                var img = imgContainer.ChildNodes
-                    .FirstOrDefault(n => n is SafeXmlElement && n.Name == "img");
+                var img = imgContainer.ChildNodes.FirstOrDefault(
+                    n => n is SafeXmlElement && n.Name == "img"
+                );
                 if (img == null || string.IsNullOrEmpty(img.GetAttribute("src")))
                     continue;
                 // The filename should be already urlencoded since src is a url.
@@ -783,7 +788,9 @@ namespace Bloom.Publish.BloomPub
         private static void RemoveInvisibleImageElements(Book.Book book)
         {
             var isLandscape = book.GetLayout().SizeAndOrientation.IsLandScape;
-            foreach (var img in book.RawDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray())
+            foreach (
+                var img in book.RawDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray()
+            )
             {
                 var src = img.GetAttribute("src");
                 if (string.IsNullOrEmpty(src))

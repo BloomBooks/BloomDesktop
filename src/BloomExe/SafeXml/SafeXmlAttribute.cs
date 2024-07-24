@@ -6,8 +6,7 @@ namespace Bloom.SafeXml
     // But this is a minimal implementation that should be safe and sufficient.
     public class SafeXmlAttribute : SafeXmlNode
     {
-        public SafeXmlAttribute(XmlAttribute node, SafeXmlDocument doc) : base(node, doc)
-        {
-        }
+        public SafeXmlAttribute(XmlAttribute node, SafeXmlDocument doc)
+            : base(node, doc) { }
     }
 }

@@ -1262,7 +1262,10 @@ namespace Bloom.Edit
             }
         }
 
-        static SafeXmlElement InsertContainingScalingDiv(SafeXmlElement body, SafeXmlElement pageDiv)
+        static SafeXmlElement InsertContainingScalingDiv(
+            SafeXmlElement body,
+            SafeXmlElement pageDiv
+        )
         {
             // Note: because this extra div is OUTSIDE the page div, we don't have to remove it later,
             // because only the page div and its contents are saved back to the permanent file.
@@ -1363,7 +1366,9 @@ namespace Bloom.Edit
 
         private void EnsureLevelAttrCorrect()
         {
-            var currentLevel = _currentlyDisplayedBook.OurHtmlDom.Body.GetAttribute("data-leveledreaderlevel");
+            var currentLevel = _currentlyDisplayedBook.OurHtmlDom.Body.GetAttribute(
+                "data-leveledreaderlevel"
+            );
             var correctLevel =
                 _currentlyDisplayedBook.BookInfo.MetaData.LeveledReaderLevel.ToString();
             if (correctLevel != currentLevel)
@@ -1888,7 +1893,8 @@ namespace Bloom.Edit
                 {
                     // We have to clone this so that if the user changes the page after doing the copy,
                     // when they paste they get the page as it was, not as it is now.
-                    _pageDivFromCopyPage = (SafeXmlElement)page.GetDivNodeForThisPage().CloneNode(true);
+                    _pageDivFromCopyPage = (SafeXmlElement)
+                        page.GetDivNodeForThisPage().CloneNode(true);
                     _bookPathFromCopyPage = page.Book.GetPathHtmlFile();
                     return page.Id;
                 },

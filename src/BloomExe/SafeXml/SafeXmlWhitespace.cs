@@ -6,8 +6,7 @@ namespace Bloom.SafeXml
     // which don't need more than this bare skeleton.
     public class SafeXmlWhitespace : SafeXmlCharacterData
     {
-        public SafeXmlWhitespace(XmlWhitespace node, SafeXmlDocument doc) : base(node, doc)
-        {
-        }
+        public SafeXmlWhitespace(XmlWhitespace node, SafeXmlDocument doc)
+            : base(node, doc) { }
     }
 }

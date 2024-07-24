@@ -301,7 +301,8 @@ namespace BloomTests.Spreadsheet
             _warnings = await importer.ImportAsync(ss, _progressSpy);
 
             _contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                .Cast<SafeXmlElement>().ToList();
+                .Cast<SafeXmlElement>()
+                .ToList();
 
             // Remove the xmatter to get just the content pages, but save so we can test that too.
             _contentPages.RemoveAt(0);

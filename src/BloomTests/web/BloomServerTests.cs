@@ -177,7 +177,10 @@ namespace BloomTests.web
                 );
                 EndpointHandler testFunc = (request) =>
                 {
-                    Assert.That(request.LocalPath(), Does.Contain("thisWontWorkWithoutInjectionButWillWithIt"));
+                    Assert.That(
+                        request.LocalPath(),
+                        Does.Contain("thisWontWorkWithoutInjectionButWillWithIt")
+                    );
                     Assert.That(
                         request.CurrentCollectionSettings,
                         Is.EqualTo(server.CurrentCollectionSettings)
@@ -185,7 +188,7 @@ namespace BloomTests.web
                     request.ReplyWithText("Did It!");
                 };
                 server.ApiHandler.RegisterEndpointHandler(
-					"thisWontWorkWithoutInjectionButWillWithIt",
+                    "thisWontWorkWithoutInjectionButWillWithIt",
                     testFunc,
                     true
                 );

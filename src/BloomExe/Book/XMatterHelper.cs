@@ -432,7 +432,9 @@ namespace Bloom.Book
                 divBeforeNextFrontMatterPage = newPageDiv;
 
                 //enhance... this is really ugly. I'm just trying to clear out any remaining "{blah}" left over from the template
-                foreach (SafeXmlElement e in newPageDiv.SafeSelectNodes("//*[starts-with(text(),'{')]"))
+                foreach (
+                    SafeXmlElement e in newPageDiv.SafeSelectNodes("//*[starts-with(text(),'{')]")
+                )
                 {
                     foreach (var node in e.ChildNodes)
                     {
@@ -456,7 +458,8 @@ namespace Bloom.Book
         {
             // the "inside" here means "not counting the cover"
             var numberOfFrontMatterPagesInside =
-                XMatterDom.SafeSelectNodes("//div[contains(@class,'bloom-frontMatter')]").Length - 1;
+                XMatterDom.SafeSelectNodes("//div[contains(@class,'bloom-frontMatter')]").Length
+                - 1;
             var firstPageWouldNotBePartOfASpread = numberOfFrontMatterPagesInside % 2 != 0;
 
             if (firstPageWouldNotBePartOfASpread)
@@ -484,7 +487,8 @@ namespace Bloom.Book
                             </div>
 						</div>"
                     );
-                    var flyleaf = _bookDom.RawDom.ImportNode(flyDom.FirstChild, true) as SafeXmlElement;
+                    var flyleaf =
+                        _bookDom.RawDom.ImportNode(flyDom.FirstChild, true) as SafeXmlElement;
                     flyleaf.SetAttribute("id", Guid.NewGuid().ToString());
                     lastFrontMatterPage.ParentNode.InsertAfter(flyleaf, lastFrontMatterPage);
                     SizeAndOrientation.UpdatePageSizeAndOrientationClasses(flyleaf, layout);

@@ -254,7 +254,11 @@ namespace BloomTests.Book
             var originalCopyrightAndLicenseDiv = dom.SelectSingleNode(
                 "//div[@data-derived='originalCopyrightAndLicense']"
             );
-            SafeXmlElement[] elementsToCheck = { languageLocationDiv, originalCopyrightAndLicenseDiv };
+            SafeXmlElement[] elementsToCheck =
+            {
+                languageLocationDiv,
+                originalCopyrightAndLicenseDiv
+            };
             elementsToCheck.ForEach(elementToCheck =>
             {
                 string lang = languageLocationDiv.GetAttribute("lang");

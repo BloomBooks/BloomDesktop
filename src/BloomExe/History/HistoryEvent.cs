@@ -3,16 +3,16 @@ using SQLite;
 
 namespace Bloom.History
 {
-	/// <summary>
-	/// This enumeration is used to record the type of event that has occurred in the history of a book.
-	/// The numeric values are stored in the database, so don't change them.  If you add a new item, you
-	/// MUST add it to the end of this list, and also add its name to the end of the list of names stored
-	/// in teamCollection\CollectionHistoryTable.tsx.
-	/// </summary>
-	/// <remarks>
-	/// If you reorder these items, or add a new item anywhere but at the end, you will break the history
-	/// reports by showing the wrong event types for all entries created before the change occurred!!!
-	/// </remarks>
+    /// <summary>
+    /// This enumeration is used to record the type of event that has occurred in the history of a book.
+    /// The numeric values are stored in the database, so don't change them.  If you add a new item, you
+    /// MUST add it to the end of this list, and also add its name to the end of the list of names stored
+    /// in teamCollection\CollectionHistoryTable.tsx.
+    /// </summary>
+    /// <remarks>
+    /// If you reorder these items, or add a new item anywhere but at the end, you will break the history
+    /// reports by showing the wrong event types for all entries created before the change occurred!!!
+    /// </remarks>
     public enum BookHistoryEventType
     {
         CheckOut,
@@ -25,7 +25,7 @@ namespace Bloom.History
         SyncProblem,
         Deleted
         // NB: add them here, too: teamCollection\CollectionHistoryTable.tsx
-		// and also add them to EventTypeEnumerationIsStable() in History\HistoryEventTests.cs
+        // and also add them to EventTypeEnumerationIsStable() in History\HistoryEventTests.cs
     }
 
     /// <summary>

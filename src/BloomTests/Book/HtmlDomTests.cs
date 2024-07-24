@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace BloomTests.Book
 {
-	[TestFixture]
+    [TestFixture]
     public sealed class HtmlDomTests
     {
         [Test]
@@ -828,8 +828,14 @@ namespace BloomTests.Book
 
         private void VerifyUserStylesCdataWrapping(SafeXmlNode dom)
         {
-            var stylesNodes = dom.SafeSelectNodes("/html/head/style[@title=\"userModifiedStyles\"]");
-            Assert.AreEqual(1, stylesNodes.Length, "Should only be one userModifiedStyles element.");
+            var stylesNodes = dom.SafeSelectNodes(
+                "/html/head/style[@title=\"userModifiedStyles\"]"
+            );
+            Assert.AreEqual(
+                1,
+                stylesNodes.Length,
+                "Should only be one userModifiedStyles element."
+            );
             var contents = stylesNodes[0].InnerText.Trim();
             Assert.That(
                 contents.LastIndexOf(XmlHtmlConverter.CdataPrefix).Equals(0),
@@ -2578,9 +2584,7 @@ p {
 </html>";
 
             doc.LoadXml(input);
-            HtmlDom.InsertFullBleedMarkup(
-                doc.DocumentElement.GetElementsByTagName("body").First()
-            );
+            HtmlDom.InsertFullBleedMarkup(doc.DocumentElement.GetElementsByTagName("body").First());
 
             var assertThatDoc = AssertThatXmlIn.Dom(doc);
             assertThatDoc.HasSpecifiedNumberOfMatchesForXpath(

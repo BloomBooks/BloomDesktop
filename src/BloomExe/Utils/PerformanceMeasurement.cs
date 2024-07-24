@@ -116,7 +116,11 @@ namespace Bloom.Utils
             Measurement.PerfPoint.CleanupSubprocessList();
         }
 
-        readonly string[] _majorActions = new string[] { "EditBookCommand", "SelectedTabChangedEvent" };
+        readonly string[] _majorActions = new string[]
+        {
+            "EditBookCommand",
+            "SelectedTabChangedEvent"
+        };
 
         /// <summary>
         /// This is the main public method, called anywhere in the c# code that we want to measure something.
@@ -131,12 +135,20 @@ namespace Bloom.Utils
         )
         {
             if (doMeasure)
-                return Measure(actionLabel, actionDetails, refreshSubprocessList: _majorActions.Contains(actionLabel));
+                return Measure(
+                    actionLabel,
+                    actionDetails,
+                    refreshSubprocessList: _majorActions.Contains(actionLabel)
+                );
             else
                 return new Lifespan(null, null);
         }
 
-        public IDisposable Measure(string actionLabel, string actionDetails = "", bool refreshSubprocessList = false)
+        public IDisposable Measure(
+            string actionLabel,
+            string actionDetails = "",
+            bool refreshSubprocessList = false
+        )
         {
             if (!CurrentlyMeasuring)
                 return null;
@@ -214,7 +226,12 @@ namespace Bloom.Utils
 
         public long LastKnownSize => _end?.privateBytesKb ?? _start?.privateBytesKb ?? 0L;
 
-        public Measurement(string actionLabel, string actionDetails, long previousPrivateBytesKb, bool refreshSubprocessList = false)
+        public Measurement(
+            string actionLabel,
+            string actionDetails,
+            long previousPrivateBytesKb,
+            bool refreshSubprocessList = false
+        )
         {
             _actionLabel = actionLabel;
             _actionDetails = actionDetails;
@@ -222,7 +239,7 @@ namespace Bloom.Utils
             _refreshSubprocessList = refreshSubprocessList;
             try
             {
-                _start = new PerfPoint(false);  // Use the old list of subprocesses, if any, for the starting point.
+                _start = new PerfPoint(false); // Use the old list of subprocesses, if any, for the starting point.
             }
             catch (Exception e)
             {
@@ -345,7 +362,7 @@ namespace Bloom.Utils
                     {
                         if (p.HasExited)
                             continue;
-                        p.Refresh();    // ensure current measurements
+                        p.Refresh(); // ensure current measurements
                         pagedMemoryKb += p.PagedMemorySize64 / 1024;
                         workingSetKb += p.WorkingSet64 / 1024;
                         privateBytesKb += p.PrivateMemorySize64 / 1024;

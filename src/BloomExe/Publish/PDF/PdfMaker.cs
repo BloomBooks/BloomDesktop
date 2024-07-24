@@ -52,11 +52,7 @@ namespace Bloom.Publish.PDF
             // but as it was an intermittent problem and we're not sure that was the cause, this might help.
             for (int i = 0; i < 4; i++)
             {
-                new MakePdfUsingExternalPdfMakerProgram().MakePdf(
-                    specs,
-                    worker,
-                    doWorkEventArgs
-                );
+                new MakePdfUsingExternalPdfMakerProgram().MakePdf(specs, worker, doWorkEventArgs);
 
                 if (
                     doWorkEventArgs.Cancel
@@ -75,13 +71,14 @@ namespace Bloom.Publish.PDF
             {
                 // Should never happen, but...
                 // Review: should we localize these? Hopefully the user never sees it...don't want to increase burden on localizers...
-                var message = "Bloom unexpectedly failed to create the PDF. If this happens repeatedly please report it to the developers. Probably it will work if you just try again.";
+                var message =
+                    "Bloom unexpectedly failed to create the PDF. If this happens repeatedly please report it to the developers. Probably it will work if you just try again.";
                 var header = "PDF creation failed";
                 if (owner != null)
                     owner.Invoke(() =>
-                        {
-                            MessageBox.Show(message, header, MessageBoxButtons.OK);
-                        });
+                    {
+                        MessageBox.Show(message, header, MessageBoxButtons.OK);
+                    });
                 else
                     Console.WriteLine(message);
                 doWorkEventArgs.Result = MakingPdfFailedException.CreatePdfException();
