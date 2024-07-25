@@ -90,14 +90,19 @@ namespace Bloom.Api
 			}
 		}
 
-
 		/// <summary>
 		/// extract the base and flavor parts of a Branding name
 		/// </summary>
 		/// <param name="fullBrandingName">the full key</param>
 		/// <param name="folderName">the name before any branding; this will match the folder holding all the files.</param>
 		/// <param name="flavor">a name or empty string</param>
-		public static void ParseBrandingKey(String fullBrandingName, out String folderName, out String flavor)
+		/// <param name="subUnitName">a name (normally a country) or empty string</param>
+		public static void ParseBrandingKey(
+			String fullBrandingName,
+			out String folderName,
+			out String flavor,
+			out String subUnitName
+		)
 		{
 			// A Branding may optionally have a suffix of the form "[FLAVOR]" where flavor is typically
 			// a language name. This is used to select different logo files without having to create
@@ -105,7 +110,14 @@ namespace Bloom.Api
 			// language in a project that is publishing in a situation with multiple major languages.
 			var parts = fullBrandingName.Split('[');
 			folderName = parts[0];
-			flavor = parts.Length > 1 ? parts[1].Replace("]","") : "";
+			flavor = parts.Length > 1 ? parts[1].Replace("]", "") : "";
+
+			// A Branding may optionally have a suffix of the form "(SUBUNIT)" where subUnitName is typically
+			// a country name. This is useful when the project wants different codes, but wants *exactly*
+			// the same branding.
+			parts = folderName.Split('(');
+			folderName = parts[0];
+			subUnitName = parts.Length > 1 ? parts[1].Replace(")", "") : "";
 		}
 
 		/// <summary>
@@ -118,7 +130,7 @@ namespace Bloom.Api
 		{
 			try
 			{
-				ParseBrandingKey(brandingNameOrFolderPath, out var brandingFolderName, out var flavor);
+				ParseBrandingKey(brandingNameOrFolderPath, out var brandingFolderName, out var flavor, out var subUnitName);
 
 				// check to see if we have a special branding.json just for this flavor.
 				// Note that we could instead add code that allows a single branding.json to
@@ -128,10 +140,10 @@ namespace Bloom.Api
 				// But if we needed to have different boilerplate text, well then we would need to
 				// either use this here mechanism (separate json) or implement the ability to add
 				// "flavor:" to the rules.
-				string settingsPath=null;
+				string settingsPath = null;
 				if (!string.IsNullOrEmpty(flavor))
 				{
-					settingsPath= BloomFileLocator.GetOptionalBrandingFile(brandingFolderName, "branding["+flavor+"].json");
+					settingsPath = BloomFileLocator.GetOptionalBrandingFile(brandingFolderName, "branding[" + flavor + "].json");
 				}
 
 				// if not, fall bck to just "branding.json"
@@ -154,13 +166,13 @@ namespace Bloom.Api
 				{
 					var content = RobustFile.ReadAllText(settingsPath);
 					var settings = JsonConvert.DeserializeObject<Settings>(content);
-					if(settings == null)
+					if (settings == null)
 					{
 						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Trouble reading branding settings",
 							"branding.json of the branding " + brandingNameOrFolderPath + " may be corrupt. It had: " + content);
 						return null;
 					}
-					
+
 					settings.Presets.ForEach(p =>
 					{
 						if (p.Content != null)
@@ -177,7 +189,7 @@ namespace Bloom.Api
 					return settings;
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Trouble reading branding settings", exception: e);
 			}

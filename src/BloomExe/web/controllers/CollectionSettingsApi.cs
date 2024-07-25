@@ -455,7 +455,7 @@ namespace Bloom.web.controllers
 
 		public static string GetSummaryHtml(string branding)
 		{
-			BrandingSettings.ParseBrandingKey(branding, out var baseKey, out var flavor);
+			BrandingSettings.ParseBrandingKey(branding, out var baseKey, out var flavor, out var subUnitName);
 			var summaryFile = BloomFileLocator.GetOptionalBrandingFile(baseKey, "summary.htm");
 			if (summaryFile == null)
 				return "";

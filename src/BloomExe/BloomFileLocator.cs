@@ -328,7 +328,7 @@ namespace Bloom
 		}
 		public static string GetBrandingFolder(string fullBrandingName)
 		{
-			BrandingSettings.ParseBrandingKey(fullBrandingName, out var brandingFolderName, out var flavor);
+			BrandingSettings.ParseBrandingKey(fullBrandingName, out var brandingFolderName, out var flavor, out var subUnitName);
 			return BloomFileLocator.GetOptionalBrowserDirectory("branding", brandingFolderName);
 		}
 		public string GetBrandingFile(Boolean optional, string fileName)
