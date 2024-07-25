@@ -24,7 +24,12 @@ namespace Bloom.Collection
 
         public static bool HaveFilesForBranding(string fullBrandKey)
         {
-            BrandingSettings.ParseBrandingKey(fullBrandKey, out var baseKey, out var flavor);
+            BrandingSettings.ParseBrandingKey(
+                fullBrandKey,
+                out var baseKey,
+                out var flavor,
+                out var subUnitName
+            );
 
             var brandingDirectory = BloomFileLocator.GetBrowserDirectory("branding");
             return Directory

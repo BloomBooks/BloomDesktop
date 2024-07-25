@@ -37,6 +37,57 @@
     --pageNumber-always-left-margin: var(--page-margin-left);
     --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
 }
+
+/* Rules for rounding the corner of images */
+/* Picture on left */
+.Device16x9Landscape.numberedPage
+    .marginBox
+    > .vertical-percent
+    > .position-left
+    > .split-pane-component-inner
+    > .bloom-imageContainer {
+    --image-border-radius: var(--marginBox-border-radius) 0px 0px
+        var(--marginBox-border-radius); /* left corners */
+}
+/* Picture on right */
+.Device16x9Landscape.numberedPage
+    .marginBox
+    > .vertical-percent
+    > .position-right
+    > .split-pane-component-inner
+    > .bloom-imageContainer {
+    --image-border-radius: 0px var(--marginBox-border-radius)
+        var(--marginBox-border-radius) 0px; /* right corners */
+}
+/* Picture on top */
+.Device16x9Portrait.numberedPage
+    .marginBox
+    > .horizontal-percent
+    > .position-top
+    > .split-pane-component-inner
+    > .bloom-imageContainer {
+    --image-border-radius: var(--marginBox-border-radius)
+        var(--marginBox-border-radius) 0px 0px; /* top corners */
+}
+/* Picture on bottom */
+.Device16x9Portrait.numberedPage
+    .marginBox
+    > .horizontal-percent
+    > .position-bottom
+    > .split-pane-component-inner
+    > .bloom-imageContainer {
+    --image-border-radius: 0px 0px var(--marginBox-border-radius)
+        var(--marginBox-border-radius); /* bottom corners */
+}
+/* Picture only */
+[class*="Device"].numberedPage
+    .marginBox
+    > .split-pane-component-inner
+    > .bloom-imageContainer {
+    --image-border-radius: var(--marginBox-border-radius); /* all corners */
+}
+/* End Rules for rounding the corner of images */
+
 .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
     --pageNumber-right-margin: var(--page-margin-right);
     --pageNumber-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
