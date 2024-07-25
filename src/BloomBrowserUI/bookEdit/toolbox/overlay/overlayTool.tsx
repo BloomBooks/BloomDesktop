@@ -761,7 +761,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                         <span>
                             The Overlay Tool cannot currently be used on Bloom
                             Games pages. Some of the functions are duplicated in
-                            the Drag Activity Tool.
+                            the Games Tool.
                         </span>
                     </Typography>
                 ) : (
