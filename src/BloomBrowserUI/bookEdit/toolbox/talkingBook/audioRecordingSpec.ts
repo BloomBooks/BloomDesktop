@@ -2258,12 +2258,9 @@ function escapeRegExp(regexPattern) {
     return regexPattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 }
 
-// eslint-disable no-irregular-whitespace (Rest of this file contains some strings with deliberate special whitespace characters)
-
 // Actually, when we got it (BL-13428), it was even worse. It had leftover enableHighlight and disableHighlight classes
 // which hadn't gotten cleaned up due to a bug.
 function getComplexHtmlFromUser() {
-    // eslint-disable-next-line no-irregular-whitespace
     return `<div id="box1" class="bloom-editable normal-style bloom-content1 bloom-visibility-code-on" lang="es" style="min-height: 24px;" tabindex="0" spellcheck="false" role="textbox" aria-label="false" contenteditable="true" data-audiorecordingmode="Sentence" data-languagetipcontent="Spanish">
     <p><strong><span style="color:#FFFFFF;">&nbsp; &nbsp; &nbsp;</span></strong></p>
     <p></p>
