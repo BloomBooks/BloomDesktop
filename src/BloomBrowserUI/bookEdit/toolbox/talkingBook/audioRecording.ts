@@ -584,6 +584,14 @@ export default class AudioRecording {
             if (elt.closest("[data-target-of]")) {
                 return false;
             }
+            if (
+                !elt.parentElement?.classList.contains(
+                    kBloomTranslationGroupClass
+                )
+            ) {
+                // We were getting copies from qtips
+                return false;
+            }
             if (!$this.isVisible(elt, includeCheckForTempHidden)) {
                 return false;
             }
@@ -2951,13 +2959,8 @@ export default class AudioRecording {
             return null;
         }
 
-        // Find the relevant audioSentences
-        // Note that we check they're descendants of bloom-translationGroup
-        // so that we exclude the qTip versions of these
-        const visibleAudioSentenceElems = this.getAudioElements();
-        const firstSentenceArray = this.sortByTabindex(
-            visibleAudioSentenceElems
-        );
+        // Find the relevant audioSentences (already sorted)
+        const firstSentenceArray = this.getAudioElements();
         if (firstSentenceArray.length === 0) {
             // no recordable sentence found.
             return null;

@@ -54,9 +54,9 @@ describe("talking book tests", () => {
         it("moves highlight after focus changes", async () => {
             // Setup Initial HTML
             const textBox1 =
-                '<div class="bloom-editable" id="div1"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1</span></p></div>';
+                '<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on" id="div1"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1</span></p></div></div>';
             const textBox2 =
-                '<div class="bloom-editable" id="div2"><p><span id="2.1" class="audio-sentence">2.1</span></p></div>';
+                '<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on" id="div2"><p><span id="2.1" class="audio-sentence">2.1</span></p></div></div>';
             SetupIFrameFromHtml(`<div id='page1'>${textBox1}${textBox2}</div>`);
 
             // Setup talking book tool
@@ -65,8 +65,8 @@ describe("talking book tests", () => {
 
             // Simulate a keypress on a different div
             const div2Element = theOneAudioRecorder
-                .getPageDocBody()!
-                .querySelector("#div2")! as HTMLElement;
+                .getPageDocBody()
+                ?.querySelector("#div2") as HTMLElement;
             div2Element.tabIndex = -1; // focus() won't work if no tabindex.
             div2Element.focus();
 
@@ -75,8 +75,8 @@ describe("talking book tests", () => {
             doUpdate();
 
             // Verification
-            const currentTextBox = theOneAudioRecorder.getCurrentTextBox()!;
-            const currentId = currentTextBox.getAttribute("id");
+            const currentTextBox = theOneAudioRecorder.getCurrentTextBox();
+            const currentId = currentTextBox?.getAttribute("id");
             expect(currentId).toBe("div2");
         });
     });
@@ -199,20 +199,20 @@ describe("talking book tests", () => {
         }
 
         function getPureSentenceModeHtml(checksums: string[]): string {
-            const div1Html = `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent" recordingmd5="${checksums[0]}">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${checksums[1]}">Sentence 1.2</span></p></div>`;
-            const div2Html = `<div class="bloom-editable" id="div2" data-audioRecordingMode="Sentence" recordingmd5=""><p><span id="2.1" class="audio-sentence" recordingmd5="${checksums[2]}">Sentence 2.1၊</span> <span id="2.2" class="audio-sentence" recordingmd5="${checksums[3]}">Sentence 2.2</span></p></div>`;
+            const div1Html = `<div class="bloom-editable bloom-visibility-code-on" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent" recordingmd5="${checksums[0]}">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${checksums[1]}">Sentence 1.2</span></p></div>`;
+            const div2Html = `<div class="bloom-editable bloom-visibility-code-on" id="div2" data-audioRecordingMode="Sentence" recordingmd5=""><p><span id="2.1" class="audio-sentence" recordingmd5="${checksums[2]}">Sentence 2.1၊</span> <span id="2.2" class="audio-sentence" recordingmd5="${checksums[3]}">Sentence 2.2</span></p></div>`;
             return `${div1Html}${div2Html}`;
         }
 
         function getPreTextBoxModeHtml(checksums: string[]): string {
-            const div1Html = `<div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox"><p><span id="1.1" class="audio-sentence" recordingmd5="${checksums[0]}">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${checksums[1]}">Sentence 1.2</span></p></div>`;
-            const div2Html = `<div class="bloom-editable" id="div2" data-audiorecordingmode="TextBox"><p><span id="2.1" class="audio-sentence" recordingmd5="${checksums[2]}">Sentence 2.1၊</span> <span id="2.2" class="audio-sentence" recordingmd5="${checksums[3]}">Sentence 2.2</span></p></div>`;
+            const div1Html = `<div class="bloom-editable bloom-visibility-code-on ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox"><p><span id="1.1" class="audio-sentence" recordingmd5="${checksums[0]}">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${checksums[1]}">Sentence 1.2</span></p></div>`;
+            const div2Html = `<div class="bloom-editable bloom-visibility-code-on" id="div2" data-audiorecordingmode="TextBox"><p><span id="2.1" class="audio-sentence" recordingmd5="${checksums[2]}">Sentence 2.1၊</span> <span id="2.2" class="audio-sentence" recordingmd5="${checksums[3]}">Sentence 2.2</span></p></div>`;
             return `${div1Html}${div2Html}`;
         }
 
         function setupPureTextBoxModeHtml(checksums: string[]): string {
-            const div1Html = `<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox" recordingmd5="${checksums[0]}"><p>Sentence 1.1၊ Sentence 1.2</p></div>`;
-            const div2Html = `<div class="bloom-editable audio-sentence" id="div2" data-audiorecordingmode="TextBox" recordingmd5="${checksums[1]}"><p>Sentence 2.1၊ Sentence 2.2</p></div>`;
+            const div1Html = `<div class="bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox" recordingmd5="${checksums[0]}"><p>Sentence 1.1၊ Sentence 1.2</p></div>`;
+            const div2Html = `<div class="bloom-editable bloom-visibility-code-on audio-sentence" id="div2" data-audiorecordingmode="TextBox" recordingmd5="${checksums[1]}"><p>Sentence 2.1၊ Sentence 2.2</p></div>`;
             return `${div1Html}${div2Html}`;
         }
 
@@ -221,7 +221,7 @@ describe("talking book tests", () => {
             let checksumIndex = 0;
             for (let i = 1; i <= 2; ++i) {
                 // FYI: Yes, it is confirmed that in hardSplit, ui-audioCurrent goes on the div, not the span.
-                const divStartHtml = `<div class="bloom-editable${
+                const divStartHtml = `<div class="bloom-editable bloom-visibility-code-on${
                     i === 1 ? " ui-audioCurrent" : ""
                 }" id="div${i}" data-audiorecordingmode="TextBox">`;
                 const divInnerHtml = `<p><span id="${i}.1" class="audio-sentence" recordingmd5="${
@@ -238,7 +238,7 @@ describe("talking book tests", () => {
         function getTextBoxSoftSplitHtml(checksums: string[]): string {
             let html = "";
             for (let i = 1; i <= 2; ++i) {
-                const divStartHtml = `<div class="bloom-editable audio-sentence${
+                const divStartHtml = `<div class="bloom-editable bloom-visibility-code-on audio-sentence${
                     i === 1 ? " ui-audioCurrent" : ""
                 }" id="div${i}" data-audiorecordingmode="TextBox" recordingmd5="${
                     checksums[i - 1]
@@ -300,8 +300,10 @@ describe("talking book tests", () => {
                 theOneAudioRecorder.recordingMode = RecordingMode.TextBox;
             }
 
-            originalDiv1Html = getFrameElementById("page", "div1")!.outerHTML;
-            originalDiv2Html = getFrameElementById("page", "div2")!.outerHTML;
+            originalDiv1Html = getFrameElementById("page", "div1")
+                ?.outerHTML as string;
+            originalDiv2Html = getFrameElementById("page", "div2")
+                ?.outerHTML as string;
 
             if (areRecordingsPresent === "present") {
                 setAllAudioFilesPresent();
@@ -375,12 +377,14 @@ describe("talking book tests", () => {
             }
         }
 
-        function verifyHtmlPreserved(scenario: AudioMode) {
-            const currentHtml1 = getFrameElementById("page", "div1")!.outerHTML;
+        function verifyHtmlPreserved(_scenario: AudioMode) {
+            const currentHtml1 = getFrameElementById("page", "div1")
+                ?.outerHTML as string;
             expect(StripRecordingMd5(currentHtml1)).toBe(
                 StripRecordingMd5(originalDiv1Html)
             );
-            const currentHtml2 = getFrameElementById("page", "div2")!.outerHTML;
+            const currentHtml2 = getFrameElementById("page", "div2")
+                ?.outerHTML as string;
             expect(StripRecordingMd5(currentHtml2)).toBe(
                 StripRecordingMd5(originalDiv2Html)
             );
@@ -412,12 +416,12 @@ describe("talking book tests", () => {
                 return;
             }
 
-            const page1 = getFrameElementById("page", "page1")!;
-            const numCurrents = page1.querySelectorAll(".ui-audioCurrent")
+            const page1 = getFrameElementById("page", "page1");
+            const numCurrents = page1?.querySelectorAll(".ui-audioCurrent")
                 .length;
             expect(numCurrents).toBe(
                 1,
-                "Only 1 item is allowed to be the current: " + page1.innerHTML
+                "Only 1 item is allowed to be the current: " + page1?.innerHTML
             );
 
             switch (scenario) {
@@ -493,7 +497,7 @@ describe("talking book tests", () => {
             const expectedMd5s = getTestMd5s("same", scenario);
             if (
                 scenario === AudioMode.PureSentence ||
-                scenario == AudioMode.PreTextBox ||
+                scenario === AudioMode.PreTextBox ||
                 scenario === AudioMode.HardSplitTextBox
             ) {
                 expectMd5("1.1", expectedMd5s[0]);
@@ -518,7 +522,7 @@ describe("talking book tests", () => {
         ) {
             if (
                 scenario === AudioMode.PureSentence ||
-                scenario == AudioMode.PreTextBox ||
+                scenario === AudioMode.PreTextBox ||
                 scenario === AudioMode.HardSplitTextBox
             ) {
                 expectMd5("1.1", "undefined");
@@ -546,7 +550,7 @@ describe("talking book tests", () => {
             const expectedMd5s = getTestMd5s("differs", scenario);
             if (
                 scenario === AudioMode.PureSentence ||
-                scenario == AudioMode.PreTextBox ||
+                scenario === AudioMode.PreTextBox ||
                 scenario === AudioMode.HardSplitTextBox
             ) {
                 // Expecting differs -> update, which means that there will only be one sentence left. Only need to check the 1st one.
@@ -733,6 +737,7 @@ describe("talking book tests", () => {
 
             // System under test
             // Simulate user deleting the vertical bar character
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             getFrameElementById("page", "1.1")!.innerText = "Phrase 1";
             const tbTool = new TalkingBookTool();
             const doUpdate = await tbTool.updateMarkupAsync();
@@ -752,36 +757,9 @@ function getAudioSentenceSpans(divId: string): HTMLSpanElement[] {
 
     expect(element).toBeTruthy(`${divId} should exist.`);
 
-    const htmlElement = element! as HTMLElement;
+    const htmlElement = element as HTMLElement;
     const collection = htmlElement.querySelectorAll("span.audio-sentence");
     return Array.from(collection) as HTMLSpanElement[];
-}
-
-function getHighlightSegments(divId: string): HTMLSpanElement[] {
-    const element = getFrameElementById("page", divId);
-
-    expect(element).toBeTruthy(`${divId} should exist.`);
-
-    const htmlElement = element! as HTMLElement;
-    const collection = htmlElement.querySelectorAll(
-        "span.bloom-highlightSegment"
-    );
-    return Array.from(collection) as HTMLSpanElement[];
-}
-
-function getParagraphsOfTextBox(divId: string): HTMLParagraphElement[] {
-    const element = getFrameElementById("page", divId);
-
-    expect(element).toBeTruthy(`${divId} should exist.`);
-
-    const htmlElement = element! as HTMLElement;
-    const collection = htmlElement.querySelectorAll("p");
-    return Array.prototype.map.call(
-        collection,
-        (elem: HTMLParagraphElement) => {
-            return elem;
-        }
-    );
 }
 
 function verifyRecordButtonEnabled() {
