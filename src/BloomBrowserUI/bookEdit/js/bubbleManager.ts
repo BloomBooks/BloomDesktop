@@ -601,7 +601,7 @@ export class BubbleManager {
 
     // This is not a great place to make this available to the world.
     // But GetSettings only works in the page Iframe, and the bubble manager
-    // is one componenent from there that the drag activity code already works with
+    // is one componenent from there that the Game code already works with
     // and that already uses the injected GetSettings(). I don't have a better idea,
     // short of refactoring so that we get settings from an API call rather than
     // by injection. But that may involve making a lot of stuff async.
@@ -767,7 +767,7 @@ export class BubbleManager {
     }
 
     // This should not return any .bloom-imageContainers that have imageContainer ancestors.
-    private getAllPrimaryImageContainersOnPage() {
+    public getAllPrimaryImageContainersOnPage() {
         const unfilteredContainers = document.getElementsByClassName(
             kImageContainerClass
         );

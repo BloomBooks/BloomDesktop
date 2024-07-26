@@ -11,8 +11,8 @@ import ReactDOM = require("react-dom");
 import { getToolboxBundleExports } from "../../js/bloomFrames";
 import { useL10n } from "../../../react_components/l10nHooks";
 
-// This component is responsible for the Game Setup mode tabs in the Drag Activity tool.
-// Although the code seems to belong in this folder with the other drag activity code, it is actually
+// This component is responsible for the Game Setup mode tabs in the Game tool.
+// Although the code seems to belong in this folder with the other Game code, it is actually
 // not part of the toolbox, since its component is part of the editable page iframe.
 // Something weird seems to happen if we render an element there using the toolbox copy of
 // ReactDOM.Render, so we go to some trouble to make the renderDragActivityTabControl be a function
@@ -126,8 +126,8 @@ export const Tabs: React.FunctionComponent<{
     );
 };
 
-// return true if the element is part of the content of a drag activity
-// (or similar Bloom game that has start/correct/wrong/play) that is currently being played
+// return true if the element is part of the content of a Game
+// that is currently being played
 export function playingBloomGame(element: HTMLElement): boolean {
     return !!element.closest(".drag-activity-play");
 }

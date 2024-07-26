@@ -202,7 +202,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
         return;
     }
     const topDiv = containerDiv.closest(".bloom-textOverPicture");
-    // Currently Gifs can only be added using the Drag Activity tool (Bloom Games).
+    // Currently Gifs can only be added using the Games tool.
     // A gif is always an img in an overlay (textOverPicture, even though it is
     // not actually text) div, and we put a special class on the TOP element
     // and use it in various ways where GIFs need to behave differently from

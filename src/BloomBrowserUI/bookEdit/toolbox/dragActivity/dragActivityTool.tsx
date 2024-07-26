@@ -3,7 +3,7 @@ import { jsx, css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import ReactDOM = require("react-dom");
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import { kDragActivityToolId } from "../toolIds";
+import { kGameToolId } from "../toolIds";
 //import Tabs from "@mui/material/Tabs";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -20,6 +20,7 @@ import {
     OverlayItemRow,
     OverlayTextItem,
     OverlayVideoItem,
+    adjustBubbleOrdering,
     setGeneratedBubbleId
 } from "../overlay/overlayItem";
 import {
@@ -650,7 +651,8 @@ const getSoundOptions = (
     return soundOptions;
 };
 
-// The core of the drag activity tool.
+// The core of the Game tool. (a good many classes and function names reflect its original
+// name, Drag Activity Tool))
 const DragActivityControls: React.FunctionComponent<{
     activeTab: number;
     pageGeneration: number; // incremented when the page changes
@@ -679,12 +681,6 @@ const DragActivityControls: React.FunctionComponent<{
         "Choose...",
         "EditTab.Toolbox.DragActivity.ChooseSound",
         ""
-    );
-    // Tooltips for the delete and duplicate buttons.
-    const deleteTooltip = useL10n("Delete", "Common.Delete");
-    const duplicateTooltip = useL10n(
-        "Duplicate",
-        "EditTab.Toolbox.ComicTool.Options.Duplicate"
     );
 
     const bubbleManager = OverlayTool.bubbleManager();
@@ -1344,7 +1340,7 @@ const DragActivityControls: React.FunctionComponent<{
                             font-weight: bold;
                             padding-top: 5px;
                             border-top: 1px solid grey;
-                            margin: 0 5px 0 10px;
+                            margin: 10px 5px 0 10px;
                             font-size: larger;
                         `}
                     >
@@ -1367,32 +1363,50 @@ const DragActivityControls: React.FunctionComponent<{
                             justify-content: space-between;
                         `}
                     >
-                        <div
-                            title={deleteTooltip}
+                        <BloomTooltip
+                            // This tooltip comes out nearly the full width of the toolbox, because of
+                            // a fixed-width setting for tooltips in our material-ui theme.
+                            // I tried changing it, but could not find a combination of settings
+                            // that works better. Without a fixed width, the tooltip tends to extend off
+                            // the screen and cause the toolbox to scroll horizontally. A fixed width
+                            // suitable for "Delete" would not work well for some localizations.
+                            id="delete"
+                            placement="top"
+                            tip={{ l10nKey: "Common.Delete" }}
                             css={css`
                                 margin: 10px;
                                 ${disabledCss(currentBubbleElement)};
                             `}
                         >
                             <TrashIcon
+                                css={css`
+                                    font-size: 35px;
+                                `}
                                 id="trashIcon"
                                 color="primary"
+                                fontSize="large"
                                 onClick={() => deleteBubble()}
                             />
-                        </div>
-                        <div
-                            title={duplicateTooltip}
+                        </BloomTooltip>
+                        <BloomTooltip
+                            id="duplicate"
+                            placement="top"
+                            tip={{
+                                l10nKey:
+                                    "EditTab.Toolbox.ComicTool.Options.Duplicate"
+                            }}
                             css={css`
                                 margin: 10px;
                                 ${disabledCss(currentBubbleElement)};
                             `}
                         >
                             <img
+                                height="30px"
                                 className="duplicate-bubble-icon"
                                 src="/bloom/bookEdit/toolbox/overlay/duplicate-bubble.svg"
                                 onClick={() => makeDuplicateOfDragBubble()}
                             />
-                        </div>
+                        </BloomTooltip>
                     </div>
                     {props.activeTab === startTabIndex && anyItemOptions && (
                         <div
@@ -1457,7 +1471,7 @@ const DragActivityControls: React.FunctionComponent<{
                             {canChooseAudioForElement && (
                                 <div
                                     css={css`
-                                        margin-top: 5px;
+                                        margin: 5px 10px 0 0;
                                         display: flex;
                                         ${disabledCss(
                                             canChooseAudioForElement
@@ -1755,7 +1769,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
     }
 
     public id(): string {
-        return kDragActivityToolId;
+        return kGameToolId;
     }
 
     public isExperimental(): boolean {
@@ -1800,6 +1814,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
             this.lastPageId = pageId;
             // useful during development, MAY not need in production.
             bubbleManager.removeDetachedTargets();
+            adjustBubbleOrdering();
 
             // Force things to Start tab as we change page.
             // If we decide not to do this, we should probably at least find a way to do it
@@ -1943,7 +1958,7 @@ const dragActivityTypes = [
 // For a long time it was an attribute of the parent element of the bloom-page. This makes it difficult to
 // stay on the same tab when reloading the current page (typically after a Save), since the whole document
 // is reloaded.
-// I don't want it anywhere in the toolbox, because it is applicable even when the Drag Activity Toolbox is not active.
+// I don't want it anywhere in the toolbox, because it is applicable even when the Game Toolbox is not active.
 // In addition to the reason above for not wanting it anywhere in the page iframe,
 // I don't want it part of the page, because then I have to take steps to prevent persisting it.
 // I don't want it in the element we add to hold the tab control, because it's possible for the page
@@ -2031,7 +2046,7 @@ export function isPageBloomGameInternal(page: HTMLElement): boolean {
     return dragActivityTypes.indexOf(activityType) >= 0;
 }
 
-// Replace the origami control with the drag activity tab control if the page is a drag activity game.
+// Replace the origami control with the Game tab control if the page is a game.
 export function setupDragActivityTabControl() {
     const page = DragActivityTool.getBloomPage();
     if (!page) {
@@ -2051,7 +2066,7 @@ export function setupDragActivityTabControl() {
         setTimeout(setupDragActivityTabControl, 200);
         return;
     }
-    // We want the drag activity controls exactly when we don't
+    // We want the Game controls exactly when we don't
     // want origami, so we use the control container we usually use for origami,
     // a nice wrapper inside the page (so we can
     // get the correct page alignment) and have already arranged to delete before saving the page.

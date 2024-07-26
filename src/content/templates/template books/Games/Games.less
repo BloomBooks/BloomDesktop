@@ -59,6 +59,7 @@
 
 .activeButton {
     opacity: 1;
+    pointer-events: unset;
 }
 
 //Slider: // The slider can go away at runtime once everything is correctly placed.
@@ -218,6 +219,9 @@
 .drag-activity-play {
     .bloom-textOverPicture[data-bubble-id] {
         z-index: @bubbleCanvasZIndex + 2;
+        &.bloom-ui-dragging {
+            z-index: @bubbleCanvasZIndex + 3;
+        }
     }
     // Buttons for editing images and formatting text should not show in test mode.
     // Review: should we instead make special cases in the code that makes these buttons?
@@ -344,12 +348,14 @@
     position: absolute;
     z-index: @imageEditingButtonZIndex;
     border-color: transparent;
+    pointer-events: none;
 }
 
 .game-button {
     height: 36px;
     width: 50px;
     opacity: 0.3;
+    pointer-events: none;
 }
 .page-turn-button {
     background-color: transparent;
@@ -358,4 +364,100 @@
 
 .turn-left img {
     transform: rotate(180deg);
+}
+
+// These rules depend on variables defined in a theme.
+&[data-activity="drag-word-chooser-slider"] {
+    [data-txt-img] {
+        border: 8px solid var(--slider-keyword-color) !important;
+        border-radius: 18px;
+        background-color: var(--text-background);
+    }
+}
+&.bloom-page {
+    // need this for specificity
+    background-color: var(--page-color);
+}
+//Slider: .bloom-activity-slider {
+//     //background-color: yellow; // Todo
+//     background-image: linear-gradient(white, yellow);
+//     .bloom-activity-slider-item {
+//         border: 6px solid var(--slider-button-color);
+//         background-color: var(--text-background);
+//     }
+// }
+.bloom-textOverPicture.draggable-text {
+    background-color: var(--draggable-background-color);
+    color: var(--draggable-color);
+}
+.drag-item-correct,
+.drag-item-wrong {
+    .bloom-translationGroup {
+        background-color: transparent;
+        color: var(--fixed-color);
+    }
+}
+.drag-item-order-word,
+.drag-item-order-sentence p {
+    background-color: var(--draggable-background-color);
+    color: var(--draggable-color);
+    border-radius: 10px;
+    padding: 0px 11px;
+    margin-right: 5px;
+}
+
+[data-target-of] {
+    border: dashed 2px var(--draggable-background-color);
+    // If we ever want targets to have a background color (except when hidden), here's the place.
+    //background-color: var(--target-color);
+
+    &:focus {
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+            0 0 8px var(--draggable-background-color);
+    }
+}
+
+.bloom-change-page-button {
+    background-color: var(--draggable-background-color);
+    color: var(--draggable-color);
+    border-radius: 10px;
+    padding: 3px 2px 2px 10px;
+    box-sizing: border-box;
+    // This puts it in front of other things so it can actually be clicked.
+    z-index: @textOverPictureZIndex;
+    // In bloom-player, cursor seems to be auto, which here gives us a text editing cursor.
+    // Not sure why that doesn't happen in play mode in Bloom desktop.
+    // But anyway, we don't want it.
+    cursor: default;
+}
+
+// We could add another common class to these three elements, but other themes
+// might want to style them differently.
+.check-button,
+.try-again-button,
+.show-correct-button {
+    cursor: pointer;
+    //font-size: 14px;
+    font-weight: bold;
+    //margin: 0 5px 5px 0;
+    //padding: 5px 10px;
+    text-decoration: none;
+    //text-transform: uppercase;
+    //transition: background-color 0.2s ease-in-out;
+    // enough for a typical line of text and the decoration we're adding to make it look like a button;
+    // tries to prevent initially coming up as overflowing, though may not succeed for other fonts.
+    // Is there a better way?
+    min-height: 36px;
+}
+.game-button {
+    background-color: var(--draggable-background-color);
+}
+
+.activeButton {
+    &:hover {
+        border-color: var(--hover-button-border);
+        &:active {
+            border-color: var(--active-button-border);
+        }
+    }
 }

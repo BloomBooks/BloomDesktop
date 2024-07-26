@@ -189,7 +189,13 @@ export const toolboxTheme = createTheme({
                     fontSize: "12px",
                     fontWeight: "normal",
 
-                    width: "180px", // width of the toolbox (which is 200px) minus a bit of padding
+                    // This forces all tooltips to be this width, even short ones like "Delete".
+                    // I tried changing it to maxWidth, which improves the size of short ones,
+                    // but then the arrows come out in the wrong place and/or the tooltips extend
+                    // outside the toolbox and cause it to scroll horizontally. It's less bad to leave
+                    // it like this.  I have no idea why the placement of the tooltip itself and
+                    // its arrow is so much worse when the width is not fixed.
+                    width: "165px", // width of the toolbox (which is 185px) minus a bit of padding
                     a: {
                         color: "white",
                         textDecorationColor: "white"
