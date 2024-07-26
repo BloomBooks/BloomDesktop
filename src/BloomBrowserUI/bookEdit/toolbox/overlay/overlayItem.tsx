@@ -361,12 +361,17 @@ export const OverlayGifItem: React.FunctionComponent<{
 
 export const OverlayVideoItem: React.FunctionComponent<{
     style: string;
+    makeTarget?: boolean;
     // We could easily add makeTarget?: boolean; but we don't want to allow video dragging in the finished book
     addClasses?: string;
     color?: string;
 }> = props => {
     return (
-        <OverlaySvgItem style={props.style} addClasses={props.addClasses}>
+        <OverlaySvgItem
+            style={props.style}
+            addClasses={props.addClasses}
+            makeTarget={props.makeTarget}
+        >
             <SignLanguageIcon
                 css={css`
                     width: 50px;
