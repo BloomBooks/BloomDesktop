@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bloom.Api;
@@ -22,9 +22,14 @@ namespace Bloom.Collection
 	{
 		public string Key;
 
-		public static bool HaveFilesForBranding(string fullBrandKey)
-		{
-			BrandingSettings.ParseBrandingKey(fullBrandKey, out var baseKey, out var flavor);
+        public static bool HaveFilesForBranding(string fullBrandKey)
+        {
+            BrandingSettings.ParseBrandingKey(
+                fullBrandKey,
+                out var baseKey,
+                out var flavor,
+                out var subUnitName
+            );
 
 			var brandingDirectory = BloomFileLocator.GetBrowserDirectory("branding");
 			return Directory.GetDirectories(brandingDirectory)

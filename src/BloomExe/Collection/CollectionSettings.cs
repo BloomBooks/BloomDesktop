@@ -635,12 +635,12 @@ namespace Bloom.Collection
 		public string BrandingProjectKey { get; set; }
 		public string GetBrandingFlavor()
 		{
-			BrandingSettings.ParseBrandingKey(BrandingProjectKey, out var baseKey, out var flavor);
+			BrandingSettings.ParseBrandingKey(BrandingProjectKey, out var baseKey, out var flavor, out var subUnitName);
 			return flavor;
 		}
 		public string GetBrandingFolderName()
 		{
-			BrandingSettings.ParseBrandingKey(BrandingProjectKey, out var folderName, out var flavor);
+			BrandingSettings.ParseBrandingKey(BrandingProjectKey, out var folderName, out var flavor, out var subUnitName);
 			return folderName;
 		}
 
