@@ -244,15 +244,6 @@
           Add items that will show when the learner gets the wrong answer. For example, you might add a text that says “Try Again!”.\nIt is OK to have no correct or wrong answers. Just give the same positive reinforcement, like “Looks Nice!”.</target>
         <note>ID: EditTab.Toolbox.DragActivity.WrongInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivityTool" translate="no">
-        <source xml:lang="en">
-          Drag Activity Tool
-        </source>
-        <target xml:lang="ha" state="needs-translation">
-          Drag Activity Tool
-        </target>
-        <note>ID: EditTab.Toolbox.DragActivityTool</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true">
         <source xml:lang="en">Book is Decodable</source>
         <target xml:lang="ha" state="needs-translation">Book is Decodable</target>
@@ -262,6 +253,15 @@
         <source xml:lang="en">Book is not Decodable</source>
         <target xml:lang="ha" state="needs-translation">Book is not Decodable</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.GameTool" translate="no">
+        <source xml:lang="en">
+          Game Tool
+        </source>
+        <target xml:lang="ha" state="needs-translation">
+          Game Tool
+        </target>
+        <note>ID: EditTab.Toolbox.GameTool</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsLeveled" sil:dynamic="true">
         <source xml:lang="en">Book is Leveled</source>
