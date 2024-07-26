@@ -5,7 +5,7 @@ import ReactDOM = require("react-dom");
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { kGameToolId } from "../toolIds";
 //import Tabs from "@mui/material/Tabs";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
     kBloomBlue,
     kOptionPanelBackgroundColor,
@@ -1116,19 +1116,30 @@ const DragActivityControls: React.FunctionComponent<{
                                     />
                                 )}{" "}
                                 {showImageDraggable && (
-                                    <OverlayImageItem
-                                        style="image"
-                                        makeTarget={
-                                            activityType !==
-                                            "drag-word-chooser-slider"
-                                        }
-                                        makeMatchingTextBox={
-                                            activityType ===
-                                            "drag-word-chooser-slider"
-                                        }
-                                        color={kBloomBlue}
-                                        strokeColor={kBloomBlue}
-                                    />
+                                    <Fragment>
+                                        <OverlayImageItem
+                                            style="image"
+                                            makeTarget={
+                                                activityType !==
+                                                "drag-word-chooser-slider"
+                                            }
+                                            makeMatchingTextBox={
+                                                activityType ===
+                                                "drag-word-chooser-slider"
+                                            }
+                                            color={kBloomBlue}
+                                            strokeColor={kBloomBlue}
+                                        />
+                                        <OverlayVideoItem
+                                            style="video"
+                                            makeTarget={
+                                                activityType !==
+                                                "drag-word-chooser-slider"
+                                            }
+                                            color={kBloomBlue}
+                                            //strokeColor={kBloomBlue}
+                                        />
+                                    </Fragment>
                                 )}
                                 {/* Slider: rather than reinstating this item, make the "selected item is part of answer" control work.
                                 // Keeping this just as a reminder of what it might take to make that work.

@@ -110,6 +110,12 @@
         z-index: @bubbleCanvasZIndex + 2;
     }
 }
+// In the play tab we don't even have the concept of a video element being selected.
+.drag-activity-play {
+    .bloom-videoContainer.bloom-selected {
+        border: none;
+    }
+}
 
 .drag-activity-play .drag-item-order-sentence {
     display: none;

@@ -19,6 +19,30 @@ const mouseOverFunction = e => {
         return; // can this happen?
     }
     if (target.tagName.toLowerCase() === "video") {
+        // If it's a draggable bloom game video in play mode, we don't want controls
+        // I'm not pleased that bloomVideo knows about Games, but it's also not great
+        // to have the game code know about turning off the video controls during play,
+        // and it's much more difficult because cross-iframe problems make it hard to
+        // get at 'the same' event-handler function to remove it.
+        // At some point we may explore having play mode hide the original bloom-page
+        // (remove bloom-page, add bloom-original-page) and make a duplicate for play
+        // that automatically has no event handlers. But this one (attached to the
+        // document) would still be a problem.
+        // Then again, I think it would work as well to attach it to the bloom-page.
+        if (
+            target
+                .closest(".bloom-page")
+                ?.parentElement?.classList.contains("drag-activity-play") &&
+            target
+                .closest(".bloom-textOverPicture")
+                ?.hasAttribute("data-bubble-id")
+        ) {
+            // I don't think it will ever be there to be removed, but it's harmless to make sure.
+            // At some point there might be a keyboard way to switch to play tab while hovering
+            // over a video.
+            target.removeAttribute("controls");
+            return;
+        }
         if (
             (e.altKey || e.ctrlKey) &&
             target.closest(".bloom-textOverPicture")
