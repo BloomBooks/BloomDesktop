@@ -97,7 +97,10 @@
         // This rule now works for regular just text bubbles and picture or video over picture.
         div:focus,
         video:focus {
-            border: 1px solid @bloom-blue;
+            // Use outline instead of border to avoid changing the size of the box
+            // when the "border" is added for focus.
+            outline: 1px solid @bloom-blue;
+            border: none;
             box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px @bloom-blue;
         }
 
@@ -161,6 +164,9 @@
     .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) {
         .bloom-translationGroup {
             .bloom-editable {
+                // Use outline instead of border to avoid changing the size of the box
+                // when the "border" is added for focus.
+                outline: none;
                 border: none;
                 box-shadow: none;
             }
@@ -176,8 +182,11 @@
         .bloom-translationGroup {
             .bloom-editable {
                 &:focus {
+                    // Use outline instead of border to avoid changing the size of the box
+                    // when the "border" is added for focus.
                     // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
-                    border: 1px solid @bloom-blue;
+                    outline: 1px solid @bloom-blue;
+                    border: none;
                     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
                         0 0 8px @bloom-blue;
                 }
