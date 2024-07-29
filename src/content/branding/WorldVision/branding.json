@@ -1,0 +1,23 @@
+{
+    "presets": [
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by-nc/4.0/",
+            "condition": "always"
+        },
+
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding bloom-badge' src='made-with-bloom-badge.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='WorldVision.svg'/>",
+            "condition": "always"
+        }
+    ]
+}
