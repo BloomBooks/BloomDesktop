@@ -19,6 +19,7 @@ export interface IBookInfo {
     id: string;
     title: string;
     collectionId: string;
+    folderName: string;
     folderPath: string;
     isFactory: boolean;
 }
@@ -41,6 +42,7 @@ export const BooksOfCollection: React.FunctionComponent<{
     // isn't done until it is visible on screen.
     lazyLoadCollection?: boolean;
     lockedToOneDownloadedBook: boolean;
+    filter?: (book: IBookInfo) => boolean;
 }> = props => {
     if (!props.collectionId) {
         window.alert("null collectionId");
@@ -66,7 +68,9 @@ export const BooksOfCollection: React.FunctionComponent<{
         props.collectionId
     )}${reloadParameter}`;
 
-    const books = useWatchApiData<Array<IBookInfo>>(
+    const [books, setBooks] = useState<Array<IBookInfo>>([]);
+
+    const unfilteredBooks = useWatchApiData<Array<IBookInfo>>(
         `collections/books?${collectionQuery}`,
         [],
         "editableCollectionList",
@@ -74,12 +78,16 @@ export const BooksOfCollection: React.FunctionComponent<{
     );
 
     useEffect(() => {
-        if (books.length > 0) {
+        if (unfilteredBooks.length > 0) {
+            if (props.filter) {
+                setBooks(unfilteredBooks.filter(props.filter));
+            } else setBooks(unfilteredBooks);
+
             // once the books variable has been updated with the book-on-blorg statuses,
             // unset the reloadParameter so we don't keep reloading the book-on-blorg statuses
             setReloadParameter("");
         }
-    }, [books]);
+    }, [unfilteredBooks]);
 
     //const selectedBookInfo = useMonitorBookSelection();
     const collection: ICollection = useApiData(

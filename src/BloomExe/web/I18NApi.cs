@@ -341,7 +341,7 @@ namespace Bloom.Api
                 NonFatalProblem.Report(
                     ModalIf.None,
                     PassiveIf.Alpha,
-                    $"Missing l10n: {englishText}",
+                    $"Missing l10n EnglishText='{englishText}', id='{id}'",
                     longMsg,
                     skipSentryReport: true
                 );
