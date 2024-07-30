@@ -1,4 +1,4 @@
-import { EditableDivUtils } from "editableDivUtils.ts";
+import { EditableDivUtils } from "../bookEdit/js/editableDivUtils.ts";
 /*!
  * qTip2 - Pretty powerful tooltips -
  * http://qtip2.com
