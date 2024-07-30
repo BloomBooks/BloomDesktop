@@ -54,7 +54,14 @@ namespace Bloom.Edit
 			// It would seem more natural to use a metadata-saving method on imageInfo,
 			// but the imageInfo has the source file's path locked into it, and the API
 			// gives us no way to change it, so such a save would go to the wrong file.
-			imageInfo.Metadata.Write(Path.Combine(bookFolderPath, imageFileName));
+			try
+			{
+				imageInfo.Metadata.Write(Path.Combine(bookFolderPath, imageFileName));
+			}
+			catch (Exception e)
+			{
+				ImageUtils.ReportImageMetadataProblem(Path.Combine(bookFolderPath, imageFileName), e);
+			}
 		}
 
 		/// <summary>
