@@ -360,7 +360,7 @@ namespace Bloom.WebLibraryIntegration
                         bookObjectId = transactionId;
                     }
 
-                    if (IsProductionRun) // don't make it seem like there are more uploads than there really are if this a tester pushing to the sandbox
+                    if (IsProductionRun) // don't make it seem like there are more uploads than there really are if this is just a tester pushing to the sandbox
                     {
                         Analytics.Track(
                             "UploadBook-Success",
@@ -443,7 +443,7 @@ namespace Bloom.WebLibraryIntegration
 
         private void ReportFailureToAnalytics(BookMetaData metadata, bool isNewBook, Exception e)
         {
-            if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
+            if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this is just a tester pushing to the sandbox
                 Analytics.Track(
                     "UploadBook-Failure",
                     new Dictionary<string, string>()
