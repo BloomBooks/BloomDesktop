@@ -71,7 +71,7 @@ export const SettingsGroup: React.FunctionComponent<{
 };
 
 const helpAndCommandGroupCss =
-    "margin-bottom: 20px; display: flex; flex-direction: column;";
+    "margin-top: 20px; display: flex; flex-direction: column;";
 
 export const HelpGroup: React.FunctionComponent = props => {
     return (

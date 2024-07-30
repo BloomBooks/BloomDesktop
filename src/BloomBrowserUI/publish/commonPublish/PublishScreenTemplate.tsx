@@ -86,7 +86,7 @@ export const OptionPanel: React.FunctionComponent = props => (
     <div
         css={css`
             background-color: ${kOptionPanelBackgroundColor};
-            padding-left: 20px;
+            padding: 0 20px 20px 20px;
             min-width: 250px;
             flex: 1 0;
             display: flex;

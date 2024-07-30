@@ -5957,6 +5957,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Put a comprehension question here</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
       </trans-unit>
+      <trans-unit id="Topic" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Topic</source>
+        <note>ID: Topic</note>
+      </trans-unit>
       <trans-unit id="TopicChooser.Title" sil:dynamic="true">
         <source xml:lang="en">Choose Topic</source>
         <note>ID: TopicChooser.Title</note>

@@ -18,6 +18,7 @@ import { useState } from "react";
 import { PublishVisibilityGroup } from "../commonPublish/PublishVisibilityGroup";
 import { MustBeCheckedOut } from "../../react_components/MustBeCheckedOut";
 import HelpLink from "../../react_components/helpLink";
+import { PublishTopic } from "../commonPublish/PublishTopic";
 
 export const kWebSocketContext = "libraryPublish";
 
@@ -43,6 +44,7 @@ export const LibraryPublishScreen = () => {
                 <CoverColorGroup />
             </MustBeCheckedOut>
             <PublishVisibilityGroup />
+            <PublishTopic />
 
             {/* push everything below this to the bottom */}
             <div
