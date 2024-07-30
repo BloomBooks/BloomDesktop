@@ -668,7 +668,11 @@ namespace Bloom.Edit
                     }
                 }
 
-                return imageBeingModified.Metadata;
+				var metadata = imageBeingModified.Metadata;
+				// If the license is not set, default to CC-BY.
+				metadata.SetupReasonableLicenseDefaultBeforeEditing();
+
+				return metadata;
             }
         }
 
