@@ -793,43 +793,43 @@ namespace Bloom.Api
                 "EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles",
                 "Text files"
             );
-            var dlg = new DialogAdapters.OpenFileDialogAdapter
+            string srcFile = null;
+            using (var dlg = new MiscUI.BloomOpenFileDialog
             {
-                Multiselect = false,
-                CheckFileExists = true,
                 Filter = String.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab", textFiles)
-            };
-            var result = dlg.ShowDialog();
-            if (result == DialogResult.OK)
+            })
             {
-                var srcFile = dlg.FileName;
-                var destFile = Path.GetFileName(srcFile);
-                if (destFile != null)
+                var result = dlg.ShowDialog();
+                if (result == DialogResult.OK)
                 {
-                    // if file is in the "Allowed Words" directory, do not try to copy it again.
-                    if (Path.GetFullPath(srcFile) != Path.Combine(destPath, destFile))
-                    {
-                        var i = 0;
-
-                        // get a unique destination file name
-                        while (RobustFile.Exists(Path.Combine(destPath, destFile)))
-                        {
-                            destFile = Path.GetFileName(srcFile);
-                            var fileExt = Path.GetExtension(srcFile);
-                            destFile =
-                                destFile.Substring(0, destFile.Length - fileExt.Length) + " - Copy";
-                            if (++i > 1)
-                                destFile += " " + i;
-                            destFile += fileExt;
-                        }
-
-                        RobustFile.Copy(srcFile, Path.Combine(destPath, destFile));
-                    }
-
-                    returnVal = destFile;
+                    srcFile = dlg.FileName;
                 }
             }
+            var destFile = Path.GetFileName(srcFile);
+            if (destFile != null)
+            {
+                // if file is in the "Allowed Words" directory, do not try to copy it again.
+                if (Path.GetFullPath(srcFile) != Path.Combine(destPath, destFile))
+                {
+                    var i = 0;
 
+                    // get a unique destination file name
+                    while (RobustFile.Exists(Path.Combine(destPath, destFile)))
+                    {
+                        destFile = Path.GetFileName(srcFile);
+                        var fileExt = Path.GetExtension(srcFile);
+                        destFile =
+                            destFile.Substring(0, destFile.Length - fileExt.Length) + " - Copy";
+                        if (++i > 1)
+                            destFile += " " + i;
+                        destFile += fileExt;
+                    }
+
+                    RobustFile.Copy(srcFile, Path.Combine(destPath, destFile));
+                }
+
+                returnVal = destFile;
+            }
             return returnVal;
         }
 

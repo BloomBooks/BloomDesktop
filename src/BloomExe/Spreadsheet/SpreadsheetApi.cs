@@ -114,7 +114,7 @@ namespace Bloom.Spreadsheet
             try
             {
                 string inputFilepath;
-                using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+                using (var dlg = new BloomOpenFileDialog())
                 {
                     dlg.Filter = "xlsx|*.xlsx";
                     dlg.RestoreDirectory = true;

@@ -623,9 +623,6 @@ namespace Bloom
                         );
                         // TODO-WV2: Can we set the browser language for WV2?  Do we need to?
 
-                        DialogAdapters.CommonDialogAdapter.ForceKeepAbove = true;
-                        DialogAdapters.CommonDialogAdapter.UseMicrosoftPositioning = true;
-
                         // Kick off getting all the font metadata for fonts currently installed in the system.
                         // This can take several seconds on slow machines with lots of fonts installed, so we
                         // run it in the background once at startup.  (The results are cached automatically.)
