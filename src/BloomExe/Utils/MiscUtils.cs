@@ -432,7 +432,7 @@ namespace Bloom.Utils
             var repeat = false;
             do
             {
-                using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+                using (var dlg = new SaveFileDialog())
                 {
                     dlg.AddExtension = true;
                     dlg.DefaultExt = defaultExtension;
@@ -441,6 +441,12 @@ namespace Bloom.Utils
                     dlg.RestoreDirectory = false;
                     dlg.OverwritePrompt = true;
                     dlg.InitialDirectory = initialFolder;
+                    dlg.FileOk += (sender, args) =>
+                    {
+                        // Truly enforce the filter. See BL-12929 and BL-13552.
+                        if (!DoubleCheckFileFilter(dlg.Filter, dlg.FileName))
+                            args.Cancel = true;
+                    };
                     if (DialogResult.Cancel == dlg.ShowDialog())
                         return null;
                     destFileName = dlg.FileName;
@@ -732,6 +738,54 @@ namespace Bloom.Utils
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Return true if the fileName truly passes the filtering of the filterString.
+        /// </summary>
+        /// <param name="filterString">filter string like those used in file dialogs</param>
+        /// <param name="filePath">file path returned by a file dialog</param>
+        public static bool DoubleCheckFileFilter(string filterString, string filePath)
+        {
+            Debug.Assert(filterString != null);
+            Debug.Assert(filePath != null);
+            Debug.WriteLine($"DoubleCheckFileFilter: filterString = {filterString}, filePath = {filePath}");
+            var filterSections = filterString.Split('|');
+            if (filterSections.Length < 2)
+                return true; // no filter, so everything passes
+            var fileName = Path.GetFileName(filePath);
+            for (int i = 1; i < filterSections.Length; i += 2)
+            {
+                if (PassesFilter(filterSections[i], fileName))
+                    return true;
+            }
+            return false;
+        }
+
+        private static bool PassesFilter(string filterList, string fileName)
+        {
+            var parts = filterList.Split(';');
+            foreach (var part in parts)
+            {
+                if (part == "*.*" || part == "*")
+                    return true;
+                var filter = part.Trim();
+                if (filter.StartsWith("*"))
+                {
+                    filter = filter.Substring(1);
+                    if (fileName.EndsWith(filter, StringComparison.InvariantCultureIgnoreCase))
+                        return true;
+                }
+                else if (filter.EndsWith("*"))
+                {
+                    filter = filter.Substring(0, filter.Length - 1);
+                    if (fileName.StartsWith(filter, StringComparison.InvariantCultureIgnoreCase))
+                        return true;
+                }
+                else if (fileName.Equals(filter, StringComparison.InvariantCultureIgnoreCase))
+                    return true;
+            }
+            return false;
         }
     }
 }

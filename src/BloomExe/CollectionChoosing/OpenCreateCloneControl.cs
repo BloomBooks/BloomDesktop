@@ -171,7 +171,7 @@ namespace Bloom.CollectionChoosing
                 Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
             }
 
-            using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+            using (var dlg = new OpenFileDialog())
             {
                 dlg.Title = "Open Collection";
 
@@ -179,6 +179,12 @@ namespace Bloom.CollectionChoosing
                 dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
                 dlg.CheckFileExists = true;
                 dlg.CheckPathExists = true;
+                dlg.FileOk += (sender, args) =>
+                {
+                    // Truly enforce the filter. See BL-12929 and BL-13552.
+                    if (!Utils.MiscUtils.DoubleCheckFileFilter(dlg.Filter, dlg.FileName))
+                        args.Cancel = true;
+                };
                 if (dlg.ShowDialog(this) == DialogResult.Cancel)
                     return;
 

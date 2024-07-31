@@ -114,11 +114,17 @@ namespace Bloom.Spreadsheet
             try
             {
                 string inputFilepath;
-                using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+                using (var dlg = new OpenFileDialog())
                 {
                     dlg.Filter = "xlsx|*.xlsx";
                     dlg.RestoreDirectory = true;
                     dlg.InitialDirectory = GetSpreadsheetFolderFor(book, false);
+                    dlg.FileOk += (sender, args) =>
+                    {
+                        // Truly enforce the filter. See BL-12929 and BL-13552.
+                        if (!Utils.MiscUtils.DoubleCheckFileFilter(dlg.Filter, dlg.FileName))
+                            args.Cancel = true;
+                    };
                     if (DialogResult.Cancel == dlg.ShowDialog())
                     {
                         return;

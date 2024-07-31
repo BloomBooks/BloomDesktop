@@ -434,7 +434,7 @@ namespace Bloom.web.controllers
             // browser simply listens to the socket.
             request.PostSucceeded();
             var pathToCollectionFile = "";
-            using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+            using (var dlg = new OpenFileDialog())
             {
                 dlg.Title = LocalizationManager.GetString(
                     "CollectionTab.ChooseCollection",
@@ -450,6 +450,12 @@ namespace Bloom.web.controllers
                 dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
                 dlg.CheckFileExists = true;
                 dlg.CheckPathExists = true;
+                dlg.FileOk += (sender, args) =>
+                {
+                    // Truly enforce the filter. See BL-12929 and BL-13552.
+                    if (!MiscUtils.DoubleCheckFileFilter(dlg.Filter, dlg.FileName))
+                        args.Cancel = true;
+                };
                 if (
                     dlg.ShowDialog() == DialogResult.Cancel
                     || MiscUtils.ReportIfInvalidCollection(dlg.FileName)

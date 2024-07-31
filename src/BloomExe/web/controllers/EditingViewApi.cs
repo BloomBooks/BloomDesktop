@@ -306,14 +306,20 @@ namespace Bloom.web.controllers
         private void HandleChooseWidget(ApiRequest request)
         {
             using (
-                var dlg = new DialogAdapters.OpenFileDialogAdapter
+                var dlg = new OpenFileDialog
                 {
                     Multiselect = false,
                     CheckFileExists = true,
-                    Filter = "Widget files|*.wdgt;*.html;*.htm"
+                    Filter = "Widget files|*.wdgt;*.html;*.htm",
                 }
             )
             {
+                dlg.FileOk += (sender, args) =>
+                {
+                    // Truly enforce the filter. See BL-12929 and BL-13552.
+                    if (!MiscUtils.DoubleCheckFileFilter(dlg.Filter, dlg.FileName))
+                        args.Cancel = true;
+                };
                 var result = dlg.ShowDialog();
                 if (result != DialogResult.OK)
                 {

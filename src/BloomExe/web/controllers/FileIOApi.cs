@@ -105,7 +105,7 @@ namespace Bloom.web.controllers
             var initialDirectory = string.IsNullOrEmpty(requestParameters.defaultPath)
                 ? System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments)
                 : Path.GetDirectoryName(requestParameters.defaultPath); // enhance would be better to actually select the file, not just the Dir?
-            var dlg = new DialogAdapters.OpenFileDialogAdapter
+            using (var dlg = new OpenFileDialog
             {
                 Title = requestParameters.title,
                 InitialDirectory = initialDirectory,
@@ -119,28 +119,36 @@ namespace Bloom.web.controllers
                             $"{fileType.name}|{string.Join(";", fileType.extensions.Select(e => "*." + e))}"
                     )
                 ),
-            };
-            var result = dlg.ShowDialog();
-            if (result == DialogResult.OK)
+            })
             {
-                // We are not trying get a memory or time diff, just a point measure.
-                PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
-
-                if (!string.IsNullOrEmpty(requestParameters.destFolder))
+                dlg.FileOk += (sender, args) =>
                 {
-                    var fileName = Path.GetFileNameWithoutExtension(dlg.FileName);
-                    var ext = Path.GetExtension(dlg.FileName);
-                    var destFolder = Path.Combine(
-                        CurrentBook.FolderPath,
-                        requestParameters.destFolder
-                    );
-                    var destPath = BookStorage.GetUniqueFileName(destFolder, fileName, ext);
-                    Directory.CreateDirectory(destFolder);
-                    RobustFile.Copy(dlg.FileName, destPath);
-                    return Path.GetFileName(destPath);
-                }
+                    // Truly enforce the filter. See BL-12929 and BL-13552.
+                    if (!MiscUtils.DoubleCheckFileFilter(dlg.Filter, dlg.FileName))
+                        args.Cancel = true;
+                };
+                var result = dlg.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    // We are not trying get a memory or time diff, just a point measure.
+                    PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
 
-                return dlg.FileName.Replace("\\", "/");
+                    if (!string.IsNullOrEmpty(requestParameters.destFolder))
+                    {
+                        var fileName = Path.GetFileNameWithoutExtension(dlg.FileName);
+                        var ext = Path.GetExtension(dlg.FileName);
+                        var destFolder = Path.Combine(
+                            CurrentBook.FolderPath,
+                            requestParameters.destFolder
+                        );
+                        var destPath = BookStorage.GetUniqueFileName(destFolder, fileName, ext);
+                        Directory.CreateDirectory(destFolder);
+                        RobustFile.Copy(dlg.FileName, destPath);
+                        return Path.GetFileName(destPath);
+                    }
+
+                    return dlg.FileName.Replace("\\", "/");
+                }
             }
 
             return String.Empty;
