@@ -115,7 +115,6 @@ namespace Bloom.CollectionTab
         // List out all the collections we have loaded
         // 0) the editable collection of this ".bloomCollection" folder.
         // 1) "Templates"
-        // 2) "Specialty Templates"
         // etc.
         public IReadOnlyList<BookCollection> GetBookCollections(bool disposing = false)
         {
@@ -303,9 +302,6 @@ namespace Bloom.CollectionTab
             // If we're locked to one downloaded book, we don't need to show the source collections, or even to load them.
             if (!_collectionSettings.LockedToOneDownloadedBook)
             {
-                // 1) "Templates"
-                // 2) "Specialty Templates"
-                // etc.
                 foreach (var bookCollection in _sourceCollectionsList.GetSourceCollectionsFolders())
                 {
                     var collection = _bookCollectionFactory(

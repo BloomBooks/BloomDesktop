@@ -491,7 +491,6 @@ namespace Bloom.web.controllers
         // List out all the collections we have loaded
         // 0) the editable collection of this ".bloomCollection" folder.
         // 1) "Templates"
-        // 2) "Specialty Templates"
         // etc.
         public void HandleListRequest(ApiRequest request)
         {

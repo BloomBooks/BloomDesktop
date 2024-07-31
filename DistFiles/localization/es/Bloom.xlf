@@ -941,11 +941,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Plantillas</target>
         <note>ID: CollectionTab.Templates</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.SpecializedTemplatesHeading" approved="yes">
-        <source xml:lang="en">Specialized Templates</source>
-        <target xml:lang="es-ES" state="final">Plantillas Especializadas</target>
-        <note>ID: CollectionTab.SpecializedTemplatesHeading</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing" approved="yes">
         <source xml:lang="en">Title Missing</source>
         <target xml:lang="es-ES" state="final">Título faltante</target>
