@@ -681,6 +681,12 @@ namespace Bloom.web.controllers
                 }
                 return;
             }
+            string svgPath = Path.Combine(bookInfo.FolderPath, "thumbnail.svg");
+            if (RobustFile.Exists(svgPath))
+            {
+                request.ReplyWithImage(svgPath);
+                return;
+            }
 
             string path = Path.Combine(bookInfo.FolderPath, "thumbnail.png");
             if (!RobustFile.Exists(path))
