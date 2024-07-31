@@ -434,7 +434,7 @@ namespace Bloom.web.controllers
             // browser simply listens to the socket.
             request.PostSucceeded();
             var pathToCollectionFile = "";
-            using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+            using (var dlg = new BloomOpenFileDialog())
             {
                 dlg.Title = LocalizationManager.GetString(
                     "CollectionTab.ChooseCollection",
@@ -448,8 +448,6 @@ namespace Bloom.web.controllers
                         "This shows in the file-open dialog that you use to open a different bloom collection"
                     ) + @"|*.bloomLibrary;*.bloomCollection";
                 dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
-                dlg.CheckFileExists = true;
-                dlg.CheckPathExists = true;
                 if (
                     dlg.ShowDialog() == DialogResult.Cancel
                     || MiscUtils.ReportIfInvalidCollection(dlg.FileName)

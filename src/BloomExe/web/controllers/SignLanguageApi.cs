@@ -215,16 +215,16 @@ namespace Bloom.web.controllers
                             "EditTab.Toolbox.SignLanguage.FileDialogVideoFiles",
                             "Video files"
                         );
-                        var dlg = new DialogAdapters.OpenFileDialogAdapter
+                        using (var dlg = new MiscUI.BloomOpenFileDialog
                         {
-                            Multiselect = false,
-                            CheckFileExists = true,
                             // If this filter ever changes, make sure we update BookCompressor.VideoFileExtensions.
                             Filter = $"{videoFiles} (*.mp4)|*.mp4"
-                        };
-                        var result = dlg.ShowDialog();
-                        if (result == DialogResult.OK)
-                            path = dlg.FileName;
+                        })
+                        {
+                            var result = dlg.ShowDialog();
+                            if (result == DialogResult.OK)
+                                path = dlg.FileName;
+                        }
                     }
                 )
             );

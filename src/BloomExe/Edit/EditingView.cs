@@ -1039,22 +1039,17 @@ namespace Bloom.Edit
             {
                 // We don't want to use the image toolbox for GIFs, because it will convert them to PNGs.
                 // Instead, we'll just use a file chooser
-                var dlg = new DialogAdapters.OpenFileDialogAdapter
+                using (var dlg = new BloomOpenFileDialog
                 {
                     InitialDirectory =
                         _gifDirectory ?? Environment.SpecialFolder.MyPictures.ToString(),
-                    Multiselect = false,
-                    CheckFileExists = true,
                     Filter = "gif|*.gif"
-                };
-                var result = dlg.ShowDialog();
-                if (result != DialogResult.OK)
+                })
                 {
-                    return;
+                    var result = dlg.ShowDialog();
+                    if (result == DialogResult.OK)
+                        SetGifImage(imageId, imageSrc, dlg.FileName);
                 }
-
-                SetGifImage(imageId, imageSrc, dlg.FileName);
-                return;
             }
 
             var imageInfo = new PalasoImage();
