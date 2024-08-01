@@ -940,6 +940,11 @@
         <target xml:lang="ta" state="final">வார்ப்புருக்கள்</target>
         <note>ID: CollectionTab.Templates</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.SpecializedTemplatesHeading" sil:dynamic="true">
+        <source xml:lang="en">Specialized Templates</source>
+        <target xml:lang="ta" state="needs-translation">Specialized Templates</target>
+        <note>ID: CollectionTab.SpecializedTemplatesHeading</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing">
         <source xml:lang="en">Title Missing</source>
         <target xml:lang="ta" state="needs-translation">Title Missing</target>
