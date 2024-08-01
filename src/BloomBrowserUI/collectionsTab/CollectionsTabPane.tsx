@@ -869,8 +869,6 @@ function sanitize(id: string): string {
 
 // Divide the one "templates/" collection into separate collections and sort them
 // TODO: sort them according to some criteria TBD
-// TODO: add more template books to the simple list
-// TODO: "Basic Book" is probably going to "Booklet"
 function processTemplatesCollection(
     localizedSpecializedTemplatesHeading: string,
     templatesCollection: CollectionInfo
@@ -879,7 +877,10 @@ function processTemplatesCollection(
 
     // this "f" garbage is because TS refused to see that simpleTemplates.filter is never undefined
     const f = (book: IBookInfo) => {
-        return book.folderName.startsWith("Basic Book");
+        return (
+            book.folderName.startsWith("Basic Book") ||
+            book.folderName.startsWith("eBook")
+        );
     };
     simpleTemplates.filter = f;
     const specializedTemplates = {
