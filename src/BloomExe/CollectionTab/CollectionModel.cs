@@ -112,6 +112,10 @@ namespace Bloom.CollectionTab
 
         private object _bookCollectionLock = new object(); // Locks creation of _bookCollections
 
+        // List out all the collections we have loaded
+        // 0) the editable collection of this ".bloomCollection" folder.
+        // 1) "Templates"
+        // etc.
         public IReadOnlyList<BookCollection> GetBookCollections(bool disposing = false)
         {
             lock (_bookCollectionLock)
