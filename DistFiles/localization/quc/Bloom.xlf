@@ -941,6 +941,11 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <target xml:lang="quc" state="final">Raqanib’al</target>
         <note>ID: CollectionTab.Templates</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.SpecializedTemplatesHeading" sil:dynamic="true">
+        <source xml:lang="en">Specialized Templates</source>
+        <target xml:lang="quc" state="needs-translation">Specialized Templates</target>
+        <note>ID: CollectionTab.SpecializedTemplatesHeading</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing" approved="yes">
         <source xml:lang="en">Title Missing</source>
         <target xml:lang="quc" state="final">Ub’i’ chak karaj na</target>
