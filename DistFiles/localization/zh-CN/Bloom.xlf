@@ -940,6 +940,11 @@
         <target xml:lang="zh-CN" state="final">模板</target>
         <note>ID: CollectionTab.Templates</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.SpecializedTemplatesHeading" sil:dynamic="true">
+        <source xml:lang="en">Specialized Templates</source>
+        <target xml:lang="zh-CN" state="needs-translation">Specialized Templates</target>
+        <note>ID: CollectionTab.SpecializedTemplatesHeading</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing" approved="yes">
         <source xml:lang="en">Title Missing</source>
         <target xml:lang="zh-CN" state="final">标题缺失</target>
