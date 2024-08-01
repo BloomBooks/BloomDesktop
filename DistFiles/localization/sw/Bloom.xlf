@@ -941,6 +941,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Vielelezo</target>
         <note>ID: CollectionTab.Templates</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.SpecializedTemplatesHeading" sil:dynamic="true">
+        <source xml:lang="en">Specialized Templates</source>
+        <target xml:lang="sw" state="needs-translation">Specialized Templates</target>
+        <note>ID: CollectionTab.SpecializedTemplatesHeading</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing" approved="yes">
         <source xml:lang="en">Title Missing</source>
         <target xml:lang="sw" state="final">Mada iliyokosekana</target>
