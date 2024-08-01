@@ -432,7 +432,7 @@ namespace Bloom.Utils
             var repeat = false;
             do
             {
-                using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+                using (var dlg = new SaveFileDialog())
                 {
                     dlg.AddExtension = true;
                     dlg.DefaultExt = defaultExtension;
@@ -441,6 +441,12 @@ namespace Bloom.Utils
                     dlg.RestoreDirectory = false;
                     dlg.OverwritePrompt = true;
                     dlg.InitialDirectory = initialFolder;
+                    dlg.FileOk += (sender, args) =>
+                    {
+                        // Truly enforce the filter. See BL-12929 and BL-13552.
+                        if (!MiscUI.BloomOpenFileDialog.DoubleCheckFileFilter(dlg.Filter, dlg.FileName))
+                            args.Cancel = true;
+                    };
                     if (DialogResult.Cancel == dlg.ShowDialog())
                         return null;
                     destFileName = dlg.FileName;

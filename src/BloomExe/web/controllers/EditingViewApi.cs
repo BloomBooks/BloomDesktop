@@ -306,11 +306,9 @@ namespace Bloom.web.controllers
         private void HandleChooseWidget(ApiRequest request)
         {
             using (
-                var dlg = new DialogAdapters.OpenFileDialogAdapter
+                var dlg = new MiscUI.BloomOpenFileDialog
                 {
-                    Multiselect = false,
-                    CheckFileExists = true,
-                    Filter = "Widget files|*.wdgt;*.html;*.htm"
+                    Filter = "Widget files|*.wdgt;*.html;*.htm",
                 }
             )
             {

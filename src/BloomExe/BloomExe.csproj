@@ -179,8 +179,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
 		<PackageReference Include="CairoSharp-signed" Version="3.22.24.37" />
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
-		<!-- Don't let Nuget Package Manager automatically update (downgrade) this to DialogAdapters.Gtk2; it will break Bloom -->
-		<PackageReference Include="DialogAdapters" Version="0.1.11" />
 		<PackageReference Include="EPPlus" Version="6.2.4" />
 		<PackageReference Include="Fleck" Version="1.1.0" />
 		<PackageReference Include="Glob" Version="1.1.8" />
