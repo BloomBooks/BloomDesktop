@@ -800,9 +800,9 @@
         <source xml:lang="en">Templates</source>
         <note>ID: CollectionTab.Templates</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.SpecializedTemplatesHeading" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Specialized Templates" sil:dynamic="true">
         <source xml:lang="en">Specialized Templates</source>
-        <note>ID: CollectionTab.SpecializedTemplatesHeading</note>
+        <note>ID: CollectionTab.Specialized Templates</note>
       </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing">
         <source xml:lang="en">Title Missing</source>

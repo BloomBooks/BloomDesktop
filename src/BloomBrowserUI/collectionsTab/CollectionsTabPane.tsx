@@ -59,11 +59,6 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         });
     }, []);
 
-    const specializedTemplatesHeading = useL10n(
-        "Specialized Templates",
-        "CollectionTab.SpecializedTemplatesHeading"
-    );
-
     // Setting the collectionCount to a new value causes a refresh.  Even though it's
     // not explicitly referenced anywhere except for being set, not having it results
     // in no refreshes when collections are removed.
@@ -343,10 +338,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     if (sourcesCollections.length > 0) {
         // when we're in the "download for editing" mode, there are no other collections
         sourcesCollections = [
-            ...processTemplatesCollection(
-                specializedTemplatesHeading,
-                sourcesCollections[0]
-            ),
+            ...processTemplatesCollection(sourcesCollections[0]),
             ...sourcesCollections.slice(1)
         ];
     }
@@ -870,7 +862,6 @@ function sanitize(id: string): string {
 // Divide the one "templates/" collection into separate collections and sort them
 // TODO: sort them according to some criteria TBD
 function processTemplatesCollection(
-    localizedSpecializedTemplatesHeading: string,
     templatesCollection: CollectionInfo
 ): CollectionInfo[] {
     const simpleTemplates = { ...templatesCollection };
@@ -885,7 +876,7 @@ function processTemplatesCollection(
     simpleTemplates.filter = f;
     const specializedTemplates = {
         ...templatesCollection,
-        name: localizedSpecializedTemplatesHeading
+        name: "Specialized Templates"
     };
     specializedTemplates.filter = (book: IBookInfo) => {
         return !f(book);
