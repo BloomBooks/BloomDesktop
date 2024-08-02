@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 import {
     getPageLabel,
     getTemplatePageImageSource,
-    IGroupData
+    ITemplateBookInfo
 } from "./PageChooserDialog";
 import PageThumbnail from "./PageThumbnail";
 import TemplateBookErrorReplacement from "./TemplateBookErrorReplacement";
@@ -25,7 +25,7 @@ interface ITemplateBookPagesProps {
     // If neither of the 2 above props are defined and this is the first group, fire onTemplatePageSelect
     // on my first page.
     firstGroup: boolean;
-    groupUrls: IGroupData;
+    templateBooks: ITemplateBookInfo;
     orientation: string;
     forChooseLayout: boolean;
     onTemplatePageSelect: (
@@ -43,7 +43,7 @@ const enterpriseMarkerChar = "\u25cf";
 
 export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps> = ({
     forChooseLayout,
-    groupUrls,
+    templateBooks: groupUrls,
     onLoad,
     orientation,
     selectedPageId,
