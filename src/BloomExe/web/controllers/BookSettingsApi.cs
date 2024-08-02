@@ -2,12 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
-using System.Linq;
-using Bloom.Book;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.web.controllers;
-using Newtonsoft.Json;
 using Newtonsoft.Json;
 using SIL.IO;
 

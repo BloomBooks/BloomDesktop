@@ -7,7 +7,7 @@ import { get, post } from "../utils/bloomApi";
 import Button from "@mui/material/Button";
 import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { Div } from "./l10nComponents";
+import { Div, Span } from "./l10nComponents";
 import { useL10n } from "./l10nHooks";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
@@ -487,6 +487,43 @@ export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
                 </DialogBottomButtons>
             </div>
         </BloomDialog>
+    );
+};
+
+export const BloomEnterpriseIndicatorIconAndText: React.FunctionComponent<{
+    className?: string;
+}> = props => {
+    const enterpriseAvailable = useEnterpriseAvailable();
+
+    return (
+        <div
+            onClick={() => {
+                enterpriseAvailable || openBloomEnterpriseSettings();
+            }}
+            css={css`
+                display: flex;
+                align-items: center;
+                ${enterpriseAvailable || "cursor:pointer"};
+            `}
+            className={props.className}
+        >
+            <img
+                src={badgeUrl}
+                css={css`
+                    height: 1.5em;
+                    padding-right: 0.5em;
+                `}
+            />
+            {enterpriseAvailable ? (
+                <Span l10nKey={"Common.AvailableWithEnterprise"}>
+                    Available with your Enterprise Subscription
+                </Span>
+            ) : (
+                <Span l10nKey={"Common.EnterpriseRequired"}>
+                    Enterprise Required
+                </Span>
+            )}
+        </div>
     );
 };
 

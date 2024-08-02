@@ -48,6 +48,7 @@ import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
+import { BloomEnterpriseIndicatorIconAndText } from "../../react_components/requiresBloomEnterprise";
 
 let isOpenAlready = false;
 
@@ -190,6 +191,15 @@ export const BookSettingsDialog: React.FunctionComponent<{
     const resolutionLabel = useL10n("Resolution", "BookSettings.Resolution");
     const bloomPubLabel = useL10n("eBooks", "PublishTab.bloomPUBButton"); // reuse the same string localized for the Publish tab
 
+    const coverAsImageLabel = useL10n(
+        "Fill the front cover with a single image",
+        "BookSettings.CoverIsImage"
+    );
+    const coverAsImageDescription = useL10n(
+        "For paper books, this image will be full bleed.",
+        "BookSettings.CoverIsImage.Description"
+    );
+
     // This is a helper function to make it easier to pass the override information
     function getAdditionalProps<T>(
         subPath: string
@@ -323,7 +333,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                         height: 600px;
                         // This odd width was chosen to make the customBookStyles alert box format nicely.
                         // See BL-12956. It's not that important, but I don't think anything else is affected
-                        // much by the exact witdh.
+                        // much by the exact width.
                         width: 638px;
                         #groups {
                             margin-right: 10px; // make room for the scrollbar
@@ -375,6 +385,30 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         </Div>
                                     </NoteBox>
                                 )}
+
+                                <div>
+                                    <ConfigrBoolean
+                                        label={coverAsImageLabel}
+                                        description={coverAsImageDescription}
+                                        {...getAdditionalProps<boolean>(
+                                            `coverIsImage`
+                                        )}
+                                    />
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            padding-bottom: 5px;
+                                            font-size: 12px;
+                                            font-weight: bold;
+                                        `}
+                                    >
+                                        <BloomEnterpriseIndicatorIconAndText
+                                            css={css`
+                                                margin-left: auto;
+                                            `}
+                                        />
+                                    </div>
+                                </div>
                                 <FieldVisibilityGroup
                                     field="cover-title"
                                     labelFrame="Show Title in {0}"

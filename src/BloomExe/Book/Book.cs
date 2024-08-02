@@ -2349,7 +2349,8 @@ namespace Bloom.Book
                 layout,
                 BookInfo.UseDeviceXMatter,
                 _bookData.MetadataLanguage1Tag,
-                oldIds
+                oldIds,
+                BookInfo.AppearanceSettings.CoverIsImage
             );
 
             var dataBookLangs = bookDOM.GatherDataBookLanguages();

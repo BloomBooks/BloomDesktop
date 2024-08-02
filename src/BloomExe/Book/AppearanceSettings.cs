@@ -6,8 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Navigation;
-using Amazon.Auth.AccessControlPolicy;
 using Bloom;
 using Bloom.Book;
 using Bloom.web.controllers;
@@ -27,9 +25,9 @@ public class AppearanceSettings
     public AppearanceSettings()
     {
         _properties = new ExpandoObject();
-        if (_substitutinator == null)
+        if (_appearanceMigrator == null)
         {
-            _substitutinator = new AppearanceMigrator();
+            _appearanceMigrator = new AppearanceMigrator();
         }
 
         // copy in the default values from each definition
@@ -45,7 +43,7 @@ public class AppearanceSettings
     public static string kDoShowValueForDisplay = "doShow-css-will-ignore-this-and-use-default"; // by using an illegal value, we just get a no-op rule, which is what we want
     public static string kHideValueForDisplay = "none";
     public static string kOverrideGroupsArrayKey = "groupsToOverrideFromParent"; // e.g. "coverFields, xmatter"
-    private static AppearanceMigrator _substitutinator;
+    private static AppearanceMigrator _appearanceMigrator;
 
     // A representation of the content of Appearance.json
     internal dynamic _properties;
@@ -110,9 +108,13 @@ public class AppearanceSettings
         // The default here is rarely if ever relevant. Usually a newly created instance will be initialized from a folder, and the default will be overwritten,
         // either to whatever we find in appearance.json, or to "legacy-5-6" if there is no appearance.json.
         new StringPropertyDef("cssThemeName", "cssThemeName", "default"),
+        // Cover page is just a full bleed image.
+        new BooleanPropertyDef("coverIsImage", "coverIsImage", false),
         // Todo: when we implement this setting, we want to migrate the old record of color color.
         // See code commented out in BringBookUpToDateUnprotected.
         //new CssStringVariableDef("coverColor","colors","yellow"),
+
+        // User can turn the visibility of these fields on and off in the dialog.
         new CssDisplayVariableDef("cover-title-L1-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L2-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L3-show", "coverFields", false),
@@ -157,6 +159,11 @@ public class AppearanceSettings
     {
         get { return _properties.cssThemeName; }
         set { _properties.cssThemeName = value; }
+    }
+    public bool CoverIsImage
+    {
+        get { return _properties.coverIsImage; }
+        set { _properties.coverIsImage = value; }
     }
 
     /// <summary>
@@ -669,7 +676,7 @@ public class AppearanceSettings
 
             if (definition is CssPropertyDef)
             {
-                var setting = ((PropertyDef)definition).GetCssVariableDeclaration(keyValuePair);
+                var setting = ((CssPropertyDef)definition).GetCssVariableDeclaration(keyValuePair);
                 if (!string.IsNullOrEmpty(setting))
                     cssBuilder.AppendLine("\t" + setting);
             }
@@ -952,11 +959,12 @@ public abstract class PropertyDef
     /// The name of the group of properties that can a book can override from a collection, or a page can override from a book.
     /// </summary>
     public string OverrideGroup;
-
-    public abstract string GetCssVariableDeclaration(dynamic property);
 }
 
-public abstract class CssPropertyDef : PropertyDef { }
+public abstract class CssPropertyDef : PropertyDef
+{
+    public abstract string GetCssVariableDeclaration(dynamic property);
+}
 
 public class StringPropertyDef : PropertyDef
 {
@@ -966,12 +974,23 @@ public class StringPropertyDef : PropertyDef
         DefaultValue = defaultValue;
         OverrideGroup = overrideGroup;
     }
+}
 
-    public override string GetCssVariableDeclaration(dynamic property)
+public class BooleanPropertyDef : PropertyDef
+{
+    public BooleanPropertyDef(string name, string overrideGroup, bool defaultValue)
     {
-        return $"--{Name}: {property.Value};";
+        Name = name;
+        OverrideGroup = overrideGroup;
+        DefaultValue = defaultValue;
     }
 }
+
+//public class BooleanPropertyDef : StringPropertyDef
+//{
+//    public BooleanPropertyDef(string name, string overrideGroup, bool defaultValue)
+//        : base(name, overrideGroup, defaultValue.ToString().ToLowerInvariant()) { }
+//}
 
 public class CssStringVariableDef : CssPropertyDef
 {

@@ -298,38 +298,83 @@ body.publishingWithoutFullBleed {
 .bloom-page {
     &.A5Portrait {
         .SetPageDimensions(@A5Portrait-Width, @A5Portrait-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@A5Portrait-Width, @A5Portrait-Height);
+            }
+        }
     }
 
     &.A5Landscape {
         .SetPageDimensions(@A5Landscape-Width, @A5Landscape-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@A5Landscape-Width, @A5Landscape-Height);
+            }
+        }
     }
 
     &.B5Portrait {
         .SetPageDimensions(@B5Portrait-Width, @B5Portrait-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@B5Portrait-Width, @B5Portrait-Height);
+            }
+        }
     }
 
     &.A4Landscape {
         .SetPageDimensions(@A4Landscape-Width, @A4Landscape-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@A4Landscape-Width, @A4Landscape-Height);
+            }
+        }
     }
 
     &.A4Portrait {
         .SetPageDimensions(@A4Portrait-Width, @A4Portrait-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@A4Portrait-Width, @A4Portrait-Height);
+            }
+        }
     }
 
     &.A3Landscape {
         .SetPageDimensions(@A3Landscape-Width, @A3Landscape-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@A3Landscape-Width, @A3Landscape-Height);
+            }
+        }
     }
 
     &.A3Portrait {
         .SetPageDimensions(@A3Portrait-Width, @A3Portrait-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@A3Portrait-Width, @A3Portrait-Height);
+            }
+        }
     }
 
     &.A6Portrait {
         .SetPageDimensions(@A6Portrait-Width, @A6Portrait-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@A6Portrait-Width, @A6Portrait-Height);
+            }
+        }
     }
 
     &.A6Landscape {
         .SetPageDimensions(@A6Landscape-Width, @A6Landscape-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@A6Landscape-Width, @A6Landscape-Height);
+            }
+        }
     }
 
     &.QuarterLetterPortrait {
@@ -337,6 +382,14 @@ body.publishingWithoutFullBleed {
             @QuarterLetterPortrait-Width,
             @QuarterLetterPortrait-Height
         );
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @QuarterLetterPortrait-Width,
+                    @QuarterLetterPortrait-Height
+                );
+            }
+        }
     }
 
     &.QuarterLetterLandscape {
@@ -344,6 +397,14 @@ body.publishingWithoutFullBleed {
             @QuarterLetterLandscape-Width,
             @QuarterLetterLandscape-Height
         );
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @QuarterLetterLandscape-Width,
+                    @QuarterLetterLandscape-Height
+                );
+            }
+        }
     }
 
     &.HalfLetterPortrait {
@@ -351,6 +412,14 @@ body.publishingWithoutFullBleed {
             @HalfLetterPortrait-Width,
             @HalfLetterPortrait-Height
         );
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @HalfLetterPortrait-Width,
+                    @HalfLetterPortrait-Height
+                );
+            }
+        }
     }
 
     &.HalfLetterLandscape {
@@ -358,18 +427,50 @@ body.publishingWithoutFullBleed {
             @HalfLetterLandscape-Width,
             @HalfLetterLandscape-Height
         );
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @HalfLetterLandscape-Width,
+                    @HalfLetterLandscape-Height
+                );
+            }
+        }
     }
 
     &.LetterPortrait {
         .SetPageDimensions(@LetterPortrait-Width, @LetterPortrait-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @LetterPortrait-Width,
+                    @LetterPortrait-Height
+                );
+            }
+        }
     }
 
     &.LetterLandscape {
         .SetPageDimensions(@LetterLandscape-Width, @LetterLandscape-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @LetterLandscape-Width,
+                    @LetterLandscape-Height
+                );
+            }
+        }
     }
 
     &.HalfLegalPortrait {
         .SetPageDimensions(@HalfLegalPortrait-Width, @HalfLegalPortrait-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @HalfLegalPortrait-Width,
+                    @HalfLegalPortrait-Height
+                );
+            }
+        }
     }
 
     &.HalfLegalLandscape {
@@ -377,30 +478,80 @@ body.publishingWithoutFullBleed {
             @HalfLegalLandscape-Width,
             @HalfLegalLandscape-Height
         );
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @HalfLegalLandscape-Width,
+                    @HalfLegalLandscape-Height
+                );
+            }
+        }
     }
 
     &.LegalPortrait {
         .SetPageDimensions(@LegalPortrait-Width, @LegalPortrait-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@LegalPortrait-Width, @LegalPortrait-Height);
+            }
+        }
     }
 
     &.LegalLandscape {
         .SetPageDimensions(@LegalLandscape-Width, @LegalLandscape-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @LegalLandscape-Width,
+                    @LegalLandscape-Height
+                );
+            }
+        }
     }
 
     &.Cm13Landscape {
         .SetPageDimensions(@Cm13Square-Side, @Cm13Square-Side);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(@Cm13Square-Side, @Cm13Square-Side);
+            }
+        }
     }
 
     &.USComicPortrait {
         .SetPageDimensions(@USComicPortrait-Width, @USComicPortrait-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @USComicPortrait-Width,
+                    @USComicPortrait-Height
+                );
+            }
+        }
     }
 
     &.Size6x9Portrait {
         .SetPageDimensions(@Size6x9Portrait-Width, @Size6x9Portrait-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @Size6x9Portrait-Width,
+                    @Size6x9Portrait-Height
+                );
+            }
+        }
     }
 
     &.Size6x9Landscape {
         .SetPageDimensions(@Size6x9Landscape-Width, @Size6x9Landscape-Height);
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @Size6x9Landscape-Width,
+                    @Size6x9Landscape-Height
+                );
+            }
+        }
     }
 
     &.Device16x9Portrait {
@@ -408,6 +559,14 @@ body.publishingWithoutFullBleed {
             @Device16x9Portrait-Width,
             @Device16x9Portrait-Height
         );
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @Device16x9Portrait-Width,
+                    @Device16x9Portrait-Height
+                );
+            }
+        }
     }
 
     &.Device16x9Landscape {
@@ -415,6 +574,14 @@ body.publishingWithoutFullBleed {
             @Device16x9Landscape-Width,
             @Device16x9Landscape-Height
         );
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @Device16x9Landscape-Width,
+                    @Device16x9Landscape-Height
+                );
+            }
+        }
     }
 
     &.PictureStoryLandscape {
@@ -422,5 +589,13 @@ body.publishingWithoutFullBleed {
             @PictureStoryLandscape-Width,
             @PictureStoryLandscape-Height
         );
+        &.outsideFrontCover.no-margin-page-not-yet {
+            .bloom-imageContainer {
+                .SetPageDimensions(
+                    @PictureStoryLandscape-Width,
+                    @PictureStoryLandscape-Height
+                );
+            }
+        }
     }
 }

@@ -699,6 +699,29 @@ div[data-book*="branding"] {
     }
 }
 
+.bloom-page.outsideFrontCover.no-margin-page-not-yet {
+    visibility: hidden;
+    // margin: 0mm;
+    padding: 0mm;
+
+    .bloom-imageContainer {
+        visibility: visible;
+        // position: fixed;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0mm;
+        background-color: #222222; //@dark from common-comics.less
+    }
+}
+
+.bloom-page.outsideFrontCover.no-margin-page,
+.bloom-page.outsideFrontCover.no-margin-page-not-yet {
+    // TODO see if we can make this work? It only works for inside pages currently.
+    // --page-background-color: #222222; //@dark from common-comics.less TODO extract it
+    //background-color: #222222 !important; //@dark from common-comics.less TODO: use a variable
+}
+
 /* About the calc() here: depending on the margin, we may need to adjust the padding of the text to make it so that
 you get less padding on the side of the text that is next to edge of the page.
 
