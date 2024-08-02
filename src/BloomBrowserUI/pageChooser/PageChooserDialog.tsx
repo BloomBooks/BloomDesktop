@@ -280,7 +280,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                         selectedTemplatePageDiv ? undefined : defaultPageId
                     }
                     firstGroup={index === 0}
-                    templateBooks={book}
+                    templateBook={book}
                     orientation={orientation}
                     forChooseLayout={props.forChooseLayout}
                     key={index}

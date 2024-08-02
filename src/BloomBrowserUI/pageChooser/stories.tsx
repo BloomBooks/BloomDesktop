@@ -137,7 +137,7 @@ storiesOf("Page Chooser", module)
         );
     })
     .add("TemplateBookPages", () => {
-        const urls: ITemplateBookInfo = {
+        const book: ITemplateBookInfo = {
             templateBookFolderUrl:
                 "c:/bloomdesktop/output/browser/templates/template books/basic book",
             templateBookPath:
@@ -147,7 +147,7 @@ storiesOf("Page Chooser", module)
             <PreviewFrame>
                 <TemplateBookPages
                     firstGroup={false}
-                    templateBooks={urls}
+                    templateBook={book}
                     orientation="portrait"
                     forChooseLayout={false}
                     onTemplatePageSelect={() => {}}
@@ -157,7 +157,7 @@ storiesOf("Page Chooser", module)
         );
     })
     .add("TemplateBookPages-activity-portrait", () => {
-        const urls: ITemplateBookInfo = {
+        const book: ITemplateBookInfo = {
             templateBookFolderUrl:
                 "c:/bloomdesktop/output/browser/templates/template books/activity",
             templateBookPath:
@@ -167,7 +167,7 @@ storiesOf("Page Chooser", module)
             <PreviewFrame>
                 <TemplateBookPages
                     firstGroup={false}
-                    templateBooks={urls}
+                    templateBook={book}
                     orientation="portrait"
                     forChooseLayout={false}
                     onTemplatePageSelect={() => {}}
@@ -177,7 +177,7 @@ storiesOf("Page Chooser", module)
         );
     })
     .add("TemplateBookPages-activity-landscape", () => {
-        const urls: ITemplateBookInfo = {
+        const book: ITemplateBookInfo = {
             templateBookFolderUrl:
                 "c:/bloomdesktop/output/browser/templates/template books/activity",
             templateBookPath:
@@ -187,7 +187,7 @@ storiesOf("Page Chooser", module)
             <PreviewFrame>
                 <TemplateBookPages
                     firstGroup={false}
-                    templateBooks={urls}
+                    templateBook={book}
                     orientation="landscape"
                     forChooseLayout={true}
                     onTemplatePageSelect={() => {}}
@@ -197,7 +197,7 @@ storiesOf("Page Chooser", module)
         );
     })
     .add("TemplateBookPages-custom", () => {
-        const urls: ITemplateBookInfo = {
+        const book: ITemplateBookInfo = {
             templateBookFolderUrl:
                 "c:/users/gordon/documents/bloom/sokoro books test/gaadi template",
             templateBookPath:
@@ -207,7 +207,7 @@ storiesOf("Page Chooser", module)
             <PreviewFrame>
                 <TemplateBookPages
                     firstGroup={false}
-                    templateBooks={urls}
+                    templateBook={book}
                     orientation="portrait"
                     forChooseLayout={false}
                     onTemplatePageSelect={() => {}}
