@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 import {
     getPageLabel,
     getTemplatePageImageSource,
-    IGroupData
+    ITemplateBookInfo
 } from "./PageChooserDialog";
 import PageThumbnail from "./PageThumbnail";
 import TemplateBookErrorReplacement from "./TemplateBookErrorReplacement";
@@ -25,7 +25,7 @@ interface ITemplateBookPagesProps {
     // If neither of the 2 above props are defined and this is the first group, fire onTemplatePageSelect
     // on my first page.
     firstGroup: boolean;
-    groupUrls: IGroupData;
+    templateBook: ITemplateBookInfo;
     orientation: string;
     forChooseLayout: boolean;
     onTemplatePageSelect: (
@@ -43,7 +43,7 @@ const enterpriseMarkerChar = "\u25cf";
 
 export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps> = ({
     forChooseLayout,
-    groupUrls,
+    templateBook,
     onLoad,
     orientation,
     selectedPageId,
@@ -70,7 +70,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         axios
             .get(
                 getBloomApiPrefix(false) +
-                    encodeURIComponent(groupUrls.templateBookPath)
+                    encodeURIComponent(templateBook.templateBookPath)
             )
             .then(result => {
                 const resultPageData: HTMLElement = new DOMParser().parseFromString(
@@ -101,7 +101,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                 if (filteredBloomPages.length === 0) {
                     console.log(
                         "Could not find any template pages in " +
-                            groupUrls.templateBookPath
+                            templateBook.templateBookPath
                     );
                     return;
                 }
@@ -124,7 +124,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                 // Just display a message.
                 setErrorState(true);
             });
-    }, [forChooseLayout, groupUrls.templateBookPath]);
+    }, [forChooseLayout, templateBook.templateBookPath]);
 
     useEffect(() => {
         if (onLoad) {
@@ -197,7 +197,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                       />
                       <PageThumbnail
                           imageSource={getTemplatePageImageSource(
-                              groupUrls.templateBookFolderUrl,
+                              templateBook.templateBookFolderUrl,
                               getPageLabel(currentPageDiv),
                               orientation
                           )}
@@ -209,7 +209,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         : undefined;
 
     const templatePageClickHandler = (currentPageDiv: HTMLDivElement) => {
-        onTemplatePageSelect(currentPageDiv, groupUrls.templateBookPath);
+        onTemplatePageSelect(currentPageDiv, templateBook.templateBookPath);
     };
 
     const templatePageDoubleClickHandler = (currentPageDiv: HTMLDivElement) => {
@@ -274,7 +274,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
             )}
             {errorState && (
                 <TemplateBookErrorReplacement
-                    templateBookPath={groupUrls.templateBookPath}
+                    templateBookPath={templateBook.templateBookPath}
                 />
             )}
         </React.Fragment>

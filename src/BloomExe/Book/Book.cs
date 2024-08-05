@@ -5644,5 +5644,10 @@ namespace Bloom.Book
             //SetCoverColor(BookInfo.AppearanceSettings.CoverColor);
             _pageListChangedEvent.Raise(true);
         }
+
+        public string GetDefaultTemplatePageId()
+        {
+            return Storage.Dom.GetMetaValue("defaultTemplatePageId", null);
+        }
     }
 }

@@ -82,6 +82,20 @@ namespace Bloom.web.controllers
                 _templateInsertionCommand.MostRecentInsertedTemplatePage == null
                     ? ""
                     : _templateInsertionCommand.MostRecentInsertedTemplatePage.Id;
+
+            if (addPageSettings.defaultPageToSelect == "")
+            {
+                var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
+                if (templateBook != null)
+                {
+                    var id = templateBook.GetDefaultTemplatePageId();
+                    if (!string.IsNullOrEmpty(id))
+                    {
+                        addPageSettings.defaultPageToSelect = id;
+                    }
+                }
+            }
+
             var sizeAndOrientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation;
             addPageSettings.orientation = sizeAndOrientation.IsSquare
                 ? "square"
@@ -89,7 +103,7 @@ namespace Bloom.web.controllers
                     ? "landscape"
                     : "portrait";
 
-            addPageSettings.groups = GetBookTemplatePaths(
+            addPageSettings.templateBooks = GetBookTemplatePaths(
                     GetPathToCurrentTemplateHtml(),
                     GetCurrentAndSourceBookPaths()
                 )
