@@ -2101,6 +2101,16 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="translated">Bloom ma xkowinta che upaqab’axik {0}. Ri k’olchak kaj xa yab’. Chab’ana jun toq’ob’, chb’ana chik jumul ruk’ jun uwach chik. Chi’ k’o nik’aj no’j chik: </target>
         <note>ID: EditTab.Image.Corrupt</note>
       </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.Corrupt" sil:dynamic="true">
+        <source xml:lang="en">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</source>
+        <target xml:lang="quc" state="needs-translation">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</target>
+        <note>ID: EditTab.ImageMetadata.Corrupt</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.Corrupt.MoreInfo" sil:dynamic="true">
+        <source xml:lang="en">More Information</source>
+        <target xml:lang="quc" state="needs-translation">More Information</target>
+        <note>ID: EditTab.ImageMetadata.Corrupt.MoreInfo</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
         <target xml:lang="quc" state="final">Uqupixik ri wachib'al</target>
