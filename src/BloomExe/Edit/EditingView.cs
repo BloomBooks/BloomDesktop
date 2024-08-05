@@ -676,7 +676,7 @@ namespace Bloom.Edit
             }
         }
 
-        /// <returns>false if saving via libpalaso image toolbox; true otherwise</returns>
+        /// <returns>false if saving via libpalaso image toolbox or saving failed; true otherwise</returns>
         public bool SaveImageMetadata(Metadata metadata)
         {
             if (_saveNewImageMetadataActionForImageToolbox != null)
@@ -685,12 +685,19 @@ namespace Bloom.Edit
                 return false;
             }
 
-            ImageUtils.SaveImageMetadataIfNeeded(
-                metadata,
-                _model.CurrentBook.FolderPath,
-                _fileNameOfImageBeingModified
-            );
-
+            try
+            {
+                ImageUtils.SaveImageMetadataIfNeeded(
+                    metadata,
+                    _model.CurrentBook.FolderPath,
+                    _fileNameOfImageBeingModified
+                );
+            }
+            catch (Exception e)
+            {
+                ImageUtils.ReportImageMetadataProblem(Path.Combine(_model.CurrentBook.FolderPath, _fileNameOfImageBeingModified), e);
+                return false;
+            }
             return true;
         }
 
