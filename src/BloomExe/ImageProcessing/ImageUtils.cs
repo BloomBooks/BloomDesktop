@@ -26,6 +26,8 @@ using TempFile = SIL.IO.TempFile;
 using Bloom.ToPalaso;
 using SIL.CommandLineProcessing;
 using SIL.Windows.Forms.ClearShare;
+using Bloom.ErrorReporter;
+using L10NSharp;
 
 namespace Bloom.ImageProcessing
 {
@@ -285,6 +287,21 @@ namespace Bloom.ImageProcessing
             var png = new byte[] { 137, 80, 78, 71 }; // PNG
 
             return png.SequenceEqual(bytes.Take(png.Length));
+        }
+
+        public static void ReportImageMetadataProblem(string filePath, Exception ex)
+        {
+            var msgFmt = LocalizationManager.GetString("EditTab.ImageMetadata.Corrupt",
+                "Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.");
+            var msg = string.Format(msgFmt, Path.GetFileName(filePath));
+            var btnLabel = LocalizationManager.GetString("EditTab.ImageMetadata.MoreInfo",
+                "More Information");
+            var settings = new NotifyUserOfProblemSettings(AllowSendReport.Disallow,
+                btnLabel,
+                (str, ex) => {
+                    SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org/image-license-problem");
+                });
+            BloomErrorReport.NotifyUserOfProblem(msg, ex, settings);
         }
 
         /// <summary>
