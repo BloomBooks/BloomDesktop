@@ -2101,12 +2101,12 @@
       </trans-unit>
       <trans-unit id="EditTab.ImageMetadata.Corrupt" sil:dynamic="true">
         <source xml:lang="en">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</source>
-        <target xml:lang="az" state="needs-translation">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</target>
+        <target xml:lang="az" state="translated">Bloomun {0} ilə problemi var idi. Fayl xarab ola bilər. Zəhmət olmazsa, başqa şəkil sınayın və ya Bloom 6.0 və ya daha yeni versiya ilə cəhd edin.</target>
         <note>ID: EditTab.ImageMetadata.Corrupt</note>
       </trans-unit>
       <trans-unit id="EditTab.ImageMetadata.Corrupt.MoreInfo" sil:dynamic="true">
         <source xml:lang="en">More Information</source>
-        <target xml:lang="az" state="needs-translation">More Information</target>
+        <target xml:lang="az" state="translated">Ətraflı məlumat</target>
         <note>ID: EditTab.ImageMetadata.Corrupt.MoreInfo</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
