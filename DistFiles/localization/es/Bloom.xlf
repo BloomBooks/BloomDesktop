@@ -2101,6 +2101,16 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Bloom no pudo cargar {0}. El archivo puede estar corrompido. Por favor, intente con otra imagen. Aquí hay algunos detalles técnicos: </target>
         <note>ID: EditTab.Image.Corrupt</note>
       </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.Corrupt" sil:dynamic="true">
+        <source xml:lang="en">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</source>
+        <target xml:lang="es-ES" state="needs-translation">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</target>
+        <note>ID: EditTab.ImageMetadata.Corrupt</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.Corrupt.MoreInfo" sil:dynamic="true">
+        <source xml:lang="en">More Information</source>
+        <target xml:lang="es-ES" state="needs-translation">More Information</target>
+        <note>ID: EditTab.ImageMetadata.Corrupt.MoreInfo</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
         <target xml:lang="es-ES" state="final">Cortar la imagen</target>
