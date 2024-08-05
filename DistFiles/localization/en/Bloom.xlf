@@ -1821,6 +1821,18 @@
         <note>ID: EditTab.Image.Corrupt</note>
         <note>{0} is required, and will be replaced with a file path. After the message Bloom will append a further message.</note>
       </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.Corrupt" sil:dynamic="true">
+        <!-- Possibly used only in Bloom 5.6 -->
+        <source xml:lang="en">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</source>
+        <note>ID: EditTab.ImageMetadata.Corrupt</note>
+        <note>{0} is required, and will be replaced with a file path.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.Corrupt.MoreInfo" sil:dynamic="true">
+        <!-- Possibly used only in Bloom 5.6 -->
+        <source xml:lang="en">More Information</source>
+        <note>ID: EditTab.ImageMetadata.Corrupt.MoreInfo</note>
+        <note>label of a button to click to display a website with more information</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
         <source xml:lang="en">Cut Image</source>
         <note>ID: EditTab.Image.CutImage</note>
