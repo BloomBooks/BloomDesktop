@@ -20,10 +20,14 @@ const mouseOverFunction = e => {
     }
     if (target.tagName.toLowerCase() === "video") {
         if (
-            (e.altKey || e.ctrlKey) &&
+            (e.altKey ||
+                e.ctrlKey ||
+                target.classList.contains("bloom-ui-no-controls")) &&
             target.closest(".bloom-textOverPicture")
         ) {
-            target.removeAttribute("controls"); // trying to move/resize video container
+            // trying to move/resize video container, or in some other state where we
+            // don't want controls
+            target.removeAttribute("controls");
         } else {
             target.setAttribute("controls", ""); // attribute just has to exist to work
         }
