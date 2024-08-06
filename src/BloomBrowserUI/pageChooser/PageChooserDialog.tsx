@@ -45,7 +45,7 @@ export const getTemplatePageImageSource = (
 
     const urlPrefix = getBloomApiPrefix();
 
-    //NB:  without the generateThumbnaiIfNecessary=true, we can run out of worker threads and get deadlocked.
+    //NB:  without the generateThumbnailIfNecessary=true, we can run out of worker threads and get deadlocked.
     //See EnhancedImageServer.IsRecursiveRequestContext
     return (
         `${urlPrefix}pageTemplateThumbnail?path=` +
@@ -57,7 +57,7 @@ export const getTemplatePageImageSource = (
             : orientation === "square"
             ? "-square"
             : "") +
-        ".svg?generateThumbnaiIfNecessary=true"
+        ".svg?generateThumbnailIfNecessary=true"
     );
 };
 
@@ -142,7 +142,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                 const imgSrc = img.src.replace(/%2F/g, "/");
                 // The 'if' condition here is to make sure we're dealing with the correct image element.
                 // We use 'startsWith' because the original 'imgSrc' has the parameter
-                // "?generateThumbnaiIfNecessary=true" tacked onto the end
+                // "?generateThumbnailIfNecessary=true" tacked onto the end
                 // [See getTemplatePageImageSource()], whereas 'updatedThumbUrl' is just the url
                 // to the updated thumbnail image.
                 if (imgSrc.startsWith(updatedThumbUrl)) {

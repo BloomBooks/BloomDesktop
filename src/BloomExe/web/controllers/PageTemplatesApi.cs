@@ -333,7 +333,10 @@ namespace Bloom.web.controllers
                                 // same object, but the function call wants it to be DynamicJson,
                                 // while it's easier to set the props when it is typed as dynamic.
                                 dynamic props1 = props;
-                                props1.src = expectedPathOfThumbnailImage
+                                // Strip off the parameter that we no longer need so that the dialog code can use the path.
+                                // See BL-13722 for what happens if we don't do this.
+                                var path = expectedPathOfThumbnailImage.Replace("?generateThumbnailIfNecessary=true", "");
+                                props1.src = path
                                     .ToLocalhost()
                                     .Replace(
                                         BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
