@@ -117,6 +117,14 @@ namespace Bloom
             // to do it before we create the Autofac context objects that create all
             // our singletons.
             RegistrationDialog.UpgradeRegistrationIfNeeded();
+
+            // Initializing localization can pop up a dialog if the system language
+            // is not one of our supported languages. The following calls must be done
+            // before any UI windows are displayed, so we do them here before we call
+            // SetUpLocalization().  See BL-13708.
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
             // We use crowdin for localizing, and they require a directory per language setup.
             LocalizationManager.UseLanguageCodeFolders = true;
             // We want only good localizations in Bloom.
@@ -242,9 +250,6 @@ namespace Bloom
 
             try
             {
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
-
                 var args = args1;
 
                 if (SIL.PlatformUtilities.Platform.IsWindows)
