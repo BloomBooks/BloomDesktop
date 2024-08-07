@@ -2268,7 +2268,32 @@ namespace Bloom.Book
             foreach (XmlElement style in styles)
             {
                 var cssContent = style.InnerText;
-                FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
+                // This regex finds the style settings stored in the html header.
+                // A font-family used by a Bloom style is not actually used in the book if the style is not used.
+                // See BL-13655.
+                var findRule = new Regex("\\.([-A-Za-z]*)(\\[lang=['\"]([-a-zA-Z]*)['\"]\\])?\\s*{([^}]*)}");
+                var rulesMatched = findRule.Matches(cssContent);
+                foreach (Match match in rulesMatched)
+                {
+                    var className = match.Groups[1].Value;
+                    var lang = match.Groups[3].Value;
+                    var cssDeclarationBlock = match.Groups[4].Value;
+                    if (cssDeclarationBlock.Contains("font-family:"))
+                    {
+                        string selector;
+                        if (string.IsNullOrEmpty(lang))
+                            selector = $"//div[contains(@class, '{className}')]";
+                        else
+                            selector = $"//div[contains(@class, '{className}') and @lang='{lang}']";
+                        var elements = dom.SafeSelectNodes(selector);
+                        if (elements.Count > 0)
+                            FindFontsUsedInCss(cssDeclarationBlock, result, includeFallbackFonts);
+                    }
+                }
+                // If there's some css content that doesn't match the style-setting pattern, it must be
+                // some sort of global css.  We'll just look for font-family in it.
+                if (rulesMatched.Count == 0)
+                    FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
             }
             var elementsWithStyleAttribute = dom.SafeSelectNodes("/html/body//*[@style]");
             foreach (XmlElement element in elementsWithStyleAttribute)
