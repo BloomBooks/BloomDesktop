@@ -6826,6 +6826,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">Chaya jun k'otow chi'aj rech ch'ob'onem chi ri'</target>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
       </trans-unit>
+      <trans-unit id="Topic" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Topic</source>
+        <target xml:lang="quc" state="needs-translation">Topic</target>
+        <note>ID: Topic</note>
+      </trans-unit>
       <trans-unit id="TopicChooser.Title" sil:dynamic="true">
         <source xml:lang="en">Choose Topic</source>
         <target xml:lang="quc" state="needs-translation">Choose Topic</target>
