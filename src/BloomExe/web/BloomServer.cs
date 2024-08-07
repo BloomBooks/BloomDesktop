@@ -1174,14 +1174,14 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// Requests with ?generateThumbnaiIfNecessary=true are potentially recursive in that we may have to navigate
+        /// Requests with ?generateThumbnailIfNecessary=true are potentially recursive in that we may have to navigate
         /// a browser to the template page in order to construct the thumbnail.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
         protected bool IsRecursiveRequestContext(HttpListenerContext context)
         {
-            return context.Request.QueryString["generateThumbnaiIfNecessary"] == "true";
+            return context.Request.QueryString["generateThumbnailIfNecessary"] == "true";
         }
 
         private bool ProcessCssFile(IRequestInfo info, string incomingPath)
