@@ -286,15 +286,8 @@ namespace Bloom.WebLibraryIntegration
 
         private void SetContentDisposition(PutObjectRequest request, string localFilePath)
         {
-            // when the user downloads, preserve the original file name instead of encoding it such that spaces become "+"
-            var name = Path.GetFileName(localFilePath);
-            // urlecode things like ñ but leave spaces as spaces, not "+"
-            var encoded = Uri.EscapeUriString(name); // note, we want this instead of UrlEncode() because that changes spaces to "+"
-            var disposition = "filename=" + encoded;
-
             // The effect of this is that navigating to the file's URL is always treated as an attempt to download the file.
-            // This is definitely not desirable for the PDF  <-- JH: I'm not clear that this is not desirable.
-            // (typically a preview) which we want to navigate to in the Preview button
+            // This is definitely not desirable for the PDF (typically a preview) which we want to navigate to in the Preview button
             // of BloomLibrary.
             // I'm not sure whether there is still any reason to do it for other files.
             // It was temporarily important for the BookOrder file when the Open In Bloom button just downloaded it.
@@ -308,12 +301,8 @@ namespace Bloom.WebLibraryIntegration
             // It seems that the header we insert here eventually becomes a header for a web request, and these allow only ascii.
             // There may be some way to encode non-ascii filenames to get the effect, if we ever want it again. Or AWS may fix the problem.
             // If you put setting the filename back in without such a workaround, be sure to test with a non-ascii book title.
-
-
             if (Path.GetExtension(localFilePath).ToLowerInvariant() != ".pdf")
-                disposition += "; attachment";
-
-            request.Headers.ContentDisposition = disposition;
+                request.Headers.ContentDisposition = "attachment";
         }
 
         public string DownloadFile(string bucketName, string storageKeyOfFile)
