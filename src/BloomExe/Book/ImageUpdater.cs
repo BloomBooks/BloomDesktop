@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Bloom.ErrorReporter;
 using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
@@ -65,11 +66,26 @@ namespace Bloom.Book
                 {
                     list += ", ...";
                 }
-                var msg = LocalizationManager.GetString(
+                var msgFmt = LocalizationManager.GetString(
                     "Errors.CopyImageMetadata",
-                    "Bloom was not able to copy the metadata to {0} image(s): {1}. Try restarting your computer. If that does not fix the problem, please send us a report and we will help you fix it."
+                    "Bloom was not able to copy the metadata to {0} image(s): {1}. The files may be corrupted. Please try other images, or try with Bloom 6.0 or newer."
                 );
-                ErrorReport.NotifyUserOfProblem(lastError, msg, filesWithProblems.Count, list);
+                var message = string.Format(msgFmt, filesWithProblems.Count, list);
+                var btnLabel = LocalizationManager.GetString(
+                    "EditTab.ImageMetadata.MoreInfo",
+                    "More Information"
+                );
+                var settings = new NotifyUserOfProblemSettings(
+                    AllowSendReport.Disallow,
+                    btnLabel,
+                    (str, ex) =>
+                    {
+                        SIL.Program.Process.SafeStart(
+                            "https://docs.bloomlibrary.org/image-license-problem"
+                        );
+                    }
+                );
+                BloomErrorReport.NotifyUserOfProblem(message, null, settings);
             }
 
             //Now update the html attributes which echo some of it, and is used by javascript to overlay displays related to
