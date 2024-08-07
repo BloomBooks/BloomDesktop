@@ -6824,6 +6824,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Weka swali la ufahamu hapa</target>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
       </trans-unit>
+      <trans-unit id="Topic" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Topic</source>
+        <target xml:lang="sw" state="needs-translation">Topic</target>
+        <note>ID: Topic</note>
+      </trans-unit>
       <trans-unit id="TopicChooser.Title" sil:dynamic="true">
         <source xml:lang="en">Choose Topic</source>
         <target xml:lang="sw" state="needs-translation">Choose Topic</target>
