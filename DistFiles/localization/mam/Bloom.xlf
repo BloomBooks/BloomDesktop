@@ -6823,6 +6823,11 @@
         <target xml:lang="mam" state="final">Q’o’nka jun xjelb’il ti’j nab’il tzalu’</target>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
       </trans-unit>
+      <trans-unit id="Topic" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Topic</source>
+        <target xml:lang="mam" state="needs-translation">Topic</target>
+        <note>ID: Topic</note>
+      </trans-unit>
       <trans-unit id="TopicChooser.Title" sil:dynamic="true">
         <source xml:lang="en">Choose Topic</source>
         <target xml:lang="mam" state="needs-translation">Choose Topic</target>
