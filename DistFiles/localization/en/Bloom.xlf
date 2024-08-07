@@ -1888,13 +1888,11 @@
         <note>{0} is required, and will be replaced with a file path. After the message Bloom will append a further message.</note>
       </trans-unit>
       <trans-unit id="EditTab.ImageMetadata.Corrupt" sil:dynamic="true">
-        <!-- Possibly used only in Bloom 5.6 -->
         <source xml:lang="en">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</source>
         <note>ID: EditTab.ImageMetadata.Corrupt</note>
         <note>{0} is required, and will be replaced with a file path.</note>
       </trans-unit>
       <trans-unit id="EditTab.ImageMetadata.Corrupt.MoreInfo" sil:dynamic="true">
-        <!-- Possibly used only in Bloom 5.6 -->
         <source xml:lang="en">More Information</source>
         <note>ID: EditTab.ImageMetadata.Corrupt.MoreInfo</note>
         <note>label of a button to click to display a website with more information</note>
@@ -2864,7 +2862,7 @@
         <note>ID: Errors.BookProblem</note>
       </trans-unit>
       <trans-unit id="Errors.CopyImageMetadata">
-        <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. Try restarting your computer. If that does not fix the problem, please send us a report and we will help you fix it.</source>
+        <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. The files may be corrupted. Please try other images, or try with Bloom 6.0 or newer.</source>
         <note>ID: Errors.BookProblem</note>
         <note>The placeholder {0} will get a number that is the count of how many image files had a problem.</note>
         <note>The placeholder {1} will get a list of the names of image files that had a problem.</note>
