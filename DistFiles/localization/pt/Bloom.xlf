@@ -3179,9 +3179,9 @@
         <target xml:lang="pt-PT" state="final">Bloom teve um problema mostrando este livro. Isto não significa que seu trabalho seja perdido, mas isso significa que algo está fora de data, está faltando ou está errado.</target>
         <note>ID: Errors.BookProblem</note>
       </trans-unit>
-      <trans-unit id="Errors.CopyImageMetadata" approved="yes">
-        <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. Try restarting your computer. If that does not fix the problem, please send us a report and we will help you fix it.</source>
-        <target xml:lang="pt-PT" state="final">Bloom não foi capaz de copiar os metadados para {0} imagem(s): {1}. Tente reiniciar seu computador. Se isso não resolver o problema, por favor, envie-nos um relatório e nós ajudaremos a consertá-lo.</target>
+      <trans-unit id="Errors.CopyImageMetadata">
+        <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. The files may be corrupted. Please try other images, or try with Bloom 6.0 or newer.</source>
+        <target xml:lang="pt-PT" state="translated">Bloom não foi capaz de copiar os metadados para {0} imagem(s): {1}. Tente reiniciar seu computador. Se isso não resolver o problema, por favor, envie-nos um relatório e nós ajudaremos a consertá-lo.</target>
         <note>ID: Errors.BookProblem</note>
       </trans-unit>
       <trans-unit id="Errors.CannotAccessFile" sil:dynamic="true" approved="yes">
