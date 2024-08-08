@@ -41,8 +41,14 @@ namespace Bloom.Edit
                 bookFolderPath,
                 isSameFile
             );
-            ImageUtils.SaveImageMetadata(imageInfo, Path.Combine(bookFolderPath, imageFileName));
-
+            try
+            {
+                ImageUtils.SaveImageMetadata(imageInfo, Path.Combine(bookFolderPath, imageFileName));
+            }
+            catch (Exception e)
+            {
+                ImageUtils.ReportImageMetadataProblem(Path.Combine(bookFolderPath, imageFileName), e);
+            }
             return new ImageInfoForJavascript()
             {
                 imageId = imageId,
