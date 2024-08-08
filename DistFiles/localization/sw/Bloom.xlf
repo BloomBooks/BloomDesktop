@@ -3181,7 +3181,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: Errors.BookProblem</note>
       </trans-unit>
       <trans-unit id="Errors.CopyImageMetadata">
-        <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. Try restarting your computer. If that does not fix the problem, please send us a report and we will help you fix it.</source>
+        <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. The files may be corrupted. Please try other images, or try with Bloom 6.0 or newer.</source>
         <target xml:lang="sw" state="translated">Bloom haikuweza kunakili metadata kwa {0} picha: {1}. Jaribu kuiwasha tena kompyuta yako. Ikiwa hiyo haitasuluhisha tatizo hilo, tafadhali tutumie ripoti na tutakusaidia kulitatua.</target>
         <note>ID: Errors.BookProblem</note>
       </trans-unit>
