@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { ConfigrGroup, ConfigrPane } from "@sillsdev/config-r";
+import { ConfigrPane, ConfigrPage } from "@sillsdev/config-r";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -85,8 +85,8 @@ export const CollectionSettingsDialog: React.FunctionComponent<{}> = () => {
                             setSettingsToReturnLater(s);
                         }}
                     >
-                        <ConfigrGroup label={"Languages"}></ConfigrGroup>
-                        <ConfigrGroup label={"Appearance"}></ConfigrGroup>
+                        <ConfigrPage label={"Languages"}></ConfigrPage>
+                        <ConfigrPage label={"Appearance"}></ConfigrPage>
                     </ConfigrPane>
                 </div>
             </DialogMiddle>
