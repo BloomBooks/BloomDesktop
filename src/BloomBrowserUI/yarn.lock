@@ -3032,10 +3032,10 @@
     "@react-spring/shared" "~9.4.5"
     "@react-spring/types" "~9.4.5"
 
-"@sillsdev/config-r@^1.0.0-alpha.15":
-  version "1.0.0-alpha.15"
-  resolved "https://registry.npmjs.org/@sillsdev/config-r/-/config-r-1.0.0-alpha.15.tgz#0979c316e50e6d7edbe699e30235c3160cbf18b0"
-  integrity sha512-blKYURgkxTr7kdjR13+7JDwnyqolMtfKaTKAVRuEiyLxbNNUiHDIXazc7A9k/tNBPNpItAT21tu4E+3RZB9gXQ==
+"@sillsdev/config-r@^1.0.0-alpha.17":
+  version "1.0.0-alpha.17"
+  resolved "https://registry.npmjs.org/@sillsdev/config-r/-/config-r-1.0.0-alpha.17.tgz#351aeab35f84997c4db60992f47fda42fc4c5020"
+  integrity sha512-beLAT8OiqILQou06aSBQnT4OPgizX0zZMu4RHkUnhU4wdzwj2+8l4HsEpWAGJU3ZLa+PYFiqVVhZ8eFFQIFnJQ==
   dependencies:
     "@textea/json-viewer" "^2.13.1"
     formik "^2.2.9"

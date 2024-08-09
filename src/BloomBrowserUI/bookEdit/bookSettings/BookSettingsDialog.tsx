@@ -2,15 +2,12 @@ import { css } from "@emotion/react";
 import { ListItem, Slider, Typography } from "@mui/material";
 import {
     ConfigrPane,
+    ConfigrPage,
     ConfigrGroup,
-    ConfigrSubgroup,
-    ConfigrCustomStringInput,
-    ConfigrCustomNumberInput,
-    ConfigrColorPicker,
-    ConfigrInput,
     ConfigrCustomObjectInput,
     ConfigrBoolean,
-    ConfigrSelect
+    ConfigrSelect,
+    ConfigrCustomStringInput
 } from "@sillsdev/config-r";
 import React = require("react");
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -399,9 +396,11 @@ export const BookSettingsDialog: React.FunctionComponent<{
                             setSettingsToReturnLater(s);
                             //setSettings(s);
                         }}
-                        selectedGroupIndex={props.initiallySelectedGroupIndex}
+                        initiallySelectedTopLevelPageIndex={
+                            props.initiallySelectedGroupIndex
+                        }
                     >
-                        <ConfigrGroup label={coverLabel} level={1}>
+                        <ConfigrPage label={coverLabel}>
                             {appearanceDisabled && (
                                 <NoteBox>
                                     <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
@@ -410,9 +409,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     </Div>
                                 </NoteBox>
                             )}
-                            <ConfigrSubgroup
+                            <ConfigrGroup
                                 label={whatToShowOnCoverLabel}
-                                path={`appearance`}
+                                // path={`appearance`}
                             >
                                 <div>
                                     <ConfigrBoolean
@@ -469,11 +468,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `cover-topic-show`
                                     )}
                                 />
-                            </ConfigrSubgroup>
-                            <ConfigrSubgroup
-                                label={"All Cover Pages"}
-                                path={`appearance`}
-                            >
+                            </ConfigrGroup>
+                            <ConfigrGroup label={"All Cover Pages"}>
                                 <ConfigrCustomStringInput
                                     label={coverBackgroundColorLabel}
                                     control={ColorPickerForConfigr}
@@ -482,10 +478,10 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `cover-background-color`
                                     )}
                                 />
-                            </ConfigrSubgroup>
+                            </ConfigrGroup>
                             {/*
 
-                            <ConfigrSubgroup
+                            <ConfigrGroup
                                 label={
                                     frontAndBackMatterLabel +
                                     "  (Not implemented yet)"
@@ -501,89 +497,96 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     ]}
                                     description={frontAndBackMatterDescription}
                                 />
-                            </ConfigrSubgroup> */}
-                        </ConfigrGroup>
-                        <ConfigrGroup label={contentPagesLabel} level={1}>
-                            {
-                                // This group of four possible messages...sometimes none of them shows, so there are five options...
-                                // is very similar to the one in BookInfoIndicator.tsx. If you change one, you may need to change the other.
-                                // In particular, the logic for which to show and the text of the messages should be kept in sync.
-                                // I'm not seeing a clean way to reuse the logic. Some sort of higher-order component might work,
-                                // but I don't think the logic is complex enough to be worth it, when only used in two places.
-                            }
-                            {firstPossiblyLegacyCss && theme === "legacy-5-6" && (
-                                <WarningBox>
-                                    <MessageUsingLegacyThemeWithIncompatibleCss
-                                        fileName={firstPossiblyLegacyCss}
-                                    />
-                                </WarningBox>
-                            )}
-                            {firstPossiblyLegacyCss ===
-                                "customBookStyles.css" &&
-                                theme !== "legacy-5-6" && (
-                                    <NoteBox>
-                                        <div>
-                                            {migratedTheme ? (
-                                                <MessageUsingMigratedThemeInsteadOfIncompatibleCss
-                                                    fileName={
-                                                        firstPossiblyLegacyCss
-                                                    }
-                                                />
-                                            ) : (
-                                                <MessageIgnoringIncompatibleCssCanDelete
-                                                    fileName={
-                                                        firstPossiblyLegacyCss
-                                                    }
-                                                />
-                                            )}
-                                            <div
-                                                css={css`
-                                                    display: flex;
-                                                    align-items: center;
-                                                    // The way it comes out in English, we'd be better off without this, or even
-                                                    // some negative margin. But a translation may produce a last line of the
-                                                    // main message
-                                                    margin-top: 2px;
-                                                    justify-content: flex-end;
-                                                    &:hover {
-                                                        cursor: pointer;
-                                                    }
-                                                `}
-                                                onClick={() =>
-                                                    deleteCustomBookStyles()
+                            </ConfigrGroup> */}
+                        </ConfigrPage>
+                        <ConfigrPage label={contentPagesLabel}>
+                            <ConfigrGroup label="">
+                                {
+                                    // This group of four possible messages...sometimes none of them shows, so there are five options...
+                                    // is very similar to the one in BookInfoIndicator.tsx. If you change one, you may need to change the other.
+                                    // In particular, the logic for which to show and the text of the messages should be kept in sync.
+                                    // I'm not seeing a clean way to reuse the logic. Some sort of higher-order component might work,
+                                    // but I don't think the logic is complex enough to be worth it, when only used in two places.
+                                }
+                                {firstPossiblyLegacyCss &&
+                                    theme === "legacy-5-6" && (
+                                        <WarningBox>
+                                            <MessageUsingLegacyThemeWithIncompatibleCss
+                                                fileName={
+                                                    firstPossiblyLegacyCss
                                                 }
-                                            >
-                                                <TrashIcon
-                                                    id="trashIcon"
-                                                    color="primary"
-                                                />
-                                                <Div
-                                                    l10nKey="BookSettings.DeleteCustomBookStyles"
-                                                    l10nParam0={
-                                                        firstPossiblyLegacyCss
-                                                    }
-                                                    css={css`
-                                                        color: ${kBloomBlue};
-                                                    `}
-                                                >
-                                                    Delete{" "}
-                                                    {firstPossiblyLegacyCss}
-                                                </Div>
-                                            </div>
-                                        </div>
-                                    </NoteBox>
-                                )}
-                            {firstPossiblyLegacyCss &&
-                                firstPossiblyLegacyCss !==
+                                            />
+                                        </WarningBox>
+                                    )}
+                                {firstPossiblyLegacyCss ===
                                     "customBookStyles.css" &&
-                                theme !== "legacy-5-6" && (
-                                    <NoteBox>
-                                        <MessageIgnoringIncompatibleCss
-                                            fileName={firstPossiblyLegacyCss}
-                                        />
-                                    </NoteBox>
-                                )}
-                            <ConfigrSubgroup label="" path={`appearance`}>
+                                    theme !== "legacy-5-6" && (
+                                        <NoteBox>
+                                            <div>
+                                                {migratedTheme ? (
+                                                    <MessageUsingMigratedThemeInsteadOfIncompatibleCss
+                                                        fileName={
+                                                            firstPossiblyLegacyCss
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <MessageIgnoringIncompatibleCssCanDelete
+                                                        fileName={
+                                                            firstPossiblyLegacyCss
+                                                        }
+                                                    />
+                                                )}
+                                                <div
+                                                    css={css`
+                                                        display: flex;
+                                                        align-items: center;
+                                                        // The way it comes out in English, we'd be better off without this, or even
+                                                        // some negative margin. But a translation may produce a last line of the
+                                                        // main message
+                                                        margin-top: 2px;
+                                                        justify-content: flex-end;
+                                                        &:hover {
+                                                            cursor: pointer;
+                                                        }
+                                                    `}
+                                                    onClick={() =>
+                                                        deleteCustomBookStyles()
+                                                    }
+                                                >
+                                                    <TrashIcon
+                                                        id="trashIcon"
+                                                        color="primary"
+                                                    />
+                                                    <Div
+                                                        l10nKey="BookSettings.DeleteCustomBookStyles"
+                                                        l10nParam0={
+                                                            firstPossiblyLegacyCss
+                                                        }
+                                                        css={css`
+                                                            color: ${kBloomBlue};
+                                                        `}
+                                                    >
+                                                        Delete{" "}
+                                                        {firstPossiblyLegacyCss}
+                                                    </Div>
+                                                </div>
+                                            </div>
+                                        </NoteBox>
+                                    )}
+                                {firstPossiblyLegacyCss &&
+                                    firstPossiblyLegacyCss !==
+                                        "customBookStyles.css" &&
+                                    theme !== "legacy-5-6" && (
+                                        <NoteBox>
+                                            <MessageIgnoringIncompatibleCss
+                                                fileName={
+                                                    firstPossiblyLegacyCss
+                                                }
+                                            />
+                                        </NoteBox>
+                                    )}
+                            </ConfigrGroup>
+                            <ConfigrGroup label="">
                                 {/* Wrapping these two in a div prevents Config-R from sticking a divider between them */}
                                 <div>
                                     <ConfigrSelect
@@ -620,10 +623,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `pageNumber-show`
                                     )}
                                 />
-                            </ConfigrSubgroup>
-                            <ConfigrSubgroup
+                            </ConfigrGroup>
+                            <ConfigrGroup
                                 label={languagesToShowNormalSubgroupLabel}
-                                path={`appearance`}
                             >
                                 <FieldVisibilityGroup
                                     field="autoTextBox"
@@ -636,11 +638,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     disabled={false}
                                     getAdditionalProps={getAdditionalProps}
                                 />
-                            </ConfigrSubgroup>
-                            <ConfigrSubgroup
-                                label={advancedLayoutLabel}
-                                path={`appearance`}
-                            >
+                            </ConfigrGroup>
+                            <ConfigrGroup label={advancedLayoutLabel}>
                                 <ConfigrSelect
                                     label={textPaddingLabel}
                                     options={[
@@ -661,16 +660,16 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `topLevel-text-padding`
                                     )}
                                 />
-                            </ConfigrSubgroup>
-                        </ConfigrGroup>
-                        <ConfigrGroup label={bloomPubLabel} level={1}>
+                            </ConfigrGroup>
+                        </ConfigrPage>
+                        <ConfigrGroup label={bloomPubLabel}>
                             {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}
                             <BloomResolutionSlider
                                 label={resolutionLabel}
                                 path={`publish.bloomPUB.imageSettings`}
                             />
                         </ConfigrGroup>
-                        <ConfigrGroup label="Fonts" level={1}>
+                        <ConfigrGroup label="Fonts">
                             <NoteBox>
                                 <div>
                                     <P l10nKey="BookSettings.Fonts.Problematic">
