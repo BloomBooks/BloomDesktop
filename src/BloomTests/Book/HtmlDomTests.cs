@@ -1719,13 +1719,8 @@ p {
             );
         }
 
-        [Test]
-        public void FindFontsUsedInCss_WorksWithHtml()
-        {
-            const string htmlContent =
-                @"<html>
-<head>
-<style type=""text/css"">
+        const string kHtmlHeadContent =
+            @"<style type=""text/css"">
     /*<![CDATA[*/
     .Title-On-Cover-style[lang=""en""] { font-family: NikoshBAN ! important, ""Andika Basic"" !important; }
     .small-style[lang=""en""] { font-family: Andika New Basic ! important; font-size: 9pt ! important; font-weight: normal ! important; font-style: normal ! important; }
@@ -1743,20 +1738,35 @@ p {
     .normal-style[lang=""en""] { font-family: Scheherazade ! important; }
 </style>
 -->
-</head>
-<body>
-<div style=""font-size:26.0pt; font-family:&quot;Charis SIL First&quot;;"">Test 1</div>
+";
+        const string kBodyContentWithoutClasses =
+            @"<div style=""font-size:26.0pt; font-family:&quot;Charis SIL First&quot;;"">Test 1</div>
 <p style=""font-size:26.0pt; font-family:'Charis SIL Second';"">Test 2</p>
 <div style=""font-size:26.0pt; /*font-family:&quot;Charis SIL Third&quot;;*/"">Test 3</div>
 <!--div style=""font-size:26.0pt; font-family:&quot;Charis SIL Fourth&quot;;"">Test 4</div-->
 <p style=""font-size:26.0pt; font-family:'Doulos SIL';""></p>
 <span style=""font-family: ABeeZee""></span>
+";
+
+        [Test]
+        public void FindFontsUsedInCss_WorksWithHtml()
+        {
+            const string htmlContent =
+                @"<html>
+<head>" + kHtmlHeadContent + @"
+</head>
+<body>"+ kBodyContentWithoutClasses + @"
+<div class=""Title-On-Cover-style"" lang=""en"">Test 5</div>
+<div class=""small-style"" lang=""en"">Test 6</div>
+<div class=""Inside-Back-Cover-style"" lang=""jmx"">Test 7</div>
+<div class=""big-style"" lang=""jmx"">Test 8</div>
+<div class=""New-style"" lang=""en"">Test 9</div>
 </body>
 </html>";
 
             var fonts = new HashSet<string>();
             HtmlDom.FindFontsUsedInCss(htmlContent, fonts, true);
-            Assert.AreEqual(6, fonts.Count, "Six fonts are used in the test html/css data");
+            Assert.AreEqual(6, fonts.Count, "Six fonts are found in the test html/css data");
             Assert.IsTrue(
                 fonts.Contains("NikoshBAN"),
                 "The text/css data refers to NikoshBAN as a font."
@@ -1780,6 +1790,39 @@ p {
             Assert.IsTrue(
                 fonts.Contains("Comic Sans MS"),
                 "The text/css data refers to Comic Sans MS as a font."
+            );
+        }
+
+        [Test]
+        public void FindFontsUsedInCss_WorksWithHtmlForActuallyUsedStyles()
+        {
+            const string htmlContent =
+                @"<html>
+<head>" + kHtmlHeadContent + @"
+</head>
+<body>" + kBodyContentWithoutClasses + @"
+<div class=""Title-On-Cover-style"" lang=""en"">Test 5</div>
+</body>
+</html>";
+
+            var fonts = new HashSet<string>();
+            HtmlDom.FindFontsUsedInCss(htmlContent, fonts, true);
+            Assert.AreEqual(4, fonts.Count, "Four fonts are actually used in the test html/css data");
+            Assert.IsTrue(
+                fonts.Contains("NikoshBAN"),
+                "The text/css data refers to NikoshBAN as a font."
+            );
+            Assert.IsTrue(
+                fonts.Contains("Andika Basic"),
+                "The text/css data refers to Andika Basic as a font."
+            );
+            Assert.IsTrue(
+                fonts.Contains("Charis SIL First"),
+                "The html style attribute refers to Charis SIL First as a font."
+            );
+            Assert.IsTrue(
+                fonts.Contains("Charis SIL Second"),
+                "The html style attribute refers to Charis SIL Second as a font."
             );
         }
 

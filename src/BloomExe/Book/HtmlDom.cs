@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows.Markup;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Publish; // for DynamicJson
@@ -2096,8 +2095,47 @@ namespace Bloom.Book
             var styles = dom.SafeSelectNodes("/html/head/style");
             foreach (SafeXmlElement style in styles)
             {
+                // A font-family used by a Bloom style is not actually used in the book if the style is not used.
+                // See BL-13655.
                 var cssContent = style.InnerText;
-                FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
+                // This regex finds the style settings stored in the html header.
+                // These style settings look something like this in the HTML:
+                //<style type="text/css" title="userModifiedStyles">
+                //    /*<![CDATA[*/
+                //    .BigWords-style { font-size: 45pt !important; text-align: center !important; }
+                //    .Bubble-style { padding: 0px!important; }
+                //    .normal-style[lang = "en"] { font-size: 22pt !important; }
+                //    .normal-style { font-size: 22pt !important; }
+                //    .BigWords-style[lang = "en"] { font-family: Gothic !important; }/*]]>*/</ style >
+                // For the next to last line, group 1 is "normal-style", group 2 is empty, group 3 is empty,
+                // and group 4 is " font-size: 22pt !important; ".
+                // For the last line, group 1 is "BigWords-style", group 2 is "[lang="en"]", group 3 is "en",
+                // and group 4 is " font-family: Gothic !important; ".
+                var findRule = new Regex(
+                    "\\.([-A-Za-z]*)(\\[lang=['\"]([-a-zA-Z]*)['\"]\\])?\\s*{([^}]*)}"
+                );
+                var rulesMatched = findRule.Matches(cssContent);
+                foreach (Match match in rulesMatched)
+                {
+                    var className = match.Groups[1].Value;
+                    var lang = match.Groups[3].Value;
+                    var cssDeclarationBlock = match.Groups[4].Value;
+                    if (cssDeclarationBlock.Contains("font-family:"))
+                    {
+                        string selector;
+                        if (string.IsNullOrEmpty(lang))
+                            selector = $"//div[contains(@class, '{className}')]";
+                        else
+                            selector = $"//div[contains(@class, '{className}') and @lang='{lang}']";
+                        var elements = dom.SafeSelectNodes(selector);
+                        if (elements.Count > 0)
+                            FindFontsUsedInCss(cssDeclarationBlock, result, includeFallbackFonts);
+                    }
+                }
+                // If there's some css content that doesn't match the style-setting pattern, it must be
+                // some sort of global css.  We'll just look for font-family in it.
+                if (rulesMatched.Count == 0)
+                    FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
             }
             var elementsWithStyleAttribute = dom.SafeSelectNodes("/html/body//*[@style]");
             foreach (SafeXmlElement element in elementsWithStyleAttribute)
