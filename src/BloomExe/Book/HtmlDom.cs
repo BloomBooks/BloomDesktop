@@ -2128,7 +2128,7 @@ namespace Bloom.Book
                         else
                             selector = $"//div[contains(@class, '{className}') and @lang='{lang}']";
                         var elements = dom.SafeSelectNodes(selector);
-                        if (elements.Count > 0)
+                        if (elements.Length > 0)
                             FindFontsUsedInCss(cssDeclarationBlock, result, includeFallbackFonts);
                     }
                 }
