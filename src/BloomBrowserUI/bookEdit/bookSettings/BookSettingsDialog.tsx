@@ -43,11 +43,12 @@ import {
 } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 import { useL10n } from "../../react_components/l10nHooks";
-import { Div } from "../../react_components/l10nComponents";
+import { Div, P } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
+import { StyleAndFontTable } from "./StyleAndFontTable";
 
 let isOpenAlready = false;
 
@@ -579,6 +580,24 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 label={resolutionLabel}
                                 path={`publish.bloomPUB.imageSettings`}
                             />
+                        </ConfigrGroup>
+                        <ConfigrGroup label="Fonts" level={1}>
+                            <NoteBox>
+                                <div>
+                                    <P l10nKey="BookSettings.Fonts.Problematic">
+                                        When you publish a book to the web or as
+                                        an ebook, Bloom will flag any
+                                        problematic fonts. For example, we
+                                        cannot legally host most Microsoft fonts
+                                        on BloomLibrary.org.
+                                    </P>
+                                    <P l10nKey="BookSettings.Fonts.TableDescription">
+                                        The following table shows where fonts
+                                        have been used.
+                                    </P>
+                                </div>
+                            </NoteBox>
+                            <StyleAndFontTable />
                         </ConfigrGroup>
                     </ConfigrPane>
                 )}
