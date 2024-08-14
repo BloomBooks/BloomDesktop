@@ -680,6 +680,14 @@
         <source xml:lang="en">The selected page theme does not support the following settings.</source>
         <note>BookSettings.ThemeDisablesOptionsNotice</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true">
+        <source xml:lang="en">When you publish a book on the web or an ebook, Bloom will flag any problematic fonts. For example, we cannot legally host most Microsoft fonts on BloomLibrary.org.</source>
+        <note>ID: BookSettings.Fonts.Problematic</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.TableDescription" sil:dynamic="true">
+        <source xml:lang="en">The following table shows where fonts have been used.</source>
+        <note>ID: BookSettings.Fonts.TableDescription</note>
+      </trans-unit>
       <trans-unit id="AppearanceTheme.default" sil:dynamic="true">
         <source xml:lang="en">Default</source>
         <note>AppearanceTheme.default</note>
