@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
-using Bloom.Book;
 using Bloom.Edit;
 using Bloom.web.controllers;
 using Newtonsoft.Json;
-using Newtonsoft.Json;
 using SIL.IO;
+using System.Text.RegularExpressions;
+using SIL.Extensions;
+using Bloom.SafeXml;
+using System.Windows;
 
 namespace Bloom.Api
 {
@@ -60,6 +63,22 @@ namespace Bloom.Api
                 HandleDeleteCustomBookStyles,
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                "book/settings/stylesAndFonts",
+                HandleStylesAndFonts,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "book/settings/jumpToPage",
+                HandleJumpToPage,
+                true);
+        }
+
+        private void HandleJumpToPage(ApiRequest request)
+        {
+            var pageId = request.GetPostStringOrNull();
+            request.PostSucceeded();
+            _editingView.Model.SaveThen(() => pageId, () => { });
         }
 
         private void HandleGetOverrides(ApiRequest request)
@@ -218,6 +237,277 @@ namespace Bloom.Api
         private bool GetIsBookATemplate()
         {
             return _bookSelection.CurrentSelection.IsSuitableForMakingShells;
+        }
+
+        // This class must be kept in sync with the IStyleAndFont interface in StyleAndFontTable.tsx.
+        public class StyleAndFont
+        {
+            public string style;
+            public string styleName;
+            public string languageName;
+            public string languageTag;
+            public string fontName;
+            public string pageId;
+            public string pageDescription;
+        }
+        public struct PageInfo
+        {
+            public string id;
+            public string description;
+        }
+
+        private void HandleStylesAndFonts(ApiRequest request)
+        {
+            var book = _bookSelection.CurrentSelection;
+            // Get all the styles used in the book.
+            var stylesInBook = GetStylesUsedInBook(book.OurHtmlDom, book.FolderPath);
+            // Get all the languages used in the book and their default fonts.
+            var fontToLangs = new Dictionary<string, List<string>>();
+            var langToFont = GetLanguagesAndDefaultFonts(fontToLangs, book, book.OurHtmlDom);
+            // Get all the user-modified styles that set a font for the style.
+            var stylesAndFonts = GetUserModifiedStylesAndFonts(book.OurHtmlDom);
+            // Add the styles that are in the book but not covered by the user-modified styles.
+            foreach (var style in stylesInBook.Keys)
+            {
+                var existing = stylesAndFonts.FindAll(s => s.style == style).ToArray();
+                if (existing.Length == 0)
+                {
+                    var styleAndFont = new StyleAndFont();
+                    styleAndFont.style = style;
+                    if (fontToLangs.Count == 1)
+                    {
+                        if (fontToLangs.First().Value.Count == 1)
+                            styleAndFont.languageTag = fontToLangs.First().Value.First();
+                        else
+                            styleAndFont.languageTag = "*";
+                        styleAndFont.fontName = fontToLangs.First().Key;
+                    }
+                    stylesAndFonts.Add(styleAndFont);
+                    styleAndFont.pageId = stylesInBook[style].id;
+                    styleAndFont.pageDescription = stylesInBook[style].description;
+                }
+                else
+                {
+                    foreach (var tag in langToFont.Keys)
+                    {
+                        if (existing.Any(s => s.languageTag == tag))
+                            continue;
+                        var styleAndFont = new StyleAndFont();
+                        styleAndFont.style = style;
+                        styleAndFont.languageTag = tag;
+                        styleAndFont.fontName = langToFont[tag];
+                        styleAndFont.pageId = stylesInBook[style].id;
+                        styleAndFont.pageDescription = stylesInBook[style].description;
+                        stylesAndFonts.Add(styleAndFont);
+                    }
+                }
+            }
+            foreach (var styleAndFont in stylesAndFonts.ToArray())
+            {
+                if (styleAndFont.languageTag == "*")
+                    styleAndFont.languageName = "*";
+                else
+                    styleAndFont.languageName = GetLanguageName(styleAndFont.languageTag);
+                // If the style is not in the default styles, don't worry about not getting a localized name.
+                styleAndFont.styleName = L10NSharp.LocalizationManager.GetString(
+                    $"EditTab.FormatDialog.DefaultStyles.{styleAndFont.style}-style", GetEnglishStyleName(styleAndFont.style));
+            }
+            stylesAndFonts.Sort((a, b) => string.Compare(a.styleName, b.styleName, StringComparison.InvariantCultureIgnoreCase));
+            var jsonData = JsonConvert.SerializeObject(stylesAndFonts.ToArray());
+            request.ReplyWithJson(jsonData);
+        }
+
+        // Gets the English Display name for the default styles that are used in Bloom code
+        // Changes here should be reflected in StyleEditor.ts: StyleEditor.getDisplayName().
+        // Changes here should be reflected in the Bloom.xlf file too.
+        private string GetEnglishStyleName(string ruleId)
+        {
+            switch (ruleId)
+            {
+                case "BigWords":
+                    return "Big Words";
+                case "Cover-Default":
+                    return "Cover Default";
+                case "Credits-Page":
+                    return "Credits Page";
+                case "Heading1":
+                    return "Heading 1";
+                case "Heading2":
+                    return "Heading 2";
+                case "normal":
+                    return "Normal";
+                case "Title-On-Cover":
+                    return "Title On Cover";
+                case "Title-On-Title-Page":
+                    return "Title On Title Page";
+                case "ImageDescriptionEdit":
+                    return "Image Description Edit";
+                case "QuizHeader":
+                    return "Quiz Header";
+                case "QuizQuestion":
+                    return "Quiz Question";
+                case "QuizAnswer":
+                    return "Quiz Answer";
+                case "Equation": // If the id is the same as the English, just fall through to default.
+                default:
+                    return ruleId;
+            }
+        }
+
+        private static Dictionary<string, string> GetLanguagesAndDefaultFonts(Dictionary<string, List<string>> fontToLangs, Book.Book book, HtmlDom dom)
+        {
+            var langToFont = new Dictionary<string, string>();
+            var defaultLangStylesPath = Path.Combine(book.FolderPath, "defaultLangStyles.css");
+            var languagesWithContent = dom.GetLanguagesWithContent().ToArray();
+            if (RobustFile.Exists(defaultLangStylesPath))
+            {
+                var defaultLangStylesContent = RobustFile.ReadAllText(defaultLangStylesPath, System.Text.Encoding.UTF8);
+                /* Pattern to match in the defaultLangStylesContent (whole text):
+                [lang='en']
+                {
+                    font-family: 'Andika New Basic';
+                    direction: ltr;
+                }
+                */
+                Regex languageCssRegex = new Regex(
+                    @"\[\s*lang\s*=\s*['""](.*?)['""]\s*\]\s*{[^}]*font-family:([^;]*);[^}]*}",
+                    RegexOptions.Singleline | RegexOptions.Compiled
+                );
+                foreach (Match match in languageCssRegex.Matches(defaultLangStylesContent))
+                {
+                    var lang = match.Groups[1].Value;
+                    var font = match.Groups[2].Value.Trim(new[] { ' ', '\t', '"', '\'' });
+                    if (languagesWithContent.Contains(lang))
+                        AddLangForFont(lang, font, langToFont, fontToLangs);
+                }
+            }
+            else
+            {
+                // This branch is probably never taken, but it's here just in case.
+                var settings = book.CollectionSettings;
+                if (!string.IsNullOrEmpty(settings.Language1Tag) && !string.IsNullOrEmpty(settings.Language1.FontName))
+                    AddLangForFont(settings.Language1Tag, settings.Language1.FontName, langToFont, fontToLangs);
+                if (!string.IsNullOrEmpty(settings.Language2Tag) && !string.IsNullOrEmpty(settings.Language2.FontName))
+                    AddLangForFont(settings.Language2Tag, settings.Language2.FontName, langToFont, fontToLangs);
+                if (!string.IsNullOrEmpty(settings.Language3Tag) && !string.IsNullOrEmpty(settings.Language3.FontName))
+                    AddLangForFont(settings.Language3Tag, settings.Language3.FontName, langToFont, fontToLangs);
+            }
+            return langToFont;
+        }
+
+        private static Dictionary<string,PageInfo> GetStylesUsedInBook(HtmlDom dom, string bookFolderPath)
+        {
+            var stylesInBook = new Dictionary<string, PageInfo>();
+            foreach (var div in dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]//div[contains(@class, '-style')]"))
+            {
+                var classList = div.GetAttribute("class");
+                var classes = classList.Split(' ');
+                var style = classes.First(c => c.EndsWith("-style")).Replace("-style", "");
+                // These are not offered by the Styles Dialog, so I guess users aren't supposed to be aware of them.
+                // Presumably xmatter developers want complete control over these.
+                if (style == "Inside-Front-Cover" || style == "Inside-Back-Cover" || style == "Outside-Back-Cover")
+                    continue;
+                var pageDiv = div.SelectSingleNode("ancestor::div[contains(@class,'bloom-page')]");
+                if (!stylesInBook.Keys.Contains(style))
+                {
+                    // ENHANCE: distinguish first pages for each language.
+                    stylesInBook.Add(style, new PageInfo { id=pageDiv.GetAttribute("id"), description=GetPageDescription(pageDiv)});
+                }
+            }
+            return stylesInBook;
+        }
+
+        private static string GetPageDescription(SafeXmlNode pageDiv)
+        {
+            var xmatter = pageDiv.GetAttribute("data-xmatter-page");
+            if (!String.IsNullOrEmpty(xmatter))
+            {
+                return L10NSharp.LocalizationManager.GetDynamicString("BloomMediumPriority",
+                    $"BookSettings.Fonts.{xmatter}", GetEnglishForXmatterPages(xmatter));
+            }
+            var pageNumber = pageDiv.GetAttribute("data-page-number");
+            if (!String.IsNullOrEmpty(pageNumber))
+            {
+                var fmt = L10NSharp.LocalizationManager.GetDynamicString("BloomMediumPriority",
+                    "BookSettings.Fonts.PageNumber", "Page {0}");
+                return string.Format(fmt, pageNumber);
+            }
+            return L10NSharp.LocalizationManager.GetDynamicString("BloomMediumPriority",
+                "BookSettings.Fonts.UnnumberedPage", "Unnumbered Page");
+        }
+
+        // These should be kept in sync with the entries in BloomMediumPriority.xlf.
+        private static string GetEnglishForXmatterPages(string xmatter)
+        {
+            switch (xmatter)
+            {
+                case "credits":
+                    return "Credits Page";
+                case "frontCover":
+                    return "Front Cover";
+                case "insideBackCover":
+                    return "Inside Back Cover";
+                case "insideFrontCover":
+                    return "Inside Front Cover";
+                case "outsideBackCover":
+                    return "Back Cover";
+                case "titlePage":
+                    return "Title Page";
+                default:
+                    return xmatter;
+            }
+        }
+
+        private static List<StyleAndFont> GetUserModifiedStylesAndFonts(HtmlDom dom)
+        {
+            var stylesAndFonts = new List<StyleAndFont>();
+            var userModifiedStyles = HtmlDom.GetUserModifiedStyleElement(dom.Head);
+            if (userModifiedStyles != null)
+            {
+                /* Patterns to match in the userModifiedStyles (line by line):
+                .BigWords-style { font-size: 45pt !important; text-align: center !important; }
+                .BigWords-style[lang="en"] { font-family: Cambria !important; }
+                .normal-style[lang="en"] { font-size: 13pt !important; font-family: "Charis SIL Literacy AmArea" !important; }
+                .normal-style { font-size: 13pt !important; }
+                .TextToMatch-style[lang="es"] { font-size: 14pt !important; font-family: ABeeZee !important; }
+                */
+                var regex = new Regex(@"\.([^\s]+)-style(\[lang=""([A-Za-z-]*)""\])?\s*{[^}]*font-family:([^};]*)[^}]*}");
+                foreach (Match match in regex.Matches(userModifiedStyles.InnerText))
+                {
+                    var styleAndFont = new StyleAndFont();
+                    styleAndFont.style = match.Groups[1].Value;
+                    styleAndFont.languageTag = match.Groups[3]?.Value ?? "*";
+                    styleAndFont.fontName = match.Groups[4].Value.Replace("!important", "").Trim(new[] { ' ', '\t', '"', '\'' });
+                    stylesAndFonts.Add(styleAndFont);
+                }
+            }
+            return stylesAndFonts;
+        }
+
+        private static void AddLangForFont(string langTag, string font,
+            Dictionary<string, string> langToFont, Dictionary<string, List<string>> fontToLangs)
+        {
+            if (!string.IsNullOrEmpty(langTag) && !string.IsNullOrEmpty(font) && !langToFont.ContainsKey(langTag))
+            {
+                langToFont.Add(langTag, font);
+                if (!fontToLangs.ContainsKey(font))
+                    fontToLangs.Add(font, new List<string>());
+                fontToLangs[font].Add(langTag);
+            }
+        }
+
+        private string GetLanguageName(string langTag)
+        {
+            var settings = _bookSelection.CurrentSelection.CollectionSettings;
+            if (langTag == settings.Language1Tag)
+                return settings.Language1.Name;
+            if (langTag == settings.Language2Tag)
+                return settings.Language2.Name;
+            if (langTag == settings.Language3Tag)
+                return settings.Language3.Name;
+            var ws = new Collection.WritingSystem(99, () => settings.Language2Tag);
+            ws.Tag = langTag;
+            return ws.Name;
         }
     }
 }

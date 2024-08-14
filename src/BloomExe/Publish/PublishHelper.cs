@@ -888,6 +888,10 @@ namespace Bloom.Publish
                         font,
                         fileExtension
                     );
+                    progress.Message(
+                            "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                            "Check the Fonts section of the Book Settings dialog to locate this font.",
+                            ProgressKind.Error);
                 }
                 else if (fontFileFinder.FontsWeCantInstall.Contains(font) || badLicense)
                 {
@@ -898,6 +902,10 @@ namespace Bloom.Publish
                         ProgressKind.Error,
                         font
                     );
+                    progress.Message(
+                            "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                            "Check the Fonts section of the Book Settings dialog to locate this font.",
+                            ProgressKind.Error);
                 }
                 else if (!dontComplain)
                 {
@@ -908,6 +916,10 @@ namespace Bloom.Publish
                         ProgressKind.Error,
                         font
                     );
+                    progress.Message(
+                            "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                            "Check the Fonts section of the Book Settings dialog to locate this font.",
+                            ProgressKind.Error);
                 }
                 if (!dontComplain)
                     progress.MessageWithParams(
@@ -1089,10 +1101,15 @@ namespace Bloom.Publish
                             "PublishTab.FontProblem.Result",
                             "BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the �READ� button or downloads for BloomPUB or ePUB."
                         );
+                        var msg4 = LocalizationManager.GetString(
+                            "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                            "Check the Fonts section of the Book Settings dialog to locate this font."
+                        );
                         // progress.WriteError() uses Color.Red, but also exposes a link to "report error" which we don't want here.
                         progress.WriteMessageWithColor("Red", msgFmt1, font);
                         progress.WriteMessageWithColor("Red", " \u2022 {0}", msg2);
                         progress.WriteMessageWithColor("Red", " \u2022 {0}", msg3);
+                        progress.WriteMessageWithColor("Red", " \u2022 {0}", msg4);
                     }
                 }
                 else

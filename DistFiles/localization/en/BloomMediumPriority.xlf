@@ -680,6 +680,47 @@
         <source xml:lang="en">The selected page theme does not support the following settings.</source>
         <note>BookSettings.ThemeDisablesOptionsNotice</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true">
+        <source xml:lang="en">When you publish a book to the web or as an ebook, Bloom will flag any problematic fonts. For example, we cannot legally host most Microsoft fonts on BloomLibrary.org.</source>
+        <note>ID: BookSettings.Fonts.Problematic</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.TableDescription" sil:dynamic="true">
+        <source xml:lang="en">The following table shows where fonts have been used.</source>
+        <note>ID: BookSettings.Fonts.TableDescription</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.credits" sil:dynamic="true">
+        <source xml:lang="en">Credits Page</source>
+        <note>ID: BookSettings.Fonts.credits</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.frontCover" sil:dynamic="true">
+        <source xml:lang="en">Front Cover</source>
+        <note>ID: BookSettings.Fonts.frontCover</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.insideBackCover" sil:dynamic="true">
+        <source xml:lang="en">Inside Back Cover</source>
+        <note>ID: BookSettings.Fonts.insideBackCover</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.insideFrontCover" sil:dynamic="true">
+        <source xml:lang="en">Inside Front Cover</source>
+        <note>ID: BookSettings.Fonts.insideFrontCover</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.outsideBackCover" sil:dynamic="true">
+        <source xml:lang="en">Back Cover</source>
+        <note>ID: BookSettings.Fonts.outsideBackCover</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.titlePage" sil:dynamic="true">
+        <source xml:lang="en">Title Page</source>
+        <note>ID: BookSettings.Fonts.titlePage</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true">
+        <source xml:lang="en">Page {0}</source>
+        <note>ID: BookSettings.Fonts.PageNumber</note>
+        <note>Do not change {0}.  It will be replaced by the page number.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.UnnumberedPage" sil:dynamic="true">
+        <source xml:lang="en">Unnumbered Page</source>
+        <note>ID: BookSettings.Fonts.UnnumberedPage</note>
+      </trans-unit>
       <trans-unit id="AppearanceTheme.default" sil:dynamic="true">
         <source xml:lang="en">Default</source>
         <note>AppearanceTheme.default</note>
