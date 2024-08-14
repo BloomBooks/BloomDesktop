@@ -300,6 +300,7 @@ export default class StyleEditor {
     // We were thinking of using a custom css property in the style css definition,
     // but we would have needed this switch to deal with existing books anyway, so...
     // we'll just use the switch.
+    // Changes here should be reflected in BookSettingsApi.cs: BookSettingsApi.GetEnglishStyleName().
     // Changes here should be reflected in the Bloom.xlf file too.
     public getDisplayName(ruleId: string): string {
         switch (ruleId) {

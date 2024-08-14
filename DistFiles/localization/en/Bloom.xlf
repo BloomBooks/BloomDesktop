@@ -1569,6 +1569,10 @@
         <source xml:lang="en">Emphasis</source>
         <note>ID: EditTab.FormatDialog.Emphasis</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FirstPage" sil:dynamic="true">
+        <source xml:lang="en">First Page</source>
+        <note>ID: EditTab.FormatDialog.FirstPage</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
         <source xml:lang="en">Font</source>
         <note>ID: EditTab.FormatDialog.Font</note>
