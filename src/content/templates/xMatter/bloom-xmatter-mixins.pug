@@ -155,7 +155,7 @@ mixin standard-cover-contents
 //- so that the contents will survive changes to xmatter (and updates in bringBookUpToDate)
 mixin standard-cover-image
 	.bloom-imageContainer
-		img(data-book="coverImage", src="placeHolder.png")
+		img(data-book="coverImage", src="placeHolder.png")&attributes(attributes)
 		+field-cover-image("auto").bloom-imageDescription.bloom-trailingElement
 
 mixin field-cover-image(languages)

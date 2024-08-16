@@ -22,6 +22,7 @@ namespace Bloom.Book
     {
         private readonly HtmlDom _bookDom;
         private readonly string _nameOfXMatterPack;
+        private readonly IFileLocator _fileLocator;
 
         /// <summary>
         /// Constructs by finding the file and folder of the xmatter pack, given the its key name e.g. "Factory", "SILIndonesia".
@@ -40,6 +41,7 @@ namespace Bloom.Book
             bool useDeviceVersionIfAvailable = false
         )
         {
+            _fileLocator = fileLocator;
             string directoryPath = null;
             _bookDom = bookDom;
             var bookSpecificXMatterPack = bookDom.GetMetaValue("xmatter", null);
@@ -316,7 +318,8 @@ namespace Bloom.Book
             Layout layout,
             bool orderXmatterForDeviceUse,
             string metadataLangTag,
-            List<string> oldIds = null
+            List<string> oldIds = null,
+            bool coverIsImage = false
         )
         {
             //don't want to pollute shells with this content
@@ -358,7 +361,31 @@ namespace Bloom.Book
                 )
             )
             {
-                var newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as SafeXmlElement;
+                SafeXmlElement newPageDiv;
+                var newPageSource = xmatterPage;
+
+                // If we are using an image for the front cover, replace the typical front cover with
+                // a special one which has a full-page image container.
+                if (coverIsImage && IsOutsideFrontCoverPage(xmatterPage))
+                {
+                    var directoryPath = GetXMatterDirectory(
+                        "CoverIsImage",
+                        _fileLocator,
+                        null,
+                        true
+                    );
+                    var coverIsImageDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(
+                        directoryPath.CombineForPath("CoverIsImage-XMatter.html"),
+                        false
+                    );
+                    var coverIsImagePage = coverIsImageDom.SelectSingleNode(
+                        "/html/body/div[contains(@data-page,'required')]"
+                    );
+                    newPageSource = coverIsImagePage as SafeXmlElement;
+                }
+
+                newPageDiv = _bookDom.RawDom.ImportNode(newPageSource, true) as SafeXmlElement;
+
                 // If we're updating an existing book, we want to keep the IDs (as much as possible; sometimes
                 // the number of xmatter pages changes and we have to add IDs). In this case, oldIds is obtained
                 // while running RemoveExistingXMatter.
@@ -498,37 +525,32 @@ namespace Bloom.Book
 
         public static bool IsFrontMatterPage(SafeXmlElement pageDiv)
         {
-            return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-frontMatter')]")
-                != null;
+            return pageDiv.HasClass("bloom-frontMatter");
+        }
+
+        public static bool IsOutsideFrontCoverPage(SafeXmlElement pageDiv)
+        {
+            return pageDiv.HasClass("outsideFrontCover");
         }
 
         public static bool IsBackMatterPage(SafeXmlElement pageDiv)
         {
-            return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-backMatter')]")
-                != null;
+            return pageDiv.HasClass("bloom-backMatter");
         }
 
         public static bool IsXMatterPage(SafeXmlElement pageDiv)
         {
-            return pageDiv.SelectSingleNode(
-                    "self::div[contains(@class, 'bloom-frontMatter') or contains(@class, 'bloom-backMatter')]"
-                ) != null;
+            return IsFrontMatterPage(pageDiv) || IsBackMatterPage(pageDiv);
         }
 
         public static bool IsCoverPage(SafeXmlElement pageDiv)
         {
-            return pageDiv.SelectSingleNode("self::div[contains(@class, 'cover')]") != null;
-        }
-
-        public static bool IsFrontCoverPage(SafeXmlElement pageDiv)
-        {
-            return pageDiv.SelectSingleNode("self::div[contains(@class, 'outsideFrontCover')]")
-                != null;
+            return pageDiv.HasClass("cover");
         }
 
         public static bool ShouldBeInBackForDeviceUse(SafeXmlElement pageDiv)
         {
-            return pageDiv.SelectSingleNode("self::div[contains(@class, 'frontCover')]") == null;
+            return !pageDiv.HasClass("frontCover");
         }
 
         /// <summary>
