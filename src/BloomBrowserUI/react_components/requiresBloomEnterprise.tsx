@@ -7,7 +7,7 @@ import { get, post } from "../utils/bloomApi";
 import Button from "@mui/material/Button";
 import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { Div } from "./l10nComponents";
+import { Div, Span } from "./l10nComponents";
 import { useL10n } from "./l10nHooks";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
@@ -487,6 +487,48 @@ export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
                 </DialogBottomButtons>
             </div>
         </BloomDialog>
+    );
+};
+
+export const BloomEnterpriseIndicatorIconAndText: React.FunctionComponent<{
+    disabled?: boolean;
+    className?: string;
+}> = props => {
+    const enterpriseAvailable = useEnterpriseAvailable();
+
+    return (
+        <div
+            onClick={() => {
+                enterpriseAvailable ||
+                    props.disabled ||
+                    openBloomEnterpriseSettings();
+            }}
+            css={css`
+                display: flex;
+                align-items: center;
+                ${enterpriseAvailable || props.disabled || "cursor:pointer"};
+
+                opacity: ${props.disabled ? kBloomDisabledOpacity : 1.0};
+            `}
+            className={props.className}
+        >
+            <img
+                src={badgeUrl}
+                css={css`
+                    height: 1.5em;
+                    padding-right: 0.5em;
+                `}
+            />
+            {enterpriseAvailable ? (
+                <Span l10nKey={"AvailableWithEnterprise"}>
+                    Available with your Enterprise Subscription
+                </Span>
+            ) : (
+                <Span l10nKey={"Common.EnterpriseRequired"}>
+                    Enterprise Required
+                </Span>
+            )}
+        </div>
     );
 };
 
