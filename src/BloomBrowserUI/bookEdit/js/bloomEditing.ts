@@ -6,7 +6,8 @@ import {
     cleanupImages,
     SetOverlayForImagesWithoutMetadata,
     SetupResizableElement,
-    SetupImagesInContainer
+    SetupImagesInContainer,
+    doImageCommand
 } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
@@ -18,7 +19,12 @@ import BloomField from "../bloomField/BloomField";
 import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
-import { initializeBubbleManager, theOneBubbleManager } from "./bubbleManager";
+import {
+    initializeBubbleManager,
+    kTextOverPictureClass,
+    kTextOverPictureSelector,
+    theOneBubbleManager
+} from "./bubbleManager";
 import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
@@ -58,6 +64,7 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { removeToolboxMarkup } from "../toolbox/toolbox";
 import { IBloomWebSocketEvent } from "../../utils/WebSocketManager";
 import { setupDragActivityTabControl } from "../toolbox/dragActivity/dragActivityTool";
+import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -286,9 +293,12 @@ function AddLanguageTags(container) {
             // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
             // with each other, leading to flashing back and forth
             // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
-            if ($this.width() < 100) {
-                return;
-            }
+            // August 2024: very small boxes are now usually overlays, and they now show the language in the bubbleControlBox,
+            // so I don't think we need this restriction anymore. Leaving it here in case we have problems with other small
+            // boxes and need to be more selective.
+            // if ($this.width() < 100) {
+            //     return;
+            // }
 
             const key = $this.attr("lang");
             if (key !== undefined && (key === "*" || key.length < 1)) {
@@ -331,7 +341,7 @@ function SetBookCopyrightAndLicenseButtonVisibility(container) {
         .css("display", shouldShowButton ? "inline" : "none");
 }
 
-function GetEditor() {
+export function GetEditor() {
     return new StyleEditor("/bloom/bookEdit");
 }
 
@@ -403,6 +413,7 @@ export function changeImage(imageInfo: {
     }
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
+    theOneBubbleManager.updateBubbleForChangedImage(imgOrImageContainer);
 }
 
 // This origami checking business is related BL-13120
@@ -419,7 +430,10 @@ function hasOrigami(container: HTMLElement) {
 // can add new elements (such as during layout mode) and call this on only newly added elements.
 // Now document.load calls this with $('body') as the container.
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
-export function SetupElements(container: HTMLElement) {
+export function SetupElements(
+    container: HTMLElement,
+    elementToFocus?: HTMLElement
+) {
     recordWhatThisPageLooksLikeForSanityCheck(container);
 
     SetupImagesInContainer(container);
@@ -832,8 +846,24 @@ export function SetupElements(container: HTMLElement) {
             );
         }
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
+
+        // If we saved the page with an indication that a particular element should be
+        // active, and calling code is not specifying one, restore the one we saved.
+        // This is especially useful when the page is unexpectedly reloaded, for example,
+        // changing a picture.
+        if (!elementToFocus) {
+            elementToFocus = Array.from(
+                document.getElementsByClassName(kTextOverPictureClass)
+            ).find(e => e.hasAttribute("data-bloom-active")) as HTMLElement;
+        }
         // Ensure focus exists as best we can (BL-7994)
-        if (
+        if (elementToFocus && $(elementToFocus).find(":focusable")) {
+            $(elementToFocus)
+                .find(":focusable")
+                .focus();
+            // see similar code below
+            BloomSourceBubbles.ShowSourceBubbleForElement(elementToFocus);
+        } else if (
             document.hasFocus() &&
             document.activeElement &&
             $(document.activeElement).find(":focusable").length > 0
@@ -1415,11 +1445,37 @@ async function cutSelectionImpl() {
 }
 
 // See comment on copySelection
-export const pasteClipboardText = () => {
-    pasteImpl();
+export const pasteClipboard = (imageAvailable: boolean) => {
+    pasteImpl(imageAvailable);
 };
 
-async function pasteImpl() {
+async function pasteImpl(imageAvailable: boolean) {
+    const bubbleManager = theOneBubbleManager;
+    // Enhance: in what case would we consider a non-overlay image container to be the natural destination for pasting?
+    const activeBubble = bubbleManager?.getActiveElement();
+    const imageContainer = activeBubble?.getElementsByClassName(
+        "bloom-imageContainer"
+    )[0];
+    if (imageContainer) {
+        if (imageAvailable) {
+            const img = imageContainer.getElementsByTagName("img")[0];
+            if (!img) {
+                return; // unexpected, maybe log??
+            }
+            doImageCommand(img, "paste");
+        } else {
+            const imageIsGif =
+                activeBubble?.classList.contains("bloom-gif") ?? false;
+            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                imageIsGif
+                    ? "EditTab.NoGifFoundOnClipboard"
+                    : "EditTab.NoImageFoundOnClipboard",
+                "No image found",
+                ""
+            );
+        }
+        return; // can't paste anything but an image into an image container overlay
+    }
     // Using ckeditor here because it's the only way I've found to integrate clipboard
     // ops into an Undo stack that we can operate from an external button.
     // We do a Save before and after to make sure that the cut is distinct from

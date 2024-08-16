@@ -1117,7 +1117,7 @@ export default class StyleEditor {
             oldCog.remove();
         }
 
-        let styleName = StyleEditor.GetStyleNameForElement(targetBox);
+        const styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName) {
             return;
         }
@@ -1165,11 +1165,6 @@ export default class StyleEditor {
         editor.AddQtipToElement(formatButton, txt, 1500);
         */
 
-        // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
-        const suppress = $(document).find('meta[name="lockFormatting"]');
-        const noFormatChange =
-            suppress.length > 0 &&
-            suppress.attr("content").toLowerCase() === "true";
         //The following commented out code works fine on Windows, but causes the program to crash
         //(disappear) on Linux when you click on the format button.
         //if (suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true') {
@@ -1182,242 +1177,9 @@ export default class StyleEditor {
         //    return;
         //}
 
-        formatButton?.addEventListener("click", () => {
-            // Using axios directly because bloomApi does not support combining multiple promises with .all
-            wrapAxios(
-                axios
-                    .all([
-                        axios.get("/bloom/api/fonts/metadata"),
-                        axios.get(
-                            "/bloom/bookEdit/StyleEditor/StyleEditor.html"
-                        ),
-                        theOneLocalizationManager.getTextInUiLanguageAsync(
-                            "EditTab.Toolbox.ComicTool.Options.TextColor",
-                            "Text Color"
-                        )
-                    ])
-                    .then(results => {
-                        const fontMetadata: IFontMetaData[] = results[0].data;
-                        const html = results[1].data;
-                        this.textColorTitle = results[2].data.text;
-
-                        this.boxBeingEdited = targetBox;
-                        styleName = StyleEditor.GetBaseStyleNameForElement(
-                            targetBox
-                        );
-                        const current = this.getFormatValues();
-                        this.styles = this.getFormattingStyles();
-                        if (
-                            styleName != null &&
-                            this.styles.every(
-                                style => !style.hasStyleId(styleName as string)
-                            )
-                        ) {
-                            this.styles.push(
-                                new FormattingStyle(
-                                    styleName,
-                                    this.getDisplayName(styleName)
-                                )
-                            );
-                        }
-
-                        $("#format-toolbar").remove(); // in case there's still one somewhere else
-                        $("body").append(html);
-
-                        if (noFormatChange) {
-                            $("#format-toolbar").addClass("formattingDisabled");
-                        } else {
-                            // The tab library doesn't allow us to put other class names on the tab-page,
-                            // so we are doing it this way rather than the approach of using css to hide
-                            // tabs based on class names.
-                            if (this.xmatterMode) {
-                                $("#style-page").remove();
-                            }
-                            // Show the overlay tab only if the box being edited is in an overlay
-                            if (
-                                !this.boxBeingEdited.closest(
-                                    ".bloom-textOverPicture"
-                                )
-                            ) {
-                                document
-                                    .getElementById("overlay-page")
-                                    ?.remove();
-                            }
-
-                            const visibleTabs = $(".tab-page:visible");
-                            if (visibleTabs.length === 1) {
-                                // When there is only one tab, we want to hide the tab itself.
-                                $(visibleTabs[0])
-                                    .find("h2.tab")
-                                    .remove();
-                            }
-
-                            this.setupSelectControls(
-                                current,
-                                styleName ? styleName : ""
-                            );
-                        }
-
-                        //make some select boxes permit custom values
-                        $(".allowCustom").select2({
-                            tags: true //this is weird, we're not really doing tags, but this is how you get to enable typing
-                        });
-                        $("select:not(.allowCustom)").select2({
-                            tags: false,
-                            minimumResultsForSearch: -1 // result is that no search box is shown
-                        });
-
-                        const toolbar = $("#format-toolbar");
-                        toolbar.find("*[data-i18n]").localize();
-                        toolbar.draggable({
-                            distance: 10,
-                            scroll: false,
-                            containment: $("html")
-                        });
-                        toolbar.draggable("disable"); // until after we make sure it's in the Viewport
-                        toolbar.css("opacity", 1.0);
-                        RenderRoot(
-                            styleName ?? "",
-                            current.color,
-                            current.hiliteTextColor,
-                            current.hiliteBgColor,
-                            (textColor, bgColor) =>
-                                this.changeHiliteProps(textColor, bgColor)
-                        );
-
-                        RenderOverlayRoot(
-                            current.padding,
-                            (newPadding: string) => {
-                                this.changePadding(newPadding);
-                            }
-                        );
-
-                        if (!noFormatChange) {
-                            this.updateFontControl(
-                                fontMetadata,
-                                current.fontName
-                            );
-                            this.updateLabelsWithStyleName();
-
-                            this.AddQtipToElement(
-                                $("#fontSelectComponent"),
-                                theOneLocalizationManager.getText(
-                                    "EditTab.FormatDialog.FontFaceToolTip",
-                                    "Change the font face"
-                                ),
-                                1500
-                            );
-                            $("#size-select").change(() => {
-                                this.changeSize();
-                            });
-                            this.AddQtipToElement(
-                                $("#size-select"),
-                                theOneLocalizationManager.getText(
-                                    "EditTab.FormatDialog.FontSizeToolTip",
-                                    "Change the font size"
-                                ),
-                                1500
-                            );
-                            $("#line-height-select").change(() => {
-                                this.changeLineheight();
-                            });
-                            this.AddQtipToElement(
-                                $("#line-height-select").parent(),
-                                theOneLocalizationManager.getText(
-                                    "EditTab.FormatDialog.LineSpacingToolTip",
-                                    "Change the spacing between lines of text"
-                                ),
-                                1500
-                            );
-                            $("#word-space-select").change(() => {
-                                this.changeWordSpace();
-                            });
-                            this.AddQtipToElement(
-                                $("#word-space-select").parent(),
-                                theOneLocalizationManager.getText(
-                                    "EditTab.FormatDialog.WordSpacingToolTip",
-                                    "Change the spacing between words"
-                                ),
-                                1500
-                            );
-                            this.getParagraphTabDescription();
-                            if (!this.xmatterMode) {
-                                $("#styleSelect").change(() => {
-                                    this.selectStyle();
-                                });
-                                (<alphanumInterface>(
-                                    $("#style-select-input")
-                                )).alphanum({
-                                    allowSpace: false,
-                                    preventLeadingNumeric: true
-                                });
-                                // don't use .change() here, as it only fires on loss of focus
-                                $("#style-select-input").on("input", () => {
-                                    this.styleInputChanged();
-                                });
-                                // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
-                                // so typescript checking just has to be worked around. This enables a hack in jquery.alphanum.js.
-                                (<any>(
-                                    $("#style-select-input").get(0)
-                                )).trimNotification = () => {
-                                    this.styleStateChange("invalid-characters");
-                                };
-                                $("#show-createStyle").click(event => {
-                                    event.preventDefault();
-                                    this.showCreateStyle();
-                                    return false;
-                                });
-                                $("#create-button").click(() => {
-                                    this.createStyle();
-                                });
-                            }
-                            const buttonIds = this.getButtonIds();
-                            for (let i = 0; i < buttonIds.length; i++) {
-                                const button = $("#" + buttonIds[i]);
-
-                                // Note: Use arrow function so that "this" refers to the right thing.
-                                // Otherwise, clicking on Gear Icon's Bold All/Italics All/etc. will throw exception because "this" doesn't refer to the right thing.
-                                button.click(() => {
-                                    this.buttonClick(button);
-                                });
-                                button.addClass("propButton");
-                            }
-                            $("#para-spacing-select").change(() => {
-                                this.changeParaSpacing();
-                            });
-                            this.setColorButtonColor(
-                                "colorSelectButton",
-                                current.color
-                            );
-                            // (The hiliting color buttons are updated by re-rendering the control above.)
-                            const colorButton = $("#colorSelectButton");
-                            colorButton?.click(() => {
-                                const style = getComputedStyle(colorButton[0]);
-                                const backgroundColor = style.backgroundColor;
-                                this.launchColorPicker(backgroundColor);
-                            });
-
-                            this.selectButtons(current);
-                            new WebFXTabPane($("#tabRoot").get(0), false);
-                        }
-                        const orientOnButton = $("#formatButton");
-                        EditableDivUtils.positionDialogAndSetDraggable(
-                            toolbar,
-                            orientOnButton
-                        );
-                        toolbar.draggable("enable");
-
-                        $("html").off("click.toolbar");
-                        $("html").on("click.toolbar", event =>
-                            this.closeDialog(event, toolbar, targetBox)
-                        );
-                        toolbar.on("click.toolbar", event => {
-                            // this stops an event inside the dialog from propagating to the html element, which would close the dialog
-                            event.stopPropagation();
-                        });
-                    })
-            );
-        });
+        formatButton?.addEventListener("click", () =>
+            this.runFormatDialog(targetBox)
+        );
     }
     changePadding(padding: string) {
         if (this.ignoreControlChanges) {
@@ -2437,5 +2199,237 @@ export default class StyleEditor {
             "#format-toolbar"
         );
         return formatDialog.length > 0;
+    }
+
+    public runFormatDialog(targetBox: HTMLElement) {
+        // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
+        const suppress = $(document).find('meta[name="lockFormatting"]');
+        const noFormatChange =
+            suppress.length > 0 &&
+            suppress.attr("content").toLowerCase() === "true";
+        // Using axios directly because bloomApi does not support combining multiple promises with .all
+        wrapAxios(
+            axios
+                .all([
+                    axios.get("/bloom/api/fonts/metadata"),
+                    axios.get("/bloom/bookEdit/StyleEditor/StyleEditor.html"),
+                    theOneLocalizationManager.getTextInUiLanguageAsync(
+                        "EditTab.Toolbox.ComicTool.Options.TextColor",
+                        "Text Color"
+                    )
+                ])
+                .then(results => {
+                    const fontMetadata: IFontMetaData[] = results[0].data;
+                    const html = results[1].data;
+                    this.textColorTitle = results[2].data.text;
+
+                    this.boxBeingEdited = targetBox;
+                    const styleName = StyleEditor.GetBaseStyleNameForElement(
+                        targetBox
+                    );
+                    const current = this.getFormatValues();
+                    this.styles = this.getFormattingStyles();
+                    if (
+                        styleName != null &&
+                        this.styles.every(
+                            style => !style.hasStyleId(styleName as string)
+                        )
+                    ) {
+                        this.styles.push(
+                            new FormattingStyle(
+                                styleName,
+                                this.getDisplayName(styleName)
+                            )
+                        );
+                    }
+
+                    $("#format-toolbar").remove(); // in case there's still one somewhere else
+                    $("body").append(html);
+
+                    if (noFormatChange) {
+                        $("#format-toolbar").addClass("formattingDisabled");
+                    } else {
+                        // The tab library doesn't allow us to put other class names on the tab-page,
+                        // so we are doing it this way rather than the approach of using css to hide
+                        // tabs based on class names.
+                        if (this.xmatterMode) {
+                            $("#style-page").remove();
+                        }
+                        // Show the overlay tab only if the box being edited is in an overlay
+                        if (
+                            !this.boxBeingEdited.closest(
+                                ".bloom-textOverPicture"
+                            )
+                        ) {
+                            document.getElementById("overlay-page")?.remove();
+                        }
+
+                        const visibleTabs = $(".tab-page:visible");
+                        if (visibleTabs.length === 1) {
+                            // When there is only one tab, we want to hide the tab itself.
+                            $(visibleTabs[0])
+                                .find("h2.tab")
+                                .remove();
+                        }
+
+                        this.setupSelectControls(
+                            current,
+                            styleName ? styleName : ""
+                        );
+                    }
+
+                    //make some select boxes permit custom values
+                    $(".allowCustom").select2({
+                        tags: true //this is weird, we're not really doing tags, but this is how you get to enable typing
+                    });
+                    $("select:not(.allowCustom)").select2({
+                        tags: false,
+                        minimumResultsForSearch: -1 // result is that no search box is shown
+                    });
+
+                    const toolbar = $("#format-toolbar");
+                    toolbar.find("*[data-i18n]").localize();
+                    toolbar.draggable({
+                        distance: 10,
+                        scroll: false,
+                        containment: $("html")
+                    });
+                    toolbar.draggable("disable"); // until after we make sure it's in the Viewport
+                    toolbar.css("opacity", 1.0);
+                    RenderRoot(
+                        styleName ?? "",
+                        current.color,
+                        current.hiliteTextColor,
+                        current.hiliteBgColor,
+                        (textColor, bgColor) =>
+                            this.changeHiliteProps(textColor, bgColor)
+                    );
+
+                    RenderOverlayRoot(current.padding, (newPadding: string) => {
+                        this.changePadding(newPadding);
+                    });
+
+                    if (!noFormatChange) {
+                        this.updateFontControl(fontMetadata, current.fontName);
+                        this.updateLabelsWithStyleName();
+
+                        this.AddQtipToElement(
+                            $("#fontSelectComponent"),
+                            theOneLocalizationManager.getText(
+                                "EditTab.FormatDialog.FontFaceToolTip",
+                                "Change the font face"
+                            ),
+                            1500
+                        );
+                        $("#size-select").change(() => {
+                            this.changeSize();
+                        });
+                        this.AddQtipToElement(
+                            $("#size-select"),
+                            theOneLocalizationManager.getText(
+                                "EditTab.FormatDialog.FontSizeToolTip",
+                                "Change the font size"
+                            ),
+                            1500
+                        );
+                        $("#line-height-select").change(() => {
+                            this.changeLineheight();
+                        });
+                        this.AddQtipToElement(
+                            $("#line-height-select").parent(),
+                            theOneLocalizationManager.getText(
+                                "EditTab.FormatDialog.LineSpacingToolTip",
+                                "Change the spacing between lines of text"
+                            ),
+                            1500
+                        );
+                        $("#word-space-select").change(() => {
+                            this.changeWordSpace();
+                        });
+                        this.AddQtipToElement(
+                            $("#word-space-select").parent(),
+                            theOneLocalizationManager.getText(
+                                "EditTab.FormatDialog.WordSpacingToolTip",
+                                "Change the spacing between words"
+                            ),
+                            1500
+                        );
+                        this.getParagraphTabDescription();
+                        if (!this.xmatterMode) {
+                            $("#styleSelect").change(() => {
+                                this.selectStyle();
+                            });
+                            (<alphanumInterface>(
+                                $("#style-select-input")
+                            )).alphanum({
+                                allowSpace: false,
+                                preventLeadingNumeric: true
+                            });
+                            // don't use .change() here, as it only fires on loss of focus
+                            $("#style-select-input").on("input", () => {
+                                this.styleInputChanged();
+                            });
+                            // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
+                            // so typescript checking just has to be worked around. This enables a hack in jquery.alphanum.js.
+                            (<any>(
+                                $("#style-select-input").get(0)
+                            )).trimNotification = () => {
+                                this.styleStateChange("invalid-characters");
+                            };
+                            $("#show-createStyle").click(event => {
+                                event.preventDefault();
+                                this.showCreateStyle();
+                                return false;
+                            });
+                            $("#create-button").click(() => {
+                                this.createStyle();
+                            });
+                        }
+                        const buttonIds = this.getButtonIds();
+                        for (let i = 0; i < buttonIds.length; i++) {
+                            const button = $("#" + buttonIds[i]);
+
+                            // Note: Use arrow function so that "this" refers to the right thing.
+                            // Otherwise, clicking on Gear Icon's Bold All/Italics All/etc. will throw exception because "this" doesn't refer to the right thing.
+                            button.click(() => {
+                                this.buttonClick(button);
+                            });
+                            button.addClass("propButton");
+                        }
+                        $("#para-spacing-select").change(() => {
+                            this.changeParaSpacing();
+                        });
+                        this.setColorButtonColor(
+                            "colorSelectButton",
+                            current.color
+                        );
+                        // (The hiliting color buttons are updated by re-rendering the control above.)
+                        const colorButton = $("#colorSelectButton");
+                        colorButton?.click(() => {
+                            const style = getComputedStyle(colorButton[0]);
+                            const backgroundColor = style.backgroundColor;
+                            this.launchColorPicker(backgroundColor);
+                        });
+
+                        this.selectButtons(current);
+                        new WebFXTabPane($("#tabRoot").get(0), false);
+                    }
+                    const orientOnButton = $("#formatButton");
+                    EditableDivUtils.positionDialogAndSetDraggable(
+                        toolbar,
+                        orientOnButton
+                    );
+                    toolbar.draggable("enable");
+
+                    $("html").off("click.toolbar");
+                    $("html").on("click.toolbar", event =>
+                        this.closeDialog(event, toolbar, targetBox)
+                    );
+                    toolbar.on("click.toolbar", event => {
+                        // this stops an event inside the dialog from propagating to the html element, which would close the dialog
+                        event.stopPropagation();
+                    });
+                })
+        );
     }
 }

@@ -87,8 +87,10 @@ namespace Bloom
         public Action ReplaceContextMenu { get; set; }
 
         protected bool WantDebugMenuItems =>
-            ApplicationUpdateSupport.IsDevOrAlpha
-            || ((ModifierKeys & Keys.Control) == Keys.Control);
+            // Had this for a long time, but it's increasingly in conflict with right-click stuff
+            // implemented in JavaScript.
+            //ApplicationUpdateSupport.IsDevOrAlpha ||
+            ((ModifierKeys & Keys.Control) == Keys.Control);
 
         public abstract void CopySelection();
         public abstract void SelectAll();

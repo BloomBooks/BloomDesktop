@@ -167,7 +167,13 @@ div.ui-tooltip-content {
 }
 
 .bloom-imageContainer {
-    min-height: 50px;
+    // Was 50px until 6.1. Now we support making very small draggable images in games, so that's too big.
+    // Then we tried 10px with the idea that it could at least be grabbed. We may make a separate dragging affordance like
+    // Canva for very small imagesto help with that. But any min-height causes weird behavior when cropping
+    // makes the bubble smaller than the image-container is allowed to be. So try not setting one at all.
+    // We also have code to prevent them getting smaller than 30px, but setting an actual CSS min-height is problematic
+    // when the cropping code is trying to compute very exact sizes. I think we're better off without it.
+    // min-height: 10px;
     border-radius: var(--image-border-radius);
     // image containers are ordered by document order so they can NOT be a stacking context,
     // allowing their child buttons to be over the comicaljs canvas

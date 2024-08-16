@@ -8,7 +8,7 @@ type l10nDefinition = {
     // so as not to break existing code. It gets ignored as long as we find the l10nKey.
     english?: string;
 };
-type TipContent = l10nDefinition | React.ReactElement | string;
+export type TipContent = l10nDefinition | React.ReactElement | string;
 
 export interface IBloomToolTipProps {
     tip?: TipContent;
