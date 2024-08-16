@@ -1031,10 +1031,7 @@ namespace Bloom.Book
                 return;
             }
             _pagesCache = null;
-            string oldMetaData = string.Empty;
 
-            // This does its own check for whether it needs to be done, and updates the state
-            // after doing anything it needs to.
             EnsureUpToDateMemory(progress);
 
             Storage.MigrateToMediaLevel1ShrinkLargeImages();
@@ -2447,7 +2444,9 @@ namespace Bloom.Book
                 layout,
                 BookInfo.UseDeviceXMatter,
                 _bookData.MetadataLanguage1Tag,
-                oldIds
+                oldIds,
+                BookInfo.AppearanceSettings.CoverIsImage
+                    && CollectionSettings.HaveEnterpriseFeatures
             );
 
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
@@ -3979,8 +3978,13 @@ namespace Bloom.Book
         }
 
         public bool FullBleed =>
-            BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-            && CollectionSettings.HaveEnterpriseFeatures;
+            (
+                // Wants to be
+                // BookInfo.AppearanceSettings.FullBleed
+                // but we haven't put that in the book settings yet.
+                BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
+                || BookInfo.AppearanceSettings.CoverIsImage
+            ) && CollectionSettings.HaveEnterpriseFeatures;
 
         /// <summary>
         /// Save the page content to the DOM.
@@ -4666,6 +4670,15 @@ namespace Bloom.Book
                 // current book location.
                 PageTemplateSource = Path.GetFileName(FolderPath);
             }
+
+            if (BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate)
+            {
+                // Only doing this loses the data-book values like title:
+                //BringXmatterHtmlUpToDate(OurHtmlDom);
+
+                EnsureUpToDateMemory(new NullProgress());
+            }
+            BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate = false;
 
             try
             {
