@@ -702,9 +702,9 @@ namespace Bloom.Edit
             }
         }
 
-        private bool IsFrontCover
+        private bool IsOutsideFrontCover
         {
-            get { return _pageSelection?.CurrentSelection?.IsFrontCoverPage ?? false; }
+            get { return _pageSelection?.CurrentSelection?.IsOutsideFrontCoverPage ?? false; }
         }
 
         // For now, the same rules govern copying hyperlinks. Working hyperlinks to xmatter pages are difficult,
@@ -712,7 +712,7 @@ namespace Bloom.Edit
         // a different strategy for identifying them. And then, choosing a different xmatter pack might cause a page
         // to cease to exist altogether.
         // The only exception is the front cover page, which uses a magic value instead of the page id.
-        public bool CanCopyHyperlink => CanCopyPage || IsFrontCover;
+        public bool CanCopyHyperlink => CanCopyPage || IsOutsideFrontCover;
 
         public bool CanDeletePage
         {
@@ -1940,7 +1940,7 @@ namespace Bloom.Edit
 
         public void CopyHyperlink(IPage page)
         {
-            var pageId = page.IsFrontCoverPage
+            var pageId = page.IsOutsideFrontCoverPage
                 ? "cover"
                 : page.GetDivNodeForThisPage().GetAttribute("id");
             var bookId = _bookSelection.CurrentSelection.ID;
