@@ -1,9 +1,39 @@
 @import "../branding-base.less";
-[data-book="outside-back-cover-branding-top-html"] img {
-    margin-left: auto;
-    margin-right: 0;
-    width: 20%;
+[data-book="outside-back-cover-branding-top-html"] {
+    margin-bottom: 1em;
+    img {
+        margin-left: auto;
+        margin-right: 0;
+
+        width: 20%;
+        height: 1cm;
+    }
 }
-[data-book="outside-back-cover-branding-bottom-html"] img {
-    width: 60%;
+[data-book="outside-back-cover-branding-bottom-html"] {
+    margin-top: auto;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    img {
+        margin: 0;
+    }
+    margin-bottom: 0;
+
+    flex-wrap: wrap-reverse;
+}
+@patiiWidth: 20%;
+img.branding {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+img.branding.inade {
+    width: calc(@patiiWidth * 1.1);
+}
+img.branding.med {
+    width: calc(@patiiWidth * 2.2);
+}
+img.branding.patii {
+    width: @patiiWidth;
 }
