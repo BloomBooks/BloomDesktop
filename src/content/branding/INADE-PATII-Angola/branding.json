@@ -1,6 +1,12 @@
 {
     "presets": [
         {
+            "data-book": "cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding bloom-badge' src='RepublicaDeAngola.png'/><div><p>República de Angola</p><p>Ministério da Educação</p><p>Instituto Nacional de Avaliação e de Desenvolvimento da Educação</p></div>",
+            "condition": "always"
+        },
+        {
             "data-book": "outside-back-cover-branding-top-html",
             "lang": "*",
             "content": "<img class='branding bloom-badge' src='made-with-bloom-badge-monochrome.svg'/>",
