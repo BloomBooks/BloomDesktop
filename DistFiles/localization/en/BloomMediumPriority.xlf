@@ -5,6 +5,10 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
+      <trans-unit id="AvailableWithEnterprise" translate="no">
+        <source xml:lang="en">Available with your Enterprise Subscription</source>
+        <note>ID: AvailableWithEnterprise</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.Check" translate="no">
         <source xml:lang="en">Check</source>
@@ -583,6 +587,14 @@
       <trans-unit id="BookSettings.CoverGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Cover</source>
         <note>BookSettings.CoverGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CoverIsImage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fill the front cover with a single image</source>
+        <note>BookSettings.CoverIsImage</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true" translate="no">
+        <source xml:lang="en">For paper books, this image will be full bleed.</source>
+        <note>BookSettings.CoverIsImage.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Content Pages</source>

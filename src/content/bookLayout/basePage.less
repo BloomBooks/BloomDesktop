@@ -1,18 +1,18 @@
 @import "basePage-sharedRules.less";
 @import "bubble.less";
 @import (reference) "../../BloomBrowserUI/bloomUI.less"; // importing by reference only brings in the constants
-// NOTE: more style sheet imports are at the end of this document,
-// ones that should supersede the normal rules
-
 @import "pageBoxesSizing.less";
 @import "marginBox.less";
 @import "pageNumbers.less";
+// NOTE: more style sheet imports come later in this document, ones that should supersede the normal rules
 
 // TODO: replace with variable
 // no units! No em!!!! em makes children inside have a lineheight that matches the font of the overall box, regardless of the thing's font-size. See https://developer.mozilla.org/en-US/docs/Web/CSS/line-height
 // However, when you use it as anything BUT a line-height (e.g., min-height), remember to multiply by 1em, otherwise it
 // will be ignored.
 @defaultLineHeight: 1.5;
+
+@dark: #222222; // duplicates @dark in common-comics.less
 
 .Browser-Reset() {
     /*+init {*/
@@ -697,6 +697,16 @@ div[data-book*="branding"] {
     &:not(.bloom-templateMode) {
         overflow: hidden;
     }
+}
+.bloom-page.outsideFrontCover.cover-is-image {
+    --cover-margin-side: 0mm;
+    --cover-margin-top: 0mm;
+    --cover-margin-bottom: 0mm;
+
+    // This doesn't actually work currently; it only works for inside pages because the cover color overrides it.
+    --page-background-color: @dark !important;
+
+    background-color: @dark !important;
 }
 
 /* About the calc() here: depending on the margin, we may need to adjust the padding of the text to make it so that

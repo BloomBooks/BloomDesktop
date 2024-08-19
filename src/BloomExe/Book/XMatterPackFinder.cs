@@ -39,7 +39,8 @@ namespace Bloom.Book
             "shrp",
             "sharp",
             "forunittest",
-            "templatestarter"
+            "templatestarter",
+            "coverisimage",
         };
 
         public IEnumerable<XMatterInfo> GetXMattersToOfferInSettings(
