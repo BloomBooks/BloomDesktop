@@ -1,50 +1,50 @@
 /* The statement below hides the credits row from the Front page. It allows for a bigger picture.
  * Simply delete these lines if you want the credits row back.   */
 .Device16x9Landscape.frontCover .creditsRow {
-   --cover-creditsRow-show: none;
+    --cover-creditsRow-show: none;
 }
 
 /* The statements below control the design for 'Device16x9Landscape'. */
 
 /* The below statements control the size and color of the marginbox. It holds the text and picture of that page. The top and left numbers determine the position of the margin box on the page.   */
 
-:not(.bloom-interactive-page).numberedPage.Device16x9Landscape  {
-  --page-margin-top: 2mm;
-  --page-margin-bottom: 5mm;
-  --page-margin-left: 2mm ;
-  --page-margin-right: 5mm;
-  --page-background-color: #2E2E2E;
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape {
+    --page-margin-top: 2mm;
+    --page-margin-bottom: 2mm;
+    --page-margin-left: 2mm;
+    --page-margin-right: 2mm;
+    --page-background-color: #2e2e2e;
 
-  --marginBox-background-color: #ffffff;
-  --marginBox-border-radius: 15px;
-  --marginBox-padding: 1.5mm;
+    --marginBox-background-color: #ffffff;
+    --marginBox-border-radius: 15px;
+    --marginBox-padding: 1.5mm;
 
-  --topLevel-text-padding: 0.5em;
+    --topLevel-text-padding: 0.5em;
 
-  /* set to 0 because our marginBox is white but background is dark. This has the effect of increasing the text padding on the edges. */
-  --page-and-marginBox-are-same-color-multiplicand: 0;
+    /* set to 0 because our marginBox is white but background is dark. This has the effect of increasing the text padding on the edges. */
+    --page-and-marginBox-are-same-color-multiplicand: 0;
 
-  /* move so that page number doesn't it hide it if the text box is in the lower left */
-  --formatButton-pageNumber-dodge: 20px;
+    /* move so that page number doesn't it hide it if the text box is in the lower left */
+    --formatButton-pageNumber-dodge: 20px;
 
-  --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+    --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
 }
 
 /* The section below controls the pagenumber and the white circle around it.  */
 
 .Device16x9Landscape.numberedPage.numberedPage.numberedPage::after {
-  --pageNumber-bottom: var(--page-margin-bottom);
-  --pageNumber-top: unset;
-  --pageNumber-font-size: 10pt;
-  z-index: 1000;
-  --pageNumber-color: black;
-  display: inline-block;
-  --pageNumber-border-radius: 50%;
-  --pageNumber-background-color: #ffffff;
-  --pageNumber-background-width: 33px;
-  text-align: center !important;
-  margin: auto;
+    --pageNumber-bottom: var(--page-margin-bottom);
+    --pageNumber-top: unset;
+    --pageNumber-font-size: 10pt;
+    z-index: 1000;
+    --pageNumber-color: black;
+    display: inline-block;
+    --pageNumber-border-radius: 50%;
+    --pageNumber-background-color: #ffffff;
+    --pageNumber-background-width: 33px;
+    text-align: center !important;
+    margin: auto;
 
-  --pageNumber-always-left-margin: var(--page-margin-left);
-  --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
+    --pageNumber-always-left-margin: var(--page-margin-left);
+    --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
 }
