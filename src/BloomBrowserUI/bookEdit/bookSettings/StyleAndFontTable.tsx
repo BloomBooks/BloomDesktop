@@ -8,7 +8,7 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { Span } from "../../react_components/l10nComponents";
-import { useApiObject } from "../../utils/bloomApi";
+import { postString, useApiObject } from "../../utils/bloomApi";
 import Link from "@mui/material/Link";
 
 // This interface must be kept in sync with the StyleAndFont class in BookSettingsApi.cs.
@@ -22,12 +22,17 @@ export interface IStyleAndFont {
     pageDescription: string;
 }
 export const StyleAndFontTable: React.FunctionComponent<{
-    closeDialogAndJumpToPage: (pageId: string) => void;
+    closeDialog: () => void;
 }> = props => {
     const rows: IStyleAndFont[] = useApiObject<IStyleAndFont[]>(
-        "book/settings/stylesAndFonts",
+        "stylesAndFonts/getDataRows",
         []
     );
+
+    function closeDialogAndJumpToPage(pageId: string) {
+        props.closeDialog();
+        postString("editView/jumpToPage", pageId);
+    }
 
     return (
         <Table>
@@ -45,7 +50,7 @@ export const StyleAndFontTable: React.FunctionComponent<{
                         <Span l10nKey="EditTab.FormatDialog.Font">Font</Span>
                     </TableCell>
                     <TableCell sx={{ border: 1 }}>
-                        <Span l10nKey="EditTab.FormatDialog.FirstPage">
+                        <Span l10nKey="BookSettings.Fonts.FirstPage">
                             First Page
                         </Span>
                     </TableCell>
@@ -69,7 +74,7 @@ export const StyleAndFontTable: React.FunctionComponent<{
                             <Link
                                 href={"#" + row.pageId}
                                 onClick={() =>
-                                    props.closeDialogAndJumpToPage(row.pageId)
+                                    closeDialogAndJumpToPage(row.pageId)
                                 }
                             >
                                 {row.pageDescription}

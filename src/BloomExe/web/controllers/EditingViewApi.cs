@@ -88,13 +88,24 @@ namespace Bloom.web.controllers
                 HandlePrevPageSplit,
                 false
             );
-        }
+			apiHandler.RegisterEndpointHandler(
+				"editView/jumpToPage",
+				HandleJumpToPage,
+				true);
+		}
 
-        /// <summary>
-        /// This one is for the snapping function on dragging origami splitters.
-        /// </summary>
-        /// <param name="request"></param>
-        private void HandlePrevPageSplit(ApiRequest request)
+		private void HandleJumpToPage(ApiRequest request)
+		{
+			var pageId = request.GetPostStringOrNull();
+			request.PostSucceeded();
+			View.Model.SaveThen(() => pageId, () => { });
+		}
+
+		/// <summary>
+		/// This one is for the snapping function on dragging origami splitters.
+		/// </summary>
+		/// <param name="request"></param>
+		private void HandlePrevPageSplit(ApiRequest request)
         {
             var id = request.RequiredParam("id");
             var orientation = request.RequiredParam("orientation");

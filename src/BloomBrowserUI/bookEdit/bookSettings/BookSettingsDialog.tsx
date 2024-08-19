@@ -290,14 +290,16 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
-    function closeDialogAndJumpToPage(pageId: string) {
+    function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
             // If nothing changed, we don't get any...and don't need to make this call.
             postJson("book/settings", settingsToReturnLater);
         }
-        postString("book/settings/jumpToPage", pageId);
         isOpenAlready = false;
         closeDialog();
+        // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
+        // we can't use a global. It listens to websocket, but we currently can only listen,
+        // we cannot send.
     }
 
     return (
@@ -609,9 +611,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 </div>
                             </NoteBox>
                             <StyleAndFontTable
-                                closeDialogAndJumpToPage={
-                                    closeDialogAndJumpToPage
-                                }
+                                closeDialog={saveSettingsAndCloseDialog}
                             />
                         </ConfigrGroup>
                     </ConfigrPane>
@@ -620,17 +620,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
             <DialogBottomButtons>
                 <DialogOkButton
                     default={true}
-                    onClick={() => {
-                        if (settingsToReturnLater) {
-                            // If nothing changed, we don't get any...and don't need to make this call.
-                            postJson("book/settings", settingsToReturnLater);
-                        }
-                        isOpenAlready = false;
-                        closeDialog();
-                        // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
-                        // we can't use a global. It listens to websocket, but we currently can only listen,
-                        // we cannot send.
-                    }}
+                    onClick={saveSettingsAndCloseDialog}
                 />
                 <DialogCancelButton />
             </DialogBottomButtons>
