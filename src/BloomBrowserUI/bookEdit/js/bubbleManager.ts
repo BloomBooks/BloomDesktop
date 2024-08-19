@@ -1239,12 +1239,10 @@ export class BubbleManager {
             adjustY = (c1 * a2 - c2 * a1) / (a1 - a2);
             switch (this.resizeDragCorner) {
                 case "ne":
-                    newTop = adjustY;
                     newWidth = adjustX - this.oldLeft;
                     newHeight = this.oldTop + this.oldHeight - adjustY;
                     break;
                 case "sw":
-                    newLeft = adjustX;
                     newHeight = adjustY - this.oldTop;
                     newWidth = this.oldLeft + this.oldWidth - adjustX;
                     break;
@@ -1253,10 +1251,31 @@ export class BubbleManager {
                     newHeight = adjustY - this.oldTop;
                     break;
                 case "nw":
-                    newLeft = adjustX;
-                    newTop = adjustY;
                     newWidth = this.oldLeft + this.oldWidth - adjustX;
                     newHeight = this.oldTop + this.oldHeight - adjustY;
+                    break;
+            }
+            if (newWidth < this.minWidth) {
+                newWidth = this.minWidth;
+                newHeight = newWidth * slope;
+            }
+            if (newHeight < this.minHeight) {
+                newHeight = this.minHeight;
+                newWidth = newHeight / slope;
+            }
+            switch (this.resizeDragCorner) {
+                case "ne":
+                    newTop = adjustY;
+                    break;
+                case "sw":
+                    newLeft = adjustX;
+                    break;
+                case "se":
+                    break;
+                case "nw":
+                    newLeft = adjustX;
+                    newTop = adjustY;
+
                     break;
             }
         }
@@ -1420,6 +1439,11 @@ export class BubbleManager {
         // and makes lint happy if we don't declare variables inside the switch.
         const leftFraction =
             -this.initialCropImageLeft / this.initialCropImageWidth;
+        // Fraction of the total image width that is left of the center of the bubble.
+        // This stays constant as we crop on the top and bottom.
+        const centerFractionX =
+            leftFraction +
+            this.initialCropBubbleWidth / this.initialCropImageWidth / 2;
         const rightFraction =
             (this.initialCropImageWidth +
                 this.initialCropImageLeft -
@@ -1432,10 +1456,17 @@ export class BubbleManager {
             this.initialCropImageHeight;
         const topFraction =
             -this.initialCropImageTop / this.initialCropImageHeight;
+        // fraction of the total image height that is above the center of the bubble.
+        // This stays constant as we crop on the left and right.
+        const centerFractionY =
+            topFraction +
+            this.initialCropBubbleHeight / this.initialCropImageHeight / 2;
         // Deliberately dividing by the WIDTH here; all our calculations are
         // based on the adjusted width of the image.
         const topAsFractionOfWidth =
             -this.initialCropImageTop / this.initialCropImageWidth;
+        // Specifically, the aspect ratio for computing the height of the (full) image
+        // from its width.
         const aspectRatio = img.naturalHeight / img.naturalWidth;
         switch (this.currentCropSide) {
             case "e":
@@ -1452,10 +1483,11 @@ export class BubbleManager {
                     // fiddle with the left to keep the same part cropped
                     img.style.left = `${-leftFraction * newImageWidth}px`;
                     // and the top to split the extra height between top and bottom
-                    img.style.top = `${-topAsFractionOfWidth * newImageWidth - // would keep same crop
-                        (newImageWidth * aspectRatio -
-                            this.initialCropImageWidth * aspectRatio) /
-                            2}px`; // half the extra height at the top.
+                    newImageHeight = newImageWidth * aspectRatio;
+                    const newTopFraction =
+                        centerFractionY -
+                        this.initialCropBubbleHeight / newImageHeight / 2;
+                    img.style.top = `${-newTopFraction * newImageHeight}px`;
                 } else {
                     // no need to stretch. Restore the image to its original position and size.
                     img.style.width = `${this.initialCropImageWidth}px`;
@@ -1479,10 +1511,11 @@ export class BubbleManager {
                     // no cropping on the left
                     img.style.left = `0`;
                     // and the top to split the extra height between top and bottom
-                    img.style.top = `${-topAsFractionOfWidth * newImageWidth - // would keep same crop
-                        (newImageWidth * aspectRatio -
-                            this.initialCropImageWidth * aspectRatio) /
-                            2}px`;
+                    newImageHeight = newImageWidth * aspectRatio;
+                    const newTopFraction =
+                        centerFractionY -
+                        this.initialCropBubbleHeight / newImageHeight / 2;
+                    img.style.top = `${-newTopFraction * newImageHeight}px`;
                 } else {
                     img.style.width = `${this.initialCropImageWidth}px`;
                     img.style.top = `${this.initialCropImageTop}px`;
@@ -1504,8 +1537,12 @@ export class BubbleManager {
                     img.style.top = `${-topAsFractionOfWidth *
                         newImageWidth}px`;
                     // and the left to split the extra width between top and bottom
-                    img.style.left = `${-leftFraction * newImageWidth - // would keep same crop
-                        (newImageWidth - this.initialCropImageWidth) / 2}px`; // half the extra width on the left.
+                    // centerFractionX = leftFraction + this.initialCropBubbleWidth / this.initialCropImageWidth / 2;
+                    // centerFractionX = newleftFraction + this.initialCropBubbleWidth / newImageWidth / 2;
+                    const newleftFraction =
+                        centerFractionX -
+                        this.initialCropBubbleWidth / newImageWidth / 2;
+                    img.style.left = `${-newleftFraction * newImageWidth}px`;
                 } else {
                     img.style.width = `${this.initialCropImageWidth}px`;
                     img.style.left = `${this.initialCropImageLeft}px`;
@@ -1529,8 +1566,10 @@ export class BubbleManager {
                     // no cropping on the top
                     img.style.top = `0`;
                     // and the left to split the extra width between top and bottom
-                    img.style.left = `${-leftFraction * newImageWidth - // would keep same crop
-                        (newImageWidth - this.initialCropImageWidth) / 2}px`; // half the extra width on the left.
+                    const newleftFraction =
+                        centerFractionX -
+                        this.initialCropBubbleWidth / newImageWidth / 2;
+                    img.style.left = `${-newleftFraction * newImageWidth}px`;
                 } else {
                     img.style.width = `${this.initialCropImageWidth}px`;
                     img.style.left = `${this.initialCropImageLeft}px`;
@@ -1565,23 +1604,33 @@ export class BubbleManager {
         const imgHeight = img.naturalHeight;
         const imgRatio = imgWidth / imgHeight;
         const containerRatio = containerWidth / containerHeight;
+        let newHeight = containerHeight;
+        let newWidth = containerWidth;
         if (imgRatio > containerRatio) {
             // remove white bars at top and bottom by reducing container height
-            const newHeight = containerWidth / imgRatio;
-            const oldHeight = BubbleManager.pxToNumber(overlay.style.height);
-            overlay.style.height = `${newHeight}px`;
-            // and move container down so image does not move
-            const oldTop = BubbleManager.pxToNumber(overlay.style.top);
-            overlay.style.top = `${oldTop + (oldHeight - newHeight) / 2}px`;
+            newHeight = containerWidth / imgRatio;
+            if (newHeight < this.minHeight) {
+                newHeight = this.minHeight;
+                newWidth = newHeight * imgRatio;
+            }
         } else {
             // remove white bars at left and right by reducing container width
-            const newWidth = containerHeight * imgRatio;
-            const oldWidth = BubbleManager.pxToNumber(overlay.style.width);
-            overlay.style.width = `${newWidth}px`;
-            // and move container right so image does not move
-            const oldLeft = BubbleManager.pxToNumber(overlay.style.left);
-            overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
+            newWidth = containerHeight * imgRatio;
+            if (newWidth < this.minWidth) {
+                newWidth = this.minWidth;
+                newHeight = newWidth / imgRatio;
+            }
         }
+        const oldHeight = BubbleManager.pxToNumber(overlay.style.height);
+        overlay.style.height = `${newHeight}px`;
+        // and move container down so image does not move
+        const oldTop = BubbleManager.pxToNumber(overlay.style.top);
+        overlay.style.top = `${oldTop + (oldHeight - newHeight) / 2}px`;
+        const oldWidth = BubbleManager.pxToNumber(overlay.style.width);
+        overlay.style.width = `${newWidth}px`;
+        // and move container right so image does not move
+        const oldLeft = BubbleManager.pxToNumber(overlay.style.left);
+        overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
     }
 
     // When the image is changed in a bubble (e.g., choose or paste image),
@@ -2156,61 +2205,30 @@ export class BubbleManager {
             this.focusFirstVisibleFocusable(bubble.content);
             const positionInfo = bubble.content.getBoundingClientRect();
 
-            if (!event.altKey) {
-                // Possible move action started
-                this.bubbleToDrag = bubble;
-                this.activeContainer = container;
-                // in case this is somehow left from earlier, we want a fresh start for the new move.
-                this.animationFrame = 0;
-                // mouse is presumably moving inside this image, it should have the buttons.
-                // (It does not get them in the usual way by mouseEnter, because that event is
-                // suppressed by the comicaljs canvas, which is above the image container.)
-                addImageEditingButtons(
-                    bubble.content.getElementsByClassName(
-                        "bloom-imageContainer"
-                    )[0] as HTMLElement
-                );
+            // Possible move action started
+            this.bubbleToDrag = bubble;
+            this.activeContainer = container;
+            // in case this is somehow left from earlier, we want a fresh start for the new move.
+            this.animationFrame = 0;
+            // mouse is presumably moving inside this image, it should have the buttons.
+            // (It does not get them in the usual way by mouseEnter, because that event is
+            // suppressed by the comicaljs canvas, which is above the image container.)
+            addImageEditingButtons(
+                bubble.content.getElementsByClassName(
+                    "bloom-imageContainer"
+                )[0] as HTMLElement
+            );
 
-                // Remember the offset between the top-left of the content box and the initial
-                // location of the mouse pointer.
-                const deltaX = event.pageX - positionInfo.left;
-                const deltaY = event.pageY - positionInfo.top;
-                this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
+            // Remember the offset between the top-left of the content box and the initial
+            // location of the mouse pointer.
+            const deltaX = event.pageX - positionInfo.left;
+            const deltaY = event.pageY - positionInfo.top;
+            this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
 
-                // Even though Alt+Drag resize is not in effect, we still check using isResizing() to
-                // make sure JQuery Resizing is not in effect before proceeding.
-                if (!this.isJQueryResizing(container)) {
-                    container.classList.add("grabbing");
-                }
-            } else {
-                // Resize action started. Save some information from the initial click for later.
-                this.bubbleToResize = bubble;
-
-                // Save the resize mode. Later on, based on what the initial resize mode was, we'll parse the string
-                // and determine how to calculate the new boundaries of the content box.
-                this.bubbleResizeMode = this.getResizeMode(
-                    bubble.content,
-                    event
-                );
-                this.cleanupMouseMoveHover(container); // Need to clear both grabbable and *-resizables
-                container.classList.add(`${this.bubbleResizeMode}-resizable`);
-
-                const bubbleContentJQuery = $(bubble.content);
-                this.bubbleResizeInitialPos = {
-                    clickX: event.pageX,
-                    clickY: event.pageY,
-                    elementX: positionInfo.left,
-                    elementY: positionInfo.top,
-                    // Use JQuery here to have consistent calculations with the rest of the code.
-                    // Jquery width(): Only the Content width. (No padding, border, scrollbar, or margin)
-                    // Javascript clientWidth: Content plus Padding. (No border, scrollbar, or margin)
-                    // Javascript offsetWidth: Content, Padding, Border, and scrollbar. (No margin
-                    // References:
-                    //   https://www.w3schools.com/jsref/prop_element_clientheight.asp
-                    //   https://www.w3schools.com/jsref/prop_element_offsetheight.asp
-                    width: bubbleContentJQuery.width(),
-                    height: bubbleContentJQuery.height()
-                };
+            // Even though Alt+Drag resize is not in effect, we still check using isResizing() to
+            // make sure JQuery Resizing is not in effect before proceeding.
+            if (!this.isJQueryResizing(container)) {
+                container.classList.add("grabbing");
             }
         }
     };
