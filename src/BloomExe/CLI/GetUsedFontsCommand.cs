@@ -116,7 +116,7 @@ namespace Bloom.CLI
         internal static IEnumerable<string> GetFontsUsed(string bookPath)
         {
             string bookHtmContent = null;
-            string defaultLangStylesContent = null;
+            string defaultLangStylesPath = null;
 
             var result = new HashSet<string>();
             // Css for styles are contained in the actual html
@@ -132,7 +132,7 @@ namespace Bloom.CLI
                     bookHtmContent = fileContents;
                 else if (filePath.EndsWith("defaultLangStyles.css"))
                 {
-                    defaultLangStylesContent = fileContents;
+                    defaultLangStylesPath = filePath;
                     // Delay processing defaultLangStyles to the end when we know we have the htm content.
                     continue;
                 }
@@ -140,7 +140,7 @@ namespace Bloom.CLI
                 HtmlDom.FindFontsUsedInCss(fileContents, result, false);
             }
 
-            ProcessDefaultLangStyles(bookHtmContent, defaultLangStylesContent, result);
+            ProcessDefaultLangStyles(bookHtmContent, defaultLangStylesPath, result);
 
             return result;
         }
@@ -153,38 +153,24 @@ namespace Bloom.CLI
         /// </summary>
         private static void ProcessDefaultLangStyles(
             string bookHtmContent,
-            string defaultLangStylesContent,
+            string defaultLangStylesPath,
             HashSet<string> result
         )
         {
-            if (bookHtmContent == null || defaultLangStylesContent == null)
+            if (bookHtmContent == null || defaultLangStylesPath == null)
                 return;
-
+            // Note that this code does not return all the fonts that are served with Bloom
+            // (Andika, Andika New Basic, and ABeeZee), but only the ones that are actually
+            // used in the book.
             var htmlDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(bookHtmContent, false));
-            var languagesWithContent = htmlDom.GetLanguagesWithContent().ToArray();
-
-            // Find something like this
-            //	[lang='en']
-            //	{
-            //		font-family: 'Andika New Basic';
-            //		direction: ltr;
-            //	}
-            Regex languageCssRegex = new Regex(
-                @"\[\s*lang\s*=\s*['""](.*?)['""]\s*\]\s*{.*?}",
-                RegexOptions.Singleline | RegexOptions.Compiled
+            var langToFont = htmlDom.GetDefaultFontsForLanguages(
+                Path.GetDirectoryName(defaultLangStylesPath)
             );
-
-            // Remove it for languages which are not in the book.
-            foreach (Match match in languageCssRegex.Matches(defaultLangStylesContent))
+            if (langToFont != null)
             {
-                var langTag = match.Groups[1].Value;
-                if (languagesWithContent.Contains(langTag))
-                    continue;
-                var wholeRuleForLang = match.Groups[0].Value;
-                defaultLangStylesContent = defaultLangStylesContent.Replace(wholeRuleForLang, "");
+                foreach (var pair in langToFont)
+                    result.Add(pair.Value);
             }
-
-            HtmlDom.FindFontsUsedInCss(defaultLangStylesContent, result, false);
         }
     }
 }

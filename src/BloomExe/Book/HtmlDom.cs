@@ -2042,6 +2042,59 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Example that matches this regular expression in the defaultLangStylesContent:
+        /// <code>
+        /// [lang='en']
+        /// {
+        ///     font-family: 'Andika New Basic';
+        ///     direction: ltr;
+        /// }
+        /// </code>
+        /// Group 0 is the entire CSS rule matched by the regular expression.
+        /// Group 1 is the opening quote for the language code(used internally in the regular expression).
+        /// Group 2 is the language code.
+        /// Group 3 is the entire set of CSS value settings associated with the language code.
+        /// Group 4 is the font-family value associated with the language code.
+        /// </summary>
+        public static Regex DefaultLangStylesCssRegex = new Regex(
+            @"\[\s*lang\s*=\s*(['""])([-a-zA-Z]*)\1\s*\]\s*{([^}]*font-family:([^;]*);[^}]*)}",
+            RegexOptions.Singleline | RegexOptions.Compiled
+        );
+
+        /// <summary>
+        /// Returns a dictionary of language codes to font names found in the book's defaultLangStyles.css file.
+        /// Only languages with content are included in the result.
+        /// </summary>
+        /// <Returns>
+        /// A dictionary of language codes to font names found in the book's defaultLangStyles.css file, or null
+        /// if defaultLangStyles does not exist.
+        /// </Returns>
+        public Dictionary<string, string> GetDefaultFontsForLanguages(string bookFolder)
+        {
+            var defaultLangStylesPath = Path.Combine(bookFolder, "defaultLangStyles.css");
+            if (RobustFile.Exists(defaultLangStylesPath))
+            {
+                var langToFont = new Dictionary<string, string>();
+                var languagesWithContent = GetLanguagesWithContent().ToArray();
+                var defaultLangStylesContent = RobustFile.ReadAllText(
+                    defaultLangStylesPath,
+                    System.Text.Encoding.UTF8
+                );
+                foreach (Match match in DefaultLangStylesCssRegex.Matches(defaultLangStylesContent))
+                {
+                    var lang = match.Groups[2].Value;
+                    // Note that only a single font is listed in defaultLangStyles.css, and it is not marked
+                    // with !important.  So, we can just take the whole value listed for each language.
+                    var font = match.Groups[4].Value.Trim(new[] { ' ', '\t', '"', '\'' });
+                    if (languagesWithContent.Contains(lang))
+                        langToFont[lang] = font;
+                }
+                return langToFont;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Finds a list of fonts used in the given css
         /// </summary>
         /// <param name="cssContent">Content of either a CSS file or an HTML file</param>
@@ -2085,6 +2138,27 @@ namespace Bloom.Book
             }
         }
 
+        /// <summary>
+        /// Patterns to match in the userModifiedStyles embedded in a style element in the HTML:
+        /// <code>
+        /// .BigWords-style[lang="en"] { font-family: Cambria !important; }
+        /// .normal-style[lang="en"] { font-size: 13pt !important; font-family: "Charis SIL Literacy AmArea" !important; }
+        /// .TextToMatch-style[lang="es"] { font-size: 14pt!important; font-family: ABeeZee!important; }
+        /// </code>
+        /// Group 0 is the entire CSS rule matched by the regular expression.
+        /// Group 1 is the style name (with the -style suffix removed).
+        /// Group 2 is an optional language attribute selector in its entirety.
+        /// Group 3 is the opening quote for the optional language code (used internally by regular expression).
+        /// Group 4 is optional language code.
+        /// Group 5 is the complete set of CSS value settings associated with the style (and language code).
+        /// Group 6 is the font-family setting associated with the style (and language code).
+        /// Group 7 is the font-family value associated with the style (and language code).
+        /// </summary>
+        public static Regex UserModifiedStyleFontRegex = new Regex(
+            @"\.([^\s]+)-style(\[lang=(['""])([A-Za-z-]*)\3\])?\s*{([^}]*?(font-family:([^};]*))[^}]*)}",
+            RegexOptions.Compiled
+        );
+
         private static void FindFontsUsedInEmbeddedCss(
             string htmlContent,
             HashSet<string> result,
@@ -2098,38 +2172,23 @@ namespace Bloom.Book
                 // A font-family used by a Bloom style is not actually used in the book if the style is not used.
                 // See BL-13655.
                 var cssContent = style.InnerText;
-                // This regex finds the style settings stored in the html header.
-                // These style settings look something like this in the HTML:
-                //<style type="text/css" title="userModifiedStyles">
-                //    /*<![CDATA[*/
-                //    .BigWords-style { font-size: 45pt !important; text-align: center !important; }
-                //    .Bubble-style { padding: 0px!important; }
-                //    .normal-style[lang = "en"] { font-size: 22pt !important; }
-                //    .normal-style { font-size: 22pt !important; }
-                //    .BigWords-style[lang = "en"] { font-family: Gothic !important; }/*]]>*/</ style >
-                // For the next to last line, group 1 is "normal-style", group 2 is empty, group 3 is empty,
-                // and group 4 is " font-size: 22pt !important; ".
-                // For the last line, group 1 is "BigWords-style", group 2 is "[lang="en"]", group 3 is "en",
-                // and group 4 is " font-family: Gothic !important; ".
-                var findRule = new Regex(
-                    "\\.([-A-Za-z]*)(\\[lang=['\"]([-a-zA-Z]*)['\"]\\])?\\s*{([^}]*)}"
-                );
-                var rulesMatched = findRule.Matches(cssContent);
+                var rulesMatched = UserModifiedStyleFontRegex.Matches(cssContent);
                 foreach (Match match in rulesMatched)
                 {
-                    var className = match.Groups[1].Value;
-                    var lang = match.Groups[3].Value;
-                    var cssDeclarationBlock = match.Groups[4].Value;
-                    if (cssDeclarationBlock.Contains("font-family:"))
+                    if (string.IsNullOrEmpty(match.Groups[6].Value))
+                        continue; // no font-family setting in this rule
+                    var className = match.Groups[1].Value + "-style";
+                    var lang = match.Groups[4].Value;
+                    string selector;
+                    if (string.IsNullOrEmpty(lang))
+                        selector = $"//div[contains(@class, '{className}')]";
+                    else
+                        selector = $"//div[contains(@class, '{className}') and @lang='{lang}']";
+                    var elements = dom.SafeSelectNodes(selector);
+                    if (elements.Length > 0)
                     {
-                        string selector;
-                        if (string.IsNullOrEmpty(lang))
-                            selector = $"//div[contains(@class, '{className}')]";
-                        else
-                            selector = $"//div[contains(@class, '{className}') and @lang='{lang}']";
-                        var elements = dom.SafeSelectNodes(selector);
-                        if (elements.Length > 0)
-                            FindFontsUsedInCss(cssDeclarationBlock, result, includeFallbackFonts);
+                        var cssDeclarationBlock = match.Groups[5].Value;
+                        FindFontsUsedInCss(cssDeclarationBlock, result, includeFallbackFonts);
                     }
                 }
                 // If there's some css content that doesn't match the style-setting pattern, it must be

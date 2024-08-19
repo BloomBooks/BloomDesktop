@@ -88,6 +88,14 @@ namespace Bloom.web.controllers
                 HandlePrevPageSplit,
                 false
             );
+            apiHandler.RegisterEndpointHandler("editView/jumpToPage", HandleJumpToPage, true);
+        }
+
+        private void HandleJumpToPage(ApiRequest request)
+        {
+            var pageId = request.GetPostStringOrNull();
+            request.PostSucceeded();
+            View.Model.SaveThen(() => pageId, () => { });
         }
 
         /// <summary>

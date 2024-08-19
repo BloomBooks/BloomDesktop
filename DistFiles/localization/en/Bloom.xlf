@@ -1569,10 +1569,6 @@
         <source xml:lang="en">Emphasis</source>
         <note>ID: EditTab.FormatDialog.Emphasis</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.FirstPage" sil:dynamic="true">
-        <source xml:lang="en">First Page</source>
-        <note>ID: EditTab.FormatDialog.FirstPage</note>
-      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
         <source xml:lang="en">Font</source>
         <note>ID: EditTab.FormatDialog.Font</note>
@@ -4474,7 +4470,7 @@
         <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</source>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog">
+      <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog" translate="no">
         <source xml:lang="en">Check the Fonts section of the Book Settings dialog to locate this font.</source>
         <note>ID: PublishTab.FontProblem.CheckInBookSettingsDialog</note>
       </trans-unit>
