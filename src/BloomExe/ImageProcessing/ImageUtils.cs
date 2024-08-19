@@ -408,10 +408,11 @@ namespace Bloom.ImageProcessing
                                 isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
                             );
                     }
-                    // Review: I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
-                    // In that case, we don't need to save it again. But I'm not sure. What happens, for example, when we
-                    // use the old cropping tool to create a different image? It seems to be fine to copy an image from
-                    // one place in the book and copy to another.
+                    // I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
+                    // In that case, we don't need to save it again. I checked that when we
+                    // use the old cropping tool to create a different image, it doesn't take this path.
+                    // As far as I can tell isSameFile is only true if we are copying the file on top of
+                    // itself, and that can't ever be useful.
                     else if (!isSameFile)
                     {
                         RobustFile.Copy(sourcePath, destinationPath);

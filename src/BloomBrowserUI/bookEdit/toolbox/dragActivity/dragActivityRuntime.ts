@@ -994,59 +994,55 @@ export function copyContentToTarget(draggable: HTMLElement) {
     // only copy into the actual target if there is actually a change.
     // (Flicker is particularly likely with changes that don't affect the
     // target, like adding and removing the image editing buttons.)
-    let targetContent = target.ownerDocument.createElement("div");
-    targetContent.innerHTML = draggable.innerHTML;
+    let throwAway = target.ownerDocument.createElement("div");
+    throwAway.innerHTML = draggable.innerHTML;
 
     // Don't need the bubble controls
-    Array.from(targetContent.getElementsByClassName("bloom-ui")).forEach(e => {
+    Array.from(throwAway.getElementsByClassName("bloom-ui")).forEach(e => {
         e.remove();
     });
     // Nor the image editing controls.
-    Array.from(
-        targetContent.getElementsByClassName("imageOverlayButton")
-    ).forEach(e => {
-        e.remove();
-    });
-    Array.from(targetContent.getElementsByClassName("imageButton")).forEach(
+    Array.from(throwAway.getElementsByClassName("imageOverlayButton")).forEach(
         e => {
             e.remove();
         }
     );
+    Array.from(throwAway.getElementsByClassName("imageButton")).forEach(e => {
+        e.remove();
+    });
     // Bloom has integrity checks for duplicate ids, and we don't need them in the duplicate content.
-    Array.from(targetContent.querySelectorAll("[id]")).forEach(e => {
+    Array.from(throwAway.querySelectorAll("[id]")).forEach(e => {
         e.removeAttribute("id");
     });
-    Array.from(targetContent.getElementsByClassName("hoverUp")).forEach(e => {
+    Array.from(throwAway.getElementsByClassName("hoverUp")).forEach(e => {
         // Produces at least a change in background color that we don't want.
         e.classList.remove("hoverUp");
     });
     // Content is not editable inside the target.
-    Array.from(targetContent.querySelectorAll("[contenteditable]")).forEach(
-        e => {
-            e.removeAttribute("contenteditable");
-        }
-    );
+    Array.from(throwAway.querySelectorAll("[contenteditable]")).forEach(e => {
+        e.removeAttribute("contenteditable");
+    });
     // Nor should we able to tab to it, or focus it.
-    Array.from(targetContent.querySelectorAll("[tabindex]")).forEach(e => {
+    Array.from(throwAway.querySelectorAll("[tabindex]")).forEach(e => {
         e.removeAttribute("tabindex");
     });
-    const imageContainer = targetContent.getElementsByClassName(
+    const imageContainer = throwAway.getElementsByClassName(
         "bloom-imageContainer"
     )[0] as HTMLElement;
     if (imageContainer) {
-        // We need another layer to manage clipping and centering
-        const targetContentWrapper = target.ownerDocument.createElement("div");
-        targetContent.classList.add("bloom-targetWrapper");
+        // We need another layer to manage clipping and centering. The one we were going to
+        // throw away becomes the wrapper, and we add a new throwAway outside it
+        const wrapper = throwAway;
+        throwAway = target.ownerDocument.createElement("div");
+        throwAway.appendChild(wrapper);
+        wrapper.classList.add("bloom-targetWrapper");
         // We need the image container size to match the draggable size so that we get the
         // same cropping.
         imageContainer.style.width = draggable.style.width;
         imageContainer.style.height = draggable.style.height;
-        targetContentWrapper.appendChild(targetContent);
-        // Now the new wrapper becomes the thing we want to copy to target
-        targetContent = targetContentWrapper;
     }
-    if (target.innerHTML !== targetContent.innerHTML) {
-        target.innerHTML = targetContent.innerHTML;
+    if (target.innerHTML !== throwAway.innerHTML) {
+        target.innerHTML = throwAway.innerHTML;
     }
 }
 
