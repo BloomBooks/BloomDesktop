@@ -293,12 +293,14 @@ function AddLanguageTags(container) {
             // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
             // with each other, leading to flashing back and forth
             // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
-            // August 2024: very small boxes are now usually overlays, and they now show the language in the bubbleControlBox,
-            // so I don't think we need this restriction anymore. Leaving it here in case we have problems with other small
-            // boxes and need to be more selective.
-            // if ($this.width() < 100) {
-            //     return;
-            // }
+            // August 2024: for overlays, the language is now displayed in the context controls box, and isn't
+            // a problem for small text boxes.
+            if (
+                $this.width() < 100 &&
+                !this.closest(kTextOverPictureSelector)
+            ) {
+                return;
+            }
 
             const key = $this.attr("lang");
             if (key !== undefined && (key === "*" || key.length < 1)) {
@@ -857,10 +859,14 @@ export function SetupElements(
             ).find(e => e.hasAttribute("data-bloom-active")) as HTMLElement;
         }
         // Ensure focus exists as best we can (BL-7994)
-        if (elementToFocus && $(elementToFocus).find(":focusable")) {
-            $(elementToFocus)
-                .find(":focusable")
-                .focus();
+        const focusable = $(elementToFocus).find(":focusable");
+        if (elementToFocus && focusable) {
+            focusable.focus();
+            // Ideally calling focus above has this as a side effect.
+            // However, the focusin event handler doesn't seem to get called at this point
+            // for image containers, even though we have set tabindex to zero,
+            // so make sure it becomes the active element at least.
+            theOneBubbleManager.setActiveElement(elementToFocus);
             // see similar code below
             BloomSourceBubbles.ShowSourceBubbleForElement(elementToFocus);
         } else if (

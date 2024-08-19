@@ -1811,7 +1811,6 @@
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
         <source xml:lang="en">Change Image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
-        <note>possibly obsolete as of Bloom 6.1, replaced by ChooseImage. Todo: still used anywhere? Review: do we really want to reword?</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChooseImage" translate="no">
         <source xml:lang="en">Choose image from your computer...</source>
