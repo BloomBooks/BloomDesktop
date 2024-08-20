@@ -774,6 +774,11 @@
         <target xml:lang="hi" state="needs-translation">First Page</target>
         <note>ID: BookSettings.Fonts.FirstPage</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.All" sil:dynamic="true" translate="no">
+        <source xml:lang="en">(all)</source>
+        <target xml:lang="hi" state="needs-translation">(all)</target>
+        <note>ID: BookSettings.Fonts.All</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true" translate="no">
         <source xml:lang="en">Page {0}</source>
         <target xml:lang="hi" state="needs-translation">Page {0}</target>
