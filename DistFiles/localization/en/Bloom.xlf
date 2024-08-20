@@ -4470,6 +4470,10 @@
         <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</source>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog" translate="no">
+        <source xml:lang="en">Check the Fonts section of the Book Settings dialog to locate this font.</source>
+        <note>ID: PublishTab.FontProblem.CheckInBookSettingsDialog</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice">
         <source xml:lang="en">There was a problem uploading your book.</source>
         <note>ID: PublishTab.Upload.GenericUploadProblemNotice</note>

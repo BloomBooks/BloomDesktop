@@ -38,16 +38,18 @@ import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
 import {
     post,
     postJson,
+    postString,
     useApiObject,
     useApiStringState
 } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 import { useL10n } from "../../react_components/l10nHooks";
-import { Div } from "../../react_components/l10nComponents";
+import { Div, P } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
+import { StyleAndFontTable } from "./StyleAndFontTable";
 
 let isOpenAlready = false;
 
@@ -287,6 +289,18 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setFirstPossiblyLegacyCss("");
         setMigratedTheme("");
     };
+
+    function saveSettingsAndCloseDialog() {
+        if (settingsToReturnLater) {
+            // If nothing changed, we don't get any...and don't need to make this call.
+            postJson("book/settings", settingsToReturnLater);
+        }
+        isOpenAlready = false;
+        closeDialog();
+        // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
+        // we can't use a global. It listens to websocket, but we currently can only listen,
+        // we cannot send.
+    }
 
     return (
         <BloomDialog
@@ -580,23 +594,33 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 path={`publish.bloomPUB.imageSettings`}
                             />
                         </ConfigrGroup>
+                        <ConfigrGroup label="Fonts" level={1}>
+                            <NoteBox>
+                                <div>
+                                    <P l10nKey="BookSettings.Fonts.Problematic">
+                                        When you publish a book to the web or as
+                                        an ebook, Bloom will flag any
+                                        problematic fonts. For example, we
+                                        cannot legally host most Microsoft fonts
+                                        on BloomLibrary.org.
+                                    </P>
+                                    <P l10nKey="BookSettings.Fonts.TableDescription">
+                                        The following table shows where fonts
+                                        have been used.
+                                    </P>
+                                </div>
+                            </NoteBox>
+                            <StyleAndFontTable
+                                closeDialog={saveSettingsAndCloseDialog}
+                            />
+                        </ConfigrGroup>
                     </ConfigrPane>
                 )}
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogOkButton
                     default={true}
-                    onClick={() => {
-                        if (settingsToReturnLater) {
-                            // If nothing changed, we don't get any...and don't need to make this call.
-                            postJson("book/settings", settingsToReturnLater);
-                        }
-                        isOpenAlready = false;
-                        closeDialog();
-                        // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
-                        // we can't use a global. It listens to websocket, but we currently can only listen,
-                        // we cannot send.
-                    }}
+                    onClick={saveSettingsAndCloseDialog}
                 />
                 <DialogCancelButton />
             </DialogBottomButtons>

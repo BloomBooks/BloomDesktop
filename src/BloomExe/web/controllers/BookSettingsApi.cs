@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
-using Bloom.Book;
 using Bloom.Edit;
 using Bloom.web.controllers;
 using Newtonsoft.Json;
-using Newtonsoft.Json;
 using SIL.IO;
+using System.Text.RegularExpressions;
+using SIL.Extensions;
+using Bloom.SafeXml;
+using System.Windows;
 
 namespace Bloom.Api
 {
