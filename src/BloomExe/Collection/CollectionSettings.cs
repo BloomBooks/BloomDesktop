@@ -334,7 +334,7 @@ namespace Bloom.Collection
                 ".numberedPage::after",
                 Language1.FontName,
                 Language1.IsRightToLeft,
-                Language1.LineHeight,
+                0, // The page number has its own line-height value.  See BL-13699.
                 Language1.BreaksLinesOnlyAtSpaces,
                 omitDirection
             );
