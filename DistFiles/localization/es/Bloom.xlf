@@ -5091,6 +5091,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">BloomLibrary.org mostrará el PDF y permitirá las descargas para la traducción, pero no puede ofrecer el botón "LEER" ni las descargas para BloomPUB o ePUB.</target>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog" translate="no">
+        <source xml:lang="en">Check the Fonts section of the Book Settings dialog to locate this font.</source>
+        <target xml:lang="es-ES" state="needs-translation">Check the Fonts section of the Book Settings dialog to locate this font.</target>
+        <note>ID: PublishTab.FontProblem.CheckInBookSettingsDialog</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem uploading your book.</source>
         <target xml:lang="es-ES" state="final">Hubo un problema al cargar su libro.</target>
