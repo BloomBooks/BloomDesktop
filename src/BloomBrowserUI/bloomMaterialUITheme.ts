@@ -135,6 +135,14 @@ export const lightTheme = createTheme({
                     colorSecondary: "pink" //kBloomPurple
                 }
             }
+        },
+        MuiTableCell: {
+            styleOverrides: {
+                head: {
+                    backgroundColor: "#F5F5F5",
+                    fontWeight: "bold"
+                }
+            }
         }
     }
 });

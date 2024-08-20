@@ -692,6 +692,11 @@
         <source xml:lang="en">First Page</source>
         <note>ID: BookSettings.Fonts.FirstPage</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.All" sil:dynamic="true" translate="no">
+        <source xml:lang="en">(all)</source>
+        <note>ID: BookSettings.Fonts.All</note>
+        <note>flags that the same font is used for all languages for the given style</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true" translate="no">
         <source xml:lang="en">Page {0}</source>
         <note>ID: BookSettings.Fonts.PageNumber</note>
