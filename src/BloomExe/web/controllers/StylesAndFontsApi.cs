@@ -119,10 +119,7 @@ namespace Bloom.web.controllers
             }
             foreach (var styleAndFont in stylesAndFonts.ToArray())
             {
-                if (styleAndFont.languageTag == "*")
-                    styleAndFont.languageName = "*";
-                else
-                    styleAndFont.languageName = GetLanguageName(styleAndFont.languageTag);
+                styleAndFont.languageName = GetLanguageName(styleAndFont.languageTag);
                 // If the style is not in the default styles, don't worry about not getting a localized name.
                 styleAndFont.styleName = L10NSharp.LocalizationManager.GetString(
                     $"EditTab.FormatDialog.DefaultStyles.{styleAndFont.style}-style",
@@ -347,6 +344,8 @@ namespace Bloom.web.controllers
 
         private string GetLanguageName(string langTag)
         {
+            if (langTag == "*")
+                return L10NSharp.LocalizationManager.GetString("BookSettings.Fonts.All", "(all)");
             var settings = _bookSelection.CurrentSelection.CollectionSettings;
             if (langTag == settings.Language1Tag)
                 return settings.Language1.Name;
