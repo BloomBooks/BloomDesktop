@@ -291,16 +291,25 @@ namespace Bloom.ImageProcessing
 
         public static void ReportImageMetadataProblem(string filePath, Exception ex)
         {
-            var msgFmt = LocalizationManager.GetString("EditTab.ImageMetadata.Corrupt",
-                "Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.");
+            var msgFmt = LocalizationManager.GetString(
+                "EditTab.ImageMetadata.Corrupt",
+                "Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer."
+            );
             var msg = string.Format(msgFmt, Path.GetFileName(filePath));
-            var btnLabel = LocalizationManager.GetString("EditTab.ImageMetadata.MoreInfo",
-                "More Information");
-            var settings = new NotifyUserOfProblemSettings(AllowSendReport.Disallow,
+            var btnLabel = LocalizationManager.GetString(
+                "EditTab.ImageMetadata.MoreInfo",
+                "More Information"
+            );
+            var settings = new NotifyUserOfProblemSettings(
+                AllowSendReport.Disallow,
                 btnLabel,
-                (str, ex) => {
-                    SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org/image-license-problem");
-                });
+                (str, ex) =>
+                {
+                    SIL.Program.Process.SafeStart(
+                        "https://docs.bloomlibrary.org/image-license-problem"
+                    );
+                }
+            );
             BloomErrorReport.NotifyUserOfProblem(msg, ex, settings);
         }
 
@@ -399,7 +408,12 @@ namespace Bloom.ImageProcessing
                                 isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
                             );
                     }
-                    else
+                    // I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
+                    // In that case, we don't need to save it again. I checked that when we
+                    // use the old cropping tool to create a different image, it doesn't take this path.
+                    // As far as I can tell isSameFile is only true if we are copying the file on top of
+                    // itself, and that can't ever be useful.
+                    else if (!isSameFile)
                     {
                         RobustFile.Copy(sourcePath, destinationPath);
                     }

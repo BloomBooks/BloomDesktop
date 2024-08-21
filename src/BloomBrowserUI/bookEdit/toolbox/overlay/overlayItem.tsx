@@ -18,6 +18,7 @@ import theOneLocalizationManager from "../../../lib/localizationManager/localiza
 import { SignLanguageIcon } from "../../../react_components/icons/SignLanguageIcon";
 import { GifIcon } from "../../../react_components/icons/GifIcon";
 import { theOneBubbleManager } from "../../js/bubbleManager";
+import { Bubble, Comical } from "comicaljs";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
@@ -190,38 +191,7 @@ const ondragend = (
     }
     // This must be done AFTER we give the bubble its id if we're going to, because that's how we know
     // it's one of the ones that should be ordered to the end.
-    adjustBubbleOrdering();
-};
-
-// Adjust the ordering of bubbles so that draggables are at the end.
-// We want the things that can be moved around to be on top of the ones that can't.
-// We don't use z-index because that makes stacking contexts and interferes with
-// the way we keep bubble children on top of the canvas.
-export const adjustBubbleOrdering = () => {
-    const bubbleManager = OverlayTool.bubbleManager();
-    if (!bubbleManager) {
-        // This check is mainly to keep lint happy. We should never get here.
-        return;
-    }
-    const parents = bubbleManager.getAllPrimaryImageContainersOnPage();
-    parents.forEach(imageContainer => {
-        const bubbles = Array.from(
-            imageContainer.getElementsByClassName("bloom-textOverPicture")
-        );
-        const draggables = bubbles.filter(b =>
-            b.getAttribute("data-bubble-id")
-        );
-        if (
-            bubbles.indexOf(draggables[0]) ===
-            bubbles.length - draggables.length
-        ) {
-            return; // already all at end
-        }
-        // Move them to the end, keeping them in order.
-        draggables.forEach(draggable => {
-            draggable.parentElement?.appendChild(draggable);
-        });
-    });
+    bubbleManager.adjustBubbleOrdering();
 };
 
 // Make a unique id for the bubble, and set it on the bubble.

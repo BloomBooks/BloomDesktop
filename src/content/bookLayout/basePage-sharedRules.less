@@ -62,6 +62,11 @@ textarea,
 .bloom-imageContainer.bloom-imageObjectFit-cover {
     background-size: cover;
 }
+.bloom-textOverPicture .bloom-imageContainer img {
+    object-fit: unset;
+    height: unset;
+    // width will initially be 100%, but typically overridden by object style
+}
 
 // Now that we have overlay elements, we don't want to show the placeholder flower underneath them.
 .bloom-imageContainer.hasOverlay > img[src="placeHolder.png"] {

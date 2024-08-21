@@ -315,7 +315,7 @@ function getAbovePageControlContainer(): JQuery {
     if (
         document
             .getElementsByClassName("bloom-page")[0]
-            ?.getAttribute("data-tool-id") === "dragActivity"
+            ?.getAttribute("data-tool-id") === "game"
     ) {
         return $("<div class='above-page-control-container bloom-ui'></div>");
     }

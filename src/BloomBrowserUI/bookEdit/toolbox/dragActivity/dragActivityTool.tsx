@@ -20,7 +20,6 @@ import {
     OverlayItemRow,
     OverlayTextItem,
     OverlayVideoItem,
-    adjustBubbleOrdering,
     setGeneratedBubbleId
 } from "../overlay/overlayItem";
 import {
@@ -102,7 +101,7 @@ const overlap = (start: HTMLElement, end: HTMLElement): boolean => {
 // Draw the arrow from the draggable to its target if it has one (and remove any previous arrow).
 // If the draggable is resized, adjust the target (if any) to match.
 // If forceAdjustAll is true, or we're in auto-adjust mode, adjust all draggables and targets
-// on the page to match the size of the draggable.
+// on the page to match the size of the draggable, except that image targets are not resized.
 export const adjustTarget = (
     draggable: HTMLElement,
     target: HTMLElement | undefined,
@@ -123,19 +122,28 @@ export const adjustTarget = (
     if (!draggable?.getAttribute("data-bubble-id")) {
         return;
     }
+    const allSameSize =
+        draggable.closest(".bloom-page")!.getAttribute("data-same-size") !==
+        "false";
     // if the target is not the same size, presumably the draggable size changed, in which case
     // we need to adjust the target, and possibly all other targets and draggables on the page.
     // If there's no target, just assume we need to adjust all if we're keeping sizes the same.
+    // Note: an image might be a different size even though it has not been resized; not a great
+    // problem if we adjust things anyway.
     let adjustAll = forceAdjustAll ?? false;
     if (!target) {
         adjustAll = true;
     } else {
         if (target.offsetHeight !== draggable.offsetHeight) {
-            target.style.height = `${draggable.offsetHeight}px`;
+            if (!allSameSize) {
+                target.style.height = `${draggable.offsetHeight}px`;
+            }
             adjustAll = true;
         }
         if (target.offsetWidth !== draggable.offsetWidth) {
-            target.style.width = `${draggable.offsetWidth}px`;
+            if (!allSameSize) {
+                target.style.width = `${draggable.offsetWidth}px`;
+            }
             adjustAll = true;
         }
     }
@@ -144,25 +152,38 @@ export const adjustTarget = (
     // Enhance: possibly we should only resize the ones that are initially the same size as the
     // target used to be? That could be useful if we ever again allow letter and word draggables
     // on the same game.
-    if (
-        adjustAll &&
-        draggable.closest(".bloom-page")!.getAttribute("data-same-size") !==
-            "false"
-    ) {
-        // We need to adjust the position of all the other targets and draggables.
+    if (adjustAll && allSameSize) {
+        // We need to adjust the position of all the targets and non-image draggables other than the one we started with.
         const page = draggable.closest(".bloom-page") as HTMLElement;
-        const otherDraggables = Array.from(
+        const otherDraggables: HTMLElement[] = [];
+        const draggableImages: HTMLElement[] = [];
+        const draggables: HTMLElement[] = Array.from(
             page.querySelectorAll("[data-bubble-id]")
-        ).filter(x => x !== draggable);
-        const otherTargets = Array.from(
-            page.querySelectorAll("[data-target-of]")
-        ).filter(x => x !== target);
-        otherDraggables.concat(otherTargets).forEach((elt: HTMLElement) => {
-            if (elt.offsetHeight !== draggable.offsetHeight) {
-                elt.style.height = `${draggable.offsetHeight}px`;
+        );
+        draggables.forEach(x => {
+            if (x.getElementsByClassName("bloom-imageContainer").length !== 0) {
+                draggableImages.push(x as HTMLElement);
+            } else if (x !== draggable) {
+                otherDraggables.push(x as HTMLElement);
             }
-            if (elt.offsetWidth !== draggable.offsetWidth) {
-                elt.style.width = `${draggable.offsetWidth}px`;
+        });
+        const targets: HTMLElement[] = Array.from(
+            page.querySelectorAll("[data-target-of]")
+        );
+
+        let targetHeight = draggable.offsetHeight;
+        let targetWidth = draggable.offsetWidth;
+        if (draggableImages.length > 0) {
+            targetHeight = Math.max(...draggables.map(x => x.offsetHeight));
+            targetWidth = Math.max(...draggables.map(x => x.offsetWidth));
+        }
+
+        otherDraggables.concat(targets).forEach((elt: HTMLElement) => {
+            if (elt.offsetHeight !== targetHeight) {
+                elt.style.height = `${targetHeight}px`;
+            }
+            if (elt.offsetWidth !== targetWidth) {
+                elt.style.width = `${targetWidth}px`;
             }
         });
     }
@@ -725,8 +746,20 @@ const DragActivityControls: React.FunctionComponent<{
     // but it's fairly harmless to do it an extra time, and makes lint happy, and maybe will
     // catch some inconsistency that would otherwise be missed.
     useEffect(() => {
+        // careful here. After a change to currentBubbleElement, there will unfortunately be a render
+        // before the useEffect above runs and sets currentBubbleTarget. We don't want to
+        // adjust the old target to conform to the new bubble.
+        // (It's harmless to adjust it passing undefined as the target and then again with
+        // the correct target, and preventing it would require searching the whole page for
+        // a matching target, so we don't try to prevent that.)
         if (currentBubbleElement) {
-            adjustTarget(currentBubbleElement, currentBubbleTarget);
+            if (
+                !currentBubbleTarget ||
+                currentBubbleTarget.getAttribute("data-target-of") ===
+                    currentBubbleElement.getAttribute("data-bubble-id")
+            ) {
+                adjustTarget(currentBubbleElement, currentBubbleTarget);
+            }
         } else {
             const page = getPage();
             const arrow = page?.querySelector("#target-arrow") as HTMLElement;
@@ -757,7 +790,8 @@ const DragActivityControls: React.FunctionComponent<{
             });
             bubbleToTargetObserver.current.observe(currentBubbleElement, {
                 childList: true,
-                subtree: true
+                subtree: true,
+                attributes: true // e.g., cropping of image
             });
         }
     }, [currentBubbleElement, currentBubbleTarget, props.activeTab]);
@@ -1038,6 +1072,19 @@ const DragActivityControls: React.FunctionComponent<{
                 return;
             }
             adjustTarget(someDraggable, getTarget(someDraggable), true);
+        } else {
+            // No longer all same size, so each target should match the size of its own draggable.
+            // When images are involved, because of matching overlay aspect ratio to image, it
+            // isn't workable to make all the draggables the same size, so turning this off can
+            // actually make a difference to image targets that previously matched the largest
+            // draggable in each dimension.
+            page.querySelectorAll(
+                "[data-target-of] .bloom-imageContainer"
+            ).forEach((ic: HTMLElement) => {
+                const target = ic.closest("[data-target-of]") as HTMLElement;
+                target.style.width = ic.style.width;
+                target.style.height = ic.style.height;
+            });
         }
     };
 
@@ -1592,7 +1639,7 @@ const CorrectWrongControls: React.FunctionComponent<{
     );
 };
 
-const makeDuplicateOfDragBubble = () => {
+export const makeDuplicateOfDragBubble = () => {
     const old = OverlayTool.bubbleManager()?.getActiveElement();
     const duplicate = duplicateBubble();
     if (!duplicate || !old) {
@@ -1825,7 +1872,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
             this.lastPageId = pageId;
             // useful during development, MAY not need in production.
             bubbleManager.removeDetachedTargets();
-            adjustBubbleOrdering();
+            bubbleManager.adjustBubbleOrdering();
 
             // Force things to Start tab as we change page.
             // If we decide not to do this, we should probably at least find a way to do it

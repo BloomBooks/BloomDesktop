@@ -1812,6 +1812,10 @@
         <source xml:lang="en">Change Image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.ChooseImage" translate="no">
+        <source xml:lang="en">Choose image from your computer...</source>
+        <note>ID: EditTab.Image.ChooseImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true">
         <source xml:lang="en">Copy Image</source>
         <note>ID: EditTab.Image.CopyImage</note>
@@ -1843,6 +1847,16 @@
         <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Set Image Information...</source>
+        <note>ID: EditTab.Image.EditMetadataOverlay</note>
+        <note xml:lang="en">Invokes the same command as EditMetadata; used in overlay toolbox submenu</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Image Credits, Copyright, &amp; License</source>
+        <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
+        <note xml:lang="en">Appears in smaller, lighter text right under EditMetadataOverlay</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
@@ -2089,10 +2103,18 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
         <note>A background color that looks like old lace</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Copy Text</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
         <note>Tooltip for the bubble Duplicate icon</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Format Dialog...</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
         <source xml:lang="en">There are no options for this kind of overlay</source>
@@ -2107,6 +2129,10 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Paste Text</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true">
         <source xml:lang="en">Rounded Corners</source>

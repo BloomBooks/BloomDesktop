@@ -144,8 +144,7 @@ body {
     }
 }
 // The editing buttons are hidden when this class is added (currently by motion and comic tools)
-.bloom-imageContainer.bloom-hideImageButtons,
-.bloom-imageContainer.ui-suppressImageButtons {
+.bloom-imageContainer.bloom-hideImageButtons {
     > .imageButton,
     > .miniButton {
         display: none;
@@ -247,10 +246,18 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     background-color: @ImageAndVideoHoverOverlay;
 }
 
+// The hovered image container background is just distracting when the whole page is an image
+// container. One group of such cases is bloom games. We may want to suppress it for pages
+// designed to have a full-bleed background for a comic, and perhaps others. I went for a
+// minimal change for now.
+.bloom-page[data-tool-id="game"] .bloom-imageContainer.hoverUp {
+    background-color: transparent;
+}
+
 .imageButton {
     width: 87px;
     height: 52px;
-    z-index: @imageEditingButtonZIndex;
+    z-index: @dragHandleEventZIndex;
     position: absolute;
     background-repeat: no-repeat;
     background-size: contain;
@@ -1150,6 +1157,12 @@ body {
     }
 }
 
+.bloom-textOverPicture {
+    #formatButton {
+        display: none; // Enhance: maybe don't create at all?
+    }
+}
+
 // different bubble shapes require different positioning of the affordances
 [data-bubble] {
     // These happen to be multiples of 1.4 is because they are 1% increments of 140px (the default text box width)
@@ -1157,9 +1170,8 @@ body {
         right: calc(100% + 1.4px);
     }
 
-    // we need to push the label left-ward to get out of the way of the fat part of the bubble
     [data-languageTipContent]:after {
-        right: calc(100% + 14px) !important;
+        content: "" !important; // suppress these, now in overlay context controls
     }
 }
 
@@ -1272,4 +1284,129 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
     left: 0;
     pointer-events: none; // We can click right through it to the bloom-content1
     opacity: 40%; // dim a bit to make it look like a prompt.
+}
+
+@resizeHandleRadius: 8px;
+@cropHandleRadius: 4px;
+@cropHandleCenter: 6px;
+// We place this frame over each overlay to support resizing and cropping.
+// The frame itself is invisible (and ignores pointer events), but it provides a container
+// for the resize and crop handles and the toolbox below.
+#overlay-control-frame {
+    position: absolute;
+    z-index: @dragHandleEventZIndex + 1;
+    outline: 1px solid @bloom-blue;
+    box-sizing: border-box;
+    pointer-events: none;
+
+    // The handles and toolbox are hidden when the overlay is being moved, resized or cropped
+    // (except for the resize or crop control we are operating).
+    &.moving {
+        .bloom-ui-overlay-resize-handle,
+        .bloom-ui-overlay-crop-handle {
+            display: none;
+            &.active-control {
+                display: block;
+            }
+        }
+    }
+
+    // crop handles are, for now, only visible on images.
+    // Enahnce: Canva uses the horizontal ones on text boxes to resize the box by modifying
+    // font size. This is nice for tweaking things but it's not clear how it should interact
+    // with our style system.
+    .bloom-ui-overlay-crop-handle {
+        display: none; // default
+        &.active-control {
+            display: block;
+        }
+    }
+    &.has-image:not(.moving) .bloom-ui-overlay-crop-handle {
+        display: block;
+    }
+
+    .bloom-ui-overlay-resize-handle {
+        position: absolute;
+        width: @resizeHandleRadius * 2;
+        height: @resizeHandleRadius * 2;
+        border-radius: 50%;
+        background-color: white;
+        border: 1px solid @bloom-blue;
+        box-sizing: border-box;
+        pointer-events: all;
+        //z-index: @canvasZIndex + 2;
+        &.active-control,
+        &:hover {
+            background-color: @bloom-blue;
+        }
+    }
+    .bloom-ui-overlay-resize-handle-nw {
+        top: -@resizeHandleRadius;
+        left: -@resizeHandleRadius;
+        cursor: nw-resize;
+    }
+    .bloom-ui-overlay-resize-handle-ne {
+        top: -@resizeHandleRadius;
+        right: -@resizeHandleRadius;
+        cursor: ne-resize;
+    }
+    .bloom-ui-overlay-resize-handle-sw {
+        bottom: -@resizeHandleRadius;
+        left: -@resizeHandleRadius;
+        cursor: sw-resize;
+    }
+    .bloom-ui-overlay-resize-handle-se {
+        bottom: -@resizeHandleRadius;
+        right: -@resizeHandleRadius;
+        cursor: se-resize;
+    }
+
+    .bloom-ui-overlay-crop-handle {
+        position: absolute;
+        width: @cropHandleRadius * 2;
+        height: @cropHandleRadius * 2;
+        border-radius: @cropHandleRadius;
+        background-color: white;
+        border: 1px solid @bloom-blue;
+        box-sizing: border-box;
+        pointer-events: all;
+        &.active-control,
+        &:hover {
+            background-color: @bloom-blue;
+        }
+    }
+
+    .bloom-ui-overlay-crop-handle-n {
+        top: -@cropHandleRadius;
+        left: calc(50% - @cropHandleRadius - @cropHandleCenter);
+        width: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+        cursor: ns-resize;
+    }
+    .bloom-ui-overlay-crop-handle-e {
+        top: calc(50% - @cropHandleRadius - @cropHandleCenter);
+        right: -@cropHandleRadius;
+        height: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+        cursor: ew-resize;
+    }
+    .bloom-ui-overlay-crop-handle-s {
+        bottom: -@cropHandleRadius;
+        left: calc(50% - @cropHandleRadius - @cropHandleCenter);
+        width: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+        cursor: ns-resize;
+    }
+    .bloom-ui-overlay-crop-handle-w {
+        top: calc(50% - @cropHandleRadius - @cropHandleCenter);
+        left: -@cropHandleRadius;
+        height: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+        cursor: ew-resize;
+    }
+}
+
+#overlay-context-controls {
+    position: absolute;
+    // below, centered. Wider than it ever needs to be; the button div inside
+    // will be fit-content and centered.
+    bottom: -67px;
+    left: calc(50% - 150px);
+    width: 300px;
 }

@@ -28,7 +28,7 @@ export interface IPageFrameExports {
     pageUnloading(): void;
     copySelection(): void;
     cutSelection(): void;
-    pasteClipboardText(): void;
+    pasteClipboard(): void;
     makeElement(
         html: string,
         parent?: JQuery,
@@ -59,7 +59,7 @@ import {
     pageUnloading,
     copySelection,
     cutSelection,
-    pasteClipboardText,
+    pasteClipboard,
     makeElement,
     SetupElements,
     attachToCkEditor,
@@ -73,7 +73,7 @@ export {
     pageUnloading,
     copySelection,
     cutSelection,
-    pasteClipboardText,
+    pasteClipboard,
     makeElement,
     SetupElements,
     attachToCkEditor,

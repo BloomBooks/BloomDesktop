@@ -19,7 +19,12 @@ import {
     urlPrefix
 } from "./narration";
 
-let targetPositions: { x: number; y: number }[] = [];
+let targetPositions: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}[] = [];
 let originalPositions = new Map<HTMLElement, { x: number; y: number }>();
 let currentPage: HTMLElement | undefined;
 // Action to invoke if the user clicks a change page button.
@@ -83,6 +88,12 @@ export function prepareActivity(
         }
     );
 
+    // By default, a shadow of any image can be dragged (e.g., to a paint program).
+    // We want only dragging that is part of the game to be possible.
+    Array.from(page.getElementsByTagName("img")).forEach((img: HTMLElement) => {
+        img.setAttribute("draggable", "false");
+    });
+
     // Record the positions of targets as snap locations and the original positions of draggables.
     // Add event listeners to draggables to start dragging.
     targetPositions = [];
@@ -97,7 +108,12 @@ export function prepareActivity(
         if (target) {
             const x = target.offsetLeft;
             const y = target.offsetTop;
-            targetPositions.push({ x, y });
+            targetPositions.push({
+                x,
+                y,
+                width: target.offsetWidth,
+                height: target.offsetHeight
+            });
             targets.push(target);
         }
         // if it has data-bubble-id, it should be draggable, just not needed
@@ -234,6 +250,10 @@ export function undoPrepareActivity(page: HTMLElement) {
 
     page.querySelectorAll("[data-bubble-id]").forEach((elt: HTMLElement) => {
         elt.removeEventListener("pointerdown", startDrag, { capture: true });
+    });
+
+    Array.from(page.getElementsByTagName("img")).forEach((img: HTMLElement) => {
+        img.removeAttribute("draggable");
     });
 
     const videos = Array.from(page.getElementsByTagName("video"));
@@ -442,8 +462,10 @@ const showCorrect = (e: MouseEvent) => {
             if (!target) {
                 return; // this one is not required to be in a right place
             }
-            const x = target.offsetLeft;
-            const y = target.offsetTop;
+            const x =
+                target.offsetLeft + (target.offsetWidth - elt.offsetWidth) / 2;
+            const y =
+                target.offsetTop + (target.offsetHeight - elt.offsetHeight) / 2;
             elt.style.left = x + "px";
             elt.style.top = y + "px";
         });
@@ -507,13 +529,16 @@ const elementDrag = (e: PointerEvent) => {
     let xBest = x;
     let yBest = y;
     for (const slot of targetPositions) {
-        const deltaX = slot.x - x;
-        const deltaY = slot.y - y;
+        const offsetX = (slot.width - dragTarget.offsetWidth) / 2;
+        const offsetY = (slot.height - dragTarget.offsetHeight) / 2;
+        // if this target were centered in this slot, it would be at slot.x + offsetX, slot.y + offsetY
+        const deltaX = slot.x + offsetX - x;
+        const deltaY = slot.y + offsetY - y;
         const delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         if (delta < deltaMin) {
             deltaMin = delta;
-            xBest = slot.x;
-            yBest = slot.y;
+            xBest = slot.x + offsetX;
+            yBest = slot.y + offsetY;
         }
     }
     if (deltaMin < 50) {
@@ -546,10 +571,7 @@ const stopDrag = (e: PointerEvent) => {
         if (elt === dragTarget) {
             return;
         }
-        if (
-            elt.offsetLeft === dragTarget.offsetLeft &&
-            elt.offsetTop === dragTarget.offsetTop
-        ) {
+        if (rightPosition(elt, dragTarget)) {
             const originalPosition = originalPositions.get(elt);
             if (originalPosition) {
                 elt.style.left = originalPosition.x + "px";
@@ -566,16 +588,18 @@ const getVisibleText = (elt: HTMLElement): string => {
         .join(" ");
 };
 
-const rightPosition = (
-    elt: HTMLElement,
-    correctX: number,
-    correctY: number
-) => {
-    const actualX = elt.offsetLeft;
-    const actualY = elt.offsetTop;
+const rightPosition = (draggableToCheck: HTMLElement, target: HTMLElement) => {
+    const actualX = draggableToCheck.offsetLeft;
+    const actualY = draggableToCheck.offsetTop;
+    const correctX =
+        target.offsetLeft +
+        (target.offsetWidth - draggableToCheck.offsetWidth) / 2;
+    const correctY =
+        target.offsetTop +
+        (target.offsetHeight - draggableToCheck.offsetHeight) / 2;
     return (
-        // Since anything correct should be snapped, using a range probably isn't necessary
-        Math.abs(correctX - actualX) < 0.5 && Math.abs(correctY - actualY) < 0.5
+        // At least a half-pixel error can occur just from centering the draggable in the target.
+        Math.abs(correctX - actualX) < 0.6 && Math.abs(correctY - actualY) < 0.6
     );
 };
 
@@ -678,10 +702,7 @@ function checkDraggables(page: HTMLElement) {
             return;
         }
 
-        const correctX = target.offsetLeft;
-        const correctY = target.offsetTop;
-
-        if (!rightPosition(draggableToCheck, correctX, correctY)) {
+        if (!rightPosition(draggableToCheck, target)) {
             // It's not in the expected place. But perhaps one with the same text is?
             // This only applies if it's a text item.
             // (don't use getElementsByClassName here...there could be a TG on an image description of
@@ -704,7 +725,7 @@ function checkDraggables(page: HTMLElement) {
                     if (getVisibleText(otherDraggable) !== visibleText) {
                         return false; // only interested in ones with the same text
                     }
-                    return rightPosition(otherDraggable, correctX, correctY);
+                    return rightPosition(otherDraggable, target);
                 })
             ) {
                 allCorrect = false;
@@ -968,43 +989,60 @@ export function copyContentToTarget(draggable: HTMLElement) {
     if (!target) {
         return;
     }
-    // We want to copy the content of the draggale, with several exceptions.
+    // We want to copy the content of the draggable, with several exceptions.
     // To reduce flicker, we do the manipulations on a temporary element, and
     // only copy into the actual target if there is actually a change.
     // (Flicker is particularly likely with changes that don't affect the
     // target, like adding and removing the image editing buttons.)
-    const temp = target.ownerDocument.createElement("div");
-    temp.innerHTML = draggable.innerHTML;
+    let throwAway = target.ownerDocument.createElement("div");
+    throwAway.innerHTML = draggable.innerHTML;
 
     // Don't need the bubble controls
-    Array.from(temp.getElementsByClassName("bloom-ui")).forEach(e => {
+    Array.from(throwAway.getElementsByClassName("bloom-ui")).forEach(e => {
         e.remove();
     });
     // Nor the image editing controls.
-    Array.from(temp.getElementsByClassName("imageOverlayButton")).forEach(e => {
-        e.remove();
-    });
-    Array.from(temp.getElementsByClassName("imageButton")).forEach(e => {
+    Array.from(throwAway.getElementsByClassName("imageOverlayButton")).forEach(
+        e => {
+            e.remove();
+        }
+    );
+    Array.from(throwAway.getElementsByClassName("imageButton")).forEach(e => {
         e.remove();
     });
     // Bloom has integrity checks for duplicate ids, and we don't need them in the duplicate content.
-    Array.from(temp.querySelectorAll("[id]")).forEach(e => {
+    Array.from(throwAway.querySelectorAll("[id]")).forEach(e => {
         e.removeAttribute("id");
     });
-    Array.from(temp.getElementsByClassName("hoverUp")).forEach(e => {
+    Array.from(throwAway.getElementsByClassName("hoverUp")).forEach(e => {
         // Produces at least a change in background color that we don't want.
         e.classList.remove("hoverUp");
     });
     // Content is not editable inside the target.
-    Array.from(temp.querySelectorAll("[contenteditable]")).forEach(e => {
+    Array.from(throwAway.querySelectorAll("[contenteditable]")).forEach(e => {
         e.removeAttribute("contenteditable");
     });
     // Nor should we able to tab to it, or focus it.
-    Array.from(temp.querySelectorAll("[tabindex]")).forEach(e => {
+    Array.from(throwAway.querySelectorAll("[tabindex]")).forEach(e => {
         e.removeAttribute("tabindex");
     });
-    if (target.innerHTML !== temp.innerHTML) {
-        target.innerHTML = temp.innerHTML;
+    const imageContainer = throwAway.getElementsByClassName(
+        "bloom-imageContainer"
+    )[0] as HTMLElement;
+    if (imageContainer) {
+        // We need another layer to manage clipping and centering. The one we were going to
+        // throw away becomes the wrapper, and we add a new throwAway outside it
+        const wrapper = throwAway;
+        throwAway = target.ownerDocument.createElement("div");
+        throwAway.appendChild(wrapper);
+        wrapper.classList.add("bloom-targetWrapper");
+        // We need the image container size to match the draggable size so that we get the
+        // same cropping.
+        imageContainer.style.width = draggable.style.width;
+        imageContainer.style.height = draggable.style.height;
+    }
+    if (target.innerHTML !== throwAway.innerHTML) {
+        target.innerHTML = throwAway.innerHTML;
     }
 }
 

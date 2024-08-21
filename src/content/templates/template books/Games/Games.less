@@ -117,6 +117,14 @@
     }
 }
 
+.drag-activity-play .bloom-ui-dragging {
+    // This is purposely all but invisible. It's just enough to make WebView2 think that one more
+    // pixel is being dragged, so that it redraws a little more of the background after the image
+    // moves away. Without it, some kind of rounding error (a bug in WebView2) causes lines to be
+    // left behind while dragging things if we are scaled up.
+    outline: 1px solid rgba(255, 255, 255, 0.01);
+}
+
 .drag-activity-play .drag-item-order-sentence {
     display: none;
 }
@@ -195,6 +203,10 @@
         // targets have children to show a shadow of what is supposed to go there.
         // the contents are identical, this makes them a shadow.
         opacity: 50%;
+    }
+    // in targets, as in image overlays, we want the height to be derived from the width.
+    .bloom-imageContainer img {
+        height: unset;
     }
 }
 
@@ -328,6 +340,14 @@
         // display:none would prevent the snap code from using them, since they would not have a location.
         visibility: hidden;
     }
+}
+
+.bloom-targetWrapper {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .drag-item-order-sentence .bloom-editable {
