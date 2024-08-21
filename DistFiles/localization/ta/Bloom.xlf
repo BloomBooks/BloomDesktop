@@ -2084,6 +2084,11 @@
         <target xml:lang="ta" state="final">உருவத்தை மாற்று!!</target>
         <note>ID: EditTab.Image.ChangeImage</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.ChooseImage" translate="no">
+        <source xml:lang="en">Choose image from your computer...</source>
+        <target xml:lang="ta" state="needs-translation">Choose image from your computer...</target>
+        <note>ID: EditTab.Image.ChooseImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true">
         <source xml:lang="en">Copy Image</source>
         <target xml:lang="ta" state="needs-translation">Copy Image</target>
@@ -2118,6 +2123,16 @@
         <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
         <target xml:lang="ta" state="final">உருவம் வரைவுகள் , பதிப்புரிமை, &amp; உரிமம் திருத்து</target>
         <note>ID: EditTab.Image.EditMetadata</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Set Image Information...</source>
+        <target xml:lang="ta" state="needs-translation">Set Image Information...</target>
+        <note>ID: EditTab.Image.EditMetadataOverlay</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Image Credits, Copyright, &amp; License</source>
+        <target xml:lang="ta" state="needs-translation">Image Credits, Copyright, &amp; License</target>
+        <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
@@ -2404,10 +2419,20 @@
         <target xml:lang="ta" state="needs-translation">Old Lace</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Copy Text</source>
+        <target xml:lang="ta" state="needs-translation">Copy Text</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>
         <target xml:lang="ta" state="needs-translation">Duplicate</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Format Dialog...</source>
+        <target xml:lang="ta" state="needs-translation">Format Dialog...</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
         <source xml:lang="en">There are no options for this kind of overlay</source>
@@ -2423,6 +2448,11 @@
         <source xml:lang="en">None</source>
         <target xml:lang="ta" state="needs-translation">None</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Paste Text</source>
+        <target xml:lang="ta" state="needs-translation">Paste Text</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true">
         <source xml:lang="en">Rounded Corners</source>
