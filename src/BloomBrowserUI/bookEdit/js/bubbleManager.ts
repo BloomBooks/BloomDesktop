@@ -1078,6 +1078,17 @@ export class BubbleManager {
                     this.startCropDrag(event, side);
                 });
             });
+            const moveCropHandle = eltToPutControlsOn.ownerDocument.createElement(
+                "div"
+            );
+            moveCropHandle.classList.add("bloom-ui-overlay-move-crop-handle");
+            controlFrame?.appendChild(moveCropHandle);
+            moveCropHandle.addEventListener("mousedown", event => {
+                if (event.buttons !== 1 || !this.activeElement) {
+                    return;
+                }
+                this.startMoveCrop(event);
+            });
             const toolboxRoot = eltToPutControlsOn.ownerDocument.createElement(
                 "div"
             );
@@ -1092,9 +1103,82 @@ export class BubbleManager {
         } else {
             controlFrame.classList.remove("has-image");
         }
+        // to reduce flicker we don't show this when switching to a different bubble until we determine
+        // that it is wanted.
+        controlFrame.classList.remove("bloom-ui-overlay-show-move-crop-handle");
         this.alignControlFrameWithActiveElement();
         renderOverlayContextControls(eltToPutControlsOn, false);
     }
+
+    private startMoveCropX: number;
+    private startMoveCropY: number;
+    private startMoveCropControlX: number;
+    private startMoveCropControlY: number;
+    startMoveCrop = (event: MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!this.activeElement) return;
+        this.currentDragControl = event.currentTarget as HTMLElement;
+        this.currentDragControl.classList.add("active");
+        this.startMoveCropX = event.clientX;
+        this.startMoveCropY = event.clientY;
+        const imgC = this.activeElement.getElementsByClassName(
+            "bloom-imageContainer"
+        )[0];
+        const img = imgC?.getElementsByTagName("img")[0];
+        if (!img) return;
+        this.oldImageTop = BubbleManager.pxToNumber(img.style.top);
+        this.oldImageLeft = BubbleManager.pxToNumber(img.style.left);
+        this.lastCropControl = undefined;
+        this.startMoveCropControlX = this.currentDragControl.offsetLeft;
+        this.startMoveCropControlY = this.currentDragControl.offsetTop;
+
+        document.addEventListener("mousemove", this.continueMoveCrop);
+        document.addEventListener("mouseup", this.endMoveCrop);
+    };
+    private endMoveCrop = (event: MouseEvent) => {
+        document.removeEventListener("mousemove", this.continueMoveCrop);
+        document.removeEventListener("mouseup", this.endMoveCrop);
+        this.currentDragControl?.classList.remove("active");
+        this.currentDragControl!.style.left = "";
+        this.currentDragControl!.style.top = "";
+    };
+
+    private continueMoveCrop = (event: MouseEvent) => {
+        if (event.buttons !== 1 || !this.activeElement) {
+            return;
+        }
+        const deltaX = event.clientX - this.startMoveCropX;
+        const deltaY = event.clientY - this.startMoveCropY;
+        const imgC = this.activeElement.getElementsByClassName(
+            "bloom-imageContainer"
+        )[0];
+        const img = imgC?.getElementsByTagName("img")[0];
+        if (!img) return;
+        const imgStyle = img.style;
+        // left can't be greater than zero; that would leave empty space on the left.
+        // also can't be so small as to make the right of the image (img.clientWidth + newLeft) less than
+        // the right of the overlay (this.activeElement.clientLeft + this.activElement.clientWidth)
+        const newLeft = Math.max(
+            Math.min(this.oldImageLeft + deltaX, 0),
+            this.activeElement.clientLeft +
+                this.activeElement.clientWidth -
+                img.clientWidth
+        );
+        const newTop = Math.max(
+            Math.min(this.oldImageTop + deltaY, 0),
+            this.activeElement.clientTop +
+                this.activeElement.clientHeight -
+                img.clientHeight
+        );
+        imgStyle.left = newLeft + "px";
+        imgStyle.top = newTop + "px";
+        this.currentDragControl!.style.left =
+            this.startMoveCropControlX + newLeft - this.oldImageLeft + "px";
+        this.currentDragControl!.style.top =
+            this.startMoveCropControlY + newTop - this.oldImageTop + "px";
+    };
+
     private startResizeDrag(
         event: MouseEvent,
         corner: "ne" | "nw" | "se" | "sw"
@@ -1665,6 +1749,7 @@ export class BubbleManager {
             controlFrame.style.left = this.activeElement.style.left;
             controlFrame.style.top = this.activeElement.style.top;
         }
+        this.adjustMoveCropHandleVisibility();
     };
 
     public doNotifyChange() {
@@ -2568,12 +2653,43 @@ export class BubbleManager {
         this.placeElementAtPosition(content, container, newPoint);
     }
 
+    // The center handle, used to move the picture under the bubble, does nothing
+    // unless the bubble has actually been cropped. Unless we figure out something
+    // sensible to do in this case, it's better not to show it, lest the user be
+    // confused by a control that does nothing.
+    private adjustMoveCropHandleVisibility() {
+        const controlFrame = document.getElementById("overlay-control-frame");
+        if (!controlFrame || !this.activeElement) return;
+        const imgC = this.activeElement.getElementsByClassName(
+            kImageContainerClass
+        )[0];
+        const img = imgC?.getElementsByTagName("img")[0];
+        let wantMoveCropHandle = false;
+        if (img) {
+            const imgRect = img.getBoundingClientRect();
+            const controlRect = controlFrame.getBoundingClientRect();
+            // We don't ever allow it to be smaller, nor to be offset without being larger, so this is enough to test
+            wantMoveCropHandle =
+                imgRect.width > controlRect.width ||
+                imgRect.height > controlRect.height;
+        }
+        controlFrame.classList.toggle(
+            "bloom-ui-overlay-show-move-crop-handle",
+            wantMoveCropHandle
+        );
+    }
+
+    private stopMoving() {
+        const controlFrame = document.getElementById("overlay-control-frame");
+        controlFrame?.classList?.remove("moving");
+        this.adjustMoveCropHandleVisibility();
+    }
+
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseUp = (event: MouseEvent) => {
         const container = event.currentTarget as HTMLElement;
-        const controlFrame = document.getElementById("overlay-control-frame");
-        controlFrame?.classList?.remove("moving");
+        this.stopMoving();
 
         if (this.bubbleToDrag || this.bubbleToResize) {
             // if we're doing a resize or drag, we don't want ordinary mouseup activity
