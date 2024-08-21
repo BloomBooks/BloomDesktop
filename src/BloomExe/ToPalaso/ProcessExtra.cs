@@ -52,22 +52,26 @@ namespace Bloom.ToPalaso
             // But the path appears in the window title, so we can use that to find the window.
             var titleToMatch = urlOrCmd;
             // Many programs show the filename of the file they load.  We can use that to find the window.
-            var extension = Path.GetExtension(urlOrCmd).ToLowerInvariant();
-            switch (extension)
+            // Don't bother with this if urlOrCmd is a URL, not a file path.  See BL-13008.
+            if (!urlOrCmd.Contains("://"))
             {
-                case ".xlsx":
-                case ".pdf":
-                case ".txt":
-                case ".doc":
-                case ".csv": // comma-separated values
-                case ".tsv": // tab-separated values (audio timing file)
-                case ".3gp": // audio/video extensions
-                case ".mp4":
-                case ".mp3":
-                    titleToMatch = Path.GetFileName(urlOrCmd);
-                    break;
-                default:
-                    break;
+                var extension = Path.GetExtension(urlOrCmd).ToLowerInvariant();
+                switch (extension)
+                {
+                    case ".xlsx":
+                    case ".pdf":
+                    case ".txt":
+                    case ".doc":
+                    case ".csv": // comma-separated values
+                    case ".tsv": // tab-separated values (audio timing file)
+                    case ".3gp": // audio/video extensions
+                    case ".mp4":
+                    case ".mp3":
+                        titleToMatch = Path.GetFileName(urlOrCmd);
+                        break;
+                    default:
+                        break;
+                }
             }
             BringDesiredWindowToFront(titleToMatch, processList, windowMap);
         }
