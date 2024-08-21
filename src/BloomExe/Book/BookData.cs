@@ -912,16 +912,21 @@ namespace Bloom.Book
                 String.Format("div[@data-book='{0}' and @lang='{1}']", key, writingSystemId)
             );
 
+            var userDeleted =
+                attrs?.FirstOrDefault(
+                    (x) => x.Item1 == "data-user-deleted" && x.Item2.Xml == "true"
+                ) != null;
             _dataset.UpdateLanguageString(
                 key,
                 form,
                 DealiasWritingSystemId(writingSystemId),
-                false
+                isCollectionValue: false,
+                storeEmptyValue: userDeleted
             );
 
             if (null == node)
             {
-                if (!XmlString.IsNullOrEmpty(form))
+                if (userDeleted || !XmlString.IsNullOrEmpty(form))
                 {
                     //Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, writingSystemId, form);
                     //Debug.WriteLine("nop: " + _dataDiv.OuterXml);
@@ -935,7 +940,7 @@ namespace Bloom.Book
             }
             else
             {
-                if (XmlString.IsNullOrEmpty(form)) //a null value removes the entry entirely
+                if (!userDeleted && XmlString.IsNullOrEmpty(form)) //a null value removes the entry entirely
                 {
                     node.ParentNode.RemoveChild(node);
                 }
@@ -1337,7 +1342,8 @@ namespace Bloom.Book
                     if (lang == "{N2}")
                         lang = MetadataLanguage2Tag;
 
-                    if (StringAlternativeHasNoText(value))
+                    bool userDeleted = node.GetAttribute("data-user-deleted") == "true";
+                    if (StringAlternativeHasNoText(value) && !userDeleted)
                     {
                         // This is a value we may want to delete
                         if (itemsToDelete != null)
@@ -1392,7 +1398,10 @@ namespace Bloom.Book
                             else if (!dsv.TextAlternatives.ContainsAlternative(lang))
                             {
                                 MultiTextBase t = dsv.TextAlternatives;
-                                t.SetAlternative(lang, value);
+                                if (userDeleted && string.IsNullOrEmpty(value))
+                                    t.SetAnnotationOfAlternativeIsStarred(lang, true); // This allows empty strings to be saved and restored as empty strings.
+                                else
+                                    t.SetAlternative(lang, value);
                                 added = true;
                             }
 
@@ -1889,6 +1898,14 @@ namespace Bloom.Book
             string classes = element.GetAttribute("class");
 
             if (!classes.Contains("bloom-copyFromOtherLanguageIfNecessary"))
+            {
+                return "";
+            }
+
+            // If the user explicitly deletes the field after it's been copied, we should respect that.
+            // See BL-13779.
+            string userDeleted = element.GetAttribute("data-user-deleted");
+            if (userDeleted == "true")
             {
                 return "";
             }
