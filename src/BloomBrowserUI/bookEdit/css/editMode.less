@@ -1325,7 +1325,8 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
         display: block;
     }
 
-    .bloom-ui-overlay-resize-handle {
+    .bloom-ui-overlay-resize-handle,
+    .bloom-ui-overlay-center-handle {
         position: absolute;
         width: @resizeHandleRadius * 2;
         height: @resizeHandleRadius * 2;
@@ -1359,6 +1360,17 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
         bottom: -@resizeHandleRadius;
         right: -@resizeHandleRadius;
         cursor: se-resize;
+    }
+
+    .bloom-ui-overlay-center-handle {
+        top: calc(50% - @resizeHandleRadius);
+        left: calc(50% - @resizeHandleRadius);
+        display: none;
+        //cursor: move;
+    }
+
+    &.middleButton .bloom-ui-overlay-center-handle {
+        display: block;
     }
 
     .bloom-ui-overlay-crop-handle {
