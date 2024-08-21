@@ -182,6 +182,26 @@ export default class BloomField {
         ckeditor: CKEDITOR.editor
     ) {
         ckeditor.config.colorButton_colors = CKEDITOR.config.colorButton_colors;
+        if (
+            bloomEditableDiv.classList.contains(
+                "bloom-copyFromOtherLanguageIfNecessary"
+            ) &&
+            bloomEditableDiv.innerText &&
+            bloomEditableDiv.innerText !== "\n" &&
+            bloomEditableDiv.getAttribute("data-user-deleted") !== "true"
+        ) {
+            // See BL-13779. If the user deletes all the text in a div, we don't want to copy
+            // the text from another language in the future. We set the data-user-deleted attribute
+            // to keep this from happening.
+            ckeditor.on("change", event => {
+                if (
+                    bloomEditableDiv.innerText === "" ||
+                    bloomEditableDiv.innerText === "\n"
+                ) {
+                    bloomEditableDiv.setAttribute("data-user-deleted", "true");
+                }
+            });
+        }
         ckeditor.on("key", event => {
             if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
                 BloomField.InsertLineBreak();
