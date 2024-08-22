@@ -328,13 +328,18 @@ namespace Bloom.Collection
             sb.AppendLine(
                 "/* They may be over-ridden by rules in customCollectionStyles.css, appearance.css or customBookStyles[2].css */"
             );
-            // note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts not covered by Andika New Basic.
+            // Note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts not
+            // covered by Andika.  The important information needed is the name of the font to use for the page numbers, the
+            // directionality of the script, and possibly how to break lines in the script.  The line-height for page numbers
+            // is set in basePage.css using an appearance system variable, so we don't need to set it here.  Indeed, setting
+            // it here breaks the page numbers in some cases since defaultLangStyles.css is loaded after basePage.css.  See
+            // BL-13699.  (line-height really matters only for multi-line page numbers, which are rare to say the least.)
             WritingSystem.AddSelectorCssRule(
                 sb,
                 ".numberedPage::after",
                 Language1.FontName,
                 Language1.IsRightToLeft,
-                Language1.LineHeight,
+                -1, // Prevents a line-height rule from being created.
                 Language1.BreaksLinesOnlyAtSpaces,
                 omitDirection
             );
