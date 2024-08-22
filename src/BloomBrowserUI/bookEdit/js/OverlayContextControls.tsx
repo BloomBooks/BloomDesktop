@@ -229,9 +229,20 @@ const OverlayContextControls: React.FunctionComponent<{
                     display: flex;
                     justify-content: space-around;
                     align-items: start;
-                    padding: 4px 10px;
+                    // with the fiddles we're doing to line things up, we need padding at top but not bottom
+                    // for it to look even.
+                    padding: 5px 10px 0px;
                     margin: 0 auto 0 auto;
                     width: fit-content;
+                    // Not really sure what's going on here, since none of the buttons contans text
+                    // But somehow they have a tendency to be several pixels higher thant the contained
+                    // icons, and this seems to be related to line-height. I don't want to set it
+                    // to zero, in case (in some language) the tooltips wrap. But this seems to be small enough
+                    // to prevent the problem.
+                    line-height: 0.8em;
+                    button {
+                        line-height: 0.7em;
+                    }
                     // needed because it's a child of the control frame which has pointer-events:none
                     pointer-events: all;
                 `}
@@ -369,7 +380,7 @@ const OverlayContextControls: React.FunctionComponent<{
                             css={css`
                                 color: ${kBloomBlue};
                                 font-size: 10px;
-                                margin-top: -3px;
+                                margin-bottom: 1px;
                             `}
                         >
                             {langName}
