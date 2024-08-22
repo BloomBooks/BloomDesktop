@@ -45,7 +45,8 @@ namespace Bloom.Book
             string key,
             XmlString value,
             string writingSystemId,
-            bool isCollectionValue
+            bool isCollectionValue,
+            bool storeEmptyValue = false
         )
         {
             Debug.Assert(
@@ -60,7 +61,10 @@ namespace Bloom.Book
             {
                 text = new MultiTextBase();
             }
-            text.SetAlternative(writingSystemId, value?.Xml);
+            if (storeEmptyValue && XmlString.IsNullOrEmpty(value))
+                text.SetAnnotationOfAlternativeIsStarred(writingSystemId, true); // This allows empty strings to be saved and restored as empty strings.
+            else
+                text.SetAlternative(writingSystemId, value?.Xml);
             TextVariables.Remove(key);
             if (text.Count > 0)
                 TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
