@@ -8,26 +8,43 @@ import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as SearchIcon } from "@mui/icons-material/Search";
 import { default as MenuIcon } from "@mui/icons-material/MoreHorizSharp";
 import { default as CopyIcon } from "@mui/icons-material/ContentCopy";
-import { default as CutIcon } from "@mui/icons-material/ContentCut";
+import { default as CheckIcon } from "@mui/icons-material/Check";
+import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
 import { default as PasteIcon } from "@mui/icons-material/ContentPaste";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import { doImageCommand, getImageUrlFromImageContainer } from "./bloomImages";
-import { makeDuplicateOfDragBubble } from "../toolbox/dragActivity/dragActivityTool";
+import {
+    copyAndPlaySoundAsync,
+    makeDuplicateOfDragBubble,
+    makeTargetForBubble,
+    playSound,
+    setSoundFolder,
+    showDialogToChooseSoundFileAsync,
+    soundFolder,
+    SoundType
+} from "../toolbox/dragActivity/dragActivityTool";
 import { deleteBubble, duplicateBubble } from "../toolbox/overlay/overlayTool";
 import { ThemeProvider } from "@mui/material/styles";
 import {
     ILocalizableMenuItemProps,
-    LocalizableMenuItem
+    LocalizableMenuItem,
+    LocalizableNestedMenuItem
 } from "../../react_components/localizableMenuItem";
 import Menu from "@mui/material/Menu";
-import { Divider } from "@mui/material";
+import { Divider, MenuItem, Select } from "@mui/material";
 import { DuplicateIcon } from "./DuplicateIcon";
 import { BubbleManager } from "./bubbleManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { TrashIcon } from "../toolbox/overlay/TrashIcon";
+import { getWithPromise, postJson } from "../../utils/bloomApi";
+import { useL10n } from "../../react_components/l10nHooks";
 
 const controlFrameColor: string = kBloomBlue;
+
+interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
+    subMenu?: ILocalizableMenuItemProps[];
+}
 
 // The is the controls bar that appears beneath an overlay when it is selected. It contains buttons
 // for the most common operations that apply to the overlay in its current state, and a menu for less common
@@ -88,13 +105,82 @@ const OverlayContextControls: React.FunctionComponent<{
 
     const menuEl = useRef<HTMLElement | null>();
 
-    const menuIconColor = "black"; // Not sure just changing this will actually change them all.
+    // Menu item names for 'none' and "Choose...", options.
+    const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
+    const chooseLabel = useL10n(
+        "Choose...",
+        "EditTab.Toolbox.DragActivity.ChooseSound",
+        ""
+    );
+
+    const menuIconColor = "black";
     const muiMenIconCss = css`
         color: ${menuIconColor};
     `;
+    const currentBubbleTargetId = props.overlay?.getAttribute("data-bubble-id");
+    const [currentBubbleTarget, setCurrentBubbleTarget] = useState<
+        HTMLElement | undefined
+    >();
+    useEffect(() => {
+        if (!currentBubbleTargetId) {
+            setCurrentBubbleTarget(undefined);
+            return;
+        }
+        const page = props.overlay.closest(".bloom-page") as HTMLElement;
+        setCurrentBubbleTarget(
+            page?.querySelector(
+                `[data-target-of="${currentBubbleTargetId}"]`
+            ) as HTMLElement
+        );
+        // We need to re-evaluate when changing pages, it's possible the initially selected item
+        // on a new page has the same currentBubbleTargetId.
+    }, [currentBubbleTargetId]);
+
+    const toggleIsPartOfRightAnswer = () => {
+        if (!currentBubbleTargetId) {
+            return;
+        }
+        if (currentBubbleTarget) {
+            currentBubbleTarget.ownerDocument
+                .getElementById("target-arrow")
+                ?.remove();
+            currentBubbleTarget.remove();
+            setCurrentBubbleTarget(undefined);
+        } else {
+            setCurrentBubbleTarget(makeTargetForBubble(props.overlay));
+        }
+    };
+
+    // Currently we only allow associating an extra audio with images (and gifs), which have
+    // no other audio (except possibly image descriptions?). If we get an actual user request
+    // it may be clearer how attaching one to a text or video would work, given that they
+    // can already have narration or an audio channel.
+    const canChooseAudioForElement = hasImage;
+
+    const [imageSound, setImageSound] = useState("none");
+    useEffect(() => {
+        setImageSound(props.overlay.getAttribute("data-sound") ?? "none");
+    }, [props.overlay]);
+
+    // This is uncomfortably similar to the method by the same name in dragActivityTool.
+    // And indeed that method has a case for handling an image sound, which is no longer
+    // handled on the toolbox side. But both methods make use of component state in
+    // ways that make sharing code difficult.
+    const updateSoundShowingDialog = async () => {
+        const newSoundId = await showDialogToChooseSoundFileAsync();
+        if (!newSoundId) {
+            return;
+        }
+
+        const page = props.overlay.closest(".bloom-page") as HTMLElement;
+        const copyBuiltIn = false; // already copied, and not in our sounds folder
+        props.overlay.setAttribute("data-sound", newSoundId);
+        setImageSound(newSoundId);
+        copyAndPlaySoundAsync(newSoundId, page, copyBuiltIn);
+    };
 
     // These commands apply to all overlays.
-    const menuOptions: ILocalizableMenuItemProps[] = [
+    const menuOptions: IMenuItemWithSubmenu[] = [
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
@@ -124,6 +210,72 @@ const OverlayContextControls: React.FunctionComponent<{
             )
         }
     ];
+    if (currentBubbleTargetId || canChooseAudioForElement) {
+        menuOptions.push({
+            l10nId: "-",
+            english: "",
+            onClick: () => {}
+        });
+    }
+    if (currentBubbleTargetId) {
+        menuOptions.push({
+            l10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswer",
+            english: "Part of the right answer",
+            subLabelL10nId:
+                "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore",
+            onClick: toggleIsPartOfRightAnswer,
+            icon: currentBubbleTarget ? (
+                <CheckIcon css={muiMenIconCss} />
+            ) : (
+                undefined
+            )
+        });
+    }
+    if (canChooseAudioForElement) {
+        const imageSoundLabel = imageSound.replace(/.mp3$/, "");
+        const mainLabel = imageSound === "none" ? noneLabel : imageSoundLabel;
+        const subMenu: ILocalizableMenuItemProps[] = [
+            {
+                l10nId: "EditTab.Toolbox.DragActivity.None",
+                english: "None",
+                onClick: () => {
+                    props.overlay.removeAttribute("data-sound");
+                    setImageSound("none");
+                    props.setMenuOpen(false);
+                }
+            },
+            {
+                l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
+                english: "Choose...",
+                onClick: () => {
+                    props.setMenuOpen(false);
+                    updateSoundShowingDialog();
+                }
+            }
+        ];
+        menuOptions.push({
+            l10nId: null,
+            english: mainLabel,
+            onClick: () => {},
+            icon: <VolumeUpIcon css={muiMenIconCss} />,
+            subMenu
+        });
+        if (imageSound !== "none") {
+            subMenu.splice(1, 0, {
+                l10nId: null,
+                english: imageSoundLabel,
+                onClick: () => {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    playSound(
+                        imageSound,
+                        props.overlay.closest(".bloom-page")!
+                    );
+                    props.setMenuOpen(false);
+                }
+            });
+        }
+    }
+
     // Add these for images
     if (hasImage) {
         menuOptions.unshift(
@@ -461,6 +613,26 @@ const OverlayContextControls: React.FunctionComponent<{
                                     variant="middle"
                                     component="li"
                                 />
+                            );
+                        }
+                        if (option.subMenu) {
+                            return (
+                                <LocalizableNestedMenuItem
+                                    english={option.english}
+                                    l10nId={option.l10nId}
+                                    icon={option.icon}
+                                >
+                                    {option.subMenu.map(
+                                        (subOption, subIndex) => (
+                                            <LocalizableMenuItem
+                                                key={subIndex}
+                                                l10nId={subOption.l10nId}
+                                                english={subOption.english}
+                                                onClick={subOption.onClick}
+                                            />
+                                        )
+                                    )}
+                                </LocalizableNestedMenuItem>
                             );
                         }
                         return (

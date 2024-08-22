@@ -2,7 +2,7 @@
 import { jsx, css, SerializedStyles } from "@emotion/react";
 
 import * as React from "react";
-import { ReactNode, useEffect, useState } from "react";
+import { Fragment, ReactNode, useEffect, useState } from "react";
 import { useL10n } from "./l10nHooks";
 import {
     Checkbox,
@@ -27,13 +27,17 @@ import { Variant } from "@mui/material/styles/createTypography";
 
 interface IBaseLocalizableMenuItemProps {
     english: string;
-    l10nId: string;
+    l10nId: string | null; // pass null if already localized, to just use the "english"
     disabled?: boolean;
     tooltipIfDisabled?: string;
     variant?: OverridableStringUnion<
         Variant | "inherit",
         TypographyPropsVariantOverrides
     >;
+}
+
+export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
+    icon?: ReactNode;
 }
 
 export interface ILocalizableMenuItemProps
@@ -250,7 +254,7 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCh
     );
 };
 
-export const LocalizableNestedMenuItem: React.FunctionComponent<IBaseLocalizableMenuItemProps> = props => {
+export const LocalizableNestedMenuItem: React.FunctionComponent<INestedMenuItemProps> = props => {
     const label = useL10n(props.english, props.l10nId);
     if (!props.children) {
         return <React.Fragment />;
@@ -271,12 +275,39 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<IBaseLocalizable
                 font-family: ${kUiFontStack};
                 font-size: 1rem !important;
                 color: ${menuItemColor} !important;
-                padding: 4px 6px 0 6px !important; // adjust for denser layout
+                // probably need this back if we return to dense layout
+                //padding: 4px 6px 0 6px !important; // adjust for denser layout
                 justify-content: space-between !important; // move sub-menu arrow to right
             `}
             key={props.l10nId}
-            label={label}
+            label={
+                props.icon ? (
+                    // This is a nuisance. We should just be able to pass on props.icon.
+                    // But the 3rd-party NestedMenuItem doesn't seem to support that.
+                    // So we make it part of our label and push it off to the left.
+                    // Seems to work OK as long as there is space for it, which typically
+                    // happens as long as there are other menu items in the list with icons.
+                    // I have no idea why this interferes with the default positioning
+                    // of the label, but the tweak there seems to be needed, too.
+                    <Fragment>
+                        <div
+                            css={css`
+                                position: absolute;
+                                top: 0;
+                                left: -15px;
+                                top: 5px;
+                            `}
+                        >
+                            {props.icon}
+                        </div>
+                        <div>{label}</div>
+                    </Fragment>
+                ) : (
+                    label
+                )
+            }
             parentMenuOpen={true}
+            //icon={props.icon}
         >
             {props.children}
         </NestedMenuItem>
