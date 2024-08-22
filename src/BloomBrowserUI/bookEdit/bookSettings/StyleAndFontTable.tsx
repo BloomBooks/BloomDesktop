@@ -12,7 +12,7 @@ import { postString, useApiObject } from "../../utils/bloomApi";
 import Link from "@mui/material/Link";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@mui/material/styles";
-import { Warning } from "@mui/icons-material";
+import { default as Warning } from "@mui/icons-material/Warning";
 import { IFontMetaData } from "../StyleEditor/fontSelectComponent";
 
 // This interface must be kept in sync with the StyleAndFont class in BookSettingsApi.cs.
