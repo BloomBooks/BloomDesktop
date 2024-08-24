@@ -2113,7 +2113,7 @@
         <note>Tooltip for the bubble Duplicate icon</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Format Dialog...</source>
+        <source xml:lang="en">Format Text...</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">

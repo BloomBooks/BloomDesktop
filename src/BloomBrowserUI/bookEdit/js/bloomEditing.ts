@@ -20,6 +20,7 @@ import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import {
+    BubbleManager,
     initializeBubbleManager,
     kTextOverPictureClass,
     kTextOverPictureSelector,
@@ -849,18 +850,43 @@ export function SetupElements(
         }
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
 
+        let didSetFocus = false;
         // If we saved the page with an indication that a particular element should be
         // active, and calling code is not specifying one, restore the one we saved.
         // This is especially useful when the page is unexpectedly reloaded, for example,
         // changing a picture.
+        // Later: we decided we only want to do this if we're on the same page as last time.
         if (!elementToFocus) {
-            elementToFocus = Array.from(
-                document.getElementsByClassName(kTextOverPictureClass)
-            ).find(e => e.hasAttribute("data-bloom-active")) as HTMLElement;
+            const currentPageId = document
+                .getElementsByClassName("bloom-page")[0]
+                ?.getAttribute("id");
+            if (currentPageId === (window.top as any).lastPageId) {
+                elementToFocus = Array.from(
+                    document.getElementsByClassName(kTextOverPictureClass)
+                ).find(e => e.hasAttribute("data-bloom-active")) as HTMLElement;
+            } else {
+                // remember this page!
+                (window.top as any).lastPageId = currentPageId;
+            }
+        }
+        if (!elementToFocus) {
+            // Seems the browser will spontaneously try to focus something, and it might be an overlay.
+            // We don't want an overlay initially showing as selected, so we'll arrange to ignore the
+            // next focus event.
+            // This feels fragile: what if the browser doesn't find something to focus, or does it
+            // before we set this flag? We might ignore a later focus event that we wanted.
+            // I've done my best to guard against this by making mouse down on a bubble unambiguously
+            // make it active, whatever happens with focus. And this trick is the only way I've found
+            // to prevent getting an overlay initially selected.
+            BubbleManager.ignoreNextFocus = true;
+            theOneBubbleManager.setActiveElement(elementToFocus);
         }
         // Ensure focus exists as best we can (BL-7994)
-        const focusable = $(elementToFocus).find(":focusable");
+        const focusable = elementToFocus
+            ? $(elementToFocus).find(":focusable")
+            : undefined;
         if (elementToFocus && focusable) {
+            didSetFocus = true;
             focusable.focus();
             // Ideally calling focus above has this as a side effect.
             // However, the focusin event handler doesn't seem to get called at this point
@@ -876,7 +902,7 @@ export function SetupElements(
         ) {
             // There seem to be cases where the active element does not actually have focus.
             // We like it to, so the user can actually type there.
-            (document.activeElement as HTMLElement).focus();
+            //(document.activeElement as HTMLElement).focus();
             // It may already be focused, in which case, focusing it again may not trigger the side effect.
             // So do it explicitly.
             BloomSourceBubbles.ShowSourceBubbleForElement(
@@ -887,37 +913,10 @@ export function SetupElements(
             //         document.activeElement.outerHTML
             // );
         } else {
-            // bloomApi postDebugMessage(
-            //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - no active element: try to set focus"
-            // );
-            // nothing is focused. If there are TOP boxes on the page, it's possible we've just reloaded
-            // the page after adding a TOP box. New TOP boxes are added last, so focusing the last one
-            // is helpful to make sure the user can immediately type into the new TOP box. (BL-8502).
-            // It's not obvious this is the most desirable focus when we're NOT doing comics, but it's still
-            // probably as good a guess as anything.
-            // The one case where it's definitely wrong is if we just added a TOP box to an image that isn't
-            // the last image on the page. Then we will pick the wrong one. Getting that right is going to take
-            // a pretty tricky solution, which I don't think we should attempt while stabilizing a beta, and
-            // may not be worth it at all.
-            // Note that there is code in bubbleManager.turnOnBubbleEditing() which tries to focus the last
-            // TOP bubble. We have not figured out why it doesn't work. Until we do, the two should probably
-            // be kept matching.
-            if (!focusLastEditableTopBox()) {
-                const firstEditable = $("body")
-                    .find("textarea:visible, div.bloom-editable:visible")
-                    .first();
-                if (firstEditable.length) {
-                    // bloomApi postDebugMessage(
-                    //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - setting focus on " +
-                    //         firstEditable.get(0).outerHTML
-                    // );
-                    firstEditable.focus();
-                } else {
-                    // bloomApi postDebugMessage(
-                    //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - nothing to focus??"
-                    // );
-                }
-            }
+            // It's OK not to focus anything.
+        }
+        if (!didSetFocus) {
+            console.log("didn't try to set focus");
         }
     }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
 
