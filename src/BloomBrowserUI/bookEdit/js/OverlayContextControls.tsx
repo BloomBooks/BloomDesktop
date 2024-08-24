@@ -54,23 +54,24 @@ const OverlayContextControls: React.FunctionComponent<{
     const isPlaceHolder =
         hasImage && img.getAttribute("src")?.startsWith("placeHolder.png");
     // Some of the icons we use for buttons are Material UI ones. They need this CSS to look right.
-    const materialIconCss = css`
-        width: 30px;
+    const materialIconCss = (svgsize?: number) => css`
+        height: 30px;
         border-color: transparent;
         background-color: transparent;
         // These tweaks help make a neat row of aligned buttons the same size.
         top: -4px; // wants 3px if we remove align-items:start
         position: relative;
         svg {
-            font-size: 1.7rem;
+            font-size: ${svgsize ?? 1.7}rem;
         }
     `;
     // Some of the icons we use for buttons are SVGs. They need this CSS to look right and similar to
     // the Material UI ones.
     const svgIconCss = css`
-        width: 22px;
+        height: 23px;
         position: relative;
         //top: 7px; // restore if we remove align-items:start
+        top: -1px;
         border-color: transparent;
         background-color: transparent;
     `;
@@ -287,7 +288,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                 }}
                             >
                                 <button
-                                    css={materialIconCss}
+                                    css={materialIconCss()}
                                     onClick={e => {
                                         if (!props.overlay) return;
                                         const imgContainer = props.overlay.getElementsByClassName(
@@ -315,7 +316,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                 }}
                             >
                                 <button
-                                    css={materialIconCss}
+                                    css={materialIconCss(1.3)}
                                     style={{ marginRight: "20px" }}
                                     onClick={e => {
                                         if (!props.overlay) return;
@@ -355,7 +356,7 @@ const OverlayContextControls: React.FunctionComponent<{
                         >
                             <button
                                 css={svgIconCss}
-                                style={{ top: 0, width: "26px" }}
+                                style={{ width: "26px" }}
                                 onClick={() => {
                                     if (!props.overlay) return;
                                     GetEditor().runFormatDialog(editable);
@@ -371,6 +372,8 @@ const OverlayContextControls: React.FunctionComponent<{
                                         filter: invert(38%) sepia(93%)
                                             saturate(422%) hue-rotate(140deg)
                                             brightness(93%) contrast(96%);
+                                        height: 21px !important;
+                                        top: -1px;
                                     `}
                                     src="/bloom/bookEdit/img/cog.svg"
                                 />
@@ -405,25 +408,31 @@ const OverlayContextControls: React.FunctionComponent<{
                     </button>
                 </BloomTooltip>
                 <BloomTooltip
-                    id="format"
+                    id="trash"
                     placement="top"
                     tip={{
                         l10nKey: "Common.Delete"
                     }}
                 >
                     <button
-                        css={materialIconCss}
+                        css={svgIconCss}
                         onClick={() => {
                             if (!props.overlay) return;
                             deleteBubble();
                         }}
                     >
-                        <TrashIcon color={kBloomBlue} />
+                        <TrashIcon
+                            css={css`
+                                height: 23px;
+                                top: -2px;
+                            `}
+                            color={kBloomBlue}
+                        />
                     </button>
                 </BloomTooltip>
                 <button
                     ref={ref => (menuEl.current = ref)}
-                    css={materialIconCss}
+                    css={materialIconCss()}
                     onClick={() => props.setMenuOpen(true)}
                 >
                     <MenuIcon color="primary" />
