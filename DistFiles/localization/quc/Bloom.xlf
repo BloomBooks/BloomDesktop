@@ -2432,8 +2432,8 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Format Dialog...</source>
-        <target xml:lang="quc" state="needs-translation">Format Dialog...</target>
+        <source xml:lang="en">Format Text...</source>
+        <target xml:lang="quc" state="needs-translation">Format Text...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
