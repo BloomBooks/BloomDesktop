@@ -40,6 +40,14 @@
 .drag-activity-wrong .drag-item-wrong {
     display: block;
 }
+// in play mode suppress these focus effects
+.drag-activity-play {
+    .bloom-imageContainer .bloom-textOverPicture div:focus,
+    .bloom-imageContainer .bloom-textOverPicture video:focus {
+        outline-color: transparent;
+        box-shadow: none;
+    }
+}
 
 // We want these only in the start tab, except for ones that are specific to the other tabs
 .drag-activity-correct .bloom-textOverPicture:not(.drag-item-correct),

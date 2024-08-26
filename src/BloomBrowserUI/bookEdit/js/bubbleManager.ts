@@ -864,6 +864,9 @@ export class BubbleManager {
     // The event handler to be called when something relevant on the page frame gets focus.
     // This will set the active textOverPicture element.
     public static onFocusSetActiveElement(event: Event) {
+        if (BubbleManager.inPlayMode(event.currentTarget as Element)) {
+            return;
+        }
         if (BubbleManager.ignoreNextFocus) {
             BubbleManager.ignoreNextFocus = false;
             return;
@@ -2325,6 +2328,9 @@ export class BubbleManager {
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseMove = (event: MouseEvent) => {
+        if (BubbleManager.inPlayMode(event.currentTarget as HTMLElement)) {
+            return; // no edit mode functionality is relevant
+        }
         // Capture the most recent data to use when our animation frame request is satisfied.
         // or so keyboard events can reference the current mouse position.
         this.lastMoveEvent = event;
@@ -2693,6 +2699,9 @@ export class BubbleManager {
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseUp = (event: MouseEvent) => {
         const container = event.currentTarget as HTMLElement;
+        if (BubbleManager.inPlayMode(container)) {
+            return;
+        }
         this.stopMoving();
 
         if (this.bubbleToDrag || this.bubbleToResize) {
@@ -2770,6 +2779,10 @@ export class BubbleManager {
             // if somehow it's not connected to an element at all, I think we can safely
             // return false.
             return false;
+        }
+        if (BubbleManager.inPlayMode(targetElement)) {
+            // Game in play mode...no edit mode functionality is relevant
+            return true;
         }
         if (targetElement.classList.contains("bloom-dragHandle")) {
             // The drag handle is outside the bubble, so dragging it with the mouse
@@ -4495,6 +4508,12 @@ export class BubbleManager {
             return Bubble.makeDefaultTail(activeElement);
         }
         return undefined;
+    }
+
+    private static inPlayMode(someElt: Element) {
+        return someElt
+            .closest(".bloom-page")
+            ?.parentElement?.classList.contains("drag-activity-play");
     }
 }
 
