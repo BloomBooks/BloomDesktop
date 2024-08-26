@@ -108,8 +108,16 @@ node_modules
 *.usertasks
 Andika-R.ttf
 *~
-Bloom/
-.vs/
+
+# All this silliness is needed to exclude all of .vs/ except for the csharpier.json file
+.vs/*
+!.vs/Bloom/
+.vs/Bloom/*
+!.vs/Bloom/v17/
+.vs/Bloom/v17/*
+# The ** doesn't do anything unless you specifically unexclude the subdirectories
+!.vs/**/csharpier.json
+
 build/Bloom*.nupkg
 src/BloomBrowserUI/filesToFix.lst
 src/BloomBrowserUI/npm-debug.log

@@ -1,3 +1,4 @@
 *.md
 ThemaData.json
 *.xlf
+csharpier.json
