@@ -1443,9 +1443,10 @@ export class BubbleManager {
         if (!img.style.width) {
             // From here on it should stay this width unless we decide otherwise.
             img.style.width = `${this.initialCropImageWidth}px`;
-            // This class suppresses behavior in Bloom 6.0 and earlier that would remove
-            // the height and width from the image. We can probably remove it once 6.1 is released.
-            img.parentElement?.classList?.add("bloom-scale-with-code");
+            // tempting to add bloom-scale-with-code, which would prevent old versions of Bloom
+            // from wiping out the width and height style settings we use for cropping.
+            // However, it also triggers stuff in SetImageDisplaySizeIfCalledFor that is specific
+            // to Kyrgyzstan and messes up cropping horribly, so that won't work.
         }
         // move/up listeners are on the document so we can continue the drag even if it moves
         // outside the control clicked. I think something similar can be achieved
