@@ -1134,8 +1134,8 @@ namespace Bloom.Spreadsheet
                 _activityTemplatePath = Path.Combine(
                     BloomFileLocator.FactoryCollectionsDirectory,
                     "template books",
-                    "Activity",
-                    "Activity.html"
+                    "Games",
+                    "Games.html"
                 );
                 var activityDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(
                     _activityTemplatePath,
