@@ -833,19 +833,8 @@ export class BubbleManager {
             // overlay element and add the 'hasOverlay' class.
             updateOverlayClass(imageContainer);
         } else {
-            let focusableContainer: HTMLElement = imageContainer;
-            if (
-                this.getAllVisibleFocusableDivs(focusableContainer).length === 0
-            ) {
-                focusableContainer = document.getElementsByClassName(
-                    "marginBox"
-                )[0] as HTMLElement;
-            }
-            // We just deleted a bubble, so focus the most recently added bubble in the same
-            // imageContainer.
-            this.focusLastVisibleFocusable(focusableContainer);
-            // When the last visible editable gets focus, onFocusSetActiveElement()
-            // will call setActiveElement() to update the toolbox UI.
+            // deleted a bubble. Don't try to focus anything.
+            this.removeControlFrame(); // but don't leave this behind.
 
             // Also, since we just deleted an element, check if the original container no longer
             // has any overlay elements and remove the 'hasOverlay' class.
@@ -870,9 +859,15 @@ export class BubbleManager {
         });
     }
 
+    public static ignoreNextFocus: boolean;
+
     // The event handler to be called when something relevant on the page frame gets focus.
     // This will set the active textOverPicture element.
     public static onFocusSetActiveElement(event: Event) {
+        if (BubbleManager.ignoreNextFocus) {
+            BubbleManager.ignoreNextFocus = false;
+            return;
+        }
         // The current target is the element we attached the event listener to
         const focusedElement = event.currentTarget as Element;
 
@@ -1445,6 +1440,9 @@ export class BubbleManager {
         if (!img.style.width) {
             // From here on it should stay this width unless we decide otherwise.
             img.style.width = `${this.initialCropImageWidth}px`;
+            // This class suppresses behavior in Bloom 6.0 and earlier that would remove
+            // the height and width from the image. We can probably remove it once 6.1 is released.
+            img.parentElement?.classList?.add("bloom-scale-with-code");
         }
         // move/up listeners are on the document so we can continue the drag even if it moves
         // outside the control clicked. I think something similar can be achieved
@@ -2186,9 +2184,12 @@ export class BubbleManager {
         }
     };
 
+    private activeElementAtMouseDown: HTMLElement | undefined;
+
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseDown = (event: MouseEvent) => {
+        this.activeElementAtMouseDown = this.activeElement;
         const container = event.currentTarget as HTMLElement;
         // Let standard clicks on the bloom editable or other UI elements only be processed by that element
         if (this.isMouseEventAlreadyHandled(event)) {
@@ -2288,6 +2289,9 @@ export class BubbleManager {
                 }
             }
             this.focusFirstVisibleFocusable(bubble.content);
+            // Sometimes, mysteriously, that doesn't trigger the side effect of setting the active
+            // overlay. Make sure.
+            this.setActiveElement(bubble.content);
             const positionInfo = bubble.content.getBoundingClientRect();
 
             // Possible move action started
@@ -2704,7 +2708,12 @@ export class BubbleManager {
         const editable = (event.target as HTMLElement)?.closest(
             ".bloom-editable"
         );
-        if (!this.gotAMoveWhileMouseDown && editable) {
+        // a click without movement on an overlay that is already the active one puts it in edit mode.
+        if (
+            !this.gotAMoveWhileMouseDown &&
+            editable &&
+            this.activeElementAtMouseDown === this.activeElement
+        ) {
             this.theBubbleWeAreTextEditing = (event.target as HTMLElement)?.closest(
                 kTextOverPictureSelector
             ) as HTMLElement;
