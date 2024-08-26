@@ -2832,15 +2832,18 @@ namespace Bloom.Book
         /// </summary>
         private bool IsLanguageWantedInContent(SafeXmlElement parent, string lang)
         {
-            var defaultLangs = parent.GetAttribute("data-default-languages");
-            if (String.IsNullOrEmpty(defaultLangs) || defaultLangs == "auto")
+            var dataDefaultLanguages = parent.GetAttribute("data-default-languages");
+
+            if (String.IsNullOrEmpty(dataDefaultLanguages) || dataDefaultLanguages == "auto")
                 return true; // assume we want everything
-            var dataDefaultLanguages = defaultLangs.Split(
-                new char[] { ',', ' ' },
-                StringSplitOptions.RemoveEmptyEntries
+
+            var defaultLangs = TranslationGroupManager.ProcessLanguageList(
+                dataDefaultLanguages,
+                _bookData
             );
-            foreach (var defaultLang in dataDefaultLanguages)
+            foreach (var defaultLang in defaultLangs)
             {
+                // enhance: have ProcessLanguageList() just do these conversions so that this becomes a simple comparison between lang and the defaultLang
                 switch (defaultLang)
                 {
                     case "V":

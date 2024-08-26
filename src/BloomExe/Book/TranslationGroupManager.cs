@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml;
 using Bloom.SafeXml;
+using Bloom.Api;
 using L10NSharp;
 using SIL.Reporting;
 using SIL.WritingSystems;
@@ -277,10 +278,7 @@ namespace Bloom.Book
                 // This controls visibility for fields not yet controlled by the Appearance system
                 // (or in legacy mode).
                 var defLangsAttr = group.GetAttribute("data-default-languages");
-                var dataDefaultLanguages = defLangsAttr.Split(
-                    new char[] { ',', ' ' },
-                    StringSplitOptions.RemoveEmptyEntries
-                );
+                var dataDefaultLanguages = ProcessLanguageList(defLangsAttr, bookData);
 
                 //nb: we don't necessarily care that a div is editable or not
                 UpdateGeneratedClassesOnChildren(
@@ -313,6 +311,45 @@ namespace Bloom.Book
                     dataDefaultLanguages
                 );
             }
+        }
+
+        public static string[] ProcessLanguageList(
+            string languagesAttributeString,
+            BookData bookData
+        )
+        {
+            // Enhance: could probably just do all the "V", "L1", etc. replacements here, rather than in ShouldNormallyShowEditable()
+            // and Book.IsLanguageWantedInContent() and then simplify those functions.
+
+            var placeholdersWithDefaults = new Dictionary<string, string>
+            {
+                // Allow branding to set the language for the cover credits (needed by Angola in 2024)
+                { "CoverCreditsLanguage", "V" },
+            };
+            // As of Bloom 6.0, only front cover credits has one of these placeholders.
+            // Example: +field-prototypeDeclaredExplicity("[CoverCreditsLanguage]")
+            if (languagesAttributeString.Contains("["))
+            {
+                var brandingSettings = BrandingSettings.GetSettingsOrNull(
+                    bookData.CollectionSettings.BrandingProjectKey
+                );
+                foreach (var placeholderWithDefault in placeholdersWithDefaults)
+                {
+                    var replacement = brandingSettings?.GetPresetKeyValueOrDefault(
+                        placeholderWithDefault.Key,
+                        placeholderWithDefault.Value // default if not specified by this branding
+                    );
+                    languagesAttributeString = languagesAttributeString.Replace(
+                        // we are using square brackets in the pug for no particular reason, just looks right
+                        "[" + placeholderWithDefault.Key + "]",
+                        replacement
+                    );
+                }
+            }
+            return languagesAttributeString.Split(
+                new char[] { ',', ' ' },
+                StringSplitOptions.RemoveEmptyEntries
+            );
         }
 
         public static bool IsPageAffectedByLanguageMenu(SafeXmlElement page, bool legacy)
