@@ -1,12 +1,10 @@
 {
     "presets": [
-        // {
-        //     "data-book": "licenseUrl",
-        //     "lang": "*",
-        //     "content": "http://creativecommons.org/licenses/by-nc/4.0/",
-        //     "condition": "always"
-        // },
-
+        {
+            // instead of the usual L1 for cover credits language, they want to use Portuguese
+            "key": "CoverCreditsLanguage",
+            "content": "pt"
+        },
         {
             "data-book": "outside-back-cover-branding-top-html",
             "lang": "*",
