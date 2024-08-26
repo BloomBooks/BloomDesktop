@@ -24,6 +24,10 @@
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile" translate="no">
+        <source xml:lang="en">Choose Sound File</source>
+        <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Correct" translate="no">
         <source xml:lang="en">Correct</source>
         <note>ID: EditTab.Toolbox.DragActivity.Correct</note>
@@ -116,8 +120,12 @@
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircleInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswer" translate="no">
-        <source xml:lang="en">Selected element is part of right answer</source>
+        <source xml:lang="en">Part of the right answer</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore" translate="no">
+        <source xml:lang="en">Untick this item if it is not part of the right answer</source>
+        <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
       </trans-unit>
       <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled" translate="no">
         <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
