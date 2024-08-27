@@ -122,6 +122,7 @@ namespace Bloom.FontProcessing
                     lock (_fontNameToMetadata)
                     {
                         _fontNameToMetadata[name] = meta;
+                        //System.Diagnostics.Debug.WriteLine(meta.ToString());
                     }
                 }
                 catch (Exception ex)
