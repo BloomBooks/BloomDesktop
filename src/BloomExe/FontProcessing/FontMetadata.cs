@@ -405,13 +405,13 @@ namespace Bloom.FontProcessing
                 if (copyright == "No Rights Reserved.")
                 {
                     determinedSuitability = kOK;
-                    determinedSuitabilityNotes = copyright;
+                    determinedSuitabilityNotes = "No rights reserved";
                     return;
                 }
                 if (copyright.ToLowerInvariant().Contains("freeware"))
                 {
                     determinedSuitability = kOK;
-                    determinedSuitabilityNotes = "Freeware.";
+                    determinedSuitabilityNotes = "Freeware";
                     return;
                 }
                 if (copyright.Contains("Creative Commons"))
@@ -420,10 +420,17 @@ namespace Bloom.FontProcessing
                     determinedSuitabilityNotes = "Creative Commons";
                     return;
                 }
+                if (copyright.Contains("Microsoft Corporation"))
+                {
+                    licenseURL = "https://learn.microsoft.com/en-us/typography/fonts/font-faq";
+                    determinedSuitability = kUnsuitable;
+                    determinedSuitabilityNotes = "Microsoft font";
+                    return;
+                }
                 if (copyright.Contains("Do not distribute."))
                 {
                     determinedSuitability = kUnsuitable;
-                    determinedSuitabilityNotes = "Do not distribute.";
+                    determinedSuitabilityNotes = "Do not distribute";
                     return;
                 }
                 if (
@@ -432,17 +439,7 @@ namespace Bloom.FontProcessing
                 )
                 { // standard boilerplate, but let's believe them.
                     determinedSuitability = kUnsuitable;
-                    determinedSuitabilityNotes = "All rights reserved.";
-                    return;
-                }
-                if (copyright.Contains("Microsoft Corporation"))
-                {
-                    licenseURL = "https://learn.microsoft.com/en-us/typography/fonts/font-faq";
-                    determinedSuitability = kUnsuitable;
-                    determinedSuitabilityNotes = L10NSharp.LocalizationManager.GetString(
-                        "PublishTab.FontProblem.Microsoft",
-                        "Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font."
-                    );
+                    determinedSuitabilityNotes = "All rights reserved";
                     return;
                 }
             }
