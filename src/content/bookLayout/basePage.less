@@ -172,8 +172,11 @@ div.ui-tooltip-content {
     // Canva for very small imagesto help with that. But any min-height causes weird behavior when cropping
     // makes the bubble smaller than the image-container is allowed to be. So try not setting one at all.
     // We also have code to prevent them getting smaller than 30px, but setting an actual CSS min-height is problematic
-    // when the cropping code is trying to compute very exact sizes. I think we're better off without it.
-    // min-height: 10px;
+    // when the cropping code is trying to compute very exact sizes. I think we're better off without a min-height.
+    // However, when imageContainer has no height or min-height set at all, for some reason auto-sizing it with
+    // flex-grow (e.g., on the cover page) combined with auto-sizing the image inside it with content-fit doesn't work.
+    // A min-height of zero somehow fixes that without interfering with cropping. So that's what we're doing for now.
+    min-height: 0;
     border-radius: var(--image-border-radius);
     // image containers are ordered by document order so they can NOT be a stacking context,
     // allowing their child buttons to be over the comicaljs canvas
