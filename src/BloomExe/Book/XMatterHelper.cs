@@ -365,26 +365,29 @@ namespace Bloom.Book
 
                 // If we are using an image for the front cover, replace the typical front cover with
                 // a special one which has a full-page image container.
+                //if (useCoverIsImage && IsOutsideFrontCoverPage(xmatterPage))
+                //{
+                //var directoryPath = GetXMatterDirectory(
+                //    "CoverIsImage",
+                //    _fileLocator,
+                //    null,
+                //    true
+                //);
+                //var coverIsImageDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(
+                //    directoryPath.CombineForPath("CoverIsImage-XMatter.html"),
+                //    false
+                //);
+                //var coverIsImagePage = coverIsImageDom.SelectSingleNode(
+                //    "/html/body/div[contains(@data-page,'required')]"
+                //);
+                //newPageDiv =
+                //    _bookDom.RawDom.ImportNode(coverIsImagePage, true) as SafeXmlElement;
+                //}
+                //else
+                newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as SafeXmlElement;
+
                 if (useCoverIsImage && IsOutsideFrontCoverPage(xmatterPage))
-                {
-                    var directoryPath = GetXMatterDirectory(
-                        "CoverIsImage",
-                        _fileLocator,
-                        null,
-                        true
-                    );
-                    var coverIsImageDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(
-                        directoryPath.CombineForPath("CoverIsImage-XMatter.html"),
-                        false
-                    );
-                    var coverIsImagePage = coverIsImageDom.SelectSingleNode(
-                        "/html/body/div[contains(@data-page,'required')]"
-                    );
-                    newPageDiv =
-                        _bookDom.RawDom.ImportNode(coverIsImagePage, true) as SafeXmlElement;
-                }
-                else
-                    newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as SafeXmlElement;
+                    newPageDiv.AddClass("cover-is-image2");
 
                 // If we're updating an existing book, we want to keep the IDs (as much as possible; sometimes
                 // the number of xmatter pages changes and we have to add IDs). In this case, oldIds is obtained

@@ -723,6 +723,48 @@ div.bloom-page.coverColor {
 
     background-color: @dark !important;
 }
+.bloom-page.outsideFrontCover.cover-is-image2 {
+    --cover-margin-side: 0mm;
+    --cover-margin-top: 0mm;
+    --cover-margin-bottom: 0mm;
+    * {
+        display: none;
+    }
+    .marginBox {
+        display: block;
+        height: 100%;
+        width: 100%;
+        * {
+            display: none;
+        }
+        .bloom-imageContainer {
+            display: block;
+            height: 100%;
+            width: 100%;
+            margin: 0px;
+            background-size: cover; // bloom-player needs to this to make the image fill the container because it uses background image
+            // * {
+            //     display: block;
+            // }
+            img {
+                object-fit: cover;
+                display: inline;
+            }
+            .bloom-translationGroup {
+                display: none;
+            }
+            .bloom-showImageDescriptions & .bloom-imageDescription {
+                display: flex;
+                .bloom-editable.bloom-visibility-code-on {
+                    display: block;
+                }
+                #formatButton {
+                    display: block;
+                }
+            }
+        }
+    }
+}
 
 /* About the calc() here: depending on the margin, we may need to adjust the padding of the text to make it so that
 you get less padding on the side of the text that is next to edge of the page.
