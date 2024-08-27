@@ -530,14 +530,6 @@ export function SetupElements(
     $(container)
         .find(".bloom-translationGroup")
         .each(function() {
-            // If we get focus on a translation group, move it to the first editable. See BL-11922.
-            $(this).focus(e => {
-                $(e.target)
-                    ?.find("div.bloom-editable:visible")
-                    ?.first()
-                    ?.focus();
-            });
-
             //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
             const contentElements = $(this).find(
                 "textarea, div.bloom-editable"
@@ -869,21 +861,17 @@ export function SetupElements(
             }
         }
         if (!elementToFocus) {
-            // Seems the browser will spontaneously try to focus something, and it might be an overlay.
-            // We don't want an overlay initially showing as selected, so we'll arrange to ignore the
-            // next focus event.
-            // This feels fragile: what if the browser doesn't find something to focus, or does it
-            // before we set this flag? We might ignore a later focus event that we wanted.
-            // I've done my best to guard against this by making mouse down on a bubble unambiguously
-            // make it active, whatever happens with focus. And this trick is the only way I've found
-            // to prevent getting an overlay initially selected.
-            BubbleManager.ignoreNextFocus = true;
-            theOneBubbleManager.setActiveElement(elementToFocus);
+            // Make sure the active element is cleared if we're not setting it.
+            theOneBubbleManager.setActiveElement(undefined);
         }
-        // Ensure focus exists as best we can (BL-7994)
+
         const focusable = elementToFocus
             ? $(elementToFocus).find(":focusable")
             : undefined;
+        // If we were passed an element to focus, it could be a new comic bubble, and we'd like to
+        // be all set to type in it. So we focus it.
+        // I'm not sure whether this is desirable when we found one from data-bloom-active,
+        // but there may be a case where the page gets reloaded while a text-editable bubble is active.
         if (elementToFocus && focusable) {
             focusable.focus();
             // Ideally calling focus above has this as a side effect.
@@ -998,38 +986,6 @@ export function SetupElements(
 
     AddXMatterLabelAfterPageLabel(container);
     ConstrainContentsOfPageLabel(container);
-}
-
-function focusLastEditableTopBox(): boolean {
-    const topBoxes = document.getElementsByClassName("bloom-textOverPicture");
-    if (topBoxes.length == 0) return false;
-    const lastTop = topBoxes[topBoxes.length - 1];
-    if (focusOnChildIfFound(lastTop, "bloom-editable")) return true;
-    // image and video boxes are also possibilities (BL-11620)
-    if (focusOnChildIfFound(lastTop, "bloom-imageContainer")) return true;
-    if (focusOnChildIfFound(lastTop, "bloom-videoContainer")) return true;
-    return false; // unexpected
-}
-
-function focusOnChildIfFound(lastTop: Element, className: string): boolean {
-    const visibleChildBoxesInLastTop = Array.from(
-        lastTop.getElementsByClassName(className)
-    ).filter(
-        // this is a crude check for visibility, but according to stack overflow
-        // equivalent to the :visible check we were previously doing in jquery
-        s => window.getComputedStyle(s).getPropertyValue("display") != "none"
-    );
-    if (visibleChildBoxesInLastTop.length !== 0) {
-        // This doesn't work reliably if we just use the Element.focus(), so we use the JQuery version that
-        // we set the eventhandler with in BloomSourceBubbles.SetupTooltips(). We've tried adding a "focusin"
-        // eventhandler to the div, instead of the JQuery one, but it still didn't work when we used
-        // the raw HTML focus() here, even if we changed the eventhandler to use currentTarget instead of target.
-        // It may have something to do with the fact that JQuery calls trigger() on the event, rather than
-        // calling the focus method. (BL-8726)
-        $(visibleChildBoxesInLastTop[0] as HTMLElement).focus();
-        return true;
-    }
-    return false;
 }
 
 // This function sets up a rule to display a prompt following the placeholder we insert for a missing

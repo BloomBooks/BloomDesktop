@@ -361,14 +361,6 @@ export class BubbleManager {
         return false;
     }
 
-    private focusLastVisibleFocusable(activeElement: HTMLElement) {
-        const focusElements = this.getAllVisibleFocusableDivs(activeElement);
-        const numberOfElements = focusElements.length;
-        if (numberOfElements > 0) {
-            (focusElements[numberOfElements - 1] as HTMLElement).focus();
-        }
-    }
-
     public turnOnBubbleEditing(): void {
         if (this.isComicEditingOn === true) {
             return; // Already on. No work needs to be done
@@ -376,9 +368,10 @@ export class BubbleManager {
         this.isComicEditingOn = true;
 
         Comical.setActiveBubbleListener(activeElement => {
-            if (activeElement) {
-                this.focusFirstVisibleFocusable(activeElement);
-            }
+            // No longer want to focus a bubble when activated.
+            // if (activeElement) {
+            //     this.focusFirstVisibleFocusable(activeElement);
+            // }
         });
 
         const imageContainers: HTMLElement[] = this.getAllPrimaryImageContainersOnPage();
@@ -438,7 +431,7 @@ export class BubbleManager {
             // That code usually finds that nothing is focused.
             // (gjm: I reworked the code that finds a visible element a bit,
             // it's possible the above comment is no longer accurate)
-            this.focusFirstVisibleFocusable(this.activeElement);
+            //this.focusFirstVisibleFocusable(this.activeElement);
             Comical.setUserInterfaceProperties({ tailHandleColor: "#96668F" }); // light bloom purple
             Comical.startEditing(imageContainers);
             this.migrateOldTextOverPictureElements(overPictureElements);
@@ -613,9 +606,12 @@ export class BubbleManager {
         );
     }
     // declare this strange way so it has the right 'this' when added as event listener.
-    private bubbleLosingFocus = () => {
+    private bubbleLosingFocus = event => {
         // removing focus from a text bubble means the next click on it could drag it.
-        this.theBubbleWeAreTextEditing = undefined;
+        // However, it's possible the active bubble already moved; don't clear theBubbleWeAreTextEditing if so
+        if (event.currentTarget === this.theBubbleWeAreTextEditing) {
+            this.theBubbleWeAreTextEditing = undefined;
+        }
     };
 
     // This is not a great place to make this available to the world.
@@ -859,16 +855,10 @@ export class BubbleManager {
         });
     }
 
-    public static ignoreNextFocus: boolean;
-
     // The event handler to be called when something relevant on the page frame gets focus.
     // This will set the active textOverPicture element.
     public static onFocusSetActiveElement(event: Event) {
         if (BubbleManager.inPlayMode(event.currentTarget as Element)) {
-            return;
-        }
-        if (BubbleManager.ignoreNextFocus) {
-            BubbleManager.ignoreNextFocus = false;
             return;
         }
         // The current target is the element we attached the event listener to
@@ -2172,7 +2162,7 @@ export class BubbleManager {
     // those events to turn the click into a drag of the bubble if there is mouse movement.
     // This uses the browser's caretPositionFromPoint or caretRangeFromPoint, which are not
     // supported by all browsers, but at least one of them works in WebView2, which is all we need.
-    private moveInsertionPointTo = (x, y) => {
+    private moveInsertionPointTo = (x, y): Range | undefined => {
         const doc = document as any;
         const range = doc.caretPositionFromPoint
             ? doc.caretPositionFromPoint(x, y)
@@ -2186,6 +2176,7 @@ export class BubbleManager {
             selection?.removeAllRanges();
             selection?.addRange(range);
         }
+        return range as Range;
     };
 
     private activeElementAtMouseDown: HTMLElement | undefined;
@@ -2268,33 +2259,8 @@ export class BubbleManager {
             if (event.altKey || event.ctrlKey || !clickOnBubbleWeAreEditing) {
                 event.preventDefault();
                 event.stopPropagation();
-                if (!event.altKey && !event.ctrlKey) {
-                    // We're doing a mouse down which MIGHT turn out to be dragging the bubble
-                    // (if we get a non-trivial mouse move), or the user might be clicking to
-                    // activate text editing (if it does not). If we let the mouse down
-                    // propagate, we get weird selection behavior when it turns into a drag.
-                    // If we suppress it, the selection doesn't end up where expected if
-                    // it turns into a click. I tried saving the mouse down event here
-                    // and re-dispatching it on mouse up, but some side effect of selecting
-                    // (and therefore focusing) the bubble seems to put the caret into the
-                    // text anyway, at the start of the text, which is surprising. This also
-                    // sometimes wins if I do the moveCursorTo without a setTimeout.
-                    // With the setTimeout, the cursor always seems to end up where the click
-                    // happened, which is perfect if it's a simple click, and not too bad if
-                    // it's a drag. If it's not good enough, I think the next thing to try
-                    // would be not to focus the bubble until the mouse up, but then I think we
-                    // DO want to move the control box on mouse down. There may not be a perfect
-                    // answer.
-                    // Another option would be to do this on mouse up, if we didn't get movement.
-                    setTimeout(() => {
-                        //
-                        this.moveInsertionPointTo(event.clientX, event.clientY);
-                    }, 0);
-                }
             }
-            this.focusFirstVisibleFocusable(bubble.content);
-            // Sometimes, mysteriously, that doesn't trigger the side effect of setting the active
-            // overlay. Make sure.
+            // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
             this.setActiveElement(bubble.content);
             const positionInfo = bubble.content.getBoundingClientRect();
 
@@ -2303,26 +2269,12 @@ export class BubbleManager {
             this.activeContainer = container;
             // in case this is somehow left from earlier, we want a fresh start for the new move.
             this.animationFrame = 0;
-            // mouse is presumably moving inside this image, it should have the buttons.
-            // (It does not get them in the usual way by mouseEnter, because that event is
-            // suppressed by the comicaljs canvas, which is above the image container.)
-            addImageEditingButtons(
-                bubble.content.getElementsByClassName(
-                    "bloom-imageContainer"
-                )[0] as HTMLElement
-            );
 
             // Remember the offset between the top-left of the content box and the initial
             // location of the mouse pointer.
             const deltaX = event.pageX - positionInfo.left;
             const deltaY = event.pageY - positionInfo.top;
             this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
-
-            // Even though Alt+Drag resize is not in effect, we still check using isResizing() to
-            // make sure JQuery Resizing is not in effect before proceeding.
-            if (!this.isJQueryResizing(container)) {
-                container.classList.add("grabbing");
-            }
         }
     };
 
@@ -2724,9 +2676,27 @@ export class BubbleManager {
             editable &&
             this.activeElementAtMouseDown === this.activeElement
         ) {
+            // Going into edit mode on this bubble.
             this.theBubbleWeAreTextEditing = (event.target as HTMLElement)?.closest(
                 kTextOverPictureSelector
             ) as HTMLElement;
+            // We want to position the IP as if the user clicked where they did.
+            // Since we already suppressed the mouseDown event, it's not enough to just
+            // NOT suppress the mouseUp event. We need to actually move the IP to the
+            // appropriate spot and give the bubble focus.
+            const range = this.moveInsertionPointTo(
+                event.clientX,
+                event.clientY
+            );
+            if (range?.endContainer?.parentElement) {
+                range.endContainer.parentElement.focus();
+            }
+        } else {
+            // prevent the click giving it focus (or any other default behavior). This mouse up
+            // is part of dragging a bubble or resizing it or some similar special behavior that
+            // we are handling.
+            event.preventDefault();
+            event.stopPropagation();
         }
     };
 
@@ -4094,100 +4064,6 @@ export class BubbleManager {
             (htmlElement.classList &&
                 htmlElement.classList.contains("bloom-ui"))
         );
-    }
-
-    private makeOverPictureElementsDraggableAndClickable(
-        thisOverPictureElements: JQuery
-    ): void {
-        thisOverPictureElements.each((index, element) => {
-            const thisOverPictureElement = element as HTMLElement;
-            const imageContainer = BubbleManager.getTopLevelImageContainerElement(
-                thisOverPictureElement
-            )!;
-            const containerPos = imageContainer.getBoundingClientRect();
-            const wrapperBoxRectangle = thisOverPictureElement.getBoundingClientRect();
-
-            // Add the dragHandle (if needed). It is above the canvas to make it able to get mouse events.
-            const dragHandles = thisOverPictureElement.getElementsByClassName(
-                "bloom-dragHandle"
-            );
-            if (dragHandles.length == 0) {
-                // Not added yet. Let's create it
-                const imgElement = document.createElement("img");
-                imgElement.className = "bloom-ui bloom-dragHandle";
-                imgElement.src = "/bloom/bookEdit/img/dragHandle.svg";
-                thisOverPictureElement.append(imgElement);
-            }
-
-            // Containment, drag and stop work when scaled (zoomed) as long as the page has been saved since the zoom
-            // factor was last changed. Therefore we force reconstructing the page
-            // in the EditingView.Zoom setter (in C#).
-            $(thisOverPictureElement).draggable({
-                // Adjust containment by scaling
-                containment: [
-                    // arguably we could add this.minBubbleVisible ti the first two, but in practice,
-                    // since the handle is in the top left, it can't be used to drag it even that close.
-                    containerPos.left,
-                    containerPos.top,
-                    containerPos.left +
-                        containerPos.width -
-                        this.minBubbleVisible,
-                    containerPos.top +
-                        containerPos.height -
-                        this.minBubbleVisible
-                ],
-                revertDuration: 0,
-                handle: ".bloom-dragHandle",
-                drag: (event, ui) => {
-                    ui.helper.children(".bloom-editable").blur();
-                    this.focusFirstVisibleFocusable(thisOverPictureElement);
-                    const position = new Point(
-                        ui.position.left,
-                        ui.position.top,
-                        PointScaling.Scaled,
-                        "ui.position"
-                    );
-
-                    // Try to unscroll earlier. Dealing with scroll here is tough.
-                    // Scrolled draggables give JQuery draggables a hard time.
-                    // I'm having too hard of a time figuring out how to adjust it properly across all zoom factors.
-                    // Neither unadjusted, container.scrollTop, nor delta between container and canvas are right.
-                    const scroll = BubbleManager.getScrollAmount(
-                        imageContainer
-                    );
-                    console.assert(
-                        scroll.length() <= 0.0001,
-                        `Scroll expected to be [0, 0] but was [${scroll.getScaledX()}, ${scroll.getScaledY()}].`
-                    );
-
-                    // Adjusts the positioning for scale.
-                    // (Doesn't accurately adjust for the amount of scroll)
-                    ui.position.left = position.getUnscaledX();
-                    ui.position.top = position.getUnscaledY();
-
-                    const handles = thisOverPictureElement.getElementsByClassName(
-                        "bloom-dragHandle"
-                    );
-                    Array.from(handles).forEach(element => {
-                        (element as HTMLElement).classList.add("grabbing");
-                    });
-                    this.adjustTarget(thisOverPictureElement);
-                },
-                stop: event => {
-                    const target = event.target as Element;
-                    if (target) {
-                        BubbleManager.convertTextboxPositionToAbsolute(target);
-                    }
-
-                    const handles = thisOverPictureElement.getElementsByClassName(
-                        "bloom-dragHandle"
-                    );
-                    Array.from(handles).forEach(element => {
-                        (element as HTMLElement).classList.remove("grabbing");
-                    });
-                }
-            });
-        });
     }
 
     // Notes that comic editing either has not been suspended...isComicEditingOn might be true or false...
