@@ -164,40 +164,24 @@
         input:active ~ .placeToPutVariableCircle {
             opacity: 0.5;
             transform: scale(1);
-            transition:
-                opacity 0.3s,
-                transform 0.2s; //opacity 0.3s, transform 0.2s;
+            transition: opacity 0.3s, transform 0.2s; //opacity 0.3s, transform 0.2s;
         }
     }
 }
 
 // overrides a rule in EditMode.less to push the language label over and make room for cog on right.
-.bloom-editable.QuizHeader-style[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after,
-.bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after,
-.bloom-editable.QuizQuestion-style[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after {
+.bloom-editable.QuizHeader-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
+.bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
+.bloom-editable.QuizQuestion-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     margin-right: 24px;
 }
 // Also hide the label except in the focused item (but only in editMode, where we have this label and other rules about it.
 // In PDF, we don't want an :after at all...will mess up page layout. (BL-10019).
 .editMode
-    .bloom-editable.QuizAnswer-style:not(
-        .cke_focus
-    )[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after,
+    .bloom-editable.QuizAnswer-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
 .editMode
-    .bloom-editable.QuizQuestion-style:not(
-        .cke_focus
-    )[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after {
-    content: "";
+    .bloom-editable.QuizQuestion-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+    content: none;
 }
 
 // In edit mode, the check boxes are checked if marked correct.
