@@ -587,11 +587,6 @@ export class BubbleManager {
                 this.setMouseDragHandlers(container);
             }
         );
-        Array.from(
-            document.getElementsByClassName(kTextOverPictureClass)
-        ).forEach((element: HTMLElement) => {
-            element.addEventListener("focusout", this.bubbleLosingFocus);
-        });
 
         // The container's onmousemove handler isn't capable of reliably detecting in all cases
         // when it goes out of bounds, because the mouse is no longer over the container.
@@ -771,6 +766,11 @@ export class BubbleManager {
             ) {
                 attachToCkEditor(element);
             }
+        });
+        Array.from(
+            document.getElementsByClassName(kTextOverPictureClass)
+        ).forEach((element: HTMLElement) => {
+            element.addEventListener("focusout", this.bubbleLosingFocus);
         });
     }
 
@@ -2162,19 +2162,39 @@ export class BubbleManager {
     // those events to turn the click into a drag of the bubble if there is mouse movement.
     // This uses the browser's caretPositionFromPoint or caretRangeFromPoint, which are not
     // supported by all browsers, but at least one of them works in WebView2, which is all we need.
-    private moveInsertionPointTo = (x, y): Range | undefined => {
+    private moveInsertionPointAndFocusTo = (x, y): Range | undefined => {
         const doc = document as any;
-        const range = doc.caretPositionFromPoint
+        const rangeOrCaret = doc.caretPositionFromPoint
             ? doc.caretPositionFromPoint(x, y)
             : doc.caretRangeFromPoint
             ? doc.caretRangeFromPoint(x, y)
             : null;
+        let range = rangeOrCaret;
+        if (!range) {
+            return undefined;
+        }
+        // We really seem to need to handle both possibilities. I had it working with just the
+        // code for range, then restarted Bloom and started getting CaretPositions. Maybe a new
+        // version of WebView2 got auto-installed? Anyway, now it should handle both.
+        if (!range.endContainer) {
+            // probably a CaretPositon. We need a range to use with addRange.
+            range = document.createRange();
+            range.setStart(rangeOrCaret.offsetNode, rangeOrCaret.offset);
+            range.setEnd(rangeOrCaret.offsetNode, rangeOrCaret.offset);
+        }
 
-        if (range) {
-            range.collapse(false);
-            const selection = window.getSelection();
-            selection?.removeAllRanges();
-            selection?.addRange(range);
+        if (range && range.collapse && range?.endContainer?.parentElement) {
+            range.collapse(false); // probably not needed?
+            range.endContainer.parentElement.focus();
+            const setSelection = () => {
+                const selection = window.getSelection();
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+            };
+            // I have _no_ idea why it is necessary to do this twice, but if we don't, the selection
+            // ends up at a more-or-less random position (often something that was recently selected).
+            setSelection();
+            setSelection();
         }
         return range as Range;
     };
@@ -2670,6 +2690,21 @@ export class BubbleManager {
         const editable = (event.target as HTMLElement)?.closest(
             ".bloom-editable"
         );
+        if (
+            editable &&
+            editable.closest(kTextOverPictureSelector) ===
+                this.theBubbleWeAreTextEditing
+        ) {
+            // We're text editing in this overlay, let the mouse do its normal things.
+            // In particular, we don't want to do moveInsertionPointAndFocusTo here,
+            // because it will force the selection back to an IP when we might want a range
+            // (e.g., after a double-click).
+            // (But note, if we started out with the overlay not active, a double click
+            // is properly interpreted as one click to select the overlay, one to put it
+            // into edit mode...that is NOT a regular double-click that selects a word.
+            // At least, that seems to be what Canva does.)
+            return;
+        }
         // a click without movement on an overlay that is already the active one puts it in edit mode.
         if (
             !this.gotAMoveWhileMouseDown &&
@@ -2684,14 +2719,8 @@ export class BubbleManager {
             // Since we already suppressed the mouseDown event, it's not enough to just
             // NOT suppress the mouseUp event. We need to actually move the IP to the
             // appropriate spot and give the bubble focus.
-            const range = this.moveInsertionPointTo(
-                event.clientX,
-                event.clientY
-            );
-            if (range?.endContainer?.parentElement) {
-                range.endContainer.parentElement.focus();
-            }
-        } else {
+            this.moveInsertionPointAndFocusTo(event.clientX, event.clientY);
+        } else if (!this.isMouseEventAlreadyHandled(event)) {
             // prevent the click giving it focus (or any other default behavior). This mouse up
             // is part of dragging a bubble or resizing it or some similar special behavior that
             // we are handling.
