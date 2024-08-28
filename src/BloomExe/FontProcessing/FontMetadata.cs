@@ -318,10 +318,7 @@ namespace Bloom.FontProcessing
                 {
                     licenseURL = "https://learn.microsoft.com/en-us/typography/fonts/font-faq";
                     determinedSuitability = kUnsuitable;
-                    determinedSuitabilityNotes = L10NSharp.LocalizationManager.GetString(
-                        "PublishTab.FontProblem.Microsoft",
-                        "Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font."
-                    );
+                    determinedSuitabilityNotes = "Microsoft font";
                     return;
                 }
                 if (license.ToLowerInvariant().Contains("contact the vendor"))
@@ -330,10 +327,7 @@ namespace Bloom.FontProcessing
                     if (copyright != null && copyright.Contains("Microsoft Corporation"))
                     {
                         licenseURL = "https://learn.microsoft.com/en-us/typography/fonts/font-faq";
-                        determinedSuitabilityNotes = L10NSharp.LocalizationManager.GetString(
-                            "PublishTab.FontProblem.Microsoft",
-                            "Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font."
-                        );
+                        determinedSuitabilityNotes = "Microsoft font";
                     }
                     else
                     {
