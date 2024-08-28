@@ -415,7 +415,14 @@ namespace Bloom.ImageProcessing
                     // itself, and that can't ever be useful.
                     else if (!isSameFile)
                     {
-                        RobustFile.Copy(sourcePath, destinationPath);
+                        // Pasting an image can result in sourcePath being null.
+                        if (sourcePath == null)
+                            imageInfo.Image.Save(
+                                destinationPath,
+                                isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
+                            );
+                        else
+                            RobustFile.Copy(sourcePath, destinationPath);
                     }
                 }
                 else

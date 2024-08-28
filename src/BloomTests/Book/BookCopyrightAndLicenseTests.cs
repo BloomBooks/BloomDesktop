@@ -124,7 +124,7 @@ namespace BloomTests.Book
             );
             Assert.IsTrue(creativeCommonsLicense.AttributionRequired);
             Assert.IsTrue(creativeCommonsLicense.CommercialUseAllowed);
-            Assert.IsTrue(creativeCommonsLicense.IntergovernmentalOriganizationQualifier);
+            Assert.IsTrue(creativeCommonsLicense.IntergovernmentalOrganizationQualifier);
         }
 
         [Test]
