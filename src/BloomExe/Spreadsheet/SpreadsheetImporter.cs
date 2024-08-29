@@ -392,6 +392,7 @@ namespace Bloom.Spreadsheet
             // and the Book itself. Testing is the other situation (mostly) that doesn't use CollectionSettings.
             if (_collectionSettings != null && _book != null)
             {
+                ImportLanguageNames();
                 _book.BringBookUpToDate(new NullProgress());
             }
 
@@ -409,6 +410,63 @@ namespace Bloom.Spreadsheet
             }
             Progress("Done");
             return _warnings;
+        }
+
+        // Flag set by either ImportLanguageNames or UpdateLanguageNameIfAppropriate to indicate
+        // the the collection settings have been changed and should be saved.
+        private bool _collectionSettingsAreDirty = false;
+
+        private void ImportLanguageNames()
+        {
+            _collectionSettingsAreDirty = false;
+            foreach (string lang in _sheet.Languages)
+            {
+                if (lang == "*")
+                    continue;
+                var langName = _sheet.Header.ColumnNameRow
+                    .GetCell(_sheet.GetRequiredColumnForLang(lang))
+                    .Content;
+                // If this is one of the standard collection languages, update the name only if the name
+                // is different.  The method will return true if the language tag matches whether or not
+                // it updated the name.
+                if (UpdateLanguageNameIfAppropriate(_collectionSettings.Language1, lang, langName))
+                    continue;
+                if (UpdateLanguageNameIfAppropriate(_collectionSettings.Language2, lang, langName))
+                    continue;
+                if (UpdateLanguageNameIfAppropriate(_collectionSettings.Language3, lang, langName))
+                    continue;
+                if (
+                    UpdateLanguageNameIfAppropriate(
+                        _collectionSettings.SignLanguage,
+                        lang,
+                        langName
+                    )
+                )
+                    continue;
+                // Set the name in the collection settings language list, creating the language if needed.
+                _collectionSettings.UpdateOrCreateCollectionLanguage(lang, langName);
+                _collectionSettingsAreDirty = true;
+            }
+            if (_collectionSettingsAreDirty)
+                _collectionSettings.Save();
+        }
+
+        private bool UpdateLanguageNameIfAppropriate(
+            WritingSystem language,
+            string tag,
+            string name
+        )
+        {
+            if (language.Tag == tag)
+            {
+                if (language.Name != name)
+                {
+                    language.SetName(name, true);
+                    _collectionSettingsAreDirty = true;
+                }
+                return true;
+            }
+            return false;
         }
 
         class PageRecord

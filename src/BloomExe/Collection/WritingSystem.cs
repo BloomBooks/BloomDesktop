@@ -121,21 +121,31 @@ namespace Bloom.Collection
             Tag = value; // also sets the name
         }
 
-        public void SaveToXElement(XElement xml)
+        /// <summary>
+        /// Call as SaveToXElement(xml) to save all the values of this class to an XElement using
+        /// the internal language number as part of the xml tags.
+        /// Call as SaveToXElement(xml, 0) to save all the values of this class to an XElement using
+        /// the xml tags without any language number.
+        /// </summary>
+        public void SaveToXElement(XElement xml, int langNumber = -2)
         {
-            var pfx =
-                _languageNumberInCollection < 0
-                    ? "SignLanguage"
-                    : "Language" + _languageNumberInCollection;
+            if (langNumber < -1)
+                langNumber = _languageNumberInCollection;
+            var langNumTag = (langNumber > 0) ? langNumber.ToString() : "";
+            var pfx = langNumber < 0 ? "SignLanguage" : "Language" + langNumTag;
+            if (langNumber > 0)
+                xml.Add(
+                    new XComment(
+                        $"{pfx}Name and related elements are present only for partial backwards compatibility."
+                    )
+                );
             xml.Add(new XElement(pfx + "Name", Name));
             xml.Add(new XElement(pfx + "IsCustomName", IsCustomName));
             xml.Add(new XElement(pfx + "Iso639Code", Tag));
-            if (_languageNumberInCollection < 0)
+            if (langNumber < 0)
                 return;
-            xml.Add(
-                new XElement($"DefaultLanguage{_languageNumberInCollection}FontName", FontName)
-            );
-            xml.Add(new XElement($"IsLanguage{_languageNumberInCollection}Rtl", IsRightToLeft));
+            xml.Add(new XElement($"DefaultLanguage{langNumTag}FontName", FontName));
+            xml.Add(new XElement($"IsLanguage{langNumTag}Rtl", IsRightToLeft));
             xml.Add(new XElement(pfx + "LineHeight", LineHeight));
             xml.Add(new XElement(pfx + "BreaksLinesOnlyAtSpaces", BreaksLinesOnlyAtSpaces));
             xml.Add(new XElement(pfx + "BaseUIFontSizeInPoints", BaseUIFontSizeInPoints));
@@ -194,16 +204,18 @@ namespace Bloom.Collection
         /// <param name="xml"></param>
         /// <param name="defaultToEnglishIfMissing"></param>
         /// <param name="languageForDefaultNameLookup">a language tag or "self" if we should use the language tag for this spec to look it up</param>
+        /// <param name="langNumber">The language number to use in the xml tags. 0 means no number. The default value uses the number assigned when the object was created.</param>
         public void ReadFromXml(
             XElement xml,
             bool defaultToEnglishIfMissing,
-            string languageForDefaultNameLookup
+            string languageForDefaultNameLookup,
+            int langNumber = -2
         )
         {
-            var pfx =
-                _languageNumberInCollection < 0
-                    ? "SignLanguage"
-                    : "Language" + _languageNumberInCollection;
+            if (langNumber < -1)
+                langNumber = _languageNumberInCollection;
+            var langNumTag = (langNumber > 0) ? langNumber.ToString() : "";
+            var pfx = _languageNumberInCollection < 0 ? "SignLanguage" : "Language" + langNumTag;
 
             /* Enhance (from JT):
               When you do this for Language1, the Tag setter will initialize Name using
@@ -224,7 +236,13 @@ namespace Bloom.Collection
 
             Tag = ReadString(xml, pfx + "Iso639Code", defaultToEnglishIfMissing ? "en" : "");
 
-            Name = ReadString(xml, pfx + "Name", "");
+            var xmlTag = pfx + "Name";
+            Name = ReadString(xml, xmlTag, "");
+            if (Name == "" && xmlTag == "LanguageName")
+            {
+                xmlTag = "Language1Name"; // revised name that was migrated for earlier versions of Bloom
+                Name = ReadString(xml, xmlTag, "");
+            }
             if (Name == "")
             {
                 Name = GetLanguageName_NoCache(
@@ -242,11 +260,11 @@ namespace Bloom.Collection
                 BaseUIFontSizeInPoints = 0;
                 return;
             }
-            IsRightToLeft = ReadBoolean(xml, $"IsLanguage{_languageNumberInCollection}Rtl", false);
+            IsRightToLeft = ReadBoolean(xml, $"IsLanguage{langNumTag}Rtl", false);
             LineHeight = ReadDecimal(xml, pfx + "LineHeight", 0);
             FontName = ReadString(
                 xml,
-                $"DefaultLanguage{_languageNumberInCollection}FontName",
+                $"DefaultLanguage{langNumTag}FontName",
                 GetDefaultFontName()
             );
             BreaksLinesOnlyAtSpaces = ReadBoolean(xml, pfx + "BreaksLinesOnlyAtSpaces", false);
