@@ -22,7 +22,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.WritingSystems;
-using Directory = System.IO.Directory;
 
 namespace Bloom.Collection
 {
@@ -39,10 +38,10 @@ namespace Bloom.Collection
     {
         private const int kCurrentOneTimeCheckVersionNumber = 1; // bumping this will trigger a new one time check
         public const string kDefaultXmatterName = "Traditional";
-        public WritingSystem Language1;
-        public WritingSystem Language2;
-        public WritingSystem Language3;
-        public WritingSystem[] LanguagesZeroBased;
+        public List<WritingSystem> LanguagesZeroBased = new List<WritingSystem>();
+        public WritingSystem Language1 => LanguagesZeroBased[0];
+        public WritingSystem Language2 => LanguagesZeroBased[1];
+        public WritingSystem Language3 => LanguagesZeroBased[2];
 
         // Email addresses of users authorized to change collection settings if this is a TeamCollection.
         public string[] Administrators;
@@ -114,13 +113,9 @@ namespace Bloom.Collection
             //Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
             //See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
             Func<string> getTagOfDefaultLanguageForNaming = () => Language2.Tag;
-            Language1 = new WritingSystem(1, getTagOfDefaultLanguageForNaming);
-            Language2 = new WritingSystem(2, getTagOfDefaultLanguageForNaming);
-            Language3 = new WritingSystem(3, getTagOfDefaultLanguageForNaming);
-            LanguagesZeroBased = new WritingSystem[3];
-            this.LanguagesZeroBased[0] = Language1;
-            this.LanguagesZeroBased[1] = Language2;
-            this.LanguagesZeroBased[2] = Language3;
+            LanguagesZeroBased.Add(new WritingSystem(1, getTagOfDefaultLanguageForNaming));
+            LanguagesZeroBased.Add(new WritingSystem(2, getTagOfDefaultLanguageForNaming));
+            LanguagesZeroBased.Add(new WritingSystem(3, getTagOfDefaultLanguageForNaming));
 
             SignLanguage = new WritingSystem(-1, getTagOfDefaultLanguageForNaming);
 
@@ -145,11 +140,8 @@ namespace Bloom.Collection
             : this(collectionInfo.PathToSettingsFile)
         {
             AllowNewBooks = collectionInfo.AllowNewBooks;
-            Language1.FontName = collectionInfo.Language1.FontName;
-            Language1 = collectionInfo.Language1;
-            Language2 = collectionInfo.Language2;
-            Language3 = collectionInfo.Language3;
 
+            LanguagesZeroBased = new List<WritingSystem>(collectionInfo.LanguagesZeroBased);
             Language2.FontName = Language3.FontName = WritingSystem.GetDefaultFontName();
             SignLanguage = collectionInfo.SignLanguage;
 
@@ -271,6 +263,9 @@ namespace Bloom.Collection
                 return Language3.Name;
             if (tag == SignLanguageTag)
                 return SignLanguage.Name;
+            var language = LanguagesZeroBased.Find(x => x.Tag == tag);
+            if (language != null)
+                return language.Name;
             // Note: the inLanguage parameter is often ignored by IetfLanguageTag.GetLocalizedLanguageName().
             return IetfLanguageTag.GetLocalizedLanguageName(tag, inLanguage);
         }
@@ -287,6 +282,31 @@ namespace Bloom.Collection
             Language1.SaveToXElement(xml);
             Language2.SaveToXElement(xml);
             Language3.SaveToXElement(xml);
+            var languageList = new XElement("Languages");
+            int wsNum = 0;
+            foreach (var langWs in LanguagesZeroBased)
+            {
+                var language = new XElement("Language");
+                switch (++wsNum)
+                {
+                    case 1:
+                        language.Add(new XAttribute("L1", "true"));
+                        break;
+                    case 2:
+                        // L2 may essentially duplicate L1, but that's okay: we've always allowed this.
+                        language.Add(new XAttribute("L2", "true"));
+                        break;
+                    case 3:
+                        if (String.IsNullOrEmpty(Language3Tag))
+                            continue; // Don't bother writing empty content.
+                        // L3 may essentially duplicate L1 or L2, but that's okay: we've always allowed this.
+                        language.Add(new XAttribute("L3", "true"));
+                        break;
+                }
+                langWs.SaveToXElement(language, 0);
+                languageList.Add(language);
+            }
+            xml.Add(languageList);
             SignLanguage.SaveToXElement(xml);
             xml.Add(new XElement("OneTimeCheckVersionNumber", OneTimeCheckVersionNumber));
             xml.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
@@ -452,9 +472,17 @@ namespace Bloom.Collection
                 // the variable (at its declaration).
                 CollectionId = ReadString(xml, "CollectionId", CollectionId);
 
-                Language1.ReadFromXml(xml, true, "en");
-                Language2.ReadFromXml(xml, true, "self");
-                Language3.ReadFromXml(xml, true, Language2.Tag);
+                var languageList = xml.Descendants("Languages").FirstOrDefault();
+                if (languageList != null)
+                {
+                    LoadLanguagesList(languageList);
+                }
+                else
+                {
+                    Language1.ReadFromXml(xml, true, "en");
+                    Language2.ReadFromXml(xml, true, "self");
+                    Language3.ReadFromXml(xml, true, Language2.Tag);
+                }
                 SignLanguage.ReadFromXml(xml, true, Language2.Tag);
 
                 XMatterPackName = ReadString(xml, "XMatterPack", "Factory");
@@ -618,6 +646,51 @@ namespace Bloom.Collection
             }
 
             SetAnalyticsProperties();
+        }
+
+        private void LoadLanguagesList(XElement languageList)
+        {
+            int wsNum = 0;
+            foreach (var language in languageList.Descendants("Language"))
+            {
+                if (wsNum == 0)
+                    Language1.ReadFromXml(language, true, "en", 0);
+                else if (wsNum == 1)
+                    Language2.ReadFromXml(language, true, "self", 0);
+                else if (wsNum == 2 && language.Attribute("L3")?.Value == "true")
+                    Language3.ReadFromXml(language, true, Language2.Tag, 0);
+                else
+                {
+                    var writingSystem = new WritingSystem(0, DefaultLanguageForNamingLanguages);
+                    writingSystem.ReadFromXml(language, true, Language2.Tag, 0);
+                    LanguagesZeroBased.Add(writingSystem);
+                }
+                ++wsNum;
+            }
+            if (Language3.Name == null)
+            {
+                // If Language3 is not defined, set some default values that would otherwise be null.
+                Language3.SetName("", false);
+                Language3.Tag = "";
+                Language3.FontName = WritingSystem.GetDefaultFontName();
+            }
+        }
+
+        public void UpdateOrCreateCollectionLanguage(string tag, string name)
+        {
+            var language = LanguagesZeroBased.Find(x => x.Tag == tag);
+            if (language != null)
+            {
+                language.SetName(name, true);
+            }
+            else
+            {
+                var writingSystem = new WritingSystem(0, DefaultLanguageForNamingLanguages);
+                writingSystem.Tag = tag;
+                writingSystem.SetName(name, true);
+                writingSystem.FontName = WritingSystem.GetDefaultFontName();
+                LanguagesZeroBased.Add(writingSystem);
+            }
         }
 
         public bool LockedToOneDownloadedBook;
