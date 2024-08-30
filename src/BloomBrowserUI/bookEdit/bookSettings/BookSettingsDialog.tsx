@@ -151,16 +151,11 @@ export const BookSettingsDialog: React.FunctionComponent<{
     );
     */
 
-    /* unused so far
-    const coverBackgroundLabel = useL10n(
-        "Cover Background",
-        "BookSettings.CoverBackground"
+    const coverBackgroundColorLabel = useL10n(
+        "Background Color",
+        "Common.BackgroundColor"
     );
-    const coverColorLabel = useL10n(
-        "Cover Color",
-        "PublishTab.Android.CoverColor" // reuse the same string localized for the Android tab
-    );
-    */
+
     const whatToShowOnCoverLabel = useL10n(
         "Front Cover",
         "BookSettings.WhatToShowOnCover"
@@ -356,25 +351,18 @@ export const BookSettingsDialog: React.FunctionComponent<{
                         selectedGroupIndex={props.initiallySelectedGroupIndex}
                     >
                         <ConfigrGroup label={coverLabel} level={1}>
-                            {
-                                // This is not part of the group of four mutually exclusive messages above
-                            }
+                            {appearanceDisabled && (
+                                <NoteBox>
+                                    <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
+                                        The selected page theme does not support
+                                        the following settings.
+                                    </Div>
+                                </NoteBox>
+                            )}
                             <ConfigrSubgroup
                                 label={whatToShowOnCoverLabel}
                                 path={`appearance`}
                             >
-                                {appearanceDisabled && (
-                                    <NoteBox
-                                        css={css`
-                                            margin-left: 20px;
-                                        `}
-                                    >
-                                        <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
-                                            The selected page theme does not
-                                            support the following settings.
-                                        </Div>
-                                    </NoteBox>
-                                )}
                                 <FieldVisibilityGroup
                                     field="cover-title"
                                     labelFrame="Show Title in {0}"
@@ -403,21 +391,19 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     )}
                                 />
                             </ConfigrSubgroup>
-                            {/* <ConfigrSubgroup
-                                label={
-                                    coverBackgroundLabel +
-                                    "  (Not implemented yet)"
-                                }
+                            <ConfigrSubgroup
+                                label={"All Cover Pages"}
                                 path={`appearance`}
                             >
                                 <ConfigrCustomStringInput
-                                    path={`appearance.coverColor`}
-                                    disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
-                                    //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
-                                    label={coverColorLabel}
+                                    label={coverBackgroundColorLabel}
                                     control={ColorPickerForConfigr}
+                                    disabled={appearanceDisabled}
+                                    {...getAdditionalProps<string>(
+                                        `cover-background-color`
+                                    )}
                                 />
-                            </ConfigrSubgroup> */}
+                            </ConfigrSubgroup>
                             {/*
 
                             <ConfigrSubgroup

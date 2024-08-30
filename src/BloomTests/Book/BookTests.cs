@@ -99,7 +99,7 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            book.SetCoverColorInternal(newValue);
+            book.SetCoverColor(newValue);
             var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
             var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
             var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
@@ -128,7 +128,7 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             var dom = book.RawDom;
-            book.SetCoverColorInternal(newValue);
+            book.SetCoverColor(newValue);
             var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
             var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
             var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
@@ -2027,7 +2027,7 @@ namespace BloomTests.Book
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("#abcdef", result);
         }
@@ -2050,7 +2050,7 @@ namespace BloomTests.Book
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("black", result);
         }
@@ -2074,7 +2074,7 @@ namespace BloomTests.Book
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("#ffd4d4", result);
         }

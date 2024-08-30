@@ -23,6 +23,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Bloom.Book
 {
@@ -354,6 +355,32 @@ namespace Bloom.Book
             meta = Head.AppendChild(_dom.CreateElement("meta")) as XmlElement;
             meta.SetAttribute("name", name);
             meta.SetAttribute("content", content);
+        }
+
+        public enum Position
+        {
+            First,
+            Last
+        }
+
+        public void AddOrReplaceStyleElement(string name, string content, Position position)
+        {
+            // NB: do not use `title` attribute: that will actuall cause the style to be ignored, browsers take it meen you have alternate stylesheets
+            var element = _dom.SelectSingleNode($"/html/head/style[@name='{name}']") as XmlElement;
+            if (element != null)
+            {
+                // always deleting makes this resilient to code changes between prepend and append
+                element.ParentNode.RemoveChild(element);
+            }
+
+            element = _dom.CreateElement("style");
+            element.SetAttribute("type", "text/css");
+            element.SetAttribute("name", name);
+            element.InnerXml = content;
+            if (position == Position.First)
+                Head.PrependChild(element);
+            else
+                Head.AppendChild(element);
         }
 
         public void AddJavascriptFileToBody(string pathToJavascript)
@@ -1497,9 +1524,7 @@ namespace Bloom.Book
             ((XmlElement)child).SetAttribute("class", newclass);
         }
 
-        // Both of these are relative to the DOM's Head element
-        private const string CoverColorStyleXPath =
-            "./style[@type='text/css' and contains(.,'coverColor')]";
+        // relative to the DOM's Head element
         public const string UserModifiedStyleXPath =
             "./style[@type='text/css' and @title='userModifiedStyles']";
 
@@ -1524,7 +1549,7 @@ namespace Bloom.Book
         internal static XmlElement GetCoverColorStyleElement(XmlNode headElement)
         {
             return headElement
-                .SafeSelectNodes(CoverColorStyleXPath)
+                .SafeSelectNodes("./style[@type='text/css' and contains(.,'coverColor')]")
                 .Cast<XmlElement>()
                 .FirstOrDefault();
         }
@@ -2278,7 +2303,9 @@ namespace Bloom.Book
                 // and group 4 is " font-size: 22pt !important; ".
                 // For the last line, group 1 is "BigWords-style", group 2 is "[lang="en"]", group 3 is "en",
                 // and group 4 is " font-family: Gothic !important; ".
-                var findRule = new Regex("\\.([-A-Za-z]*)(\\[lang=['\"]([-a-zA-Z]*)['\"]\\])?\\s*{([^}]*)}");
+                var findRule = new Regex(
+                    "\\.([-A-Za-z]*)(\\[lang=['\"]([-a-zA-Z]*)['\"]\\])?\\s*{([^}]*)}"
+                );
                 var rulesMatched = findRule.Matches(cssContent);
                 foreach (Match match in rulesMatched)
                 {
