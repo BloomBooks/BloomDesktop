@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Web;
 using System.Xml;
 using Bloom;
@@ -79,7 +80,7 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void SetCoverColor_WorksWithCaps()
+        public void SetCoverColor_UpdatesEverything()
         {
             var newValue = "#777777";
             SetDom(
@@ -87,9 +88,6 @@ namespace BloomTests.Book
                 @"<style type='text/css'>
 				</style>
 				<style type='text/css'>
-					DIV.coverColor  TEXTAREA {
-						background-color: #B2CC7D !important;
-					}
 					DIV.bloom-page.coverColor {
 						background-color: #B2CC7D !important;
 					}
@@ -98,42 +96,54 @@ namespace BloomTests.Book
 				</style>"
             );
             var book = CreateBook();
-            var dom = book.RawDom;
-            book.SetCoverColorInternal(newValue);
-            var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
-            var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
-            var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
-            Assert.That(first > 0);
-            Assert.That(last > 0 && last != first);
+            book.SetCoverColor(newValue);
+            Assert.That(GetLegacyCoverColorStyleNode(book).InnerText.Contains(newValue));
+            Assert.That(GetAppearanceCoverColorStyleNode(book).InnerText.Contains(newValue));
+            CheckOrderOfRules(book);
+            Assert.AreEqual(newValue, book.GetCoverColor());
+
+            // there should only be one style rule that contains "coverColor"... i.e. make sure we didn't just make a second one
+            Assert.AreEqual(
+                1,
+                book.RawDom.SafeSelectNodes("//style[contains(text(),'coverColor')]").Count()
+            );
+            // there should only be one appearance rule... i.e. make sure we didn't just make a second one
+            Assert.AreEqual(
+                1,
+                book.RawDom
+                    .SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
+                    .Count()
+            );
         }
 
         [Test]
-        public void SetCoverColor_WorksWithLowercase()
+        public void MigratesLegacyColorToAppearance()
         {
-            var newValue = "#777777";
             SetDom(
                 "",
                 @"<style type='text/css'>
-				</style>
-				<style type='text/css'>
-					div.coverColor  textarea {
+					DIV.bloom-page.coverColor {
 						background-color: #B2CC7D !important;
 					}
-					div.bloom-page.coverColor {
-						background-color: #B2CC7D !important;
-					}
-				</style>
-				<style type='text/css'>
 				</style>"
             );
             var book = CreateBook();
-            var dom = book.RawDom;
-            book.SetCoverColorInternal(newValue);
-            var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
-            var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
-            var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
-            Assert.That(first > 0);
-            Assert.That(last > 0 && last != first);
+            Assert.That(GetLegacyCoverColorStyleNode(book).InnerText.Contains("#B2CC7D"));
+            Assert.That(GetAppearanceCoverColorStyleNode(book).InnerText.Contains("#B2CC7D"));
+            // there should only be one style rule that contains "coverColor"... i.e. make sure we didn't just make a second one
+            Assert.AreEqual(
+                1,
+                book.RawDom.SafeSelectNodes("//style[contains(text(),'coverColor')]").Count()
+            );
+        }
+
+        [Test]
+        public void MigratingFromOldBook_CoverColorMissing()
+        {
+            SetDom("", @"");
+            var book = CreateBook();
+            Assert.NotNull(GetAppearanceCoverColorStyleNode(book));
+            Assert.NotNull(GetLegacyCoverColorStyleNode(book));
         }
 
         [Test]
@@ -1313,25 +1323,48 @@ namespace BloomTests.Book
                 );
         }
 
+        // years later, I don't know why we are testing this, perhaps there was some bug at some point
         [Test]
         public void CreateBook_AlreadyHasCoverColor_GetsEmptyUserStyles()
         {
             var coverStyle =
                 @"<style type='text/css'>
-	DIV.coverColor  TEXTAREA  { background-color: #98D0B9 !important; }
 	DIV.bloom-page.coverColor { background-color: #98D0B9 !important; }
 			</style>";
             SetDom("<div class='bloom-page' id='1'></div>", coverStyle);
-
-            // SUT
             var book = CreateBook();
+            Assert.AreEqual(string.Empty, GetUserModifiedStylesNode(book).InnerText);
+        }
 
-            var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
-            Assert.AreEqual(2, styleNodes.Length);
-            Assert.AreEqual("userModifiedStyles", styleNodes[0].GetAttribute("title"));
-            Assert.AreEqual(string.Empty, styleNodes[0].InnerText);
-            // verify that the 'coverColor' rules are still there
-            Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
+        private SafeXmlNode GetUserModifiedStylesNode(Bloom.Book.Book book)
+        {
+            return HtmlDom.GetUserModifiedStyleElement(book.RawDom.Head);
+        }
+
+        private SafeXmlNode GetLegacyCoverColorStyleNode(Bloom.Book.Book book)
+        {
+            return book.RawDom
+                .SafeSelectNodes("//style")
+                .FirstOrDefault(s => s.InnerText.Contains(".bloom-page.coverColor"));
+        }
+
+        private SafeXmlNode GetAppearanceCoverColorStyleNode(Bloom.Book.Book book)
+        {
+            return book.RawDom
+                .SafeSelectNodes("//style")
+                .FirstOrDefault(s => s.InnerText.Contains("--cover-background-color"));
+        }
+
+        private void CheckOrderOfRules(Bloom.Book.Book book)
+        {
+            var indexOfUserStyles = book.OurHtmlDom.Head.ChildNodes.IndexOf(
+                GetUserModifiedStylesNode(book)
+            );
+            var indexOfCoverColorRule = book.OurHtmlDom.Head.ChildNodes.IndexOf(
+                GetLegacyCoverColorStyleNode(book)
+            );
+            // why this should come first is lost to time
+            Assert.Less(indexOfUserStyles, indexOfCoverColorRule);
         }
 
         [Test]
@@ -1344,25 +1377,20 @@ namespace BloomTests.Book
 			</style>";
             var coverStyle =
                 @"<style type='text/css'>
-	DIV.coverColor  TEXTAREA  { background-color: #98D0B9 !important; }
 	DIV.bloom-page.coverColor { background-color: #98D0B9 !important; }
 			</style>";
             SetDom("<div class='bloom-page' id='1'></div>", userStyle + coverStyle);
 
             // SUT
             var book = CreateBook();
-
-            var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
-            Assert.AreEqual(2, styleNodes.Length);
-            Assert.AreEqual("userModifiedStyles", styleNodes[0].GetAttribute("title"));
             Assert.IsTrue(
-                styleNodes[0].InnerText.Contains(
+                GetUserModifiedStylesNode(book).InnerText.Contains(
                     ".normal-style[lang='fr'] { font-size: 9pt ! important; }"
                 )
             );
-            Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
         }
 
+        // years later, I don't know why we are testing this, perhaps there was some bug at some point
         [Test]
         public void CreateBook_HasNeitherStyle_GetsEmptyUserStyles()
         {
@@ -1370,20 +1398,27 @@ namespace BloomTests.Book
 
             // SUT
             var book = CreateBook();
-
-            var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
-            Assert.AreEqual(2, styleNodes.Length); // also gets a new 'coverColor' style element
-            Assert.AreEqual("userModifiedStyles", styleNodes[0].GetAttribute("title"));
-            Assert.AreEqual(string.Empty, styleNodes[0].InnerText);
-            Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
+            Assert.AreEqual(GetUserModifiedStylesNode(book).InnerText, string.Empty);
         }
 
+        // why this is important is lost to time, and may be even less relevent now that the Appearance system handles colors
+        // and this rule is just there for legacy purposes
         [Test]
-        public void CreateBook_AlreadyHasCoverColorAndUserStyles_InWrongOrder_GetsStyleElementsReversed()
+        public void CreateBook_CoverColorRuleMustFollowUserStyles()
+        {
+            SetDom("<div class='bloom-page' id='1'></div>");
+
+            var book = CreateBook();
+            CheckOrderOfRules(book);
+        }
+
+        // why this is important is lost to time, and may be even less relevent now that the Appearance system handles colors
+        // and this rule is just there for legacy purposes
+        [Test]
+        public void CreateBook_CoverColorRuleMustFollowUserStyles_InWrongOrder_GetsStyleElementsReversed()
         {
             var coverStyle =
                 @"<style type='text/css'>
-	DIV.coverColor  TEXTAREA  { background-color: #98D0B9 !important; }
 	DIV.bloom-page.coverColor { background-color: #98D0B9 !important; }
 			</style>";
             var userStyle =
@@ -1393,18 +1428,8 @@ namespace BloomTests.Book
 			</style>";
             SetDom("<div class='bloom-page' id='1'></div>", coverStyle + userStyle);
 
-            // SUT
             var book = CreateBook();
-
-            var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
-            Assert.AreEqual(2, styleNodes.Length);
-            Assert.AreEqual("userModifiedStyles", styleNodes[0].GetAttribute("title"));
-            Assert.IsTrue(
-                styleNodes[0].InnerText.Contains(
-                    ".normal-style[lang='fr'] { font-size: 9pt ! important; }"
-                )
-            );
-            Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
+            CheckOrderOfRules(book);
         }
 
         [Test]
@@ -2006,6 +2031,52 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void DetectAndMarkDarkCoverColor_ColorIsDark_MarksCoverColorDark()
+        {
+            _bookDom = new HtmlDom(
+                @"
+				<html>
+					<body>
+						<div class='bloom-page cover coverColor bloom-frontMatter A4Landscape' data-page='required'>
+						</div>
+					</body>
+				</html>"
+            );
+            var book = CreateBook();
+            book.SetCoverColor("blue");
+            book.DetectAndMarkDarkCoverColor();
+            // should now have a div with class of both "bloom-page" and "darkCoverColor"
+            Assert.IsNotNull(
+                book.RawDom.SelectSingleNode(
+                    "//div[contains(@class, 'bloom-page') and contains(@class, 'darkCoverColor')]"
+                )
+            );
+        }
+
+        [Test]
+        public void DetectAndMarkDarkCoverColor_ColorIsLight_RemovesDarkCoverColorClass()
+        {
+            _bookDom = new HtmlDom(
+                @"
+				<html>
+					<body>
+						<div class='bloom-page cover coverColor darkCoverColor bloom-frontMatter A4Landscape' data-page='required'>
+						</div>
+					</body>
+				</html>"
+            );
+            var book = CreateBook();
+            book.SetCoverColor("yellow");
+            book.DetectAndMarkDarkCoverColor();
+            // should have removed the "darkCoverColor"
+            Assert.IsNull(
+                book.RawDom.SelectSingleNode(
+                    "//div[contains(@class, 'bloom-page') and contains(@class, 'darkCoverColor')]"
+                )
+            );
+        }
+
+        [Test]
         public void GetCoverColorFromDom_RegularHexCode_Works()
         {
             const string xml =
@@ -2018,9 +2089,24 @@ namespace BloomTests.Book
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("#abcdef", result);
+        }
+
+        [Test]
+        public void GetCoverColorFromDom_NoCoverColorRule_ReturnsSomeColor()
+        {
+            const string xml = @"<html><head></head><body></body></html>";
+            var document = SafeXmlDocument.Create();
+            document.LoadXml(xml);
+
+            // SUT
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
+
+            // should look like a hex color
+            Assert.IsTrue(result.StartsWith("#"));
+            Assert.IsTrue(result.Length == 7);
         }
 
         [Test]
@@ -2041,7 +2127,7 @@ namespace BloomTests.Book
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("black", result);
         }
@@ -2065,7 +2151,7 @@ namespace BloomTests.Book
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("#ffd4d4", result);
         }

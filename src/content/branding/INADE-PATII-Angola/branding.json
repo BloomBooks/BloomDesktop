@@ -19,5 +19,8 @@
             "content": "<img class='branding' src='INADE-PATII-Angola.png'/>",
             "condition": "always"
         }
-    ]
+    ],
+    "appearance": {
+        "cover-background-color": "white"
+    }
 }

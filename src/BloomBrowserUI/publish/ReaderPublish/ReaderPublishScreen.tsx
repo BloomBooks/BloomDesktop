@@ -12,10 +12,8 @@ import {
 } from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser, ReaderPublishMethods } from "./MethodChooser";
 import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
-import { CoverColorGroup } from "../commonPublish/CoverColorGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
-import ReactDOM = require("react-dom");
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,
@@ -211,9 +209,6 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 generation={generation}
                 onChange={() => setHighlightPreview(true)}
             />
-            <MustBeCheckedOut>
-                <CoverColorGroup onChange={() => setHighlightPreview(true)} />
-            </MustBeCheckedOut>
             {/* push everything to the bottom */}
             <div
                 css={css`

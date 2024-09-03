@@ -646,6 +646,12 @@ div[data-book*="branding"] {
     }
 }
 
+// the extra specificity here is to win out over the legacy (but still active) cover-color rule in the html itself
+// As of 6.0 this is only used for Angola branding
+div.bloom-page.coverColor {
+    background-color: var(--cover-background-color) !important;
+}
+
 // --------------------------------------------------------------------------------------
 // pages that are symmetrical left vs. right, so that we only use --page-margin-left
 // (or --cover-margin-side).

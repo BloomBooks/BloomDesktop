@@ -341,6 +341,36 @@ namespace Bloom.Book
             meta.SetAttribute("content", content);
         }
 
+        public void AddOrReplaceStyleElement(
+            string name,
+            string content,
+            SafeXmlNode nodeThisShouldComeAfter
+        )
+        {
+            // NB: do not use `title` attribute: that will actuall cause the style to be ignored, browsers take it meen you have alternate stylesheets
+            var element = _dom.SelectSingleNode($"/html/head/style[@name='{name}']");
+            if (element != null)
+            {
+                // always deleting makes this resilient to code changes between prepend and append
+                element.ParentNode.RemoveChild(element);
+            }
+
+            element = _dom.CreateElement("style");
+            element.SetAttribute("type", "text/css");
+            element.SetAttribute("name", name);
+            element.InnerXml = content;
+
+            if (nodeThisShouldComeAfter == null)
+            {
+                Head.AppendChild(element);
+            }
+            else
+            {
+                var parent = nodeThisShouldComeAfter.ParentNode;
+                parent.InsertAfter(element, nodeThisShouldComeAfter);
+            }
+        }
+
         public void AddJavascriptFileToBody(string pathToJavascript)
         {
             Body.AppendChild(MakeJavascriptElement(pathToJavascript));
@@ -1373,9 +1403,7 @@ namespace Bloom.Book
             child.SetAttribute("class", newclass);
         }
 
-        // Both of these are relative to the DOM's Head element
-        private const string CoverColorStyleXPath =
-            "./style[@type='text/css' and contains(.,'coverColor')]";
+        // relative to the DOM's Head element
         public const string UserModifiedStyleXPath =
             "./style[@type='text/css' and @title='userModifiedStyles']";
 
@@ -1397,7 +1425,10 @@ namespace Bloom.Book
         /// <param name="headElement"></param>
         internal static SafeXmlElement GetCoverColorStyleElement(SafeXmlNode headElement)
         {
-            return (SafeXmlElement)headElement.SelectSingleNode(CoverColorStyleXPath);
+            return (SafeXmlElement)
+                headElement.SelectSingleNode(
+                    "./style[@type='text/css' and contains(.,'coverColor')]"
+                );
         }
 
         internal static SafeXmlElement AddEmptyUserModifiedStylesNode(SafeXmlNode headElement)
