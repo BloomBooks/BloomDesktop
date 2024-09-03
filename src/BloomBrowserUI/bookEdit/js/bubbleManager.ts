@@ -31,7 +31,6 @@ import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderOverlayContextControls } from "./OverlayContextControls";
-import { UndoManager } from "./undoManager";
 import { data } from "jquery";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -1811,6 +1810,16 @@ export class BubbleManager {
             controlFrame.style.height = this.activeElement.style.height;
             controlFrame.style.left = this.activeElement.style.left;
             controlFrame.style.top = this.activeElement.style.top;
+            const tails = Bubble.getBubbleSpec(this.activeElement).tails;
+            if (tails.length > 0) {
+                const tipY = tails[0].tipY;
+                controlFrame.classList.toggle(
+                    "controls-above",
+                    tipY >
+                        this.activeElement.clientHeight +
+                            this.activeElement.offsetTop
+                );
+            }
         }
         this.adjustMoveCropHandleVisibility();
     };
@@ -2737,6 +2746,7 @@ export class BubbleManager {
         const controlFrame = document.getElementById("overlay-control-frame");
         controlFrame?.classList?.remove("moving");
         this.adjustMoveCropHandleVisibility();
+        this.alignControlFrameWithActiveElement();
     }
 
     // MUST be defined this way, rather than as a member function, so that it can

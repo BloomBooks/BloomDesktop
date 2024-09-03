@@ -1309,6 +1309,9 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
                 display: block;
             }
         }
+        #overlay-context-controls {
+            display: none;
+        }
     }
     // the "crop" handles on left and right are visible for text boxes
     // (though with a different function).
@@ -1435,4 +1438,8 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
     bottom: -67px;
     left: calc(50% - 150px);
     width: 300px;
+}
+.controls-above #overlay-context-controls {
+    top: -67px;
+    bottom: unset;
 }
