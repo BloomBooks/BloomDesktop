@@ -1310,11 +1310,22 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
             }
         }
     }
+    // the "crop" handles on left and right are visible for text boxes
+    // (though with a different function).
+    &.has-text:not(.moving) {
+        .bloom-ui-overlay-crop-handle-e,
+        .bloom-ui-overlay-crop-handle-w {
+            display: block;
+        }
+        // Enhance: Canva uses these handles on text boxes to resize the box by modifying
+        // font size. This is nice for tweaking things but it's not clear how it should interact
+        // with our style system. For now we're just not showing them for text boxes.
+        .bloom-ui-overlay-resize-handle {
+            display: none;
+        }
+    }
 
     // crop handles are, for now, only visible on images.
-    // Enahnce: Canva uses the horizontal ones on text boxes to resize the box by modifying
-    // font size. This is nice for tweaking things but it's not clear how it should interact
-    // with our style system.
     .bloom-ui-overlay-crop-handle {
         display: none; // default
         &.active-control {
@@ -1362,6 +1373,8 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
         cursor: se-resize;
     }
 
+    // We call these crop handles, but for text boxes they are actually used to change width (and thus
+    // aspect ratio).
     .bloom-ui-overlay-move-crop-handle {
         top: calc(50% - @resizeHandleRadius);
         left: calc(50% - @resizeHandleRadius);
