@@ -2106,7 +2106,7 @@
       </trans-unit>
       <trans-unit id="EditTab.ImageMetadata.Corrupt" sil:dynamic="true">
         <source xml:lang="en">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</source>
-        <target xml:lang="fr" state="needs-translation">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</target>
+        <target xml:lang="fr" state="translated">Bloom a rencontré un problème avec {0}. Il se peut que le fichier soit corrompu. Veuillez essayer une autre image ou essayez avec Bloom 6.0 ou plus récent.</target>
         <note>ID: EditTab.ImageMetadata.Corrupt</note>
       </trans-unit>
       <trans-unit id="EditTab.ImageMetadata.Corrupt.MoreInfo" sil:dynamic="true">
