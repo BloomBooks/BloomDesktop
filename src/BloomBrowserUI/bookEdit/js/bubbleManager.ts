@@ -781,6 +781,8 @@ export class BubbleManager {
         attachEventsToEditables: boolean
     ): void {
         Comical.startEditing([imageContainer]);
+        // necessary if we added the very first bubble, and Comical was not previously initialized
+        Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
         if (bubble) {
             const newTextOverPictureElement = bubble.content;
             Comical.activateBubble(bubble);
@@ -1825,9 +1827,23 @@ export class BubbleManager {
     private alignControlFrameWithActiveElement = () => {
         const controlFrame = document.getElementById("overlay-control-frame");
         if (controlFrame && this.activeElement) {
-            controlFrame.style.width = this.activeElement.style.width;
+            const hasText = controlFrame.classList.contains("has-text");
+            // Text boxes get a little extra padding, making the control frame bigger than
+            // the overlay itself. The extra needed corresponds roughly to the (.less) @cropHandleRadius,
+            // but one pixel less seems to be enough to prevent the crop handles actually overlapping text,
+            // though maybe I've just been lucky and this should really be 4.
+            // Seems like it should be easy to do this in the .less file, but the control frame is not
+            // a child of the overlay (for z-order reasons), so it's not easy for CSS to move it left
+            // when the style is already absolutely controlling style.left. It's easier to just tweak
+            // it here.
+            const extraPadding = hasText ? 3 : 0;
+            controlFrame.style.width =
+                this.activeElement.clientWidth + 2 * extraPadding + "px";
             controlFrame.style.height = this.activeElement.style.height;
-            controlFrame.style.left = this.activeElement.style.left;
+            controlFrame.style.left =
+                BubbleManager.pxToNumber(this.activeElement.style.left) -
+                extraPadding +
+                "px";
             controlFrame.style.top = this.activeElement.style.top;
             const tails = Bubble.getBubbleSpec(this.activeElement).tails;
             if (tails.length > 0) {

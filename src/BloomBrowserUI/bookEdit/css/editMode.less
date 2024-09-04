@@ -575,6 +575,13 @@ div.pageLabel[contenteditable="true"]:focus {
     // box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
     //     0 0 8px rgba(82, 168, 236, 0.6);
 }
+// I'm not sure why the rule above is !important, but this one has to be to beat it.
+// In edit mode we don't want such an automatic outline, because the control frame
+// provides one, and typically they don't even line up, becuase we grow the control
+// frame a little bit to prevent the side buttons overlapping text.
+.bloom-textOverPicture .bloom-editable:focus {
+    outline: none !important;
+}
 
 .bloom-editable:focus {
     //position: relative;
