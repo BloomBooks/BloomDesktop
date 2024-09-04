@@ -1,12 +1,11 @@
 {
     "presets": [
-        // {
-        //     "data-book": "licenseUrl",
-        //     "lang": "*",
-        //     "content": "http://creativecommons.org/licenses/by-nc/4.0/",
-        //     "condition": "always"
-        // },
-
+        {
+            "data-book": "cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding' src='RepublicaDeAngola.png'/><p>República de Angola</p><p>Ministério da Educação</p><p>Instituto Nacional de Avaliação e de Desenvolvimento da Educação</p>",
+            "condition": "always"
+        },
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
