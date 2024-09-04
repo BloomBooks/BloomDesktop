@@ -1421,16 +1421,20 @@ async function pasteImpl(imageAvailable: boolean) {
     // any other editing and that ckEditor actually has an item in its undo stack
     // so that the Undo gets activated.
     const textToPaste = await navigator.clipboard.readText();
-    (<any>CKEDITOR.currentInstance).undoManager.save(true);
-    CKEDITOR.currentInstance.insertText(textToPaste);
-    (<any>CKEDITOR.currentInstance).undoManager.save(true);
-    // Works but isn't undoable.
-    //const sel = document.getSelection();
-    // if (sel) {
-    //     const range = sel.getRangeAt(0);
-    //     range.deleteContents();
-    //     range.insertNode(document.createTextNode(textToPaste));
-    // }
+    if (CKEDITOR.currentInstance) {
+        (<any>CKEDITOR.currentInstance).undoManager.save(true);
+        CKEDITOR.currentInstance.insertText(textToPaste);
+        (<any>CKEDITOR.currentInstance).undoManager.save(true);
+    } else {
+        // This works but isn't undoable.  CKEDITOR.currentInstance is sometimes
+        // null, so use this as a fallback.  See BL-13830.
+        const sel = document.getSelection();
+        if (sel) {
+            const range = sel.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(document.createTextNode(textToPaste));
+        }
+    }
 }
 
 export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
