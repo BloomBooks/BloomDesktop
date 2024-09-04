@@ -588,6 +588,7 @@ export class BubbleManager {
         // However, it's possible the active bubble already moved; don't clear theBubbleWeAreTextEditing if so
         if (event.currentTarget === this.theBubbleWeAreTextEditing) {
             this.theBubbleWeAreTextEditing = undefined;
+            this.removeFocusClass();
         }
     };
 
@@ -940,6 +941,14 @@ export class BubbleManager {
         // }
     }
 
+    public removeFocusClass() {
+        Array.from(document.getElementsByClassName("bloom-focusedTOP")).forEach(
+            element => {
+                element.classList.remove("bloom-focusedTOP");
+            }
+        );
+    }
+
     public setActiveElement(element: HTMLElement | undefined) {
         if (this.activeElement !== element && this.activeElement) {
             tryRemoveImageEditingButtons(
@@ -948,6 +957,9 @@ export class BubbleManager {
                 )[0] as Element | undefined
             );
             this.activeElement.removeAttribute("data-bloom-active");
+        }
+        if (this.activeElement !== element) {
+            this.removeFocusClass();
         }
         // Some of this could probably be avoided if this.activeElement is not changing.
         // But there are cases in page initialization where this.activeElement
@@ -1114,15 +1126,21 @@ export class BubbleManager {
         this.startMoveCropControlX = this.currentDragControl.offsetLeft;
         this.startMoveCropControlY = this.currentDragControl.offsetTop;
 
-        document.addEventListener("mousemove", this.continueMoveCrop);
+        document.addEventListener("mousemove", this.continueMoveCrop, {
+            capture: true
+        });
         // capture:true makes sure we can't miss it.
         document.addEventListener("mouseup", this.endMoveCrop, {
             capture: true
         });
     };
     private endMoveCrop = (event: MouseEvent) => {
-        document.removeEventListener("mousemove", this.continueMoveCrop);
-        document.removeEventListener("mouseup", this.endMoveCrop);
+        document.removeEventListener("mousemove", this.continueMoveCrop, {
+            capture: true
+        });
+        document.removeEventListener("mouseup", this.endMoveCrop, {
+            capture: true
+        });
         this.currentDragControl?.classList.remove("active");
         this.currentDragControl!.style.left = "";
         this.currentDragControl!.style.top = "";
@@ -1189,15 +1207,21 @@ export class BubbleManager {
             this.oldImageTop = BubbleManager.pxToNumber(img.style.top);
             this.oldImageLeft = BubbleManager.pxToNumber(img.style.left);
         }
-        document.addEventListener("mousemove", this.continueResizeDrag);
+        document.addEventListener("mousemove", this.continueResizeDrag, {
+            capture: true
+        });
         // capture:true makes sure we can't miss it.
         document.addEventListener("mouseup", this.endResizeDrag, {
             capture: true
         });
     }
     private endResizeDrag = (_event: MouseEvent) => {
-        document.removeEventListener("mousemove", this.continueResizeDrag);
-        document.removeEventListener("mouseup", this.endResizeDrag);
+        document.removeEventListener("mousemove", this.continueResizeDrag, {
+            capture: true
+        });
+        document.removeEventListener("mouseup", this.endResizeDrag, {
+            capture: true
+        });
         this.currentDragControl?.classList.remove("active-control");
     };
 
@@ -1210,6 +1234,9 @@ export class BubbleManager {
             this.resizeDragCorner = undefined; // drag is over
             return;
         }
+        // we're handling this event, we don't want (e.g.) Comical to do so as well.
+        event.stopPropagation();
+        event.preventDefault();
         // We seem to get an initial no-op mouse move right after the mouse down.
         // It would be harmless to go through all the steps for it, but it's quite annoying when
         // try to debug an actual move.
@@ -1447,7 +1474,9 @@ export class BubbleManager {
         // move/up listeners are on the document so we can continue the drag even if it moves
         // outside the control clicked. I think something similar can be achieved
         // with mouse capture, but less portably.
-        document.addEventListener("mousemove", this.continueCropDrag);
+        document.addEventListener("mousemove", this.continueCropDrag, {
+            capture: true
+        });
         // putting this in capture phase to make sure we can't miss it. Had some trouble with
         // mouseup not firing, possibly because something does stopPropagation.
         document.addEventListener("mouseup", this.stopCropDrag, {
@@ -1455,8 +1484,12 @@ export class BubbleManager {
         });
     }
     private stopCropDrag = () => {
-        document.removeEventListener("mousemove", this.continueCropDrag);
-        document.removeEventListener("mouseup", this.stopCropDrag);
+        document.removeEventListener("mousemove", this.continueCropDrag, {
+            capture: true
+        });
+        document.removeEventListener("mouseup", this.stopCropDrag, {
+            capture: true
+        });
         this.currentDragControl?.classList.remove("active-control");
     };
     private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
@@ -2379,6 +2412,7 @@ export class BubbleManager {
                 "overlay-control-frame"
             );
             controlFrame?.classList?.add("moving");
+            this.activeElement?.classList?.add("moving");
         }
 
         const container = event.currentTarget as HTMLElement;
@@ -2534,6 +2568,23 @@ export class BubbleManager {
         event: MouseEvent,
         container: HTMLElement
     ) {
+        if (this.activeElement) {
+            const r = this.activeElement.getBoundingClientRect();
+            const container = this.activeElement.parentElement?.closest(
+                kImageContainerSelector
+            );
+            if (container) {
+                const canvas = this.getFirstCanvasForContainer(container);
+                if (canvas)
+                    canvas.classList.toggle(
+                        "moving",
+                        event.clientX > r.left &&
+                            event.clientX < r.right &&
+                            event.clientY > r.top &&
+                            event.clientY < r.bottom
+                    );
+            }
+        }
         // Capture the most recent data to use when our animation frame request is satisfied.
         this.lastMoveContainer = container;
         // We don't want any other effects of mouse move, like selecting text in the box,
@@ -2730,7 +2781,13 @@ export class BubbleManager {
 
     private stopMoving() {
         const controlFrame = document.getElementById("overlay-control-frame");
-        controlFrame?.classList?.remove("moving");
+        // We want to get rid of it at least from the control frame and the active bubble,
+        // but may as well make sure it doesn't get left anywhere.
+        Array.from(document.getElementsByClassName("moving")).forEach(
+            element => {
+                element.classList.remove("moving");
+            }
+        );
         this.adjustMoveCropHandleVisibility();
         this.alignControlFrameWithActiveElement();
     }
@@ -2782,6 +2839,7 @@ export class BubbleManager {
             this.theBubbleWeAreTextEditing = (event.target as HTMLElement)?.closest(
                 kTextOverPictureSelector
             ) as HTMLElement;
+            this.theBubbleWeAreTextEditing?.classList.add("bloom-focusedTOP");
             // We want to position the IP as if the user clicked where they did.
             // Since we already suppressed the mouseDown event, it's not enough to just
             // NOT suppress the mouseUp event. We need to actually move the IP to the
@@ -3195,6 +3253,7 @@ export class BubbleManager {
         }
         this.isComicEditingOn = false;
         this.removeControlFrame();
+        this.removeFocusClass();
 
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();

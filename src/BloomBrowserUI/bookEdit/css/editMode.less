@@ -1286,6 +1286,17 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
     opacity: 40%; // dim a bit to make it look like a prompt.
 }
 
+canvas.moving {
+    cursor: move;
+}
+
+.bloom-textOverPicture:not(.bloom-focusedTOP) * {
+    cursor: default;
+}
+.bloom-textOverPicture.moving:not(.bloom-focusedTOP) * {
+    cursor: move;
+}
+
 @resizeHandleRadius: 8px;
 @cropHandleRadius: 4px;
 @cropHandleCenter: 6px;
