@@ -443,12 +443,11 @@ function DisableImageTooltip(container: HTMLElement) {
     // (to avoid complicated conflicting z-index issues)
     const patriarch = farthest<HTMLElement>(container, ".bloom-imageContainer");
 
-    // Before clearing the patriarch's title, first check if the patriarch
-    // still represents this particular container.
-    // When switching between containers, it might not, because we need to both set the title for the new one
-    // and disable the old title.
-    // So, check first before clearing the title.
-    if (patriarch?.title === container.getAttribute("data-title")) {
+    // Earlier, we cleared it only if the patriarch's title was set to the same value as the container's data-title.
+    // A comment said this was to prevent turning off one bubble interfering with turning on another.
+    // But then we may fail to turn it off when we should. I think it's better to just make sure that
+    // turning on a new one comes after turning off an old one.
+    if (patriarch) {
         patriarch.title = "";
     }
 }

@@ -230,11 +230,11 @@ export class BubbleManager {
         return parseInt(px.replace("px", ""));
     }
 
-    // Now that we have the possibility of "nested" imageContainer elements,
-    // we need to limit the img tags we look at to those that are immediate children.
-    public static hideImageButtonsIfNotPlaceHolderOrHasOverlays(
-        container: HTMLElement
-    ) {
+    // We usually don't show the image editing buttons on an overlay page.
+    // (If the user clicks on the background, we show them.)
+    // An earlier version did not hide them if there isn't a background image (just a placeholder).
+    // But it's increasingly common to deliberately leave the background blank.
+    public static hideImageButtonsIfHasOverlays(container: HTMLElement) {
         if (
             document.getElementsByClassName(kTextOverPictureClass).length === 0
         ) {
@@ -246,21 +246,7 @@ export class BubbleManager {
             // relevant to this one.
             return;
         }
-        const placeHolderImages = Array.from(container.childNodes).filter(
-            child => {
-                return (
-                    child.nodeName === "IMG" &&
-                    (child as HTMLElement).getAttribute("src") ===
-                        "placeHolder.png"
-                );
-            }
-        );
-        const hasOverlay = container.classList.contains("hasOverlay");
-        // Would this be more reliable?
-        // container.getElementsByClassName("bloom-textOverPicture").length > 0;
-        if (placeHolderImages.length === 0 || hasOverlay) {
-            DisableImageEditing(container);
-        }
+        DisableImageEditing(container);
     }
 
     public turnOnHidingImageButtons() {
@@ -268,9 +254,7 @@ export class BubbleManager {
             this.getAllPrimaryImageContainersOnPage() as any
         );
         imageContainers.forEach(container => {
-            BubbleManager.hideImageButtonsIfNotPlaceHolderOrHasOverlays(
-                container
-            );
+            BubbleManager.hideImageButtonsIfHasOverlays(container);
         });
     }
 
@@ -773,9 +757,6 @@ export class BubbleManager {
     }
 
     private handleFocusInEvent(ev: Event) {
-        // Restore hiding these when we focus a bubble, so they don't get in the way of working on
-        // that bubble.
-        theOneBubbleManager.turnOnHidingImageButtons();
         BubbleManager.onFocusSetActiveElement(ev);
     }
 
@@ -979,6 +960,11 @@ export class BubbleManager {
         this.adjustTarget(this.activeElement);
         this.showCorrespondingTextBox(this.activeElement);
         this.setupControlFrame();
+        if (this.activeElement) {
+            // Restore hiding these when we activate a bubble, so they don't get in the way of working on
+            // that bubble.
+            theOneBubbleManager.turnOnHidingImageButtons();
+        }
     }
 
     // clientX/Y of the mouseDown event in one of the resize handles.
