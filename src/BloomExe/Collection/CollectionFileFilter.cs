@@ -22,7 +22,7 @@ namespace Bloom.Collection
         private Dictionary<string, BookFileFilter> _bookFilters =
             new Dictionary<string, BookFileFilter>();
 
-        public virtual bool Filter(string fullPath)
+        public virtual bool ShouldAllow(string fullPath)
         {
             if (_rootFolder == null)
                 return false; // can't accept anything without at least one book so this gets initialized.
@@ -34,7 +34,7 @@ namespace Bloom.Collection
                 return false;
 
             if (_bookFilters.TryGetValue(folder, out BookFileFilter bookFilter))
-                return bookFilter.Filter(fullPath);
+                return bookFilter.ShouldAllow(fullPath);
 
             return false;
         }
