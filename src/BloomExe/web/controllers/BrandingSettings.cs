@@ -153,15 +153,18 @@ namespace Bloom.Api
 
         public static Settings GetSettingsOrNull(string brandingNameOrFolderPath)
         {
-            if (CachedBrandingSettingsName == brandingNameOrFolderPath)
+            lock (_cacheLock)
             {
-                if (
-                    !Debugger.IsAttached // in production, we don't want to check this
-                    || RobustFile.GetLastWriteTimeUtc(CachedBrandingSettingsPath) // during development, we may be changing the branding.json file
-                        == CachedBrandingSettingsLastModified
-                )
+                if (CachedBrandingSettingsName == brandingNameOrFolderPath)
                 {
-                    return CachedBrandingSettings;
+                    if (
+                        !Debugger.IsAttached // in production, we don't want to check this
+                        || RobustFile.GetLastWriteTimeUtc(CachedBrandingSettingsPath) // during development, we may be changing the branding.json file
+                            == CachedBrandingSettingsLastModified
+                    )
+                    {
+                        return CachedBrandingSettings;
+                    }
                 }
             }
 
