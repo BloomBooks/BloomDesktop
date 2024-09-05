@@ -180,9 +180,11 @@ export default class OverflowChecker {
         // Conceivably, there could be some flicker from setting and clearing these, but I haven't
         // noticed it. Typically we use the results of this function to make overlays the right size,
         // and then grow/shrink don't do anything.
-        if (children.length === 0) {
+        if (element.childNodes.length === 0) {
             return 0;
         }
+        // Note that there may be no children, even though there are childNodes. We can only set style
+        // for elements, but we need to measure all the nodes (at least for one unit test).
         children.forEach((e: HTMLElement) => {
             e.style.flexGrow = "0";
             e.style.flexShrink = "0";
@@ -191,8 +193,9 @@ export default class OverflowChecker {
         // and means we don't have to worry about scroll position.
         let result = element.scrollHeight;
         if (element.scrollHeight <= element.clientHeight) {
-            // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm
-            children.forEach((x: HTMLElement) => {
+            // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
+            //
+            element.childNodes.forEach((x: HTMLElement) => {
                 if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
                 if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
                 // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
