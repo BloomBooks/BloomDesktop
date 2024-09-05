@@ -4786,7 +4786,7 @@ namespace Bloom.Book
                             .OrderBy(x => x)
                     )
                     {
-                        if (!filter.Filter(path))
+                        if (!filter.ShouldAllow(path))
                             continue;
                         if (path == filePath)
                             continue; // we already included a simplified version of the main HTML file

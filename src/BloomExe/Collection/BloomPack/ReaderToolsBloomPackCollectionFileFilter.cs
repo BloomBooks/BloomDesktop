@@ -7,11 +7,11 @@ namespace Bloom.Collection
     /// </summary>
     internal class ReaderToolsBloomPackCollectionFileFilter : CollectionFileFilter
     {
-        public override bool Filter(string fullPath)
+        public override bool ShouldAllow(string fullPath)
         {
             // Include everything for a normal collection.
             bool baseResult;
-            if (baseResult = base.Filter(fullPath))
+            if (baseResult = base.ShouldAllow(fullPath))
                 return true;
 
             // Plus a couple extra files for a Reader Tools BloomPack.

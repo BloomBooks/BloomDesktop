@@ -1,9 +1,32 @@
 @import "../branding-base.less";
-[data-book="outside-back-cover-branding-top-html"] img {
-    margin-left: auto;
-    margin-right: 0;
-    width: 20%;
+
+.bloom-page.frontCover {
+    --cover-margin-top: 10px !important;
+
+    [data-book="bookTitle"][lang="pt"] {
+        font-style: italic;
+    }
+    [data-book="smallCoverCredits"] {
+        line-height: 1em !important;
+        margin-bottom: 1em; // would need 2em to match the mockup at https://www.canva.com/design/DAGOTU0Dub0/6A-tUjw6eV4s7BhznwrZMQ
+    }
+}
+.bloom-page.coverColor.bloom-page.coverColor {
+    background-color: white !important; // needed for 6.0 but in 6.1 we move to use the appearance system so that the cover color controls get disabled
+}
+
+[data-book="cover-branding-top-html"] {
+    img {
+        width: 1.8cm;
+    }
+    p {
+        font-family: "Andika";
+        text-align: center;
+        font-size: 10pt;
+    }
+    margin-bottom: 2em;
 }
 [data-book="outside-back-cover-branding-bottom-html"] img {
-    width: 60%;
+    //width: 60%;
+    width: 100%;
 }
