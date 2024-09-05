@@ -2415,7 +2415,14 @@ export default class StyleEditor {
                         this.selectButtons(current);
                         new WebFXTabPane($("#tabRoot").get(0), false);
                     }
-                    const orientOnButton = $("#formatButton");
+                    // #formatButton doesn't always exist in text-on-picture
+                    // divs, so we need a fallback that will exist in those cases.
+                    // But we also want repeatable positions for overlays, so we
+                    // check for their popup div first.  See BL-13829.
+                    let orientOnButton = $("#overlay-context-controls");
+                    if (orientOnButton.length === 0) {
+                        orientOnButton = $("#formatButton");
+                    }
                     EditableDivUtils.positionDialogAndSetDraggable(
                         toolbar,
                         orientOnButton
