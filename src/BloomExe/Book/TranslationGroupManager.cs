@@ -321,28 +321,28 @@ namespace Bloom.Book
             // Enhance: could probably just do all the "V", "L1", etc. replacements here, rather than in ShouldNormallyShowEditable()
             // and Book.IsLanguageWantedInContent() and then simplify those functions.
 
-            var placeholdersWithDefaults = new Dictionary<string, string>
-            {
-                // Allow branding to set the language for the cover credits (needed by Angola in 2024)
-                { "CoverCreditsLanguage", "V" },
-            };
-            // As of Bloom 6.0, only front cover credits has one of these placeholders.
-            // Example: +field-prototypeDeclaredExplicity("[CoverCreditsLanguage]")
+            // As of Bloom 6.1, only front cover credits has one of these placeholders.
+            // Example: +field-prototypeDeclaredExplicity("[CoverCreditsLanguage] DEFAULT:V,N1")
             if (languagesAttributeString.Contains("["))
             {
-                var brandingSettings = BrandingSettings.GetSettingsOrNull(
-                    bookData.CollectionSettings.BrandingProjectKey
+                var match = System.Text.RegularExpressions.Regex.Match(
+                    languagesAttributeString,
+                    @"\[(?<brandingPresetKey>[^\]]+)\]\s*DEFAULT:\s*(?<default>.+)"
                 );
-                foreach (var placeholderWithDefault in placeholdersWithDefaults)
+                if (match.Success)
                 {
-                    var replacement = brandingSettings?.GetPresetKeyValueOrDefault(
-                        placeholderWithDefault.Key,
-                        placeholderWithDefault.Value // default if not specified by this branding
+                    var brandingSettings = BrandingSettings.GetSettingsOrNull(
+                        bookData.CollectionSettings.BrandingProjectKey
                     );
-                    languagesAttributeString = languagesAttributeString.Replace(
-                        // we are using square brackets in the pug for no particular reason, just looks right
-                        "[" + placeholderWithDefault.Key + "]",
-                        replacement
+                    languagesAttributeString = brandingSettings?.GetPresetKeyValueOrDefault(
+                        match.Groups["brandingPresetKey"].Value,
+                        match.Groups["default"].Value
+                    );
+                }
+                else
+                {
+                    throw new ApplicationException(
+                        $"Cannot parse this languages attribute string: {languagesAttributeString}"
                     );
                 }
             }
