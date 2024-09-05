@@ -68,7 +68,7 @@ namespace Bloom.Book
 				// In case the book is a template, we want at least the thumbnails
 				// and description files. This is rare enough that I don't think it's
 				// worth trying to be more precise.
-				_specialGroups.Add(new Regex(@"^templates(/|\\)"));
+				_specialGroups.Add(new Regex(@"^template(/|\\)"));
 			}
 		}
 

@@ -214,8 +214,8 @@ namespace BloomTests.Book
 		[Test]
 		public void Filter_PassesTemplatesIfForEditing()
 		{
-			Assert.That(_normalFilter.FilterRelative(Path.Combine("templates", "somefile.svg")), Is.False);
-			Assert.That(_filterForEdit.FilterRelative(Path.Combine("templates", "somefile.svg")), Is.True);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("template", "somefile.svg")), Is.False);
+			Assert.That(_filterForEdit.FilterRelative(Path.Combine("template", "somefile.svg")), Is.True);
 
 		}
 
