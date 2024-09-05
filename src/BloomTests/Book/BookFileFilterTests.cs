@@ -255,25 +255,31 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void Filter_ForBloomPlayer_PassesSpecialAudioFiles()
+        public void ShouldAllow_ForBloomPlayer_PassesSpecialAudioFiles()
         {
-            Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "right.mp3")), Is.False);
-            Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "wrong.mp3")), Is.False);
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("audio", "playme.mp3")),
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "right.mp3")),
+                Is.False
+            );
+            Assert.That(
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "wrong.mp3")),
+                Is.False
+            );
+            Assert.That(
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "playme.mp3")),
                 Is.False
             );
 
             Assert.That(
-                _filterForInteractive.FilterRelative(Path.Combine("audio", "right.mp3")),
+                _filterForInteractive.ShouldAllowRelativePath(Path.Combine("audio", "right.mp3")),
                 Is.True
             );
             Assert.That(
-                _filterForInteractive.FilterRelative(Path.Combine("audio", "bad.mp3")),
+                _filterForInteractive.ShouldAllowRelativePath(Path.Combine("audio", "bad.mp3")),
                 Is.True
             );
             Assert.That(
-                _filterForInteractive.FilterRelative(Path.Combine("audio", "playme.mp3")),
+                _filterForInteractive.ShouldAllowRelativePath(Path.Combine("audio", "playme.mp3")),
                 Is.True
             );
         }
