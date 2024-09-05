@@ -961,6 +961,12 @@ export class BubbleManager {
             this.activeElement.removeAttribute("data-bloom-active");
         }
         if (this.activeElement !== element) {
+            this.theBubbleWeAreTextEditing = undefined; // even if focus doesn't move.
+            // For some reason this doesnt' trigger as a result of changing the selection.
+            // But we definitely don't want to show the CkEditor toolbar until there is some
+            // new range selection, so just set up the usual class to hide it.
+            document.body.classList.add("hideAllCKEditors");
+            window.getSelection()?.removeAllRanges();
             this.removeFocusClass();
         }
         // Some of this could probably be avoided if this.activeElement is not changing.
