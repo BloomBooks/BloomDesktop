@@ -92,6 +92,7 @@ namespace Bloom.Book
                     || fileName.ToLowerInvariant().Contains("origami")
                     || fileName.ToLowerInvariant().Contains("defaultlangstyles")
                     || fileName.ToLowerInvariant().Contains("customcollectionstyles")
+                    || fileName.ToLowerInvariant().EndsWith("activity.css") // obsolete Activity.css files didn't contain size info
                     ||
                     // Ignore this obsolete styles file as well.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9128.
                     fileName

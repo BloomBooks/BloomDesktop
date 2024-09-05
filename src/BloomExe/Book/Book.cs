@@ -1814,6 +1814,9 @@ namespace Bloom.Book
                 return;
             }
 
+            progress.WriteStatus("Fixing renamed css files");
+            FixRenamedCssFiles(OurHtmlDom);
+
             progress.WriteStatus("Updating Front/Back Matter...");
             BringXmatterHtmlUpToDate(OurHtmlDom);
             RepairBrokenSmallCoverCredits(OurHtmlDom);
@@ -1916,6 +1919,30 @@ namespace Bloom.Book
 
             //we've removed and possible added pages, so our page cache is invalid
             _pagesCache = null;
+        }
+
+        private void FixRenamedCssFiles(HtmlDom bookDom)
+        {
+            // This currently handles renaming Activity.css to Games.css.
+            // Multiple renamings could be handled in a data-driven loop, but YAGNI keeps this
+            // simple for now.  The current code could serve as a base for the loop body.
+            var activityLink = bookDom.SelectSingleNode(
+                "//link[@href='Activity.css' and @rel='stylesheet']"
+            );
+            if (activityLink == null)
+                return; // the renamed file isn't referenced.
+            var gamesLink = bookDom.SelectSingleNode(
+                "//link[@href='Games.css' and @rel='stylesheet']"
+            );
+            if (gamesLink != null)
+                return; // the renamed file has already been handled.
+            // We keep the link to Activity.css to allow older versions of Bloom to edit this book.
+            // Otherwise, we could just reuse the element by changing the href attribute.
+            var newLink = activityLink.OwnerDocument.CreateElement("link");
+            newLink.SetAttribute("rel", "stylesheet");
+            newLink.SetAttribute("href", "Games.css");
+            newLink.SetAttribute("type", "text/css");
+            activityLink.ParentNode.InsertBefore(newLink, activityLink);
         }
 
         const string kCustomStyles = "customCollectionStyles.css";
