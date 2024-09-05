@@ -13,7 +13,7 @@ namespace Bloom.Book
 {
     public interface IFilter
     {
-        bool Filter(string fullPath);
+        bool ShouldAllow(string fullPath);
     }
 
     /// <summary>
@@ -22,7 +22,7 @@ namespace Bloom.Book
     /// are copied if they have certain extensions, audio files are copied if they are used in the book (and, optionally, if
     /// they are narration files for the languages we need, or music files that are wanted). Several properties allow it to
     /// be configured for common copy scenarios like when the copy will be used for further editing (upload, bloompack) or
-    /// situations where users can interact (bloomPub). Exceptions can also be added for partiular files that are or are not
+    /// situations where users can interact (bloomPub). Exceptions can also be added for particular files that are or are not
     /// wanted in a particular situation.
     /// Putting this functionality in a filter class makes it easy to use both for copying folders and for restricting what
     /// is put in a zip file; it also facilitates testing with a minimum of actual file creation.
@@ -70,7 +70,7 @@ namespace Bloom.Book
                 // In case the book is a template, we want at least the thumbnails
                 // and description files. This is rare enough that I don't think it's
                 // worth trying to be more precise.
-                _specialGroups.Add(new Regex(@"^templates(/|\\)"));
+                _specialGroups.Add(new Regex(@"^template(/|\\)"));
             }
         }
 
@@ -200,10 +200,10 @@ namespace Bloom.Book
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public string[] FilterPaths(string[] input, string bookFolderPath)
+        public string[] AllowedPaths(string[] input, string bookFolderPath)
         {
             var length = bookFolderPath.Length + 1;
-            return input.Where(x => FilterRelative(x.Substring(length))).ToArray();
+            return input.Where(x => ShouldAllowRelativePath(x.Substring(length))).ToArray();
         }
 
         /// <summary>
@@ -249,17 +249,17 @@ namespace Bloom.Book
         /// <summary>
         /// Return true if the file at fullPath should be included in the output.
         /// </summary>
-        public bool Filter(string fullPath)
+        public bool ShouldAllow(string fullPath)
         {
             var pathFromRootFolder = fullPath.Substring(BookFolderPath.Length + 1);
-            return FilterRelative(pathFromRootFolder);
+            return ShouldAllowRelativePath(pathFromRootFolder);
         }
 
         /// <summary>
         /// This overload is more convenient for testing, and is also the core of the implementation.
         /// </summary>
 
-        public bool FilterRelative(string pathFromRootFolder)
+        public bool ShouldAllowRelativePath(string pathFromRootFolder)
         {
             pathFromRootFolder = normalizePath(pathFromRootFolder);
             if (_specialCases.TryGetValue(pathFromRootFolder, out bool isWanted))
@@ -437,7 +437,7 @@ namespace Bloom.Book
         public void CopyBookFolderFiltered(string destinationFolder)
         {
             Directory.CreateDirectory(destinationFolder);
-            foreach (var path in FilterPaths(GetAllFilePaths(BookFolderPath), BookFolderPath))
+            foreach (var path in AllowedPaths(GetAllFilePaths(BookFolderPath), BookFolderPath))
             {
                 var pathFromBookFolder = path.Substring(_bookFolderPrefixLength);
                 var dest = Path.Combine(destinationFolder, pathFromBookFolder);

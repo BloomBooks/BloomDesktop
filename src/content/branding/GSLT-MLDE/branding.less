@@ -1,0 +1,73 @@
+@import "../branding-base.less";
+
+@padding: 10px;
+.outsideBackCover .marginBox .bloom-translationGroup {
+    display: none;
+}
+[data-book="outside-back-cover-branding-top-html"] {
+    width: 70%;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    img.branding {
+        height: 2.3cm;
+        margin-top: 0.3cm;
+        margin-bottom: 1em;
+    }
+
+    p {
+        margin-bottom: 1em;
+        text-align: center;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 11pt;
+        line-height: 1.2em;
+    }
+}
+[data-book="outside-back-cover-branding-bottom-html"] {
+    margin-top: auto !important;
+    img.badge {
+        height: 1cm;
+    }
+}
+.bloom-page[class*="Landscape"] {
+    [data-book="outside-back-cover-branding-bottom-html"] {
+        display: flex;
+        flex-direction: column;
+
+        img.bar {
+            margin-bottom: 0;
+            width: 100%;
+            object-fit: cover; // so we can stretch it
+            height: 56px;
+        }
+        img.badge {
+            margin-bottom: 10px;
+        }
+    }
+}
+
+// .bloom-page[class*="Portrait"] {
+//     [data-book="outside-back-cover-branding-top-html"] img.branding {
+//         margin-top: 1em;
+//     }
+//     [data-book="outside-back-cover-branding-bottom-html"] {
+//         img.badge {
+//             margin-left: auto;
+//             margin-right: auto;
+//             margin-bottom: @padding;
+//         }
+//     }
+//     [data-book="outside-back-cover-branding-bottom-html"] {
+//         img.branding {
+//             display: none; // we're going to show the logo in the top section instead
+//         }
+//     }
+// }
+
+.bloom-page.coverColor.outsideBackCover {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
+    background-color: white !important;
+}

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Bloom.Book;
 using BloomTemp;
 using NUnit.Framework;
@@ -91,7 +88,7 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void FilterPaths_PassesThingsThatPassFilter()
+        public void AllowedPaths_PassesThingsThatPassFilter()
         {
             var bookFolder = @"c:\Users\Joe\Documents\Bloom\My Book";
             var data = new[]
@@ -101,7 +98,10 @@ namespace BloomTests.Book
                 Tuple.Create(bookFolder + "/license.png", true),
                 Tuple.Create(bookFolder + "/My data.db", false),
             };
-            var result = _normalFilter.FilterPaths(data.Select(t => t.Item1).ToArray(), bookFolder);
+            var result = _normalFilter.AllowedPaths(
+                data.Select(t => t.Item1).ToArray(),
+                bookFolder
+            );
             foreach (var t in data)
             {
                 if (t.Item2)
@@ -116,88 +116,106 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void Filter_PassesOnlyRootHtmlFile()
+        public void ShouldAllow_PassesOnlyRootHtmlFile()
         {
             Assert.That(
-                _normalFilter.FilterRelative(_normalBookPath.Substring(_normalBookPrefixLength)),
+                _normalFilter.ShouldAllowRelativePath(
+                    _normalBookPath.Substring(_normalBookPrefixLength)
+                ),
                 Is.True
             );
             Assert.That(
-                _normalFilter.FilterRelative(_configHtmlPath.Substring(_normalBookPrefixLength)),
+                _normalFilter.ShouldAllowRelativePath(
+                    _configHtmlPath.Substring(_normalBookPrefixLength)
+                ),
                 Is.False
             );
             Assert.That(
-                _normalFilter.FilterRelative(_otherHtmlPath.Substring(_normalBookPrefixLength)),
+                _normalFilter.ShouldAllowRelativePath(
+                    _otherHtmlPath.Substring(_normalBookPrefixLength)
+                ),
                 Is.False
             );
         }
 
         [Test]
-        public void Filter_ForEdit_PassesRootHtmlFileAndConfig()
+        public void ShouldAllow_ForEdit_PassesRootHtmlFileAndConfig()
         {
             Assert.That(
-                _filterForEdit.FilterRelative(_normalBookPath.Substring(_normalBookPrefixLength)),
+                _filterForEdit.ShouldAllowRelativePath(
+                    _normalBookPath.Substring(_normalBookPrefixLength)
+                ),
                 Is.True
             );
             Assert.That(
-                _filterForEdit.FilterRelative(_configHtmlPath.Substring(_normalBookPrefixLength)),
+                _filterForEdit.ShouldAllowRelativePath(
+                    _configHtmlPath.Substring(_normalBookPrefixLength)
+                ),
                 Is.True
             );
             Assert.That(
-                _filterForEdit.FilterRelative(_otherHtmlPath.Substring(_normalBookPrefixLength)),
+                _filterForEdit.ShouldAllowRelativePath(
+                    _otherHtmlPath.Substring(_normalBookPrefixLength)
+                ),
                 Is.False
             );
         }
 
         [Test]
-        public void Filter_DoesNotPassStuffInUnwantedFolders()
+        public void ShouldAllow_DoesNotPassStuffInUnwantedFolders()
         {
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("rubbish", "something.png")),
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("rubbish", "something.png")),
                 Is.False
             );
         }
 
         [Test]
-        public void Filter_ForInteractive_PassesEverythingInActivities()
+        public void ShouldAllow_ForInteractive_PassesEverythingInActivities()
         {
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("activities", "something.png")),
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("activities", "something.png")),
                 Is.False
             );
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("activities", "audio", "mynoise.mp3")),
+                _normalFilter.ShouldAllowRelativePath(
+                    Path.Combine("activities", "audio", "mynoise.mp3")
+                ),
                 Is.False
             );
             // Including subfolders; make sure to test mp3, wav, a subfolder called audio, video, files with extensions we normally exclude
             Assert.That(
-                _filterForInteractive.FilterRelative(Path.Combine("activities", "something.png")),
+                _filterForInteractive.ShouldAllowRelativePath(
+                    Path.Combine("activities", "something.png")
+                ),
                 Is.True
             );
             Assert.That(
-                _filterForInteractive.FilterRelative(
+                _filterForInteractive.ShouldAllowRelativePath(
                     Path.Combine("activities", "audio", "mynoise.mp3")
                 ),
                 Is.True
             );
             Assert.That(
-                _filterForInteractive.FilterRelative(
+                _filterForInteractive.ShouldAllowRelativePath(
                     Path.Combine("activities", "video", "myvideo.mp4")
                 ),
                 Is.True
             );
             Assert.That(
-                _filterForInteractive.FilterRelative(
+                _filterForInteractive.ShouldAllowRelativePath(
                     Path.Combine("activities", "something.unknown")
                 ),
                 Is.True
             );
             Assert.That(
-                _filterForInteractive.FilterRelative(Path.Combine("activities", "placeHolder.png")),
+                _filterForInteractive.ShouldAllowRelativePath(
+                    Path.Combine("activities", "placeHolder.png")
+                ),
                 Is.True
             );
             Assert.That(
-                _filterForInteractive.FilterRelative(
+                _filterForInteractive.ShouldAllowRelativePath(
                     Path.Combine("activities", "thumbnail-256.png")
                 ),
                 Is.True
@@ -205,180 +223,192 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void Filter_ForInteractive_PassesVersionDotTxt()
+        public void ShouldAllow_ForInteractive_PassesVersionDotTxt()
         {
-            Assert.That(_filterForInteractive.FilterRelative("version.txt"), Is.True);
+            Assert.That(_filterForInteractive.ShouldAllowRelativePath("version.txt"), Is.True);
         }
 
         [Test]
-        public void Filter_PassesImagesInRootFolder()
+        public void ShouldAllow_PassesImagesInRootFolder()
         {
-            Assert.That(_normalFilter.FilterRelative("green elephants.png"), Is.True);
-            Assert.That(_normalFilter.FilterRelative("pink frogs.jpg"), Is.True);
-            Assert.That(_normalFilter.FilterRelative("yellow signs.svg"), Is.True);
-            Assert.That(_normalFilter.FilterRelative("dirty thumbnails--cleaning.png"), Is.True);
-        }
-
-        [Test]
-        public void Filter_ExcludesPlaceholdersInRootFolder()
-        {
-            Assert.That(_normalFilter.FilterRelative("placeHolder.png"), Is.False);
-            Assert.That(_normalFilter.FilterRelative("placeHolder122.png"), Is.False);
-        }
-
-        [Test]
-        public void Filter_ForEdit_PassesExtraExtensions()
-        {
-            Assert.That(_normalFilter.FilterRelative("something.md"), Is.False);
-            Assert.That(_filterForEdit.FilterRelative("something.md"), Is.True);
-        }
-
-        [Test]
-        public void Filter_ForBloomPlayer_PassesSpecialAudioFiles()
-        {
-            Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "right.mp3")), Is.False);
-            Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "wrong.mp3")), Is.False);
+            Assert.That(_normalFilter.ShouldAllowRelativePath("green elephants.png"), Is.True);
+            Assert.That(_normalFilter.ShouldAllowRelativePath("pink frogs.jpg"), Is.True);
+            Assert.That(_normalFilter.ShouldAllowRelativePath("yellow signs.svg"), Is.True);
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("audio", "playme.mp3")),
+                _normalFilter.ShouldAllowRelativePath("dirty thumbnails--cleaning.png"),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void ShouldAllow_ExcludesPlaceholdersInRootFolder()
+        {
+            Assert.That(_normalFilter.ShouldAllowRelativePath("placeHolder.png"), Is.False);
+            Assert.That(_normalFilter.ShouldAllowRelativePath("placeHolder122.png"), Is.False);
+        }
+
+        [Test]
+        public void ShouldAllow_ForEdit_PassesExtraExtensions()
+        {
+            Assert.That(_normalFilter.ShouldAllowRelativePath("something.md"), Is.False);
+            Assert.That(_filterForEdit.ShouldAllowRelativePath("something.md"), Is.True);
+        }
+
+        [Test]
+        public void ShouldAllow_ForBloomPlayer_PassesSpecialAudioFiles()
+        {
+            Assert.That(
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "right.mp3")),
+                Is.False
+            );
+            Assert.That(
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "wrong.mp3")),
+                Is.False
+            );
+            Assert.That(
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "playme.mp3")),
                 Is.False
             );
 
             Assert.That(
-                _filterForInteractive.FilterRelative(Path.Combine("audio", "right.mp3")),
+                _filterForInteractive.ShouldAllowRelativePath(Path.Combine("audio", "right.mp3")),
                 Is.True
             );
             Assert.That(
-                _filterForInteractive.FilterRelative(Path.Combine("audio", "bad.mp3")),
+                _filterForInteractive.ShouldAllowRelativePath(Path.Combine("audio", "bad.mp3")),
                 Is.True
             );
             Assert.That(
-                _filterForInteractive.FilterRelative(Path.Combine("audio", "playme.mp3")),
+                _filterForInteractive.ShouldAllowRelativePath(Path.Combine("audio", "playme.mp3")),
                 Is.True
             );
         }
 
         // For this we need a BookStorage. Possibly make a new constructor that just initializes the DOM, which is all many methods need.
         [Test]
-        public void Filter_PassesAudio_ForRequestedLanguages()
+        public void ShouldAllow_PassesAudio_ForRequestedLanguages()
         {
             Assert.That(
-                _normalFilter.FilterRelative(
+                _normalFilter.ShouldAllowRelativePath(
                     Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08c.mp3")
                 ),
                 Is.False
             );
             Assert.That(
-                _normalFilter.FilterRelative(
+                _normalFilter.ShouldAllowRelativePath(
                     Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08e.mp3")
                 ),
                 Is.False
             );
             _normalFilter.NarrationLanguages = new[] { "akl", "es" };
             Assert.That(
-                _normalFilter.FilterRelative(
+                _normalFilter.ShouldAllowRelativePath(
                     Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08c.mp3")
                 ),
                 Is.True
             );
             Assert.That(
-                _normalFilter.FilterRelative(
+                _normalFilter.ShouldAllowRelativePath(
                     Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08d.mp3")
                 ),
                 Is.True
             );
             Assert.That(
-                _normalFilter.FilterRelative(
+                _normalFilter.ShouldAllowRelativePath(
                     Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08e.mp3")
                 ),
                 Is.False
             ); // wrong language
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("audio", "does not exist.mp3")),
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "does not exist.mp3")),
                 Is.False
             );
             _normalFilter.NarrationLanguages = null; // means everything
             Assert.That(
-                _normalFilter.FilterRelative(
+                _normalFilter.ShouldAllowRelativePath(
                     Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08c.mp3")
                 ),
                 Is.True
             );
             Assert.That(
-                _normalFilter.FilterRelative(
+                _normalFilter.ShouldAllowRelativePath(
                     Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08d.mp3")
                 ),
                 Is.True
             );
             Assert.That(
-                _normalFilter.FilterRelative(
+                _normalFilter.ShouldAllowRelativePath(
                     Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08e.mp3")
                 ),
                 Is.True
             );
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("audio", "does not exist.mp3")),
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "does not exist.mp3")),
                 Is.False
             );
         }
 
         [Test]
-        public void Filter_PassesMusicAudio()
+        public void ShouldAllow_PassesMusicAudio()
         {
             _normalFilter.WantMusic = false;
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("audio", "Abcdefg.mp3")),
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "Abcdefg.mp3")),
                 Is.False
             );
             _normalFilter.WantMusic = true;
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("audio", "Abcdefg.mp3")),
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "Abcdefg.mp3")),
                 Is.True
             );
-            Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "12345.mp3")), Is.False);
+            Assert.That(
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("audio", "12345.mp3")),
+                Is.False
+            );
         }
 
         [Test]
-        public void Filter_PassesVideoIfRequested()
+        public void ShouldAllow_PassesVideoIfRequested()
         {
             _normalFilter.WantVideo = false;
             Assert.That(
-                _normalFilter.FilterRelative(
+                _normalFilter.ShouldAllowRelativePath(
                     Path.Combine("video", "847700f2-cfa3-41a4-8f5b-29198b8eca28.mp4")
                 ),
                 Is.False
             );
             _normalFilter.WantVideo = true;
             Assert.That(
-                _normalFilter.FilterRelative(
+                _normalFilter.ShouldAllowRelativePath(
                     Path.Combine("video", "847700f2-cfa3-41a4-8f5b-29198b8eca28.mp4")
                 ),
                 Is.True
             );
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("video", "Unused.mp4")),
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("video", "Unused.mp4")),
                 Is.False
             );
         }
 
         [Test]
-        public void Filter_PassesTemplatesIfForEditing()
+        public void ShouldAllow_PassesTemplatesIfForEditing()
         {
             Assert.That(
-                _normalFilter.FilterRelative(Path.Combine("templates", "somefile.svg")),
+                _normalFilter.ShouldAllowRelativePath(Path.Combine("template", "somefile.svg")),
                 Is.False
             );
             Assert.That(
-                _filterForEdit.FilterRelative(Path.Combine("templates", "somefile.svg")),
+                _filterForEdit.ShouldAllowRelativePath(Path.Combine("template", "somefile.svg")),
                 Is.True
             );
         }
 
         [Test]
-        public void Filter_PassesBookOrderForUpload()
+        public void ShouldAllow_PassesBookOrderForUpload()
         {
-            Assert.That(_normalFilter.FilterRelative("myfile.BloomBookOrder"), Is.False);
+            Assert.That(_normalFilter.ShouldAllowRelativePath("myfile.BloomBookOrder"), Is.False);
             _normalFilter.AlwaysAccept("myfile.BloomBookOrder");
-            Assert.That(_normalFilter.FilterRelative("myfile.BloomBookOrder"), Is.True);
+            Assert.That(_normalFilter.ShouldAllowRelativePath("myfile.BloomBookOrder"), Is.True);
         }
     }
 }

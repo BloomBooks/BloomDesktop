@@ -236,7 +236,7 @@ namespace Bloom.Book
 
             foreach (var filePath in files)
             {
-                if (!filter.Filter(filePath))
+                if (!filter.ShouldAllow(filePath))
                     continue;
 
                 FileInfo fi = new FileInfo(filePath);
