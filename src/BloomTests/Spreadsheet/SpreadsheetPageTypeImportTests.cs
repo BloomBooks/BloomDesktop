@@ -515,7 +515,7 @@ namespace BloomTests.Spreadsheet
         [Test]
         public void ActivityCssFile_WasAdded()
         {
-            var activityPath = Path.Combine(_bookFolder.FolderPath, "Games.css");
+            var activityPath = Path.Combine(_bookFolder.FolderPath, "Activity.css");
             Assert.That(RobustFile.Exists(activityPath), Is.True);
         }
 
@@ -525,7 +525,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_dom.Head)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//link[@rel='stylesheet' and @href='Games.css']",
+                    "//link[@rel='stylesheet' and @href='Activity.css']",
                     1
                 );
         }

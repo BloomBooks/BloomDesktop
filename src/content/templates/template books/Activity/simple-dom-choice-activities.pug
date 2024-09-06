@@ -1,0 +1,40 @@
+mixin textButtonChoice
+	//- .player-button causes Bloom Player to replace this div with a real button at runtime
+	.player-button&attributes(attributes)
+		+field("L1").bloom-ignoreOverflow.ButtonText-style
+			block
+
+mixin imageButtonChoice
+	//- .player-button causes Bloom Player to replace this div with a real button at runtime
+	.player-button&attributes(attributes)
+		+image()
+			block
+
+mixin correctAnswerBubble
+	label.bubble(data-i18n="SimpleChoiceActivity.CorrectAnswerIndicator") Put the correct answer in this button. Bloom will shuffle the order later.
+
+mixin chooseWordFromPicture
+	+page("Choose Word from Picture", "An interactive page with an image and some text buttons.").bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.numberedPage#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D33(data-page='extra' data-analyticscategories="simple-dom-choice" data-activity="simple-dom-choice")
+		+field-withEnglishText("L1").Prompt-style.disableHighlight
+			| Choose the matching word
+		.imageThenChoices
+			+image
+			.choices.player-shuffle-buttons
+				//- we put .chosen-correct on one button to turn on the styling during edit.
+				+textButtonChoice(data-activityRole="correct-answer").chosen-correct
+					+correctAnswerBubble
+				each count in new Array(2)
+					+textButtonChoice(data-activityRole="wrong-answer")
+
+mixin choosePictureFromWord
+	+page("Choose Picture from Word", "An interactive page with a text and some picture buttons.").bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.numberedPage#fe7acd9d-c05c-449b-9f99-841d54856924(data-page='extra' data-analyticscategories="simple-dom-choice" data-activity="simple-dom-choice")
+		+field-withEnglishText("L1").Prompt-style.disableHighlight
+			| Choose the matching picture
+		.wordThenChoices
+			+field("L1").bloom-ignoreOverflow.word-to-match.TextToMatch-style
+			.choices.player-shuffle-buttons
+				//- we put .chosen-correct on one button to turn on the styling during edit.
+				+imageButtonChoice(data-activityRole="correct-answer").chosen-correct
+					+correctAnswerBubble
+				each count in new Array(2)
+					+imageButtonChoice(data-activityRole="wrong-answer")
