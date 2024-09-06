@@ -3143,9 +3143,14 @@ namespace Bloom.Book
         {
             // This is here because basePage wants to use  --cover-background-color but if this variable is
             // undefined, you get black. You'd like CSS to just ignore the rule, but we found no way to do that.
+            // It is in this sense that this is a "fallback" declaration; if the expected appearance rules don't
+            // mention a color, then we get this one. The code that adds links to css files puts them at the end
+            // of the head, so this rule will be overridden by the appearance rules if they are present.
             OurHtmlDom.AddOrReplaceStyleElement(
                 "appearanceCoverBackgroundColor",
                 $".bloom-page {{ --cover-background-color: {color}; }}",
+                // I don't know if the order matters, but it has to go *somewhere* and this puts it next to the legacy
+                // color rule, which followed this element in pre-6.1 blooms, and I see no reason to move it.
                 HtmlDom.GetUserModifiedStyleElement(RawDom.Head)
             );
 
@@ -3181,6 +3186,8 @@ namespace Bloom.Book
             OurHtmlDom.AddOrReplaceStyleElement(
                 "legacyCoverBackgroundColor", // legacy here means pre-6.1
                 $"DIV.bloom-page.coverColor {{ background-color: {color} !important;}}",
+                // I don't know if the order matters, but it has to go *somewhere* and in pre-6.1 bloom put it here,
+                // and I see no reason to start putting it somewhere else.
                 HtmlDom.GetUserModifiedStyleElement(RawDom.Head)
             );
         }
@@ -3223,8 +3230,7 @@ namespace Bloom.Book
             return "#FFFFFF";
         }
 
-        // nothing but tests should be calling this; instead, set the color using appearanceSettings
-        internal void SetCoverColor(string color)
+        public void SetCoverColor(string color)
         {
             SetBackwardsCompatibleCoverBackgroundColor(OurHtmlDom, color);
             UpdateFallbackAppearanceCoverBackgroundColor(color);

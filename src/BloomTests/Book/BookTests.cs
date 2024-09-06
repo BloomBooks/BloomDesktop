@@ -98,7 +98,9 @@ namespace BloomTests.Book
             var book = CreateBook();
             book.SetCoverColor(newValue);
             Assert.That(GetLegacyCoverColorStyleNode(book).InnerText.Contains(newValue));
-            Assert.That(GetAppearanceCoverColorStyleNode(book).InnerText.Contains(newValue));
+            Assert.That(
+                GetAppearanceCoverBackgroundFallbackStyleNode(book).InnerText.Contains(newValue)
+            );
             CheckOrderOfRules(book);
             Assert.AreEqual(newValue, book.GetCoverColor());
 
@@ -129,7 +131,9 @@ namespace BloomTests.Book
             );
             var book = CreateBook();
             Assert.That(GetLegacyCoverColorStyleNode(book).InnerText.Contains("#B2CC7D"));
-            Assert.That(GetAppearanceCoverColorStyleNode(book).InnerText.Contains("#B2CC7D"));
+            Assert.That(
+                GetAppearanceCoverBackgroundFallbackStyleNode(book).InnerText.Contains("#B2CC7D")
+            );
             // there should only be one style rule that contains "coverColor"... i.e. make sure we didn't just make a second one
             Assert.AreEqual(
                 1,
@@ -142,7 +146,7 @@ namespace BloomTests.Book
         {
             SetDom("", @"");
             var book = CreateBook();
-            Assert.NotNull(GetAppearanceCoverColorStyleNode(book));
+            Assert.NotNull(GetAppearanceCoverBackgroundFallbackStyleNode(book));
             Assert.NotNull(GetLegacyCoverColorStyleNode(book));
         }
 
@@ -1344,15 +1348,15 @@ namespace BloomTests.Book
         private SafeXmlNode GetLegacyCoverColorStyleNode(Bloom.Book.Book book)
         {
             return book.RawDom
-                .SafeSelectNodes("//style")
-                .FirstOrDefault(s => s.InnerText.Contains(".bloom-page.coverColor"));
+                .SafeSelectNodes("//style[contains(text(),'.bloom-page.coverColor')]")
+                .First();
         }
 
-        private SafeXmlNode GetAppearanceCoverColorStyleNode(Bloom.Book.Book book)
+        private SafeXmlNode GetAppearanceCoverBackgroundFallbackStyleNode(Bloom.Book.Book book)
         {
             return book.RawDom
-                .SafeSelectNodes("//style")
-                .FirstOrDefault(s => s.InnerText.Contains("--cover-background-color"));
+                .SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
+                .First();
         }
 
         private void CheckOrderOfRules(Bloom.Book.Book book)
@@ -2069,11 +2073,11 @@ namespace BloomTests.Book
             book.SetCoverColor("yellow");
             book.DetectAndMarkDarkCoverColor();
             // should have removed the "darkCoverColor"
-            Assert.IsNull(
-                book.RawDom.SelectSingleNode(
+            AssertThatXmlIn
+                .Dom(book.RawDom)
+                .HasNoMatchForXpath(
                     "//div[contains(@class, 'bloom-page') and contains(@class, 'darkCoverColor')]"
-                )
-            );
+                );
         }
 
         [Test]

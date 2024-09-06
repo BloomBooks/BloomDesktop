@@ -548,7 +548,7 @@ public class AppearanceSettings
         }
         else
         {
-            if (bookFolderPath.Contains("template books"))
+            if (bookFolderPath == BloomFileLocator.FactoryTemplateBookDirectory)
             {
                 CssThemeName = "default"; // our factory templates are safe for default
             }
