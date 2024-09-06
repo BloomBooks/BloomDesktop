@@ -4264,9 +4264,15 @@ export class BubbleManager {
     }
 
     private removeJQueryResizableWidget() {
-        const allOverPictureElements = $("body").find(kTextOverPictureSelector);
-        // Removes the resizable functionality completely. This will return the element back to its pre-init state.
-        allOverPictureElements.resizable("destroy");
+        try {
+            const allOverPictureElements = $("body").find(
+                kTextOverPictureSelector
+            );
+            // Removes the resizable functionality completely. This will return the element back to its pre-init state.
+            allOverPictureElements.resizable("destroy");
+        } catch (e) {
+            //console.log(`Error removing resizable widget: ${e}`);
+        }
     }
 
     // Converts a text box's position to absolute in pixels (using CSS styling)
