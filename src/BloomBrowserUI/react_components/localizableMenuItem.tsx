@@ -180,7 +180,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                         `}
                         primaryTypographyProps={typographyProps}
                         primary={label + ellipsis}
-                        secondary={sublabel}
+                        secondary={sublabel !== "" ? sublabel : null} // null is needed to not leave an empty row
                     ></ListItemText>
                     {enterpriseElement}
                 </React.Fragment>
