@@ -1305,8 +1305,8 @@ canvas.moving {
 }
 
 @resizeHandleRadius: 8px;
-@cropHandleRadius: 4px;
-@cropHandleCenter: 6px;
+@sideHandleRadius: 4px;
+@sideHandleCenter: 6px;
 // We place this frame over each overlay to support resizing and cropping.
 // The frame itself is invisible (and ignores pointer events), but it provides a container
 // for the resize and crop handles and the toolbox below.
@@ -1321,7 +1321,7 @@ canvas.moving {
     // (except for the resize or crop control we are operating).
     &.moving {
         .bloom-ui-overlay-resize-handle,
-        .bloom-ui-overlay-crop-handle {
+        .bloom-ui-overlay-side-handle {
             display: none;
             &.active-control {
                 display: block;
@@ -1334,8 +1334,8 @@ canvas.moving {
     // the "crop" handles on left and right are visible for text boxes
     // (though with a different function).
     &.has-text:not(.moving) {
-        .bloom-ui-overlay-crop-handle-e,
-        .bloom-ui-overlay-crop-handle-w {
+        .bloom-ui-overlay-side-handle-e,
+        .bloom-ui-overlay-side-handle-w {
             display: block;
         }
         // Enhance: Canva uses these handles on text boxes to resize the box by modifying
@@ -1347,16 +1347,19 @@ canvas.moving {
     }
 
     // crop handles are, for now, only visible on images.
-    .bloom-ui-overlay-crop-handle {
+    .bloom-ui-overlay-side-handle {
         display: none; // default
         &.active-control {
             display: block;
         }
     }
-    &.has-image:not(.moving) .bloom-ui-overlay-crop-handle {
+    &.has-image:not(.moving) .bloom-ui-overlay-side-handle {
         display: block;
     }
 
+    // The resize handles are the small circles in the four corners.
+    // The move crop handle is the small circle in the center, used to change how an
+    // image is cropped by (apparently) moving the image within the frame.
     .bloom-ui-overlay-resize-handle,
     .bloom-ui-overlay-move-crop-handle {
         position: absolute;
@@ -1394,8 +1397,6 @@ canvas.moving {
         cursor: se-resize;
     }
 
-    // We call these crop handles, but for text boxes they are actually used to change width (and thus
-    // aspect ratio).
     .bloom-ui-overlay-move-crop-handle {
         top: calc(50% - @resizeHandleRadius);
         left: calc(50% - @resizeHandleRadius);
@@ -1408,11 +1409,13 @@ canvas.moving {
         display: block;
     }
 
-    .bloom-ui-overlay-crop-handle {
+    // Used to crop images, but for text boxes the left and right ones are actually used to change width (and thus
+    // aspect ratio).
+    .bloom-ui-overlay-side-handle {
         position: absolute;
-        width: @cropHandleRadius * 2;
-        height: @cropHandleRadius * 2;
-        border-radius: @cropHandleRadius;
+        width: @sideHandleRadius * 2;
+        height: @sideHandleRadius * 2;
+        border-radius: @sideHandleRadius;
         background-color: white;
         border: 1px solid @bloom-blue;
         box-sizing: border-box;
@@ -1423,28 +1426,28 @@ canvas.moving {
         }
     }
 
-    .bloom-ui-overlay-crop-handle-n {
-        top: -@cropHandleRadius;
-        left: calc(50% - @cropHandleRadius - @cropHandleCenter);
-        width: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+    .bloom-ui-overlay-side-handle-n {
+        top: -@sideHandleRadius;
+        left: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ns-resize;
     }
-    .bloom-ui-overlay-crop-handle-e {
-        top: calc(50% - @cropHandleRadius - @cropHandleCenter);
-        right: -@cropHandleRadius;
-        height: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+    .bloom-ui-overlay-side-handle-e {
+        top: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        right: -@sideHandleRadius;
+        height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ew-resize;
     }
-    .bloom-ui-overlay-crop-handle-s {
-        bottom: -@cropHandleRadius;
-        left: calc(50% - @cropHandleRadius - @cropHandleCenter);
-        width: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+    .bloom-ui-overlay-side-handle-s {
+        bottom: -@sideHandleRadius;
+        left: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ns-resize;
     }
-    .bloom-ui-overlay-crop-handle-w {
-        top: calc(50% - @cropHandleRadius - @cropHandleCenter);
-        left: -@cropHandleRadius;
-        height: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+    .bloom-ui-overlay-side-handle-w {
+        top: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        left: -@sideHandleRadius;
+        height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ew-resize;
     }
 }

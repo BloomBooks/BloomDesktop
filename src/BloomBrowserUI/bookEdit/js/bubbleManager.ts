@@ -1053,29 +1053,30 @@ export class BubbleManager {
                     );
                 });
             });
+            // "sides means not just left and right, but all four sides of the control frame"
             const sides = ["n", "s", "e", "w"];
             sides.forEach(side => {
-                const cropControl = eltToPutControlsOn.ownerDocument.createElement(
+                const sideControl = eltToPutControlsOn.ownerDocument.createElement(
                     "div"
                 );
-                cropControl.classList.add("bloom-ui-overlay-crop-handle");
-                cropControl.classList.add(
-                    "bloom-ui-overlay-crop-handle-" + side
+                sideControl.classList.add("bloom-ui-overlay-side-handle");
+                sideControl.classList.add(
+                    "bloom-ui-overlay-side-handle-" + side
                 );
-                controlFrame?.appendChild(cropControl);
-                cropControl.addEventListener("mousedown", event => {
+                controlFrame?.appendChild(sideControl);
+                sideControl.addEventListener("mousedown", event => {
                     if (event.buttons !== 1 || !this.activeElement) {
                         return;
                     }
-                    this.startCropDrag(event, side);
+                    this.startSideControlDrag(event, side);
                 });
             });
-            const moveCropHandle = eltToPutControlsOn.ownerDocument.createElement(
+            const sideHandle = eltToPutControlsOn.ownerDocument.createElement(
                 "div"
             );
-            moveCropHandle.classList.add("bloom-ui-overlay-move-crop-handle");
-            controlFrame?.appendChild(moveCropHandle);
-            moveCropHandle.addEventListener("mousedown", event => {
+            sideHandle.classList.add("bloom-ui-overlay-move-crop-handle");
+            controlFrame?.appendChild(sideHandle);
+            sideHandle.addEventListener("mousedown", event => {
                 if (event.buttons !== 1 || !this.activeElement) {
                     return;
                 }
@@ -1403,8 +1404,8 @@ export class BubbleManager {
         this.alignControlFrameWithActiveElement();
         this.adjustTarget(this.activeElement);
     };
-    private startCropDragX: number;
-    private startCropDragY: number;
+    private startSideDragX: number;
+    private startSideDragY: number;
 
     // The most recent crop control that was dragged. We use this to decide whether to
     // reset the initial values.
@@ -1425,11 +1426,11 @@ export class BubbleManager {
     private initialCropBubbleTop: number;
     private initialCropBubbleLeft: number;
 
-    private currentCropSide: string | undefined;
+    private currentDragSide: string | undefined;
     // For both resize and crop
     private currentDragControl: HTMLElement | undefined;
 
-    private startCropDrag(event: MouseEvent, side: string) {
+    private startSideControlDrag(event: MouseEvent, side: string) {
         const img = this.activeElement?.getElementsByTagName("img")[0];
         const textBox = this.activeElement?.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
@@ -1437,11 +1438,11 @@ export class BubbleManager {
         if ((!img && !textBox) || !this.activeElement) {
             return;
         }
-        this.startCropDragX = event.clientX;
-        this.startCropDragY = event.clientY;
+        this.startSideDragX = event.clientX;
+        this.startSideDragY = event.clientY;
         this.currentDragControl = event.currentTarget as HTMLElement;
         this.currentDragControl.classList.add("active-control");
-        this.currentCropSide = side;
+        this.currentDragSide = side;
         const style = this.activeElement.style;
         this.oldWidth = BubbleManager.pxToNumber(style.width);
         this.oldHeight = BubbleManager.pxToNumber(style.height);
@@ -1482,29 +1483,29 @@ export class BubbleManager {
         // move/up listeners are on the document so we can continue the drag even if it moves
         // outside the control clicked. I think something similar can be achieved
         // with mouse capture, but less portably.
-        document.addEventListener("mousemove", this.continueCropDrag, {
+        document.addEventListener("mousemove", this.continueSideDrag, {
             capture: true
         });
         // putting this in capture phase to make sure we can't miss it. Had some trouble with
         // mouseup not firing, possibly because something does stopPropagation.
-        document.addEventListener("mouseup", this.stopCropDrag, {
+        document.addEventListener("mouseup", this.stopSideDrag, {
             capture: true
         });
     }
-    private stopCropDrag = () => {
-        document.removeEventListener("mousemove", this.continueCropDrag, {
+    private stopSideDrag = () => {
+        document.removeEventListener("mousemove", this.continueSideDrag, {
             capture: true
         });
-        document.removeEventListener("mouseup", this.stopCropDrag, {
+        document.removeEventListener("mouseup", this.stopSideDrag, {
             capture: true
         });
         this.currentDragControl?.classList.remove("active-control");
     };
     private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
         if (!this.activeElement) return; // should never happen, but makes lint happy
-        let deltaX = event.clientX - this.startCropDragX;
+        let deltaX = event.clientX - this.startSideDragX;
         let newBubbleWidth = this.oldWidth; // default
-        switch (this.currentCropSide) {
+        switch (this.currentDragSide) {
             case "e":
                 newBubbleWidth = Math.max(
                     this.oldWidth + deltaX,
@@ -1539,7 +1540,7 @@ export class BubbleManager {
         this.alignControlFrameWithActiveElement();
     }
 
-    private continueCropDrag = (event: MouseEvent) => {
+    private continueSideDrag = (event: MouseEvent) => {
         if (event.buttons !== 1 || !this.activeElement) {
             return;
         }
@@ -1556,13 +1557,13 @@ export class BubbleManager {
             return;
         }
         // These may be adjusted to the deltas that would not violate min sizes
-        let deltaX = event.clientX - this.startCropDragX;
-        let deltaY = event.clientY - this.startCropDragY;
+        let deltaX = event.clientX - this.startSideDragX;
+        let deltaY = event.clientY - this.startSideDragY;
         if (event.movementX === 0 && event.movementY === 0) return;
 
         let newBubbleWidth = this.oldWidth; // default
         let newBubbleHeight = this.oldHeight;
-        switch (this.currentCropSide) {
+        switch (this.currentDragSide) {
             case "n":
                 newBubbleHeight = Math.max(
                     this.oldHeight - deltaY,
@@ -1641,7 +1642,7 @@ export class BubbleManager {
         // Specifically, the aspect ratio for computing the height of the (full) image
         // from its width.
         const aspectRatio = img.naturalHeight / img.naturalWidth;
-        switch (this.currentCropSide) {
+        switch (this.currentDragSide) {
             case "e":
                 if (
                     // the bubble has stretched beyond the right side of the image
@@ -1835,8 +1836,8 @@ export class BubbleManager {
         if (controlFrame && this.activeElement) {
             const hasText = controlFrame.classList.contains("has-text");
             // Text boxes get a little extra padding, making the control frame bigger than
-            // the overlay itself. The extra needed corresponds roughly to the (.less) @cropHandleRadius,
-            // but one pixel less seems to be enough to prevent the crop handles actually overlapping text,
+            // the overlay itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
+            // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
             // though maybe I've just been lucky and this should really be 4.
             // Seems like it should be easy to do this in the .less file, but the control frame is not
             // a child of the overlay (for z-order reasons), so it's not easy for CSS to move it left
