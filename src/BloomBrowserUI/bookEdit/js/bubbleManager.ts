@@ -31,6 +31,10 @@ import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderOverlayContextControls } from "./OverlayContextControls";
+import { data } from "jquery";
+import { kBloomBlue } from "../../bloomMaterialUITheme";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
+import { MeasureText } from "../../utils/measureText";
 
 export interface ITextColorInfo {
     color: string;
@@ -104,7 +108,11 @@ export class BubbleManager {
     // Returns true if successful; it will currently fail if box is not
     // inside a valid OverPicture element or if the OverPicture element can't grow this much while
     // remaining inside the image container. If it returns false, it makes no changes at all.
-    public growOverflowingBox(box: HTMLElement, overflowY: number): boolean {
+    public growOverflowingBox(
+        box: HTMLElement,
+        overflowY: number,
+        allowShrink?: boolean
+    ): boolean {
         const wrapperBox = box.closest(kTextOverPictureSelector) as HTMLElement;
         if (!wrapperBox) {
             return false; // we can't fix it
@@ -117,9 +125,6 @@ export class BubbleManager {
             return false; // paranoia; OverPicture element should always be in image container
         }
 
-        if (overflowY > -6 && overflowY < -2) {
-            return false; // near enough, avoid jitter; -4 would be no change, see below.
-        }
         // The +4 is based on experiment. It may relate to a couple of 'fudge factors'
         // in OverflowChecker.getSelfOverflowAmounts, which I don't want to mess with
         // as a lot of work went into getting overflow reporting right. We seem to
@@ -127,27 +132,19 @@ export class BubbleManager {
         // The 27 is the minimumSize that CSS imposes on OverPicture elements; it may cause
         // Comical some problems if we try to set the actual size smaller.
         // (I think I saw background gradients behaving strangely, for example.)
-        let newHeight = Math.max(wrapperBox.clientHeight + overflowY + 4, 27);
-        if (overflowY < -4) {
-            if (!wrapperBox.classList.contains("bloom-allowAutoShrink")) {
-                return false; // currently auto-shrink is only allowed when manually changing width
-            }
-            // the scrollSize property that overflowY is based on is not useful when it's nowhere
-            // near overflowing. So figure the new size we need another way.
-            // This is not ideal, we're not going to get the exact same
-            // size when the bubble is shrinking as when it's growing. But in practice it
-            // seems near enough for automatic sizing. The user can take over and fine tune
-            // it if desired.
-            let maxContentBottom = 0;
-            Array.from(box.children).forEach((x: HTMLElement) => {
-                if (!(x instanceof HTMLElement)) return; // not an element
-                if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
-                const xbottom = x.offsetTop + x.offsetHeight;
-                if (xbottom > maxContentBottom) {
-                    maxContentBottom = xbottom;
-                }
-            });
-            newHeight = Math.max(maxContentBottom + box.scrollTop + 4, 27);
+        let newHeight = Math.max(box.clientHeight + overflowY + 4, 27);
+        if (
+            newHeight < wrapperBox.clientHeight &&
+            newHeight > wrapperBox.clientHeight - 4
+        ) {
+            return false; // near enough, avoid jitter making it a tiny bit smaller.
+        }
+        if (
+            newHeight < wrapperBox.clientHeight &&
+            !wrapperBox.classList.contains("bloom-allowAutoShrink") &&
+            !allowShrink
+        ) {
+            return false; // currently auto-shrink is only allowed when manually changing width
         }
 
         // If a lot of text is pasted, the container will scroll down.
@@ -168,6 +165,7 @@ export class BubbleManager {
         wrapperBox.style.height = newHeight + "px"; // next line will change to percent
         BubbleManager.convertTextboxPositionToAbsolute(wrapperBox, container);
         this.adjustTarget(wrapperBox);
+        this.alignControlFrameWithActiveElement();
         return true;
     }
 
@@ -232,11 +230,11 @@ export class BubbleManager {
         return parseInt(px.replace("px", ""));
     }
 
-    // Now that we have the possibility of "nested" imageContainer elements,
-    // we need to limit the img tags we look at to those that are immediate children.
-    public static hideImageButtonsIfNotPlaceHolderOrHasOverlays(
-        container: HTMLElement
-    ) {
+    // We usually don't show the image editing buttons on an overlay page.
+    // (If the user clicks on the background, we show them.)
+    // An earlier version did not hide them if there isn't a background image (just a placeholder).
+    // But it's increasingly common to deliberately leave the background blank.
+    public static hideImageButtonsIfHasOverlays(container: HTMLElement) {
         if (
             document.getElementsByClassName(kTextOverPictureClass).length === 0
         ) {
@@ -248,21 +246,7 @@ export class BubbleManager {
             // relevant to this one.
             return;
         }
-        const placeHolderImages = Array.from(container.childNodes).filter(
-            child => {
-                return (
-                    child.nodeName === "IMG" &&
-                    (child as HTMLElement).getAttribute("src") ===
-                        "placeHolder.png"
-                );
-            }
-        );
-        const hasOverlay = container.classList.contains("hasOverlay");
-        // Would this be more reliable?
-        // container.getElementsByClassName("bloom-textOverPicture").length > 0;
-        if (placeHolderImages.length === 0 || hasOverlay) {
-            DisableImageEditing(container);
-        }
+        DisableImageEditing(container);
     }
 
     public turnOnHidingImageButtons() {
@@ -270,9 +254,7 @@ export class BubbleManager {
             this.getAllPrimaryImageContainersOnPage() as any
         );
         imageContainers.forEach(container => {
-            BubbleManager.hideImageButtonsIfNotPlaceHolderOrHasOverlays(
-                container
-            );
+            BubbleManager.hideImageButtonsIfHasOverlays(container);
         });
     }
 
@@ -432,7 +414,7 @@ export class BubbleManager {
             // (gjm: I reworked the code that finds a visible element a bit,
             // it's possible the above comment is no longer accurate)
             //this.focusFirstVisibleFocusable(this.activeElement);
-            Comical.setUserInterfaceProperties({ tailHandleColor: "#96668F" }); // light bloom purple
+            Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
             Comical.startEditing(imageContainers);
             this.migrateOldTextOverPictureElements(overPictureElements);
             Comical.activateElement(this.activeElement);
@@ -606,6 +588,7 @@ export class BubbleManager {
         // However, it's possible the active bubble already moved; don't clear theBubbleWeAreTextEditing if so
         if (event.currentTarget === this.theBubbleWeAreTextEditing) {
             this.theBubbleWeAreTextEditing = undefined;
+            this.removeFocusClass();
         }
     };
 
@@ -775,9 +758,6 @@ export class BubbleManager {
     }
 
     private handleFocusInEvent(ev: Event) {
-        // Restore hiding these when we focus a bubble, so they don't get in the way of working on
-        // that bubble.
-        theOneBubbleManager.turnOnHidingImageButtons();
         BubbleManager.onFocusSetActiveElement(ev);
     }
 
@@ -801,6 +781,8 @@ export class BubbleManager {
         attachEventsToEditables: boolean
     ): void {
         Comical.startEditing([imageContainer]);
+        // necessary if we added the very first bubble, and Comical was not previously initialized
+        Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
         if (bubble) {
             const newTextOverPictureElement = bubble.content;
             Comical.activateBubble(bubble);
@@ -961,6 +943,14 @@ export class BubbleManager {
         // }
     }
 
+    public removeFocusClass() {
+        Array.from(document.getElementsByClassName("bloom-focusedTOP")).forEach(
+            element => {
+                element.classList.remove("bloom-focusedTOP");
+            }
+        );
+    }
+
     public setActiveElement(element: HTMLElement | undefined) {
         if (this.activeElement !== element && this.activeElement) {
             tryRemoveImageEditingButtons(
@@ -969,6 +959,15 @@ export class BubbleManager {
                 )[0] as Element | undefined
             );
             this.activeElement.removeAttribute("data-bloom-active");
+        }
+        if (this.activeElement !== element) {
+            this.theBubbleWeAreTextEditing = undefined; // even if focus doesn't move.
+            // For some reason this doesnt' trigger as a result of changing the selection.
+            // But we definitely don't want to show the CkEditor toolbar until there is some
+            // new range selection, so just set up the usual class to hide it.
+            document.body.classList.add("hideAllCKEditors");
+            window.getSelection()?.removeAllRanges();
+            this.removeFocusClass();
         }
         // Some of this could probably be avoided if this.activeElement is not changing.
         // But there are cases in page initialization where this.activeElement
@@ -981,6 +980,11 @@ export class BubbleManager {
         this.adjustTarget(this.activeElement);
         this.showCorrespondingTextBox(this.activeElement);
         this.setupControlFrame();
+        if (this.activeElement) {
+            // Restore hiding these when we activate a bubble, so they don't get in the way of working on
+            // that bubble.
+            theOneBubbleManager.turnOnHidingImageButtons();
+        }
     }
 
     // clientX/Y of the mouseDown event in one of the resize handles.
@@ -1049,29 +1053,30 @@ export class BubbleManager {
                     );
                 });
             });
+            // "sides means not just left and right, but all four sides of the control frame"
             const sides = ["n", "s", "e", "w"];
             sides.forEach(side => {
-                const cropControl = eltToPutControlsOn.ownerDocument.createElement(
+                const sideControl = eltToPutControlsOn.ownerDocument.createElement(
                     "div"
                 );
-                cropControl.classList.add("bloom-ui-overlay-crop-handle");
-                cropControl.classList.add(
-                    "bloom-ui-overlay-crop-handle-" + side
+                sideControl.classList.add("bloom-ui-overlay-side-handle");
+                sideControl.classList.add(
+                    "bloom-ui-overlay-side-handle-" + side
                 );
-                controlFrame?.appendChild(cropControl);
-                cropControl.addEventListener("mousedown", event => {
+                controlFrame?.appendChild(sideControl);
+                sideControl.addEventListener("mousedown", event => {
                     if (event.buttons !== 1 || !this.activeElement) {
                         return;
                     }
-                    this.startCropDrag(event, side);
+                    this.startSideControlDrag(event, side);
                 });
             });
-            const moveCropHandle = eltToPutControlsOn.ownerDocument.createElement(
+            const sideHandle = eltToPutControlsOn.ownerDocument.createElement(
                 "div"
             );
-            moveCropHandle.classList.add("bloom-ui-overlay-move-crop-handle");
-            controlFrame?.appendChild(moveCropHandle);
-            moveCropHandle.addEventListener("mousedown", event => {
+            sideHandle.classList.add("bloom-ui-overlay-move-crop-handle");
+            controlFrame?.appendChild(sideHandle);
+            sideHandle.addEventListener("mousedown", event => {
                 if (event.buttons !== 1 || !this.activeElement) {
                     return;
                 }
@@ -1090,6 +1095,15 @@ export class BubbleManager {
             controlFrame.classList.add("has-image");
         } else {
             controlFrame.classList.remove("has-image");
+        }
+        const hasText =
+            eltToPutControlsOn?.getElementsByClassName(
+                "bloom-editable bloom-visibility-code-on"
+            ).length > 0;
+        if (hasText) {
+            controlFrame.classList.add("has-text");
+        } else {
+            controlFrame.classList.remove("has-text");
         }
         // to reduce flicker we don't show this when switching to a different bubble until we determine
         // that it is wanted.
@@ -1121,12 +1135,21 @@ export class BubbleManager {
         this.startMoveCropControlX = this.currentDragControl.offsetLeft;
         this.startMoveCropControlY = this.currentDragControl.offsetTop;
 
-        document.addEventListener("mousemove", this.continueMoveCrop);
-        document.addEventListener("mouseup", this.endMoveCrop);
+        document.addEventListener("mousemove", this.continueMoveCrop, {
+            capture: true
+        });
+        // capture:true makes sure we can't miss it.
+        document.addEventListener("mouseup", this.endMoveCrop, {
+            capture: true
+        });
     };
     private endMoveCrop = (event: MouseEvent) => {
-        document.removeEventListener("mousemove", this.continueMoveCrop);
-        document.removeEventListener("mouseup", this.endMoveCrop);
+        document.removeEventListener("mousemove", this.continueMoveCrop, {
+            capture: true
+        });
+        document.removeEventListener("mouseup", this.endMoveCrop, {
+            capture: true
+        });
         this.currentDragControl?.classList.remove("active");
         this.currentDragControl!.style.left = "";
         this.currentDragControl!.style.top = "";
@@ -1193,12 +1216,21 @@ export class BubbleManager {
             this.oldImageTop = BubbleManager.pxToNumber(img.style.top);
             this.oldImageLeft = BubbleManager.pxToNumber(img.style.left);
         }
-        document.addEventListener("mousemove", this.continueResizeDrag);
-        document.addEventListener("mouseup", this.endResizeDrag);
+        document.addEventListener("mousemove", this.continueResizeDrag, {
+            capture: true
+        });
+        // capture:true makes sure we can't miss it.
+        document.addEventListener("mouseup", this.endResizeDrag, {
+            capture: true
+        });
     }
     private endResizeDrag = (_event: MouseEvent) => {
-        document.removeEventListener("mousemove", this.continueResizeDrag);
-        document.removeEventListener("mouseup", this.endResizeDrag);
+        document.removeEventListener("mousemove", this.continueResizeDrag, {
+            capture: true
+        });
+        document.removeEventListener("mouseup", this.endResizeDrag, {
+            capture: true
+        });
         this.currentDragControl?.classList.remove("active-control");
     };
 
@@ -1211,6 +1243,9 @@ export class BubbleManager {
             this.resizeDragCorner = undefined; // drag is over
             return;
         }
+        // we're handling this event, we don't want (e.g.) Comical to do so as well.
+        event.stopPropagation();
+        event.preventDefault();
         // We seem to get an initial no-op mouse move right after the mouse down.
         // It would be harmless to go through all the steps for it, but it's quite annoying when
         // try to debug an actual move.
@@ -1369,8 +1404,8 @@ export class BubbleManager {
         this.alignControlFrameWithActiveElement();
         this.adjustTarget(this.activeElement);
     };
-    private startCropDragX: number;
-    private startCropDragY: number;
+    private startSideDragX: number;
+    private startSideDragY: number;
 
     // The most recent crop control that was dragged. We use this to decide whether to
     // reset the initial values.
@@ -1391,81 +1426,144 @@ export class BubbleManager {
     private initialCropBubbleTop: number;
     private initialCropBubbleLeft: number;
 
-    private currentCropSide: string | undefined;
+    private currentDragSide: string | undefined;
     // For both resize and crop
     private currentDragControl: HTMLElement | undefined;
 
-    private startCropDrag(event: MouseEvent, side: string) {
+    private startSideControlDrag(event: MouseEvent, side: string) {
         const img = this.activeElement?.getElementsByTagName("img")[0];
-        if (!img || !this.activeElement) {
+        const textBox = this.activeElement?.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on"
+        )[0];
+        if ((!img && !textBox) || !this.activeElement) {
             return;
         }
-        this.startCropDragX = event.clientX;
-        this.startCropDragY = event.clientY;
+        this.startSideDragX = event.clientX;
+        this.startSideDragY = event.clientY;
         this.currentDragControl = event.currentTarget as HTMLElement;
         this.currentDragControl.classList.add("active-control");
-        this.currentCropSide = side;
+        this.currentDragSide = side;
         const style = this.activeElement.style;
         this.oldWidth = BubbleManager.pxToNumber(style.width);
         this.oldHeight = BubbleManager.pxToNumber(style.height);
         this.oldTop = BubbleManager.pxToNumber(style.top);
         this.oldLeft = BubbleManager.pxToNumber(style.left);
-        this.oldImageLeft = BubbleManager.pxToNumber(img.style.left);
-        this.oldImageTop = BubbleManager.pxToNumber(img.style.top);
+        if (img) {
+            this.oldImageLeft = BubbleManager.pxToNumber(img.style.left);
+            this.oldImageTop = BubbleManager.pxToNumber(img.style.top);
 
-        if (this.lastCropControl !== event.currentTarget) {
-            this.initialCropImageWidth = img.offsetWidth;
-            this.initialCropImageHeight = img.offsetHeight;
-            this.initialCropImageLeft = BubbleManager.pxToNumber(
-                img.style.left
-            );
-            this.initialCropImageTop = BubbleManager.pxToNumber(img.style.top);
-            this.initialCropBubbleWidth = this.activeElement.offsetWidth;
-            this.initialCropBubbleHeight = this.activeElement.offsetHeight;
-            this.initialCropBubbleTop = BubbleManager.pxToNumber(
-                this.activeElement.style.top
-            );
-            this.initialCropBubbleLeft = BubbleManager.pxToNumber(
-                this.activeElement.style.left
-            );
-            this.lastCropControl = event.currentTarget as HTMLElement;
-        }
-        if (!img.style.width) {
-            // From here on it should stay this width unless we decide otherwise.
-            img.style.width = `${this.initialCropImageWidth}px`;
-            // tempting to add bloom-scale-with-code, which would prevent old versions of Bloom
-            // from wiping out the width and height style settings we use for cropping.
-            // However, it also triggers stuff in SetImageDisplaySizeIfCalledFor that is specific
-            // to Kyrgyzstan and messes up cropping horribly, so that won't work.
+            if (this.lastCropControl !== event.currentTarget) {
+                this.initialCropImageWidth = img.offsetWidth;
+                this.initialCropImageHeight = img.offsetHeight;
+                this.initialCropImageLeft = BubbleManager.pxToNumber(
+                    img.style.left
+                );
+                this.initialCropImageTop = BubbleManager.pxToNumber(
+                    img.style.top
+                );
+                this.initialCropBubbleWidth = this.activeElement.offsetWidth;
+                this.initialCropBubbleHeight = this.activeElement.offsetHeight;
+                this.initialCropBubbleTop = BubbleManager.pxToNumber(
+                    this.activeElement.style.top
+                );
+                this.initialCropBubbleLeft = BubbleManager.pxToNumber(
+                    this.activeElement.style.left
+                );
+                this.lastCropControl = event.currentTarget as HTMLElement;
+            }
+            if (!img.style.width) {
+                // From here on it should stay this width unless we decide otherwise.
+                img.style.width = `${this.initialCropImageWidth}px`;
+                // tempting to add bloom-scale-with-code, which would prevent old versions of Bloom
+                // from wiping out the width and height style settings we use for cropping.
+                // However, it also triggers stuff in SetImageDisplaySizeIfCalledFor that is specific
+                // to Kyrgyzstan and messes up cropping horribly, so that won't work.
+            }
         }
         // move/up listeners are on the document so we can continue the drag even if it moves
         // outside the control clicked. I think something similar can be achieved
         // with mouse capture, but less portably.
-        document.addEventListener("mousemove", this.continueCropDrag);
-        document.addEventListener("mouseup", this.stopCropDrag);
+        document.addEventListener("mousemove", this.continueSideDrag, {
+            capture: true
+        });
+        // putting this in capture phase to make sure we can't miss it. Had some trouble with
+        // mouseup not firing, possibly because something does stopPropagation.
+        document.addEventListener("mouseup", this.stopSideDrag, {
+            capture: true
+        });
     }
-    private stopCropDrag = () => {
-        document.removeEventListener("mousemove", this.continueCropDrag);
-        document.removeEventListener("mouseup", this.stopCropDrag);
+    private stopSideDrag = () => {
+        document.removeEventListener("mousemove", this.continueSideDrag, {
+            capture: true
+        });
+        document.removeEventListener("mouseup", this.stopSideDrag, {
+            capture: true
+        });
         this.currentDragControl?.classList.remove("active-control");
     };
-    private continueCropDrag = (event: MouseEvent) => {
+    private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
+        if (!this.activeElement) return; // should never happen, but makes lint happy
+        let deltaX = event.clientX - this.startSideDragX;
+        let newBubbleWidth = this.oldWidth; // default
+        switch (this.currentDragSide) {
+            case "e":
+                newBubbleWidth = Math.max(
+                    this.oldWidth + deltaX,
+                    this.minWidth
+                );
+                deltaX = newBubbleWidth - this.oldWidth;
+                this.activeElement.style.width = `${newBubbleWidth}px`;
+                break;
+            case "w":
+                newBubbleWidth = Math.max(
+                    this.oldWidth - deltaX,
+                    this.minWidth
+                );
+                deltaX = this.oldWidth - newBubbleWidth;
+                this.activeElement.style.width = `${newBubbleWidth}px`;
+                this.activeElement.style.left = `${this.oldLeft + deltaX}px`;
+                break;
+        }
+        const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
+            editable
+        );
+        const overflowY =
+            overflowAmounts[1] +
+            editable.offsetHeight -
+            this.activeElement.offsetHeight;
+
+        theOneBubbleManager.growOverflowingBox(
+            this.activeElement,
+            overflowY,
+            true
+        );
+        this.alignControlFrameWithActiveElement();
+    }
+
+    private continueSideDrag = (event: MouseEvent) => {
         if (event.buttons !== 1 || !this.activeElement) {
             return;
         }
+        const textBox = this.activeElement.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on"
+        )[0];
+        if (textBox) {
+            this.continueTextBoxResize(event, textBox as HTMLElement);
+            return;
+        }
         const img = this.activeElement?.getElementsByTagName("img")[0];
-        if (!img || !this.activeElement) {
+        if (!img) {
             // These handles shouldn't even be visible in this case, so this is for paranoia/lint.
             return;
         }
         // These may be adjusted to the deltas that would not violate min sizes
-        let deltaX = event.clientX - this.startCropDragX;
-        let deltaY = event.clientY - this.startCropDragY;
+        let deltaX = event.clientX - this.startSideDragX;
+        let deltaY = event.clientY - this.startSideDragY;
         if (event.movementX === 0 && event.movementY === 0) return;
 
         let newBubbleWidth = this.oldWidth; // default
         let newBubbleHeight = this.oldHeight;
-        switch (this.currentCropSide) {
+        switch (this.currentDragSide) {
             case "n":
                 newBubbleHeight = Math.max(
                     this.oldHeight - deltaY,
@@ -1544,7 +1642,7 @@ export class BubbleManager {
         // Specifically, the aspect ratio for computing the height of the (full) image
         // from its width.
         const aspectRatio = img.naturalHeight / img.naturalWidth;
-        switch (this.currentCropSide) {
+        switch (this.currentDragSide) {
             case "e":
                 if (
                     // the bubble has stretched beyond the right side of the image
@@ -1736,10 +1834,34 @@ export class BubbleManager {
     private alignControlFrameWithActiveElement = () => {
         const controlFrame = document.getElementById("overlay-control-frame");
         if (controlFrame && this.activeElement) {
-            controlFrame.style.width = this.activeElement.style.width;
+            const hasText = controlFrame.classList.contains("has-text");
+            // Text boxes get a little extra padding, making the control frame bigger than
+            // the overlay itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
+            // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
+            // though maybe I've just been lucky and this should really be 4.
+            // Seems like it should be easy to do this in the .less file, but the control frame is not
+            // a child of the overlay (for z-order reasons), so it's not easy for CSS to move it left
+            // when the style is already absolutely controlling style.left. It's easier to just tweak
+            // it here.
+            const extraPadding = hasText ? 3 : 0;
+            controlFrame.style.width =
+                this.activeElement.clientWidth + 2 * extraPadding + "px";
             controlFrame.style.height = this.activeElement.style.height;
-            controlFrame.style.left = this.activeElement.style.left;
+            controlFrame.style.left =
+                BubbleManager.pxToNumber(this.activeElement.style.left) -
+                extraPadding +
+                "px";
             controlFrame.style.top = this.activeElement.style.top;
+            const tails = Bubble.getBubbleSpec(this.activeElement).tails;
+            if (tails.length > 0) {
+                const tipY = tails[0].tipY;
+                controlFrame.classList.toggle(
+                    "controls-above",
+                    tipY >
+                        this.activeElement.clientHeight +
+                            this.activeElement.offsetTop
+                );
+            }
         }
         this.adjustMoveCropHandleVisibility();
     };
@@ -2313,6 +2435,7 @@ export class BubbleManager {
                 "overlay-control-frame"
             );
             controlFrame?.classList?.add("moving");
+            this.activeElement?.classList?.add("moving");
         }
 
         const container = event.currentTarget as HTMLElement;
@@ -2468,6 +2591,23 @@ export class BubbleManager {
         event: MouseEvent,
         container: HTMLElement
     ) {
+        if (this.activeElement) {
+            const r = this.activeElement.getBoundingClientRect();
+            const container = this.activeElement.parentElement?.closest(
+                kImageContainerSelector
+            );
+            if (container) {
+                const canvas = this.getFirstCanvasForContainer(container);
+                if (canvas)
+                    canvas.classList.toggle(
+                        "moving",
+                        event.clientX > r.left &&
+                            event.clientX < r.right &&
+                            event.clientY > r.top &&
+                            event.clientY < r.bottom
+                    );
+            }
+        }
         // Capture the most recent data to use when our animation frame request is satisfied.
         this.lastMoveContainer = container;
         // We don't want any other effects of mouse move, like selecting text in the box,
@@ -2664,8 +2804,15 @@ export class BubbleManager {
 
     private stopMoving() {
         const controlFrame = document.getElementById("overlay-control-frame");
-        controlFrame?.classList?.remove("moving");
+        // We want to get rid of it at least from the control frame and the active bubble,
+        // but may as well make sure it doesn't get left anywhere.
+        Array.from(document.getElementsByClassName("moving")).forEach(
+            element => {
+                element.classList.remove("moving");
+            }
+        );
         this.adjustMoveCropHandleVisibility();
+        this.alignControlFrameWithActiveElement();
     }
 
     // MUST be defined this way, rather than as a member function, so that it can
@@ -2715,6 +2862,7 @@ export class BubbleManager {
             this.theBubbleWeAreTextEditing = (event.target as HTMLElement)?.closest(
                 kTextOverPictureSelector
             ) as HTMLElement;
+            this.theBubbleWeAreTextEditing?.classList.add("bloom-focusedTOP");
             // We want to position the IP as if the user clicked where they did.
             // Since we already suppressed the mouseDown event, it's not enough to just
             // NOT suppress the mouseUp event. We need to actually move the IP to the
@@ -3128,6 +3276,7 @@ export class BubbleManager {
         }
         this.isComicEditingOn = false;
         this.removeControlFrame();
+        this.removeFocusClass();
 
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();

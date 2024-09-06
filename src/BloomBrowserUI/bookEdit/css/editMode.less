@@ -575,6 +575,13 @@ div.pageLabel[contenteditable="true"]:focus {
     // box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
     //     0 0 8px rgba(82, 168, 236, 0.6);
 }
+// I'm not sure why the rule above is !important, but this one has to be to beat it.
+// In edit mode we don't want such an automatic outline, because the control frame
+// provides one, and typically they don't even line up, becuase we grow the control
+// frame a little bit to prevent the side buttons overlapping text.
+.bloom-textOverPicture .bloom-editable:focus {
+    outline: none !important;
+}
 
 .bloom-editable:focus {
     //position: relative;
@@ -1286,9 +1293,20 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
     opacity: 40%; // dim a bit to make it look like a prompt.
 }
 
+canvas.moving {
+    cursor: move;
+}
+
+.bloom-textOverPicture:not(.bloom-focusedTOP) * {
+    cursor: default;
+}
+.bloom-textOverPicture.moving:not(.bloom-focusedTOP) * {
+    cursor: move;
+}
+
 @resizeHandleRadius: 8px;
-@cropHandleRadius: 4px;
-@cropHandleCenter: 6px;
+@sideHandleRadius: 4px;
+@sideHandleCenter: 6px;
 // We place this frame over each overlay to support resizing and cropping.
 // The frame itself is invisible (and ignores pointer events), but it provides a container
 // for the resize and crop handles and the toolbox below.
@@ -1303,28 +1321,45 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
     // (except for the resize or crop control we are operating).
     &.moving {
         .bloom-ui-overlay-resize-handle,
-        .bloom-ui-overlay-crop-handle {
+        .bloom-ui-overlay-side-handle {
             display: none;
             &.active-control {
                 display: block;
             }
         }
+        #overlay-context-controls {
+            display: none;
+        }
+    }
+    // the "crop" handles on left and right are visible for text boxes
+    // (though with a different function).
+    &.has-text:not(.moving) {
+        .bloom-ui-overlay-side-handle-e,
+        .bloom-ui-overlay-side-handle-w {
+            display: block;
+        }
+        // Enhance: Canva uses these handles on text boxes to resize the box by modifying
+        // font size. This is nice for tweaking things but it's not clear how it should interact
+        // with our style system. For now we're just not showing them for text boxes.
+        .bloom-ui-overlay-resize-handle {
+            display: none;
+        }
     }
 
     // crop handles are, for now, only visible on images.
-    // Enahnce: Canva uses the horizontal ones on text boxes to resize the box by modifying
-    // font size. This is nice for tweaking things but it's not clear how it should interact
-    // with our style system.
-    .bloom-ui-overlay-crop-handle {
+    .bloom-ui-overlay-side-handle {
         display: none; // default
         &.active-control {
             display: block;
         }
     }
-    &.has-image:not(.moving) .bloom-ui-overlay-crop-handle {
+    &.has-image:not(.moving) .bloom-ui-overlay-side-handle {
         display: block;
     }
 
+    // The resize handles are the small circles in the four corners.
+    // The move crop handle is the small circle in the center, used to change how an
+    // image is cropped by (apparently) moving the image within the frame.
     .bloom-ui-overlay-resize-handle,
     .bloom-ui-overlay-move-crop-handle {
         position: absolute;
@@ -1374,11 +1409,13 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
         display: block;
     }
 
-    .bloom-ui-overlay-crop-handle {
+    // Used to crop images, but for text boxes the left and right ones are actually used to change width (and thus
+    // aspect ratio).
+    .bloom-ui-overlay-side-handle {
         position: absolute;
-        width: @cropHandleRadius * 2;
-        height: @cropHandleRadius * 2;
-        border-radius: @cropHandleRadius;
+        width: @sideHandleRadius * 2;
+        height: @sideHandleRadius * 2;
+        border-radius: @sideHandleRadius;
         background-color: white;
         border: 1px solid @bloom-blue;
         box-sizing: border-box;
@@ -1389,28 +1426,28 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
         }
     }
 
-    .bloom-ui-overlay-crop-handle-n {
-        top: -@cropHandleRadius;
-        left: calc(50% - @cropHandleRadius - @cropHandleCenter);
-        width: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+    .bloom-ui-overlay-side-handle-n {
+        top: -@sideHandleRadius;
+        left: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ns-resize;
     }
-    .bloom-ui-overlay-crop-handle-e {
-        top: calc(50% - @cropHandleRadius - @cropHandleCenter);
-        right: -@cropHandleRadius;
-        height: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+    .bloom-ui-overlay-side-handle-e {
+        top: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        right: -@sideHandleRadius;
+        height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ew-resize;
     }
-    .bloom-ui-overlay-crop-handle-s {
-        bottom: -@cropHandleRadius;
-        left: calc(50% - @cropHandleRadius - @cropHandleCenter);
-        width: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+    .bloom-ui-overlay-side-handle-s {
+        bottom: -@sideHandleRadius;
+        left: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ns-resize;
     }
-    .bloom-ui-overlay-crop-handle-w {
-        top: calc(50% - @cropHandleRadius - @cropHandleCenter);
-        left: -@cropHandleRadius;
-        height: @cropHandleCenter * 2 + @cropHandleRadius * 2;
+    .bloom-ui-overlay-side-handle-w {
+        top: calc(50% - @sideHandleRadius - @sideHandleCenter);
+        left: -@sideHandleRadius;
+        height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ew-resize;
     }
 }
@@ -1422,4 +1459,8 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
     bottom: -67px;
     left: calc(50% - 150px);
     width: 300px;
+}
+.controls-above #overlay-context-controls {
+    top: -67px;
+    bottom: unset;
 }

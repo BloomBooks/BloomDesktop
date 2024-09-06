@@ -156,7 +156,7 @@ export default class OverflowChecker {
         element.classList.add("disableTOPControls");
 
         const overflowY =
-            element.scrollHeight -
+            this.contentHeight(element) -
             fontFudgeFactor -
             (element.clientHeight +
                 focusedBorderFudgeFactor +
@@ -168,6 +168,52 @@ export default class OverflowChecker {
         element.classList.remove("disableTOPControls");
 
         return [overflowX, overflowY];
+    }
+
+    private static contentHeight(element: HTMLElement): number {
+        let maxContentBottom = 0;
+        const children = Array.from(element.children);
+        // First, we need to make sure that the size and position of the children are not affected
+        // by flex grow or shrink. Possibly at some point we might need to remember the old values
+        // of these styles, but currently we only mess with them using stylesheets, so setting them
+        // back to empty at the end is sufficient.
+        // Conceivably, there could be some flicker from setting and clearing these, but I haven't
+        // noticed it. Typically we use the results of this function to make overlays the right size,
+        // and then grow/shrink don't do anything.
+        if (element.childNodes.length === 0) {
+            return 0;
+        }
+        // Note that there may be no children, even though there are childNodes. We can only set style
+        // for elements, but we need to measure all the nodes (at least for one unit test).
+        children.forEach((e: HTMLElement) => {
+            e.style.flexGrow = "0";
+            e.style.flexShrink = "0";
+        });
+        // This is a reliable way to get the information if it is greater than the clientHeight,
+        // and means we don't have to worry about scroll position.
+        let result = element.scrollHeight;
+        if (element.scrollHeight <= element.clientHeight) {
+            // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
+            //
+            element.childNodes.forEach((x: HTMLElement) => {
+                if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
+                if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
+                // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
+                // But in case it is, we don't want to shrink the content height. And often there is only one
+                // child so we'll get an accurate figure this way even if there is some scrolling.
+                const xbottom = Math.max(x.offsetTop, 0) + x.offsetHeight;
+                if (xbottom > maxContentBottom) {
+                    maxContentBottom = xbottom;
+                }
+            });
+            result = maxContentBottom;
+        }
+        children.forEach((e: HTMLElement) => {
+            // return control to stylesheet
+            e.style.flexGrow = "";
+            e.style.flexShrink = "";
+        });
+        return result;
     }
 
     // Actual testable determination of Type II overflow or not
