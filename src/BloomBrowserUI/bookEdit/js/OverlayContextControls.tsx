@@ -328,6 +328,17 @@ const OverlayContextControls: React.FunctionComponent<{
 
         // );
     }
+    const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
+        // This prevents focus leaving the text box.
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    const handleMenuButtonMouseUp = (e: React.MouseEvent) => {
+        // This prevents focus leaving the text box.
+        e.preventDefault();
+        e.stopPropagation();
+        props.setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
+    };
     const editable = props.overlay.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
@@ -585,7 +596,11 @@ const OverlayContextControls: React.FunctionComponent<{
                 <button
                     ref={ref => (menuEl.current = ref)}
                     css={materialIconCss()}
-                    onClick={() => props.setMenuOpen(true)}
+                    // It would be more natural to handle a click. But clicks are a combination of
+                    // mouse down and mouse up, and those have side effects, especially change of focus,
+                    // that we need to prevent. So we handle them ourselves.
+                    onMouseDown={handleMenuButtonMouseDown}
+                    onMouseUp={handleMenuButtonMouseUp}
                 >
                     <MenuIcon color="primary" />
                 </button>

@@ -870,6 +870,9 @@ export class BubbleManager {
             // If that's the target, we didn't click in an image container or button.
             return;
         }
+        if (clickedElement.classList.contains("MuiBackdrop-root")) {
+            return; // we clicked outside a popup menu to close it. Don't mess with focus.
+        }
         if (
             BubbleManager.getTopLevelImageContainerElement(clickedElement) ||
             clickedElement.closest(".source-copy-button")
