@@ -109,6 +109,11 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                 const bookTitleElement = resultPageData.querySelector(
                     "div[data-book='bookTitle']"
                 );
+                if (bookTitleElement?.textContent?.trim() === "Games") {
+                    // For 6.1, We don't want to show the games book in the page chooser.
+                    // If you take this out to play with Games, you need to Refresh or restart Bloom to see the change.
+                    return;
+                }
                 if (bookTitleElement) {
                     setGroupTitle(
                         bookTitleElement.textContent
