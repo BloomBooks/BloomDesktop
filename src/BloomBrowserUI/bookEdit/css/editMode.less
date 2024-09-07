@@ -579,6 +579,10 @@ div.pageLabel[contenteditable="true"]:focus {
 // In edit mode we don't want such an automatic outline, because the control frame
 // provides one, and typically they don't even line up, becuase we grow the control
 // frame a little bit to prevent the side buttons overlapping text.
+// Note that, prior to 6.1, we also had two rules in bubble.less (in content) putting an outline
+// and shadow on a focused bloom-editable in an overlay. If we put that back for some
+// reason, we'll need a box-shadow:none (maybe !important) here because it looks wrong
+// with the wider control frame.
 .bloom-textOverPicture .bloom-editable:focus {
     outline: none !important;
 }
