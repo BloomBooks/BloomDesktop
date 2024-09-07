@@ -20,7 +20,13 @@ export function setupOrigami() {
             const origamiControl = getAbovePageControlContainer()
                 .append(createTypeSelectors(isEnterpriseEnabled))
                 .append(createTextBoxIdentifier());
-            $("#page-scaling-container").append(origamiControl);
+            // The order of this is not important in most ways, since it is positioned absolutely.
+            // However, we position the page label, also absolutely, in the same screen area, and
+            // we want it on top of origami control, so that in template pages the user can edit it.
+            // The page label is part of the page, so we want the page to come after the origami control.
+            // (Could also do this with z-order, but I prefer to do what I can by ordering elements,
+            // and save z-order for when it is really needed.)
+            $("#page-scaling-container").prepend(origamiControl);
             // The container width is set to 100% in the CSS, but we need to
             // limit it to no more than the actual width of the page.
             const toggleContainer = $(".above-page-control-container").get(0);
