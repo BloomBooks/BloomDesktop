@@ -61,15 +61,15 @@
     <g
        id="g1851"
        transform="matrix(4.8228162,0,0,4.8250817,889.2515,712.29552)"
-       style="stroke:#59b4d3;stroke-width:0.73452413;stroke-opacity:1">
+       style="stroke:black;stroke-width:0.73452413;stroke-opacity:1">
       <path
          inkscape:connector-curvature="0"
          id="path1828"
          d="m -179.72441,63.643478 -4.16101,0 0,6.336705 6.4149,0 0,-3.835374"
-         style="fill:none;stroke:#59b4d3;stroke-width:0.58302855;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+         style="fill:none;stroke:black;stroke-width:0.58302855;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <path
          sodipodi:nodetypes="cccccccccssccccc"
-         style="fill:#59b4d3;fill-opacity:1;stroke:#59b4d3;stroke-width:0.19434284;stroke-linecap:round;stroke-opacity:1"
+         style="fill:black;fill-opacity:1;stroke:black;stroke-width:0.19434284;stroke-linecap:round;stroke-opacity:1"
          id="path4-2"
          d="m -176.88813,62.77335 -4.69367,4.569999 0,-1.881151 c -9.3e-4,-0.379392 -0.56965,-0.379392 -0.57058,0 l 0,2.565739 c -0.002,0.01897 -0.002,0.03808 0,0.05705 l 0,0.08557 0.0207,0.0641 0.0789,0.02147 2.75167,0 c 0.38039,0 0.38039,-0.57049 0,-0.57049 l -1.88154,0 0.94855,-0.932793 3.74513,-3.580157 c 0.19792,-0.263879 -0.25824,-0.556301 -0.3994,-0.399343 z"
          data-name="Path"
