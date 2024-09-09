@@ -67,6 +67,7 @@ namespace Bloom.Book
             //these are needed so that "HalfLetter" doesn't come out "Halfletter"
             name = name.Replace("letter", "Letter");
             name = name.Replace("legal", "Legal");
+            name = name.Replace("folio", "Folio");
             name = name.Replace("Uscomic", "USComic");
             return name;
         }
@@ -179,6 +180,7 @@ namespace Bloom.Book
             yield return new Layout { SizeAndOrientation = FromString("LegalLandscape") };
             yield return new Layout { SizeAndOrientation = FromString("HalfLetterPortrait") };
             yield return new Layout { SizeAndOrientation = FromString("HalfLetterLandscape") };
+            yield return new Layout { SizeAndOrientation = FromString("HalfFolioPortrait") };
             yield return new Layout { SizeAndOrientation = FromString("QuarterLetterPortrait") };
             yield return new Layout { SizeAndOrientation = FromString("QuarterLetterLandscape") };
             yield return new Layout { SizeAndOrientation = FromString("Device16x9Portrait") };

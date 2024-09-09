@@ -153,6 +153,7 @@ namespace Bloom.Book
 
                 englishName = englishName.Replace("letter", " Letter");
                 englishName = englishName.Replace("legal", " Legal");
+                englishName = englishName.Replace("folio", " Folio");
                 englishName = englishName.Replace("16x9", " 16x9");
                 englishName = englishName.Trim();
                 var displayName = L10NSharp.LocalizationManager.GetDynamicString(

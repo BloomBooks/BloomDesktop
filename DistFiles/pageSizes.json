@@ -1,30 +1,51 @@
 {
-       "sizes": [
-        {"size":"A5Portrait", "width":"148mm", "height":"210mm"},
-        {"size":"A5Landscape", "width":"210mm", "height":"148mm"},
-        {"size":"B5Portrait", "width":"176mm", "height":"250mm"},
-        {"size":"A4Landscape", "width":"297mm", "height":"210mm"},
-        {"size":"A4Portrait", "width":"210mm", "height":"297mm"},
-        {"size":"A3Landscape", "width":"420mm", "height":"297mm"},
-        {"size":"A3Portrait", "width":"297mm", "height":"420mm"},
-        {"size":"A6Portrait", "width":"105mm", "height":"148mm"},
-        {"size":"A6Landscape", "width":"148mm", "height":"105mm"},
-        {"size":"QuarterLetterPortrait", "width":"4.25in", "height":"5.5in"},
-        {"size":"QuarterLetterLandscape", "width":"5.5in", "height":"4.25in"},
-        {"size":"HalfLetterPortrait", "width":"5.5in", "height":"8.5in"},
-        {"size":"HalfLetterLandscape", "width":"8.5in", "height":"5.5in"},
-        {"size":"LetterPortrait", "width":"8.5in", "height":"11in"},
-        {"size":"LetterLandscape", "width":"11in", "height":"8.5in"},
-        {"size":"HalfLegalPortrait", "width":"7in", "height":"8.5in"},
-        {"size":"HalfLegalLandscape", "width":"8.5in", "height":"7in"},
-        {"size":"LegalPortrait", "width":"8.5in", "height":"14in"},
-        {"size":"LegalLandscape", "width":"14in", "height":"8.5in"},
-        {"size":"Cm13Landscape", "width":"130mm", "height":"130mm"},
-        {"size":"USComicPortrait", "width":"6.625in", "height":"10.25in"},
-        {"size":"Device16x9Portrait", "width":"100mm", "height":"177.77777778mm"},
-        {"size":"Device16x9Landscape", "width":"177.77777778mm", "height":"100mm"},
-        {"size":"PictureStoryLandscape", "width":"177.77777778mm", "height":"100mm"},
-        {"size":"Size6x9Portrait", "width":"6in", "height":"9in"},
-        {"size":"Size6x9Landscape", "width":"9in", "height":"6in"}
+    "sizes": [
+        { "size": "A5Portrait", "width": "148mm", "height": "210mm" },
+        { "size": "A5Landscape", "width": "210mm", "height": "148mm" },
+        { "size": "B5Portrait", "width": "176mm", "height": "250mm" },
+        { "size": "A4Landscape", "width": "297mm", "height": "210mm" },
+        { "size": "A4Portrait", "width": "210mm", "height": "297mm" },
+        { "size": "A3Landscape", "width": "420mm", "height": "297mm" },
+        { "size": "A3Portrait", "width": "297mm", "height": "420mm" },
+        { "size": "A6Portrait", "width": "105mm", "height": "148mm" },
+        { "size": "A6Landscape", "width": "148mm", "height": "105mm" },
+        {
+            "size": "QuarterLetterPortrait",
+            "width": "4.25in",
+            "height": "5.5in"
+        },
+        {
+            "size": "QuarterLetterLandscape",
+            "width": "5.5in",
+            "height": "4.25in"
+        },
+        { "size": "HalfLetterPortrait", "width": "5.5in", "height": "8.5in" },
+        { "size": "HalfLetterLandscape", "width": "8.5in", "height": "5.5in" },
+        { "size": "LetterPortrait", "width": "8.5in", "height": "11in" },
+        { "size": "LetterLandscape", "width": "11in", "height": "8.5in" },
+        { "size": "HalfFolioPortrait", "width": "6.5in", "height": "8.5in" },
+        { "size": "HalfLegalPortrait", "width": "7in", "height": "8.5in" },
+        { "size": "HalfLegalLandscape", "width": "8.5in", "height": "7in" },
+        { "size": "LegalPortrait", "width": "8.5in", "height": "14in" },
+        { "size": "LegalLandscape", "width": "14in", "height": "8.5in" },
+        { "size": "Cm13Landscape", "width": "130mm", "height": "130mm" },
+        { "size": "USComicPortrait", "width": "6.625in", "height": "10.25in" },
+        {
+            "size": "Device16x9Portrait",
+            "width": "100mm",
+            "height": "177.77777778mm"
+        },
+        {
+            "size": "Device16x9Landscape",
+            "width": "177.77777778mm",
+            "height": "100mm"
+        },
+        {
+            "size": "PictureStoryLandscape",
+            "width": "177.77777778mm",
+            "height": "100mm"
+        },
+        { "size": "Size6x9Portrait", "width": "6in", "height": "9in" },
+        { "size": "Size6x9Landscape", "width": "9in", "height": "6in" }
     ]
 }
