@@ -33,6 +33,12 @@ import { BubbleManager, theOneBubbleManager } from "./bubbleManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { TrashIcon } from "../toolbox/overlay/TrashIcon";
+import {
+    getWithPromise,
+    post,
+    postJson,
+    postThatMightNavigate
+} from "../../utils/bloomApi";
 import { useL10n } from "../../react_components/l10nHooks";
 
 const controlFrameColor: string = kBloomBlue;
@@ -185,6 +191,38 @@ const OverlayContextControls: React.FunctionComponent<{
         props.overlay.setAttribute("data-sound", newSoundId);
         setImageSound(newSoundId);
         copyAndPlaySoundAsync(newSoundId, page, copyBuiltIn);
+    };
+    const updateVideo = (url: string): void => {
+        if (!url) return;
+        const container = props.overlay.getElementsByClassName(
+            "bloom-videoContainer"
+        )[0] as HTMLElement;
+        if (!container) return;
+        let video = container.getElementsByTagName("video")[0];
+        if (!video && container.ownerDocument) {
+            video = container.ownerDocument.createElement("video");
+            container.appendChild(video);
+        }
+        if (video) {
+            let source = video.getElementsByTagName("source")[0];
+            if (!source && container.ownerDocument) {
+                source = container.ownerDocument.createElement("source");
+                video.appendChild(source);
+            }
+            if (source) {
+                source.setAttribute("src", url);
+            }
+        }
+    };
+
+    const importRecording = () => {
+        post("signLanguage/importVideo", result => {
+            updateVideo(result.data);
+            // Makes sure the page gets saved with a reference to the new video,
+            // and incidentally that everything gets updated to be consistent with the
+            // new state of things.
+            postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+        });
     };
 
     // These commands apply to all overlays.
@@ -345,6 +383,31 @@ const OverlayContextControls: React.FunctionComponent<{
         // );
     }
     const autoHeight = !props.overlay.classList.contains("bloom-noAutoHeight");
+
+    const hasVideo =
+        props.overlay.getElementsByClassName("bloom-videoContainer").length > 0;
+    if (hasVideo) {
+        menuOptions.unshift(
+            {
+                l10nId: "EditTab.Toolbox.SignLanguage.ImportVideo",
+                english: "Import...",
+                onClick: () => importRecording(),
+                icon: (
+                    <img
+                        css={css`
+                            width: 19px;
+                        `}
+                        src="/bloom/bookEdit/toolbox/signLanguage/ImportVideo.svg"
+                    />
+                )
+            },
+            {
+                l10nId: "-",
+                english: "",
+                onClick: () => {}
+            }
+        );
+    }
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
         e.preventDefault();
