@@ -3589,6 +3589,11 @@
         <target xml:lang="fr" state="final">Appareil16x9Portrait</target>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
+      <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Half Folio Portrait</source>
+        <target xml:lang="fr" state="needs-translation">Half Folio Portrait</target>
+        <note>ID: LayoutChoices.HalfFolioPortrait</note>
+      </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HalfLetter Landscape</source>
         <target xml:lang="fr" state="final">DemiPagePaysage</target>
