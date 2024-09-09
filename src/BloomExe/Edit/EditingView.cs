@@ -670,11 +670,11 @@ namespace Bloom.Edit
                     }
                 }
 
-				var metadata = imageBeingModified.Metadata;
-				// If the license is not set, default to CC-BY.
-				metadata.SetupReasonableLicenseDefaultBeforeEditing();
+                var metadata = imageBeingModified.Metadata;
+                // If the license is not set, default to CC-BY.
+                metadata.SetupReasonableLicenseDefaultBeforeEditing();
 
-				return metadata;
+                return metadata;
             }
         }
 
@@ -697,7 +697,10 @@ namespace Bloom.Edit
             }
             catch (Exception e)
             {
-                ImageUtils.ReportImageMetadataProblem(Path.Combine(_model.CurrentBook.FolderPath, _fileNameOfImageBeingModified), e);
+                ImageUtils.ReportImageMetadataProblem(
+                    Path.Combine(_model.CurrentBook.FolderPath, _fileNameOfImageBeingModified),
+                    e
+                );
                 return false;
             }
             return true;
@@ -1046,12 +1049,14 @@ namespace Bloom.Edit
             {
                 // We don't want to use the image toolbox for GIFs, because it will convert them to PNGs.
                 // Instead, we'll just use a file chooser
-                using (var dlg = new BloomOpenFileDialog
-                {
-                    InitialDirectory =
-                        _gifDirectory ?? Environment.SpecialFolder.MyPictures.ToString(),
-                    Filter = "gif|*.gif"
-                })
+                using (
+                    var dlg = new BloomOpenFileDialog
+                    {
+                        InitialDirectory =
+                            _gifDirectory ?? Environment.SpecialFolder.MyPictures.ToString(),
+                        Filter = "gif|*.gif"
+                    }
+                )
                 {
                     var result = dlg.ShowDialog();
                     if (result == DialogResult.OK)
@@ -1886,6 +1891,14 @@ namespace Bloom.Edit
                     //Application.Idle += SaveWhenIdle;
                 };
             }
+            // This prevents the built-in ctrl-mousewheel zooming as well as ctrl-+ and ctrl--.
+            // They are a problem because the toolbox zooms too, which causes various problems including
+            // BL-13846 (can't drag new overlays onto the page).
+            // We enable these mouse actions for the main document iframe by handling the events
+            // in Javascript and calling our zoom functions through an API.
+            var settings = (Browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;
+            if (settings != null)
+                settings.IsZoomControlEnabled = false;
         }
 
         public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
