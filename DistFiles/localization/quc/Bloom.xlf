@@ -3591,6 +3591,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="translated">Wiqchakub'al16x9Q'e'lik</target>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
+      <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Half Folio Portrait</source>
+        <target xml:lang="quc" state="needs-translation">Half Folio Portrait</target>
+        <note>ID: LayoutChoices.HalfFolioPortrait</note>
+      </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true">
         <source xml:lang="en">HalfLetter Landscape</source>
         <target xml:lang="quc" state="translated">Panik'ajEtab'alKo'luxaqQ'e'lik</target>
