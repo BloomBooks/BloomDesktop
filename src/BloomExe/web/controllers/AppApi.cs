@@ -56,7 +56,7 @@ namespace Bloom.Api
 				var url = UrlLookup.LookupUrl(UrlType.LibrarySite, null) + "/installers";
 				if (SIL.PlatformUtilities.Platform.IsWindows)
 					// Let the default browser open the link.
-					ProcessExtra.SafeStartInFront('"' + url + '"');
+					ProcessExtra.SafeStartInFront( url);
 				else
 					ProcessExtra.SafeStartInFront("xdg-open", Uri.EscapeUriString(url));	// may not need this distinction
 				request.ExternalLinkSucceeded();
