@@ -2960,10 +2960,6 @@ export class BubbleManager {
         if (ev.ctrlKey || ev.altKey) {
             return false;
         }
-        if (targetElement.closest(".bloom-videoContainer")) {
-            // want playback-related behavior in video containers
-            return true;
-        }
         const editable = targetElement.closest(".bloom-editable");
         if (
             editable &&
