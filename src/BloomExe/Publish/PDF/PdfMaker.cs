@@ -274,6 +274,9 @@ namespace Bloom.Publish.PDF
                 case "HalfLetter":
                     pageSize = PageSize.Letter;
                     break;
+                case "HalfFolio":
+                    pageSize = PageSize.Folio;
+                    break;
                 case "QuarterLetter":
                     pageSize = PageSize.Statement; // ?? Wikipedia says HalfLetter is aka Statement
                     break;

@@ -3140,6 +3140,10 @@
         <source xml:lang="en">Device16x9 Portrait</source>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
+      <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Half Folio Portrait</source>
+        <note>ID: LayoutChoices.HalfFolioPortrait</note>
+      </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true">
         <source xml:lang="en">HalfLetter Landscape</source>
         <note>ID: LayoutChoices.HalfLetterLandscape</note>
