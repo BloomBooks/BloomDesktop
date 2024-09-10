@@ -584,6 +584,7 @@ export class BubbleManager {
     }
     // declare this strange way so it has the right 'this' when added as event listener.
     private bubbleLosingFocus = event => {
+        if (BubbleManager.ignoreFocusChanges) return;
         // removing focus from a text bubble means the next click on it could drag it.
         // However, it's possible the active bubble already moved; don't clear theBubbleWeAreTextEditing if so
         if (event.currentTarget === this.theBubbleWeAreTextEditing) {
@@ -840,6 +841,7 @@ export class BubbleManager {
     // The event handler to be called when something relevant on the page frame gets focus.
     // This will set the active textOverPicture element.
     public static onFocusSetActiveElement(event: Event) {
+        if (BubbleManager.ignoreFocusChanges) return;
         if (BubbleManager.inPlayMode(event.currentTarget as Element)) {
             return;
         }
@@ -858,6 +860,17 @@ export class BubbleManager {
         const bubbleElement = focusedElement.closest(kTextOverPictureSelector);
         if (bubbleElement) {
             theOneBubbleManager.setActiveElement(bubbleElement as HTMLElement);
+            // When a bubble is first clicked, we try hard not to let it get focus.
+            // Another click will focus it. Unfortunately, various other things do as well,
+            // such as activating Bloom (which seems to focus the thing that most recently had
+            // a text selection, possibly because of CkEditor), and Undo. If something
+            // has focused the bubble, it will typically have a selection visible, and so it
+            // looks as if it's in edit mode. I think it's best to just make it so.)
+            theOneBubbleManager.theBubbleWeAreTextEditing =
+                theOneBubbleManager.activeElement;
+            theOneBubbleManager.theBubbleWeAreTextEditing?.classList.add(
+                "bloom-focusedTOP"
+            );
         } else {
             theOneBubbleManager.setActiveElement(undefined);
         }
@@ -953,6 +966,10 @@ export class BubbleManager {
             }
         );
     }
+
+    // Some controls, such as MUI menus, temporarily steal focus. We don't want the usual
+    // loss-of-focus behavior, so this allows suppressing it.
+    public static ignoreFocusChanges: boolean;
 
     public setActiveElement(element: HTMLElement | undefined) {
         if (this.activeElement !== element && this.activeElement) {
@@ -2908,7 +2925,7 @@ export class BubbleManager {
     // If we get a click (without movement) on a text bubble, we treat subsequent mouse events on
     // that bubble as text editing events, rather than drag events, as long as it keeps focus.
     // This is the bubble, if any, that is currently in that state.
-    private theBubbleWeAreTextEditing: HTMLElement | undefined;
+    public theBubbleWeAreTextEditing: HTMLElement | undefined;
     /**
      * Returns true if a handler already exists to sufficiently process this mouse event
      * without needing our custom onMouseDown/onMouseHover/etc event handlers to process it

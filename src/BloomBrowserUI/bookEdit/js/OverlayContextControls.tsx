@@ -104,6 +104,14 @@ const OverlayContextControls: React.FunctionComponent<{
         );
     };
 
+    const setMenuOpen = (open: boolean) => {
+        // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
+        // or some other code somewhere is doing it when we choose a menu item. So we tell the bubble manager
+        // to ignore focus changes while the menu is open.
+        BubbleManager.ignoreFocusChanges = open;
+        props.setMenuOpen(open);
+    };
+
     const menuEl = useRef<HTMLElement | null>();
 
     // Menu item names for 'none' and "Choose...", options.
@@ -242,14 +250,14 @@ const OverlayContextControls: React.FunctionComponent<{
                 onClick: () => {
                     props.overlay.removeAttribute("data-sound");
                     setImageSound("none");
-                    props.setMenuOpen(false);
+                    setMenuOpen(false);
                 }
             },
             {
                 l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
                 english: "Choose...",
                 onClick: () => {
-                    props.setMenuOpen(false);
+                    setMenuOpen(false);
                     updateSoundShowingDialog();
                 }
             }
@@ -271,7 +279,7 @@ const OverlayContextControls: React.FunctionComponent<{
                         imageSound,
                         props.overlay.closest(".bloom-page")!
                     );
-                    props.setMenuOpen(false);
+                    setMenuOpen(false);
                 }
             });
         }
@@ -337,7 +345,7 @@ const OverlayContextControls: React.FunctionComponent<{
         // This prevents focus leaving the text box.
         e.preventDefault();
         e.stopPropagation();
-        props.setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
+        setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
     };
     const editable = props.overlay.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
@@ -627,7 +635,9 @@ const OverlayContextControls: React.FunctionComponent<{
                         props.menuAnchorPosition ? "anchorPosition" : "anchorEl"
                     }
                     anchorPosition={props.menuAnchorPosition}
-                    onClose={() => props.setMenuOpen(false)}
+                    onClose={() => setMenuOpen(false)}
+                    disableAutoFocus={true}
+                    disableEnforceFocus={true}
                 >
                     {menuOptions.map((option, index) => {
                         if (option.l10nId === "-") {
@@ -665,7 +675,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                 l10nId={option.l10nId}
                                 english={option.english}
                                 onClick={e => {
-                                    props.setMenuOpen(false);
+                                    setMenuOpen(false);
                                     option.onClick(e);
                                 }}
                                 icon={option.icon}

@@ -1356,7 +1356,31 @@ export const copySelection = () => {
 
 async function copyImpl() {
     const sel = document.getSelection();
-    if (!sel) return;
+    if (!sel?.toString()) {
+        const activeBubble = theOneBubbleManager?.getActiveElement();
+        const activeBubbleEditable = activeBubble?.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on"
+        )[0] as HTMLElement;
+        if (
+            activeBubbleEditable &&
+            activeBubble !== theOneBubbleManager.theBubbleWeAreTextEditing
+        ) {
+            // no active text selection to copy, but we do have an active...but not for editing...text bubble.
+            // Copy its entire content.
+            navigator.clipboard.writeText(activeBubbleEditable.innerText);
+            // Something in the above line causes focus to move back to wherever it last was.
+            // We want to keep the active bubble active, so we have to set it again.
+            // Doing it right away doesn't work, it needs to be fixed in a later event cycle,
+            // presumably after whatever is messing things up. There is a slight flicker,
+            // but this is the best I can figure out. It's probably fairly rare to copy a bubble
+            // you haven't recently been editing.
+            setTimeout(
+                () => theOneBubbleManager.setActiveElement(activeBubble),
+                0
+            );
+        }
+        return; // even if we didn't find a bubble, don't copy an empty string to the clipboard.
+    }
     navigator.clipboard.writeText(sel.toString());
 }
 
@@ -1415,22 +1439,49 @@ async function pasteImpl(imageAvailable: boolean) {
         }
         return; // can't paste anything but an image into an image container overlay
     }
+    const activeBubbleEditable = activeBubble?.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on"
+    )[0] as HTMLElement;
+
+    if (
+        activeBubbleEditable &&
+        activeBubble !== bubbleManager.theBubbleWeAreTextEditing
+    ) {
+        // We've issued a paste command on a bubble that isn't active for editing.
+        // Replace its entire content with what's on the clipboard.
+        const editor = (activeBubbleEditable as any).bloomCkEditor;
+        if (editor) {
+            const manager = editor.undoManager;
+            const textToPaste = await navigator.clipboard.readText();
+            editor.focus();
+            manager.save(true);
+            // The description of these arguments is quite mysterious, but by experiment, if both are passed true,
+            // then the two changes we are about to make are treated as a single operation for undo purposes.
+            manager.lock(true, true);
+            // I tried a few options here. Using insertText is desirable because, unlike embedding the text in the
+            // html between the <p> tags, it doesn't bypass ckeditor's usual checks, nor allow unexpected things
+            // to happen if the clipboard contains something that looks like HTML. The setData gets rid of the
+            // old content, provides the wrapper markup we want, and leaves the insertion point in the right
+            // place for the desired text to be inserted.
+            editor.setData(`<p><p>`);
+            editor.insertText(textToPaste);
+            manager.unlock();
+            manager.save(true);
+        }
+        // It shouldn't happen that we don't have an editor, but if we don't, we just don't paste.
+        // Otherwise, the paste is likely to go somewhere unexpected, wherever a ckeditor last had
+        // a selection.
+        return;
+    }
+    const textToPaste = await navigator.clipboard.readText();
     // Using ckeditor here because it's the only way I've found to integrate clipboard
     // ops into an Undo stack that we can operate from an external button.
     // We do a Save before and after to make sure that the cut is distinct from
     // any other editing and that ckEditor actually has an item in its undo stack
     // so that the Undo gets activated.
-    const textToPaste = await navigator.clipboard.readText();
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
     CKEDITOR.currentInstance.insertText(textToPaste);
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
-    // Works but isn't undoable.
-    //const sel = document.getSelection();
-    // if (sel) {
-    //     const range = sel.getRangeAt(0);
-    //     range.deleteContents();
-    //     range.insertNode(document.createTextNode(textToPaste));
-    // }
 }
 
 export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
