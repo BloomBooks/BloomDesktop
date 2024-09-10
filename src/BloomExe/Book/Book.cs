@@ -3158,7 +3158,8 @@ namespace Bloom.Book
             // It is in this sense that this is a "fallback" declaration; if the expected appearance rules don't
             // mention a color, then we get this one. The code that adds links to css files puts them at the end
             // of the head, so this rule will be overridden by the appearance rules if they are present.
-            OurHtmlDom.AddOrReplaceStyleElement(
+            HtmlDom.AddOrReplaceStyleElement(
+                RawDom,
                 "appearanceCoverBackgroundColor",
                 $".bloom-page {{ --cover-background-color: {color}; }}",
                 // I don't know if the order matters, but it has to go *somewhere* and this puts it next to the legacy
@@ -3169,26 +3170,31 @@ namespace Bloom.Book
 
         // Add the old-style rule for books either using legacy theme or running in older
         // Bloom Editors that won't read --cover-background-color so that they just get the original color
-        // This rule will get overridden in contexts using appearance
-        private void SetBackwardsCompatibleCoverBackgroundColor(HtmlDom dom, string color)
+        // This rule will get overridden in contexts using appearance, unless overrideAllOtherRules is true.
+        private static void SetBackwardsCompatibleCoverBackgroundColor(
+            SafeXmlDocument dom,
+            string color,
+            bool overrideAllOtherRules // for forcing white on PDFs
+        )
         {
             //remove any pre-Bloom 6.1 background color rules (which didn't have the nice "title" attribute that we add now)
             SafeXmlNode rule;
             do
             {
-                rule = dom.RawDom.SelectSingleNode(
-                    "//style[contains(text(), 'bloom-page.coverColor')]"
-                );
+                rule = dom.SelectSingleNode("//style[contains(text(), 'bloom-page.coverColor')]");
                 if (rule != null)
                     rule.ParentNode.RemoveChild(rule);
             } while (rule != null);
 
-            OurHtmlDom.AddOrReplaceStyleElement(
+            HtmlDom.AddOrReplaceStyleElement(
+                dom,
                 "legacyCoverBackgroundColor", // legacy here means pre-6.1
                 $"DIV.bloom-page.coverColor {{ background-color: {color} !important;}}",
                 // I don't know if the order matters, but it has to go *somewhere* and in pre-6.1 bloom put it here,
                 // and I see no reason to start putting it somewhere else.
-                HtmlDom.GetUserModifiedStyleElement(RawDom.Head)
+                overrideAllOtherRules
+                    ? dom.SelectSingleNode("//head/*[last()]") // put it at the end so that it can override other rules
+                    : HtmlDom.GetUserModifiedStyleElement(dom.Head)
             );
         }
 
@@ -3232,7 +3238,7 @@ namespace Bloom.Book
 
         public void SetCoverColor(string color)
         {
-            SetBackwardsCompatibleCoverBackgroundColor(OurHtmlDom, color);
+            SetBackwardsCompatibleCoverBackgroundColor(RawDom, color, false);
             UpdateFallbackAppearanceCoverBackgroundColor(color);
 
             // also change in AppearanceSettings
@@ -4228,7 +4234,7 @@ namespace Bloom.Book
                 InsertFullBleedMarkup(printingDom.Body);
             }
             if (!FullBleed)
-                SetBackwardsCompatibleCoverBackgroundColor(printingDom, "white");
+                SetBackwardsCompatibleCoverBackgroundColor(printingDom.RawDom, "white", true);
             AddPreviewJavascript(printingDom);
             return printingDom;
         }

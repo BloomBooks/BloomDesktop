@@ -341,28 +341,30 @@ namespace Bloom.Book
             meta.SetAttribute("content", content);
         }
 
-        public void AddOrReplaceStyleElement(
+        public static void AddOrReplaceStyleElement(
+            SafeXmlDocument dom,
             string name,
             string content,
-            SafeXmlNode nodeThisShouldComeAfter
+            SafeXmlNode nodeThisShouldComeAfter // set to null if it should come at the beginning
         )
         {
             // NB: do not use `title` attribute: that will actuall cause the style to be ignored, browsers take it meen you have alternate stylesheets
-            var element = _dom.SelectSingleNode($"/html/head/style[@name='{name}']");
+            var element = dom.SelectSingleNode($"/html/head/style[@name='{name}']");
             if (element != null)
             {
                 // always deleting makes this resilient to code changes between prepend and append
                 element.ParentNode.RemoveChild(element);
             }
 
-            element = _dom.CreateElement("style");
+            element = dom.CreateElement("style");
             element.SetAttribute("type", "text/css");
             element.SetAttribute("name", name);
             element.InnerXml = content;
 
             if (nodeThisShouldComeAfter == null)
             {
-                Head.AppendChild(element);
+                // put it at the beginning
+                dom.Head.PrependChild(element);
             }
             else
             {
