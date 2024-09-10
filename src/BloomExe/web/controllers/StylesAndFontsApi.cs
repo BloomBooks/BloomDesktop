@@ -347,13 +347,12 @@ namespace Bloom.web.controllers
             if (langTag == "*")
                 return L10NSharp.LocalizationManager.GetString("BookSettings.Fonts.All", "(all)");
             var settings = _bookSelection.CurrentSelection.CollectionSettings;
-            if (langTag == settings.Language1Tag)
-                return settings.Language1.Name;
-            if (langTag == settings.Language2Tag)
-                return settings.Language2.Name;
-            if (langTag == settings.Language3Tag)
-                return settings.Language3.Name;
-            var ws = new Collection.WritingSystem(99, () => settings.Language2Tag);
+            var language = settings.AllLanguages.Find(x => x.Tag == langTag);
+            if (language != null)
+                return language.Name;
+            if (langTag == settings.SignLanguageTag)
+                return settings.SignLanguage.Name;
+            var ws = new Collection.WritingSystem(() => settings.Language2Tag);
             ws.Tag = langTag;
             return ws.Name;
         }

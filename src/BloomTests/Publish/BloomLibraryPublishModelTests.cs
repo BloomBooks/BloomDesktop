@@ -294,7 +294,7 @@ namespace BloomTests.Publish
                 @"<html><head><div id='bloomDataDiv'>" + "</div></head><body></body></html>"
             );
             var bookData = new BookData(dom, collectionSettings, (x) => { });
-            var ws = new WritingSystem(-1, () => "en");
+            var ws = new WritingSystem(() => "en");
             collectionSettings.SignLanguage = ws;
             ws.Tag = "abc";
             ws.SetName("Sign", true);

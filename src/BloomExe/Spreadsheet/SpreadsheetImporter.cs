@@ -23,6 +23,7 @@ using Bloom.ImageProcessing;
 using Bloom.web.controllers;
 using Bloom.Utils;
 using Bloom.SafeXml;
+using Bloom.TeamCollection;
 
 namespace Bloom.Spreadsheet
 {
@@ -65,6 +66,7 @@ namespace Bloom.Spreadsheet
         private bool _bookIsLandscape;
         private Layout _destLayout;
         private readonly CollectionSettings _collectionSettings;
+        private readonly TeamCollectionManager _tcManager;
 
         public delegate SpreadsheetImporter Factory();
 
@@ -103,7 +105,8 @@ namespace Bloom.Spreadsheet
         public SpreadsheetImporter(
             IBloomWebSocketServer webSocketServer,
             Book.Book book,
-            string pathToSpreadsheetFolder
+            string pathToSpreadsheetFolder,
+            TeamCollectionManager teamCollectionManager = null
         )
             : this(
                 webSocketServer,
@@ -114,6 +117,7 @@ namespace Bloom.Spreadsheet
             )
         {
             _book = book;
+            _tcManager = teamCollectionManager;
         }
 
         // If the import is not done on the main UI thread, a control should be passed that can be used to
@@ -412,13 +416,9 @@ namespace Bloom.Spreadsheet
             return _warnings;
         }
 
-        // Flag set by either ImportLanguageNames or UpdateLanguageNameIfAppropriate to indicate
-        // the the collection settings have been changed and should be saved.
-        private bool _collectionSettingsAreDirty = false;
-
         private void ImportLanguageNames()
         {
-            _collectionSettingsAreDirty = false;
+            var collectionSettingsAreDirty = false;
             foreach (string lang in _sheet.Languages)
             {
                 if (lang == "*")
@@ -426,47 +426,42 @@ namespace Bloom.Spreadsheet
                 var langName = _sheet.Header.ColumnNameRow
                     .GetCell(_sheet.GetRequiredColumnForLang(lang))
                     .Content;
-                // If this is one of the standard collection languages, update the name only if the name
-                // is different.  The method will return true if the language tag matches whether or not
-                // it updated the name.
-                if (UpdateLanguageNameIfAppropriate(_collectionSettings.Language1, lang, langName))
+                // If this is the sign language, update the name only if the name is different.
+                // (The sign language is recorded separately in the collection settings.)
+                if (lang == _collectionSettings.SignLanguage.Tag)
+                {
+                    if (_collectionSettings.SignLanguage.Name != langName)
+                    {
+                        _collectionSettings.SignLanguage.SetName(langName, true);
+                        collectionSettingsAreDirty = true;
+                    }
                     continue;
-                if (UpdateLanguageNameIfAppropriate(_collectionSettings.Language2, lang, langName))
-                    continue;
-                if (UpdateLanguageNameIfAppropriate(_collectionSettings.Language3, lang, langName))
-                    continue;
-                if (
-                    UpdateLanguageNameIfAppropriate(
-                        _collectionSettings.SignLanguage,
-                        lang,
-                        langName
+                }
+                // Set the name in the collection settings language list, creating the language if needed.
+                collectionSettingsAreDirty |= _collectionSettings.UpdateOrCreateCollectionLanguage(
+                    lang,
+                    langName
+                );
+            }
+            if (collectionSettingsAreDirty)
+            {
+                if (_tcManager != null)
+                {
+                    if (_tcManager.OkToEditCollectionSettings)
+                        _collectionSettings.Save();
+                }
+                else if (
+                    _collectionSettings.Administrators == null
+                    || _collectionSettings.Administrators.Length == 0 // not TC or legacy TC, no admin recorded
+                    || _collectionSettings.Administrators.Contains(
+                        TeamCollectionManager.CurrentUser,
+                        StringComparer.InvariantCultureIgnoreCase
                     )
                 )
-                    continue;
-                // Set the name in the collection settings language list, creating the language if needed.
-                _collectionSettings.UpdateOrCreateCollectionLanguage(lang, langName);
-                _collectionSettingsAreDirty = true;
-            }
-            if (_collectionSettingsAreDirty)
-                _collectionSettings.Save();
-        }
-
-        private bool UpdateLanguageNameIfAppropriate(
-            WritingSystem language,
-            string tag,
-            string name
-        )
-        {
-            if (language.Tag == tag)
-            {
-                if (language.Name != name)
                 {
-                    language.SetName(name, true);
-                    _collectionSettingsAreDirty = true;
+                    _collectionSettings.Save();
                 }
-                return true;
             }
-            return false;
         }
 
         class PageRecord

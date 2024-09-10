@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -40,13 +41,8 @@ namespace Bloom.Collection
         public decimal LineHeight;
         public string FontName;
 
-        public WritingSystem(
-            int languageNumberInCollection,
-            Func<string> tagOfDefaultLanguageForNaming
-        )
+        public WritingSystem(Func<string> tagOfDefaultLanguageForNaming)
         {
-            _languageNumberInCollection = languageNumberInCollection;
-
             //Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
             //See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
             _tagOfDefaultLanguageForNaming = tagOfDefaultLanguageForNaming;
@@ -102,9 +98,7 @@ namespace Bloom.Collection
                     string match;
                     if (!IetfLanguageTag.GetBestLanguageName(Tag, out match))
                     {
-                        if (_languageNumberInCollection < 0)
-                            return $"SignLanguage-Unknown-" + Tag;
-                        return $"L{_languageNumberInCollection}-Unknown-" + Tag;
+                        return $"Unknown-{Tag}";
                     }
                     return match;
                 }
@@ -112,7 +106,7 @@ namespace Bloom.Collection
             }
             catch (Exception)
             {
-                return "Unknown-" + Tag;
+                return $"Unknown-{Tag}";
             }
         }
 
@@ -122,33 +116,56 @@ namespace Bloom.Collection
         }
 
         /// <summary>
-        /// Call as SaveToXElement(xml) to save all the values of this class to an XElement using
-        /// the internal language number as part of the xml tags.
-        /// Call as SaveToXElement(xml, 0) to save all the values of this class to an XElement using
-        /// the xml tags without any language number.
+        /// Write all the settings of this class as separate child elements to an XElement.  This method
+        /// is used for writing to the complete set of language settings in the collection.  It can also
+        /// be used to write the sign language settings by providing a prefix of "Sign".
         /// </summary>
-        public void SaveToXElement(XElement xml, int langNumber = -2)
+        /// <param name="xml">Language element which receives all of the settings as child elements</param>
+        /// <param name="isSignLanguage">true if the language is a sign language with no font, line-height, etc.</param>
+        public void SaveToXElement(XElement xml, bool isSignLanguage = false)
         {
-            if (langNumber < -1)
-                langNumber = _languageNumberInCollection;
-            var langNumTag = (langNumber > 0) ? langNumber.ToString() : "";
-            var pfx = langNumber < 0 ? "SignLanguage" : "Language" + langNumTag;
-            if (langNumber > 0)
-                xml.Add(
-                    new XComment(
-                        $"{pfx}Name and related elements are present only for partial backwards compatibility."
-                    )
-                );
-            xml.Add(new XElement(pfx + "Name", Name));
-            xml.Add(new XElement(pfx + "IsCustomName", IsCustomName));
-            xml.Add(new XElement(pfx + "Iso639Code", Tag));
-            if (langNumber < 0)
+            SaveToXElementInternal(xml, isSignLanguage, "");
+        }
+
+        /// <summary>
+        /// Write all the settings of this writing system as separate child elements to the top Collection element.
+        /// </summary>
+        /// <param name="xml">Collection element which receives all of the settings as child elements.</param>
+        /// <param name="languageNumber">The language number to use in the xml tags: 1, 2, or 3.</param>
+        public void SaveToXElementLegacy(XElement xml, int languageNumber)
+        {
+            Debug.Assert(languageNumber > 0 && languageNumber < 4);
+
+            xml.Add(
+                new XComment(
+                    $"Language{languageNumber}Name and related elements are present only for partial backwards compatibility."
+                )
+            );
+            SaveToXElementInternal(xml, false, languageNumber.ToString());
+        }
+
+        private void SaveToXElementInternal(XElement xml, bool isSignLanguage, string langNumTag)
+        {
+            Debug.Assert(!(isSignLanguage && !string.IsNullOrEmpty(langNumTag)));
+
+            var prefix = isSignLanguage ? "Sign" : "";
+            xml.Add(new XElement($"{prefix}Language{langNumTag}Name", Name));
+            xml.Add(new XElement($"{prefix}Language{langNumTag}IsCustomName", IsCustomName));
+            xml.Add(new XElement($"{prefix}Language{langNumTag}Iso639Code", Tag));
+            if (isSignLanguage)
                 return;
             xml.Add(new XElement($"DefaultLanguage{langNumTag}FontName", FontName));
-            xml.Add(new XElement($"IsLanguage{langNumTag}Rtl", IsRightToLeft));
-            xml.Add(new XElement(pfx + "LineHeight", LineHeight));
-            xml.Add(new XElement(pfx + "BreaksLinesOnlyAtSpaces", BreaksLinesOnlyAtSpaces));
-            xml.Add(new XElement(pfx + "BaseUIFontSizeInPoints", BaseUIFontSizeInPoints));
+            xml.Add(new XElement($"IsLanguage{langNumTag}IsRtl", IsRightToLeft));
+            xml.Add(new XElement($"Language{langNumTag}LineHeight", LineHeight));
+            xml.Add(
+                new XElement(
+                    $"Language{langNumTag}BreaksLinesOnlyAtSpaces",
+                    BreaksLinesOnlyAtSpaces
+                )
+            );
+            xml.Add(
+                new XElement($"Language{langNumTag}BaseUIFontSizeInPoints", BaseUIFontSizeInPoints)
+            );
         }
 
         public void AddSelectorCssRule(StringBuilder sb, bool omitDirection)
@@ -199,24 +216,43 @@ namespace Bloom.Collection
         }
 
         /// <summary>
-        /// Read in all the persisted values of this class from an XElement
+        /// Read in all the persisted values of this class from the child elements of an XElement
         /// </summary>
         /// <param name="xml"></param>
-        /// <param name="defaultToEnglishIfMissing"></param>
         /// <param name="languageForDefaultNameLookup">a language tag or "self" if we should use the language tag for this spec to look it up</param>
-        /// <param name="langNumber">The language number to use in the xml tags. 0 means no number. The default value uses the number assigned when the object was created.</param>
+        /// <param name="isSignLanguage">true if the language to be read is the sign language</param>
         public void ReadFromXml(
             XElement xml,
-            bool defaultToEnglishIfMissing,
             string languageForDefaultNameLookup,
-            int langNumber = -2
+            bool isSignLanguage = false
         )
         {
-            if (langNumber < -1)
-                langNumber = _languageNumberInCollection;
-            var langNumTag = (langNumber > 0) ? langNumber.ToString() : "";
-            var pfx = _languageNumberInCollection < 0 ? "SignLanguage" : "Language" + langNumTag;
+            ReadFromXmlInternal(xml, languageForDefaultNameLookup, isSignLanguage, "");
+        }
 
+        /// <summary>
+        /// Read in all the persisted values of this class from the child elements of an XElement
+        /// </summary>
+        /// <param name="xml"></param>
+        /// <param name="languageForDefaultNameLookup">a language tag or "self" if we should use the language tag for this spec to look it up</param>
+        /// <param name="langNumber">The language number to use in the xml tags: 1, 2, or 3.</param>
+        public void ReadFromXmlLegacy(
+            XElement xml,
+            string languageForDefaultNameLookup,
+            int langNumber
+        )
+        {
+            ReadFromXmlInternal(xml, languageForDefaultNameLookup, false, langNumber.ToString());
+        }
+
+        public void ReadFromXmlInternal(
+            XElement xml,
+            string languageForDefaultNameLookup,
+            bool isSignLanguage,
+            string langNumTag
+        )
+        {
+            var prefix = isSignLanguage ? "Sign" : "";
             /* Enhance (from JT):
               When you do this for Language1, the Tag setter will initialize Name using
               _tagOfDefaultLanguageForNaming(). But that will retrieve the Language2 Tag, which hasn't been set yet.
@@ -234,14 +270,16 @@ namespace Bloom.Collection
               You could then get rid of the languageForDefaultNameLookup argument.
             */
 
-            Tag = ReadString(xml, pfx + "Iso639Code", defaultToEnglishIfMissing ? "en" : "");
-
-            var xmlTag = pfx + "Name";
+            Tag = ReadString(xml, $"{prefix}Language{langNumTag}Iso639Code", "en");
+            var xmlTag = $"{prefix}Language{langNumTag}Name";
             Name = ReadString(xml, xmlTag, "");
             if (Name == "" && xmlTag == "LanguageName")
             {
-                xmlTag = "Language1Name"; // revised name that was migrated for earlier versions of Bloom
-                Name = ReadString(xml, xmlTag, "");
+                // "LanguageName" is migrated to "Language1Name" for earlier versions of Bloom.
+                // Antique collection could conceivably still have "LanguageName" in the xml for L1,
+                // so the migration is still applied.  But that breaks our new names the full list
+                // of languages in the collection.  So we retry with the migrated name.
+                Name = ReadString(xml, "Language1Name", "");
             }
             if (Name == "")
             {
@@ -249,8 +287,11 @@ namespace Bloom.Collection
                     languageForDefaultNameLookup == "self" ? Tag : languageForDefaultNameLookup
                 );
             }
-            IsCustomName = ReadOrComputeIsCustomName(xml, pfx + "IsCustomName");
-            if (_languageNumberInCollection < 0)
+            IsCustomName = ReadOrComputeIsCustomName(
+                xml,
+                $"{prefix}Language{langNumTag}IsCustomName"
+            );
+            if (isSignLanguage)
             {
                 // Set the rest (which isn't used for Sign Languages) to default values and return.
                 IsRightToLeft = false;
@@ -261,16 +302,20 @@ namespace Bloom.Collection
                 return;
             }
             IsRightToLeft = ReadBoolean(xml, $"IsLanguage{langNumTag}Rtl", false);
-            LineHeight = ReadDecimal(xml, pfx + "LineHeight", 0);
+            LineHeight = ReadDecimal(xml, $"Language{langNumTag}LineHeight", 0);
             FontName = ReadString(
                 xml,
                 $"DefaultLanguage{langNumTag}FontName",
                 GetDefaultFontName()
             );
-            BreaksLinesOnlyAtSpaces = ReadBoolean(xml, pfx + "BreaksLinesOnlyAtSpaces", false);
+            BreaksLinesOnlyAtSpaces = ReadBoolean(
+                xml,
+                $"Language{langNumTag}BreaksLinesOnlyAtSpaces",
+                false
+            );
             BaseUIFontSizeInPoints = ReadInt(
                 xml,
-                pfx + "BaseUIFontSizeInPoints",
+                $"Language{langNumTag}BaseUIFontSizeInPoints",
                 0 /* 0 means "default" */
             );
         }
@@ -353,10 +398,7 @@ namespace Bloom.Collection
 
         internal WritingSystem Clone()
         {
-            var copy = new WritingSystem(
-                this._languageNumberInCollection,
-                this._tagOfDefaultLanguageForNaming
-            );
+            var copy = new WritingSystem(this._tagOfDefaultLanguageForNaming);
             copy.Tag = this.Tag;
             copy.Name = this.Name;
             copy.IsCustomName = this.IsCustomName;

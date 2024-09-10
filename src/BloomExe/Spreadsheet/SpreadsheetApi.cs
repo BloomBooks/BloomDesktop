@@ -6,6 +6,7 @@ using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.IO;
@@ -20,16 +21,19 @@ namespace Bloom.Spreadsheet
         private readonly CollectionModel _collectionModel;
         private BookSelection _bookSelection;
         private readonly BloomWebSocketServer _webSocketServer;
+        private readonly TeamCollectionManager _teamCollectionManager;
 
         public SpreadsheetApi(
             CollectionModel collectionModel,
             BloomWebSocketServer webSocketServer,
-            BookSelection bookSelection
+            BookSelection bookSelection,
+            TeamCollectionManager teamCollectionManager
         )
         {
             _collectionModel = collectionModel;
             _webSocketServer = webSocketServer;
             _bookSelection = bookSelection;
+            _teamCollectionManager = teamCollectionManager;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -131,7 +135,8 @@ namespace Bloom.Spreadsheet
                 var importer = new SpreadsheetImporter(
                     _webSocketServer,
                     book,
-                    Path.GetDirectoryName(inputFilepath)
+                    Path.GetDirectoryName(inputFilepath),
+                    _teamCollectionManager
                 );
                 importer.ControlForInvoke = Shell.GetShellOrOtherOpenForm();
                 importer.ImportWithProgressAsync(

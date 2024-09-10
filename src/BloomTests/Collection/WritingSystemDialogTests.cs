@@ -34,19 +34,19 @@ namespace BloomTests.Collection
              */
             var languages = new List<WritingSystem>();
             languages.Add(
-                new WritingSystem(1, DefaultLanguageForNames) { Tag = "en", FontName = "Andika" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika" }
             );
             languages.Add(
-                new WritingSystem(2, DefaultLanguageForNames) { Tag = "en", FontName = "Andika" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika" }
             );
             languages.Add(
-                new WritingSystem(3, DefaultLanguageForNames) { Tag = "", FontName = "Andika" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "", FontName = "Andika" }
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(1, DefaultLanguageForNames) { Tag = "en" };
-            pending[1] = new WritingSystem(2, DefaultLanguageForNames) { Tag = "en" };
-            pending[2] = new WritingSystem(3, DefaultLanguageForNames) { Tag = "" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
@@ -75,25 +75,25 @@ namespace BloomTests.Collection
              */
             var languages = new List<WritingSystem>();
             languages.Add(
-                new WritingSystem(1, DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
             );
             languages.Add(
-                new WritingSystem(2, DefaultLanguageForNames) { Tag = "en", FontName = "Andika 2" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika 2" }
             );
             languages.Add(
-                new WritingSystem(3, DefaultLanguageForNames) { Tag = "", FontName = "Andika 3" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "", FontName = "Andika 3" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "es", FontName = "Andika 4" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "es", FontName = "Andika 4" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 5" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 5" }
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(1, DefaultLanguageForNames) { Tag = "en" };
-            pending[1] = new WritingSystem(2, DefaultLanguageForNames) { Tag = "fr" };
-            pending[2] = new WritingSystem(3, DefaultLanguageForNames) { Tag = "de" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "fr" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "de" };
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
@@ -128,31 +128,31 @@ namespace BloomTests.Collection
              */
             var languages = new List<WritingSystem>();
             languages.Add(
-                new WritingSystem(1, DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
             );
             languages.Add(
-                new WritingSystem(2, DefaultLanguageForNames) { Tag = "en", FontName = "Andika 2" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika 2" }
             );
             languages.Add(
-                new WritingSystem(3, DefaultLanguageForNames) { Tag = "", FontName = "Andika 3" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "", FontName = "Andika 3" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "fr", FontName = "Andika 4" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "fr", FontName = "Andika 4" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "es", FontName = "Andika 5" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "es", FontName = "Andika 5" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "de", FontName = "Andika 6" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "de", FontName = "Andika 6" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 7" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 7" }
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(1, DefaultLanguageForNames) { Tag = "en" };
-            pending[1] = new WritingSystem(2, DefaultLanguageForNames) { Tag = "fr" };
-            pending[2] = new WritingSystem(3, DefaultLanguageForNames) { Tag = "de" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "fr" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "de" };
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
@@ -187,31 +187,31 @@ namespace BloomTests.Collection
              */
             var languages = new List<WritingSystem>();
             languages.Add(
-                new WritingSystem(1, DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
             );
             languages.Add(
-                new WritingSystem(2, DefaultLanguageForNames) { Tag = "en", FontName = "Andika 2" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika 2" }
             );
             languages.Add(
-                new WritingSystem(3, DefaultLanguageForNames) { Tag = "", FontName = "Andika 3" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "", FontName = "Andika 3" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "fr", FontName = "Andika 4" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "fr", FontName = "Andika 4" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "es", FontName = "Andika 5" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "es", FontName = "Andika 5" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "de", FontName = "Andika 6" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "de", FontName = "Andika 6" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 7" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 7" }
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(1, DefaultLanguageForNames) { Tag = "es" };
-            pending[1] = new WritingSystem(2, DefaultLanguageForNames) { Tag = "pt" };
-            pending[2] = new WritingSystem(3, DefaultLanguageForNames) { Tag = "" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "es" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "pt" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
@@ -248,25 +248,25 @@ namespace BloomTests.Collection
              */
             var languages = new List<WritingSystem>();
             languages.Add(
-                new WritingSystem(1, DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
             );
             languages.Add(
-                new WritingSystem(2, DefaultLanguageForNames) { Tag = "fr", FontName = "Andika 2" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "fr", FontName = "Andika 2" }
             );
             languages.Add(
-                new WritingSystem(3, DefaultLanguageForNames) { Tag = "es", FontName = "Andika 3" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "es", FontName = "Andika 3" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "de", FontName = "Andika 4" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "de", FontName = "Andika 4" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 5" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 5" }
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(1, DefaultLanguageForNames) { Tag = "se" };
-            pending[1] = new WritingSystem(2, DefaultLanguageForNames) { Tag = "fr" };
-            pending[2] = new WritingSystem(3, DefaultLanguageForNames) { Tag = "" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "se" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "fr" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
@@ -303,25 +303,25 @@ namespace BloomTests.Collection
              */
             var languages = new List<WritingSystem>();
             languages.Add(
-                new WritingSystem(1, DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
             );
             languages.Add(
-                new WritingSystem(2, DefaultLanguageForNames) { Tag = "fr", FontName = "Andika 2" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "fr", FontName = "Andika 2" }
             );
             languages.Add(
-                new WritingSystem(3, DefaultLanguageForNames) { Tag = "es", FontName = "Andika 3" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "es", FontName = "Andika 3" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "de", FontName = "Andika 4" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "de", FontName = "Andika 4" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 5" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 5" }
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(1, DefaultLanguageForNames) { Tag = "de" };
-            pending[1] = new WritingSystem(2, DefaultLanguageForNames) { Tag = "fr" };
-            pending[2] = new WritingSystem(3, DefaultLanguageForNames) { Tag = "pt" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "de" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "fr" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "pt" };
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
@@ -354,25 +354,25 @@ namespace BloomTests.Collection
              */
             var languages = new List<WritingSystem>();
             languages.Add(
-                new WritingSystem(1, DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "en", FontName = "Andika 1" }
             );
             languages.Add(
-                new WritingSystem(2, DefaultLanguageForNames) { Tag = "fr", FontName = "Andika 2" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "fr", FontName = "Andika 2" }
             );
             languages.Add(
-                new WritingSystem(3, DefaultLanguageForNames) { Tag = "es", FontName = "Andika 3" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "es", FontName = "Andika 3" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "de", FontName = "Andika 4" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "de", FontName = "Andika 4" }
             );
             languages.Add(
-                new WritingSystem(0, DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 5" }
+                new WritingSystem(DefaultLanguageForNames) { Tag = "pt", FontName = "Andika 5" }
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(1, DefaultLanguageForNames) { Tag = "fr" };
-            pending[1] = new WritingSystem(2, DefaultLanguageForNames) { Tag = "de" };
-            pending[2] = new WritingSystem(3, DefaultLanguageForNames) { Tag = "en" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "fr" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "de" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
