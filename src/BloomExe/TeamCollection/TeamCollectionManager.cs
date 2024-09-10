@@ -117,13 +117,18 @@ namespace Bloom.TeamCollection
                     );
                     settings = ProjectContext.GetCollectionSettings(projectSettingsPath);
                 }
-                if (settings.Administrators.Length == 0)
-                    return true; // legacy TC, no admin recorded
-                return settings.Administrators.Contains(
-                    CurrentUser,
-                    StringComparer.InvariantCultureIgnoreCase
-                );
+                return CollectionSettingsCanBeEdited(settings);
             }
+        }
+
+        public static bool CollectionSettingsCanBeEdited(CollectionSettings settings)
+        {
+            if (settings.Administrators == null || settings.Administrators.Length == 0)
+                return true; // legacy TC, no admin recorded (or not TC)
+            return settings.Administrators.Contains(
+                CurrentUser,
+                StringComparer.InvariantCultureIgnoreCase
+            );
         }
 
         public static void RaiseTeamCollectionStatusChanged()
