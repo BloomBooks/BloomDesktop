@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml;
 using Bloom.SafeXml;
+using Bloom.Api;
 using L10NSharp;
 using SIL.Reporting;
 using SIL.WritingSystems;
@@ -277,10 +278,7 @@ namespace Bloom.Book
                 // This controls visibility for fields not yet controlled by the Appearance system
                 // (or in legacy mode).
                 var defLangsAttr = group.GetAttribute("data-default-languages");
-                var dataDefaultLanguages = defLangsAttr.Split(
-                    new char[] { ',', ' ' },
-                    StringSplitOptions.RemoveEmptyEntries
-                );
+                var dataDefaultLanguages = ProcessLanguageList(defLangsAttr, bookData);
 
                 //nb: we don't necessarily care that a div is editable or not
                 UpdateGeneratedClassesOnChildren(
@@ -313,6 +311,45 @@ namespace Bloom.Book
                     dataDefaultLanguages
                 );
             }
+        }
+
+        public static string[] ProcessLanguageList(
+            string languagesAttributeString,
+            BookData bookData
+        )
+        {
+            // Enhance: could probably just do all the "V", "L1", etc. replacements here, rather than in ShouldNormallyShowEditable()
+            // and Book.IsLanguageWantedInContent() and then simplify those functions.
+
+            // As of Bloom 6.1, only front cover credits has one of these placeholders.
+            // Example: +field-prototypeDeclaredExplicity("[CoverCreditsLanguage] DEFAULT:V,N1")
+            if (languagesAttributeString.Contains("["))
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(
+                    languagesAttributeString,
+                    @"\[(?<brandingPresetKey>[^\]]+)\]\s*DEFAULT:\s*(?<default>.+)"
+                );
+                if (match.Success)
+                {
+                    var brandingSettings = BrandingSettings.GetSettingsOrNull(
+                        bookData.CollectionSettings.BrandingProjectKey
+                    );
+                    languagesAttributeString = brandingSettings?.GetPresetKeyValueOrDefault(
+                        match.Groups["brandingPresetKey"].Value,
+                        match.Groups["default"].Value
+                    );
+                }
+                else
+                {
+                    throw new ApplicationException(
+                        $"Cannot parse this languages attribute string: {languagesAttributeString}"
+                    );
+                }
+            }
+            return languagesAttributeString.Split(
+                new char[] { ',', ' ' },
+                StringSplitOptions.RemoveEmptyEntries
+            );
         }
 
         public static bool IsPageAffectedByLanguageMenu(SafeXmlElement page, bool legacy)
