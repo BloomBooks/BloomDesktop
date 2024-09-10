@@ -3141,8 +3141,20 @@ namespace Bloom.Book
 
         private void UpdateFallbackAppearanceCoverBackgroundColor(string color)
         {
-            // This is here because basePage wants to use  --cover-background-color but if this variable is
-            // undefined, you get black. You'd like CSS to just ignore the rule, but we found no way to do that.
+            var coverFromBrandingViaAppearance =
+                BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
+                    "cover-background-color",
+                    null
+                );
+
+            // The rule we're going to create or update gets read by the browser
+            // when we are showing the book in previews mode AND it doesn't have an appearance.css.
+            // Why wouldn't it? Because it's in the "Sources for new Books" and is older than 6.0.
+            // Why don't we just write an appearance.css?
+            // Because we intentionally  don't migrate the book, we don't add files to it.
+
+            // OK, so, lacking an appearance.css, when basePage wants to use  --cover-background-color this variable would be
+            // undefined, and you'd get black. You'd like CSS to just ignore the rule, but we found no way to do that.
             // It is in this sense that this is a "fallback" declaration; if the expected appearance rules don't
             // mention a color, then we get this one. The code that adds links to css files puts them at the end
             // of the head, so this rule will be overridden by the appearance rules if they are present.
@@ -3153,18 +3165,6 @@ namespace Bloom.Book
                 // color rule, which followed this element in pre-6.1 blooms, and I see no reason to move it.
                 HtmlDom.GetUserModifiedStyleElement(RawDom.Head)
             );
-
-            // if the appearance setting for this color is missing, set it now
-            if (
-                !string.IsNullOrWhiteSpace(color)
-                && BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
-                    "cover-background-color",
-                    null
-                ) == null
-            )
-            {
-                BookInfo.AppearanceSettings.SetPropertyString("cover-background-color", color);
-            }
         }
 
         // Add the old-style rule for books either using legacy theme or running in older
