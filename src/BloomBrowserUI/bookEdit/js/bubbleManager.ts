@@ -1033,6 +1033,18 @@ export class BubbleManager {
         if (controlFrame) {
             controlFrame.remove();
         }
+        // Remove the menu if it's still open.  See BL-13852.
+        const menuElements = document.getElementsByClassName(
+            "MuiPopover-root MuiModal-root"
+        );
+        if (menuElements.length > 0) {
+            Array.from(menuElements).forEach(menuElement => {
+                const classNames = menuElement.getAttribute("class");
+                if (classNames?.includes("-OverlayContextControls")) {
+                    menuElement.remove();
+                }
+            });
+        }
     }
 
     // Set up the control frame for the active overlay. This includes creating it if it
