@@ -3877,6 +3877,10 @@ export class BubbleManager {
         bubble.setBubbleSpec(bubbleSpec);
         const imageContainer = imageContainerJQuery.get(0);
         this.refreshBubbleEditing(imageContainer, bubble, true);
+        const editable = contentElement.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on"
+        )[0] as HTMLElement;
+        editable?.focus();
         return contentElement;
     }
 
