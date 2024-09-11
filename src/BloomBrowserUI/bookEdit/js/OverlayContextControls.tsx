@@ -10,6 +10,7 @@ import { default as MenuIcon } from "@mui/icons-material/MoreHorizSharp";
 import { default as CopyIcon } from "@mui/icons-material/ContentCopy";
 import { default as CheckIcon } from "@mui/icons-material/Check";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
+import { default as VideoIcon } from "@mui/icons-material/VideoCam";
 import { default as PasteIcon } from "@mui/icons-material/ContentPaste";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import { doImageCommand, getImageUrlFromImageContainer } from "./bloomImages";
@@ -40,6 +41,7 @@ import {
     postThatMightNavigate
 } from "../../utils/bloomApi";
 import { useL10n } from "../../react_components/l10nHooks";
+import { showSignLanguageTool } from "./bloomVideo";
 
 const controlFrameColor: string = kBloomBlue;
 
@@ -384,8 +386,10 @@ const OverlayContextControls: React.FunctionComponent<{
     }
     const autoHeight = !props.overlay.classList.contains("bloom-noAutoHeight");
 
-    const hasVideo =
-        props.overlay.getElementsByClassName("bloom-videoContainer").length > 0;
+    // Note: there's also a class, bloom-noVideoSelected, but we don't ever seem to remove this.
+    const showChooseVideo =
+        hasVideo && videoContainer.getElementsByTagName("video").length === 0;
+
     if (hasVideo) {
         menuOptions.unshift(
             {
@@ -400,6 +404,13 @@ const OverlayContextControls: React.FunctionComponent<{
                         src="/bloom/bookEdit/toolbox/signLanguage/ImportVideo.svg"
                     />
                 )
+            },
+            {
+                l10nId:
+                    "EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool",
+                english: "Show Sign Language Tool",
+                onClick: () => showSignLanguageTool(),
+                icon: <VideoIcon css={muiMenIconCss} />
             },
             {
                 l10nId: "-",
@@ -599,6 +610,36 @@ const OverlayContextControls: React.FunctionComponent<{
                             </BloomTooltip>
                         )}
                     </Fragment>
+                )}
+                {hasVideo && showChooseVideo && (
+                    <BloomTooltip
+                        id="importVideo"
+                        placement="top"
+                        tip={{
+                            l10nKey: "EditTab.Toolbox.SignLanguage.ImportVideo"
+                        }}
+                    >
+                        <button
+                            css={svgIconCss}
+                            style={{ width: "26px" }}
+                            onClick={() => importRecording()}
+                        >
+                            <img
+                                // A trick to make it bloom-blue
+                                // To generate new filter rules like this, use https://codepen.io/sosuke/pen/Pjoqqp
+                                // It would be better still to make a react element SVG that can be any color.
+                                // But this icon proved quite difficult to convert.
+                                css={css`
+                                    filter: invert(38%) sepia(93%)
+                                        saturate(422%) hue-rotate(140deg)
+                                        brightness(93%) contrast(96%);
+                                    height: 21px !important;
+                                    top: -1px;
+                                `}
+                                src="/bloom/bookEdit/toolbox/signLanguage/ImportVideo.svg"
+                            />
+                        </button>
+                    </BloomTooltip>
                 )}
                 {editable && (
                     <div
