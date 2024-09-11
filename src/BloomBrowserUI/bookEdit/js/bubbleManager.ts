@@ -1028,10 +1028,20 @@ export class BubbleManager {
     private gotAMoveWhileMouseDown: boolean = false;
 
     // Remove the overlay control frame if it exists (when no overlay is active)
+    // Also remove the menu if it's still open.  See BL-13852.
     removeControlFrame() {
+        // this.activeElement is still set and works for hiding the menu.
+        const eltWithControlOnIt = this.activeElement;
         const controlFrame = document.getElementById("overlay-control-frame");
         if (controlFrame) {
-            controlFrame.remove();
+            if (eltWithControlOnIt) {
+                renderOverlayContextControls(eltWithControlOnIt, false);
+            }
+            // Allow a bit of time for the rerender to finish before removing
+            // the control frame.
+            setTimeout(() => {
+                controlFrame.remove();
+            }, 50);
         }
     }
 
