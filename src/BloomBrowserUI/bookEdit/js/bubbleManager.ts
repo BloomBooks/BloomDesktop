@@ -3962,13 +3962,19 @@ export class BubbleManager {
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse
+    // The desired element might be covered by a .MuiModal-backdrop, so we may
+    // need to check multiple elements at that location.
     private getImageContainerFromMouse(mouseX: number, mouseY: number): JQuery {
-        const clickElement = document.elementFromPoint(mouseX, mouseY);
-        if (!clickElement) {
-            // method not specified to return null
-            return $();
+        const elements = document.elementsFromPoint(mouseX, mouseY);
+        for (let i = 0; i < elements.length; i++) {
+            const trial = BubbleManager.getTopLevelImageContainerElement(
+                elements[i]
+            );
+            if (trial) {
+                return $(trial);
+            }
         }
-        return $(BubbleManager.getTopLevelImageContainerElement(clickElement)!);
+        return $();
     }
 
     // This method is used both for creating new elements and in dragging/resizing.
@@ -4660,7 +4666,7 @@ export class BubbleManager {
         if (!firstTry) {
             return null; // 'element' is not in an imageContainer at all
         }
-        const secondTry = firstTry.parentElement!.closest(
+        const secondTry = firstTry.parentElement?.closest(
             kImageContainerSelector
         );
         return secondTry
