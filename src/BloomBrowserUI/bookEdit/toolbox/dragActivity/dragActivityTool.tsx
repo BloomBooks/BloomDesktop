@@ -22,11 +22,6 @@ import {
     OverlayVideoItem,
     setGeneratedBubbleId
 } from "../overlay/overlayItem";
-import {
-    OverlayTool,
-    deleteBubble,
-    duplicateBubble
-} from "../overlay/overlayTool";
 import { ToolBox } from "../toolbox";
 import {
     classSetter,
@@ -50,6 +45,7 @@ import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { BubbleSpec } from "comicaljs";
 import { setPlayerUrlPrefixFromWindowLocationHref } from "./narration";
+import { theOneBubbleManager } from "../../js/bubbleManager";
 
 // This is the main code that manages the Bloom Games or Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -402,10 +398,7 @@ const startDraggingTarget = (e: MouseEvent) => {
     targetClickOffsetTop = e.clientY / scale - target.offsetTop;
     page.addEventListener("mouseup", stopDraggingTarget);
     page.addEventListener("mousemove", dragTarget);
-    const bubbleManager = OverlayTool.bubbleManager();
-    if (bubbleManager) {
-        bubbleManager?.setActiveElement(bubbleOfTarget(target));
-    }
+    theOneBubbleManager?.setActiveElement(bubbleOfTarget(target));
     dragTarget(e); // some side effects like drawing the arrow we want even if no movement happens.
 };
 
@@ -758,7 +751,7 @@ const DragActivityControls: React.FunctionComponent<{
         ""
     );
 
-    const bubbleManager = OverlayTool.bubbleManager();
+    const bubbleManager = theOneBubbleManager;
     const currentBubbleElement = bubbleManager?.getActiveElement();
     const currentBubbleTargetId = currentBubbleElement?.getAttribute(
         "data-bubble-id"
@@ -1012,8 +1005,7 @@ const DragActivityControls: React.FunctionComponent<{
         const page = getPage();
         page.setAttribute("data-same-size", newAllSameSize ? "true" : "false");
         if (newAllSameSize) {
-            const bm = OverlayTool.bubbleManager()!;
-            let someDraggable = bm.getActiveElement(); // prefer the selected one
+            let someDraggable = theOneBubbleManager?.getActiveElement(); // prefer the selected one
             if (
                 !someDraggable ||
                 !someDraggable.getAttribute("data-bubble-id")
@@ -1397,7 +1389,7 @@ const DragActivityControls: React.FunctionComponent<{
                                 id="trashIcon"
                                 color="primary"
                                 fontSize="large"
-                                onClick={() => deleteBubble()}
+                                onClick={() => bubbleManager?.deleteBubble()}
                             />
                         </BloomTooltip>
                         <BloomTooltip
@@ -1509,8 +1501,8 @@ const CorrectWrongControls: React.FunctionComponent<{
 };
 
 export const makeDuplicateOfDragBubble = () => {
-    const old = OverlayTool.bubbleManager()?.getActiveElement();
-    const duplicate = duplicateBubble();
+    const old = theOneBubbleManager?.getActiveElement();
+    const duplicate = theOneBubbleManager?.duplicateBubble();
     if (!duplicate || !old) {
         // can't be duplicate without an old, but make TS happy
         return;
@@ -1718,10 +1710,9 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
     private lastPageId = "";
 
     public newPageReady() {
-        const bubbleManager = OverlayTool.bubbleManager();
         const page = DragActivityTool.getBloomPage();
         const pageFrameExports = getEditablePageBundleExports();
-        if (!bubbleManager || !page || !pageFrameExports) {
+        if (!theOneBubbleManager || !page || !pageFrameExports) {
             // probably the toolbox just finished loading before the page.
             // No clean way to fix this
             window.setTimeout(() => this.newPageReady(), 100);
@@ -1741,8 +1732,8 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
         } else {
             this.lastPageId = pageId;
             // useful during development, MAY not need in production.
-            bubbleManager.removeDetachedTargets();
-            bubbleManager.adjustBubbleOrdering();
+            theOneBubbleManager.removeDetachedTargets();
+            theOneBubbleManager.adjustBubbleOrdering();
 
             // Force things to Start tab as we change page.
             // If we decide not to do this, we should probably at least find a way to do it
@@ -1867,7 +1858,7 @@ export function playSound(newSoundId: string, page: HTMLElement) {
 //         b => b.getElementsByTagName("img")[0].getAttribute("src") === src
 //     );
 //     if (bubbleToSelect) {
-//         OverlayTool.bubbleManager()?.setActiveElement(
+//         theOneBubbleManager?.setActiveElement(
 //             bubbleToSelect as HTMLElement
 //         );
 //     }
@@ -1931,13 +1922,12 @@ export function setActiveDragActivityTab(tab: number) {
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
     toolbox?.getTheOneDragActivityTool()?.setActiveTab(tab);
 
-    const bubbleManager = OverlayTool.bubbleManager();
     //Slider: const wrapper = page.getElementsByClassName(
     //     "bloom-activity-slider"
     // )[0] as HTMLElement;
 
     if (tab === playTabIndex) {
-        bubbleManager?.suspendComicEditing("forGamePlayMode");
+        theOneBubbleManager?.suspendComicEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
         prepareActivity(page, _next => {});
@@ -1945,14 +1935,13 @@ export function setActiveDragActivityTab(tab: number) {
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
         undoPrepareActivity(page);
-        const bubbleManager = OverlayTool.bubbleManager();
-        bubbleManager?.resumeComicEditing();
+        theOneBubbleManager?.resumeComicEditing();
         //Slider: wrapper?.addEventListener("click", designTimeClickOnSlider);
     }
     if (tab === correctTabIndex || tab === wrongTabIndex) {
         // We can't currently do this for hidden bubbles, and selecting one of these tabs
         // may cause some previously hidden bubbles to become visible.
-        bubbleManager?.ensureBubblesIntersectParent(page);
+        theOneBubbleManager?.ensureBubblesIntersectParent(page);
     }
     if (tab === startTabIndex) {
         enableDraggingTargets(page);

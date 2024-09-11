@@ -50,54 +50,6 @@ import {
 } from "./overlayItem";
 import { isPageBloomGame } from "../dragActivity/dragActivityTool";
 
-export const deleteBubble = () => {
-    const bubbleManager = OverlayTool.bubbleManager();
-    if (bubbleManager) {
-        const active = bubbleManager.getActiveElement();
-        if (active) {
-            bubbleManager.deleteTOPBox(active);
-        }
-    }
-};
-
-export const duplicateBubble = (): HTMLElement | undefined => {
-    const bubbleManager = OverlayTool.bubbleManager();
-    if (bubbleManager) {
-        const active = bubbleManager.getActiveElement();
-        if (active) {
-            return bubbleManager.duplicateTOPBox(active);
-        }
-    }
-    return undefined;
-};
-
-export const addChildBubble = () => {
-    const bubbleManager = OverlayTool.bubbleManager();
-    if (bubbleManager) {
-        const parentElement = bubbleManager.getActiveElement();
-        if (!parentElement) {
-            // No parent to attach to
-            toastr.info("No element is currently active.");
-            return;
-        }
-
-        // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date?
-        // Comical would need to call the notifier a lot more often like when the tail moves.
-
-        // Retrieve the latest bubbleSpec
-        const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
-        const [offsetX, offsetY] = OverlayTool.GetChildPositionFromParentBubble(
-            parentElement,
-            bubbleSpec
-        );
-        bubbleManager.addChildOverPictureElementAndRefreshPage(
-            parentElement,
-            offsetX,
-            offsetY
-        );
-    }
-};
-
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
     type BubbleType = "text" | "image" | "video" | undefined;
@@ -909,49 +861,6 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
     public static bubbleManager(): BubbleManager | undefined {
         const exports = getEditablePageBundleExports();
         return exports ? exports.getTheOneBubbleManager() : undefined;
-    }
-
-    // Returns a 2-tuple containing the desired x and y offsets of the child bubble from the parent bubble
-    //   (i.e., offsetX = child.left - parent.left)
-    public static GetChildPositionFromParentBubble(
-        parentElement: HTMLElement,
-        parentBubbleSpec: BubbleSpec | undefined
-    ): number[] {
-        let offsetX = parentElement.clientWidth;
-        let offsetY = parentElement.clientHeight;
-
-        if (
-            parentBubbleSpec &&
-            parentBubbleSpec.tails &&
-            parentBubbleSpec.tails.length > 0
-        ) {
-            const tail = parentBubbleSpec.tails[0];
-
-            const bubbleCenterX =
-                parentElement.offsetLeft + parentElement.clientWidth / 2.0;
-            const bubbleCenterY =
-                parentElement.offsetTop + parentElement.clientHeight / 2.0;
-
-            const deltaX = tail.tipX - bubbleCenterX;
-            const deltaY = tail.tipY - bubbleCenterY;
-
-            // Place the new child in the opposite quandrant of the tail
-            if (deltaX > 0) {
-                // ENHANCE: SHould be the child's width
-                offsetX = -parentElement.clientWidth;
-            } else {
-                offsetX = parentElement.clientWidth;
-            }
-
-            if (deltaY > 0) {
-                // ENHANCE: SHould be the child's height
-                offsetY = -parentElement.clientHeight;
-            } else {
-                offsetY = parentElement.clientHeight;
-            }
-        }
-
-        return [offsetX, offsetY];
     }
 }
 
