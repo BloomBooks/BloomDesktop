@@ -71,6 +71,33 @@ export const duplicateBubble = (): HTMLElement | undefined => {
     return undefined;
 };
 
+export const addChildBubble = () => {
+    const bubbleManager = OverlayTool.bubbleManager();
+    if (bubbleManager) {
+        const parentElement = bubbleManager.getActiveElement();
+        if (!parentElement) {
+            // No parent to attach to
+            toastr.info("No element is currently active.");
+            return;
+        }
+
+        // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date?
+        // Comical would need to call the notifier a lot more often like when the tail moves.
+
+        // Retrieve the latest bubbleSpec
+        const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
+        const [offsetX, offsetY] = OverlayTool.GetChildPositionFromParentBubble(
+            parentElement,
+            bubbleSpec
+        );
+        bubbleManager.addChildOverPictureElementAndRefreshPage(
+            parentElement,
+            offsetX,
+            offsetY
+        );
+    }
+};
+
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
     type BubbleType = "text" | "image" | "video" | undefined;
@@ -369,38 +396,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
             bubbleMgr.updateSelectedFamilyBubbleSpec({
                 outerBorderColor: newValue
             });
-        }
-    };
-
-    const handleChildBubbleLinkClick = event => {
-        const bubbleManager = OverlayTool.bubbleManager();
-
-        if (bubbleManager) {
-            const parentElement = bubbleManager.getActiveElement();
-
-            if (!parentElement) {
-                // No parent to attach to
-                toastr.info("No element is currently active.");
-                return;
-            }
-
-            // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date?
-            // Comical would need to call the notifier a lot more often like when the tail moves.
-
-            // Retrieve the latest bubbleSpec
-            const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
-            const [
-                offsetX,
-                offsetY
-            ] = OverlayTool.GetChildPositionFromParentBubble(
-                parentElement,
-                bubbleSpec
-            );
-            bubbleManager.addChildOverPictureElementAndRefreshPage(
-                parentElement,
-                offsetX,
-                offsetY
-            );
         }
     };
 
@@ -713,13 +708,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 </MenuItem>
                             </Select>
                         </FormControl>
-                        <Button
-                            onClick={event => handleChildBubbleLinkClick(event)}
-                        >
-                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.AddChildBubble">
-                                Add Child Bubble
-                            </Div>
-                        </Button>
                     </form>
                 );
         }
@@ -834,22 +822,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             }
                         >
                             {getControlOptionsRegion()}
-                            <div className="option-button-row">
-                                <div title={deleteTooltip}>
-                                    <TrashIcon
-                                        id="trashIcon"
-                                        color="primary"
-                                        onClick={() => deleteBubble()}
-                                    />
-                                </div>
-                                <div title={duplicateTooltip}>
-                                    <img
-                                        className="duplicate-bubble-icon"
-                                        src="/bloom/bookEdit/toolbox/overlay/duplicate-bubble.svg"
-                                        onClick={() => duplicateBubble()}
-                                    />
-                                </div>
-                            </div>
                         </div>
                         <div id="overlayToolControlFillerRegion" />
                         <div id={"overlayToolControlFooterRegion"}>
