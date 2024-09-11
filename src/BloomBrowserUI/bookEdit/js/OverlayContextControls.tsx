@@ -1,7 +1,7 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { useState, useEffect, useMemo, Fragment, useRef } from "react";
+import { useState, useEffect, Fragment, useRef } from "react";
 import * as ReactDOM from "react-dom";
 import { kBloomBlue, lightTheme } from "../../bloomMaterialUITheme";
 import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
@@ -18,12 +18,13 @@ import {
     makeDuplicateOfDragBubble,
     makeTargetForBubble,
     playSound,
-    setSoundFolder,
-    showDialogToChooseSoundFileAsync,
-    soundFolder,
-    SoundType
+    showDialogToChooseSoundFileAsync
 } from "../toolbox/dragActivity/dragActivityTool";
-import { deleteBubble, duplicateBubble } from "../toolbox/overlay/overlayTool";
+import {
+    addChildBubble,
+    deleteBubble,
+    duplicateBubble
+} from "../toolbox/overlay/overlayTool";
 import { ThemeProvider } from "@mui/material/styles";
 import {
     ILocalizableMenuItemProps,
@@ -31,13 +32,12 @@ import {
     LocalizableNestedMenuItem
 } from "../../react_components/localizableMenuItem";
 import Menu from "@mui/material/Menu";
-import { Divider, MenuItem, Select } from "@mui/material";
+import { Divider } from "@mui/material";
 import { DuplicateIcon } from "./DuplicateIcon";
 import { BubbleManager, theOneBubbleManager } from "./bubbleManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { TrashIcon } from "../toolbox/overlay/TrashIcon";
-import { getWithPromise, postJson } from "../../utils/bloomApi";
 import { useL10n } from "../../react_components/l10nHooks";
 
 const controlFrameColor: string = kBloomBlue;
@@ -190,6 +190,11 @@ const OverlayContextControls: React.FunctionComponent<{
 
     // These commands apply to all overlays.
     const menuOptions: IMenuItemWithSubmenu[] = [
+        {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
+            english: "Add Child Bubble",
+            onClick: addChildBubble
+        },
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
