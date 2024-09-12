@@ -12,5 +12,8 @@
             "content": "<img class='branding' src='back-cover-logos.svg'/>",
             "condition": "always"
         }
-    ]
+    ],
+    "appearance": {
+        "topLevel-text-padding": "2mm"
+    }
 }
