@@ -291,37 +291,6 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "publish/backColor",
-                request =>
-                {
-                    if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        if (request.CurrentBook != _coverColorSourceBook)
-                        {
-                            _coverColorSourceBook = request.CurrentBook;
-                            ImageUtils.TryCssColorFromString(
-                                request.CurrentBook?.GetCoverColor() ?? "",
-                                out _thumbnailBackgroundColor
-                            );
-                        }
-                        request.ReplyWithText(ToCssColorString(_thumbnailBackgroundColor));
-                    }
-                    else // post
-                    {
-                        // ignore invalid colors (very common while user is editing hex)
-                        Color newColor;
-                        var newColorAsString = request.RequiredPostString();
-                        if (ImageUtils.TryCssColorFromString(newColorAsString, out newColor))
-                        {
-                            _thumbnailBackgroundColor = newColor;
-                            request.CurrentBook.SetCoverColor(newColorAsString);
-                        }
-                        request.PostSucceeded();
-                    }
-                },
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
                 "publish/thumbnail",
                 request =>
                 {

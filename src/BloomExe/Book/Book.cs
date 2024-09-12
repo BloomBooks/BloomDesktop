@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -39,12 +40,12 @@ namespace Bloom.Book
     public class Book
     {
         public delegate Book Factory(BookInfo info, IBookStorage storage); //autofac uses this
-        public static Color[] CoverColors =
+        public static string[] CoverColors =
         {
-            Color.FromArgb(228, 140, 132),
-            Color.FromArgb(176, 222, 228),
-            Color.FromArgb(152, 208, 185),
-            Color.FromArgb(194, 166, 191)
+            "#E48C84", // light red
+            "#B0DEE4", // light blue
+            "#98D0B9", // light green
+            "#C2A6BF" // light purple
         };
 
         //We only randomize the initial value for each run. Without it, we were making a lot
@@ -187,6 +188,8 @@ namespace Bloom.Book
             {
                 InitCoverColor(); // should use the same color as what they saw in the preview of the template/shell
             }
+            this.UpdateFallbackAppearanceCoverBackgroundColor(this.GetCoverColor());
+
             FixBookIdAndLineageIfNeeded();
             FixUrlEncodedCoverImageIfNeeded();
             Storage.Dom.RemoveExtraBookTitles();
@@ -1818,7 +1821,7 @@ namespace Bloom.Book
             BringXmatterHtmlUpToDate(OurHtmlDom);
             RepairBrokenSmallCoverCredits(OurHtmlDom);
             RepairCoverImageDescriptions(OurHtmlDom);
-            DetectAndMarkDarkCoverColor(OurHtmlDom);
+            DetectAndMarkDarkCoverColor();
 
             progress.WriteStatus("Repair page label localization");
             RepairPageLabelLocalization(OurHtmlDom);
@@ -2282,14 +2285,14 @@ namespace Bloom.Book
             }
         }
 
-        internal static void DetectAndMarkDarkCoverColor(HtmlDom bookDOM)
+        internal void DetectAndMarkDarkCoverColor()
         {
-            var coverColor = GetCoverColorFromDom(bookDOM.RawDom);
+            var coverColor = GetCoverColor();
             if (coverColor != null)
             {
                 var coverColorIsDark = ColorUtils.IsDark(coverColor);
                 foreach (
-                    var page in bookDOM
+                    var page in OurHtmlDom
                         .SafeSelectNodes("//div[contains(@class,'coverColor')]")
                         .Cast<SafeXmlElement>()
                 )
@@ -3135,29 +3138,88 @@ namespace Bloom.Book
             var preserve = this.OurHtmlDom.GetMetaValue("preserveCoverColor", "false");
             if (preserve == "false")
             {
-                AddCoverColor(this.OurHtmlDom, CoverColors[s_coverColorIndex]);
+                SetCoverColor(CoverColors[s_coverColorIndex]);
             }
         }
 
-        private void AddCoverColor(HtmlDom dom, Color coverColor)
+        private void UpdateFallbackAppearanceCoverBackgroundColor(string color)
         {
-            var colorValue = ColorTranslator.ToHtml(coverColor);
-            //            var colorValue = String.Format("#{0:X2}{1:X2}{2:X2}", coverColor.R, coverColor.G, coverColor.B);
-            var colorStyle = dom.RawDom.CreateElement("style");
-            colorStyle.SetAttribute("type", "text/css");
-            colorStyle.InnerXml = @"
-				DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
-				".Replace("colorValue", colorValue); //string.format has a hard time with all those {'s
+            var coverFromBrandingViaAppearance =
+                BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
+                    "cover-background-color",
+                    null
+                );
 
-            dom.Head.AppendChild(colorStyle);
+            // The rule we're going to create or update gets read by the browser
+            // when we are showing the book in previews mode AND it doesn't have an appearance.css.
+            // Why wouldn't it? Because it's in the "Sources for new Books" and is older than 6.0.
+            // Why don't we just write an appearance.css?
+            // Because we intentionally  don't migrate the book, we don't add files to it.
+
+            // OK, so, lacking an appearance.css, when basePage wants to use  --cover-background-color this variable would be
+            // undefined, and you'd get black. You'd like CSS to just ignore the rule, but we found no way to do that.
+            // It is in this sense that this is a "fallback" declaration; if the expected appearance rules don't
+            // mention a color, then we get this one. The code that adds links to css files puts them at the end
+            // of the head, so this rule will be overridden by the appearance rules if they are present.
+            HtmlDom.AddOrReplaceStyleElement(
+                RawDom,
+                "appearanceCoverBackgroundColor",
+                $".bloom-page {{ --cover-background-color: {color}; }}",
+                // I don't know if the order matters, but it has to go *somewhere* and this puts it next to the legacy
+                // color rule, which followed this element in pre-6.1 blooms, and I see no reason to move it.
+                HtmlDom.GetUserModifiedStyleElement(RawDom.Head)
+            );
         }
 
+        // Add the old-style rule for books either using legacy theme or running in older
+        // Bloom Editors that won't read --cover-background-color so that they just get the original color
+        // This rule will get overridden in contexts using appearance, unless overrideAllOtherRules is true.
+        private static void SetBackwardsCompatibleCoverBackgroundColor(
+            SafeXmlDocument dom,
+            string color,
+            bool overrideAllOtherRules // for forcing white on PDFs
+        )
+        {
+            //remove any pre-Bloom 6.1 background color rules (which didn't have the nice "title" attribute that we add now)
+            SafeXmlNode rule;
+            do
+            {
+                rule = dom.SelectSingleNode("//style[contains(text(), 'bloom-page.coverColor')]");
+                if (rule != null)
+                    rule.ParentNode.RemoveChild(rule);
+            } while (rule != null);
+
+            HtmlDom.AddOrReplaceStyleElement(
+                dom,
+                "legacyCoverBackgroundColor", // legacy here means pre-6.1
+                $"DIV.bloom-page.coverColor {{ background-color: {color} !important;}}",
+                // I don't know if the order matters, but it has to go *somewhere* and in pre-6.1 bloom put it here,
+                // and I see no reason to start putting it somewhere else.
+                overrideAllOtherRules
+                    ? dom.SelectSingleNode("//head/*[last()]") // put it at the end so that it can override other rules
+                    : HtmlDom.GetUserModifiedStyleElement(dom.Head)
+            );
+        }
+
+        // returns the active color, be it from Apppearance or the Legacy system
         public String GetCoverColor()
         {
-            return GetCoverColorFromDom(RawDom);
+            if (BookInfo.AppearanceSettings.CssThemeName != "legacy-5-6")
+            {
+                var color = BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
+                    "cover-background-color",
+                    null
+                );
+                if (color != null)
+                {
+                    return color;
+                }
+            }
+
+            return GetCoverBackgroundColorFromOldInlineStyle(RawDom);
         }
 
-        public static String GetCoverColorFromDom(SafeXmlDocument dom)
+        internal static String GetCoverBackgroundColorFromOldInlineStyle(SafeXmlDocument dom)
         {
             foreach (SafeXmlElement stylesheet in dom.SafeSelectNodes("//style"))
             {
@@ -3166,54 +3228,26 @@ namespace Bloom.Book
                 // work with. The Stylesheet content is just raw CDATA text.
                 // Regex updated to handle comments and lowercase 'div' in the cover color rule.
                 var match = new Regex(
-                    @"(DIV|div).bloom-page.coverColor\s*{.*?background-color:\s*(#[0-9a-fA-F]*|[a-z]*)",
+                    @".*\.bloom-page\.coverColor\s*{.*?background-color:\s*(#[0-9a-fA-F]*|[a-z]*)",
                     RegexOptions.Singleline
                 ).Match(content);
                 if (match.Success)
                 {
-                    return match.Groups[2].Value;
+                    return match.Groups[1].Value;
                 }
             }
             return "#FFFFFF";
         }
 
-        /// <summary>
-        /// Set the cover color. Not used initially; assumes there is already an (unfortunately unmarked)
-        /// stylesheet created as in AddCoverColor.
-        /// </summary>
-        /// <param name="color"></param>
         public void SetCoverColor(string color)
         {
-            if (SetCoverColorInternal(color))
-            {
-                Save();
-                ContentsChanged?.Invoke(this, new EventArgs());
-            }
-        }
+            SetBackwardsCompatibleCoverBackgroundColor(RawDom, color, false);
+            UpdateFallbackAppearanceCoverBackgroundColor(color);
 
-        /// <summary>
-        /// Internal method is testable
-        /// </summary>
-        /// <param name="color"></param>
-        /// <returns>true if a change was made</returns>
-        internal bool SetCoverColorInternal(string color)
-        {
-            foreach (SafeXmlElement stylesheet in RawDom.SafeSelectNodes("//style"))
-            {
-                string content = stylesheet.InnerXml;
-                var regex = new Regex(
-                    @"(DIV.(coverColor\s*TEXTAREA|bloom-page.coverColor)\s*{\s*background-color:\s*)(#[0-9a-fA-F]*)",
-                    RegexOptions.IgnoreCase
-                );
-                if (!regex.IsMatch(content))
-                    continue;
-                var newContent = regex.Replace(content, "$1" + color);
-                stylesheet.InnerXml = newContent;
-                DetectAndMarkDarkCoverColor(OurHtmlDom);
-                return true;
-            }
+            // also change in AppearanceSettings
+            BookInfo.AppearanceSettings.SetPropertyString("cover-background-color", color);
 
-            return false;
+            DetectAndMarkDarkCoverColor();
         }
 
         /// <summary>
@@ -4203,7 +4237,7 @@ namespace Bloom.Book
                 InsertFullBleedMarkup(printingDom.Body);
             }
             if (!FullBleed)
-                AddCoverColor(printingDom, Color.White);
+                SetBackwardsCompatibleCoverBackgroundColor(printingDom.RawDom, "white", true);
             AddPreviewJavascript(printingDom);
             return printingDom;
         }
@@ -5644,7 +5678,12 @@ namespace Bloom.Book
             // Should not be needed when deleting customBookStyles.css, but definitely when we change theme.
             Storage.UpdateSupportFiles();
             // temporary while we're in transition between storing cover color in the HTML and in the bookInfo
-            //SetCoverColor(BookInfo.AppearanceSettings.CoverColor);
+            var color = BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
+                "cover-background-color",
+                null
+            );
+            if (color != null)
+                SetCoverColor(color);
             _pageListChangedEvent.Raise(true);
         }
 
