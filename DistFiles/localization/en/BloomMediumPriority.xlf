@@ -6,209 +6,209 @@
     </header>
     <body>
       <!-- Drag Activity Tool -->
-      <trans-unit id="EditTab.Toolbox.DragActivity.Check" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Check" translate="yes">
         <source xml:lang="en">Check</source>
         <note>ID: EditTab.Toolbox.DragActivity.Check</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.CheckAnswer" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.CheckAnswer" translate="yes">
         <source xml:lang="en">Check Answer</source>
         <note>ID: EditTab.Toolbox.DragActivity.CheckAnswer</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.CheckHint" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.CheckHint" translate="yes">
         <!-- Currently, if this is changed, RuntimeInformationInjector.AddHtmlUiStrings must be changed to match.
         This is unfortunate, but our code for getting localization of hints is tricky to make async.-->
         <source xml:lang="en">Clicking this validates the positions things have been dragged to.</source>
         <note>ID: EditTab.Toolbox.DragActivity.CheckHint</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound" translate="yes">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile" translate="yes">
         <source xml:lang="en">Choose Sound File</source>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Correct" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Correct" translate="yes">
         <source xml:lang="en">Correct</source>
         <note>ID: EditTab.Toolbox.DragActivity.Correct</note>
         <note>Label of a button that puts the Bloom Game tool into its the mode for adding elements that should show when the reader gets the answer right.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.CorrectInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.CorrectInstructions" translate="yes">
         <source xml:lang="en">Add items that will show when the learner gets the correct answer. For example, you might add a text that says “Correct!” with a GIF of a dancing chicken.</source>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Draggable" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Draggable" translate="yes">
         <source xml:lang="en">Draggable</source>
         <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading" translate="yes">
         <source xml:lang="en">Drag Images to Targets</source>
         <note>ID: EditTab.Toolbox.DragActivity.DragImageHeading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DragLetterHeading" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.DragLetterHeading" translate="yes">
         <source xml:lang="en">Drag Letters to Targets</source>
         <note>ID: EditTab.Toolbox.DragActivity.DragLetterHeading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DragLetterInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.DragLetterInstructions" translate="yes">
         <source xml:lang="en">Place the letters anywhere on the scene, in a mixed up order.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DragLetterInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DragImageInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.DragImageInstructions" translate="yes">
         <source xml:lang="en">Place the images anywhere on the scene, and the targets where the student should put them.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DragImagesnstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTarget" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTarget" translate="yes">
         <source xml:lang="en">Draggable Target</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTarget</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace" translate="yes">
         <source xml:lang="en">Fixed In Place</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableShape" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableShape" translate="yes">
         <source xml:lang="en">Draggable Shape</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableShape</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions" translate="yes">
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.FixedShape" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.FixedShape" translate="yes">
         <source xml:lang="en">Fixed Shape</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedShape</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Instructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Instructions" translate="yes">
         <source xml:lang="en">Instructions</source>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.InstructionsOrLabels" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.InstructionsOrLabels" translate="yes">
         <source xml:lang="en">Instructions or other labels</source>
         <note>ID: EditTab.Toolbox.DragActivity.InstructionsOrLabels</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Item" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Item" translate="yes">
         <source xml:lang="en">Item:</source>
         <note>ID: EditTab.Toolbox.DragActivity.Item</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Letter" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Letter" translate="yes">
         <source xml:lang="en">M</source>
         <note>ID: EditTab.Toolbox.DragActivity.Letter</note>
         <note>This is the label of an item that can be dragged onto the canvas to hold text, typically a single letter. It works best if it is one of the widest letters (including digraphs) in your alphabet</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.None" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.None" translate="yes">
         <source xml:lang="en">None</source>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
         <note>Used as the label of a button that is otherwise the name of a sound file, indicating that no sound has been chosen.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading" translate="yes">
         <source xml:lang="en">Order Sentence</source>
         <note>ID: EditTab.Toolbox.DragActivity.OrderSentenceHeading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceInstructions" translate="yes">
         <source xml:lang="en">Type a sentence. Bloom will shuffle the words for the student to fix.</source>
         <note>ID: EditTab.Toolbox.DragActivity.OrderSentenceInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Options" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Options" translate="yes">
         <source xml:lang="en">Options</source>
         <note>ID: EditTab.Toolbox.DragActivity.Options</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle" translate="yes">
         <source xml:lang="en">Order Circle</source>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircleInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircleInstructions" translate="yes">
         <source xml:lang="en">Put the Order Circles in the correct order. Bloom will shuffle them when it is time to play.</source>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircleInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswer" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswer" translate="yes">
         <source xml:lang="en">Part of the right answer</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore" translate="yes">
         <source xml:lang="en">Untick this item if it is not part of the right answer</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
       </trans-unit>
-      <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled" translate="no">
+      <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled" translate="yes">
         <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled</note>
       </trans-unit-->
-      <trans-unit id="EditTab.Toolbox.DragActivity.Play" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Play" translate="yes">
         <source xml:lang="en">Play</source>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
         <note>Label of a button that puts the Bloom Game tool into its the mode for playing (testing) the game.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PlayAudio" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.PlayAudio" translate="yes">
         <source xml:lang="en">Play Audio</source>
         <note>ID: EditTab.Toolbox.DragActivity.PlayAudio</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.None" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.None" translate="yes">
         <source xml:lang="en">None</source>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
         <note>Used as the label of a button that is otherwise the name of a sound file, indicating that no sound has been chosen.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.SameSize" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.SameSize" translate="yes">
         <source xml:lang="en">Keep all items and targets the same size</source>
         <note>ID: EditTab.Toolbox.DragActivity.SameSize</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions" translate="yes">
         <source xml:lang="en">Properties of the Scene</source>
         <note>ID: EditTab.Toolbox.DragActivity.SceneInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.SentenceHint" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.SentenceHint" translate="yes">
         <source xml:lang="en">Type a sentence. The reader will be asked to sort the words.</source>
         <note>ID: EditTab.Toolbox.DragActivity.SentenceHint</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.SetupMode" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.SetupMode" translate="yes">
         <source xml:lang="en">Game Setup mode:</source>
         <note>ID: EditTab.Toolbox.DragActivity.SetupMode</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ShowTargetsPlay" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ShowTargetsPlay" translate="yes">
         <source xml:lang="en">Show drag targets during Play</source>
         <note>ID: EditTab.Toolbox.DragActivity.ShowTargetsPlay</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle" translate="yes">
         <source xml:lang="en">Order Circle</source>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets" translate="yes">
         <source xml:lang="en">Show Answer even during Play</source>
         <note>ID: EditTab.Toolbox.DragActivity.ShowAnswersInTargets</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Start" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Start" translate="yes">
         <source xml:lang="en">Start</source>
         <note>ID: EditTab.Toolbox.DragActivity.Start</note>
         <note>Label of a button that puts the Bloom Game tool into its initial mode for setting up the game.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TestInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.TestInstructions" translate="yes">
         <source xml:lang="en">Try it out!</source>
         <note>ID: EditTab.Toolbox.DragActivity.TestInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TextToPutOnThePage" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.TextToPutOnThePage" translate="yes">
         <source xml:lang="en">Text to put on the page</source>
         <note>ID: EditTab.Toolbox.DragActivity.TextToPutOnThePage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TryAgain" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.TryAgain" translate="yes">
         <source xml:lang="en">Try Again</source>
         <note>ID: EditTab.Toolbox.DragActivity.TryAgain</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WhenCorrect" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.WhenCorrect" translate="yes">
         <source xml:lang="en">When the answer is correct</source>
         <note>ID: EditTab.Toolbox.DragActivity.WhenCorrect</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WhenWrong" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.WhenWrong" translate="yes">
         <source xml:lang="en">When the answer is wrong</source>
         <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Word" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Word" translate="yes">
         <source xml:lang="en">Word</source>
         <note>ID: EditTab.Toolbox.DragActivity.Word</note>
         <note>This is the label of an item that can be dragged onto the canvas to hold text, typically about the length of a word.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Wrong" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Wrong" translate="yes">
         <source xml:lang="en">Wrong</source>
         <note>ID: EditTab.Toolbox.DragActivity.Wrong</note>
         <note>Label of a button that puts the Bloom Game tool into its the mode for adding elements that should show when the reader gets the answer wrong.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WrongInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.WrongInstructions" translate="yes">
         <source xml:lang="en">
           Add items that will show when the learner gets the wrong answer. For example, you might add a text that says “Try Again!”.\nIt is OK to have no correct or wrong answers. Just give the same positive reinforcement, like “Looks Nice!”.</source>
         <note>ID: EditTab.Toolbox.DragActivity.WrongInstructions</note>
@@ -221,7 +221,7 @@
         <source xml:lang="en">Book is not Decodable</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.GameTool" translate="no">
+      <trans-unit id="EditTab.Toolbox.GameTool" translate="yes">
         <source xml:lang="en">
           Game Tool
         </source>
@@ -688,29 +688,29 @@
         <source xml:lang="en">The selected page theme does not support the following settings.</source>
         <note>BookSettings.ThemeDisablesOptionsNotice</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true" translate="yes">
         <source xml:lang="en">When you publish a book to the web or as an ebook, Bloom will flag any problematic fonts. For example, we cannot legally host most Microsoft fonts on BloomLibrary.org.</source>
         <note>ID: BookSettings.Fonts.Problematic</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.TableDescription" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.Fonts.TableDescription" sil:dynamic="true" translate="yes">
         <source xml:lang="en">The following table shows where fonts have been used.</source>
         <note>ID: BookSettings.Fonts.TableDescription</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true" translate="yes">
         <source xml:lang="en">First Page</source>
         <note>ID: BookSettings.Fonts.FirstPage</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.All" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.Fonts.All" sil:dynamic="true" translate="yes">
         <source xml:lang="en">(all)</source>
         <note>ID: BookSettings.Fonts.All</note>
         <note>flags that the same font is used for all languages for the given style</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Page {0}</source>
         <note>ID: BookSettings.Fonts.PageNumber</note>
         <note>Do not change {0}.  It will be replaced by the page number.</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.UnnumberedPage" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.Fonts.UnnumberedPage" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Unnumbered Page</source>
         <note>ID: BookSettings.Fonts.UnnumberedPage</note>
       </trans-unit>
