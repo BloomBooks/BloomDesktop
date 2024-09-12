@@ -680,10 +680,10 @@
         <target xml:lang="ru" state="needs-translation">Page Themes are a bundle of margins, borders, and other page settings. For information about each theme, see [Page Themes Catalog](https://docs.bloomlibrary.org/page-themes-catalog).</target>
         <note>BookSettings.Theme.Description</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverBackground" sil:dynamic="true">
-        <source xml:lang="en">Cover Background</source>
-        <target xml:lang="ru" state="needs-translation">Cover Background</target>
-        <note>BookSettings.CoverBackground</note>
+      <trans-unit id="Common.BackgroundColor" sil:dynamic="true">
+        <source xml:lang="en">Background Color</source>
+        <target xml:lang="ru" state="needs-translation">Background Color</target>
+        <note>Common.CoverBackgroundColor</note>
       </trans-unit>
       <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true">
         <source xml:lang="en">Front Cover</source>
