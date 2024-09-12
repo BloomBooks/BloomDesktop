@@ -575,12 +575,12 @@ namespace Bloom.web.controllers
             for (var i = 0; i < 3; i++)
             {
                 if (
-                    _collectionSettings.LanguagesZeroBased[i] == null
-                    || string.IsNullOrEmpty(_collectionSettings.LanguagesZeroBased[i].Name)
+                    _collectionSettings.AllLanguages[i] == null
+                    || string.IsNullOrEmpty(_collectionSettings.AllLanguages[i].Name)
                 )
                     continue;
-                var name = _collectionSettings.LanguagesZeroBased[i].Name;
-                var font = _collectionSettings.LanguagesZeroBased[i].FontName;
+                var name = _collectionSettings.AllLanguages[i].Name;
+                var font = _collectionSettings.AllLanguages[i].FontName;
                 langData[i] = new { languageName = name, fontName = font };
             }
             return langData;
@@ -596,7 +596,7 @@ namespace Bloom.web.controllers
             var zeroBasedLanguageNumber = languageNumber - 1;
             if (
                 zeroBasedLanguageNumber == 2
-                && _collectionSettings.LanguagesZeroBased[zeroBasedLanguageNumber] == null
+                && _collectionSettings.AllLanguages[zeroBasedLanguageNumber] == null
             )
                 return;
             if (DialogBeingEdited != null)
@@ -620,14 +620,12 @@ namespace Bloom.web.controllers
             var zeroBasedLanguageNumber = languageNumber - 1;
             if (
                 zeroBasedLanguageNumber == 2
-                && _collectionSettings.LanguagesZeroBased[zeroBasedLanguageNumber] == null
+                && _collectionSettings.AllLanguages[zeroBasedLanguageNumber] == null
             )
                 return;
             if (DialogBeingEdited != null)
                 DialogBeingEdited.PendingFontSelections[zeroBasedLanguageNumber] = fontName;
-            if (
-                fontName != _collectionSettings.LanguagesZeroBased[zeroBasedLanguageNumber].FontName
-            )
+            if (fontName != _collectionSettings.AllLanguages[zeroBasedLanguageNumber].FontName)
                 DialogBeingEdited.ChangeThatRequiresRestart();
         }
 
