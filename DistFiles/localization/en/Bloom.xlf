@@ -2093,6 +2093,10 @@
         <source xml:lang="en">Add Child Bubble</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.AddChildBubble</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.AutoHeight" sil:dynamic="true">
+        <source xml:lang="en">Auto Height</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.AutoHeight</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background Color</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor</note>
