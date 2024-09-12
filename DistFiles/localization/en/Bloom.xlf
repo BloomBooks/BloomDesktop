@@ -1812,7 +1812,7 @@
         <source xml:lang="en">Change Image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.ChooseImage" translate="no">
+      <trans-unit id="EditTab.Image.ChooseImage" translate="yes">
         <source xml:lang="en">Choose image from your computer...</source>
         <note>ID: EditTab.Image.ChooseImage</note>
       </trans-unit>
@@ -1848,12 +1848,12 @@
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Set Image Information...</source>
         <note>ID: EditTab.Image.EditMetadataOverlay</note>
         <note xml:lang="en">Invokes the same command as EditMetadata; used in overlay toolbox submenu</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Image Credits, Copyright, &amp; License</source>
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
         <note xml:lang="en">Appears in smaller, lighter text right under EditMetadataOverlay</note>
@@ -2103,7 +2103,7 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
         <note>A background color that looks like old lace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Copy Text</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
@@ -2112,7 +2112,7 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
         <note>Tooltip for the bubble Duplicate icon</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Format Text...</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
@@ -2130,7 +2130,7 @@
         <source xml:lang="en">None</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Paste Text</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
@@ -3140,7 +3140,7 @@
         <source xml:lang="en">Device16x9 Portrait</source>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
-      <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true" translate="no">
+      <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Half Folio Portrait</source>
         <note>ID: LayoutChoices.HalfFolioPortrait</note>
       </trans-unit>
@@ -4496,7 +4496,7 @@
         <source xml:lang="en">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web.</source>
         <note>ID: PublishTab.FontProblem.License</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.Microsoft" translate="no">
+      <trans-unit id="PublishTab.FontProblem.Microsoft" translate="yes">
         <source xml:lang="en">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</source>
         <note>ID: PublishTab.FontProblem.Microsoft</note>
         <note>This shows in the popup when hovering over a font that Microsoft owns (or distributes).</note>
@@ -4505,7 +4505,7 @@
         <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</source>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog" translate="no">
+      <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog" translate="yes">
         <source xml:lang="en">Check the Fonts section of the Book Settings dialog to locate this font.</source>
         <note>ID: PublishTab.FontProblem.CheckInBookSettingsDialog</note>
       </trans-unit>
@@ -6010,7 +6010,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Put a comprehension question here</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
       </trans-unit>
-      <trans-unit id="Topic" sil:dynamic="true" translate="no">
+      <trans-unit id="Topic" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Topic</source>
         <note>ID: Topic</note>
       </trans-unit>
