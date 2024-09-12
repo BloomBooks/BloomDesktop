@@ -101,20 +101,20 @@ export class BubbleManager {
     }
 
     // Given the box has been determined to be overflowing vertically by
-    // 'overflowY' pixels, if it's inside an OverPicture element, enlarge the OverPicture element
-    // by that much so it won't overflow.
+    // 'overflowY' pixels, if it's inside an OverPicture element that does not have the class
+    // bloom-noAutoSize, adjust the size of the OverPicture element
+    // to fit it.
     // (Caller may wish to do box.scrollTop = 0 to make sure the whole content shows now there
     // is room for it all.)
     // Returns true if successful; it will currently fail if box is not
     // inside a valid OverPicture element or if the OverPicture element can't grow this much while
     // remaining inside the image container. If it returns false, it makes no changes at all.
-    public growOverflowingBox(
-        box: HTMLElement,
-        overflowY: number,
-        allowShrink?: boolean
-    ): boolean {
+    public growOverflowingBox(box: HTMLElement, overflowY: number): boolean {
         const wrapperBox = box.closest(kTextOverPictureSelector) as HTMLElement;
-        if (!wrapperBox) {
+        if (
+            !wrapperBox ||
+            wrapperBox.classList.contains("bloom-noAutoHeight")
+        ) {
             return false; // we can't fix it
         }
 
@@ -139,13 +139,6 @@ export class BubbleManager {
         ) {
             return false; // near enough, avoid jitter making it a tiny bit smaller.
         }
-        if (
-            newHeight < wrapperBox.clientHeight &&
-            !wrapperBox.classList.contains("bloom-allowAutoShrink") &&
-            !allowShrink
-        ) {
-            return false; // currently auto-shrink is only allowed when manually changing width
-        }
 
         // If a lot of text is pasted, the container will scroll down.
         //    (This can happen even if the text doesn't necessarily go out the bottom of the image container).
@@ -167,6 +160,41 @@ export class BubbleManager {
         this.adjustTarget(wrapperBox);
         this.alignControlFrameWithActiveElement();
         return true;
+    }
+
+    public updateAutoHeight(): void {
+        if (
+            this.activeElement &&
+            !this.activeElement.classList.contains("bloom-noAutoHeight")
+        ) {
+            const editable = this.activeElement.getElementsByClassName(
+                "bloom-editable bloom-visibility-code-on"
+            )[0] as HTMLElement;
+
+            this.adjustBubbleHeightToContent(editable);
+        }
+        this.alignControlFrameWithActiveElement();
+    }
+    public adjustBubbleHeightToContent(editable: HTMLElement): void {
+        if (!this.activeElement) return;
+        const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
+            editable
+        );
+        let overflowY =
+            overflowAmounts[1] +
+            editable.offsetHeight -
+            this.activeElement.offsetHeight;
+
+        // This mimics the relevant part of OverflowChecker.MarkOverflowInternal
+        if (
+            theOneBubbleManager.growOverflowingBox(
+                this.activeElement,
+                overflowY
+            )
+        ) {
+            overflowY = 0;
+        }
+        editable.classList.toggle("overflow", overflowY > 0);
     }
 
     // When the format dialog changes the amount of padding for overlays, adjust their sizes
@@ -1524,7 +1552,9 @@ export class BubbleManager {
     private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
         if (!this.activeElement) return; // should never happen, but makes lint happy
         let deltaX = event.clientX - this.startSideDragX;
+        let deltaY = event.clientY - this.startSideDragY;
         let newBubbleWidth = this.oldWidth; // default
+        let newBubbleHeight = this.oldHeight; // default
         switch (this.currentDragSide) {
             case "e":
                 newBubbleWidth = Math.max(
@@ -1543,20 +1573,16 @@ export class BubbleManager {
                 this.activeElement.style.width = `${newBubbleWidth}px`;
                 this.activeElement.style.left = `${this.oldLeft + deltaX}px`;
                 break;
+            case "s":
+                newBubbleHeight = Math.max(
+                    this.oldHeight + deltaY,
+                    this.minHeight
+                );
+                deltaY = newBubbleHeight - this.oldHeight;
+                this.activeElement.style.height = `${newBubbleHeight}px`;
         }
-        const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
-            editable
-        );
-        const overflowY =
-            overflowAmounts[1] +
-            editable.offsetHeight -
-            this.activeElement.offsetHeight;
-
-        theOneBubbleManager.growOverflowingBox(
-            this.activeElement,
-            overflowY,
-            true
-        );
+        // don't need this for case "s", but that case only happens when the bubble is not being auto-adjusted.
+        theOneBubbleManager.adjustBubbleHeightToContent(editable);
         this.alignControlFrameWithActiveElement();
     }
 
@@ -1854,6 +1880,10 @@ export class BubbleManager {
     private alignControlFrameWithActiveElement = () => {
         const controlFrame = document.getElementById("overlay-control-frame");
         if (controlFrame && this.activeElement) {
+            controlFrame.classList.toggle(
+                "bloom-noAutoHeight",
+                this.activeElement.classList.contains("bloom-noAutoHeight")
+            );
             const hasText = controlFrame.classList.contains("has-text");
             // Text boxes get a little extra padding, making the control frame bigger than
             // the overlay itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
