@@ -295,11 +295,6 @@ const page = document.getElementsByClassName('bloom-page')[0]; page.clientHeight
 
             order.Done = false;
             browser.Tag = order;
-            Color coverColor;
-            ImageUtils.TryCssColorFromString(
-                Book.Book.GetCoverColorFromDom(order.Document.RawDom),
-                out coverColor
-            );
             if (!OpenTempFileInBrowser(browser, order.Document))
                 return null;
 

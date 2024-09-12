@@ -17,5 +17,8 @@
             "content": "<img class='branding' src='back-cover-logos.svg'/>",
             "condition": "always"
         }
-    ]
+    ],
+    "appearance": {
+        "cover-background-color": "white"
+    }
 }
