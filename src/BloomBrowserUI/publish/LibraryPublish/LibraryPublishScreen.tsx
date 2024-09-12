@@ -1,6 +1,5 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-import ReactDOM = require("react-dom");
 import { Typography } from "@mui/material";
 import { Link } from "../../react_components/link";
 import {
@@ -13,10 +12,8 @@ import { LibraryPublishSteps } from "./LibraryPublishSteps";
 import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { PublishLanguagesGroup } from "../commonPublish/PublishLanguagesGroup";
-import { CoverColorGroup } from "../commonPublish/CoverColorGroup";
 import { useState } from "react";
 import { PublishVisibilityGroup } from "../commonPublish/PublishVisibilityGroup";
-import { MustBeCheckedOut } from "../../react_components/MustBeCheckedOut";
 import HelpLink from "../../react_components/helpLink";
 import { PublishTopic } from "../commonPublish/PublishTopic";
 
@@ -40,9 +37,6 @@ export const LibraryPublishScreen = () => {
                 }}
             />
             <PublishFeaturesGroup generation={generation} />
-            <MustBeCheckedOut>
-                <CoverColorGroup />
-            </MustBeCheckedOut>
             <PublishVisibilityGroup />
             <PublishTopic />
 
