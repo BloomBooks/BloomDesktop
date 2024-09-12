@@ -33,7 +33,7 @@ import {
 import Menu from "@mui/material/Menu";
 import { Divider, MenuItem, Select } from "@mui/material";
 import { DuplicateIcon } from "./DuplicateIcon";
-import { BubbleManager } from "./bubbleManager";
+import { BubbleManager, theOneBubbleManager } from "./bubbleManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { TrashIcon } from "../toolbox/overlay/TrashIcon";
@@ -336,6 +336,7 @@ const OverlayContextControls: React.FunctionComponent<{
 
         // );
     }
+    const autoHeight = !props.overlay.classList.contains("bloom-noAutoHeight");
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
         e.preventDefault();
@@ -346,6 +347,13 @@ const OverlayContextControls: React.FunctionComponent<{
         e.preventDefault();
         e.stopPropagation();
         setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
+    };
+    const toggleAutoHeight = () => {
+        props.overlay.classList.toggle("bloom-noAutoHeight");
+        theOneBubbleManager.updateAutoHeight();
+        // In most contexts, we would need to do something now to make the control render, so we get
+        // an updated value for autoHeight. But the menu is going to be hidden, and showing it again
+        // will involve a re-render, and we don't care until then.
     };
     const editable = props.overlay.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
@@ -379,6 +387,18 @@ const OverlayContextControls: React.FunctionComponent<{
                 // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
                 onClick: () => pasteClipboard(false),
                 icon: <PasteIcon css={muiMenIconCss} />
+            },
+            {
+                l10nId: "-",
+                english: "",
+                onClick: () => {}
+            },
+            {
+                l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
+                english: "Auto Height",
+                // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
+                onClick: () => toggleAutoHeight(),
+                icon: autoHeight && <CheckIcon css={muiMenIconCss} />
             },
             {
                 l10nId: "-",
