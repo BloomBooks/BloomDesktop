@@ -680,10 +680,10 @@
         <target xml:lang="es-ES" state="final">Los temas de página son un conjunto de márgenes, bordes y otros ajustes de página. Para obtener información sobre cada tema, consulte [Catálogo de temas de página](https://docs.bloomlibrary.org/page-themes-catalog).</target>
         <note>BookSettings.Theme.Description</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverBackground" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Cover Background</source>
-        <target xml:lang="es-ES" state="final">Fondo de la portada</target>
-        <note>BookSettings.CoverBackground</note>
+      <trans-unit id="Common.BackgroundColor" sil:dynamic="true">
+        <source xml:lang="en">Background Color</source>
+        <target xml:lang="es-ES" state="needs-translation">Background Color</target>
+        <note>Common.CoverBackgroundColor</note>
       </trans-unit>
       <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Front Cover</source>
