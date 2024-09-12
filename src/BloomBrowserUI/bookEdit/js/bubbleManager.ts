@@ -1028,10 +1028,19 @@ export class BubbleManager {
     private gotAMoveWhileMouseDown: boolean = false;
 
     // Remove the overlay control frame if it exists (when no overlay is active)
+    // Also remove the menu if it's still open.  See BL-13852.
     removeControlFrame() {
+        // this.activeElement is still set and works for hiding the menu.
+        const eltWithControlOnIt = this.activeElement;
         const controlFrame = document.getElementById("overlay-control-frame");
         if (controlFrame) {
-            controlFrame.remove();
+            if (eltWithControlOnIt) {
+                renderOverlayContextControls(eltWithControlOnIt, false);
+            }
+            // Reschedule so that the rerender can finish before removing the control frame.
+            setTimeout(() => {
+                controlFrame.remove();
+            }, 0);
         }
     }
 
@@ -3971,6 +3980,10 @@ export class BubbleManager {
 
         // Update UI and make sure things get redrawn correctly.
         this.refreshBubbleEditing(containerElement, undefined, false);
+        // We no longer have an active element, but the old active element may be
+        // needed by the removeControlFrame method called by refreshBubbleEditing
+        // to remove a popup menu.
+        this.setActiveElement(undefined);
         // By this point it's really gone, so this will clean up if it had a target.
         this.removeDetachedTargets();
     }
