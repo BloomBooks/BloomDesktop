@@ -261,6 +261,8 @@ export const ReportDialog: React.FunctionComponent<{
                                                     <Link
                                                         underline="hover"
                                                         href={issueLink}
+                                                        rel="noreferrer"
+                                                        target="_blank"
                                                     >
                                                         {issueLink}
                                                     </Link>
