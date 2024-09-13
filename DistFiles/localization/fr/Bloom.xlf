@@ -2409,9 +2409,9 @@
         <target xml:lang="fr" state="final">Ajouter Bulle Enfant</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.AddChildBubble</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.AutoHeight" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.AutoHeight" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Auto Height</source>
-        <target xml:lang="fr" state="needs-translation">Auto Height</target>
+        <target xml:lang="fr" state="final">Hauteur Automatique</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.AutoHeight</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor" sil:dynamic="true" approved="yes">
