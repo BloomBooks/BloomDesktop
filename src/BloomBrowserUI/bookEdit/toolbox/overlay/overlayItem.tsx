@@ -19,6 +19,7 @@ import { SignLanguageIcon } from "../../../react_components/icons/SignLanguageIc
 import { GifIcon } from "../../../react_components/icons/GifIcon";
 import { theOneBubbleManager } from "../../js/bubbleManager";
 import { Bubble, Comical } from "comicaljs";
+import { Point } from "../../js/point";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
@@ -36,6 +37,15 @@ const ondragstart = (
     // to be.
     ev.dataTransfer.setData("text/x-bloombubble", style);
     ev.dataTransfer.setData("text/x-bloomdraggable", "true");
+    const target = ev.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    // add this (typically negative) amount to drop.clientY to get where the top of the new bubble should be
+    const top = (rect.top - ev.clientY) / Point.getScalingFactor();
+    // add this (typically positive) amount to drop.clientX to get where the right of the new bubble should be
+    const right = (rect.right - ev.clientX) / Point.getScalingFactor();
+    // This bizarre trick is necessary because the drag-and-drop security model won't let ondragend
+    // access the content of a data transfer item, but it can see all their names.
+    ev.dataTransfer.setData(`text/x-right-top-offset:${right},${top}`, "");
 };
 
 // When a template bubble is dropped on the image, we create a new bubble
@@ -57,11 +67,24 @@ const ondragend = (
         console.error("No bubble manager at end of drag.");
         return;
     }
+    let rightTopOffset = "";
+    for (let i = 0; i < ev.dataTransfer.items.length; i++) {
+        if (
+            ev.dataTransfer.items[i].type.startsWith("text/x-right-top-offset:")
+        ) {
+            rightTopOffset = ev.dataTransfer.items[i].type.substring(
+                "text/x-right-top-offset:".length
+            );
+            break;
+        }
+    }
+
     const bubble = bubbleManager.addOverPictureElementWithScreenCoords(
         ev.screenX,
         ev.screenY,
         style,
-        userDefinedStyleName
+        userDefinedStyleName,
+        rightTopOffset
     );
     if (!bubble) return;
     if (extraAction) {
