@@ -56,7 +56,7 @@ namespace Bloom
             var channel = ApplicationUpdateSupport.ChannelName;
             _channelLabel.Visible = channel.ToLowerInvariant() != "release";
             _channelLabel.Text = channel; // No need to localize this: seen only by testers or special users (BL-4451)
-            _copyrightlabel.Text = $"© 2011-{DateTime.Now.Year} SIL International";
+            _copyrightlabel.Text = $"© 2011-{DateTime.Now.Year} SIL Global";
             BringToFront();
         }
 

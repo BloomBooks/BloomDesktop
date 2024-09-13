@@ -146,6 +146,7 @@ public class AppearanceSettings
         new CssStringVariableDef("pageNumber-left-margin", "page-number"),
         new CssStringVariableDef("pageNumber-right-margin", "page-number"),
         new CssStringVariableDef("pageNumber-top", "page-number"),
+        new CssStringVariableDef("topLevel-text-padding", "padding"),
     };
 
     /// <summary>

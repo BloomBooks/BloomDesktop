@@ -822,8 +822,8 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     }
     // And now some special cases where we DO want it on blocks that are more deeply nested.
 
-    // This one handles the a text box at the bottom of a picture-in-middle page or similar layout
-    // (including Big Text Diglot).
+    // Set padding above a bottom text that is nested two layers deep in origami
+    //     Matches include: built-in "picture-in-middle" page & Big Text Diglot
     &
         > .split-pane.horizontal-percent
         > .split-pane-component.position-bottom
@@ -831,7 +831,17 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane.horizontal-percent
         > .split-pane-component.position-bottom
         > .split-pane-component-inner
-        > .bloom-translationGroup {
+        > .bloom-translationGroup,
+    //      Matches include: Start with image on bottom, split the image to have a text below it. (e.g. Angola project's bilingual template)
+    &
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-bottom
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-bottom
+        > .split-pane-component-inner
+        > .bloom-translationGroup
+        //, ENHANCE: could put other patterns in here too that give you the same layout visually
+ {
         padding-top: var(--topLevel-text-padding-top);
         .mixinLeftTgPadding;
         .mixinRightTgPadding;
