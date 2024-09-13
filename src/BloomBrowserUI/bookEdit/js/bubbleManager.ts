@@ -2853,10 +2853,12 @@ export class BubbleManager {
         if (img) {
             const imgRect = img.getBoundingClientRect();
             const controlRect = controlFrame.getBoundingClientRect();
-            // We don't ever allow it to be smaller, nor to be offset without being larger, so this is enough to test
+            // We don't ever allow it to be smaller, nor to be offset without being larger, so this is enough to test.
+            // Rounding errors can throw things off slightly, especially when zoomed, so we give a one-pixel margin.
+            // Not much point moving the picture if we're only one pixel cropped, anyway.
             wantMoveCropHandle =
-                imgRect.width > controlRect.width ||
-                imgRect.height > controlRect.height;
+                imgRect.width > controlRect.width + 1 ||
+                imgRect.height > controlRect.height + 1;
         }
         controlFrame.classList.toggle(
             "bloom-ui-overlay-show-move-crop-handle",
