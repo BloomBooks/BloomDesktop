@@ -1342,6 +1342,10 @@ canvas.moving {
         .bloom-ui-overlay-side-handle-w {
             display: block;
         }
+        // the south one is visible for text boxes only when auto-height is turned off.
+        &.bloom-noAutoHeight .bloom-ui-overlay-side-handle-s {
+            display: block;
+        }
         // Enhance: Canva uses these handles on text boxes to resize the box by modifying
         // font size. This is nice for tweaking things but it's not clear how it should interact
         // with our style system. For now we're just not showing them for text boxes.

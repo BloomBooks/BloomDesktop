@@ -16,6 +16,8 @@ using Bloom.Api;
 using Bloom.Publish.BloomLibrary;
 using SIL.IO;
 using SIL.Windows.Forms.SettingProtection;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Bloom.Collection
 {
@@ -90,11 +92,11 @@ namespace Bloom.Collection
             PendingLanguages[1] = PendingLanguage2;
             PendingLanguages[2] = PendingLanguage3;
 
-            PendingFontSelections[0] = _collectionSettings.LanguagesZeroBased[0].FontName;
-            PendingFontSelections[1] = _collectionSettings.LanguagesZeroBased[1].FontName;
-            var have3rdLanguage = _collectionSettings.LanguagesZeroBased[2] != null;
+            PendingFontSelections[0] = _collectionSettings.AllLanguages[0].FontName;
+            PendingFontSelections[1] = _collectionSettings.AllLanguages[1].FontName;
+            var have3rdLanguage = _collectionSettings.AllLanguages[2] != null;
             PendingFontSelections[2] = have3rdLanguage
-                ? _collectionSettings.LanguagesZeroBased[2].FontName
+                ? _collectionSettings.AllLanguages[2].FontName
                 : "";
             PendingNumberingStyle = _collectionSettings.PageNumberStyle;
             PendingXmatter = _collectionSettings.XMatterPackName;
@@ -266,6 +268,8 @@ namespace Bloom.Collection
             {
                 PendingLanguage1.Tag = l.LanguageTag;
                 PendingLanguage1.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
+                // Enhance: if we already have information about the newly chosen language we could copy it into the dialog.
+                // (find it by _collectionSettings.LanguagesZeroBased.Find(x => x.Tag == l.languageTag);)
                 ChangeThatRequiresRestart();
             }
         }
@@ -281,6 +285,8 @@ namespace Bloom.Collection
             {
                 PendingLanguage2.Tag = l.LanguageTag;
                 PendingLanguage2.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
+                // Enhance: if we already have information about the newly chosen language we could copy it into the dialog.
+                // (find it by _collectionSettings.LanguagesZeroBased.Find(x => x.Tag == l.languageTag);)
                 ChangeThatRequiresRestart();
             }
         }
@@ -296,6 +302,8 @@ namespace Bloom.Collection
             {
                 PendingLanguage3.Tag = l.LanguageTag;
                 PendingLanguage3.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
+                // Enhance: if we already have information about the newly chosen language we could copy it into the dialog.
+                // (find it by _collectionSettings.LanguagesZeroBased.Find(x => x.Tag == l.languageTag);)
                 ChangeThatRequiresRestart();
             }
         }
@@ -410,18 +418,6 @@ namespace Bloom.Collection
             _collectionSettings.Province = _provinceText.Text.Trim();
             _collectionSettings.District = _districtText.Text.Trim();
 
-            var languages = _collectionSettings.LanguagesZeroBased;
-            for (int i = 0; i < 3; i++)
-            {
-                if (languages[i] == null)
-                    continue;
-                languages[i].FontName = PendingFontSelections[i];
-                languages[i].IsRightToLeft = PendingLanguages[i].IsRightToLeft;
-                languages[i].LineHeight = PendingLanguages[i].LineHeight;
-                languages[i].BaseUIFontSizeInPoints = PendingLanguages[i].BaseUIFontSizeInPoints;
-                languages[i].BreaksLinesOnlyAtSpaces = PendingLanguages[i].BreaksLinesOnlyAtSpaces;
-            }
-
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
             var oldBrand = _collectionSettings.BrandingProjectKey;
@@ -462,24 +458,13 @@ namespace Bloom.Collection
             //no point in letting them have the Nat lang 2 be the same as 1
             if (PendingLanguage2.Tag == PendingLanguage3.Tag)
                 PendingLanguage3.ChangeTag(String.Empty);
-            _collectionSettings.Language1.ChangeTag(PendingLanguage1.Tag);
-            _collectionSettings.Language1.SetName(
-                PendingLanguage1.Name,
-                PendingLanguage1.IsCustomName
+
+            UpdateLanguageSettings(
+                _collectionSettings.AllLanguages,
+                PendingLanguages,
+                PendingFontSelections
             );
-            _collectionSettings.Language2.ChangeTag(PendingLanguage2.Tag);
-            // Note that setting the tag to empty will cause the name to be set to empty.
-            if (!String.IsNullOrEmpty(PendingLanguage2.Tag))
-                _collectionSettings.Language2.SetName(
-                    PendingLanguage2.Name,
-                    PendingLanguage2.IsCustomName
-                );
-            _collectionSettings.Language3.ChangeTag(PendingLanguage3.Tag);
-            if (!String.IsNullOrEmpty(PendingLanguage3.Tag))
-                _collectionSettings.Language3.SetName(
-                    PendingLanguage3.Name,
-                    PendingLanguage3.IsCustomName
-                );
+
             _collectionSettings.SignLanguage.ChangeTag(PendingSignLanguage.Tag);
             if (!String.IsNullOrEmpty(PendingSignLanguage.Tag))
                 _collectionSettings.SignLanguage.SetName(
@@ -499,6 +484,103 @@ namespace Bloom.Collection
             Close();
 
             DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;
+        }
+
+        // internal and static to facilitate unit testing
+        internal static void UpdateLanguageSettings(
+            List<WritingSystem> languages,
+            WritingSystem[] pendingLanguages,
+            string[] pendingFonts
+        )
+        {
+            Debug.Assert(languages.Count >= 3);
+            Debug.Assert(pendingLanguages.Length == 3);
+            Debug.Assert(pendingFonts.Length == 3);
+
+            // Provide some useful abbreviations for the first 3 languages.
+            // (This method is static so that it can be tested without creating a dialog.)
+            var Language1 = languages[0];
+            var Language2 = languages[1];
+            var Language3 = languages.Count > 2 ? languages[2] : null;
+            var PendingLanguage1 = pendingLanguages[0];
+            var PendingLanguage2 = pendingLanguages[1];
+            var PendingLanguage3 = pendingLanguages[2];
+
+            // NOTE: if one of the first 3 languages is replaced, we need to add it to
+            // the list after the first 3.  If one of the first 3 languages was already
+            // in the list, we need to remove it from its old position.
+
+            // Copy the old Language1 if it's not in the first 3 languages.
+            if (
+                Language1.Tag != PendingLanguage1.Tag
+                && Language1.Tag != PendingLanguage2.Tag
+                && Language1.Tag != PendingLanguage3.Tag
+            )
+            {
+                languages.Add(Language1.Clone()); // need a fresh copy
+            }
+            // Copy the old Language2 if it's not in the first 3 languages, and is not
+            // the same as the old Language1.
+            if (
+                Language2.Tag != PendingLanguage1.Tag
+                && Language2.Tag != PendingLanguage2.Tag
+                && Language2.Tag != PendingLanguage3.Tag
+                && Language2.Tag != Language1.Tag
+            )
+            {
+                languages.Add(Language2.Clone());
+            }
+            // Copy the old Language3 if it exists and is not in the first 3 languages, and
+            // is not the same as either the old Language1 or the old Language2.
+            if (
+                !String.IsNullOrEmpty(Language3.Tag)
+                && Language3.Tag != PendingLanguage1.Tag
+                && Language3.Tag != PendingLanguage2.Tag
+                && Language3.Tag != PendingLanguage3.Tag
+                && Language3.Tag != Language1.Tag
+                && Language3.Tag != Language2.Tag
+            )
+            {
+                languages.Add(Language3.Clone());
+            }
+            // Remove the languages that are now in the first 3 languages from later in the list
+            // if they were in the list after the first 3 languages.
+            for (int i = languages.Count - 1; i >= 3; i--)
+            {
+                if (languages[i].Tag == PendingLanguage1.Tag)
+                {
+                    languages.RemoveAt(i);
+                }
+                else if (languages[i].Tag == PendingLanguage2.Tag)
+                {
+                    languages.RemoveAt(i);
+                }
+                else if (languages[i].Tag == PendingLanguage3.Tag)
+                {
+                    languages.RemoveAt(i);
+                }
+            }
+            // Update the values in the first three languages.
+            for (int i = 0; i < 3; i++)
+            {
+                if (languages[i] == null)
+                    continue;
+                languages[i].FontName = pendingFonts[i];
+                languages[i].IsRightToLeft = pendingLanguages[i].IsRightToLeft;
+                languages[i].LineHeight = pendingLanguages[i].LineHeight;
+                languages[i].BaseUIFontSizeInPoints = pendingLanguages[i].BaseUIFontSizeInPoints;
+                languages[i].BreaksLinesOnlyAtSpaces = pendingLanguages[i].BreaksLinesOnlyAtSpaces;
+            }
+
+            Language1.ChangeTag(PendingLanguage1.Tag);
+            Language1.SetName(PendingLanguage1.Name, PendingLanguage1.IsCustomName);
+            // Note that setting the tag to empty will cause the name to be set to empty.
+            Language2.ChangeTag(PendingLanguage2.Tag);
+            if (!String.IsNullOrEmpty(PendingLanguage2.Tag))
+                Language2.SetName(PendingLanguage2.Name, PendingLanguage2.IsCustomName);
+            Language3.ChangeTag(PendingLanguage3.Tag);
+            if (!String.IsNullOrEmpty(PendingLanguage3.Tag))
+                Language3.SetName(PendingLanguage3.Name, PendingLanguage3.IsCustomName);
         }
 
         private bool XMatterChangePending
@@ -637,9 +719,7 @@ namespace Bloom.Collection
                 pendingLanguage.BaseUIFontSizeInPoints = frm.UIFontSize;
                 pendingLanguage.IsRightToLeft = frm.LanguageRightToLeft;
                 return pendingLanguage.IsRightToLeft
-                    != _collectionSettings.LanguagesZeroBased[
-                        zeroBasedLanguageNumber
-                    ].IsRightToLeft;
+                    != _collectionSettings.AllLanguages[zeroBasedLanguageNumber].IsRightToLeft;
             }
         }
 

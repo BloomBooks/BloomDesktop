@@ -19,6 +19,7 @@
         }
     ],
     "appearance": {
-        "cover-background-color": "white"
+        "cover-background-color": "white",
+        "topLevel-text-padding": "2mm"
     }
 }

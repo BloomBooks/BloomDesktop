@@ -189,6 +189,9 @@ export default class OverflowChecker {
             e.style.flexGrow = "0";
             e.style.flexShrink = "0";
         });
+        // The element itself must not shrink, lest its scrollHeight or clientHeight be inaccurate.
+        element.style.flexGrow = "0";
+        element.style.flexShrink = "0";
         // This is a reliable way to get the information if it is greater than the clientHeight,
         // and means we don't have to worry about scroll position.
         let result = element.scrollHeight;
@@ -208,11 +211,13 @@ export default class OverflowChecker {
             });
             result = maxContentBottom;
         }
+        // return control to stylesheet
         children.forEach((e: HTMLElement) => {
-            // return control to stylesheet
             e.style.flexGrow = "";
             e.style.flexShrink = "";
         });
+        element.style.flexGrow = "";
+        element.style.flexShrink = "";
         return result;
     }
 

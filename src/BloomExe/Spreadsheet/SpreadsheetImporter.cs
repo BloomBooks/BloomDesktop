@@ -23,6 +23,7 @@ using Bloom.ImageProcessing;
 using Bloom.web.controllers;
 using Bloom.Utils;
 using Bloom.SafeXml;
+using Bloom.TeamCollection;
 
 namespace Bloom.Spreadsheet
 {
@@ -65,6 +66,7 @@ namespace Bloom.Spreadsheet
         private bool _bookIsLandscape;
         private Layout _destLayout;
         private readonly CollectionSettings _collectionSettings;
+        private readonly TeamCollectionManager _tcManager;
 
         public delegate SpreadsheetImporter Factory();
 
@@ -103,7 +105,8 @@ namespace Bloom.Spreadsheet
         public SpreadsheetImporter(
             IBloomWebSocketServer webSocketServer,
             Book.Book book,
-            string pathToSpreadsheetFolder
+            string pathToSpreadsheetFolder,
+            TeamCollectionManager teamCollectionManager = null
         )
             : this(
                 webSocketServer,
@@ -114,6 +117,7 @@ namespace Bloom.Spreadsheet
             )
         {
             _book = book;
+            _tcManager = teamCollectionManager;
         }
 
         // If the import is not done on the main UI thread, a control should be passed that can be used to
@@ -392,6 +396,7 @@ namespace Bloom.Spreadsheet
             // and the Book itself. Testing is the other situation (mostly) that doesn't use CollectionSettings.
             if (_collectionSettings != null && _book != null)
             {
+                ImportLanguageNames();
                 _book.BringBookUpToDate(new NullProgress());
             }
 
@@ -409,6 +414,57 @@ namespace Bloom.Spreadsheet
             }
             Progress("Done");
             return _warnings;
+        }
+
+        private void ImportLanguageNames()
+        {
+            var collectionSettingsAreDirty = false;
+            var okToChangeSettings =
+                (_tcManager == null)
+                    ? TeamCollectionManager.CollectionSettingsCanBeEdited(_collectionSettings)
+                    : _tcManager.OkToEditCollectionSettings;
+            foreach (string lang in _sheet.Languages)
+            {
+                if (lang == "*")
+                    continue;
+                var langName = _sheet.Header.ColumnNameRow
+                    .GetCell(_sheet.GetRequiredColumnForLang(lang))
+                    .Content;
+                // If this is the sign language, update the name only if the name is different.
+                // (The sign language is recorded separately in the collection settings.)
+                if (lang == _collectionSettings.SignLanguage.Tag)
+                {
+                    if (_collectionSettings.SignLanguage.Name != langName)
+                    {
+                        if (okToChangeSettings)
+                            _collectionSettings.SignLanguage.SetName(langName, true);
+                        else
+                            Warn(
+                                $"The name of the sign language ('${lang}') could not be changed to '{langName}' because you are not a team administrator."
+                            );
+                        collectionSettingsAreDirty = true;
+                    }
+                    continue;
+                }
+                // Set the name in the collection settings language list, creating the language if needed.
+                var dirty = _collectionSettings.UpdateOrCreateCollectionLanguage(
+                    lang,
+                    langName,
+                    okToChangeSettings
+                );
+                if (dirty)
+                {
+                    if (!okToChangeSettings)
+                        Warn(
+                            $"The name of the language for '{lang}' could not be changed to '{langName}' because you are not a team administrator."
+                        );
+                    collectionSettingsAreDirty = true;
+                }
+            }
+            if (collectionSettingsAreDirty && okToChangeSettings)
+            {
+                _collectionSettings.Save();
+            }
         }
 
         class PageRecord
