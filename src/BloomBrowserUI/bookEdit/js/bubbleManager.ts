@@ -2113,6 +2113,9 @@ export class BubbleManager {
                 const style = ev.dataTransfer
                     ? ev.dataTransfer.getData("text/x-bloombubble")
                     : "speech";
+                // If this got used, we'd want it to have a rightTopOffset value. But I think all our things that can
+                // be dragged are now using overlayItem, and its dragStart sets text/x-bloomdraggable, so this
+                // code does't get used.
                 this.addOverPictureElement(ev.clientX, ev.clientY, style);
             }
         };
@@ -3659,7 +3662,8 @@ export class BubbleManager {
         screenX: number,
         screenY: number,
         style: string,
-        userDefinedStyleName?: string
+        userDefinedStyleName?: string,
+        rightTopOffset?: string
     ): HTMLElement | undefined {
         const clientX = screenX - window.screenX;
         const clientY = screenY - window.screenY;
@@ -3667,7 +3671,8 @@ export class BubbleManager {
             clientX,
             clientY,
             style,
-            userDefinedStyleName
+            userDefinedStyleName,
+            rightTopOffset
         );
     }
 
@@ -3760,7 +3765,8 @@ export class BubbleManager {
         mouseX: number,
         mouseY: number,
         style?: string,
-        userDefinedStyleName?: string
+        userDefinedStyleName?: string,
+        rightTopOffset?: string
     ): HTMLElement | undefined {
         const imageContainer = this.getImageContainerFromMouse(mouseX, mouseY);
         if (!imageContainer || imageContainer.length === 0) {
@@ -3775,19 +3781,25 @@ export class BubbleManager {
             "Scaled Viewport coordinates"
         );
         if (style === "video") {
-            return this.addVideoOverPicture(positionInViewport, imageContainer);
+            return this.addVideoOverPicture(
+                positionInViewport,
+                imageContainer,
+                rightTopOffset
+            );
         }
         if (style === "image") {
             return this.addPictureOverPicture(
                 positionInViewport,
-                imageContainer
+                imageContainer,
+                rightTopOffset
             );
         }
         return this.addTextOverPicture(
             positionInViewport,
             imageContainer,
             style,
-            userDefinedStyleName
+            userDefinedStyleName,
+            rightTopOffset
         );
     }
 
@@ -3795,7 +3807,8 @@ export class BubbleManager {
         location: Point,
         imageContainerJQuery: JQuery,
         style?: string,
-        userDefinedStyleName?: string
+        userDefinedStyleName?: string,
+        rightTopOffset?: string
     ): HTMLElement {
         const defaultNewTextLanguage = GetSettings().languageForNewTextBoxes;
         const userDefinedStyle = userDefinedStyleName ?? "Bubble";
@@ -3821,13 +3834,15 @@ export class BubbleManager {
             transGroupHtml,
             location,
             style,
-            false
+            false,
+            rightTopOffset
         );
     }
 
     private addVideoOverPicture(
         location: Point,
-        imageContainerJQuery: JQuery
+        imageContainerJQuery: JQuery,
+        rightTopOffset?: string
     ): HTMLElement {
         const standardVideoClasses =
             kVideoContainerClass +
@@ -3839,13 +3854,15 @@ export class BubbleManager {
             videoContainerHtml,
             location,
             "none",
-            true
+            true,
+            rightTopOffset
         );
     }
 
     private addPictureOverPicture(
         location: Point,
-        imageContainerJQuery: JQuery
+        imageContainerJQuery: JQuery,
+        rightTopOffset?: string
     ): HTMLElement {
         const standardImageClasses =
             kImageContainerClass + " bloom-leadingElement";
@@ -3862,7 +3879,8 @@ export class BubbleManager {
             imageContainerHtml,
             location,
             "none",
-            true
+            true,
+            rightTopOffset
         );
     }
 
@@ -3871,7 +3889,8 @@ export class BubbleManager {
         internalHtml: string,
         location: Point,
         style?: string,
-        setElementActive?: boolean
+        setElementActive?: boolean,
+        rightTopOffset?: string
     ): HTMLElement {
         // add OverPicture element as last child of .bloom-imageContainer (BL-7883)
         const lastContainerChild = imageContainerJQuery.children().last();
@@ -3891,7 +3910,8 @@ export class BubbleManager {
         this.placeElementAtPosition(
             wrapperJQuery,
             imageContainerJQuery.get(0),
-            location
+            location,
+            rightTopOffset
         );
 
         // The following code would not be needed for Picture and Video bubbles if the focusin
@@ -3950,19 +3970,40 @@ export class BubbleManager {
     }
 
     // This method is used both for creating new elements and in dragging/resizing.
-    // positionInViewport: is the position to place the top-left corner of the wrapperBox
-    // (But, note that it is not called continuously during dragging.)
+    // positionInViewport and rightTopOffset determine where to place the element.
+    // If rightTopOffset is falsy, we put the element's top left at positionInViewPort.
+    // If rightTopOffset is truthy, it is a string like "10,-20" which are values to
+    // add to positionInViewport (which in this case is the mouse position where
+    // something was dropped) to get the top right of the visual object that was dropped.
+    // Then we position the new element so its top right is at that same point.
+    // Note: I wish we could just make this adjustment in the dragEnd event handler
+    // which receives both the point and the rightTopOffset data, but it does not
+    // have acess to the element being created to get its width. We could push it up
+    // one level into finishAddingOverPictureElement, but it's simpler here where we're
+    // already extracting and adjusting the offsets from positionInViewport
     private placeElementAtPosition(
         wrapperBox: JQuery,
         container: Element,
-        positionInViewport: Point
+        positionInViewport: Point,
+        rightTopOffset?: string
     ) {
         const newPoint = BubbleManager.convertPointFromViewportToElementFrame(
             positionInViewport,
             container
         );
-        const xOffset = newPoint.getUnscaledX();
-        const yOffset = newPoint.getUnscaledY();
+        let xOffset = newPoint.getUnscaledX();
+        let yOffset = newPoint.getUnscaledY();
+        let right = 0;
+        let top = 0;
+        if (rightTopOffset) {
+            const parts = rightTopOffset.split(",");
+            right = parseInt(parts[0]);
+            top = parseInt(parts[1]);
+            // Why -10? I have no idea. But visually most box types seem to come out
+            // in the position we want with that correction.
+            xOffset = xOffset + right - wrapperBox.width() - 10;
+            yOffset = yOffset + top;
+        }
 
         // Note: This code will not clear out the rest of the style properties... they are preserved.
         //       If some or all style properties need to be removed before doing this processing, it is the caller's responsibility to do so beforehand
