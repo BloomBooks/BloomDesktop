@@ -1460,15 +1460,30 @@ canvas.moving {
     }
 }
 
-#overlay-context-controls {
+// text bubbles, captions, and blocks.  optimized for bubbles.
+.has-text > #overlay-context-controls {
     position: absolute;
     // below, centered. Wider than it ever needs to be; the button div inside
     // will be fit-content and centered.
-    bottom: -67px;
+    bottom: -58px;
     left: calc(50% - 150px);
     width: 300px;
 }
-.controls-above #overlay-context-controls {
-    top: -67px;
+.has-text.controls-above > #overlay-context-controls {
+    top: -59px;
+    bottom: unset;
+}
+
+// image and video overlays
+:not(.has-text) > #overlay-context-controls {
+    position: absolute;
+    bottom: -48px;
+    // below, centered. Wider than it ever needs to be; the button div inside
+    // will be fit-content and centered.
+    left: calc(50% - 150px);
+    width: 300px;
+}
+:not(.has-text).controls-above > #overlay-context-controls {
+    top: -48px;
     bottom: unset;
 }
