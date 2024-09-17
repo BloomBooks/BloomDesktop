@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -33,7 +31,6 @@ using SIL.Progress;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -188,7 +185,7 @@ namespace Bloom.Book
             {
                 InitCoverColor(); // should use the same color as what they saw in the preview of the template/shell
             }
-            this.UpdateFallbackAppearanceCoverBackgroundColor(this.GetCoverColor());
+            this.SetCoverColor(this.GetCoverColor());
 
             FixBookIdAndLineageIfNeeded();
             FixUrlEncodedCoverImageIfNeeded();
@@ -3144,12 +3141,6 @@ namespace Bloom.Book
 
         private void UpdateFallbackAppearanceCoverBackgroundColor(string color)
         {
-            var coverFromBrandingViaAppearance =
-                BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
-                    "cover-background-color",
-                    null
-                );
-
             // The rule we're going to create or update gets read by the browser
             // when we are showing the book in previews mode AND it doesn't have an appearance.css.
             // Why wouldn't it? Because it's in the "Sources for new Books" and is older than 6.0.

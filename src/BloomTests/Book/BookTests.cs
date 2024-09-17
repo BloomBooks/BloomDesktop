@@ -142,6 +142,53 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void MigratesLegacyColorToAppearance_RegressionFromActualBook()
+        {
+            SetDom(
+                "",
+                @"    <meta charset='UTF-8'></meta>
+    <meta name='Generator' content='Bloom Version 5.5.104 (apparent build date: 21-Aug-2023)'></meta>
+    <meta name='BloomFormatVersion' content='2.1'></meta>
+    <meta name='pageTemplateSource' content='Basic Book'></meta>
+
+    <title>நான் எப்படி மரமானேன்</title>
+    <style type='text/css' title='userModifiedStyles'>
+    /*<![CDATA[*/
+    .BigWords-style { font-size: 45pt !important; text-align: center !important; }
+    .normal-style[lang='en'] { font-size: 18pt !important; line-height: 1.6 !important; word-spacing: 5pt !important; }
+    .normal-style { font-size: 18pt !important; line-height: 1.8 !important; text-align: center !important; word-spacing: 5pt !important; }
+    .Outside-Back-Cover-style[lang='en'] { font-size: 16pt !important; }
+    .Outside-Back-Cover-style { font-size: 16pt !important; text-align: start !important; }
+    .Inside-Back-Cover-style[lang='en'] { font-size: 13pt !important; }
+    .Inside-Back-Cover-style { font-size: 12pt !important; line-height: 1.3 !important; word-spacing: normal !important; }
+    .Inside-Back-Cover-style > p { margin-bottom: 0.5em !important; }
+    .normal-style > p { margin-bottom: 0em !important; }
+    .Content-On-Title-Page-style[lang='ta'] { font-size: 12pt !important; word-spacing: 5pt !important; }
+    .Content-On-Title-Page-style { font-size: 12pt !important; word-spacing: 5pt !important; }
+    .Inside-Back-Cover-style[lang='ta'] { color: rgb(0, 0, 0); font-size: 12pt !important; line-height: 1.3 !important; word-spacing: normal !important; }
+    .normal-style[lang='ta'] { font-size: 18pt !important; line-height: 1.8 !important; }/*]]>*/
+    </style>
+    <style type='text/css'>
+    DIV.bloom-page.coverColor       {               background-color: #FEBF00 !important;   }
+    </style>
+    <meta name='FeatureRequirement' content='[{&quot;BloomDesktopMinVersion&quot;:&quot;5.5&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;hiddenAudioSplitMarkers&quot;,&quot;FeaturePhrase&quot;:&quot;Hide audio split markers (|) outside the talking book tool&quot;},{&quot;BloomDesktopMinVersion&quot;:&quot;4.7&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudioInXmatter&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio in Front/Back Matter&quot;},{&quot;BloomDesktopMinVersion&quot;:&quot;4.4&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio&quot;}]'></meta>
+    <meta name='maintenanceLevel' content='3'></meta>
+    <meta name='lockedDownAsShell' content='true'></meta>
+    <link rel='stylesheet' href='basePage.css' type='text/css'></link>"
+            );
+            var book = CreateBook();
+            Assert.That(GetLegacyCoverColorStyleNode(book).InnerText.Contains("#FEBF00"));
+            Assert.That(
+                GetAppearanceCoverBackgroundFallbackStyleNode(book).InnerText.Contains("#FEBF00")
+            );
+            // there should only be one style rule that contains "coverColor"... i.e. make sure we didn't just make a second one
+            Assert.AreEqual(
+                1,
+                book.RawDom.SafeSelectNodes("//style[contains(text(),'coverColor')]").Count()
+            );
+        }
+
+        [Test]
         public void MigratingFromOldBook_CoverColorMissing()
         {
             SetDom("", @"");
