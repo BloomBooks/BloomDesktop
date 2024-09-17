@@ -11,9 +11,11 @@ using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.History;
 using Bloom.MiscUI;
+using Bloom.Publish;
 using Bloom.Registration;
 using Bloom.Utils;
 using Bloom.web;
+using Bloom.Workspace;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -59,6 +61,8 @@ namespace Bloom.TeamCollection
             _collectionModel = collectionModel;
             TheOneInstance = this;
         }
+
+        public WorkspaceView WorkspaceView { get; set; }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -812,6 +816,15 @@ namespace Bloom.TeamCollection
 
         public void HandleCheckInCurrentBook(ApiRequest request)
         {
+            // Make sure the user can't switch to edit while we're checking in
+            // This is a bit of a hack, and I wish this class didn't even know about the
+            // WorkspaceView. But it takes time to save the book and check it in, and until
+            // that happens the book won't register as not Saveable, which is how the
+            // WorkspaceView knows to disable the Edit control. So even if we somehow get
+            // WSV.UpdateDisplay() called sooner, it will get the wrong answer . If we make
+            // the book not Saveable sooner, it will mess up our attempts to save it
+            // and check it in. So I think this is the best we can do for now.
+            WorkspaceView?.DisableEditTab();
             Action<float> reportCheckinProgress = (fraction) =>
             {
                 dynamic messageBundle = new DynamicJson();
