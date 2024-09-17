@@ -15,13 +15,16 @@
     --marginBox-padding: 1.5mm;
     --marginBox-background-color: #ffffff; /* white */
 
-    --topLevel-text-padding: 0.5em;
-
     /* set to 0 because our marginBox is white but background is dark. This has the effect of increasing the text padding on the edges. */
     --page-and-marginBox-are-same-color-multiplicand: 0;
 
     /* move so that page number doesn't it hide it if the text box is in the lower left */
     --formatButton-pageNumber-dodge: 20px;
+}
+
+/* using "where:" so that the user's custom appearance can override the theme if specified */
+.numberedPage:where([class*="Device"]:not(.bloom-interactive-page)) {
+    --topLevel-text-padding: 0.5em;
 }
 
 [class*="Device"].numberedPage:not(.bloom-interactive-page) {
