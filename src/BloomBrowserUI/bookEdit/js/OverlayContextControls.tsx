@@ -1,7 +1,7 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { useState, useEffect, useMemo, Fragment, useRef } from "react";
+import { useState, useEffect, Fragment, useRef } from "react";
 import * as ReactDOM from "react-dom";
 import { kBloomBlue, lightTheme } from "../../bloomMaterialUITheme";
 import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
@@ -18,12 +18,8 @@ import {
     makeDuplicateOfDragBubble,
     makeTargetForBubble,
     playSound,
-    setSoundFolder,
-    showDialogToChooseSoundFileAsync,
-    soundFolder,
-    SoundType
+    showDialogToChooseSoundFileAsync
 } from "../toolbox/dragActivity/dragActivityTool";
-import { deleteBubble, duplicateBubble } from "../toolbox/overlay/overlayTool";
 import { ThemeProvider } from "@mui/material/styles";
 import {
     ILocalizableMenuItemProps,
@@ -31,13 +27,12 @@ import {
     LocalizableNestedMenuItem
 } from "../../react_components/localizableMenuItem";
 import Menu from "@mui/material/Menu";
-import { Divider, MenuItem, Select } from "@mui/material";
+import { Divider } from "@mui/material";
 import { DuplicateIcon } from "./DuplicateIcon";
 import { BubbleManager, theOneBubbleManager } from "./bubbleManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { TrashIcon } from "../toolbox/overlay/TrashIcon";
-import { getWithPromise, postJson } from "../../utils/bloomApi";
 import { useL10n } from "../../react_components/l10nHooks";
 
 const controlFrameColor: string = kBloomBlue;
@@ -68,6 +63,10 @@ const OverlayContextControls: React.FunctionComponent<{
     const hasImage = !!imgContainer;
     const img = imgContainer?.getElementsByTagName("img")[0];
     //const hasLicenseProblem = hasImage && !img.getAttribute("data-copyright");
+    const videoContainer = props.overlay.getElementsByClassName(
+        "bloom-videoContainer"
+    )[0];
+    const hasVideo = !!videoContainer;
     const isPlaceHolder =
         hasImage && img.getAttribute("src")?.startsWith("placeHolder.png");
     // Some of the icons we use for buttons are Material UI ones. They need this CSS to look right.
@@ -193,7 +192,7 @@ const OverlayContextControls: React.FunctionComponent<{
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
-            onClick: duplicateBubble,
+            onClick: theOneBubbleManager?.duplicateBubble,
             icon: (
                 <DuplicateIcon
                     css={css`
@@ -206,7 +205,7 @@ const OverlayContextControls: React.FunctionComponent<{
         {
             l10nId: "Common.Delete",
             english: "Delete",
-            onClick: deleteBubble,
+            onClick: theOneBubbleManager?.deleteBubble,
             icon: (
                 <TrashIcon
                     color="black"
@@ -219,6 +218,13 @@ const OverlayContextControls: React.FunctionComponent<{
             )
         }
     ];
+    if (!hasImage && !hasVideo) {
+        menuOptions.splice(0, 0, {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
+            english: "Add Child Bubble",
+            onClick: theOneBubbleManager?.addChildBubble
+        });
+    }
     if (currentBubbleTargetId || canChooseAudioForElement) {
         menuOptions.push({
             l10nId: "-",
@@ -609,7 +615,7 @@ const OverlayContextControls: React.FunctionComponent<{
                         css={svgIconCss}
                         onClick={() => {
                             if (!props.overlay) return;
-                            deleteBubble();
+                            theOneBubbleManager?.deleteBubble();
                         }}
                     >
                         <TrashIcon
