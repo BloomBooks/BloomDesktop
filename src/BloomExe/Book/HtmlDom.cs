@@ -2485,7 +2485,8 @@ namespace Bloom.Book
             if (srcElement == null)
             {
                 srcElement = videoElt.AppendChild("source");
-                srcElement.SetAttribute("type", XmlString.FromUnencoded("video/mp4").Unencoded);
+                var type = url.NotEncoded.EndsWith(".webm") ? "video/webm" : "video/mp4";
+                srcElement.SetAttribute("type", type);
             }
             SetSrcOfVideoElement(url, srcElement, urlEncode);
             // Hides the placeholder.
