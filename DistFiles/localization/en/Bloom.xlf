@@ -1858,6 +1858,11 @@
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
         <note xml:lang="en">Appears in smaller, lighter text right under EditMetadataOverlay</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" translate="no">
+	<source xml:lang="en">This sound will play when the item is touched.</source>
+	<note>ID: EditTab.Image.PlayWhenTouched</note>
+        <note xml:lang="en">Appears in smaller, lighter text right under sound file's name in popup menu</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
         <note>ID: EditTab.Image.MissingInfo</note>
