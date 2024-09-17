@@ -96,7 +96,8 @@ namespace Bloom.Workspace
             WorkspaceApi workspaceApi,
             WorkspaceTabSelection tabSelection,
             AudioRecording audioRecording,
-            CollectionSettingsApi collectionSettingsApi
+            CollectionSettingsApi collectionSettingsApi,
+            TeamCollectionApi teamCollectionApi
         )
         {
             _model = model;
@@ -114,6 +115,7 @@ namespace Bloom.Workspace
             _collectionApi = collectionApi;
             appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
             workspaceApi.WorkspaceView = this; // and yet one more
+            teamCollectionApi.WorkspaceView = this;
             _collectionSettingsApi = collectionSettingsApi;
 
             _collectionSettings = collectionSettings;
@@ -893,6 +895,13 @@ namespace Bloom.Workspace
             SetTabVisibility(_editTab, _model.ShowEditTab);
             SetTabVisibility(_publishTab, _model.ShowPublishTab);
             _editTab.Enabled = !_model.EditTabLocked;
+        }
+
+        // Called early in checkin, will be re-updated by OnUpdateDisplay later in checkin,
+        // but we need to disable it right away when losing permission to edit.
+        public void DisableEditTab()
+        {
+            _editTab.Enabled = false;
         }
 
         private void SetTabVisibility(TabStripButton tab, bool visible)
