@@ -265,6 +265,7 @@ const OverlayContextControls: React.FunctionComponent<{
         menuOptions.push({
             l10nId: null,
             english: mainLabel,
+            subLabelL10nId: "EditTab.Image.PlayWhenTouched",
             onClick: () => {},
             icon: <VolumeUpIcon css={muiMenIconCss} />,
             subMenu
@@ -280,7 +281,8 @@ const OverlayContextControls: React.FunctionComponent<{
                         props.overlay.closest(".bloom-page")!
                     );
                     setMenuOpen(false);
-                }
+                },
+                icon: <CheckIcon css={muiMenIconCss} />
             });
         }
     }
@@ -675,6 +677,8 @@ const OverlayContextControls: React.FunctionComponent<{
                                     english={option.english}
                                     l10nId={option.l10nId}
                                     icon={option.icon}
+                                    truncateMainLabel={true}
+                                    subLabelL10nId={option.subLabelL10nId}
                                 >
                                     {option.subMenu.map(
                                         (subOption, subIndex) => (
@@ -683,6 +687,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                                 l10nId={subOption.l10nId}
                                                 english={subOption.english}
                                                 onClick={subOption.onClick}
+                                                icon={subOption.icon}
                                             />
                                         )
                                     )}
