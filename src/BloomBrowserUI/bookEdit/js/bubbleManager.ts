@@ -35,6 +35,7 @@ import { data } from "jquery";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { MeasureText } from "../../utils/measureText";
+import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 export interface ITextColorInfo {
     color: string;
@@ -1885,6 +1886,30 @@ export class BubbleManager {
         this.alignControlFrameWithActiveElement();
     }
 
+    private async getHandleTitlesAsync(
+        controlFrame: HTMLElement,
+        className: string,
+        l10nId: string,
+        force: boolean = false
+    ) {
+        const handles = Array.from(
+            controlFrame.getElementsByClassName(className)
+        ) as HTMLElement[];
+        // We could cache these somewhere, especially the crop/change shape pair, but I think
+        // it would be premature optimization. We only have four title, and
+        // only the crop/change shape one has to be retrieved each time the frame moves.
+        if (!handles[0]?.title || force) {
+            const title = await theOneLocalizationManager.asyncGetText(
+                "EditTab.Toolbox.ComicTool.Handle." + l10nId,
+                "",
+                ""
+            );
+            handles.forEach(handle => {
+                handle.title = title;
+            });
+        }
+    }
+
     // Align the control frame with the active overlay.
     private alignControlFrameWithActiveElement = () => {
         const controlFrame = document.getElementById("overlay-control-frame");
@@ -1894,6 +1919,24 @@ export class BubbleManager {
                 this.activeElement.classList.contains("bloom-noAutoHeight")
             );
             const hasText = controlFrame.classList.contains("has-text");
+            // We don't need to await these, they are just async so the handle titles can be updated
+            // once the localization manager retrieves them.
+            this.getHandleTitlesAsync(
+                controlFrame,
+                "bloom-ui-overlay-resize-handle",
+                "Resize"
+            );
+            this.getHandleTitlesAsync(
+                controlFrame,
+                "bloom-ui-overlay-side-handle",
+                hasText ? "ChangeShape" : "Crop",
+                true
+            );
+            this.getHandleTitlesAsync(
+                controlFrame,
+                "bloom-ui-overlay-move-crop-handle",
+                "Shift"
+            );
             // Text boxes get a little extra padding, making the control frame bigger than
             // the overlay itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
             // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
@@ -2784,7 +2827,7 @@ export class BubbleManager {
         }
 
         // Determine the horizontal component
-        if (this.bubbleResizeMode.charAt(1) == "w") {
+        if (this.bubbleResizeMode.charAt(1) === "w") {
             // The left edge is moving, but the right edge is anchored.
             newLeft =
                 this.bubbleResizeInitialPos.elementX +
