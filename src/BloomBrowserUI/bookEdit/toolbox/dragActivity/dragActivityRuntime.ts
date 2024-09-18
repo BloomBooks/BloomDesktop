@@ -6,12 +6,11 @@
 // For now, in Bloom desktop, this file is only used in the Play tab of drag activities,
 // so both live there. In Bloom player, both live in the root src directory.
 // In the long run, the answer is probably a folder, or even an npm package, for all
-// the stuff that the two progams share...or maybe we can make bloom player publish
+// the stuff that the two programs share...or maybe we can make bloom player publish
 // these files along with the output bundle and have bloom desktop use them from there.
 // For now, though, it's much easier to just edit them and have them built automatically
 // than to have this code in another repo.
 
-import { get } from "jquery";
 import {
     kAudioSentence,
     playAllAudio,
@@ -281,6 +280,9 @@ export function undoPrepareActivity(page: HTMLElement) {
         elt.removeEventListener("click", performTryAgain);
     });
 
+    // In Bloom Player, this will have been done by other play code, since data-sound is not
+    // specfic to games. But we're adding a listener for the same function, so it doesn't matter.
+    // In Bloom desktop, we need this to make cliking data-sound elements work in Play mode.
     const soundItems = Array.from(page.querySelectorAll("[data-sound]"));
     soundItems.forEach((elt: HTMLElement) => {
         elt.removeEventListener("click", playSoundOf);
@@ -298,12 +300,16 @@ export function undoPrepareActivity(page: HTMLElement) {
     // });
 }
 
-const playSoundOf = (e: MouseEvent) => {
+export const playSoundOf = (e: MouseEvent) => {
     const elt = e.currentTarget as HTMLElement;
     const soundFile = elt.getAttribute("data-sound");
     if (soundFile) {
         playSound(elt, soundFile);
     }
+    // Not needed in Play tab, but in Bloom Player, the click would otherwise cause
+    // a toggle between full screen and showing toolbars.
+    e.preventDefault();
+    e.stopPropagation();
 };
 
 const playAudioOfTarget = (e: PointerEvent) => {
