@@ -343,14 +343,19 @@ namespace Bloom.Workspace
 
         private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
         {
-            var result = GetCurrentSelectedBookInfo();
+            SendBookSelectionChanged(false);
+        }
+
+        private void SendBookSelectionChanged(bool forceNotSaveable)
+        {
+            var result = GetCurrentSelectedBookInfo(forceNotSaveable);
             // Important for at least the TeamCollectionBookStatusPanel and the CollectionsTabBookPanel.
             _webSocketServer.SendString("book-selection", "changed", result);
         }
 
         string _tempBookInfoHtmlPath;
 
-        public string GetCurrentSelectedBookInfo()
+        public string GetCurrentSelectedBookInfo(bool forceNotSaveable = false)
         {
             var book = _bookSelection.CurrentSelection;
             var collectionKind = Book.Book.CollectionKind(book);
@@ -379,12 +384,16 @@ namespace Bloom.Workspace
                     aboutBookInfoUrl = _tempBookInfoHtmlPath.ToLocalhost();
                 }
             }
+
+            var saveable = _bookSelection.CurrentSelection?.IsSaveable ?? false;
+            if (forceNotSaveable)
+                saveable = false;
             // notify browser components that are listening to this event
             var result = JsonConvert.SerializeObject(
                 new
                 {
                     id = book?.ID,
-                    saveable = _bookSelection.CurrentSelection?.IsSaveable ?? false,
+                    saveable,
                     collectionKind,
                     aboutBookInfoUrl,
                     isTemplate = book?.IsTemplateBook
@@ -902,6 +911,8 @@ namespace Bloom.Workspace
         public void DisableEditTab()
         {
             _editTab.Enabled = false;
+            // This disables the Edit button.
+            SendBookSelectionChanged(forceNotSaveable: true);
         }
 
         private void SetTabVisibility(TabStripButton tab, bool visible)
