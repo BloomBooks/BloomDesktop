@@ -2134,6 +2134,11 @@
         <target xml:lang="ru" state="needs-translation">Image Credits, Copyright, &amp; License</target>
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This sound will play when the item is touched.</source>
+        <target xml:lang="ru" state="needs-translation">This sound will play when the item is touched.</target>
+        <note>ID: EditTab.Image.PlayWhenTouched</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
         <target xml:lang="ru" state="translated">В изображении отсутствует информация о кредитах, авторских правах или лицензии</target>
@@ -2403,6 +2408,26 @@
         <source xml:lang="en">Drag any of these overlays onto the image:</source>
         <target xml:lang="ru" state="translated">Перетащите для добавления изображения</target>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
+        <source xml:lang="en">Change Shape</source>
+        <target xml:lang="ru" state="needs-translation">Change Shape</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.ChangeShape</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
+        <source xml:lang="en">Crop</source>
+        <target xml:lang="ru" state="needs-translation">Crop</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
+        <source xml:lang="en">Resize</source>
+        <target xml:lang="ru" state="needs-translation">Resize</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
+        <source xml:lang="en">Shift Picture</source>
+        <target xml:lang="ru" state="needs-translation">Shift Picture</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Shift</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
         <source xml:lang="en">Add Child Bubble</source>
