@@ -1460,15 +1460,34 @@ canvas.moving {
     }
 }
 
+@heightOfTextControllerBar: 47px;
+@heightOfOtherControllerBar: 37px;
+@controllerBarGap: 11px;
+
 #overlay-context-controls {
     position: absolute;
-    // below, centered. Wider than it ever needs to be; the button div inside
+    // Centered. Wider than it ever needs to be; the button div inside
     // will be fit-content and centered.
-    bottom: -67px;
     left: calc(50% - 150px);
     width: 300px;
 }
-.controls-above #overlay-context-controls {
-    top: -67px;
+
+// text bubbles, captions, and blocks.  optimized for bubbles.
+.has-text > #overlay-context-controls {
+    bottom: -@heightOfTextControllerBar - @controllerBarGap;
+    height: @heightOfTextControllerBar;
+}
+.has-text.controls-above > #overlay-context-controls {
+    top: -@heightOfTextControllerBar - @controllerBarGap;
+    bottom: unset;
+}
+
+// image and video overlays
+:not(.has-text) > #overlay-context-controls {
+    bottom: -@heightOfOtherControllerBar - @controllerBarGap;
+    height: @heightOfOtherControllerBar;
+}
+:not(.has-text).controls-above > #overlay-context-controls {
+    top: -@heightOfOtherControllerBar - @controllerBarGap;
     bottom: unset;
 }
