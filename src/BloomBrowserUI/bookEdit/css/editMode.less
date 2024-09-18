@@ -1331,9 +1331,6 @@ canvas.moving {
                 display: block;
             }
         }
-        #overlay-context-controls {
-            display: none;
-        }
         &.bloom-ui-overlay-show-move-crop-handle {
             .bloom-ui-overlay-move-crop-handle {
                 display: none;
@@ -1465,34 +1462,10 @@ canvas.moving {
     }
 }
 
-@heightOfTextControllerBar: 47px;
-@heightOfOtherControllerBar: 37px;
-@controllerBarGap: 11px;
-
 #overlay-context-controls {
     position: absolute;
-    // Centered. Wider than it ever needs to be; the button div inside
-    // will be fit-content and centered.
-    left: calc(50% - 150px);
-    width: 300px;
-}
-
-// text bubbles, captions, and blocks.  optimized for bubbles.
-.has-text > #overlay-context-controls {
-    bottom: -@heightOfTextControllerBar - @controllerBarGap;
-    height: @heightOfTextControllerBar;
-}
-.has-text.controls-above > #overlay-context-controls {
-    top: -@heightOfTextControllerBar - @controllerBarGap;
-    bottom: unset;
-}
-
-// image and video overlays
-:not(.has-text) > #overlay-context-controls {
-    bottom: -@heightOfOtherControllerBar - @controllerBarGap;
-    height: @heightOfOtherControllerBar;
-}
-:not(.has-text).controls-above > #overlay-context-controls {
-    top: -@heightOfOtherControllerBar - @controllerBarGap;
-    bottom: unset;
+    transform-origin: top left;
+    &.moving {
+        display: none;
+    }
 }
