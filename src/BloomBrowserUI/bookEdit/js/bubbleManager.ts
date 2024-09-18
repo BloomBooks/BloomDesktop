@@ -2531,6 +2531,12 @@ export class BubbleManager {
         if (BubbleManager.inPlayMode(event.currentTarget as HTMLElement)) {
             return; // no edit mode functionality is relevant
         }
+        if (event.altKey) {
+            // Don't resize or move with Alt. See BL-13899.
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
         // Capture the most recent data to use when our animation frame request is satisfied.
         // or so keyboard events can reference the current mouse position.
         this.lastMoveEvent = event;
@@ -2603,6 +2609,7 @@ export class BubbleManager {
         // text boxes, which can also be clicked for text editing, so it would be confusing
         // and make it hard to click in the exact place wanted).
         if (!event.altKey) {
+            // event.altKey test is probably redundant due to BL-13899.
             if (isVideo) {
                 // Don't add "grabbable" to video over picture, because click will play the video,
                 // not drag it (unless we're holding the Ctrl key down).
@@ -2616,8 +2623,6 @@ export class BubbleManager {
                     targetElement.setAttribute("controls", "");
                 }
             }
-        } else {
-            this.applyResizingUI(hoveredBubble, container, event, isVideo);
         }
     }
 
