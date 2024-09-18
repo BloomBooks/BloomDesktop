@@ -157,7 +157,10 @@ namespace Bloom.Api
                 _actualContext.Response.ContentLength64 = fs.Length;
                 _actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
                 _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
-                if (path.EndsWith(".mp4", StringComparison.InvariantCultureIgnoreCase))
+                if (
+                    path.EndsWith(".mp4", StringComparison.InvariantCultureIgnoreCase)
+                    || path.EndsWith(".webm", StringComparison.InvariantCultureIgnoreCase)
+                )
                 {
                     // Apparently Chrome/WebView2 is more picky than Firefox about the need for an Accept-Ranges header if you're going to
                     // request a range in a file like a video (or perhaps audio). Without this extra header, setting the currentTime in
