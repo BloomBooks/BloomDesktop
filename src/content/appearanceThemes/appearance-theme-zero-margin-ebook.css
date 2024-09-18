@@ -43,8 +43,11 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
 }
 
-[class*="Device"].numberedPage:not(.bloom-interactive-page) {
+/* using "where:" so that the user's custom appearance can override the theme if specified */
+.numberedPage:where([class*="Device"]:not(.bloom-interactive-page)) {
     --topLevel-text-padding: 0.5em;
+}
+[class*="Device"].numberedPage:not(.bloom-interactive-page) {
     /* move so that page number doesn't it hide it if the text box is in the lower left */
     --formatButton-pageNumber-dodge: 20px;
 }
