@@ -96,7 +96,8 @@ namespace Bloom.Workspace
             WorkspaceApi workspaceApi,
             WorkspaceTabSelection tabSelection,
             AudioRecording audioRecording,
-            CollectionSettingsApi collectionSettingsApi
+            CollectionSettingsApi collectionSettingsApi,
+            TeamCollectionApi teamCollectionApi
         )
         {
             _model = model;
@@ -114,6 +115,7 @@ namespace Bloom.Workspace
             _collectionApi = collectionApi;
             appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
             workspaceApi.WorkspaceView = this; // and yet one more
+            teamCollectionApi.WorkspaceView = this;
             _collectionSettingsApi = collectionSettingsApi;
 
             _collectionSettings = collectionSettings;
@@ -341,14 +343,19 @@ namespace Bloom.Workspace
 
         private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
         {
-            var result = GetCurrentSelectedBookInfo();
+            SendBookSelectionChanged(false);
+        }
+
+        private void SendBookSelectionChanged(bool forceNotSaveable)
+        {
+            var result = GetCurrentSelectedBookInfo(forceNotSaveable);
             // Important for at least the TeamCollectionBookStatusPanel and the CollectionsTabBookPanel.
             _webSocketServer.SendString("book-selection", "changed", result);
         }
 
         string _tempBookInfoHtmlPath;
 
-        public string GetCurrentSelectedBookInfo()
+        public string GetCurrentSelectedBookInfo(bool forceNotSaveable = false)
         {
             var book = _bookSelection.CurrentSelection;
             var collectionKind = Book.Book.CollectionKind(book);
@@ -377,12 +384,16 @@ namespace Bloom.Workspace
                     aboutBookInfoUrl = _tempBookInfoHtmlPath.ToLocalhost();
                 }
             }
+
+            var saveable = _bookSelection.CurrentSelection?.IsSaveable ?? false;
+            if (forceNotSaveable)
+                saveable = false;
             // notify browser components that are listening to this event
             var result = JsonConvert.SerializeObject(
                 new
                 {
                     id = book?.ID,
-                    saveable = _bookSelection.CurrentSelection?.IsSaveable ?? false,
+                    saveable,
                     collectionKind,
                     aboutBookInfoUrl,
                     isTemplate = book?.IsTemplateBook
@@ -893,6 +904,15 @@ namespace Bloom.Workspace
             SetTabVisibility(_editTab, _model.ShowEditTab);
             SetTabVisibility(_publishTab, _model.ShowPublishTab);
             _editTab.Enabled = !_model.EditTabLocked;
+        }
+
+        // Called early in checkin, will be re-updated by OnUpdateDisplay later in checkin,
+        // but we need to disable it right away when losing permission to edit.
+        public void DisableEditTab()
+        {
+            _editTab.Enabled = false;
+            // This disables the Edit button.
+            SendBookSelectionChanged(forceNotSaveable: true);
         }
 
         private void SetTabVisibility(TabStripButton tab, bool visible)

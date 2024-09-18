@@ -1858,6 +1858,11 @@
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
         <note xml:lang="en">Appears in smaller, lighter text right under EditMetadataOverlay</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" translate="no">
+	<source xml:lang="en">This sound will play when the item is touched.</source>
+	<note>ID: EditTab.Image.PlayWhenTouched</note>
+        <note xml:lang="en">Appears in smaller, lighter text right under sound file's name in popup menu</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
         <note>ID: EditTab.Image.MissingInfo</note>
@@ -2088,6 +2093,23 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
         <source xml:lang="en">Drag any of these overlays onto the image:</source>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
+        <source xml:lang="en">Change Shape</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.ChangeShape</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
+        <source xml:lang="en">Crop</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
+        <source xml:lang="en">Resize</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
+        <source xml:lang="en">Shift Picture</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Shift</note>
+        <note>Or you could translate "position picture". The control is used when a picture has been made bigger than its framing overlay by cropping and causes the picture to move without changing the shape of the overlay so that a different part of it can be seen.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
         <source xml:lang="en">Add Child Bubble</source>

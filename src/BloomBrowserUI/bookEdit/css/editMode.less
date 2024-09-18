@@ -9,6 +9,7 @@
 
 .bloom-page {
     --page-structure-color: #1d94a41a;
+    --edit-outline-color: #1d94a434;
     --language-tag-color: #1d94a488;
     --selectedEdit-color: #1d94a4c2; //transparent;
     --unselectedEdit-color: var(--page-structure-color);
@@ -40,7 +41,8 @@
 
 @EditBoxItemsColor: #0000001a;
 @MediumGray: #c0b9b9;
-@ImageAndVideoHoverOverlay: #d5d5e4;
+// For now we don't want this effect at all (BL-13895). Decided to keep the variable in case we change our minds.
+@ImageAndVideoHoverOverlay: transparent;
 @ImageButtonBorder: #716666;
 @ChangeImageButtonColor: @ControlColor;
 @PasteImageButtonColor: @bloom-blue;
@@ -564,7 +566,6 @@ button.moveButton {
 }
 
 img.hoverUp {
-    background-color: @bloom-buff;
     outline: 1px outset black;
 }
 
@@ -1238,8 +1239,7 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
 }
 
 // --------------------------------------------------------
-// show some structure when the page is focused or hovered
-.bloom-page:focus-within,
+// show some structure when the page is hovered
 .bloom-page:hover {
     // Show the padding, multilingual gap, etc as colored areas.
     // The ".split-pane-component-inner >"  disables this for overlays, where it's common to have backgrounds like transparent
@@ -1255,7 +1255,7 @@ body :has(.bloom-page:focus-within, .bloom-page:hover) {
         }
 
         .bloom-editable {
-            outline: 1px solid var(--page-structure-color);
+            outline: 1px solid var(--edit-outline-color);
             outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
         }
         // the parent translation group has the "page structure" color so we
@@ -1333,6 +1333,11 @@ canvas.moving {
         }
         #overlay-context-controls {
             display: none;
+        }
+        &.bloom-ui-overlay-show-move-crop-handle {
+            .bloom-ui-overlay-move-crop-handle {
+                display: none;
+            }
         }
     }
     // the "crop" handles on left and right are visible for text boxes
@@ -1460,15 +1465,34 @@ canvas.moving {
     }
 }
 
+@heightOfTextControllerBar: 47px;
+@heightOfOtherControllerBar: 37px;
+@controllerBarGap: 11px;
+
 #overlay-context-controls {
     position: absolute;
-    // below, centered. Wider than it ever needs to be; the button div inside
+    // Centered. Wider than it ever needs to be; the button div inside
     // will be fit-content and centered.
-    bottom: -67px;
     left: calc(50% - 150px);
     width: 300px;
 }
-.controls-above #overlay-context-controls {
-    top: -67px;
+
+// text bubbles, captions, and blocks.  optimized for bubbles.
+.has-text > #overlay-context-controls {
+    bottom: -@heightOfTextControllerBar - @controllerBarGap;
+    height: @heightOfTextControllerBar;
+}
+.has-text.controls-above > #overlay-context-controls {
+    top: -@heightOfTextControllerBar - @controllerBarGap;
+    bottom: unset;
+}
+
+// image and video overlays
+:not(.has-text) > #overlay-context-controls {
+    bottom: -@heightOfOtherControllerBar - @controllerBarGap;
+    height: @heightOfOtherControllerBar;
+}
+:not(.has-text).controls-above > #overlay-context-controls {
+    top: -@heightOfOtherControllerBar - @controllerBarGap;
     bottom: unset;
 }

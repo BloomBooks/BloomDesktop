@@ -215,11 +215,13 @@ namespace Bloom.web.controllers
                             "EditTab.Toolbox.SignLanguage.FileDialogVideoFiles",
                             "Video files"
                         );
-                        using (var dlg = new MiscUI.BloomOpenFileDialog
-                        {
-                            // If this filter ever changes, make sure we update BookCompressor.VideoFileExtensions.
-                            Filter = $"{videoFiles} (*.mp4)|*.mp4"
-                        })
+                        // If this filter ever changes, other places dependent on mp4 as an extension
+                        // may also need to change.
+                        var filter = $"{videoFiles} (*.mp4)|*.mp4";
+                        // Allow experimentation with other video types: see BL-13849.
+                        if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
+                            filter = $"{videoFiles}|*.mp4;*.webm";
+                        using (var dlg = new MiscUI.BloomOpenFileDialog { Filter = filter })
                         {
                             var result = dlg.ShowDialog();
                             if (result == DialogResult.OK)
@@ -235,7 +237,7 @@ namespace Bloom.web.controllers
                     _importedVideoIntoBloom = true;
                     var newVideoPath = Path.Combine(
                         BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath),
-                        GetNewVideoFileName()
+                        GetNewVideoFileName(Path.GetExtension(path))
                     ); // Use a new name to defeat caching.
                     RobustFile.Copy(path, newVideoPath);
                     var relativePath =
@@ -520,9 +522,9 @@ namespace Bloom.web.controllers
                 return info.CreationTime;
         }
 
-        public static string GetNewVideoFileName()
+        public static string GetNewVideoFileName(string extension = ".mp4")
         {
-            return Guid.NewGuid().ToString() + ".mp4";
+            return Guid.NewGuid().ToString() + extension;
         }
 
         public DateTime DeactivateTime { get; set; }
@@ -566,6 +568,12 @@ namespace Bloom.web.controllers
                 .Where(f => GetRealLastModifiedTime(f) > DeactivateTime)
                 .Select(f => f.FullName)
                 .ToList();
+            var moreFilesModified = new DirectoryInfo(videoFolderPath)
+                .GetFiles("*.webm")
+                .Where(f => GetRealLastModifiedTime(f) > DeactivateTime)
+                .Select(f => f.FullName)
+                .ToList();
+            filesModifiedSinceDeactivate.AddRange(moreFilesModified);
 
             if (!filesModifiedSinceDeactivate.Any())
                 return;

@@ -36,7 +36,7 @@ namespace Bloom.Utils
         // and is unlikely to save space. It might also increase the likelihood of spurious
         // differences between file versions making Dropbox's sync less efficient.
         private static readonly HashSet<string> extensionsNotToCompress = new HashSet<string>(
-            new[] { ".png", ".jpg", ".mp3", ".mp4" }
+            new[] { ".png", ".jpg", ".mp3", ".mp4", ".webm" }
         );
 
         /// <summary>

@@ -35,6 +35,7 @@ import { data } from "jquery";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { MeasureText } from "../../utils/measureText";
+import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 export interface ITextColorInfo {
     color: string;
@@ -1885,6 +1886,30 @@ export class BubbleManager {
         this.alignControlFrameWithActiveElement();
     }
 
+    private async getHandleTitlesAsync(
+        controlFrame: HTMLElement,
+        className: string,
+        l10nId: string,
+        force: boolean = false
+    ) {
+        const handles = Array.from(
+            controlFrame.getElementsByClassName(className)
+        ) as HTMLElement[];
+        // We could cache these somewhere, especially the crop/change shape pair, but I think
+        // it would be premature optimization. We only have four title, and
+        // only the crop/change shape one has to be retrieved each time the frame moves.
+        if (!handles[0]?.title || force) {
+            const title = await theOneLocalizationManager.asyncGetText(
+                "EditTab.Toolbox.ComicTool.Handle." + l10nId,
+                "",
+                ""
+            );
+            handles.forEach(handle => {
+                handle.title = title;
+            });
+        }
+    }
+
     // Align the control frame with the active overlay.
     private alignControlFrameWithActiveElement = () => {
         const controlFrame = document.getElementById("overlay-control-frame");
@@ -1894,6 +1919,24 @@ export class BubbleManager {
                 this.activeElement.classList.contains("bloom-noAutoHeight")
             );
             const hasText = controlFrame.classList.contains("has-text");
+            // We don't need to await these, they are just async so the handle titles can be updated
+            // once the localization manager retrieves them.
+            this.getHandleTitlesAsync(
+                controlFrame,
+                "bloom-ui-overlay-resize-handle",
+                "Resize"
+            );
+            this.getHandleTitlesAsync(
+                controlFrame,
+                "bloom-ui-overlay-side-handle",
+                hasText ? "ChangeShape" : "Crop",
+                true
+            );
+            this.getHandleTitlesAsync(
+                controlFrame,
+                "bloom-ui-overlay-move-crop-handle",
+                "Shift"
+            );
             // Text boxes get a little extra padding, making the control frame bigger than
             // the overlay itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
             // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
@@ -2113,6 +2156,9 @@ export class BubbleManager {
                 const style = ev.dataTransfer
                     ? ev.dataTransfer.getData("text/x-bloombubble")
                     : "speech";
+                // If this got used, we'd want it to have a rightTopOffset value. But I think all our things that can
+                // be dragged are now using overlayItem, and its dragStart sets text/x-bloomdraggable, so this
+                // code does't get used.
                 this.addOverPictureElement(ev.clientX, ev.clientY, style);
             }
         };
@@ -2485,6 +2531,12 @@ export class BubbleManager {
         if (BubbleManager.inPlayMode(event.currentTarget as HTMLElement)) {
             return; // no edit mode functionality is relevant
         }
+        if (event.altKey) {
+            // Don't resize or move with Alt. See BL-13899.
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
         // Capture the most recent data to use when our animation frame request is satisfied.
         // or so keyboard events can reference the current mouse position.
         this.lastMoveEvent = event;
@@ -2557,6 +2609,7 @@ export class BubbleManager {
         // text boxes, which can also be clicked for text editing, so it would be confusing
         // and make it hard to click in the exact place wanted).
         if (!event.altKey) {
+            // event.altKey test is probably redundant due to BL-13899.
             if (isVideo) {
                 // Don't add "grabbable" to video over picture, because click will play the video,
                 // not drag it (unless we're holding the Ctrl key down).
@@ -2570,8 +2623,6 @@ export class BubbleManager {
                     targetElement.setAttribute("controls", "");
                 }
             }
-        } else {
-            this.applyResizingUI(hoveredBubble, container, event, isVideo);
         }
     }
 
@@ -2652,11 +2703,11 @@ export class BubbleManager {
     ) {
         if (this.activeElement) {
             const r = this.activeElement.getBoundingClientRect();
-            const container = this.activeElement.parentElement?.closest(
+            const activeContainer = this.activeElement.parentElement?.closest(
                 kImageContainerSelector
             );
-            if (container) {
-                const canvas = this.getFirstCanvasForContainer(container);
+            if (activeContainer) {
+                const canvas = this.getFirstCanvasForContainer(activeContainer);
                 if (canvas)
                     canvas.classList.toggle(
                         "moving",
@@ -2669,6 +2720,7 @@ export class BubbleManager {
         }
         // Capture the most recent data to use when our animation frame request is satisfied.
         this.lastMoveContainer = container;
+        this.lastMoveContainer.style.cursor = "move";
         // We don't want any other effects of mouse move, like selecting text in the box,
         // to happen while we're dragging it around.
         event.preventDefault();
@@ -2781,7 +2833,7 @@ export class BubbleManager {
         }
 
         // Determine the horizontal component
-        if (this.bubbleResizeMode.charAt(1) == "w") {
+        if (this.bubbleResizeMode.charAt(1) === "w") {
             // The left edge is moving, but the right edge is anchored.
             newLeft =
                 this.bubbleResizeInitialPos.elementX +
@@ -2850,10 +2902,12 @@ export class BubbleManager {
         if (img) {
             const imgRect = img.getBoundingClientRect();
             const controlRect = controlFrame.getBoundingClientRect();
-            // We don't ever allow it to be smaller, nor to be offset without being larger, so this is enough to test
+            // We don't ever allow it to be smaller, nor to be offset without being larger, so this is enough to test.
+            // Rounding errors can throw things off slightly, especially when zoomed, so we give a one-pixel margin.
+            // Not much point moving the picture if we're only one pixel cropped, anyway.
             wantMoveCropHandle =
-                imgRect.width > controlRect.width ||
-                imgRect.height > controlRect.height;
+                imgRect.width > controlRect.width + 1 ||
+                imgRect.height > controlRect.height + 1;
         }
         controlFrame.classList.toggle(
             "bloom-ui-overlay-show-move-crop-handle",
@@ -2862,6 +2916,7 @@ export class BubbleManager {
     }
 
     private stopMoving() {
+        if (this.lastMoveContainer) this.lastMoveContainer.style.cursor = "";
         const controlFrame = document.getElementById("overlay-control-frame");
         // We want to get rid of it at least from the control frame and the active bubble,
         // but may as well make sure it doesn't get left anywhere.
@@ -3659,7 +3714,8 @@ export class BubbleManager {
         screenX: number,
         screenY: number,
         style: string,
-        userDefinedStyleName?: string
+        userDefinedStyleName?: string,
+        rightTopOffset?: string
     ): HTMLElement | undefined {
         const clientX = screenX - window.screenX;
         const clientY = screenY - window.screenY;
@@ -3667,7 +3723,8 @@ export class BubbleManager {
             clientX,
             clientY,
             style,
-            userDefinedStyleName
+            userDefinedStyleName,
+            rightTopOffset
         );
     }
 
@@ -3760,7 +3817,8 @@ export class BubbleManager {
         mouseX: number,
         mouseY: number,
         style?: string,
-        userDefinedStyleName?: string
+        userDefinedStyleName?: string,
+        rightTopOffset?: string
     ): HTMLElement | undefined {
         const imageContainer = this.getImageContainerFromMouse(mouseX, mouseY);
         if (!imageContainer || imageContainer.length === 0) {
@@ -3775,19 +3833,25 @@ export class BubbleManager {
             "Scaled Viewport coordinates"
         );
         if (style === "video") {
-            return this.addVideoOverPicture(positionInViewport, imageContainer);
+            return this.addVideoOverPicture(
+                positionInViewport,
+                imageContainer,
+                rightTopOffset
+            );
         }
         if (style === "image") {
             return this.addPictureOverPicture(
                 positionInViewport,
-                imageContainer
+                imageContainer,
+                rightTopOffset
             );
         }
         return this.addTextOverPicture(
             positionInViewport,
             imageContainer,
             style,
-            userDefinedStyleName
+            userDefinedStyleName,
+            rightTopOffset
         );
     }
 
@@ -3795,7 +3859,8 @@ export class BubbleManager {
         location: Point,
         imageContainerJQuery: JQuery,
         style?: string,
-        userDefinedStyleName?: string
+        userDefinedStyleName?: string,
+        rightTopOffset?: string
     ): HTMLElement {
         const defaultNewTextLanguage = GetSettings().languageForNewTextBoxes;
         const userDefinedStyle = userDefinedStyleName ?? "Bubble";
@@ -3821,13 +3886,15 @@ export class BubbleManager {
             transGroupHtml,
             location,
             style,
-            false
+            false,
+            rightTopOffset
         );
     }
 
     private addVideoOverPicture(
         location: Point,
-        imageContainerJQuery: JQuery
+        imageContainerJQuery: JQuery,
+        rightTopOffset?: string
     ): HTMLElement {
         const standardVideoClasses =
             kVideoContainerClass +
@@ -3839,13 +3906,15 @@ export class BubbleManager {
             videoContainerHtml,
             location,
             "none",
-            true
+            true,
+            rightTopOffset
         );
     }
 
     private addPictureOverPicture(
         location: Point,
-        imageContainerJQuery: JQuery
+        imageContainerJQuery: JQuery,
+        rightTopOffset?: string
     ): HTMLElement {
         const standardImageClasses =
             kImageContainerClass + " bloom-leadingElement";
@@ -3862,7 +3931,8 @@ export class BubbleManager {
             imageContainerHtml,
             location,
             "none",
-            true
+            true,
+            rightTopOffset
         );
     }
 
@@ -3871,7 +3941,8 @@ export class BubbleManager {
         internalHtml: string,
         location: Point,
         style?: string,
-        setElementActive?: boolean
+        setElementActive?: boolean,
+        rightTopOffset?: string
     ): HTMLElement {
         // add OverPicture element as last child of .bloom-imageContainer (BL-7883)
         const lastContainerChild = imageContainerJQuery.children().last();
@@ -3891,7 +3962,8 @@ export class BubbleManager {
         this.placeElementAtPosition(
             wrapperJQuery,
             imageContainerJQuery.get(0),
-            location
+            location,
+            rightTopOffset
         );
 
         // The following code would not be needed for Picture and Video bubbles if the focusin
@@ -3940,29 +4012,56 @@ export class BubbleManager {
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse
+    // The desired element might be covered by a .MuiModal-backdrop, so we may
+    // need to check multiple elements at that location.
     private getImageContainerFromMouse(mouseX: number, mouseY: number): JQuery {
-        const clickElement = document.elementFromPoint(mouseX, mouseY);
-        if (!clickElement) {
-            // method not specified to return null
-            return $();
+        const elements = document.elementsFromPoint(mouseX, mouseY);
+        for (let i = 0; i < elements.length; i++) {
+            const trial = BubbleManager.getTopLevelImageContainerElement(
+                elements[i]
+            );
+            if (trial) {
+                return $(trial);
+            }
         }
-        return $(BubbleManager.getTopLevelImageContainerElement(clickElement)!);
+        return $();
     }
 
     // This method is used both for creating new elements and in dragging/resizing.
-    // positionInViewport: is the position to place the top-left corner of the wrapperBox
-    // (But, note that it is not called continuously during dragging.)
+    // positionInViewport and rightTopOffset determine where to place the element.
+    // If rightTopOffset is falsy, we put the element's top left at positionInViewPort.
+    // If rightTopOffset is truthy, it is a string like "10,-20" which are values to
+    // add to positionInViewport (which in this case is the mouse position where
+    // something was dropped) to get the top right of the visual object that was dropped.
+    // Then we position the new element so its top right is at that same point.
+    // Note: I wish we could just make this adjustment in the dragEnd event handler
+    // which receives both the point and the rightTopOffset data, but it does not
+    // have acess to the element being created to get its width. We could push it up
+    // one level into finishAddingOverPictureElement, but it's simpler here where we're
+    // already extracting and adjusting the offsets from positionInViewport
     private placeElementAtPosition(
         wrapperBox: JQuery,
         container: Element,
-        positionInViewport: Point
+        positionInViewport: Point,
+        rightTopOffset?: string
     ) {
         const newPoint = BubbleManager.convertPointFromViewportToElementFrame(
             positionInViewport,
             container
         );
-        const xOffset = newPoint.getUnscaledX();
-        const yOffset = newPoint.getUnscaledY();
+        let xOffset = newPoint.getUnscaledX();
+        let yOffset = newPoint.getUnscaledY();
+        let right = 0;
+        let top = 0;
+        if (rightTopOffset) {
+            const parts = rightTopOffset.split(",");
+            right = parseInt(parts[0]);
+            top = parseInt(parts[1]);
+            // Why -10? I have no idea. But visually most box types seem to come out
+            // in the position we want with that correction.
+            xOffset = xOffset + right - wrapperBox.width() - 10;
+            yOffset = yOffset + top;
+        }
 
         // Note: This code will not clear out the rest of the style properties... they are preserved.
         //       If some or all style properties need to be removed before doing this processing, it is the caller's responsibility to do so beforehand
@@ -4617,7 +4716,7 @@ export class BubbleManager {
         if (!firstTry) {
             return null; // 'element' is not in an imageContainer at all
         }
-        const secondTry = firstTry.parentElement!.closest(
+        const secondTry = firstTry.parentElement?.closest(
             kImageContainerSelector
         );
         return secondTry
@@ -4638,6 +4737,91 @@ export class BubbleManager {
         return someElt
             .closest(".bloom-page")
             ?.parentElement?.classList.contains("drag-activity-play");
+    }
+
+    public deleteBubble(): void {
+        const active = this.getActiveElement();
+        if (active) {
+            this.deleteTOPBox(active);
+        }
+    }
+
+    public duplicateBubble(): HTMLElement | undefined {
+        const active = this.getActiveElement();
+        if (active) {
+            return this.duplicateTOPBox(active);
+        }
+        return undefined;
+    }
+
+    public addChildBubble(): void {
+        const parentElement = this.getActiveElement();
+        if (!parentElement) {
+            // No parent to attach to
+            toastr.info("No element is currently active.");
+            return;
+        }
+
+        // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date?
+        // Comical would need to call the notifier a lot more often like when the tail moves.
+
+        // Retrieve the latest bubbleSpec
+        const bubbleSpec = this.getSelectedItemBubbleSpec();
+        const [
+            offsetX,
+            offsetY
+        ] = BubbleManager.GetChildPositionFromParentBubble(
+            parentElement,
+            bubbleSpec
+        );
+        this.addChildOverPictureElementAndRefreshPage(
+            parentElement,
+            offsetX,
+            offsetY
+        );
+    }
+
+    // Returns a 2-tuple containing the desired x and y offsets of the child bubble from the parent bubble
+    //   (i.e., offsetX = child.left - parent.left)
+    public static GetChildPositionFromParentBubble(
+        parentElement: HTMLElement,
+        parentBubbleSpec: BubbleSpec | undefined
+    ): number[] {
+        let offsetX = parentElement.clientWidth;
+        let offsetY = parentElement.clientHeight;
+
+        if (
+            parentBubbleSpec &&
+            parentBubbleSpec.tails &&
+            parentBubbleSpec.tails.length > 0
+        ) {
+            const tail = parentBubbleSpec.tails[0];
+
+            const bubbleCenterX =
+                parentElement.offsetLeft + parentElement.clientWidth / 2.0;
+            const bubbleCenterY =
+                parentElement.offsetTop + parentElement.clientHeight / 2.0;
+
+            const deltaX = tail.tipX - bubbleCenterX;
+            const deltaY = tail.tipY - bubbleCenterY;
+
+            // Place the new child in the opposite quandrant of the tail
+            if (deltaX > 0) {
+                // ENHANCE: SHould be the child's width
+                offsetX = -parentElement.clientWidth;
+            } else {
+                offsetX = parentElement.clientWidth;
+            }
+
+            if (deltaY > 0) {
+                // ENHANCE: SHould be the child's height
+                offsetY = -parentElement.clientHeight;
+            } else {
+                offsetY = parentElement.clientHeight;
+            }
+        }
+
+        return [offsetX, offsetY];
     }
 }
 

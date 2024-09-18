@@ -1491,15 +1491,20 @@ namespace Bloom.Book
             //Collect up all the video files in our book's video directory
             var videoFolderPath = GetVideoFolderPath(FolderPath);
             var videoFilesToDeleteIfNotUsed = new List<string>();
-            const string videoExtension = ".mp4"; // .mov, .avi...?
+            var videoExtensions = new HashSet<string> { ".mp4", ".webm" }; // .mov, .avi...?
 
             if (Directory.Exists(videoFolderPath))
             {
-                foreach (
-                    var path in Directory.EnumerateFiles(videoFolderPath, "*" + videoExtension)
-                )
+                foreach (var videoExtension in videoExtensions)
                 {
-                    videoFilesToDeleteIfNotUsed.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
+                    foreach (
+                        var path in Directory.EnumerateFiles(videoFolderPath, "*" + videoExtension)
+                    )
+                    {
+                        videoFilesToDeleteIfNotUsed.Add(
+                            Path.GetFileName(GetNormalizedPathForOS(path))
+                        );
+                    }
                 }
             }
 
@@ -1511,7 +1516,11 @@ namespace Bloom.Book
             {
                 if (Path.GetExtension(relativeFilePath).Length > 0)
                 {
-                    if (Path.GetExtension(relativeFilePath).ToLowerInvariant() == videoExtension)
+                    if (
+                        videoExtensions.Contains(
+                            Path.GetExtension(relativeFilePath).ToLowerInvariant()
+                        )
+                    )
                     {
                         videoFilesToDeleteIfNotUsed.Remove(
                             Path.GetFileName(GetNormalizedPathForOS(relativeFilePath))
