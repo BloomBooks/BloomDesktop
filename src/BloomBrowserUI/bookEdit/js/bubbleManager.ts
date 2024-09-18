@@ -80,17 +80,6 @@ export class BubbleManager {
     private bubbleDragGrabOffset: { x: number; y: number } = { x: 0, y: 0 };
     private activeContainer: HTMLElement | undefined;
 
-    private bubbleToResize: Bubble | undefined; // Use Undefined to indicate that there is no active resize in progress
-    private bubbleResizeMode: string;
-    private bubbleResizeInitialPos: {
-        clickX: number;
-        clickY: number;
-        elementX: number;
-        elementY: number;
-        width: number;
-        height: number;
-    };
-
     public initializeBubbleManager(): void {
         // Currently nothing to do; used to set up web socket listener
         // for right-click messages to add and delete OverPicture elements.
@@ -927,6 +916,7 @@ export class BubbleManager {
         }
         if (
             clickedElement.closest("#overlay-control-frame") ||
+            clickedElement.closest("#overlay-context-controls") ||
             clickedElement.closest(".MuiMenu-list") ||
             clickedElement.closest(".above-page-control-container")
         ) {
@@ -1999,7 +1989,7 @@ export class BubbleManager {
         // This just needs to be wider than the context controls ever are. The get centered in a box this wide.
         const contextControlsWidth = 300;
         // Subtracting half the width of the context control frame and adding half the width of the control Frame
-        // canters it. The width of the context controls is scaled by its own transform (which we set
+        // centers it. The width of the context controls is scaled by its own transform (which we set
         // to match the one that applies to the control frame) so we need to scale the left offset the same.)
         // The width of the control frame rect is already scaled by the transform.
         const left =
@@ -2591,6 +2581,10 @@ export class BubbleManager {
             event.stopPropagation();
             return;
         }
+        if (event.buttons === 0) {
+            this.onMouseUp(event);
+            return;
+        }
         // Capture the most recent data to use when our animation frame request is satisfied.
         // or so keyboard events can reference the current mouse position.
         this.lastMoveEvent = event;
@@ -2614,12 +2608,10 @@ export class BubbleManager {
             return;
         }
 
-        if (!this.bubbleToDrag && !this.bubbleToResize) {
+        if (!this.bubbleToDrag) {
             this.handleMouseMoveHover(event, container);
         } else if (this.bubbleToDrag) {
             this.handleMouseMoveDragBubble(event, container);
-        } else {
-            this.handleMouseMoveResizeBubble(event, container);
         }
     };
 
@@ -2758,6 +2750,12 @@ export class BubbleManager {
         event: MouseEvent,
         container: HTMLElement
     ) {
+        if (event.buttons === 0) {
+            // we missed the mouse up...maybe because we're debugging? In any case, we need to
+            // get out of that mode.
+            this.onMouseUp(event);
+            return;
+        }
         if (this.activeElement) {
             const r = this.activeElement.getBoundingClientRect();
             const activeContainer = this.activeElement.parentElement?.closest(
@@ -2823,127 +2821,6 @@ export class BubbleManager {
         });
     }
 
-    // Resizes the current bubble
-    private handleMouseMoveResizeBubble(
-        event: MouseEvent,
-        container: HTMLElement
-    ) {
-        if (!this.bubbleToResize) {
-            console.assert(false, "bubbleToResize is undefined");
-            return;
-        }
-        // If we're resizing, we don't want to get effects of dragging within the text.
-        event.preventDefault();
-        event.stopPropagation();
-
-        const content = $(this.bubbleToResize.content);
-
-        const positionInfo = content[0].getBoundingClientRect();
-        const oldLeft = positionInfo.left;
-        const oldTop = positionInfo.top;
-        // Note: This uses the JQuery width() function, which returns just the width of the element without padding/border.
-        //       The ClientRect width includes the padding and border
-        //       The child functions we later call expect the width without padding/border (because they use JQuery),
-        //       so make sure to pass in the appropriate one
-        const oldWidth = content.width();
-        const oldHeight = content.height();
-
-        let newLeft = oldLeft;
-        let newTop = oldTop;
-        let newWidth = oldWidth;
-        let newHeight = oldHeight;
-
-        // Rather than using the current iteration's movementX/Y, we use the distance away from the original click.
-        // This gives behavior consistent with what JQuery resize handles do.
-        // If the user resizes it below the minimum width (which prevents the box from actually getting any smaller),
-        // they will not start immediately expanding the box when they move the mouse back, but only once they reach the minimum width threshold again.
-        const totalMovement = new Point(
-            event.pageX - this.bubbleResizeInitialPos.clickX,
-            event.pageY - this.bubbleResizeInitialPos.clickY,
-            PointScaling.Scaled,
-            "PageX - ClickX (Scaled)"
-        );
-
-        // Determine the vertical component
-        if (this.bubbleResizeMode.charAt(0) == "n") {
-            // The top edge is moving, but the bottom edge is anchored.
-            newTop =
-                this.bubbleResizeInitialPos.elementY +
-                totalMovement.getScaledY();
-            newHeight =
-                this.bubbleResizeInitialPos.height -
-                totalMovement.getUnscaledY();
-
-            if (newHeight < this.minTextBoxHeightPx) {
-                newHeight = this.minTextBoxHeightPx;
-
-                // Even though we capped newHeight, it's still possible that the height shrunk,
-                // so we may possibly still need to adjust the value of 'top'
-                newTop = oldTop + (oldHeight - newHeight);
-            }
-        } else {
-            // The bottom edge is moving, while the top edge is anchored.
-            newHeight =
-                this.bubbleResizeInitialPos.height +
-                totalMovement.getUnscaledY();
-            newHeight = Math.max(newHeight, this.minTextBoxHeightPx);
-        }
-
-        // Determine the horizontal component
-        if (this.bubbleResizeMode.charAt(1) === "w") {
-            // The left edge is moving, but the right edge is anchored.
-            newLeft =
-                this.bubbleResizeInitialPos.elementX +
-                totalMovement.getScaledX();
-            newWidth =
-                this.bubbleResizeInitialPos.width -
-                totalMovement.getUnscaledX();
-
-            if (newWidth < this.minTextBoxWidthPx) {
-                newWidth = this.minTextBoxWidthPx;
-
-                // Even though we capped newWidth, it's still possible that the width shrunk,
-                // so we may possibly still need to adjust left
-                newLeft = oldLeft + (oldWidth - newWidth);
-            }
-        } else {
-            // The right edge is moving, but the left edge is anchored.
-            newWidth =
-                this.bubbleResizeInitialPos.width +
-                totalMovement.getUnscaledX();
-            newWidth = Math.max(newWidth, this.minTextBoxWidthPx);
-        }
-
-        if (
-            newTop == oldTop &&
-            newLeft == oldLeft &&
-            newWidth == oldWidth &&
-            newHeight == oldHeight
-        ) {
-            // Nothing changed, can abort early.
-            return;
-        }
-
-        // If the drag changed the height of the bubble, we'd better turn off
-        // the behavior that will otherwise immediately force it back to
-        // the standard height!
-        if (newHeight !== oldHeight) {
-            content.get(0).classList.remove("bloom-allowAutoShrink");
-        }
-
-        // Width/Height should use unscaled units
-        content.width(newWidth);
-        content.height(newHeight);
-
-        const newPoint = new Point(
-            newLeft,
-            newTop,
-            PointScaling.Scaled,
-            "Created by handleMouseMoveResizeBubble()"
-        );
-        this.placeElementAtPosition(content, container, newPoint);
-    }
-
     // The center handle, used to move the picture under the bubble, does nothing
     // unless the bubble has actually been cropped. Unless we figure out something
     // sensible to do in this case, it's better not to show it, lest the user be
@@ -2995,7 +2872,7 @@ export class BubbleManager {
         }
         this.stopMoving();
 
-        if (this.bubbleToDrag || this.bubbleToResize) {
+        if (this.bubbleToDrag) {
             // if we're doing a resize or drag, we don't want ordinary mouseup activity
             // on the text inside the bubble.
             event.preventDefault();
@@ -3051,12 +2928,10 @@ export class BubbleManager {
     public turnOffResizing(container: Element) {
         this.clearResizeModeClasses(container);
         this.activeContainer = undefined;
-        this.bubbleToResize = undefined;
-        this.bubbleResizeMode = "";
     }
 
     public isResizing(container: Element) {
-        return this.bubbleToResize || this.isJQueryResizing(container);
+        return this.isJQueryResizing(container);
     }
 
     // Returns true if any of the container's children are currently being resized using JQuery
