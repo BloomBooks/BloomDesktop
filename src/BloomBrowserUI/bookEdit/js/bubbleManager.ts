@@ -1064,11 +1064,15 @@ export class BubbleManager {
         const controlFrame = document.getElementById("overlay-control-frame");
         if (controlFrame) {
             if (eltWithControlOnIt) {
+                // we're going to remove the container of the overlay context controls,
+                // but it seems best to let React clean up after itself.
+                // For example, there may be a context menu popup to remove, too.
                 renderOverlayContextControls(eltWithControlOnIt, false);
             }
             // Reschedule so that the rerender can finish before removing the control frame.
             setTimeout(() => {
                 controlFrame.remove();
+                document.getElementById("overlay-context-controls")?.remove();
             }, 0);
         }
     }
@@ -1079,9 +1083,7 @@ export class BubbleManager {
         const eltToPutControlsOn = this.activeElement;
         let controlFrame = document.getElementById("overlay-control-frame");
         if (!eltToPutControlsOn) {
-            if (controlFrame) {
-                controlFrame.remove();
-            }
+            this.removeControlFrame();
             return;
         }
         // if the overlay is not the right shape for a contained image, fix it now.
@@ -1144,7 +1146,9 @@ export class BubbleManager {
                 "div"
             );
             toolboxRoot.setAttribute("id", "overlay-context-controls");
-            controlFrame.appendChild(toolboxRoot);
+            // We don't have to worry about removing this before saving because it is above the level
+            // of the bloom-page.
+            document.body.appendChild(toolboxRoot);
         }
         const hasImage =
             eltToPutControlsOn?.getElementsByClassName("bloom-imageContainer")
@@ -1913,6 +1917,7 @@ export class BubbleManager {
     // Align the control frame with the active overlay.
     private alignControlFrameWithActiveElement = () => {
         const controlFrame = document.getElementById("overlay-control-frame");
+        let controlsAbove = false;
         if (controlFrame && this.activeElement) {
             controlFrame.classList.toggle(
                 "bloom-noAutoHeight",
@@ -1957,16 +1962,65 @@ export class BubbleManager {
             const tails = Bubble.getBubbleSpec(this.activeElement).tails;
             if (tails.length > 0) {
                 const tipY = tails[0].tipY;
-                controlFrame.classList.toggle(
-                    "controls-above",
+                controlsAbove =
                     tipY >
-                        this.activeElement.clientHeight +
-                            this.activeElement.offsetTop
-                );
+                    this.activeElement.clientHeight +
+                        this.activeElement.offsetTop;
             }
         }
         this.adjustMoveCropHandleVisibility();
+        this.adjustContextControlPosition(controlFrame, controlsAbove);
     };
+
+    adjustContextControlPosition(
+        controlFrame: HTMLElement | null,
+        controlsAbove: boolean
+    ) {
+        const contextControl = document.getElementById(
+            "overlay-context-controls"
+        );
+        if (!contextControl) return;
+        if (!controlFrame) {
+            contextControl.remove();
+            return;
+        }
+        const scalingContainer = document.getElementById(
+            "page-scaling-container"
+        );
+        // The context controls look as if they're on the page, so they should have the same scaling.
+        // But they aren't actually in the scaling container, so we have to give them their
+        // own scaling transform.
+        contextControl.style.transform =
+            scalingContainer?.style.transform ?? "";
+        const controlFrameRect = controlFrame.getBoundingClientRect();
+        const contextControlRect = contextControl.getBoundingClientRect();
+        const scale = Point.getScalingFactor();
+
+        // This just needs to be wider than the context controls ever are. The get centered in a box this wide.
+        const contextControlsWidth = 300;
+        // Subtracting half the width of the context control frame and adding half the width of the control Frame
+        // canters it. The width of the context controls is scaled by its own transform (which we set
+        // to match the one that applies to the control frame) so we need to scale the left offset the same.)
+        // The width of the control frame rect is already scaled by the transform.
+        const left =
+            controlFrameRect.left +
+            window.scrollX +
+            controlFrameRect.width / 2 -
+            (contextControlsWidth / 2) * scale;
+        let top = controlFrameRect.top + window.scrollY;
+        if (controlsAbove) {
+            // Bottom 11 px above the top of the control frame.
+            top -= contextControlRect.height + 11;
+        } else {
+            // Top 11 px below the bottom of the control frame
+            top += controlFrameRect.height + 11;
+        }
+        contextControl.style.left = left + "px";
+        contextControl.style.top = top + "px";
+        // This is constant, so it could be in the CSS. But then it could not share a constant
+        // with the computation of left above, so it would be harder to keep things consistent.
+        contextControl.style.width = contextControlsWidth + "px";
+    }
 
     public doNotifyChange() {
         const spec = this.getSelectedFamilySpec();
@@ -2541,6 +2595,9 @@ export class BubbleManager {
             );
             controlFrame?.classList?.add("moving");
             this.activeElement?.classList?.add("moving");
+            document
+                .getElementById("overlay-context-controls")
+                ?.classList?.add("moving");
         }
 
         const container = event.currentTarget as HTMLElement;
