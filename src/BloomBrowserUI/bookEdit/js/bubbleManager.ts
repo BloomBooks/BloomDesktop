@@ -2698,11 +2698,11 @@ export class BubbleManager {
     ) {
         if (this.activeElement) {
             const r = this.activeElement.getBoundingClientRect();
-            const container = this.activeElement.parentElement?.closest(
+            const activeContainer = this.activeElement.parentElement?.closest(
                 kImageContainerSelector
             );
-            if (container) {
-                const canvas = this.getFirstCanvasForContainer(container);
+            if (activeContainer) {
+                const canvas = this.getFirstCanvasForContainer(activeContainer);
                 if (canvas)
                     canvas.classList.toggle(
                         "moving",
@@ -2715,6 +2715,7 @@ export class BubbleManager {
         }
         // Capture the most recent data to use when our animation frame request is satisfied.
         this.lastMoveContainer = container;
+        this.lastMoveContainer.style.cursor = "move";
         // We don't want any other effects of mouse move, like selecting text in the box,
         // to happen while we're dragging it around.
         event.preventDefault();
@@ -2910,6 +2911,7 @@ export class BubbleManager {
     }
 
     private stopMoving() {
+        if (this.lastMoveContainer) this.lastMoveContainer.style.cursor = "";
         const controlFrame = document.getElementById("overlay-control-frame");
         // We want to get rid of it at least from the control frame and the active bubble,
         // but may as well make sure it doesn't get left anywhere.
