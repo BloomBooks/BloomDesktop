@@ -2585,6 +2585,12 @@ export class BubbleManager {
         if (BubbleManager.inPlayMode(event.currentTarget as HTMLElement)) {
             return; // no edit mode functionality is relevant
         }
+        if (event.altKey) {
+            // Don't resize or move with Alt. See BL-13899.
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
         // Capture the most recent data to use when our animation frame request is satisfied.
         // or so keyboard events can reference the current mouse position.
         this.lastMoveEvent = event;
@@ -2660,6 +2666,7 @@ export class BubbleManager {
         // text boxes, which can also be clicked for text editing, so it would be confusing
         // and make it hard to click in the exact place wanted).
         if (!event.altKey) {
+            // event.altKey test is probably redundant due to BL-13899.
             if (isVideo) {
                 // Don't add "grabbable" to video over picture, because click will play the video,
                 // not drag it (unless we're holding the Ctrl key down).
@@ -2673,8 +2680,6 @@ export class BubbleManager {
                     targetElement.setAttribute("controls", "");
                 }
             }
-        } else {
-            this.applyResizingUI(hoveredBubble, container, event, isVideo);
         }
     }
 
@@ -2755,11 +2760,11 @@ export class BubbleManager {
     ) {
         if (this.activeElement) {
             const r = this.activeElement.getBoundingClientRect();
-            const container = this.activeElement.parentElement?.closest(
+            const activeContainer = this.activeElement.parentElement?.closest(
                 kImageContainerSelector
             );
-            if (container) {
-                const canvas = this.getFirstCanvasForContainer(container);
+            if (activeContainer) {
+                const canvas = this.getFirstCanvasForContainer(activeContainer);
                 if (canvas)
                     canvas.classList.toggle(
                         "moving",
@@ -2772,6 +2777,7 @@ export class BubbleManager {
         }
         // Capture the most recent data to use when our animation frame request is satisfied.
         this.lastMoveContainer = container;
+        this.lastMoveContainer.style.cursor = "move";
         // We don't want any other effects of mouse move, like selecting text in the box,
         // to happen while we're dragging it around.
         event.preventDefault();
@@ -2967,6 +2973,7 @@ export class BubbleManager {
     }
 
     private stopMoving() {
+        if (this.lastMoveContainer) this.lastMoveContainer.style.cursor = "";
         const controlFrame = document.getElementById("overlay-control-frame");
         // We want to get rid of it at least from the control frame and the active bubble,
         // but may as well make sure it doesn't get left anywhere.
