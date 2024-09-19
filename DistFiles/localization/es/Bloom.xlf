@@ -2113,7 +2113,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.ImageMetadata.Corrupt.MoreInfo" sil:dynamic="true">
         <source xml:lang="en">More Information</source>
-        <target xml:lang="es-ES" state="needs-translation">More Information</target>
+        <target xml:lang="es-ES" state="translated">Más información</target>
         <note>ID: EditTab.ImageMetadata.Corrupt.MoreInfo</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
@@ -2418,12 +2418,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
         <source xml:lang="en">Crop</source>
-        <target xml:lang="es-ES" state="needs-translation">Crop</target>
+        <target xml:lang="es-ES" state="translated">Recortar</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
         <source xml:lang="en">Resize</source>
-        <target xml:lang="es-ES" state="needs-translation">Resize</target>
+        <target xml:lang="es-ES" state="translated">Redimencionar</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
@@ -2453,7 +2453,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Copy Text</source>
-        <target xml:lang="es-ES" state="needs-translation">Copy Text</target>
+        <target xml:lang="es-ES" state="translated">Copiar texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true" approved="yes">
@@ -2483,7 +2483,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Paste Text</source>
-        <target xml:lang="es-ES" state="needs-translation">Paste Text</target>
+        <target xml:lang="es-ES" state="translated">Pegar texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true" approved="yes">
@@ -6902,7 +6902,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="Topic" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Topic</source>
-        <target xml:lang="es-ES" state="needs-translation">Topic</target>
+        <target xml:lang="es-ES" state="translated">Tema</target>
         <note>ID: Topic</note>
       </trans-unit>
       <trans-unit id="TopicChooser.Title" sil:dynamic="true" approved="yes">
