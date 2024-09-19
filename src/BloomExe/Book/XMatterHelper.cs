@@ -520,6 +520,12 @@ namespace Bloom.Book
             return pageDiv.SelectSingleNode("self::div[contains(@class, 'cover')]") != null;
         }
 
+        public static bool IsFrontCoverPage(SafeXmlElement pageDiv)
+        {
+            return pageDiv.SelectSingleNode("self::div[contains(@class, 'outsideFrontCover')]")
+                != null;
+        }
+
         public static bool ShouldBeInBackForDeviceUse(SafeXmlElement pageDiv)
         {
             return pageDiv.SelectSingleNode("self::div[contains(@class, 'frontCover')]") == null;
