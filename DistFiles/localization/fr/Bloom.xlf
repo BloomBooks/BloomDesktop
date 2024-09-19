@@ -2409,24 +2409,24 @@
         <target xml:lang="fr" state="final">Faites glisser l'une de ces surcouches sur l'image :</target>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Shape</source>
-        <target xml:lang="fr" state="needs-translation">Change Shape</target>
+        <target xml:lang="fr" state="final">Changer de Forme</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.ChangeShape</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Crop</source>
-        <target xml:lang="fr" state="needs-translation">Crop</target>
+        <target xml:lang="fr" state="final">Rogner</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Resize</source>
-        <target xml:lang="fr" state="needs-translation">Resize</target>
+        <target xml:lang="fr" state="final">Redimensionner</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Shift Picture</source>
-        <target xml:lang="fr" state="needs-translation">Shift Picture</target>
+        <target xml:lang="fr" state="final">Décaler l'Image</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Shift</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true" approved="yes">
