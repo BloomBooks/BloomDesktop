@@ -25,7 +25,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound" translate="yes">
         <source xml:lang="en">Choose...</source>
-        <target xml:lang="es-ES" state="needs-translation">Choose...</target>
+        <target xml:lang="es-ES" state="translated">Elegir...</target>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile" translate="yes">
@@ -130,7 +130,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Options" translate="yes">
         <source xml:lang="en">Options</source>
-        <target xml:lang="es-ES" state="needs-translation">Options</target>
+        <target xml:lang="es-ES" state="translated">Opciones</target>
         <note>ID: EditTab.Toolbox.DragActivity.Options</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle" translate="yes">
@@ -159,12 +159,12 @@
       </trans-unit-->
       <trans-unit id="EditTab.Toolbox.DragActivity.Play" translate="yes">
         <source xml:lang="en">Play</source>
-        <target xml:lang="es-ES" state="needs-translation">Play</target>
+        <target xml:lang="es-ES" state="translated">Reproducir</target>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PlayAudio" translate="yes">
         <source xml:lang="en">Play Audio</source>
-        <target xml:lang="es-ES" state="needs-translation">Play Audio</target>
+        <target xml:lang="es-ES" state="translated">Reproducir audio</target>
         <note>ID: EditTab.Toolbox.DragActivity.PlayAudio</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None" translate="yes">
@@ -239,7 +239,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word" translate="yes">
         <source xml:lang="en">Word</source>
-        <target xml:lang="es-ES" state="needs-translation">Word</target>
+        <target xml:lang="es-ES" state="translated">Palabra</target>
         <note>ID: EditTab.Toolbox.DragActivity.Word</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Wrong" translate="yes">
@@ -816,7 +816,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Page {0}</source>
-        <target xml:lang="es-ES" state="needs-translation">Page {0}</target>
+        <target xml:lang="es-ES" state="translated">Página {0}</target>
         <note>ID: BookSettings.Fonts.PageNumber</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.UnnumberedPage" sil:dynamic="true" translate="yes">
