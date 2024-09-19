@@ -688,6 +688,26 @@
         <source xml:lang="en">The selected page theme does not support the following settings.</source>
         <note>BookSettings.ThemeDisablesOptionsNotice</note>
       </trans-unit>
+      <trans-unit id="BookSettings.AdvancedLayoutLabel" sil:dynamic="true">
+        <source xml:lang="en">Advanced Layout</source>
+        <note>BookSettings.AdvancedLayoutLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.TopLevelTextPaddingLabel" sil:dynamic="true">
+        <source xml:lang="en">Text Padding</source>
+        <note>BookSettings.TopLevelTextPaddingLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.TopLevelTextPadding.Description" sil:dynamic="true">
+        <source xml:lang="en">Smart spacing around text boxes. Works well for simple pages, but may not suit custom layouts.</source>
+        <note>BookSettings.TopLevelTextPadding.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.TopLevelTextPadding.DefaultLabel" sil:dynamic="true">
+        <source xml:lang="en">Default (set by Theme)</source>
+        <note>BookSettings.TopLevelTextPadding.DefaultLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true">
+        <source xml:lang="en">1em (font size)</source>
+        <note>BookSettings.TopLevelTextPadding.1emLabel</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true" translate="yes">
         <source xml:lang="en">When you publish a book to the web or as an ebook, Bloom will flag any problematic fonts. For example, we cannot legally host most Microsoft fonts on BloomLibrary.org.</source>
         <note>ID: BookSettings.Fonts.Problematic</note>
