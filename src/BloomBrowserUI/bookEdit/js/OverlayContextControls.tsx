@@ -443,7 +443,7 @@ const OverlayContextControls: React.FunctionComponent<{
                     button {
                         line-height: 0.7em;
                     }
-                    // needed because it's a child of the control frame which has pointer-events:none
+                    // needed because it's a child of #overlay-context-controls which has pointer-events:none
                     pointer-events: all;
                 `}
             >
