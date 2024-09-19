@@ -187,6 +187,27 @@ export const BookSettingsDialog: React.FunctionComponent<{
     const resolutionLabel = useL10n("Resolution", "BookSettings.Resolution");
     const bloomPubLabel = useL10n("eBooks", "PublishTab.bloomPUBButton"); // reuse the same string localized for the Publish tab
 
+    const advancedLayoutLabel = useL10n(
+        "Advanced Layout",
+        "BookSettings.AdvancedLayoutLabel"
+    );
+    const textPaddingLabel = useL10n(
+        "Text Padding",
+        "BookSettings.TopLevelTextPaddingLabel"
+    );
+    const textPaddingDescription = useL10n(
+        "Smart spacing around text boxes. Works well for simple pages, but may not suit custom layouts.",
+        "BookSettings.TopLevelTextPadding.Description"
+    );
+    const textPaddingDefaultLabel = useL10n(
+        "Default (set by Theme)",
+        "BookSettings.TopLevelTextPadding.DefaultLabel"
+    );
+    const textPadding1emLabel = useL10n(
+        "1em (font size)",
+        "BookSettings.TopLevelTextPadding.1emLabel"
+    );
+
     // This is a helper function to make it easier to pass the override information
     function getAdditionalProps<T>(
         subPath: string
@@ -570,6 +591,31 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     }
                                     disabled={false}
                                     getAdditionalProps={getAdditionalProps}
+                                />
+                            </ConfigrSubgroup>
+                            <ConfigrSubgroup
+                                label={advancedLayoutLabel}
+                                path={`appearance`}
+                            >
+                                <ConfigrSelect
+                                    label={textPaddingLabel}
+                                    options={[
+                                        {
+                                            label: textPaddingDefaultLabel,
+                                            value: "" // use whatever the theme provides
+                                        },
+                                        { label: "0mm", value: "0mm" },
+                                        { label: "2mm", value: "2mm" },
+                                        { label: "4mm", value: "4mm" },
+                                        {
+                                            label: textPadding1emLabel,
+                                            value: "1em"
+                                        }
+                                    ]}
+                                    description={textPaddingDescription}
+                                    {...getAdditionalProps<string>(
+                                        `topLevel-text-padding`
+                                    )}
                                 />
                             </ConfigrSubgroup>
                         </ConfigrGroup>

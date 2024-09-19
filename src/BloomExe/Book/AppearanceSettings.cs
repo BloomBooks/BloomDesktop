@@ -6,8 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Navigation;
-using Amazon.Auth.AccessControlPolicy;
 using Bloom;
 using Bloom.Book;
 using Bloom.web.controllers;
@@ -117,6 +115,10 @@ public class AppearanceSettings
         new CssDisplayVariableDef("cover-topic-show", "coverFields", true),
         new CssDisplayVariableDef("cover-languageName-show", "coverFields", true),
         new CssDisplayVariableDef("pageNumber-show", "page-number", true),
+        // Deliberately does not have a default. This (or a default of empty string) allows the actual default to be set by the
+        // current (or default theme), since nothing about this variable will be written to the part of appearance.css
+        // that is controlled by these.
+        new CssStringVariableDef("topLevel-text-padding", "padding"),
         // these ones are not in the dialog yet, but are used in our css, so if they are somehow in appearance.json,
         // we want to output them to css. The override groups are a guess and not yet used.
         new CssStringVariableDef("cover-creditsRow-show", "coverFields"),
@@ -146,7 +148,6 @@ public class AppearanceSettings
         new CssStringVariableDef("pageNumber-left-margin", "page-number"),
         new CssStringVariableDef("pageNumber-right-margin", "page-number"),
         new CssStringVariableDef("pageNumber-top", "page-number"),
-        new CssStringVariableDef("topLevel-text-padding", "padding"),
     };
 
     /// <summary>
@@ -601,6 +602,10 @@ public class AppearanceSettings
     ///		--cover-topic-show: bogus-value-so-default-is-used;
     ///		--cover-languageName-show: none;
     ///	}"
+    /// Exception: a property that is set to an empty string (or null) will not be output,
+    /// allowing the value from the current or default theme to win. For example,
+    /// topLevel-text-padding is controlled by a menu, and one option is "Default",
+    /// and its value is empty string.
     /// </summary>
     public string GetCssOwnPropsDeclaration(dynamic properties, AppearanceSettings parent = null)
     {
@@ -1004,6 +1009,9 @@ public class CssStringVariableDef : CssPropertyDef
 
     public override string GetCssVariableDeclaration(dynamic property)
     {
+        // This allows empty string to be a special value (e.g., in a menu) that means "use the default",
+        // (that is, whatever the theme says), since nothing about this variable gets written to the
+        // part of appearance.css that is generated from these settings.
         if (string.IsNullOrEmpty(property?.Value?.ToString()))
             return "";
         return $"--{Name}: {property.Value};";
