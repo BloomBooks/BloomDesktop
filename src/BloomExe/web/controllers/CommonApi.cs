@@ -97,6 +97,21 @@ namespace Bloom.web.controllers
                 },
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                "common/currentBookId",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                    {
+                        request.ReplyWithText(_bookSelection.CurrentSelection.ID);
+                    }
+                    else
+                    {
+                        request.Failed("Only GET is supported for common/currentBookId");
+                    }
+                },
+                false
+            );
             // Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
             // clipboard is passed as the 'text' property of a JSON requestData.
             // Somehow the get version of this fires while initializing a page (probably hooking up CkEditor, an unwanted
