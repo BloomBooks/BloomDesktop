@@ -2451,7 +2451,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Copy Text</source>
-        <target xml:lang="pt-PT" state="needs-translation">Copy Text</target>
+        <target xml:lang="pt-PT" state="translated">Copiar Texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true" approved="yes">
@@ -2481,7 +2481,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Paste Text</source>
-        <target xml:lang="pt-PT" state="needs-translation">Paste Text</target>
+        <target xml:lang="pt-PT" state="translated">Colar Texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true" approved="yes">
@@ -5151,7 +5151,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Microsoft" translate="yes">
         <source xml:lang="en">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</target>
+        <target xml:lang="pt-PT" state="translated">Esta é uma fonte fornecida pela Microsoft para uso apenas no seu computador. A Microsoft não permite o uso livre de suas fontes na internet ou em eBooks. Use outra fonte.</target>
         <note>ID: PublishTab.FontProblem.Microsoft</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Result" approved="yes">
@@ -6900,7 +6900,7 @@
       </trans-unit>
       <trans-unit id="Topic" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Topic</source>
-        <target xml:lang="pt-PT" state="needs-translation">Topic</target>
+        <target xml:lang="pt-PT" state="translated">Tema</target>
         <note>ID: Topic</note>
       </trans-unit>
       <trans-unit id="TopicChooser.Title" sil:dynamic="true" approved="yes">
