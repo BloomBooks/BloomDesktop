@@ -40,7 +40,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectInstructions" translate="yes">
         <source xml:lang="en">Add items that will show when the learner gets the correct answer. For example, you might add a text that says “Correct!” with a GIF of a dancing chicken.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Add items that will show when the learner gets the correct answer. For example, you might add a text that says “Correct!” with a GIF of a dancing chicken.</target>
+        <target xml:lang="pt-PT" state="translated">Adicione itens que demonstram que o aluno respondeu corretamente. Por exemplo, pode adicionar a palavra "Certo!" com um GIF de uma galinha dançando.</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Draggable" translate="yes">
@@ -50,7 +50,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading" translate="yes">
         <source xml:lang="en">Drag Images to Targets</source>
-        <target xml:lang="pt-PT" state="needs-translation">Drag Images to Targets</target>
+        <target xml:lang="pt-PT" state="translated">Arraste Imagens para Alvos</target>
         <note>ID: EditTab.Toolbox.DragActivity.DragImageHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragLetterHeading" translate="yes">
@@ -682,7 +682,7 @@
       </trans-unit>
       <trans-unit id="Common.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background Color</source>
-        <target xml:lang="pt-PT" state="needs-translation">Background Color</target>
+        <target xml:lang="pt-PT" state="translated">Cor de Fundo</target>
         <note>Common.CoverBackgroundColor</note>
       </trans-unit>
       <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true" approved="yes">
@@ -821,7 +821,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.UnnumberedPage" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Unnumbered Page</source>
-        <target xml:lang="pt-PT" state="needs-translation">Unnumbered Page</target>
+        <target xml:lang="pt-PT" state="translated">Página não numerada</target>
         <note>ID: BookSettings.Fonts.UnnumberedPage</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.default" sil:dynamic="true" approved="yes">
