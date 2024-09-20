@@ -771,17 +771,17 @@
       </trans-unit>
       <trans-unit id="BookSettings.AdvancedLayoutLabel" sil:dynamic="true">
         <source xml:lang="en">Advanced Layout</source>
-        <target xml:lang="fr" state="needs-translation">Advanced Layout</target>
+        <target xml:lang="fr" state="translated">Mise en page Avancée</target>
         <note>BookSettings.AdvancedLayoutLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPaddingLabel" sil:dynamic="true">
         <source xml:lang="en">Text Padding</source>
-        <target xml:lang="fr" state="needs-translation">Text Padding</target>
+        <target xml:lang="fr" state="translated">Marges du Texte</target>
         <note>BookSettings.TopLevelTextPaddingLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPadding.Description" sil:dynamic="true">
         <source xml:lang="en">Smart spacing around text boxes. Works well for simple pages, but may not suit custom layouts.</source>
-        <target xml:lang="fr" state="needs-translation">Smart spacing around text boxes. Works well for simple pages, but may not suit custom layouts.</target>
+        <target xml:lang="fr" state="translated">Espacement intelligent autour des zones de texte. Fonctionne bien pour les pages simples, mais pourrait ne pas convenir à des mises en page personnalisées.</target>
         <note>BookSettings.TopLevelTextPadding.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPadding.DefaultLabel" sil:dynamic="true">
