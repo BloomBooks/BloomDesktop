@@ -769,29 +769,29 @@
         <target xml:lang="fr" state="needs-translation">The selected page theme does not support the following settings.</target>
         <note>BookSettings.ThemeDisablesOptionsNotice</note>
       </trans-unit>
-      <trans-unit id="BookSettings.AdvancedLayoutLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.AdvancedLayoutLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Advanced Layout</source>
-        <target xml:lang="fr" state="translated">Mise en page Avancée</target>
+        <target xml:lang="fr" state="final">Mise en page Avancée</target>
         <note>BookSettings.AdvancedLayoutLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.TopLevelTextPaddingLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.TopLevelTextPaddingLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Padding</source>
-        <target xml:lang="fr" state="translated">Marges du Texte</target>
+        <target xml:lang="fr" state="final">Marges du Texte</target>
         <note>BookSettings.TopLevelTextPaddingLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.TopLevelTextPadding.Description" sil:dynamic="true">
+      <trans-unit id="BookSettings.TopLevelTextPadding.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Smart spacing around text boxes. Works well for simple pages, but may not suit custom layouts.</source>
-        <target xml:lang="fr" state="translated">Espacement intelligent autour des zones de texte. Fonctionne bien pour les pages simples, mais pourrait ne pas convenir à des mises en page personnalisées.</target>
+        <target xml:lang="fr" state="final">Espacement intelligent autour des zones de texte. Fonctionne bien pour les pages simples, mais pourrait ne pas convenir à des mises en page personnalisées.</target>
         <note>BookSettings.TopLevelTextPadding.Description</note>
       </trans-unit>
-      <trans-unit id="BookSettings.TopLevelTextPadding.DefaultLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.TopLevelTextPadding.DefaultLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Default (set by Theme)</source>
-        <target xml:lang="fr" state="needs-translation">Default (set by Theme)</target>
+        <target xml:lang="fr" state="final">Par défaut (défini par Thème)</target>
         <note>BookSettings.TopLevelTextPadding.DefaultLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1em (font size)</source>
-        <target xml:lang="fr" state="needs-translation">1em (font size)</target>
+        <target xml:lang="fr" state="final">1em (taille de police)</target>
         <note>BookSettings.TopLevelTextPadding.1emLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true" translate="yes">
