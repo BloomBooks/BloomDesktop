@@ -437,7 +437,7 @@ function getVisibleEditables(container: HTMLElement) {
     return result;
 }
 
-function shuffle<T>(array: T[]): T[] {
+export function shuffle<T>(array: T[]): T[] {
     // review: something Copliot came up with. Is it guaranteed to be sufficiently different
     // from the correct answer?
     let currentIndex = array.length,

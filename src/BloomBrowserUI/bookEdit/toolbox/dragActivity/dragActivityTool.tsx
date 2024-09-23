@@ -31,6 +31,7 @@ import {
     getTarget,
     playInitialElements,
     prepareActivity,
+    shuffle,
     undoPrepareActivity
 } from "./dragActivityRuntime";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -66,6 +67,110 @@ export const enableDraggingTargets = (startingPoint: HTMLElement) => {
     //     )[0] as HTMLElement;
     //     wrapper.addEventListener("click", designTimeClickOnSlider);
     // }
+};
+
+let promptObserver: MutationObserver | null = null;
+let draggableX = 20000;
+let draggableY = 20000;
+let targetX = 20000;
+let targetY = 20000;
+
+export const enableStartPrompts = (startingPoint: HTMLElement) => {
+    const page = startingPoint.closest(".bloom-page") as HTMLElement;
+    const prompt = page.getElementsByClassName(
+        "bloom-game-prompt"
+    )[0] as HTMLElement;
+    // So far only this one kind of game has a prompt
+    if (
+        !prompt ||
+        page.getAttribute("data-activity") !== "drag-letter-to-target"
+    )
+        return;
+    const editable = prompt.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on"
+    )[0] as HTMLElement;
+    if (!editable) return; // paranoia & lint
+    const closeButton = prompt.getElementsByClassName(
+        "bloom-game-prompt-close"
+    )[0] as HTMLElement;
+    if (closeButton) {
+        closeButton.addEventListener("click", () => {
+            prompt.classList.remove("bloom-show-prompt");
+        });
+    }
+    // capture where the top left draggable and target are (before we add or remove any)
+    const originalDraggables = Array.from(
+        page.getElementsByClassName("bloom-textOverPicture draggable-text")
+    ) as HTMLElement[];
+    for (let i = 0; i < originalDraggables.length; i++) {
+        const target = getTarget(originalDraggables[i]);
+        if (target) {
+            targetX = Math.min(targetX, target.offsetLeft);
+            targetY = Math.min(targetY, target.offsetTop);
+        }
+        draggableX = Math.min(draggableX, originalDraggables[i].offsetLeft);
+        draggableY = Math.min(draggableY, originalDraggables[i].offsetTop);
+    }
+    promptObserver = new MutationObserver(() => {
+        const promptText = editable.textContent ?? "";
+        const letters = Array.from(promptText); // Todo: obey digraph etc rules, maybe allow | to split.
+        const draggables = Array.from(
+            page.getElementsByClassName("bloom-textOverPicture draggable-text")
+        ) as HTMLElement[];
+        if (draggables.length > letters.length) {
+            // We have more draggables than letters. We'll remove the extra ones.
+            draggables
+                .slice(Math.max(letters.length, 1))
+                .forEach((elt: HTMLElement) => {
+                    getTarget(elt)?.remove();
+                    elt.remove();
+                });
+        } else if (draggables.length < letters.length) {
+            // We have more letters than draggables. We'll add more draggables.
+            const lastDraggable = draggables[draggables.length - 1];
+            for (let i = draggables.length; i < letters.length; i++) {
+                const newDraggable = lastDraggable.cloneNode(
+                    true
+                ) as HTMLElement;
+                setGeneratedBubbleId(newDraggable);
+                lastDraggable.parentElement?.appendChild(newDraggable);
+                makeTargetForBubble(newDraggable);
+                draggables.push(newDraggable);
+            }
+        }
+        for (let i = 0; i < letters.length; i++) {
+            const ed = draggables[i].getElementsByClassName(
+                "bloom-editable bloom-visibility-code-on"
+            )[0] as HTMLElement;
+            const p = ed.getElementsByTagName("p")[0];
+            p.textContent = letters[i];
+            copyContentToTarget(draggables[i]);
+        }
+        let shuffledDraggables = draggables.slice();
+        const separation = draggables[0].offsetWidth + 15; // enhance: may want to increase this
+        shuffle(shuffledDraggables);
+        for (let i = 0; i < draggables.length; i++) {
+            shuffledDraggables[i].style.left = `${draggableX +
+                i * separation}px`;
+            shuffledDraggables[i].style.top = `${draggableY}px`;
+            const t = getTarget(draggables[i]);
+            if (t) {
+                t.style.left = `${targetX + i * separation}px`;
+                t.style.top = `${targetY}px`;
+            }
+        }
+        adjustTarget(draggables[0], getTarget(draggables[0]), true);
+    });
+    promptObserver.observe(editable, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+};
+
+export const disableStartPrompts = (startingPoint: HTMLElement) => {
+    promptObserver?.disconnect();
+    promptObserver = null;
 };
 
 // Make the targets not draggable (in Correct, Wrong, and Play modes).
@@ -1945,8 +2050,10 @@ export function setActiveDragActivityTab(tab: number) {
     }
     if (tab === startTabIndex) {
         enableDraggingTargets(page);
+        enableStartPrompts(page);
     } else {
         disableDraggingTargets(page);
+        disableStartPrompts(page);
     }
 }
 

@@ -495,3 +495,36 @@
         }
     }
 }
+
+.bloom-game-prompt {
+    z-index: 3000;
+    position: absolute;
+    left: 33%;
+    right: 33%;
+    top: 33%;
+    border: 2px solid black;
+    border-radius: 5px;
+    background-color: white;
+    color: black;
+    padding: 10px;
+    display: none;
+    .bloom-game-prompt-close {
+        margin-left: auto;
+        margin-top: 10px;
+        width: fit-content; // with margin-left: auto, aligns right.
+        text-transform: uppercase;
+        color: var(--button-color);
+    }
+}
+.drag-activity-start .bloom-game-prompt.bloom-show-prompt {
+    display: block;
+}
+
+.bloom-game-prompt-label {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.bloom-game-prompt-input {
+}
