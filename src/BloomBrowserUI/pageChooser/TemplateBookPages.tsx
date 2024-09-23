@@ -109,11 +109,13 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                 const bookTitleElement = resultPageData.querySelector(
                     "div[data-book='bookTitle']"
                 );
-                if (bookTitleElement?.textContent?.trim() === "Games") {
-                    // For 6.1, We don't want to show the games book in the page chooser.
-                    // If you take this out to play with Games, you need to Refresh or restart Bloom to see the change.
-                    return;
-                }
+                // I'm leaving this around mainly because it's easy to find and helps mark the place
+                // about where we may want to merge the pages from Activities and Games unde a single heading.
+                // if (bookTitleElement?.textContent?.trim() === "Games") {
+                //     // For 6.1, We don't want to show the games book in the page chooser.
+                //     // If you take this out to play with Games, you need to Refresh or restart Bloom to see the change.
+                //     return;
+                // }
                 if (bookTitleElement) {
                     setGroupTitle(
                         bookTitleElement.textContent
