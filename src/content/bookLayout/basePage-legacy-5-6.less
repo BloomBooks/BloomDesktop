@@ -19,274 +19,315 @@
 // One potential solution to this was to get rid of the variables and move the relevant rules to basePage.less and here.
 // But there is too much entanglement with the multiple less and css files involved, including split-pane.css to make
 // it simple to do. So for now, we just define the variables here.
-.bloom-page{
+.bloom-page {
     --side-by-side-gap: 3px;
     --top-bottom-gap: 3px;
 }
 
 body {
     line-height: 1.5;
-    font-family: Andika, "Andika New Basic", "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulos SIL", Sans-Serif;
+    font-family: Andika, "Andika New Basic", "Andika Basic", "Gentium Basic",
+        "Gentium Book Basic", "Doulos SIL", Sans-Serif;
 }
 span.ui-audioCurrent,
 div.ui-audioCurrent p {
     background-color: #febf00;
     color: black;
-  }
-  textarea,
-  .bloom-editable {
+}
+textarea,
+.bloom-editable {
     flex-direction: column;
-  }
-  .bloom-backgroundImage {
+}
+.bloom-backgroundImage {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-  }
-  .bloom-imageContainer img {
+}
+.bloom-imageContainer img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-  }
-  .bloom-imageContainer img.bloom-imageObjectFit-cover {
+}
+.bloom-imageContainer img.bloom-imageObjectFit-cover {
     object-fit: cover;
-  }
-  .bloom-imageContainer.bloom-imageObjectFit-cover {
+}
+.bloom-imageContainer.bloom-imageObjectFit-cover {
     background-size: cover;
-  }
-  .bloom-imageContainer.hasOverlay > img[src="placeHolder.png"] {
+}
+.bloom-imageContainer.hasOverlay > img[src="placeHolder.png"] {
     display: none;
-  }
-  .bloom-imageContainer .bloom-imageDescription {
+}
+.bloom-imageContainer .bloom-imageDescription {
     display: none;
-  }
-  .bloom-alignImageTopLeft img {
+}
+.bloom-alignImageTopLeft img {
     object-position: 0 0;
-  }
-  .bloom-borderstyle-black,
-  .bloom-borderstyle-black-round,
-  .bloom-borderstyle-gray,
-  .bloom-borderstyle-gray-round {
+}
+.bloom-borderstyle-black,
+.bloom-borderstyle-black-round,
+.bloom-borderstyle-gray,
+.bloom-borderstyle-gray-round {
     padding: 7px;
-  }
-  .bloom-borderstyle-black .bloom-editable,
-  .bloom-borderstyle-black-round .bloom-editable,
-  .bloom-borderstyle-gray .bloom-editable,
-  .bloom-borderstyle-gray-round .bloom-editable {
+}
+.bloom-borderstyle-black .bloom-editable,
+.bloom-borderstyle-black-round .bloom-editable,
+.bloom-borderstyle-gray .bloom-editable,
+.bloom-borderstyle-gray-round .bloom-editable {
     border: none;
-  }
-  .bloom-borderstyle-black {
+}
+.bloom-borderstyle-black {
     border: 1px solid black;
     border-radius: 0px;
     box-sizing: border-box;
-  }
-  .bloom-borderstyle-black-round {
+}
+.bloom-borderstyle-black-round {
     border: 1px solid black;
     border-radius: 10px;
     box-sizing: border-box;
-  }
-  .bloom-borderstyle-gray {
+}
+.bloom-borderstyle-gray {
     border: 1px solid gray;
     border-radius: 0px;
     box-sizing: border-box;
-  }
-  .bloom-borderstyle-gray-round {
+}
+.bloom-borderstyle-gray-round {
     border: 1px solid gray;
     border-radius: 10px;
     box-sizing: border-box;
-  }
-  .bloom-top-border-off {
+}
+.bloom-top-border-off {
     border-top: none;
-  }
-  .bloom-right-border-off {
+}
+.bloom-right-border-off {
     border-right: none;
-  }
-  .bloom-bottom-border-off {
+}
+.bloom-bottom-border-off {
     border-bottom: none;
-  }
-  .bloom-left-border-off {
+}
+.bloom-left-border-off {
     border-left: none;
-  }
-  .bloom-background-none {
+}
+.bloom-background-none {
     background-color: transparent;
-  }
-  .bloom-background-gray {
+}
+.bloom-background-gray {
     background-color: hsl(0, 0%, 86%);
-  }
-  span.bloom-linebreak {
+}
+span.bloom-linebreak {
     display: block;
     text-indent: 0;
-  }
-  .pdfPublishMode .bloom-page.Device16x9Portrait {
+}
+.pdfPublishMode .bloom-page.Device16x9Portrait {
     min-width: 99.74791667mm;
     max-width: 99.74791667mm;
     min-height: 177.53541667mm;
     max-height: 177.53541667mm;
-  }
-  .pdfPublishMode .bloom-page.Device16x9Landscape {
+}
+.pdfPublishMode .bloom-page.Device16x9Landscape {
     min-width: 177.53541667mm;
     max-width: 177.53541667mm;
     min-height: 99.74791667mm;
     max-height: 99.74791667mm;
-  }
-  .bloom-page.Device16x9Portrait {
+}
+.bloom-page.Device16x9Portrait {
     min-width: 100mm;
     max-width: 100mm;
     min-height: 177.77777778mm;
     max-height: 177.77777778mm;
-  }
-  .bloom-page.Device16x9Landscape {
+}
+.bloom-page.Device16x9Landscape {
     min-width: 177.77777778mm;
     max-width: 177.77777778mm;
     min-height: 100mm;
     max-height: 100mm;
-  }
-  .bloom-page.PictureStoryLandscape {
+}
+.bloom-page.PictureStoryLandscape {
     min-width: 177.77777778mm;
     max-width: 177.77777778mm;
     min-height: 100mm;
     max-height: 100mm;
-  }
-  .Device16x9Landscape,
-  .PictureStoryLandscape {
+}
+.Device16x9Landscape,
+.PictureStoryLandscape {
     background-color: black;
-  }
-  .Device16x9Landscape .marginBox .split-pane.horizontal-percent > .split-pane-component.position-top,
-  .Device16x9Portrait .marginBox .split-pane.horizontal-percent > .split-pane-component.position-top,
-  .PictureStoryLandscape .marginBox .split-pane.horizontal-percent > .split-pane-component.position-top {
+}
+.Device16x9Landscape
+    .marginBox
+    .split-pane.horizontal-percent
+    > .split-pane-component.position-top,
+.Device16x9Portrait
+    .marginBox
+    .split-pane.horizontal-percent
+    > .split-pane-component.position-top,
+.PictureStoryLandscape
+    .marginBox
+    .split-pane.horizontal-percent
+    > .split-pane-component.position-top {
     margin-bottom: 0;
-  }
-  .Device16x9Landscape .marginBox .bloom-imageContainer,
-  .Device16x9Portrait .marginBox .bloom-imageContainer,
-  .PictureStoryLandscape .marginBox .bloom-imageContainer {
+}
+.Device16x9Landscape .marginBox .bloom-imageContainer,
+.Device16x9Portrait .marginBox .bloom-imageContainer,
+.PictureStoryLandscape .marginBox .bloom-imageContainer {
     height: calc(100%) !important;
-  }
-  .Device16x9Landscape.numberedPage::after,
-  .Device16x9Portrait.numberedPage::after,
-  .PictureStoryLandscape.numberedPage::after {
+}
+.Device16x9Landscape.numberedPage::after,
+.Device16x9Portrait.numberedPage::after,
+.PictureStoryLandscape.numberedPage::after {
     bottom: 5px;
-  }
-  .Device16x9Landscape.numberedPage.side-left::after,
-  .Device16x9Portrait.numberedPage.side-left::after,
-  .PictureStoryLandscape.numberedPage.side-left::after {
-    left: calc(100% / 2 -  10px);
-  }
-  .Device16x9Landscape.numberedPage.side-right::after,
-  .Device16x9Portrait.numberedPage.side-right::after,
-  .PictureStoryLandscape.numberedPage.side-right::after {
-    right: calc(100% / 2 -  10px);
-  }
-  .Device16x9Portrait .marginBox {
+}
+.Device16x9Landscape.numberedPage.side-left::after,
+.Device16x9Portrait.numberedPage.side-left::after,
+.PictureStoryLandscape.numberedPage.side-left::after {
+    left: calc(100% / 2 - 10px);
+}
+.Device16x9Landscape.numberedPage.side-right::after,
+.Device16x9Portrait.numberedPage.side-right::after,
+.PictureStoryLandscape.numberedPage.side-right::after {
+    right: calc(100% / 2 - 10px);
+}
+.Device16x9Portrait .marginBox {
     height: 172.48611111mm;
     width: 94.70833333mm;
     top: 10px;
     left: 10px !important;
-  }
-  .Device16x9Portrait .marginBox img {
+}
+.Device16x9Portrait .marginBox img {
     max-width: 94.70833333mm;
-  }
-  .numberedPage.Device16x9Portrait .marginBox {
+}
+.numberedPage.Device16x9Portrait .marginBox {
     height: 165.87152778mm;
-  }
-  .Device16x9Landscape .marginBox {
+}
+.Device16x9Landscape .marginBox {
     height: 94.70833333mm;
     width: 172.48611111mm;
     top: 10px;
     left: 10px !important;
-  }
-  .Device16x9Landscape .marginBox img {
+}
+.Device16x9Landscape .marginBox img {
     max-width: 172.48611111mm;
-  }
-  .numberedPage.Device16x9Landscape .marginBox {
+}
+.numberedPage.Device16x9Landscape .marginBox {
     height: 88.09375mm;
-  }
-  .screen-only.Device16x9Portrait .marginBox {
+}
+.screen-only.Device16x9Portrait .marginBox {
     width: 94.70833333mm;
-  }
-  .screen-only.Device16x9Landscape .marginBox {
+}
+.screen-only.Device16x9Landscape .marginBox {
     width: 172.48611111mm;
-  }
-  .PictureStoryLandscape .marginBox {
+}
+.PictureStoryLandscape .marginBox {
     height: 94.70833333mm;
     width: 172.48611111mm;
     top: 10px;
     left: 10px !important;
-  }
-  .PictureStoryLandscape .marginBox img {
+}
+.PictureStoryLandscape .marginBox img {
     max-width: 172.48611111mm;
-  }
-  .PictureStoryLandscape .marginBox .position-top {
+}
+.PictureStoryLandscape .marginBox .position-top {
     bottom: 0 !important;
-  }
-  .PictureStoryLandscape .marginBox .position-bottom {
+}
+.PictureStoryLandscape .marginBox .position-bottom {
     display: none;
-  }
-  .numberedPage.PictureStoryLandscape .marginBox {
+}
+.numberedPage.PictureStoryLandscape .marginBox {
     height: 88.09375mm;
-  }
-  .bloom-imageContainer.ui-ctrlDown .bloom-textOverPicture .ui-resizable-handle {
+}
+.bloom-imageContainer.ui-ctrlDown .bloom-textOverPicture .ui-resizable-handle {
     display: none !important;
-  }
-  .bloom-imageContainer .bloom-imageContainer {
+}
+.bloom-imageContainer .bloom-imageContainer {
     z-index: auto !important;
-  }
-  .bloom-imageContainer.grabbable:not(.ui-jquery-resizing-in-progress),
-  .bloom-imageContainer.grabbable:not(.ui-jquery-resizing-in-progress) .bloom-textOverPicture .bloom-translationGroup .bloom-editable.cke_editable {
+}
+.bloom-imageContainer.grabbable:not(.ui-jquery-resizing-in-progress),
+.bloom-imageContainer.grabbable:not(.ui-jquery-resizing-in-progress)
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable.cke_editable {
     cursor: grab;
-  }
-  .bloom-imageContainer.grabbing:not(.ui-jquery-resizing-in-progress),
-  .bloom-imageContainer.grabbing:not(.ui-jquery-resizing-in-progress) .bloom-textOverPicture .bloom-translationGroup .bloom-editable.cke_editable {
+}
+.bloom-imageContainer.grabbing:not(.ui-jquery-resizing-in-progress),
+.bloom-imageContainer.grabbing:not(.ui-jquery-resizing-in-progress)
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable.cke_editable {
     cursor: grabbing;
-  }
-  .bloom-imageContainer .bloom-textOverPicture:not(.ui-resizable-resizing) .bloom-dragHandle {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture:not(.ui-resizable-resizing)
+    .bloom-dragHandle {
     cursor: grab;
-  }
-  .bloom-imageContainer .bloom-textOverPicture:not(.ui-resizable-resizing) .bloom-dragHandle.grabbing {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture:not(.ui-resizable-resizing)
+    .bloom-dragHandle.grabbing {
     cursor: grabbing;
-  }
-  .bloom-imageContainer.ne-resizable,
-  .bloom-imageContainer.ne-resizable .bloom-textOverPicture .bloom-translationGroup .bloom-editable.cke_editable {
+}
+.bloom-imageContainer.ne-resizable,
+.bloom-imageContainer.ne-resizable
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable.cke_editable {
     cursor: ne-resize;
-  }
-  .bloom-imageContainer.nw-resizable,
-  .bloom-imageContainer.nw-resizable .bloom-textOverPicture .bloom-translationGroup .bloom-editable.cke_editable {
+}
+.bloom-imageContainer.nw-resizable,
+.bloom-imageContainer.nw-resizable
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable.cke_editable {
     cursor: nw-resize;
-  }
-  .bloom-imageContainer.sw-resizable,
-  .bloom-imageContainer.sw-resizable .bloom-textOverPicture .bloom-translationGroup .bloom-editable.cke_editable {
+}
+.bloom-imageContainer.sw-resizable,
+.bloom-imageContainer.sw-resizable
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable.cke_editable {
     cursor: sw-resize;
-  }
-  .bloom-imageContainer.se-resizable,
-  .bloom-imageContainer.se-resizable .bloom-textOverPicture .bloom-translationGroup .bloom-editable.cke_editable {
+}
+.bloom-imageContainer.se-resizable,
+.bloom-imageContainer.se-resizable
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable.cke_editable {
     cursor: se-resize;
-  }
-  .bloom-imageContainer .bloom-textOverPicture {
+}
+.bloom-imageContainer .bloom-textOverPicture {
     position: absolute;
     width: 140px;
     min-width: 30px;
     min-height: 30px;
     border-radius: 3px;
     border: none !important;
-  }
-  .bloom-imageContainer .bloom-textOverPicture div:focus,
-  .bloom-imageContainer .bloom-textOverPicture video:focus {
+}
+.bloom-imageContainer .bloom-textOverPicture div:focus,
+.bloom-imageContainer .bloom-textOverPicture video:focus {
     border: 1px solid #1d94a4;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px #1d94a4;
-  }
-  .bloom-imageContainer .bloom-textOverPicture .bloom-translationGroup {
+}
+.bloom-imageContainer .bloom-textOverPicture .bloom-translationGroup {
     background: transparent;
     border: none;
     z-index: 1002;
-  }
-  .bloom-imageContainer .bloom-textOverPicture .bloom-translationGroup .bloom-editable {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable {
     min-width: 27px;
     min-height: 27px !important;
     text-align: center;
     overflow: visible;
-  }
-  .bloom-imageContainer .bloom-textOverPicture .bloom-translationGroup .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     display: none;
-  }
-  .bloom-imageContainer .bloom-textOverPicture .bloom-translationGroup .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):focus:after {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):focus:after {
     display: block;
     left: unset;
     text-align: right;
@@ -295,122 +336,168 @@ div.ui-audioCurrent p {
     background-color: white;
     font-size: small;
     cursor: auto;
-  }
-  .bloom-imageContainer .bloom-textOverPicture .bloom-translationGroup .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):focus:after:hover {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):focus:after:hover {
     background-color: white;
-  }
-  .bloom-imageContainer .bloom-textOverPicture .bloom-translationGroup .bloom-editable.disableTOPControls:after {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture
+    .bloom-translationGroup
+    .bloom-editable.disableTOPControls:after {
     display: none !important;
-  }
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) .bloom-translationGroup .bloom-editable {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"])
+    .bloom-translationGroup
+    .bloom-editable {
     border: none;
     box-shadow: none;
-  }
-  .bloom-imageContainer .bloom-textOverPicture:not([data-bubble]) .bloom-translationGroup .bloom-editable:focus,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="`style`:`none`"] .bloom-translationGroup .bloom-editable:focus {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture:not([data-bubble])
+    .bloom-translationGroup
+    .bloom-editable:focus,
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble*="`style`:`none`"]
+    .bloom-translationGroup
+    .bloom-editable:focus {
     border: 1px solid #1d94a4;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px #1d94a4;
-  }
-  .bloom-showImageDescriptions .bloom-textOverPicture {
+}
+.bloom-showImageDescriptions .bloom-textOverPicture {
     display: none !important;
-  }
-  .bloom-fullBleed .bloom-imageContainer .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
+}
+.bloom-fullBleed
+    .bloom-imageContainer
+    .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
     display: flex;
     flex-direction: column;
-  }
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]),
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow)),
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow)) {
     display: flex;
     align-items: center;
-  }
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) .bloom-editable.bloom-visibility-code-on,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-editable.bloom-visibility-code-on
-  {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
+    .bloom-editable.bloom-visibility-code-on,
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
+    .bloom-editable.bloom-visibility-code-on {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
     align-content: center;
-  }
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) .bloom-editable.bloom-visibility-code-on p,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-editable.bloom-visibility-code-on p {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"])
+    .bloom-editable.bloom-visibility-code-on
+    p,
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"])
+    .bloom-editable.bloom-visibility-code-on
+    p {
     flex-basis: 100%;
     flex-grow: 0;
-  }
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) .bloom-vertical-align-top .bloom-editable,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-vertical-align-top .bloom-editable {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
+    .bloom-vertical-align-top
+    .bloom-editable,
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
+    .bloom-vertical-align-top
+    .bloom-editable {
     align-items: flex-start;
     align-content: flex-start;
-  }
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) .bloom-vertical-align-center .bloom-editable,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-vertical-align-center .bloom-editable {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
+    .bloom-vertical-align-center
+    .bloom-editable,
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
+    .bloom-vertical-align-center
+    .bloom-editable {
     align-items: center;
     align-content: center;
-  }
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) .bloom-vertical-align-bottom .bloom-editable,
-  .bloom-imageContainer .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) .bloom-vertical-align-bottom .bloom-editable {
+}
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
+    .bloom-vertical-align-bottom
+    .bloom-editable,
+.bloom-imageContainer
+    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
+    .bloom-vertical-align-bottom
+    .bloom-editable {
     align-items: flex-end;
     align-content: flex-end;
-  }
-  /*+init {*/
-  * {
+}
+/*+init {*/
+* {
     position: relative;
     margin: 0;
     padding: 0;
     font-size: 1em;
-  }
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  th {
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+th {
     font-weight: inherit;
-  }
-  address,
-  dfn,
-  var {
+}
+address,
+dfn,
+var {
     font-style: inherit;
-  }
-  caption,
-  code,
-  kbd,
-  pre,
-  samp,
-  tt,
-  input,
-  textarea,
-  select,
-  button {
+}
+caption,
+code,
+kbd,
+pre,
+samp,
+tt,
+input,
+textarea,
+select,
+button {
     font-family: inherit;
-  }
-  table {
+}
+table {
     border-spacing: 0;
-  }
-  th {
+}
+th {
     text-align: left;
-  }
-  html,
-  body,
-  thead,
-  tbody,
-  tfoot,
-  tr,
-  th,
-  td,
-  br {
+}
+html,
+body,
+thead,
+tbody,
+tfoot,
+tr,
+th,
+td,
+br {
     position: static;
-  }
-  input[type="hidden"] {
+}
+input[type="hidden"] {
     display: none !important;
-  }
-  fieldset,
-  a img {
+}
+fieldset,
+a img {
     border: 0;
-  }
-  body,
-  div.bloomPlayer-page {
+}
+body,
+div.bloomPlayer-page {
     /*
       We used to set font-size slightly larger in editPaneGlobal.less, to handle a mismatch between webkit
       pdf generation and geckofx edit mode. That no longer seems to be necessary and the Browser-Reset() above
@@ -418,26 +505,32 @@ div.ui-audioCurrent p {
       font-sizes everywhere jump up about 3px in size, so we'll leave this one here.
       */
     font-size: 10pt;
-  }
-  .bloom-templateThumbnail {
+}
+.bloom-templateThumbnail {
     overflow: clip;
-  }
-  .bloom-templateThumbnail .numberedPage:after {
+}
+.bloom-templateThumbnail .numberedPage:after {
     display: none;
-  }
-  .bloom-templateThumbnail .bloom-translationGroup {
-    background: repeating-linear-gradient(to bottom, transparent, transparent 1em, grey 1em, grey 4em);
+}
+.bloom-templateThumbnail .bloom-translationGroup {
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 1em,
+        grey 1em,
+        grey 4em
+    );
     padding: 1em 0em;
     box-sizing: border-box;
     background-clip: content-box;
     color: transparent;
     display: block;
-  }
-  /* gridItem means this is a page thumbnail */
-  .gridItem .pageOverflows {
+}
+/* gridItem means this is a page thumbnail */
+.gridItem .pageOverflows {
     height: 100%;
-  }
-  .gridItem .pageOverflowsIcon {
+}
+.gridItem .pageOverflowsIcon {
     background-image: url("/bloom/images/Attention.svg");
     /* red triangle with exclamation point */
     background-position: bottom;
@@ -445,24 +538,24 @@ div.ui-audioCurrent p {
     background-size: 70%;
     z-index: 3;
     height: 100%;
-  }
-  div.ui-tooltip-content {
+}
+div.ui-tooltip-content {
     overflow: visible !important;
     font-size: 10pt;
     padding: 0px 9px;
-  }
-  .uibloomSourceTextsBubble .ui-tooltip-content {
+}
+.uibloomSourceTextsBubble .ui-tooltip-content {
     /*This minimum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
     min-height: 60px !important;
-  }
-  .bloom-imageContainer {
+}
+.bloom-imageContainer {
     min-height: 50px;
-  }
-  p {
+}
+p {
     min-height: 1.5em;
-  }
-  textarea,
-  .bloom-editable {
+}
+textarea,
+.bloom-editable {
     resize: none;
     /*don't show those cute little resize controls in Firefox 4 and greater*/
     overflow: visible;
@@ -478,12 +571,12 @@ div.ui-audioCurrent p {
     // legacy books, so I think it is worth the risk of adding it here so the new
     // feature is not broken in legacy.
     box-sizing: border-box;
-  }
-  /* The following has been split out from the above rule because it should probably be removed,
+}
+/* The following has been split out from the above rule because it should probably be removed,
       but at this point we are about to go release candidate with 3.1 so it will have to wait.
       When we do remove it, the main things it could effect are the Story Primer template and the dozen or so SIL LEAD Uganda SHRP templates.
   */
-  td {
+td {
     resize: none;
     /*don't show those cute little resize controls in Firefox 4 and greater*/
     overflow: visible;
@@ -491,569 +584,575 @@ div.ui-audioCurrent p {
     line-height: 1.5em;
     min-height: 1.8em;
     width: 100%;
-  }
-  div.bloom-page {
+}
+div.bloom-page {
     display: block;
     background-color: white;
-  }
-  div.bloom-page:not(.bloom-templateMode) {
+}
+div.bloom-page:not(.bloom-templateMode) {
     overflow: hidden;
-  }
-  div#bloomDataDiv {
+}
+div#bloomDataDiv {
     display: none;
-  }
-  .centered {
+}
+.centered {
     text-align: center;
-  }
-  .centerJustify {
+}
+.centerJustify {
     text-align: center;
-  }
-  .bloom-fullBleed .bloom-page {
+}
+.bloom-fullBleed .bloom-page {
     transform-origin: top left;
     transition: 0.5s ease-in-out;
-  }
-  .bloom-fullBleed .bloom-page.A5Portrait {
+}
+.bloom-fullBleed .bloom-page.A5Portrait {
     transform: translate(0, -1.25675676mm) scale(1.04054054);
-  }
-  .bloom-fullBleed .bloom-page.A5Landscape {
+}
+.bloom-fullBleed .bloom-page.A5Landscape {
     transform: translate(-1.25675676mm, 0) scale(1.04054054);
-  }
-  .bloom-fullBleed .bloom-page.A4Portrait {
+}
+.bloom-fullBleed .bloom-page.A4Portrait {
     transform: translate(0, -1.24285714mm) scale(1.02857143);
-  }
-  .bloom-fullBleed .bloom-page.A4Landscape {
+}
+.bloom-fullBleed .bloom-page.A4Landscape {
     transform: translate(-1.24285714mm, 0) scale(1.02857143);
-  }
-  .bloom-fullBleed .bloom-page.A3Portrait {
+}
+.bloom-fullBleed .bloom-page.A3Portrait {
     transform: translate(0, -1.24242424mm) scale(1.02020202);
-  }
-  .bloom-fullBleed .bloom-page.A3Landscape {
+}
+.bloom-fullBleed .bloom-page.A3Landscape {
     transform: translate(-1.24242424mm, 0) scale(1.02020202);
-  }
-  .bloom-fullBleed .bloom-page.USComicPortrait {
+}
+.bloom-fullBleed .bloom-page.USComicPortrait {
     transform: translate(0, -0.06462636in) scale(1.03565592);
-  }
-  .bloom-fullBleed .bloom-page.Size6x9Portrait {
+}
+.bloom-fullBleed .bloom-page.Size6x9Portrait {
     transform: translate(0, -0.05905512in) scale(1.03937008);
-  }
-  .bloom-fullBleed .bloom-page.Size6x9Landscape {
+}
+.bloom-fullBleed .bloom-page.Size6x9Landscape {
     transform: translate(-0.05905512in, 0) scale(1.03937008);
-  }
-  .bloom-mediaBox {
+}
+.bloom-mediaBox {
     page-break-after: always;
     overflow: hidden;
-  }
-  .bloom-mediaBox.A5Portrait {
+}
+.bloom-mediaBox.A5Portrait {
     width: 154mm;
     height: 216mm;
-  }
-  .bloom-mediaBox.A5Landscape {
+}
+.bloom-mediaBox.A5Landscape {
     width: 216mm;
     height: 154mm;
-  }
-  .bloom-mediaBox.A4Portrait {
+}
+.bloom-mediaBox.A4Portrait {
     width: 216mm;
     height: 303mm;
-  }
-  .bloom-mediaBox.A4Landscape {
+}
+.bloom-mediaBox.A4Landscape {
     width: 303mm;
     height: 216mm;
-  }
-  .bloom-mediaBox.A3Portrait {
+}
+.bloom-mediaBox.A3Portrait {
     width: 303mm;
     height: 426mm;
-  }
-  .bloom-mediaBox.A3Landscape {
+}
+.bloom-mediaBox.A3Landscape {
     width: 426mm;
     height: 303mm;
-  }
-  .bloom-mediaBox.Device16x9Portrait {
+}
+.bloom-mediaBox.Device16x9Portrait {
     width: 100mm;
     height: 177.77777778mm;
-  }
-  .bloom-mediaBox.Device16x9Landscape {
+}
+.bloom-mediaBox.Device16x9Landscape {
     width: 177.77777778mm;
     height: 100mm;
-  }
-  .bloom-mediaBox.USComicPortrait {
+}
+.bloom-mediaBox.USComicPortrait {
     width: 6.86122047in;
     height: 10.48622047in;
-  }
-  .bloom-mediaBox.Size6x9Portrait {
+}
+.bloom-mediaBox.Size6x9Portrait {
     width: 6.23622047in;
     height: 9.23622047in;
-  }
-  .bloom-mediaBox.Size6x9Landscape {
+}
+.bloom-mediaBox.Size6x9Landscape {
     width: 9.23622047in;
     height: 6.23622047in;
-  }
-  body.publishingWithoutFullBleed .bloom-mediaBox {
+}
+body.publishingWithoutFullBleed .bloom-mediaBox {
     overflow: hidden;
-  }
-  body.publishingWithoutFullBleed .bloom-mediaBox.A5Portrait {
+}
+body.publishingWithoutFullBleed .bloom-mediaBox.A5Portrait {
     width: 148mm;
     height: 210mm;
-  }
-  body.publishingWithoutFullBleed .bloom-mediaBox.A5Landscape {
+}
+body.publishingWithoutFullBleed .bloom-mediaBox.A5Landscape {
     width: 210mm;
     height: 148mm;
-  }
-  body.publishingWithoutFullBleed .bloom-mediaBox.USComicPortrait {
+}
+body.publishingWithoutFullBleed .bloom-mediaBox.USComicPortrait {
     width: 6.625in;
     height: 10.25in;
-  }
-  body.publishingWithoutFullBleed .bloom-mediaBox.Size6x9Portrait {
+}
+body.publishingWithoutFullBleed .bloom-mediaBox.Size6x9Portrait {
     width: 6in;
     height: 9in;
-  }
-  body.publishingWithoutFullBleed .bloom-mediaBox.Size6x9Landscape {
+}
+body.publishingWithoutFullBleed .bloom-mediaBox.Size6x9Landscape {
     width: 9in;
     height: 6in;
-  }
-  .pdfPublishMode .bloom-page {
+}
+.pdfPublishMode .bloom-page {
     break-after: page;
-  }
-  .pdfPublishMode .bloom-page.A3Portrait {
+}
+.pdfPublishMode .bloom-page.A3Portrait {
     min-width: 296.8625mm;
     max-width: 296.8625mm;
     min-height: 419.89375mm;
     max-height: 419.89375mm;
-  }
-  .pdfPublishMode .bloom-page.A3Landscape {
+}
+.pdfPublishMode .bloom-page.A3Landscape {
     min-width: 419.89375mm;
     max-width: 419.89375mm;
     min-height: 296.8625mm;
     max-height: 296.8625mm;
-  }
-  .pdfPublishMode .bloom-page.A4Portrait {
+}
+.pdfPublishMode .bloom-page.A4Portrait {
     min-width: 209.81458333mm;
     max-width: 209.81458333mm;
     min-height: 296.8625mm;
     max-height: 296.8625mm;
-  }
-  .pdfPublishMode .bloom-page.A4Landscape {
+}
+.pdfPublishMode .bloom-page.A4Landscape {
     min-width: 297.12708333mm;
     max-width: 297.12708333mm;
     min-height: 209.81458333mm;
     max-height: 209.81458333mm;
-  }
-  .pdfPublishMode .bloom-page.A5Portrait {
+}
+.pdfPublishMode .bloom-page.A5Portrait {
     min-width: 147.90208333mm;
     max-width: 147.90208333mm;
     min-height: 209.81458333mm;
     max-height: 209.81458333mm;
-  }
-  .pdfPublishMode .bloom-page.A5Landscape {
+}
+.pdfPublishMode .bloom-page.A5Landscape {
     min-width: 209.81458333mm;
     max-width: 209.81458333mm;
     min-height: 147.90208333mm;
     max-height: 147.90208333mm;
-  }
-  .pdfPublishMode .bloom-page.A6Portrait {
+}
+.pdfPublishMode .bloom-page.A6Portrait {
     min-width: 105.03958333mm;
     max-width: 105.03958333mm;
     min-height: 147.90208333mm;
     max-height: 147.90208333mm;
-  }
-  .pdfPublishMode .bloom-page.A6Landscape {
+}
+.pdfPublishMode .bloom-page.A6Landscape {
     min-width: 147.90208333mm;
     max-width: 147.90208333mm;
     min-height: 105.03958333mm;
     max-height: 105.03958333mm;
-  }
-  .pdfPublishMode .bloom-page.B5Portrait {
+}
+.pdfPublishMode .bloom-page.B5Portrait {
     min-width: 175.94791667mm;
     max-width: 175.94791667mm;
     min-height: 249.76666667mm;
     max-height: 249.76666667mm;
-  }
-  .pdfPublishMode .bloom-page.Cm13Landscape {
+}
+.pdfPublishMode .bloom-page.Cm13Landscape {
     min-width: 129.91041667mm;
     max-width: 129.91041667mm;
     min-height: 130.175mm;
     max-height: 130.175mm;
-  }
-  .bloom-page.A5Portrait {
+}
+.bloom-page.A5Portrait {
     min-width: 148mm;
     max-width: 148mm;
     min-height: 210mm;
     max-height: 210mm;
-  }
-  .bloom-page.A5Landscape {
+}
+.bloom-page.A5Landscape {
     min-width: 210mm;
     max-width: 210mm;
     min-height: 148mm;
     max-height: 148mm;
-  }
-  .bloom-page.B5Portrait {
+}
+.bloom-page.B5Portrait {
     min-width: 176mm;
     max-width: 176mm;
     min-height: 250mm;
     max-height: 250mm;
-  }
-  .bloom-page.A4Landscape {
+}
+.bloom-page.A4Landscape {
     min-width: 297mm;
     max-width: 297mm;
     min-height: 210mm;
     max-height: 210mm;
-  }
-  .bloom-page.A4Portrait {
+}
+.bloom-page.A4Portrait {
     min-width: 210mm;
     max-width: 210mm;
     min-height: 297mm;
     max-height: 297mm;
-  }
-  .bloom-page.A3Landscape {
+}
+.bloom-page.A3Landscape {
     min-width: 420mm;
     max-width: 420mm;
     min-height: 297mm;
     max-height: 297mm;
-  }
-  .bloom-page.A3Portrait {
+}
+.bloom-page.A3Portrait {
     min-width: 297mm;
     max-width: 297mm;
     min-height: 420mm;
     max-height: 420mm;
-  }
-  .bloom-page.A6Portrait {
+}
+.bloom-page.A6Portrait {
     min-width: 105mm;
     max-width: 105mm;
     min-height: 148mm;
     max-height: 148mm;
-  }
-  .bloom-page.A6Landscape {
+}
+.bloom-page.A6Landscape {
     min-width: 148mm;
     max-width: 148mm;
     min-height: 105mm;
     max-height: 105mm;
-  }
-  .bloom-page.QuarterLetterPortrait {
+}
+.bloom-page.QuarterLetterPortrait {
     min-width: 4.25in;
     max-width: 4.25in;
     min-height: 5.5in;
     max-height: 5.5in;
-  }
-  .bloom-page.QuarterLetterLandscape {
+}
+.bloom-page.QuarterLetterLandscape {
     min-width: 5.5in;
     max-width: 5.5in;
     min-height: 4.25in;
     max-height: 4.25in;
-  }
-  .bloom-page.HalfLetterPortrait {
+}
+.bloom-page.HalfLetterPortrait {
     min-width: 5.5in;
     max-width: 5.5in;
     min-height: 8.5in;
     max-height: 8.5in;
-  }
-  .bloom-page.HalfLetterLandscape {
+}
+.bloom-page.HalfLetterLandscape {
     min-width: 8.5in;
     max-width: 8.5in;
     min-height: 5.5in;
     max-height: 5.5in;
-  }
-  .bloom-page.LetterPortrait {
+}
+.bloom-page.LetterPortrait {
     min-width: 8.5in;
     max-width: 8.5in;
     min-height: 11in;
     max-height: 11in;
-  }
-  .bloom-page.LetterLandscape {
+}
+.bloom-page.LetterLandscape {
     min-width: 11in;
     max-width: 11in;
     min-height: 8.5in;
     max-height: 8.5in;
-  }
-  .bloom-page.HalfLegalPortrait {
+}
+.bloom-page.HalfLegalPortrait {
     min-width: 7in;
     max-width: 7in;
     min-height: 8.5in;
     max-height: 8.5in;
-  }
-  .bloom-page.HalfLegalLandscape {
+}
+.bloom-page.HalfLegalLandscape {
     min-width: 8.5in;
     max-width: 8.5in;
     min-height: 7in;
     max-height: 7in;
-  }
-  .bloom-page.LegalPortrait {
+}
+.bloom-page.LegalPortrait {
     min-width: 8.5in;
     max-width: 8.5in;
     min-height: 14in;
     max-height: 14in;
-  }
-  .bloom-page.LegalLandscape {
+}
+.bloom-page.LegalLandscape {
     min-width: 14in;
     max-width: 14in;
     min-height: 8.5in;
     max-height: 8.5in;
-  }
-  .bloom-page.Cm13Landscape {
+}
+.bloom-page.Cm13Landscape {
     min-width: 130mm;
     max-width: 130mm;
     min-height: 130mm;
     max-height: 130mm;
-  }
-  .bloom-page.USComicPortrait {
+}
+.bloom-page.USComicPortrait {
     min-width: 6.625in;
     max-width: 6.625in;
     min-height: 10.25in;
     max-height: 10.25in;
-  }
-  .bloom-page.Size6x9Portrait {
+}
+.bloom-page.Size6x9Portrait {
     min-width: 6in;
     max-width: 6in;
     min-height: 9in;
     max-height: 9in;
-  }
-  .bloom-page.Size6x9Landscape {
+}
+.bloom-page.Size6x9Landscape {
     min-width: 9in;
     max-width: 9in;
     min-height: 6in;
     max-height: 6in;
-  }
-  /*Margins*/
-  .textWholePage .marginBox {
+}
+/*Margins*/
+.textWholePage .marginBox {
     position: absolute;
     /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
-  }
-  .marginBox {
+}
+.marginBox {
     position: absolute;
     top: 15mm;
-  }
-  .A3Portrait .marginBox {
+}
+.A3Portrait .marginBox {
     height: 390mm;
     width: 257mm;
-  }
-  .A3Landscape .marginBox {
+}
+.A3Landscape .marginBox {
     height: 267mm;
     width: 380mm;
-  }
-  .A4Portrait .marginBox {
+}
+.A4Portrait .marginBox {
     height: 267mm;
     width: 170mm;
-  }
-  .A4Landscape .marginBox {
+}
+.A4Landscape .marginBox {
     height: 180mm;
     width: 257mm;
-  }
-  .A5Portrait .marginBox {
+}
+.A5Portrait .marginBox {
     height: 180mm;
     width: 108mm;
-  }
-  .A5Landscape .marginBox {
+}
+.A5Landscape .marginBox {
     height: 118mm;
     width: 170mm;
-  }
-  .A6Portrait .marginBox {
+}
+.A6Portrait .marginBox {
     height: 118mm;
     width: 65mm;
-  }
-  .A6Landscape .marginBox {
+}
+.A6Landscape .marginBox {
     height: 75mm;
     width: 108mm;
-  }
-  .B5Portrait .marginBox {
+}
+.B5Portrait .marginBox {
     height: 220mm;
     width: 136mm;
-  }
-  .QuarterLetterPortrait .marginBox {
+}
+.QuarterLetterPortrait .marginBox {
     height: 4.31889764in;
     width: 2.67519685in;
-  }
-  .QuarterLetterLandscape .marginBox {
+}
+.QuarterLetterLandscape .marginBox {
     height: 3.06889764in;
     width: 3.92519685in;
-  }
-  .HalfLetterPortrait .marginBox {
+}
+.HalfLetterPortrait .marginBox {
     height: 7.31889764in;
     width: 3.92519685in;
-  }
-  .HalfLetterLandscape .marginBox {
+}
+.HalfLetterLandscape .marginBox {
     height: 4.31889764in;
     width: 6.92519685in;
-  }
-  .LetterPortrait .marginBox {
+}
+.LetterPortrait .marginBox {
     height: 9.81889764in;
     width: 6.92519685in;
-  }
-  .LetterLandscape .marginBox {
+}
+.LetterLandscape .marginBox {
     height: 7.31889764in;
     width: 9.42519685in;
-  }
-  .HalfLegalPortrait .marginBox {
+}
+.HalfLegalPortrait .marginBox {
     height: 7.31889764in;
     width: 5.42519685in;
-  }
-  .LegalPortrait .marginBox {
+}
+.LegalPortrait .marginBox {
     height: 12.81889764in;
     width: 6.92519685in;
-  }
-  .LegalLandscape .marginBox {
+}
+.LegalLandscape .marginBox {
     height: 7.31889764in;
     width: 12.42519685in;
-  }
-  .Cm13Landscape .marginBox {
+}
+.Cm13Landscape .marginBox {
     height: 100mm;
     width: 90mm;
-  }
-  .USComicPortrait .marginBox {
+}
+.USComicPortrait .marginBox {
     height: 9.06889764in;
     width: 5.05019685in;
-  }
-  .Size6x9Portrait .marginBox {
+}
+.Size6x9Portrait .marginBox {
     height: 7.81889764in;
     width: 4.42519685in;
-  }
-  .Size6x9Landscape .marginBox {
+}
+.Size6x9Landscape .marginBox {
     height: 4.81889764in;
     width: 7.42519685in;
-  }
-  :not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only).side-left .marginBox {
+}
+:not(.calendarFold)
+    :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only).side-left
+    .marginBox {
     left: 15mm;
-  }
-  :not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only).side-right .marginBox {
+}
+:not(.calendarFold)
+    :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only).side-right
+    .marginBox {
     left: 25mm;
-  }
-  .screen-only .marginBox {
+}
+.screen-only .marginBox {
     left: 20px;
     width: calc(100% - 40px);
-  }
-  .calendarFold .marginBox {
+}
+.calendarFold .marginBox {
     /* balanced margin*/
     left: 20mm;
-  }
-  .pageDescription {
+}
+.pageDescription {
     display: none;
-  }
-  /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
-  label.bubble,
-  label.placeholder {
+}
+/*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
+label.bubble,
+label.placeholder {
     display: none;
-  }
-  .superscript {
+}
+.superscript {
     vertical-align: super;
     font-size: 80%;
-  }
-  /* This is the html default, but our Browser.reset.* unfortunately overrides it. */
-  sup {
+}
+/* This is the html default, but our Browser.reset.* unfortunately overrides it. */
+sup {
     font-size: smaller;
-  }
-  h1 {
+}
+h1 {
     font-size: 1.5em;
-  }
-  h2 {
+}
+h2 {
     font-size: 1.2em;
-  }
-  /* box-header is an idea we never implemented. We don't use it any more, but older
+}
+/* box-header is an idea we never implemented. We don't use it any more, but older
   books may contain divs with box-header-off, so we need a rule to hide them.*/
-  .box-header-off {
+.box-header-off {
     display: none !important;
-  }
-  .bloom-editable.bloom-visibility-code-on ~ .bloom-editable {
+}
+.bloom-editable.bloom-visibility-code-on ~ .bloom-editable {
     margin-top: 10px;
-  }
-  .customPage .bloom-imageContainer {
+}
+.customPage .bloom-imageContainer {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
     overflow: hidden;
-  }
-  .customPage .bloom-videoContainer {
+}
+.customPage .bloom-videoContainer {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
     z-index: 1002;
-  }
-  .customPage .bloom-videoContainer.bloom-noVideoSelected {
+}
+.customPage .bloom-videoContainer.bloom-noVideoSelected {
     background: url("video-placeholder.svg") no-repeat center;
     background-size: contain;
-  }
-  .customPage .bloom-videoContainer video {
+}
+.customPage .bloom-videoContainer video {
     height: 100%;
     width: 100%;
     max-height: 100%;
     max-width: 100%;
-  }
-  .customPage .bloom-widgetContainer {
+}
+.customPage .bloom-widgetContainer {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
     z-index: 1000;
-  }
-  .customPage .bloom-widgetContainer.bloom-noWidgetSelected {
+}
+.customPage .bloom-widgetContainer.bloom-noWidgetSelected {
     background: url("widget-placeholder.svg") no-repeat center;
     background-size: 50%;
-  }
-  .customPage .bloom-widgetContainer iframe {
+}
+.customPage .bloom-widgetContainer iframe {
     height: 100%;
     width: 100%;
     box-sizing: border-box;
     border: none;
-  }
-  .customPage .bloom-editable {
+}
+.customPage .bloom-editable {
     overflow-y: hidden;
-  }
-  .customPage .bloom-translationGroup {
+}
+.customPage .bloom-translationGroup {
     height: calc(100% - 2px);
     width: calc(100% - 2px);
-  }
-  .customPage .split-pane-component {
+}
+.customPage .split-pane-component {
     min-height: 1.5em;
-  }
-  .bloom-vertical-align-center:not(:has(.overflow)) {
+}
+.bloom-vertical-align-center:not(:has(.overflow)) {
     justify-content: center;
-  }
-  .bloom-vertical-align-center:not(:has(.overflow)):not(.bloom-bilingual):not(.bloom-trilingual) .bloom-editable {
+}
+.bloom-vertical-align-center:not(:has(.overflow)):not(.bloom-bilingual):not(.bloom-trilingual)
+    .bloom-editable {
     justify-content: center;
-  }
-  .bloom-vertical-align-bottom:not(:has(.overflow)) {
+}
+.bloom-vertical-align-bottom:not(:has(.overflow)) {
     justify-content: flex-end;
-  }
-  .bloom-vertical-align-bottom:not(:has(.overflow)):not(.bloom-bilingual):not(.bloom-trilingual) .bloom-editable {
+}
+.bloom-vertical-align-bottom:not(:has(.overflow)):not(.bloom-bilingual):not(.bloom-trilingual)
+    .bloom-editable {
     justify-content: flex-end;
-  }
-  /* ------------------------------------------------------
+}
+/* ------------------------------------------------------
   /*		Visibility System
   /*		https://goo.gl/EgnSJo
   /* ------------------------------------------------------*/
-  .bloom-editable {
+.bloom-editable {
     display: none;
     order: 99;
-  }
-  .bloom-translationGroup {
+}
+.bloom-translationGroup {
     display: flex;
     flex-direction: column;
-  }
-  .bloom-content1 {
+}
+.bloom-content1 {
     order: 0;
-  }
-  .bloom-content2 {
+}
+.bloom-content2 {
     order: 1;
-  }
-  .bloom-content3 {
+}
+.bloom-content3 {
     order: 2;
-  }
-  .numberedPage:after {
+}
+.numberedPage:after {
     content: attr(data-page-number);
     font-size: 14pt;
     position: absolute;
     bottom: 20px;
-  }
-  .numberedPage.side-left:after {
+}
+.numberedPage.side-left:after {
     left: 57px;
-  }
-  .numberedPage.side-right:after {
+}
+.numberedPage.side-right:after {
     right: 60px;
     text-align: right;
-  }
-  .bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
+}
+.bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
     display: flex;
-  }
-  .bloom-showImageDescriptions .bloom-imageContainer {
+}
+.bloom-showImageDescriptions .bloom-imageContainer {
     background-size: 50% auto;
     background-position-x: 0;
-  }
-  .bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
+}
+.bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
     width: 50%;
     height: 100%;
     top: 0;
@@ -1061,171 +1160,300 @@ div.ui-audioCurrent p {
     left: 50%;
     box-sizing: border-box;
     border-left: solid lightgray 1px;
-  }
-  .bloom-showImageDescriptions .bloom-imageContainer > img {
+}
+.bloom-showImageDescriptions .bloom-imageContainer > img {
     width: 50%;
-  }
-  div[data-book*="branding"] a:link,
-  div[data-book*="branding"] a:visited {
+}
+div[data-book*="branding"] a:link,
+div[data-book*="branding"] a:visited {
     color: unset;
     text-decoration: unset;
-  }
-  .comical-generated {
+}
+.comical-generated {
     z-index: 1001;
     position: absolute;
     top: 0;
     left: 0;
-  }
-  .no-margin-page::after,
-  .comic::after {
+}
+.no-margin-page::after,
+.comic::after {
     /* Hide page number */
     display: none;
-  }
-  .no-margin-page .marginBox img,
-  .comic .marginBox img {
+}
+.no-margin-page .marginBox img,
+.comic .marginBox img {
     max-width: unset;
-  }
-  .no-margin-page .marginBox,
-  .comic .marginBox {
+}
+.no-margin-page .marginBox,
+.comic .marginBox {
     left: 0 !important;
     top: 0 !important;
     height: 100% !important;
     width: 100% !important;
-  }
-  .-epub-media-overlay-active {
+}
+.-epub-media-overlay-active {
     background-color: #febf00;
-  }
-  .bloom-audio-split-marker {
+}
+.bloom-audio-split-marker {
     display: none;
-  }
-  .bloom-page .bloom-editable.bloom-visibility-code-on {
+}
+.bloom-page .bloom-editable.bloom-visibility-code-on {
     word-wrap: break-word;
-  }
-  body[data-bfhidepagenumbers*="allMedia"][data-bfhidepagenumbers*="allOrientations"]::after,
-  body[data-bfhidepagenumbers*="print"][data-media*="print"][data-bfhidepagenumbers*="allOrientations"]::after,
-  body[data-bfhidepagenumbers*="bloomReader"][data-media*="bloomReader"][data-bfhidepagenumbers*="allOrientations"]::after,
-  body[data-bfhidepagenumbers*="epub"][data-media*="epub"][data-bfhidepagenumbers*="allOrientations"]::after,
-  body[data-bfhidepagenumbers*="video"][data-media*="video"][data-bfhidepagenumbers*="allOrientations"]::after,
-  body[data-bfhidepagenumbers*="allMedia"][data-bfhidepagenumbers*="landscape"] .bloom-page[class*="Landscape"]::after,
-  body[data-bfhidepagenumbers*="print"][data-media*="print"][data-bfhidepagenumbers*="landscape"] .bloom-page[class*="Landscape"]::after,
-  body[data-bfhidepagenumbers*="bloomReader"][data-media*="bloomReader"][data-bfhidepagenumbers*="landscape"] .bloom-page[class*="Landscape"]::after,
-  body[data-bfhidepagenumbers*="epub"][data-media*="epub"][data-bfhidepagenumbers*="landscape"] .bloom-page[class*="Landscape"]::after,
-  body[data-bfhidepagenumbers*="video"][data-media*="video"][data-bfhidepagenumbers*="landscape"] .bloom-page[class*="Landscape"]::after,
-  body[data-bfhidepagenumbers*="allMedia"][data-bfhidepagenumbers*="portrait"] .bloom-page[class*="Portrait"]::after,
-  body[data-bfhidepagenumbers*="print"][data-media*="print"][data-bfhidepagenumbers*="portrait"] .bloom-page[class*="Portrait"]::after,
-  body[data-bfhidepagenumbers*="bloomReader"][data-media*="bloomReader"][data-bfhidepagenumbers*="portrait"] .bloom-page[class*="Portrait"]::after,
-  body[data-bfhidepagenumbers*="epub"][data-media*="epub"][data-bfhidepagenumbers*="portrait"] .bloom-page[class*="Portrait"]::after,
-  body[data-bfhidepagenumbers*="video"][data-media*="video"][data-bfhidepagenumbers*="portrait"] .bloom-page[class*="Portrait"]::after {
+}
+body[data-bfhidepagenumbers*="allMedia"][data-bfhidepagenumbers*="allOrientations"]::after,
+body[data-bfhidepagenumbers*="print"][data-media*="print"][data-bfhidepagenumbers*="allOrientations"]::after,
+body[data-bfhidepagenumbers*="bloomReader"][data-media*="bloomReader"][data-bfhidepagenumbers*="allOrientations"]::after,
+body[data-bfhidepagenumbers*="epub"][data-media*="epub"][data-bfhidepagenumbers*="allOrientations"]::after,
+body[data-bfhidepagenumbers*="video"][data-media*="video"][data-bfhidepagenumbers*="allOrientations"]::after,
+body[data-bfhidepagenumbers*="allMedia"][data-bfhidepagenumbers*="landscape"]
+    .bloom-page[class*="Landscape"]::after,
+body[data-bfhidepagenumbers*="print"][data-media*="print"][data-bfhidepagenumbers*="landscape"]
+    .bloom-page[class*="Landscape"]::after,
+body[data-bfhidepagenumbers*="bloomReader"][data-media*="bloomReader"][data-bfhidepagenumbers*="landscape"]
+    .bloom-page[class*="Landscape"]::after,
+body[data-bfhidepagenumbers*="epub"][data-media*="epub"][data-bfhidepagenumbers*="landscape"]
+    .bloom-page[class*="Landscape"]::after,
+body[data-bfhidepagenumbers*="video"][data-media*="video"][data-bfhidepagenumbers*="landscape"]
+    .bloom-page[class*="Landscape"]::after,
+body[data-bfhidepagenumbers*="allMedia"][data-bfhidepagenumbers*="portrait"]
+    .bloom-page[class*="Portrait"]::after,
+body[data-bfhidepagenumbers*="print"][data-media*="print"][data-bfhidepagenumbers*="portrait"]
+    .bloom-page[class*="Portrait"]::after,
+body[data-bfhidepagenumbers*="bloomReader"][data-media*="bloomReader"][data-bfhidepagenumbers*="portrait"]
+    .bloom-page[class*="Portrait"]::after,
+body[data-bfhidepagenumbers*="epub"][data-media*="epub"][data-bfhidepagenumbers*="portrait"]
+    .bloom-page[class*="Portrait"]::after,
+body[data-bfhidepagenumbers*="video"][data-media*="video"][data-bfhidepagenumbers*="portrait"]
+    .bloom-page[class*="Portrait"]::after {
     content: unset;
-  }
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-translationGroup,
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-translationGroup {
+}
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-translationGroup,
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-translationGroup {
     visibility: hidden;
-  }
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer,
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer {
+}
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer,
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer {
     background-color: black;
     position: fixed;
     left: 0;
     top: 0;
     width: 100%;
     margin-top: 0;
-  }
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer[class*="Device16x9Landscape"],
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer[class*="Device16x9Landscape"] {
+}
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer[class*="Device16x9Landscape"],
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer[class*="Device16x9Landscape"] {
     width: 177.77777778mm;
-  }
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"] .bloom-page[class*="Landscape"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer[class*="Device16x9Portrait"],
-  body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"] .bloom-page[class*="Portrait"] .bloom-imageContainer[class*="Device16x9Portrait"] {
+}
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"]
+    .bloom-page[class*="Landscape"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer[class*="Device16x9Portrait"],
+body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"]
+    .bloom-page[class*="Portrait"]
+    .bloom-imageContainer[class*="Device16x9Portrait"] {
     width: 100mm;
-  }
-  body[data-bftextoverlay*="allMedia"][data-bftextoverlay*="allOrientations"],
-  body[data-bftextoverlay*="print"][data-media*="print"][data-bftextoverlay*="allOrientations"],
-  body[data-bftextoverlay*="bloomReader"][data-media*="bloomReader"][data-bftextoverlay*="allOrientations"],
-  body[data-bftextoverlay*="epub"][data-media*="epub"][data-bftextoverlay*="allOrientations"],
-  body[data-bftextoverlay*="video"][data-media*="video"][data-bftextoverlay*="allOrientations"],
-  body[data-bftextoverlay*="allMedia"][data-bftextoverlay*="landscape"] .bloom-page[class*="Landscape"],
-  body[data-bftextoverlay*="print"][data-media*="print"][data-bftextoverlay*="landscape"] .bloom-page[class*="Landscape"],
-  body[data-bftextoverlay*="bloomReader"][data-media*="bloomReader"][data-bftextoverlay*="landscape"] .bloom-page[class*="Landscape"],
-  body[data-bftextoverlay*="epub"][data-media*="epub"][data-bftextoverlay*="landscape"] .bloom-page[class*="Landscape"],
-  body[data-bftextoverlay*="video"][data-media*="video"][data-bftextoverlay*="landscape"] .bloom-page[class*="Landscape"],
-  body[data-bftextoverlay*="allMedia"][data-bftextoverlay*="portrait"] .bloom-page[class*="Portrait"],
-  body[data-bftextoverlay*="print"][data-media*="print"][data-bftextoverlay*="portrait"] .bloom-page[class*="Portrait"],
-  body[data-bftextoverlay*="bloomReader"][data-media*="bloomReader"][data-bftextoverlay*="portrait"] .bloom-page[class*="Portrait"],
-  body[data-bftextoverlay*="epub"][data-media*="epub"][data-bftextoverlay*="portrait"] .bloom-page[class*="Portrait"],
-  body[data-bftextoverlay*="video"][data-media*="video"][data-bftextoverlay*="portrait"] .bloom-page[class*="Portrait"] {
+}
+body[data-bftextoverlay*="allMedia"][data-bftextoverlay*="allOrientations"],
+body[data-bftextoverlay*="print"][data-media*="print"][data-bftextoverlay*="allOrientations"],
+body[data-bftextoverlay*="bloomReader"][data-media*="bloomReader"][data-bftextoverlay*="allOrientations"],
+body[data-bftextoverlay*="epub"][data-media*="epub"][data-bftextoverlay*="allOrientations"],
+body[data-bftextoverlay*="video"][data-media*="video"][data-bftextoverlay*="allOrientations"],
+body[data-bftextoverlay*="allMedia"][data-bftextoverlay*="landscape"]
+    .bloom-page[class*="Landscape"],
+body[data-bftextoverlay*="print"][data-media*="print"][data-bftextoverlay*="landscape"]
+    .bloom-page[class*="Landscape"],
+body[data-bftextoverlay*="bloomReader"][data-media*="bloomReader"][data-bftextoverlay*="landscape"]
+    .bloom-page[class*="Landscape"],
+body[data-bftextoverlay*="epub"][data-media*="epub"][data-bftextoverlay*="landscape"]
+    .bloom-page[class*="Landscape"],
+body[data-bftextoverlay*="video"][data-media*="video"][data-bftextoverlay*="landscape"]
+    .bloom-page[class*="Landscape"],
+body[data-bftextoverlay*="allMedia"][data-bftextoverlay*="portrait"]
+    .bloom-page[class*="Portrait"],
+body[data-bftextoverlay*="print"][data-media*="print"][data-bftextoverlay*="portrait"]
+    .bloom-page[class*="Portrait"],
+body[data-bftextoverlay*="bloomReader"][data-media*="bloomReader"][data-bftextoverlay*="portrait"]
+    .bloom-page[class*="Portrait"],
+body[data-bftextoverlay*="epub"][data-media*="epub"][data-bftextoverlay*="portrait"]
+    .bloom-page[class*="Portrait"],
+body[data-bftextoverlay*="video"][data-media*="video"][data-bftextoverlay*="portrait"]
+    .bloom-page[class*="Portrait"] {
     border-right: solid yellow;
-  }
-  body[data-bfnomargin*="allMedia"][data-bfnomargin*="allOrientations"],
-  body[data-bfnomargin*="print"][data-media*="print"][data-bfnomargin*="allOrientations"],
-  body[data-bfnomargin*="bloomReader"][data-media*="bloomReader"][data-bfnomargin*="allOrientations"],
-  body[data-bfnomargin*="epub"][data-media*="epub"][data-bfnomargin*="allOrientations"],
-  body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="allOrientations"],
-  body[data-bfnomargin*="allMedia"][data-bfnomargin*="landscape"] .bloom-page[class*="Landscape"],
-  body[data-bfnomargin*="print"][data-media*="print"][data-bfnomargin*="landscape"] .bloom-page[class*="Landscape"],
-  body[data-bfnomargin*="bloomReader"][data-media*="bloomReader"][data-bfnomargin*="landscape"] .bloom-page[class*="Landscape"],
-  body[data-bfnomargin*="epub"][data-media*="epub"][data-bfnomargin*="landscape"] .bloom-page[class*="Landscape"],
-  body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="landscape"] .bloom-page[class*="Landscape"],
-  body[data-bfnomargin*="allMedia"][data-bfnomargin*="portrait"] .bloom-page[class*="Portrait"],
-  body[data-bfnomargin*="print"][data-media*="print"][data-bfnomargin*="portrait"] .bloom-page[class*="Portrait"],
-  body[data-bfnomargin*="bloomReader"][data-media*="bloomReader"][data-bfnomargin*="portrait"] .bloom-page[class*="Portrait"],
-  body[data-bfnomargin*="epub"][data-media*="epub"][data-bfnomargin*="portrait"] .bloom-page[class*="Portrait"],
-  body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"] .bloom-page[class*="Portrait"] {
+}
+body[data-bfnomargin*="allMedia"][data-bfnomargin*="allOrientations"],
+body[data-bfnomargin*="print"][data-media*="print"][data-bfnomargin*="allOrientations"],
+body[data-bfnomargin*="bloomReader"][data-media*="bloomReader"][data-bfnomargin*="allOrientations"],
+body[data-bfnomargin*="epub"][data-media*="epub"][data-bfnomargin*="allOrientations"],
+body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="allOrientations"],
+body[data-bfnomargin*="allMedia"][data-bfnomargin*="landscape"]
+    .bloom-page[class*="Landscape"],
+body[data-bfnomargin*="print"][data-media*="print"][data-bfnomargin*="landscape"]
+    .bloom-page[class*="Landscape"],
+body[data-bfnomargin*="bloomReader"][data-media*="bloomReader"][data-bfnomargin*="landscape"]
+    .bloom-page[class*="Landscape"],
+body[data-bfnomargin*="epub"][data-media*="epub"][data-bfnomargin*="landscape"]
+    .bloom-page[class*="Landscape"],
+body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="landscape"]
+    .bloom-page[class*="Landscape"],
+body[data-bfnomargin*="allMedia"][data-bfnomargin*="portrait"]
+    .bloom-page[class*="Portrait"],
+body[data-bfnomargin*="print"][data-media*="print"][data-bfnomargin*="portrait"]
+    .bloom-page[class*="Portrait"],
+body[data-bfnomargin*="bloomReader"][data-media*="bloomReader"][data-bfnomargin*="portrait"]
+    .bloom-page[class*="Portrait"],
+body[data-bfnomargin*="epub"][data-media*="epub"][data-bfnomargin*="portrait"]
+    .bloom-page[class*="Portrait"],
+body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
+    .bloom-page[class*="Portrait"] {
     border-bottom: solid green;
-  }
-
+}
 
 /* -------------------------------------------------------
  * Rules from langVisibility.css which we stopped adding to books directly in 6.0
@@ -1252,129 +1480,129 @@ div.ui-audioCurrent p {
  * ------------------------------------------------------- */
 .A3Landscape.outsideFrontCover .marginBox,
 .A3Landscape.outsideBackCover .marginBox {
-  height: 272mm;
-  left: 15mm;
-  width: 390mm;
+    height: 272mm;
+    left: 15mm;
+    width: 390mm;
 }
 .A3Portrait.outsideFrontCover .marginBox,
 .A3Portrait.outsideBackCover .marginBox {
-  height: 395mm;
-  left: 15mm;
-  width: 267mm;
+    height: 395mm;
+    left: 15mm;
+    width: 267mm;
 }
 .A4Portrait.outsideFrontCover .marginBox,
 .A4Portrait.outsideBackCover .marginBox {
-  height: 272mm;
-  left: 15mm;
-  width: 180mm;
+    height: 272mm;
+    left: 15mm;
+    width: 180mm;
 }
 .A4Landscape.outsideFrontCover .marginBox,
 .A4Landscape.outsideBackCover .marginBox {
-  height: 185mm;
-  left: 15mm;
-  width: 267mm;
+    height: 185mm;
+    left: 15mm;
+    width: 267mm;
 }
 .A5Portrait.outsideFrontCover .marginBox,
 .A5Portrait.outsideBackCover .marginBox {
-  height: 185mm;
-  left: 15mm;
-  width: 118mm;
+    height: 185mm;
+    left: 15mm;
+    width: 118mm;
 }
 .A5Landscape.outsideFrontCover .marginBox,
 .A5Landscape.outsideBackCover .marginBox {
-  height: 123mm;
-  left: 15mm;
-  width: 180mm;
+    height: 123mm;
+    left: 15mm;
+    width: 180mm;
 }
 .A6Portrait.outsideFrontCover .marginBox,
 .A6Portrait.outsideBackCover .marginBox {
-  height: 123mm;
-  left: 15mm;
-  width: 75mm;
+    height: 123mm;
+    left: 15mm;
+    width: 75mm;
 }
 .A6Landscape.outsideFrontCover .marginBox,
 .A6Landscape.outsideBackCover .marginBox {
-  height: 80mm;
-  left: 15mm;
-  width: 118mm;
+    height: 80mm;
+    left: 15mm;
+    width: 118mm;
 }
 .B5Portrait.outsideFrontCover .marginBox,
 .B5Portrait.outsideBackCover .marginBox {
-  height: 225mm;
-  left: 15mm;
-  width: 146mm;
+    height: 225mm;
+    left: 15mm;
+    width: 146mm;
 }
 .LegalPortrait.outsideFrontCover .marginBox,
 .LegalPortrait.outsideBackCover .marginBox {
-  height: 13.01574803in;
-  left: 15mm;
-  width: 7.31889764in;
+    height: 13.01574803in;
+    left: 15mm;
+    width: 7.31889764in;
 }
 .LegalLandscape.outsideFrontCover .marginBox,
 .LegalLandscape.outsideBackCover .marginBox {
-  height: 7.51574803in;
-  left: 15mm;
-  width: 12.81889764in;
+    height: 7.51574803in;
+    left: 15mm;
+    width: 12.81889764in;
 }
 .LetterPortrait.outsideFrontCover .marginBox,
 .LetterPortrait.outsideBackCover .marginBox {
-  height: 10.01574803in;
-  left: 15mm;
-  width: 7.31889764in;
+    height: 10.01574803in;
+    left: 15mm;
+    width: 7.31889764in;
 }
 .LetterLandscape.outsideFrontCover .marginBox,
 .LetterLandscape.outsideBackCover .marginBox {
-  height: 7.51574803in;
-  left: 15mm;
-  width: 9.81889764in;
+    height: 7.51574803in;
+    left: 15mm;
+    width: 9.81889764in;
 }
 .HalfLetterPortrait.outsideFrontCover .marginBox,
 .HalfLetterPortrait.outsideBackCover .marginBox {
-  height: 7.51574803in;
-  left: 15mm;
-  width: 4.31889764in;
+    height: 7.51574803in;
+    left: 15mm;
+    width: 4.31889764in;
 }
 .HalfLetterLandscape.outsideFrontCover .marginBox,
 .HalfLetterLandscape.outsideBackCover .marginBox {
-  height: 4.51574803in;
-  left: 15mm;
-  width: 7.31889764in;
+    height: 4.51574803in;
+    left: 15mm;
+    width: 7.31889764in;
 }
 .QuarterLetterPortrait.outsideFrontCover .marginBox,
 .QuarterLetterPortrait.outsideBackCover .marginBox {
-  height: 4.51574803in;
-  left: 15mm;
-  width: 3.06889764in;
+    height: 4.51574803in;
+    left: 15mm;
+    width: 3.06889764in;
 }
 .QuarterLetterLandscape.outsideFrontCover .marginBox,
 .QuarterLetterLandscape.outsideBackCover .marginBox {
-  height: 3.26574803in;
-  left: 15mm;
-  width: 4.31889764in;
+    height: 3.26574803in;
+    left: 15mm;
+    width: 4.31889764in;
 }
 .Cm13Landscape.outsideFrontCover .marginBox,
 .Cm13Landscape.outsideBackCover .marginBox {
-  height: 105mm;
-  left: 15mm;
-  width: 100mm;
+    height: 105mm;
+    left: 15mm;
+    width: 100mm;
 }
 .USComicPortrait.outsideFrontCover .marginBox,
 .USComicPortrait.outsideBackCover .marginBox {
-  height: 9.26574803in;
-  left: 15mm;
-  width: 5.44389764in;
+    height: 9.26574803in;
+    left: 15mm;
+    width: 5.44389764in;
 }
 .Size6x9Portrait.outsideFrontCover .marginBox,
 .Size6x9Portrait.outsideBackCover .marginBox {
-  height: 8.01574803in;
-  left: 15mm;
-  width: 4.81889764in;
+    height: 8.01574803in;
+    left: 15mm;
+    width: 4.81889764in;
 }
 .Size6x9Landscape.outsideFrontCover .marginBox,
 .Size6x9Landscape.outsideBackCover .marginBox {
-  height: 5.01574803in;
-  left: 15mm;
-  width: 7.81889764in;
+    height: 5.01574803in;
+    left: 15mm;
+    width: 7.81889764in;
 }
 
 /* -------------------------------------------------------
@@ -1382,7 +1610,8 @@ div.ui-audioCurrent p {
  * TODO: we need to insert .bloom-fullBleed into the HTML used by bloom player and epub
  * ------------------------------------------------------ */
 .bloom-fullBleed .outsideFrontCover .marginBox,
-.bloom-fullBleed .outsideBackCover .marginBox {/*from Uzbekistan2023-XMatter (added .bloom-fullBleed)*/
+.bloom-fullBleed .outsideBackCover .marginBox {
+    /*from Uzbekistan2023-XMatter (added .bloom-fullBleed)*/
     top: 0;
     left: 0 !important;
     height: 100% !important;
@@ -1394,40 +1623,42 @@ div.ui-audioCurrent p {
  * That file was removed in Bloom 6.0.
  * ------------------------------------------------------ */
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable {
-  font-weight: bold;
-  // 1.4em is the minimum to show ทไปทั่วพื้ without clipping.
-  // Until Bloom 4.4, that was the default, but it was ugly
-  // for everyone else. 1.0 looks great for a simple latin
-  // alphabet without descenders, and 1.1 is safe with descenders. See BL-6402
-  line-height: 1.1;
-  min-height: auto; // elsewhere there is a min-height, that may or may not be a good idea, but for sure we don't want it here.
+    font-weight: bold;
+    // 1.4em is the minimum to show ทไปทั่วพื้ without clipping.
+    // Until Bloom 4.4, that was the default, but it was ugly
+    // for everyone else. 1.0 looks great for a simple latin
+    // alphabet without descenders, and 1.1 is safe with descenders. See BL-6402
+    line-height: 1.1;
+    min-height: auto; // elsewhere there is a min-height, that may or may not be a good idea, but for sure we don't want it here.
 }
 // NB: The order here is important. bloom-content1 should be last so that if a box is
 // *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections),
 // we want the bloom-content1 rule to win.
-.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
-  //NB: we show the national language even if this is a monolingual book
-  font-size: 12pt; // was 120% in 5.6
-  margin-bottom: 5px;
+.frontCover
+    .bloom-translationGroup.bookTitle
+    .bloom-editable.bloom-contentNational1 {
+    //NB: we show the national language even if this is a monolingual book
+    font-size: 12pt; // was 120% in 5.6
+    margin-bottom: 5px;
 }
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
-  font-size: 25pt; // was 250% in 5.6
-  margin-bottom: 5px;
+    font-size: 25pt; // was 250% in 5.6
+    margin-bottom: 5px;
 }
 .Title-On-Cover-style {
-  text-align: center;
+    text-align: center;
 }
 .credits .licenseAndCopyrightBlock .copyright {
-  margin-bottom: 2em;
+    margin-bottom: 2em;
 }
 .credits .licenseAndCopyrightBlock .licenseBlock {
-  margin-bottom: 2em;
+    margin-bottom: 2em;
 }
 .credits .licenseAndCopyrightBlock img {
-  // creative commons license image
-  //note, if this is 93 or less, then FF29 (used to at least bloom 3.3) cuts off the right edge.
-  //It was fine if you zoomed in, fine in a more modern FF, fine in PDF, etc.
-  //I have tried changing a dozen different properties, including the image-rendering, and the
-  // only thing that helped was to make it a bit larger
-  width: 94px;
+    // creative commons license image
+    //note, if this is 93 or less, then FF29 (used to at least bloom 3.3) cuts off the right edge.
+    //It was fine if you zoomed in, fine in a more modern FF, fine in PDF, etc.
+    //I have tried changing a dozen different properties, including the image-rendering, and the
+    // only thing that helped was to make it a bit larger
+    width: 94px;
 }
