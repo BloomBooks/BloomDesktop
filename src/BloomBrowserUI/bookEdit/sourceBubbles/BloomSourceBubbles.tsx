@@ -42,7 +42,8 @@ export default class BloomSourceBubbles {
     public static MakeSourceBubblesIntoQtips(
         elementThatHasBubble: HTMLElement,
         contentsOfBubble: JQuery,
-        selectLangTag?: string
+        selectLangTag?: string,
+        forceShowAlwaysOnBody?: boolean
     ) {
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
         let divForBubble = BloomSourceBubbles.CreateTabsFromDiv(
@@ -61,7 +62,8 @@ export default class BloomSourceBubbles {
         // Also makes sure the tooltips are setup correctly.
         BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(
             elementThatHasBubble,
-            divForBubble
+            divForBubble,
+            forceShowAlwaysOnBody
         );
     }
 
@@ -464,7 +466,8 @@ export default class BloomSourceBubbles {
     // Also makes sure the tooltips are setup correctly.
     private static CreateAndShowQtipBubbleFromDiv(
         group: HTMLElement,
-        divForBubble: JQuery
+        divForBubble: JQuery,
+        forceShowAlwaysOnBody?: boolean
     ): void {
         let showEvents = false;
         let hideEvents = false;
@@ -473,7 +476,13 @@ export default class BloomSourceBubbles {
         let shouldShowAlways = true;
 
         const $group = $(group);
-        if (bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group) || !$group.is(':visible')) {
+        if (
+            (!forceShowAlwaysOnBody &&
+                bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(
+                    $group
+                )) ||
+            !$group.is(":visible")
+        ) {
             showEvents = true;
             showEventsStr = "focusin";
             hideEvents = true;
@@ -495,7 +504,9 @@ export default class BloomSourceBubbles {
                         x: 0,
                         y: 0
                     },
-                    container: bloomQtipUtils.qtipZoomContainer()
+                    container: forceShowAlwaysOnBody
+                        ? document.body
+                        : bloomQtipUtils.qtipZoomContainer()
                 },
                 content: divForBubble,
 

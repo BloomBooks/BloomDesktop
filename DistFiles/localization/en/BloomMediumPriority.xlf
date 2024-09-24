@@ -207,6 +207,10 @@
         <note>ID: EditTab.Toolbox.DragActivity.Word</note>
         <note>This is the label of an item that can be dragged onto the canvas to hold text, typically about the length of a word.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell" translate="yes">
+        <source xml:lang="en">Enter the word to spell</source>
+        <note>ID: EditTab.Toolbox.DragActivity.WordToSpell</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Wrong" translate="yes">
         <source xml:lang="en">Wrong</source>
         <note>ID: EditTab.Toolbox.DragActivity.Wrong</note>
