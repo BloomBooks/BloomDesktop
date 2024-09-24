@@ -5151,9 +5151,9 @@
         <target xml:lang="fr" state="final">Les métadonnées dans cette police nous informent qu'on n'a pas le droit de l'intégrer gratuitement dans les e-books et le web.</target>
         <note>ID: PublishTab.FontProblem.License</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.Microsoft" translate="yes">
+      <trans-unit id="PublishTab.FontProblem.Microsoft" translate="yes" approved="yes">
         <source xml:lang="en">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</source>
-        <target xml:lang="fr" state="needs-translation">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</target>
+        <target xml:lang="fr" state="final">Il s'agit d'une police fournie par Microsoft pour une utilisation sur votre ordinateur uniquement. Microsoft ne permet pas à ses polices d'être librement utilisées sur le Web ou distribuées dans des livres électroniques. Veuillez utiliser une police différente.</target>
         <note>ID: PublishTab.FontProblem.Microsoft</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Result" approved="yes">
