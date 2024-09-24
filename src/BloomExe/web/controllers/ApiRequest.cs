@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -323,6 +324,22 @@ namespace Bloom.Api
 
             if (handlerException != null)
             {
+                // Add whatever extra information we can from the request to the exception.
+                var rawUrl = request._requestInfo.RawUrl;
+                handlerException.Data.Add("Raw Url", rawUrl);
+                handlerException.Data.Add(
+                    "HTTP Method",
+                    request._requestInfo.HttpMethod.ToString()
+                );
+                if (request.HttpMethod == HttpMethods.Post)
+                {
+                    var postString = request.GetPostStringOrNull();
+                    if (!string.IsNullOrEmpty(postString))
+                        handlerException.Data.Add("Post String", postString);
+                    var postJson = request.GetPostJsonOrNull();
+                    if (!string.IsNullOrEmpty(postJson))
+                        handlerException.Data.Add("Post JSON", postJson);
+                }
                 ExceptionDispatchInfo.Capture(handlerException).Throw();
             }
             return true;

@@ -31,7 +31,10 @@ namespace Bloom.WebLibraryIntegration
             {
                 matchingItemsResponse = s3.ListObjectsV2(request);
                 allMatchingItems.AddRange(matchingItemsResponse.S3Objects);
-                request.ContinuationToken = matchingItemsResponse.ContinuationToken; // ContinuationToken indicates where the next request should start
+                // matchingItemsResponse.ContinuationToken indicates where the request that generated the response started
+                // matchingItemsResponse.NextContinuationToken indicates where the next request (if needed) should start
+                // request.ContinuationToken indicates where the request starts the next time it is used
+                request.ContinuationToken = matchingItemsResponse.NextContinuationToken;
             } while (matchingItemsResponse.IsTruncated); // IsTruncated returns true if it's not at the end
 
             return allMatchingItems;

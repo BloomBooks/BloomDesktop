@@ -37,10 +37,11 @@ namespace BloomTests
                 Assert.That(arialMeta.license, Does.Contain("Microsoft supplied font"));
                 Assert.That(arialMeta.copyright, Does.Contain("Monotype"));
                 Assert.That(arialMeta.fsType, Is.EqualTo("Editable"));
-                Assert.That(arialMeta.determinedSuitability, Is.EqualTo("ok"));
+                Assert.That(arialMeta.determinedSuitability, Is.EqualTo("unsuitable"));
+                Assert.That(arialMeta.determinedSuitabilityNotes, Is.EqualTo("Microsoft font"));
                 Assert.That(
-                    arialMeta.determinedSuitabilityNotes,
-                    Is.EqualTo("fsType from reliable source")
+                    arialMeta.licenseURL,
+                    Is.EqualTo("https://learn.microsoft.com/en-us/typography/fonts/font-faq")
                 );
             }
             else

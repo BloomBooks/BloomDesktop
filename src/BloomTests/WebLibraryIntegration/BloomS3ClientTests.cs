@@ -162,7 +162,7 @@ namespace BloomTests.WebLibraryIntegration
 
                 // Prep the next request (if needed)
                 listMatchingObjectsRequest.ContinuationToken =
-                    matchingFilesResponse.ContinuationToken;
+                    matchingFilesResponse.NextContinuationToken;
             } while (matchingFilesResponse.IsTruncated); // Returns true if haven't reached the end yet
         }
     }
