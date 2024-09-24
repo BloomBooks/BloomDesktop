@@ -20,10 +20,14 @@ const mouseOverFunction = e => {
     }
     if (target.tagName.toLowerCase() === "video") {
         if (
-            (e.altKey || e.ctrlKey) &&
+            (e.altKey ||
+                e.ctrlKey ||
+                target.classList.contains("bloom-ui-no-controls")) &&
             target.closest(".bloom-textOverPicture")
         ) {
-            target.removeAttribute("controls"); // trying to move/resize video container
+            // trying to move/resize video container, or in some other state where we
+            // don't want controls
+            target.removeAttribute("controls");
         } else {
             target.setAttribute("controls", ""); // attribute just has to exist to work
         }
@@ -148,11 +152,17 @@ function resetToStartAfterPlayingToEndPoint(
     window.setTimeout(() => {
         if (video.currentTime > endPoint) {
             video.pause();
+            // For some unknown reason, this video seems to have passed its end point without
+            // reaching the end and raising the ended event.
+            // Raise the ended event in case anything is listening for it.
+            const endedEvent = new Event("ended");
+            video.dispatchEvent(endedEvent);
             SignLanguageTool.setCurrentVideoPoint(
                 getVideoStartSeconds(video),
                 video
             );
         } else {
+            // Check again in another 100ms.
             resetToStartAfterPlayingToEndPoint(video, endPoint);
         }
     }, 100);

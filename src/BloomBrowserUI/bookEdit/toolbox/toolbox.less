@@ -7,6 +7,12 @@
 @helpLinkTopMargin: 45px;
 @bloomEnterpriseBadgeSize: 24px;
 
+// The Games tool wants a white bar at the very top, so defeat the usual padding
+.ui-accordion .ui-accordion-content[data-toolid="dragActivityTool"] {
+    padding-top: 0;
+    padding-left: 1px !important;
+}
+
 div.toolboxRoot {
     display: inline-block;
     background-color: @toolboxBackgroundColor;
@@ -28,6 +34,35 @@ div.toolboxRoot {
     // multiple tools add a Help link after the rest of the tool content
     .helpLinkWrapper {
         margin-top: @helpLinkTopMargin; // put some space before the Help link
+    }
+}
+.sound-select-dropdown-menu {
+    z-index: 18001 !important; // Beat mui rule that wants it to be 1300, but it must be above the toolbox
+    // Make the popover for mui Select look right for the toolbox context.
+    // It ought to be possible to do this in React; the doc indicates that menu colors can be controlled
+    // with the sx prop, but I couldn't get it to work.
+    // Usually, the next best option would be to put additional emotion css on the container. That won't
+    // work here because the list and items are not children of the Select; they get added at the body level.
+    // For the same reason, we can't even limit this to div.toolboxRoot; the list is not inside that.
+    ul {
+        background-color: @toolboxBackgroundColor !important;
+        color: white !important;
+    }
+    li {
+        background-color: @toolboxBackgroundColor !important;
+        // Messing with these to make a tighter list and to try to make the divider lines look good.
+        padding: 2px 0 !important;
+        margin: 0 16px !important;
+        min-height: 28px !important;
+        &:hover {
+            background-color: #505050 !important;
+        }
+        &.Mui-selected {
+            background-color: @bloom-blue !important;
+        }
+        &.MuiMenuItem-divider {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+        }
     }
 }
 

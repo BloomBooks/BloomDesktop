@@ -8,6 +8,7 @@ import { EditableDivUtils } from "./js/editableDivUtils";
 import "../lib/jquery.i18n.custom.ts"; //localize()
 import "errorHandler";
 import { theOneBubbleManager, BubbleManager } from "./js/bubbleManager";
+import { renderDragActivityTabControl } from "./toolbox/dragActivity/DragActivityTabControl";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -27,7 +28,7 @@ export interface IPageFrameExports {
     pageUnloading(): void;
     copySelection(): void;
     cutSelection(): void;
-    pasteClipboardText(): void;
+    pasteClipboard(): void;
     makeElement(
         html: string,
         parent?: JQuery,
@@ -46,6 +47,7 @@ export interface IPageFrameExports {
     ckeditorUndo(): void;
 
     SayHello(): void;
+    renderDragActivityTabControl(currentTab: number): void;
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
@@ -57,7 +59,7 @@ import {
     pageUnloading,
     copySelection,
     cutSelection,
-    pasteClipboardText,
+    pasteClipboard,
     makeElement,
     SetupElements,
     attachToCkEditor,
@@ -71,12 +73,13 @@ export {
     pageUnloading,
     copySelection,
     cutSelection,
-    pasteClipboardText,
+    pasteClipboard,
     makeElement,
     SetupElements,
     attachToCkEditor,
     removeImageId,
-    changeImage
+    changeImage,
+    renderDragActivityTabControl
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";

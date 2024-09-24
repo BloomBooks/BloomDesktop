@@ -15,6 +15,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Publish.PDF;
+using Bloom.SafeXml;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
@@ -262,10 +263,10 @@ namespace Bloom.Publish
                 // - Book contains overlay elements AND
                 // - Book is not a translated shell
 
-                var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SelectNodes(
+                var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SafeSelectNodes(
                     "//div[contains(@class, 'bloom-textOverPicture')]"
                 );
-                var bookContainsOverlayElements = (overlayElementNodes?.Count ?? 0) > 0;
+                var bookContainsOverlayElements = (overlayElementNodes?.Length ?? 0) > 0;
 
                 var bookIsTranslatedFromShell =
                     BookSelection?.CurrentSelection?.BookData?.BookIsDerivative() ?? false;
@@ -423,7 +424,7 @@ namespace Bloom.Publish
             );
 
             AddStylesheetClasses(dom.RawDom);
-            HtmlDom.AddClassToBody(dom.RawDom, "pdfPublishMode");
+            dom.RawDom.AddClassToBody("pdfPublishMode");
 
             PageLayout.UpdatePageSplitMode(dom.RawDom);
             if (_currentlyLoadedBook.FullBleed && !GetPrintingWithFullBleed())
@@ -433,7 +434,7 @@ namespace Bloom.Publish
 
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
             dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
-            HtmlPageCount = dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count;
+            HtmlPageCount = dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Length;
 
             return BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 dom,
@@ -453,22 +454,22 @@ namespace Bloom.Publish
             // So it's easiest just to stick it in the style attribute of each page.
             foreach (
                 var page in dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
             )
             {
                 page.SetAttribute("style", "margin-left: -3mm; margin-top: -3mm;");
             }
         }
 
-        private void AddStylesheetClasses(XmlDocument dom)
+        private void AddStylesheetClasses(SafeXmlDocument dom)
         {
             if (this.GetPrintingWithFullBleed())
             {
-                HtmlDom.AddClassToBody(dom, "publishingWithFullBleed");
+                dom.AddClassToBody("publishingWithFullBleed");
             }
             else
             {
-                HtmlDom.AddClassToBody(dom, "publishingWithoutFullBleed");
+                dom.AddClassToBody("publishingWithoutFullBleed");
             }
             HtmlDom.AddPublishClassToBody(dom);
 
@@ -941,14 +942,14 @@ namespace Bloom.Publish
             foreach (
                 var page in dom.RawDom
                     .SafeSelectNodes("//div[contains(@class,'bloom-page')]")
-                    .Cast<XmlElement>()
+                    .Cast<SafeXmlElement>()
                     .ToList()
             )
             {
                 var isXMatter = !String.IsNullOrWhiteSpace(page.GetAttribute("data-xmatter-page"));
 
                 foreach (
-                    var div in page.SafeSelectNodes(".//div[@lang]").Cast<XmlElement>().ToList()
+                    var div in page.SafeSelectNodes(".//div[@lang]").Cast<SafeXmlElement>().ToList()
                 )
                 {
                     var lang = div.GetAttribute("lang");
@@ -984,7 +985,7 @@ namespace Bloom.Publish
                     bool deleteDiv = true;
                     foreach (
                         var subdiv in div.SafeSelectNodes(".//div[@lang]")
-                            .Cast<XmlElement>()
+                            .Cast<SafeXmlElement>()
                             .ToList()
                     )
                     {
@@ -1063,7 +1064,7 @@ namespace Bloom.Publish
             var pageIndex = 0;
 
             foreach (
-                XmlElement pageElement in this.BookSelection.CurrentSelection.GetPageElements()
+                SafeXmlElement pageElement in this.BookSelection.CurrentSelection.GetPageElements()
             )
             {
                 ++pageIndex;
@@ -1074,14 +1075,14 @@ namespace Bloom.Publish
                     // These elements are marked as audio-sentence but we're not sure yet if the user actually recorded them yet
                     var audioSentenceElements = HtmlDom
                         .SelectAudioSentenceElements(pageElement)
-                        .Cast<XmlElement>();
+                        .Cast<SafeXmlElement>();
 
                     var mergeFiles = audioSentenceElements
                         .Select(
                             s =>
                                 AudioProcessor.GetOrCreateCompressedAudio(
                                     this.BookSelection.CurrentSelection.FolderPath,
-                                    s.Attributes["id"]?.Value
+                                    s.GetAttribute("id")
                                 )
                         )
                         .Where(s => !string.IsNullOrEmpty(s));

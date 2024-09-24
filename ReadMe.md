@@ -41,8 +41,8 @@ To build the .NET/C# part of Bloom you'll need Visual Studio Community Edition.
 ### Setting up formatting
 
 In a terminal, run `dotnet tool restore`. This will install any tools we have put in .config/dotnet-tools.json along with the correct versions.
-In Visual Studio, under Extensions, install "CSharpier".
-In Preferences, under CSharpier:Solution, set `Reformat with CSharpier on Save` to `true`. Note that you are setting it for this solution, not in general.
+In Visual Studio, under Extensions, install "CSharpier".  The extension's version will not be the same as the CSharpier installed by 'dotnet tool restore', but that's not a problem.
+In Tools/Options, under CSharpier:General, set `Reformat with CSharpier on Save` to `true`. Note that you should set it for this solution, not globally.
 You should also install the CSharpier extension in vscode.
 CSharpier should be using the version specified in `.config/dotnet-tools.json`.
 When testing a new version of csharpier, to format everything, run `dotnet csharpier src/BloomExe`

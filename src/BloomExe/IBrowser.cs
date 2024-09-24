@@ -49,7 +49,6 @@ namespace Bloom
     public abstract class Browser : UserControl
     {
         internal Point ContextMenuLocation;
-        private XmlDocument _rootDom; // root DOM we navigate the browser to; typically a shell with other doms in iframes
 
         // A temporary object needed just as long as it is the content of this browser.
         // Currently may be a TempFile (a real filesystem file) or a InMemoryHtmlFile (just a dictionary entry).
@@ -88,8 +87,10 @@ namespace Bloom
         public Action ReplaceContextMenu { get; set; }
 
         protected bool WantDebugMenuItems =>
-            ApplicationUpdateSupport.IsDevOrAlpha
-            || ((ModifierKeys & Keys.Control) == Keys.Control);
+            // Had this for a long time, but it's increasingly in conflict with right-click stuff
+            // implemented in JavaScript.
+            //ApplicationUpdateSupport.IsDevOrAlpha ||
+            ((ModifierKeys & Keys.Control) == Keys.Control);
 
         public abstract void CopySelection();
         public abstract void SelectAll();
@@ -138,9 +139,7 @@ namespace Bloom
             // This must already be called before calling Navigate(), but it doesn't really hurt to call it again.
             EnsureBrowserReadyToNavigate();
 
-            XmlDocument dom = htmlDom.RawDom;
-
-            _rootDom = dom; //.CloneNode(true); //clone because we want to modify it a bit
+            var dom = htmlDom.RawDom;
 
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
             var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(

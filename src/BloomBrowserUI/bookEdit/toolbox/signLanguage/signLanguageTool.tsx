@@ -863,7 +863,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // when we come back to the page. This is especially important when refreshing the
         // page after selecting or recording a video.
         const containers = SignLanguageTool.getVideoContainers(false);
-        if (containers) {
+        if (containers && containers.length > 0) {
             for (let i = 0; i < containers.length; i++) {
                 containers[i].removeEventListener(
                     "click",

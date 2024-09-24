@@ -9,6 +9,7 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.SafeXml;
 using L10NSharp;
 using NUnit.Framework;
 using SIL.IO;
@@ -1500,7 +1501,7 @@ namespace BloomTests.Book
             var collectionSettings = CreateCollection("etr", null, "en", null, "tpi", null);
             var data = new BookData(dom, collectionSettings, null);
             data.SynchronizeDataItemsThroughoutDOM();
-            XmlElement nationalTitle = (XmlElement)
+            var nationalTitle = (SafeXmlElement)
                 dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
             Assert.AreEqual("Vaccinations", nationalTitle.InnerText);
 
@@ -1511,7 +1512,7 @@ namespace BloomTests.Book
             // Hack to update cache of ML1
             data.SetMultilingualContentLanguages("etr", "tpi", "en");
             data.SynchronizeDataItemsThroughoutDOM();
-            nationalTitle = (XmlElement)
+            nationalTitle = (SafeXmlElement)
                 dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
             Assert.AreEqual("Tambu Sut", nationalTitle.InnerText);
         }
@@ -1531,7 +1532,7 @@ namespace BloomTests.Book
             var collectionSettings = CreateCollection(Language1LangTag: "etr");
             var data = new BookData(dom, collectionSettings, null);
             data.SynchronizeDataItemsThroughoutDOM();
-            XmlElement target = (XmlElement)
+            var target = (SafeXmlElement)
                 dom.SelectSingleNodeHonoringDefaultNS("//div[@id='target']");
 
             // It's expected that the surviving label goes at the end.
@@ -1539,7 +1540,7 @@ namespace BloomTests.Book
                 target.InnerText,
                 Is.EqualTo("Here is the contentSome more space to put things")
             );
-            XmlElement label = (XmlElement)target.SelectSingleNodeHonoringDefaultNS("//label");
+            var label = (SafeXmlElement)target.SelectSingleNodeHonoringDefaultNS("//label");
             Assert.That(label.InnerText, Is.EqualTo("Some more space to put things"));
         }
 
@@ -1705,7 +1706,7 @@ namespace BloomTests.Book
 				</body></html>"
             );
 
-            var e = (XmlElement)
+            var e = (SafeXmlElement)
                 dom.RawDom.SelectSingleNode(
                     "//body/div[@class='bloom-page' and @data-xmatter-page='frontCover']"
                 );
@@ -1736,7 +1737,7 @@ namespace BloomTests.Book
 				</body></html>"
             );
 
-            var e = (XmlElement)
+            var e = (SafeXmlElement)
                 dom.RawDom.SelectSingleNode(
                     "//body/div[@class='bloom-page' and @data-xmatter-page='frontCover']"
                 );
@@ -2204,7 +2205,7 @@ namespace BloomTests.Book
         }
 
         [Test]
-		public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangToEnglish()
+        public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangToEnglish()
         {
             var bookDom = new HtmlDom(
                 @"<html ><head></head><body>
@@ -2217,70 +2218,86 @@ namespace BloomTests.Book
             var data = new BookData(bookDom, _collectionSettings, null);
             Assert.AreEqual("health", data.GetVariableOrNull("topic", "en").Xml);
             Assert.IsNull(data.GetVariableOrNull("topic", "tpi").Xml);
-		}
+        }
 
-		private BookData CreateBookDom(string topic, string copyright = null, string originalCopyright = null)
-		{
-			var topicDiv = topic != null ? $"<div data-book='topic' lang='en'>{topic}</div>" : "";
-			var copyrightDiv = copyright != null ? $"<div data-book='copyright' lang='*'>{copyright}</div>" : "";
-			var originalCopyrightDiv = originalCopyright != null ? $"<div data-book='originalCopyright' lang='*'>{originalCopyright}</div>" : "";
+        private BookData CreateBookDom(
+            string topic,
+            string copyright = null,
+            string originalCopyright = null
+        )
+        {
+            var topicDiv = topic != null ? $"<div data-book='topic' lang='en'>{topic}</div>" : "";
+            var copyrightDiv =
+                copyright != null ? $"<div data-book='copyright' lang='*'>{copyright}</div>" : "";
+            var originalCopyrightDiv =
+                originalCopyright != null
+                    ? $"<div data-book='originalCopyright' lang='*'>{originalCopyright}</div>"
+                    : "";
 
-			var bookDom = new HtmlDom(
-@$"<html><head></head><body>
+            var bookDom = new HtmlDom(
+                @$"<html><head></head><body>
 	<div id='bloomDataDiv'>
 		{topicDiv}
 		{copyrightDiv}
 		{originalCopyrightDiv}
 	</div>
- </body></html>");
+ </body></html>"
+            );
 
-			return new BookData(bookDom, _collectionSettings, null);
-		}
+            return new BookData(bookDom, _collectionSettings, null);
+        }
 
-		[Test]
-		public void MigrateSpiritualTopic_TopicIsNotSpiritual_NoChange()
-		{
-			var data = CreateBookDom(topic: "Dictionary", copyright: "Bible Society");
-			Assert.AreEqual("Dictionary", data.GetVariableOrNull("topic", "en").Xml);
-		}
+        [Test]
+        public void MigrateSpiritualTopic_TopicIsNotSpiritual_NoChange()
+        {
+            var data = CreateBookDom(topic: "Dictionary", copyright: "Bible Society");
+            Assert.AreEqual("Dictionary", data.GetVariableOrNull("topic", "en").Xml);
+        }
 
-		[TestCase("Bible Society")]
-		[TestCase("Group of Bible Translators")]
-		[TestCase("SIL International")]
-		[TestCase("Kartidaya")]
-		[TestCase("WPS")]
-		public void MigrateSpiritualTopic_TopicIsSpiritual_CopyrightIsForBible_MigratesTopicToBible(string copyright)
-		{
-			var data = CreateBookDom(topic: "Spiritual", copyright);
-			Assert.AreEqual("Bible", data.GetVariableOrNull("topic", "en").Xml);
-		}
+        [TestCase("Bible Society")]
+        [TestCase("Group of Bible Translators")]
+        [TestCase("SIL International")]
+        [TestCase("Kartidaya")]
+        [TestCase("WPS")]
+        public void MigrateSpiritualTopic_TopicIsSpiritual_CopyrightIsForBible_MigratesTopicToBible(
+            string copyright
+        )
+        {
+            var data = CreateBookDom(topic: "Spiritual", copyright);
+            Assert.AreEqual("Bible", data.GetVariableOrNull("topic", "en").Xml);
+        }
 
-		[TestCase("Some Guy", null)]
-		[TestCase("Clearasil", null)] // Doesn't find "SIL"
-		[TestCase("Some Guy", "Bible Society")]
-		[TestCase("Clearasil", "Bible Society")] // Doesn't find "SIL"
-		public void MigrateSpiritualTopic_TopicIsSpiritual_CopyrightIsNotForBible_RemovesTopic(string copyright, string originalCopyright)
-		{
-			var data = CreateBookDom(topic: "Spiritual", copyright, originalCopyright);
-			Assert.AreEqual(new MultiTextBase(), data.GetMultiTextVariableOrEmpty("topic"));
-		}
+        [TestCase("Some Guy", null)]
+        [TestCase("Clearasil", null)] // Doesn't find "SIL"
+        [TestCase("Some Guy", "Bible Society")]
+        [TestCase("Clearasil", "Bible Society")] // Doesn't find "SIL"
+        public void MigrateSpiritualTopic_TopicIsSpiritual_CopyrightIsNotForBible_RemovesTopic(
+            string copyright,
+            string originalCopyright
+        )
+        {
+            var data = CreateBookDom(topic: "Spiritual", copyright, originalCopyright);
+            Assert.AreEqual(new MultiTextBase(), data.GetMultiTextVariableOrEmpty("topic"));
+        }
 
-		[TestCase("Bible Society")]
-		[TestCase("Group of Bible Translators")]
-		[TestCase("SIL International")]
-		[TestCase("Kartidaya")]
-		[TestCase("WPS")]
-		public void MigrateSpiritualTopic_TopicIsSpiritual_NoCopyright_OriginalCopyrightIsForBible_MigratesTopicToBible(string originalCopyright)
-		{
-			var data = CreateBookDom(topic: "Spiritual", originalCopyright: originalCopyright);
-			Assert.AreEqual("Bible", data.GetVariableOrNull("topic", "en").Xml);
-		}
+        [TestCase("Bible Society")]
+        [TestCase("Group of Bible Translators")]
+        [TestCase("SIL International")]
+        [TestCase("Kartidaya")]
+        [TestCase("WPS")]
+        public void MigrateSpiritualTopic_TopicIsSpiritual_NoCopyright_OriginalCopyrightIsForBible_MigratesTopicToBible(
+            string originalCopyright
+        )
+        {
+            var data = CreateBookDom(topic: "Spiritual", originalCopyright: originalCopyright);
+            Assert.AreEqual("Bible", data.GetVariableOrNull("topic", "en").Xml);
+        }
 
-		[Test]
-		public void MigrateSpiritualTopic_TopicIsSpiritual_NoCopyrightOrOriginalCopyright_RemovesTopic()
-		{
-			var data = CreateBookDom(topic: "Spiritual");
-			Assert.AreEqual(new MultiTextBase(), data.GetMultiTextVariableOrEmpty("topic"));
+        [Test]
+        public void MigrateSpiritualTopic_TopicIsSpiritual_NoCopyrightOrOriginalCopyright_RemovesTopic()
+        {
+            var data = CreateBookDom(topic: "Spiritual");
+            Assert.AreEqual(new MultiTextBase(), data.GetMultiTextVariableOrEmpty("topic"));
         }
 
         [Test]
@@ -2470,14 +2487,14 @@ namespace BloomTests.Book
             data.SetupDisplayOfLanguagesOfBook();
 
             // Verification
-            var dataDivLanguagesOfBookNodes = bookDom.RawDom.SelectNodes(
+            var dataDivLanguagesOfBookNodes = bookDom.RawDom.SafeSelectNodes(
                 "//div[@id='bloomDataDiv']//div[@data-book='languagesOfBook']"
             );
             // The live bug was also creating multiple copies of the languagesOfBook element.
             // I can't figure out how to make that happen in a test, but the cause of it getting the wrong lang attribute
             // and multiple copies was the same.
-            Assert.That(dataDivLanguagesOfBookNodes.Count, Is.EqualTo(1));
-            Assert.That(dataDivLanguagesOfBookNodes[0].GetStringAttribute("lang"), Is.EqualTo("*"));
+            Assert.That(dataDivLanguagesOfBookNodes.Length, Is.EqualTo(1));
+            Assert.That(dataDivLanguagesOfBookNodes[0].GetAttribute("lang"), Is.EqualTo("*"));
             Assert.AreEqual("English", dataDivLanguagesOfBookNodes[0].InnerText);
         }
 
@@ -2841,7 +2858,7 @@ namespace BloomTests.Book
             );
             var data = new BookData(dom, _collectionSettings, null);
             data.SynchronizeDataItemsThroughoutDOM();
-            var foo = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@id='foo']");
+            var foo = (SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@id='foo']");
             Assert.That(foo.InnerXml, Contains.Substring("<label>some label</label>"));
         }
 
@@ -2869,7 +2886,7 @@ namespace BloomTests.Book
             );
             var data = new BookData(dom, _collectionSettings, null);
             data.SynchronizeDataItemsThroughoutDOM();
-            var dataDivImage = (XmlElement)
+            var dataDivImage = (SafeXmlElement)
                 dom.SelectSingleNodeHonoringDefaultNS("//img[@data-book='coverImage']");
             Assert.That(dataDivImage.GetAttribute("src"), Contains.Substring("new.png"));
             if (expectStyle)
@@ -2946,21 +2963,24 @@ namespace BloomTests.Book
             );
             var data = new BookData(dom, _collectionSettings, null);
             data.SynchronizeDataItemsThroughoutDOM();
-            var foo = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo']");
+            var foo = (SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo']");
             // an attribute that isn't present on the destination
             Assert.That(foo.GetAttribute("id"), Is.EqualTo("i6a720491"));
             // an attribute that needs to be overwritten.
             Assert.That(foo.GetAttribute("data-duration"), Is.EqualTo("5.839433"));
             // One that should not be copied
-            Assert.That(foo.Attributes["tabindex"], Is.Null);
+            Assert.That(foo.GetOptionalStringAttribute("tabindex", null), Is.Null);
             // One that should be removed
-            Assert.That(foo.Attributes["data-audiorecordingendtimes"], Is.Null);
+            Assert.That(
+                foo.GetOptionalStringAttribute("data-audiorecordingendtimes", null),
+                Is.Null
+            );
             // One that should not be overwritten (though more commonly it wouldn't be in the destination)
             Assert.That(foo.GetAttribute("aria-describedby"), Is.EqualTo("qtip-5"));
             // One that is not in the source and should be left alone
             Assert.That(foo.GetAttribute("keepMe"), Is.EqualTo("keep me"));
 
-            var classes = new HashSet<string>(foo.GetAttribute("class", "").Split());
+            var classes = new HashSet<string>(foo.GetAttribute("class").Split());
             // a class that should be added to the destination
             Assert.That(classes, Does.Contain("testClass"));
             // Classes that should not be added
@@ -2995,8 +3015,8 @@ namespace BloomTests.Book
             );
             var data = new BookData(dom, _collectionSettings, null);
             data.SynchronizeDataItemsThroughoutDOM();
-            var foo = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo']");
-            var foo2 = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo2']");
+            var foo = (SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo']");
+            var foo2 = (SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo2']");
             // an attribute that is potentially deletable, but present in source, gets copied to destination, overwriting old value
             Assert.That(foo.GetAttribute("data-audiorecordingendtimes"), Is.EqualTo("1.640 4.640"));
             // also copied to destination that previously didn't have it.
@@ -3005,8 +3025,8 @@ namespace BloomTests.Book
                 Is.EqualTo("1.640 4.640")
             );
 
-            var classes = new HashSet<string>(foo.GetAttribute("class", "").Split());
-            var classes2 = new HashSet<string>(foo2.GetAttribute("class", "").Split());
+            var classes = new HashSet<string>(foo.GetAttribute("class").Split());
+            var classes2 = new HashSet<string>(foo2.GetAttribute("class").Split());
             // a class that is potentially deletable, but present in source and destination, is kept
             Assert.That(classes, Does.Contain("bloom-postAudioSplit"));
             // a class that is potentially deletable, present in source but not destination, is added

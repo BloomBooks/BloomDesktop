@@ -80,7 +80,7 @@
     <Message Text="BuildHash: $(BuildHash)" Importance="high"/>
     <!-- Note, after some thought, we've decided this is the best place to keep the version number
 			(not on TeamCity, not in the projects). -->
-    <CreateProperty Value="6.0.$(BuildCounter)">
+    <CreateProperty Value="6.1.$(BuildCounter)">
       <Output PropertyName="Version" TaskParameter="Value"/>
     </CreateProperty>
     <CreateProperty Value="$(Version).$(BuildHash)">

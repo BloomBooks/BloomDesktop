@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Xml;
 using Bloom.Book;
+using Bloom.SafeXml;
 
 namespace Bloom.Edit
 {
@@ -30,7 +31,7 @@ namespace Bloom.Edit
             get { return null; }
         }
 
-        public XmlElement GetDivNodeForThisPage()
+        public SafeXmlElement GetDivNodeForThisPage()
         {
             return null;
         }
@@ -83,6 +84,11 @@ namespace Bloom.Edit
         }
 
         public bool IsCoverPage
+        {
+            get { return false; }
+        }
+
+        public bool IsFrontCoverPage
         {
             get { return false; }
         }

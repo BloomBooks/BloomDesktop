@@ -66,6 +66,7 @@ namespace Bloom.ToPalaso
                     case ".tsv": // tab-separated values (audio timing file)
                     case ".3gp": // audio/video extensions
                     case ".mp4":
+                    case ".webm":
                     case ".mp3":
                         titleToMatch = Path.GetFileName(urlOrCmd);
                         break;

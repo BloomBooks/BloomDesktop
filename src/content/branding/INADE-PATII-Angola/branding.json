@@ -1,6 +1,11 @@
 {
     "presets": [
         {
+            // instead of the usual L1 for cover credits language, they want to use Portuguese
+            "key": "CoverCreditsLanguage",
+            "content": "pt"
+        },
+        {
             "data-book": "cover-branding-top-html",
             "lang": "*",
             "content": "<img class='branding' src='RepublicaDeAngola.png'/><p>República de Angola</p><p>Ministério da Educação</p><p>Instituto Nacional de Avaliação e de Desenvolvimento da Educação</p>",
@@ -14,6 +19,7 @@
         }
     ],
     "appearance": {
+        "cover-background-color": "white",
         "topLevel-text-padding": "2mm"
     }
 }

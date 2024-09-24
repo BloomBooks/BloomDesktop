@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 import React = require("react");
 import { get, post, postString } from "../utils/bloomApi";
-import { BooksOfCollection } from "./BooksOfCollection";
+import { BooksOfCollection, IBookInfo } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
 import { SplitPane } from "react-collapse-pane";
 import { kPanelBackground, kDarkestBackground } from "../bloomMaterialUITheme";
@@ -38,10 +38,21 @@ import { BooksOnBlorgProgressBar } from "../booksOnBlorg/BooksOnBlorgProgressBar
 
 const kResizerSize = 10;
 
+type CollectionInfo = {
+    id: string;
+    name: string;
+    shouldLocalizeName: boolean;
+    isLink: boolean;
+    isRemovableFolder: boolean;
+    filter?: (book: IBookInfo) => boolean;
+};
+
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     // This sort of duplicates useApiJson, but allows us to use the underlying state variable.
     // Which we really need.
-    const [collections, setCollections] = useState<[any] | undefined>();
+    const [collections, setCollections] = useState<
+        [CollectionInfo] | undefined
+    >();
     useEffect(() => {
         get("collections/list", c => {
             setCollections(c.data);
@@ -61,9 +72,11 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         });
     };
 
-    const [newCollection, setNewCollection] = useState<any | undefined>();
+    const [newCollection, setNewCollection] = useState<
+        CollectionInfo | undefined
+    >();
 
-    const finishAddingNewSourceCollection = (collection: any) => {
+    const finishAddingNewSourceCollection = (collection: CollectionInfo) => {
         if (!collections) return;
         const currentIndex = collections.findIndex(value => {
             return value.id && value.id === collection.id;
@@ -109,7 +122,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     // via web socket iff they select a folder and close the dialog.
     useSubscribeToWebSocketForObject<{
         success: boolean;
-        collection: any;
+        collection: CollectionInfo;
     }>("collections", "addSourceCollection-results", results => {
         if (results.success) {
             setNewCollection(results.collection);
@@ -117,7 +130,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     });
 
     const [deletedCollection, setDeletedCollection] = useState<
-        any | undefined
+        CollectionInfo | undefined
     >();
 
     const removeSourceFolder = (id: string) => {
@@ -318,10 +331,17 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         setNewCollection(undefined);
     }
     if (deletedCollection) {
-        finishDeletingCollection(deletedCollection);
+        finishDeletingCollection(deletedCollection.id);
         setDeletedCollection(undefined);
     }
-    const sourcesCollections = collections.slice(1);
+    let sourcesCollections = collections.slice(1); // remove the one editable collection
+    if (sourcesCollections.length > 0) {
+        // when we're in the "download for editing" mode, there are no other collections
+        sourcesCollections = [
+            ...processTemplatesCollection(sourcesCollections[0]),
+            ...sourcesCollections.slice(1)
+        ];
+    }
     // Enhance: may want to sort these by local name, though probably keeping Templates
     // and possibly Sample Shells at the top.
     const collectionComponents = sourcesCollections.map(c => {
@@ -337,6 +357,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                 isSpreadsheetFeatureActive={isSpreadsheetFeatureActive}
                 onRemoveSourceCollection={removeSourceCollection}
                 onRemoveSourceFolder={removeSourceFolder}
+                filter={c.filter}
             />
         );
     });
@@ -720,6 +741,7 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
     isSpreadsheetFeatureActive: boolean;
     onRemoveSourceCollection: (id: string) => void;
     onRemoveSourceFolder: (id: string) => void;
+    filter?: (book: IBookInfo) => boolean;
 }> = props => {
     // Using a null l10nId lets us not make a server call when we don't want to.
     // (We can't call useL10n conditionally.)
@@ -760,6 +782,7 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
                 lazyLoadCollection={true}
                 isSpreadsheetFeatureActive={props.isSpreadsheetFeatureActive}
                 lockedToOneDownloadedBook={false}
+                filter={props.filter}
             />
         </div>
     );
@@ -836,4 +859,29 @@ function sanitize(id: string): string {
     return encodeURIComponent(id).replace(/./g, "_");
 }
 
+// Divide the one "templates/" collection into separate collections and sort them
+// TODO: sort them according to some criteria TBD
+function processTemplatesCollection(
+    templatesCollection: CollectionInfo
+): CollectionInfo[] {
+    const simpleTemplates = { ...templatesCollection };
+
+    // this "f" garbage is because TS refused to see that simpleTemplates.filter is never undefined
+    const f = (book: IBookInfo) => {
+        return (
+            book.folderName.startsWith("Basic Book") ||
+            book.folderName.startsWith("eBook")
+        );
+    };
+    simpleTemplates.filter = f;
+    const specializedTemplates = {
+        ...templatesCollection,
+        name: "Specialized Templates"
+    };
+    specializedTemplates.filter = (book: IBookInfo) => {
+        return !f(book);
+    };
+
+    return [simpleTemplates, specializedTemplates];
+}
 WireUpForWinforms(CollectionsTabPane);

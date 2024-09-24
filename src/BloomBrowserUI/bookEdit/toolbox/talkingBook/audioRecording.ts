@@ -112,6 +112,7 @@ const kAudioCurrentClassSelector = "." + kAudioCurrent;
 const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
 const kBloomTranslationGroupClass = "bloom-translationGroup";
+const kBloomVisibleClass = "bloom-visibility-code-on";
 
 const kAudioSplitId = "audio-split";
 
@@ -378,7 +379,7 @@ export default class AudioRecording {
                 }
             }
 
-            if (pageDocBody.querySelector("span.audio-sentence")) {
+            if (pageDocBody.querySelector("span." + kAudioSentence)) {
                 // This may happen when loading books from 4.3 or earlier that already have text recorded,
                 // and is especially important if the collection default is set to anything other than Sentence.
                 return RecordingMode.Sentence;
@@ -567,12 +568,30 @@ export default class AudioRecording {
             return []; // shouldn't happen
         }
         const editableDivs = Array.from(
-            pageBody.querySelectorAll(
-                ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
+            // requiring the visible class reduces the filtering we need to do, but also,
+            // some elements (currently in Bloom Games) are visible as placeholders
+            // when the main element is empty, and we don't want to record those.
+            pageBody.getElementsByClassName(
+                kBloomEditableTextBoxClass + " " + kBloomVisibleClass
             ),
             elem => <HTMLElement>elem
         );
         const recordableDivs = editableDivs.filter(elt => {
+            if (elt.parentElement?.classList.contains("bloom-noAudio")) {
+                return false;
+            }
+            // Copies in game targets are not recordable
+            if (elt.closest("[data-target-of]")) {
+                return false;
+            }
+            if (
+                !elt.parentElement?.classList.contains(
+                    kBloomTranslationGroupClass
+                )
+            ) {
+                // We were getting copies from qtips
+                return false;
+            }
             if (!$this.isVisible(elt, includeCheckForTempHidden)) {
                 return false;
             }
@@ -651,7 +670,7 @@ export default class AudioRecording {
         elem: Element,
         includeCheckForTempHidden: boolean = true
     ) {
-        if (this.isInHiddenLanguageBlock(elem)) {
+        if (EditableDivUtils.isInHiddenLanguageBlock(elem)) {
             return false;
         }
         if (!includeCheckForTempHidden) {
@@ -679,26 +698,6 @@ export default class AudioRecording {
             }
         }
         return true;
-    }
-    private isInHiddenLanguageBlock(elem: Element) {
-        // Spans (and probably other inline elements?) can have display=inline even if they're inside a div that's display=none
-        let elemToCheck = elem;
-
-        if (elem.tagName === "SPAN") {
-            const parentEditable = elem.closest(".bloom-editable");
-
-            // Really not wanting this scenario to happen, because we may get inaccurate results, but...
-            // We ought to be able to continue on without anything terrible happening
-            console.assert(
-                parentEditable,
-                "isVisible(): Unexpected span that is not inside a bloom-editable. span = " +
-                    elem
-            );
-            elemToCheck = parentEditable || elem;
-        }
-
-        const style = window.getComputedStyle(elemToCheck);
-        return style.display === "none";
     }
 
     private containsAnyAudioElements(): boolean {
@@ -1896,7 +1895,7 @@ export default class AudioRecording {
         }
 
         // Remove the recording md5(s)
-        const current = this.getCurrentTextBoxSync();
+        const current = this.getAudioCurrentElement();
         if (current) {
             const recordable = new Recordable(current);
             recordable.unsetChecksum();
@@ -2372,9 +2371,9 @@ export default class AudioRecording {
             return null;
         }
 
-        let audioCurrentElements = pageBody.getElementsByClassName(
-            kAudioCurrent
-        );
+        let audioCurrentElements = (Array.from(
+            pageBody.getElementsByClassName(kAudioCurrent)
+        ) as HTMLElement[]).filter(x => this.isVisible(x));
 
         if (audioCurrentElements.length === 0) {
             // Oops, ui-audioCurrent not set on anything. Just going to have to stick it onto the first element.
@@ -2389,20 +2388,37 @@ export default class AudioRecording {
             // 1) This original version (that includes the asynchronous fallback)
             // 2) Also a synchronous (but no fallback) version of this function called getCurrentTextBoxSync()
             this.setCurrentAudioElementToFirstAudioElementAsync();
-            audioCurrentElements = pageBody.getElementsByClassName(
-                kAudioCurrent
-            );
+            audioCurrentElements = Array.from(
+                pageBody.getElementsByClassName(kAudioCurrent)
+            ) as HTMLElement[];
 
             if (audioCurrentElements.length <= 0) {
                 return null;
             }
         }
 
-        const currentTextBox = audioCurrentElements.item(0);
+        const currentTextBox = audioCurrentElements[0];
         console.assert(currentTextBox, "CurrentTextBox should not be null");
         return <HTMLElement | null>(
-            this.getTextBoxOfElement(audioCurrentElements.item(0))
+            this.getTextBoxOfElement(audioCurrentElements[0])
         );
+    }
+
+    public getAudioCurrentElement(): HTMLElement | null {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) {
+            return null;
+        }
+
+        const audioCurrentElements = pageBody.getElementsByClassName(
+            kAudioCurrent
+        );
+
+        if (audioCurrentElements.length === 0) {
+            return null;
+        }
+
+        return audioCurrentElements.item(0) as HTMLElement;
     }
 
     // Gets the current text box. If none exists, immediately returns null.
@@ -2428,7 +2444,9 @@ export default class AudioRecording {
             return null;
         }
 
-        const currentTextBox = audioCurrentElements.item(0);
+        const currentTextBox = this.getTextBoxOfElement(
+            audioCurrentElements.item(0)
+        );
         console.assert(currentTextBox, "CurrentTextBox should not be null");
         return <HTMLElement>currentTextBox;
     }
@@ -2475,7 +2493,6 @@ export default class AudioRecording {
     }
 
     public async newPageReady(
-        imageDescToolActive: boolean,
         deshroudPhraseDelimiters?: (page: HTMLElement | null) => void
     ): Promise<void> {
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
@@ -2495,6 +2512,7 @@ export default class AudioRecording {
             }
         }
 
+        this.watchElementsThatMightChangeAffectingVisibility(); // before we might return early if there are none!
         const editable = this.getRecordableDivs(true, false);
         if (editable.length === 0) {
             // no editable text on this page.
@@ -2511,6 +2529,52 @@ export default class AudioRecording {
         await this.setShowingImageDescriptions(this.showingImageDescriptions);
 
         this.updateDisplay();
+    }
+
+    private visibilityObserver: MutationObserver | null = null;
+
+    private removeVisibilityObserver() {
+        if (this.visibilityObserver) {
+            this.visibilityObserver.disconnect();
+            this.visibilityObserver = null;
+        }
+    }
+
+    private watchElementsThatMightChangeAffectingVisibility() {
+        this.removeVisibilityObserver();
+        this.visibilityObserver = new MutationObserver(_ => {
+            this.newPageReady();
+        });
+        const divs = this.getDivsThatMightChangeAffectingVisibility();
+        for (let i = 0; i < divs.length; i++) {
+            this.visibilityObserver.observe(divs[i], {
+                attributes: true,
+                // Currently, the only elements that change causing visibility issues are
+                // the keywords associated with slider items and the parent of the page,
+                // changes to which can cause correct and wrong items to appear and disappear
+                // in Bloom Games as we change modes or check answers (etc).
+                // In all these cases, the only attribute that affects visibility
+                // is currently class. If that changes, we'll need to add more attributes.
+                attributeFilter: ["class"]
+            });
+        }
+    }
+
+    private getDivsThatMightChangeAffectingVisibility() {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) {
+            return []; // shouldn't happen
+        }
+        const result = Array.from(
+            // I don't much like that this function knows about this class, which belongs to a particular kind
+            // of item in a particular kind of game. But I don't see how to encapsulate it better.
+            // Slider: this line is only neded for the drag-word-slider game, which is mostly commented
+            // out for now. But if we remove it here we have to further complicate things by providing
+            // an alternative to convert to an array. I decided to just leave it in.
+            pageBody.getElementsByClassName("bloom-wordChoice")
+        );
+        result.push(pageBody.parentElement!);
+        return result;
     }
 
     private ensureHighlightToken;
@@ -2560,6 +2624,7 @@ export default class AudioRecording {
         this.recordingMode = RecordingMode.Unknown;
         // Don't want to leave this markup around to confuse other things.
         this.removeAudioCurrentFromPageDocBody();
+        this.removeVisibilityObserver();
     }
 
     // Called upon newPageReady(). Calls updateMarkup
@@ -2894,25 +2959,8 @@ export default class AudioRecording {
             return null;
         }
 
-        // Find the relevant audioSentences
-        // Note that we check they're descendants of bloom-translationGroup
-        // so that we exclude the qTip versions of these
-        const audioSentenceElems = Array.from(
-            pageDocBody.querySelectorAll(
-                `.bloom-translationGroup .${kAudioSentence}`
-            ),
-            elem => <HTMLElement>elem
-        );
-
-        const visibleAudioSentenceElems = audioSentenceElems.filter(elem => {
-            if (!this.isVisible(elem)) {
-                return false;
-            }
-            return true;
-        });
-        const firstSentenceArray = this.sortByTabindex(
-            visibleAudioSentenceElems
-        );
+        // Find the relevant audioSentences (already sorted)
+        const firstSentenceArray = this.getAudioElements();
         if (firstSentenceArray.length === 0) {
             // no recordable sentence found.
             return null;

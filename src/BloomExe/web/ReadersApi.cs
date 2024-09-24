@@ -23,6 +23,7 @@ using Newtonsoft.Json.Linq;
 using SIL.PlatformUtilities;
 using SIL.Windows.Forms.Miscellaneous;
 using Bloom.ToPalaso;
+using Bloom.SafeXml;
 
 namespace Bloom.Api
 {
@@ -65,7 +66,7 @@ namespace Bloom.Api
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "collection/defaultFont",
                 request =>
                 {
@@ -77,9 +78,80 @@ namespace Bloom.Api
                 handleOnUiThread: false
             );
 
-            apiHandler.RegisterEndpointLegacy("readers/ui/.*", HandleRequest, true);
-            apiHandler.RegisterEndpointLegacy("readers/io/.*", HandleRequest, false);
-            apiHandler.RegisterEndpointLegacy("directoryWatcher/", ProcessDirectoryWatcher, false);
+            apiHandler.RegisterEndpointHandler(
+                "readers/ui/chooseAllowedWordsListFile",
+                HandleChooseAllowedWordsListFile,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/ui/copyBookStatsToClipboard",
+                HandleCopyBookStatsToClipboard,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/ui/makeLetterAndWordList",
+                HandleMakeLetterAndWordList,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/ui/openTextsFolder",
+                HandleOpenTextsFolder,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/ui/sampleTextsList",
+                HandleSampleTextsList,
+                true
+            ); // why overlap with the io one?
+
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/allowedWordsList",
+                HandleAllowedWordsList,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/defaultLevel",
+                HandleDefaultLevel,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/defaultStage",
+                HandleDefaultStage,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/readerSettingsEditForbidden",
+                HandleReaderSettingsEditForbidden,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/readerToolSettings",
+                HandleReaderToolSettings,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/sampleFileContents",
+                HandleSampleFileContents,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/sampleTextsList",
+                HandleSampleTextsList,
+                false
+            ); // why overlap with the ui one?
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/synphonyLanguageData",
+                HandleSynphonyLanguageData,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "readers/io/textOfContentPages",
+                HandleTextOfContentPages,
+                false
+            );
+            apiHandler.RegisterEndpointHandler("readers/io/test", r => r.PostSucceeded(), false); // used by unit test
+
+            apiHandler.RegisterEndpointHandler("directoryWatcher", ProcessDirectoryWatcher, false);
 
             //we could do them all like this:
             //server.RegisterEndpointLegacy("readers/loadReaderToolSettings", r=> r.ReplyWithJson(GetDefaultReaderSettings(r.CurrentCollectionSettings)));
@@ -93,249 +165,267 @@ namespace Bloom.Api
             get { return _bookSelection.CurrentSelection; }
         }
 
-        public void HandleRequest(ApiRequest request)
+        private bool IsRequestInvalid(ApiRequest request)
         {
             if (CurrentBook == null)
             {
                 Debug.Fail("BL-836 reproduction?");
                 // ReSharper disable once HeuristicUnreachableCode
                 request.Failed("CurrentBook is null");
-                return;
+                return true;
             }
             if (request.CurrentCollectionSettings == null)
             {
                 Debug.Fail("BL-836 reproduction?");
                 // ReSharper disable once HeuristicUnreachableCode
                 request.Failed("CurrentBook.CollectionSettings is null");
-                return;
+                return true;
             }
+            return false;
+        }
 
-            var lastSegment = request.LocalPath().Split(new char[] { '/' }).Last();
-
-            switch (lastSegment)
+        private void HandleChooseAllowedWordsListFile(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            lock (request)
             {
-                case "test":
+                request.ReplyWithText(ShowSelectAllowedWordsFileDialog());
+            }
+        }
+
+        private void HandleCopyBookStatsToClipboard(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            // See https://issues.bloomlibrary.org/youtrack/issue/BL-10018.
+            string bookStatsString;
+            try
+            {
+                bookStatsString = request.RequiredPostJson();
+                dynamic bookStats = DynamicJson.Parse(bookStatsString);
+                var headerBldr = new StringBuilder();
+                var dataBldr = new StringBuilder();
+                headerBldr.Append("Book Title");
+                var title = _bookSelection.CurrentSelection.Title;
+                title = title.Replace("\"", "\"\""); // Double double quotes to get Excel to recognize them.
+                dataBldr.AppendFormat("\"{0}\"", title);
+                headerBldr.Append("\tLevel");
+                dataBldr.AppendFormat("\t\"Level {0}\"", bookStats["levelNumber"]);
+                headerBldr.Append("\tNumber of Pages with Text");
+                dataBldr.AppendFormat("\t{0}", bookStats["pageCount"]);
+                headerBldr.Append("\tTotal Number of Words");
+                dataBldr.AppendFormat("\t{0}", bookStats["actualWordCount"]);
+                headerBldr.Append("\tTotal Number of Sentences");
+                dataBldr.AppendFormat("\t{0}", bookStats["actualSentenceCount"]);
+                headerBldr.Append("\tAverage No of Words per Page with Text");
+                dataBldr.AppendFormat("\t{0:0.#}", bookStats["actualAverageWordsPerPage"]);
+                headerBldr.Append("\tAverage No of Sentences per Page with Text");
+                dataBldr.AppendFormat("\t{0:0.#}", bookStats["actualAverageSentencesPerPage"]);
+                headerBldr.Append("\tNumber of Unique Words");
+                dataBldr.AppendFormat("\t{0}", bookStats["actualUniqueWords"]);
+                headerBldr.Append("\tAverage Word Length");
+                dataBldr.AppendFormat("\t{0:0.#}", bookStats["actualAverageGlyphsPerWord"]);
+                headerBldr.Append("\tAverage Sentence Length");
+                dataBldr.AppendFormat("\t{0:0.#}", bookStats["actualAverageWordsPerSentence"]);
+                headerBldr.Append("\tMaximum Word Length");
+                dataBldr.AppendFormat("\t{0}", bookStats["actualMaxGlyphsPerWord"]);
+                headerBldr.Append("\tMaximum Sentence Length");
+                dataBldr.AppendFormat("\t{0}", bookStats["actualMaxWordsPerSentence"]);
+                // "actualWordsPerPageBook" is the maximum number of words on a page in the book
+                // It's in the json data, but not asked for in the clipboard copying.
+                var stringToSave =
+                    headerBldr.ToString() + Environment.NewLine + dataBldr.ToString();
+                PortableClipboard.SetText(stringToSave);
+            }
+            catch (IOException e)
+            {
+                SIL.Reporting.Logger.WriteError(
+                    "Copying book statistics to clipboard failed to get Json",
+                    e
+                );
+                request.Failed("Copying book statistics to clipboard failed to get Json");
+            }
+            request.PostSucceeded();
+        }
+
+        private void HandleMakeLetterAndWordList(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            MakeLetterAndWordList(
+                request.RequiredPostString("settings"),
+                request.RequiredPostString("allWords")
+            );
+            request.PostSucceeded();
+        }
+
+        private void HandleOpenTextsFolder(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            OpenTextsFolder();
+            request.PostSucceeded();
+        }
+
+        private void HandleSampleTextsList(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            //note, as part of this reply, we send the path of the "ReaderToolsWords-xyz.json" which is *written* by the "synphonyLanguageData" endpoint above
+            request.ReplyWithText(
+                GetSampleTextsList(request.CurrentCollectionSettings.SettingsFilePath)
+            );
+        }
+
+        private void HandleAllowedWordsList(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            switch (request.HttpMethod)
+            {
+                case HttpMethods.Delete:
+                    RecycleAllowedWordListFile(request.RequiredParam("fileName"));
                     request.PostSucceeded();
                     break;
-
-                case "readerSettingsEditForbidden":
+                case HttpMethods.Get:
+                    var fileName = request.RequiredParam("fileName");
                     request.ReplyWithText(
-                        _tcManager.OkToEditCollectionSettings
-                            ? ""
-                            : WorkspaceView.MustBeAdminMessage(request.CurrentCollectionSettings)
-                    );
-                    break;
-
-                case "readerToolSettings":
-                    if (request.HttpMethod == HttpMethods.Get)
-                        request.ReplyWithJson(GetReaderSettings(request.CurrentBook.BookData));
-                    else
-                    {
-                        var path = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(
-                            request.CurrentCollectionSettings
-                        );
-                        var content = request.RequiredPostJson();
-                        RobustFile.WriteAllText(path, content, Encoding.UTF8);
-                        request.PostSucceeded();
-                    }
-                    break;
-
-                //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
-                //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
-                case "synphonyLanguageData":
-                    //This is the "post". There is no direct "get", but the name of the file is given in the "sampleTextList" reply, below.
-                    // We've had situations (BL-4313 and friends) where reading the posted data fails. This seems to be due to situations
-                    // where we have a very large block of data and are rapidly switching between books. But as far as I can tell, the only
-                    // case where it's at all important to capture the new language data is if the user has been changing settings and
-                    // in particular editing the word list. Timing out the save in that situation seems very unlikely to fail.
-                    // So, in the interests of preventing the crash when switching books fast, we will ignore failure to read all the
-                    // json, and just not update the file. We would in any case keep only the version of the data sent to us by
-                    // the last book which sends it, and that one is unlikely to get interrupted.
-                    string langdata;
-                    try
-                    {
-                        langdata = request.RequiredPostJson();
-                    }
-                    catch (IOException e)
-                    {
-                        SIL.Reporting.Logger.WriteError(
-                            "Saving synphonyLanguageData failed to get Json",
-                            e
-                        );
-                        break;
-                    }
-
-                    SaveSynphonyLanguageData(langdata);
-                    request.PostSucceeded();
-                    break;
-
-                case "sampleTextsList":
-                    //note, as part of this reply, we send the path of the "ReaderToolsWords-xyz.json" which is *written* by the "synphonyLanguageData" endpoint above
-                    request.ReplyWithText(
-                        GetSampleTextsList(request.CurrentCollectionSettings.SettingsFilePath)
-                    );
-                    break;
-
-                case "sampleFileContents":
-                    request.ReplyWithText(
-                        GetTextFileContents(
-                            request.RequiredParam("fileName"),
-                            WordFileType.SampleFile
+                        RemoveEmptyAndDupes(
+                            GetTextFileContents(fileName, WordFileType.AllowedWordsFile)
                         )
                     );
                     break;
-
-                case "textOfContentPages":
-                    request.ReplyWithText(GetTextOfContentPagesAsJson());
-                    break;
-
-                case "makeLetterAndWordList":
-                    MakeLetterAndWordList(
-                        request.RequiredPostString("settings"),
-                        request.RequiredPostString("allWords")
-                    );
-                    request.PostSucceeded();
-                    break;
-
-                case "openTextsFolder":
-                    OpenTextsFolder();
-                    request.PostSucceeded();
-                    break;
-
-                case "chooseAllowedWordsListFile":
-                    lock (request)
-                    {
-                        request.ReplyWithText(ShowSelectAllowedWordsFileDialog());
-                    }
-                    break;
-
-                case "allowedWordsList":
-                    switch (request.HttpMethod)
-                    {
-                        case HttpMethods.Delete:
-                            RecycleAllowedWordListFile(request.RequiredParam("fileName"));
-                            request.PostSucceeded();
-                            break;
-                        case HttpMethods.Get:
-                            var fileName = request.RequiredParam("fileName");
-                            request.ReplyWithText(
-                                RemoveEmptyAndDupes(
-                                    GetTextFileContents(fileName, WordFileType.AllowedWordsFile)
-                                )
-                            );
-                            break;
-                        default:
-                            request.Failed("Http verb not handled");
-                            break;
-                    }
-                    break;
-                case "defaultLevel":
-                    if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        request.ReplyWithText(Settings.Default.CurrentLevel.ToString());
-                    }
-                    else
-                    {
-                        int level;
-                        if (int.TryParse(request.RequiredParam("level"), out level))
-                        {
-                            Settings.Default.CurrentLevel = level;
-                            Settings.Default.Save();
-                        }
-                        else
-                        {
-                            // Don't think any sort of runtime failure is worthwhile here.
-                            Debug.Fail("could not parse level number");
-                        }
-                        request.PostSucceeded(); // technically it didn't if we didn't parse the number
-                    }
-                    break;
-                case "defaultStage":
-                    if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        request.ReplyWithText(Settings.Default.CurrentStage.ToString());
-                    }
-                    else
-                    {
-                        int stage;
-                        if (int.TryParse(request.RequiredParam("stage"), out stage))
-                        {
-                            Settings.Default.CurrentStage = stage;
-                            Settings.Default.Save();
-                        }
-                        else
-                        {
-                            // Don't think any sort of runtime failure is worthwhile here.
-                            Debug.Fail("could not parse stage number");
-                        }
-                        request.PostSucceeded(); // technically it didn't if we didn't parse the number
-                    }
-                    break;
-
-                case "copyBookStatsToClipboard":
-                    // See https://issues.bloomlibrary.org/youtrack/issue/BL-10018.
-                    string bookStatsString;
-                    try
-                    {
-                        bookStatsString = request.RequiredPostJson();
-                        dynamic bookStats = DynamicJson.Parse(bookStatsString);
-                        var headerBldr = new StringBuilder();
-                        var dataBldr = new StringBuilder();
-                        headerBldr.Append("Book Title");
-                        var title = _bookSelection.CurrentSelection.Title;
-                        title = title.Replace("\"", "\"\""); // Double double quotes to get Excel to recognize them.
-                        dataBldr.AppendFormat("\"{0}\"", title);
-                        headerBldr.Append("\tLevel");
-                        dataBldr.AppendFormat("\t\"Level {0}\"", bookStats["levelNumber"]);
-                        headerBldr.Append("\tNumber of Pages with Text");
-                        dataBldr.AppendFormat("\t{0}", bookStats["pageCount"]);
-                        headerBldr.Append("\tTotal Number of Words");
-                        dataBldr.AppendFormat("\t{0}", bookStats["actualWordCount"]);
-                        headerBldr.Append("\tTotal Number of Sentences");
-                        dataBldr.AppendFormat("\t{0}", bookStats["actualSentenceCount"]);
-                        headerBldr.Append("\tAverage No of Words per Page with Text");
-                        dataBldr.AppendFormat("\t{0:0.#}", bookStats["actualAverageWordsPerPage"]);
-                        headerBldr.Append("\tAverage No of Sentences per Page with Text");
-                        dataBldr.AppendFormat(
-                            "\t{0:0.#}",
-                            bookStats["actualAverageSentencesPerPage"]
-                        );
-                        headerBldr.Append("\tNumber of Unique Words");
-                        dataBldr.AppendFormat("\t{0}", bookStats["actualUniqueWords"]);
-                        headerBldr.Append("\tAverage Word Length");
-                        dataBldr.AppendFormat("\t{0:0.#}", bookStats["actualAverageGlyphsPerWord"]);
-                        headerBldr.Append("\tAverage Sentence Length");
-                        dataBldr.AppendFormat(
-                            "\t{0:0.#}",
-                            bookStats["actualAverageWordsPerSentence"]
-                        );
-                        headerBldr.Append("\tMaximum Word Length");
-                        dataBldr.AppendFormat("\t{0}", bookStats["actualMaxGlyphsPerWord"]);
-                        headerBldr.Append("\tMaximum Sentence Length");
-                        dataBldr.AppendFormat("\t{0}", bookStats["actualMaxWordsPerSentence"]);
-                        // "actualWordsPerPageBook" is the maximum number of words on a page in the book
-                        // It's in the json data, but not asked for in the clipboard copying.
-                        var stringToSave =
-                            headerBldr.ToString() + Environment.NewLine + dataBldr.ToString();
-                        PortableClipboard.SetText(stringToSave);
-                    }
-                    catch (IOException e)
-                    {
-                        SIL.Reporting.Logger.WriteError(
-                            "Copying book statistics to clipboard failed to get Json",
-                            e
-                        );
-                        break;
-                    }
-                    request.PostSucceeded();
-                    break;
-
                 default:
-                    request.Failed(
-                        "Don't understand '" + lastSegment + "' in " + request.LocalPath()
-                    );
+                    request.Failed("Http verb not handled");
                     break;
             }
+        }
+
+        private void HandleDefaultLevel(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            if (request.HttpMethod == HttpMethods.Get)
+            {
+                request.ReplyWithText(Settings.Default.CurrentLevel.ToString());
+            }
+            else
+            {
+                int level;
+                if (int.TryParse(request.RequiredParam("level"), out level))
+                {
+                    Settings.Default.CurrentLevel = level;
+                    Settings.Default.Save();
+                }
+                else
+                {
+                    // Don't think any sort of runtime failure is worthwhile here.
+                    Debug.Fail("could not parse level number");
+                }
+                request.PostSucceeded(); // technically it didn't if we didn't parse the number
+            }
+        }
+
+        private void HandleDefaultStage(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            if (request.HttpMethod == HttpMethods.Get)
+            {
+                request.ReplyWithText(Settings.Default.CurrentStage.ToString());
+            }
+            else
+            {
+                int stage;
+                if (int.TryParse(request.RequiredParam("stage"), out stage))
+                {
+                    Settings.Default.CurrentStage = stage;
+                    Settings.Default.Save();
+                }
+                else
+                {
+                    // Don't think any sort of runtime failure is worthwhile here.
+                    Debug.Fail("could not parse stage number");
+                }
+                request.PostSucceeded(); // technically it didn't if we didn't parse the number
+            }
+        }
+
+        private void HandleReaderSettingsEditForbidden(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            request.ReplyWithText(
+                _tcManager.OkToEditCollectionSettings
+                    ? ""
+                    : WorkspaceView.MustBeAdminMessage(request.CurrentCollectionSettings)
+            );
+        }
+
+        private void HandleReaderToolSettings(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            if (request.HttpMethod == HttpMethods.Get)
+                request.ReplyWithJson(GetReaderSettings(request.CurrentBook.BookData));
+            else
+            {
+                var path = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(
+                    request.CurrentCollectionSettings
+                );
+                var content = request.RequiredPostJson();
+                RobustFile.WriteAllText(path, content, Encoding.UTF8);
+                request.PostSucceeded();
+            }
+        }
+
+        private void HandleSampleFileContents(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            request.ReplyWithText(
+                GetTextFileContents(request.RequiredParam("fileName"), WordFileType.SampleFile)
+            );
+        }
+
+        private void HandleSynphonyLanguageData(ApiRequest request)
+        {
+            //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
+            //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
+            if (IsRequestInvalid(request))
+                return;
+            //This is the "post". There is no direct "get", but the name of the file is given in the "sampleTextList" reply, below.
+            // We've had situations (BL-4313 and friends) where reading the posted data fails. This seems to be due to situations
+            // where we have a very large block of data and are rapidly switching between books. But as far as I can tell, the only
+            // case where it's at all important to capture the new language data is if the user has been changing settings and
+            // in particular editing the word list. Timing out the save in that situation seems very unlikely to fail.
+            // So, in the interests of preventing the crash when switching books fast, we will ignore failure to read all the
+            // json, and just not update the file. We would in any case keep only the version of the data sent to us by
+            // the last book which sends it, and that one is unlikely to get interrupted.
+            string langdata = "";
+            try
+            {
+                langdata = request.RequiredPostJson();
+            }
+            catch (IOException e)
+            {
+                SIL.Reporting.Logger.WriteError(
+                    "Saving synphonyLanguageData failed to get Json",
+                    e
+                );
+                request.Failed("Saving synphonyLanguageData failed to get Json");
+            }
+
+            SaveSynphonyLanguageData(langdata);
+            request.PostSucceeded();
+        }
+
+        private void HandleTextOfContentPages(ApiRequest request)
+        {
+            if (IsRequestInvalid(request))
+                return;
+            request.ReplyWithText(GetTextOfContentPagesAsJson());
         }
 
         /// <summary>
@@ -348,10 +438,10 @@ namespace Bloom.Api
 
             var pages = CurrentBook.RawDom
                 .SafeSelectNodes("//div[" + GenerateXPathClassStringSearch("bloom-page") + "]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .Where(p =>
                 {
-                    var cls = " " + p.Attributes["class"].Value + " ";
+                    var cls = " " + p.GetAttribute("class") + " ";
                     // We want only printing content pages as a first cut.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9876.
                     return !cls.Contains(" bloom-frontMatter ")
                         && !cls.Contains(" bloom-backMatter ")
@@ -371,11 +461,11 @@ namespace Bloom.Api
                 var pageWords = String.Empty;
                 var textDivs = page.SafeSelectNodes(xpathToTextContent);
                 // Skip the page if it contains no visible vernacular text elements.  (picture only)
-                if (textDivs.Count == 0)
+                if (textDivs.Length == 0)
                     continue;
                 // javascript code will strip the XHTML markup out of the returned strings.  This guarantees
                 // that entire books and individual pages are treated the same way.  (See BL-10129.)
-                foreach (XmlElement node in textDivs)
+                foreach (SafeXmlElement node in textDivs)
                     pageWords += " " + node.InnerXml;
 
                 pageTexts.Add(
@@ -703,43 +793,43 @@ namespace Bloom.Api
                 "EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles",
                 "Text files"
             );
-            var dlg = new DialogAdapters.OpenFileDialogAdapter
+            string srcFile = null;
+            using (var dlg = new MiscUI.BloomOpenFileDialog
             {
-                Multiselect = false,
-                CheckFileExists = true,
                 Filter = String.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab", textFiles)
-            };
-            var result = dlg.ShowDialog();
-            if (result == DialogResult.OK)
+            })
             {
-                var srcFile = dlg.FileName;
-                var destFile = Path.GetFileName(srcFile);
-                if (destFile != null)
+                var result = dlg.ShowDialog();
+                if (result == DialogResult.OK)
                 {
-                    // if file is in the "Allowed Words" directory, do not try to copy it again.
-                    if (Path.GetFullPath(srcFile) != Path.Combine(destPath, destFile))
-                    {
-                        var i = 0;
-
-                        // get a unique destination file name
-                        while (RobustFile.Exists(Path.Combine(destPath, destFile)))
-                        {
-                            destFile = Path.GetFileName(srcFile);
-                            var fileExt = Path.GetExtension(srcFile);
-                            destFile =
-                                destFile.Substring(0, destFile.Length - fileExt.Length) + " - Copy";
-                            if (++i > 1)
-                                destFile += " " + i;
-                            destFile += fileExt;
-                        }
-
-                        RobustFile.Copy(srcFile, Path.Combine(destPath, destFile));
-                    }
-
-                    returnVal = destFile;
+                    srcFile = dlg.FileName;
                 }
             }
+            var destFile = Path.GetFileName(srcFile);
+            if (destFile != null)
+            {
+                // if file is in the "Allowed Words" directory, do not try to copy it again.
+                if (Path.GetFullPath(srcFile) != Path.Combine(destPath, destFile))
+                {
+                    var i = 0;
 
+                    // get a unique destination file name
+                    while (RobustFile.Exists(Path.Combine(destPath, destFile)))
+                    {
+                        destFile = Path.GetFileName(srcFile);
+                        var fileExt = Path.GetExtension(srcFile);
+                        destFile =
+                            destFile.Substring(0, destFile.Length - fileExt.Length) + " - Copy";
+                        if (++i > 1)
+                            destFile += " " + i;
+                        destFile += fileExt;
+                    }
+
+                    RobustFile.Copy(srcFile, Path.Combine(destPath, destFile));
+                }
+
+                returnVal = destFile;
+            }
             return returnVal;
         }
 

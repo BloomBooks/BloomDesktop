@@ -9,6 +9,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.SafeXml;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using L10NSharp;
@@ -47,22 +48,22 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler
-                .RegisterEndpointLegacy(
+                .RegisterEndpointHandler(
                     "signLanguage/recordedVideo",
                     HandleRecordedVideoRequest,
                     true
                 )
                 .Measureable("Process recorded video");
             apiHandler
-                .RegisterEndpointLegacy("signLanguage/deleteVideo", HandleDeleteVideoRequest, true)
+                .RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true)
                 .Measureable("Delete video");
             ;
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "signLanguage/importVideo",
                 HandleImportVideoRequest,
                 true
             ); // has dialog, so measure internally after the dialog.
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "signLanguage/getStats",
                 HandleVideoStatisticsRequest,
                 true
@@ -214,16 +215,18 @@ namespace Bloom.web.controllers
                             "EditTab.Toolbox.SignLanguage.FileDialogVideoFiles",
                             "Video files"
                         );
-                        var dlg = new DialogAdapters.OpenFileDialogAdapter
+                        // If this filter ever changes, other places dependent on mp4 as an extension
+                        // may also need to change.
+                        var filter = $"{videoFiles} (*.mp4)|*.mp4";
+                        // Allow experimentation with other video types: see BL-13849.
+                        if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
+                            filter = $"{videoFiles}|*.mp4;*.webm";
+                        using (var dlg = new MiscUI.BloomOpenFileDialog { Filter = filter })
                         {
-                            Multiselect = false,
-                            CheckFileExists = true,
-                            // If this filter ever changes, make sure we update BookCompressor.VideoFileExtensions.
-                            Filter = $"{videoFiles} (*.mp4)|*.mp4"
-                        };
-                        var result = dlg.ShowDialog();
-                        if (result == DialogResult.OK)
-                            path = dlg.FileName;
+                            var result = dlg.ShowDialog();
+                            if (result == DialogResult.OK)
+                                path = dlg.FileName;
+                        }
                     }
                 )
             );
@@ -234,7 +237,7 @@ namespace Bloom.web.controllers
                     _importedVideoIntoBloom = true;
                     var newVideoPath = Path.Combine(
                         BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath),
-                        GetNewVideoFileName()
+                        GetNewVideoFileName(Path.GetExtension(path))
                     ); // Use a new name to defeat caching.
                     RobustFile.Copy(path, newVideoPath);
                     var relativePath =
@@ -519,9 +522,9 @@ namespace Bloom.web.controllers
                 return info.CreationTime;
         }
 
-        public static string GetNewVideoFileName()
+        public static string GetNewVideoFileName(string extension = ".mp4")
         {
-            return Guid.NewGuid().ToString() + ".mp4";
+            return Guid.NewGuid().ToString() + extension;
         }
 
         public DateTime DeactivateTime { get; set; }
@@ -565,6 +568,12 @@ namespace Bloom.web.controllers
                 .Where(f => GetRealLastModifiedTime(f) > DeactivateTime)
                 .Select(f => f.FullName)
                 .ToList();
+            var moreFilesModified = new DirectoryInfo(videoFolderPath)
+                .GetFiles("*.webm")
+                .Where(f => GetRealLastModifiedTime(f) > DeactivateTime)
+                .Select(f => f.FullName)
+                .ToList();
+            filesModifiedSinceDeactivate.AddRange(moreFilesModified);
 
             if (!filesModifiedSinceDeactivate.Any())
                 return;
@@ -583,7 +592,7 @@ namespace Bloom.web.controllers
                         var videoElts = CurrentBook.RawDom.SafeSelectNodes(
                             $"//video/source[contains(@src,'{expectedSrcAttr.UrlEncodedForHttpPath}')]"
                         );
-                        if (videoElts.Count == 0)
+                        if (videoElts.Length == 0)
                             continue; // not used in book, ignore
 
                         // OK, the user has modified the file outside of Bloom. Something is determined to cache video.
@@ -597,7 +606,7 @@ namespace Bloom.web.controllers
                         );
                         HtmlDom.SetSrcOfVideoElement(
                             newSrcAttr,
-                            (XmlElement)videoElts[0],
+                            (SafeXmlElement)videoElts[0],
                             true,
                             "?now=" + DateTime.Now.Ticks
                         );
@@ -619,21 +628,21 @@ namespace Bloom.web.controllers
         /// <param name="sourceBookFolder">This is assumed to be a staging folder, we may replace videos here!</param>
         /// <returns>the new filepath if a video file exists and was copied, empty string if no video file was found</returns>
         public static string PrepareVideoForPublishing(
-            XmlElement videoContainerElement,
+            SafeXmlElement videoContainerElement,
             string sourceBookFolder,
             bool videoControls
         )
         {
             var videoFolder = Path.Combine(sourceBookFolder, "video");
 
-            var videoElement = videoContainerElement.SelectSingleNode("video") as XmlElement;
+            var videoElement = videoContainerElement.SelectSingleNode("video") as SafeXmlElement;
             if (videoElement == null)
                 return string.Empty;
 
             // In each valid video element, we remove any timings in the 'src' attribute of the source element.
-            var sourceElement = videoElement.SelectSingleNode("source") as XmlElement;
-            var srcAttrVal = sourceElement?.Attributes["src"]?.Value;
-            if (srcAttrVal == null)
+            var sourceElement = videoElement.SelectSingleNode("source") as SafeXmlElement;
+            var srcAttrVal = sourceElement?.GetAttribute("src");
+            if (string.IsNullOrEmpty(srcAttrVal))
                 return string.Empty;
 
             string timings;
@@ -689,7 +698,7 @@ namespace Bloom.web.controllers
         /// but BookCompressor.CompressDirectory() for BloomPUB and BloomS3Client.UploadBook() for Upload use this method.
         /// </summary>
         public static void ProcessVideos(
-            IEnumerable<XmlElement> videoContainerElements,
+            IEnumerable<SafeXmlElement> videoContainerElements,
             string sourceFolder
         )
         {

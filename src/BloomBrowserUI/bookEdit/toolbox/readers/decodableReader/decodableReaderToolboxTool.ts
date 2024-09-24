@@ -20,6 +20,9 @@ export class DecodableReaderToolboxTool implements ITool {
     public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
+    public requiresToolId(): boolean {
+        return false;
+    }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         return beginInitializeDecodableReaderTool().then(() => {
             if (settings["decodableReaderState"]) {

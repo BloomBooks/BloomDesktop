@@ -41,6 +41,14 @@ import {
 } from "../../../react_components/color-picking/bloomPalette";
 import { OverlayKeyHints } from "./overlayKeyHints";
 import { EnableAllImageEditing } from "../../js/bloomImages";
+import {
+    OverlayImageItem,
+    OverlayItem,
+    OverlayItemRegion,
+    OverlayItemRow,
+    OverlayTextItem
+} from "./overlayItem";
+import { isPageBloomGame } from "../dragActivity/dragActivityTool";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -57,8 +65,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
         false
     );
     const [isXmatter, setIsXmatter] = useState(true);
-    // If the book is locked, we don't want users dragging things onto the page.
-    const [isBookLocked, setIsBookLocked] = useState(false);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
@@ -125,6 +131,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
         // The callback function is (currently) called when switching between bubbles, but is not called
         // if the tail spec changes, or for style and similar changes to the bubble that are initiated by React.
         bubbleManager.requestBubbleChangeNotification(
+            "overlay",
             (bubble: BubbleSpec | undefined) => {
                 setCurrentFamilySpec(bubble);
             }
@@ -189,15 +196,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
         }
         return mgr.isActiveElementVideoOverPicture() ? "video" : "text";
     };
-
-    useEffect(() => {
-        // Get the lock/unlock state from C#-land. We have to do this every time the page is refreshed
-        // (see 'callOnNewPageReady') in case the user temporarily unlocks the book.
-        get("edit/pageControls/requestState", result => {
-            const jsonObj = result.data;
-            setIsBookLocked(jsonObj.BookLockedState === "BookLocked");
-        });
-    }, [pageRefreshIndicator]);
 
     // Callback for style changed
     const handleStyleChanged = event => {
@@ -350,88 +348,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
             bubbleMgr.updateSelectedFamilyBubbleSpec({
                 outerBorderColor: newValue
             });
-        }
-    };
-
-    const handleChildBubbleLinkClick = event => {
-        const bubbleManager = OverlayTool.bubbleManager();
-
-        if (bubbleManager) {
-            const parentElement = bubbleManager.getActiveElement();
-
-            if (!parentElement) {
-                // No parent to attach to
-                toastr.info("No element is currently active.");
-                return;
-            }
-
-            // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date?
-            // Comical would need to call the notifier a lot more often like when the tail moves.
-
-            // Retrieve the latest bubbleSpec
-            const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
-            const [
-                offsetX,
-                offsetY
-            ] = OverlayTool.GetChildPositionFromParentBubble(
-                parentElement,
-                bubbleSpec
-            );
-            bubbleManager.addChildOverPictureElementAndRefreshPage(
-                parentElement,
-                offsetX,
-                offsetY
-            );
-        }
-    };
-
-    const ondragstart = (ev: React.DragEvent<HTMLElement>, style: string) => {
-        // Here "text/x-bloombubble" is a unique, private data type recognised
-        // by ondragover and ondragdrop methods that BubbleManager
-        // attaches to bloom image containers. It doesn't make sense to
-        // drag these objects anywhere else, so they don't need any of
-        // the common data types. Using a private type means that other drop handlers
-        // will not accept them. It is often recommended to include a text/plain value,
-        // but it really doesn't make sense to drop the text associated with these
-        // bubbles anywhere outside Bloom. I believe the text/x- prefix makes these
-        // valid (unregistered) mime types, which technically this argument is supposed
-        // to be.
-        ev.dataTransfer.setData("text/x-bloombubble", style);
-    };
-
-    const ondragend = (ev: React.DragEvent<HTMLElement>, style: string) => {
-        const bubbleManager = OverlayTool.bubbleManager();
-        // The Linux/Mono/Geckofx environment does not produce the dragenter, dragover,
-        // and drop events for the targeted element.  It does produce the dragend event
-        // for the source element with screen coordinates of where the mouse was released.
-        // This can be used to simulate the drop event with coordinate transformation.
-        // See https://issues.bloomlibrary.org/youtrack/issue/BL-7958.
-        if (isLinux() && bubbleManager && !isBookLocked) {
-            bubbleManager.addOverPictureElementWithScreenCoords(
-                ev.screenX,
-                ev.screenY,
-                style
-            );
-        }
-    };
-
-    const deleteBubble = () => {
-        const bubbleManager = OverlayTool.bubbleManager();
-        if (bubbleManager) {
-            const active = bubbleManager.getActiveElement();
-            if (active) {
-                bubbleManager.deleteTOPBox(active);
-            }
-        }
-    };
-
-    const duplicateBubble = () => {
-        const bubbleManager = OverlayTool.bubbleManager();
-        if (bubbleManager) {
-            const active = bubbleManager.getActiveElement();
-            if (active) {
-                bubbleManager.duplicateTOPBox(active);
-            }
         }
     };
 
@@ -744,13 +660,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 </MenuItem>
                             </Select>
                         </FormControl>
-                        <Button
-                            onClick={event => handleChildBubbleLinkClick(event)}
-                        >
-                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.AddChildBubble">
-                                Add Child Bubble
-                            </Div>
-                        </Button>
                     </form>
                 );
         }
@@ -759,147 +668,120 @@ const OverlayToolControls: React.FunctionComponent = () => {
     return (
         <div id="overlayToolControls">
             <RequiresBloomEnterpriseOverlayWrapper>
-                <div
-                    css={css`
-                        // pushes the Help region to the bottom
-                        display: flex;
-                        flex-direction: column;
-                        height: 100%;
-                    `}
-                >
-                    <div
-                        id={"overlayToolControlShapeChooserRegion"}
-                        className={!isXmatter ? "" : "disabled"}
+                {// Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
+                // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
+                // If we don't change our minds this string should get localized.
+                // issues:
+                // - making any kind of comic bubble that has a border, tail, etc able to be dragged in Play mode would
+                // required Comical to be integrated into Bloom PLayer. I think even some things that don't seem to need
+                // Comical, like setting a background color, are currently implemented using it.
+                // - consequently it's a problem to enable any controls that would switch a play-time draggable to be
+                // a bubble type whose rendering depends on Comical.
+                // - it's also something of a problem to have fixed bubbles, since the parts rendered by Comical don't
+                // obey the classes we use to dim things in Correct and Wrong tabs.
+                // - if we allow Comical bubbles to be put in the Correct or Wrong tabs, the bit rendered by Comical
+                // has to also get hidden until wanted in Start and Play modes.
+                // - the duplicate command needs enhancements to do things like duplicating the target.
+                // Enhance: if the practice of disabling some tools for some page types becomes widespread, we should
+                // generalize this somehow, so we can easily configure which tools are disabled for which page types.
+                // Without more examples, it's hard to know what would work best. For example, a page might have a data
+                // attribute that lists ids of tools that should be disabled. Or somewhere we might have a map from
+                // data-activity values to lists of tool ids that should be disabled. Or if disabling tools isn't
+                // limited to activities, we might introduce a new kind of page type attribute. Also, we may just
+                // want a single message like "This tool is not available on this page type" or something more specific
+                // like the one here.
+                isPageBloomGame() ? (
+                    <Typography
+                        css={css`
+                            // "!important" is needed to keep .MuiTypography-root from overriding
+                            margin: 15px 15px 0 15px !important;
+                            text-align: center;
+                        `}
                     >
-                        <Div
-                            l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
-                            className="overlayToolControlDragInstructions"
-                        >
-                            Drag any of these overlays onto the image:
-                        </Div>
-                        <div
-                            className={"shapeChooserRow"}
-                            id={"shapeChooserRow1"}
-                        >
-                            <img
-                                id="shapeChooserSpeechBubble"
-                                className="overlayToolControlDraggableBubble"
-                                src="/bloom/bookEdit/toolbox/overlay/comic-icon.svg"
-                                draggable={!isBookLocked} // insufficient to prevent dragging!
-                                onDragStart={
-                                    !isBookLocked
-                                        ? ev => ondragstart(ev, "speech")
-                                        : undefined
-                                }
-                                onDragEnd={
-                                    !isBookLocked
-                                        ? ev => ondragend(ev, "speech")
-                                        : undefined
-                                }
-                            />
-                            <img
-                                id="shapeChooserImagePlaceholder"
-                                className="overlayToolControlDraggableBubble"
-                                src="/bloom/bookEdit/toolbox/overlay/image-overlay.svg"
-                                draggable={!isBookLocked}
-                                onDragStart={
-                                    !isBookLocked
-                                        ? ev => ondragstart(ev, "image")
-                                        : undefined
-                                }
-                                onDragEnd={
-                                    !isBookLocked
-                                        ? ev => ondragend(ev, "image")
-                                        : undefined
-                                }
-                            />
-                            <img
-                                id="shapeChooserVideoPlaceholder"
-                                className="overlayToolControlDraggableBubble"
-                                src="/bloom/bookEdit/toolbox/overlay/sign-language-overlay.svg"
-                                draggable={!isBookLocked}
-                                onDragStart={
-                                    !isBookLocked
-                                        ? ev => ondragstart(ev, "video")
-                                        : undefined
-                                }
-                                onDragEnd={
-                                    !isBookLocked
-                                        ? ev => ondragend(ev, "video")
-                                        : undefined
-                                }
-                            />
-                        </div>
-                        <div
-                            className={"shapeChooserRow"}
-                            id={"shapeChooserRow2"}
-                        >
-                            <Span
-                                id="shapeChooserTextBlock"
-                                l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
-                                className="overlayToolControlDraggableBubble"
-                                draggable={!isBookLocked}
-                                onDragStart={
-                                    !isBookLocked
-                                        ? ev => ondragstart(ev, "none")
-                                        : undefined
-                                }
-                                onDragEnd={
-                                    !isBookLocked
-                                        ? ev => ondragend(ev, "none")
-                                        : undefined
-                                }
-                            >
-                                Text Block
-                            </Span>
-                            <Span
-                                id="shapeChooserCaption"
-                                l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
-                                className="overlayToolControlDraggableBubble"
-                                draggable={!isBookLocked}
-                                onDragStart={
-                                    !isBookLocked
-                                        ? ev => ondragstart(ev, "caption")
-                                        : undefined
-                                }
-                                onDragEnd={
-                                    !isBookLocked
-                                        ? ev => ondragend(ev, "caption")
-                                        : undefined
-                                }
-                            >
-                                Caption
-                            </Span>
-                        </div>
-                    </div>
+                        <span>
+                            The Overlay Tool cannot currently be used on Bloom
+                            Games pages. Some of the functions are duplicated in
+                            the Games Tool.
+                        </span>
+                    </Typography>
+                ) : (
                     <div
-                        id={"overlayToolControlOptionsRegion"}
-                        className={bubbleType && !isXmatter ? "" : "disabled"}
+                        css={css`
+                            // pushes the Help region to the bottom
+                            display: flex;
+                            flex-direction: column;
+                            height: 100%;
+                        `}
                     >
-                        {getControlOptionsRegion()}
-                        <div className="option-button-row">
-                            <div title={deleteTooltip}>
-                                <TrashIcon
-                                    id="trashIcon"
-                                    color="primary"
-                                    onClick={() => deleteBubble()}
+                        <OverlayItemRegion
+                            className={!isXmatter ? "" : "disabled"}
+                        >
+                            <OverlayItemRow>
+                                <OverlayItem
+                                    src="/bloom/bookEdit/toolbox/overlay/comic-icon.svg"
+                                    style="speech"
                                 />
-                            </div>
-                            <div title={duplicateTooltip}>
-                                <img
-                                    className="duplicate-bubble-icon"
-                                    src="/bloom/bookEdit/toolbox/overlay/duplicate-bubble.svg"
-                                    onClick={() => duplicateBubble()}
+                                <OverlayImageItem style="image" />
+                                <OverlayItem
+                                    src="/bloom/bookEdit/toolbox/overlay/sign-language-overlay.svg"
+                                    style="video"
                                 />
-                            </div>
+                            </OverlayItemRow>
+                            <OverlayItemRow secondRow={true}>
+                                <OverlayTextItem
+                                    css={css`
+                                        margin-left: 5px; // Match the spacing on the bubble icon above
+                                        flex-grow: 1; // Let it fill as much space as possible to the right
+                                        text-align: center; // Center the text horizontally
+
+                                        padding-top: 1em;
+                                        vertical-align: middle;
+                                        padding-bottom: 1em;
+
+                                        color: white;
+                                        border: 1px dotted white;
+                                    `}
+                                    l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
+                                    style="none"
+                                />
+
+                                <OverlayTextItem
+                                    css={css`
+                                        // Horizontal positioning / sizing of the element
+                                        margin-left: 10px;
+                                        flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
+                                        text-align: center;
+
+                                        // Vertical sizing
+                                        padding-top: 5px;
+                                        padding-bottom: 5px;
+
+                                        border: 1px solid black;
+                                        color: black;
+                                        background-color: white;
+                                        box-shadow: 3px 3px black;
+                                    `}
+                                    l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
+                                    style="caption"
+                                />
+                            </OverlayItemRow>
+                        </OverlayItemRegion>
+
+                        <div
+                            id={"overlayToolControlOptionsRegion"}
+                            className={
+                                bubbleType && !isXmatter ? "" : "disabled"
+                            }
+                        >
+                            {getControlOptionsRegion()}
+                        </div>
+                        <div id="overlayToolControlFillerRegion" />
+                        <div id={"overlayToolControlFooterRegion"}>
+                            <OverlayKeyHints />
+                            <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
                         </div>
                     </div>
-                    <div id="overlayToolControlFillerRegion" />
-                    <div id={"overlayToolControlFooterRegion"}>
-                        <OverlayKeyHints />
-                        <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
-                    </div>
-                </div>
+                )}
             </RequiresBloomEnterpriseOverlayWrapper>
         </div>
     );
@@ -972,56 +854,13 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
             //bubbleManager.turnOffBubbleEditing();
 
             EnableAllImageEditing();
-            bubbleManager.detachBubbleChangeNotification();
+            bubbleManager.detachBubbleChangeNotification("overlay");
         }
     }
 
     public static bubbleManager(): BubbleManager | undefined {
         const exports = getEditablePageBundleExports();
         return exports ? exports.getTheOneBubbleManager() : undefined;
-    }
-
-    // Returns a 2-tuple containing the desired x and y offsets of the child bubble from the parent bubble
-    //   (i.e., offsetX = child.left - parent.left)
-    public static GetChildPositionFromParentBubble(
-        parentElement: HTMLElement,
-        parentBubbleSpec: BubbleSpec | undefined
-    ): number[] {
-        let offsetX = parentElement.clientWidth;
-        let offsetY = parentElement.clientHeight;
-
-        if (
-            parentBubbleSpec &&
-            parentBubbleSpec.tails &&
-            parentBubbleSpec.tails.length > 0
-        ) {
-            const tail = parentBubbleSpec.tails[0];
-
-            const bubbleCenterX =
-                parentElement.offsetLeft + parentElement.clientWidth / 2.0;
-            const bubbleCenterY =
-                parentElement.offsetTop + parentElement.clientHeight / 2.0;
-
-            const deltaX = tail.tipX - bubbleCenterX;
-            const deltaY = tail.tipY - bubbleCenterY;
-
-            // Place the new child in the opposite quandrant of the tail
-            if (deltaX > 0) {
-                // ENHANCE: SHould be the child's width
-                offsetX = -parentElement.clientWidth;
-            } else {
-                offsetX = parentElement.clientWidth;
-            }
-
-            if (deltaY > 0) {
-                // ENHANCE: SHould be the child's height
-                offsetY = -parentElement.clientHeight;
-            } else {
-                offsetY = parentElement.clientHeight;
-            }
-        }
-
-        return [offsetX, offsetY];
     }
 }
 

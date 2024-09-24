@@ -24,6 +24,7 @@ using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Publish.BloomPub;
 using Bloom.Publish.Epub;
+using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
@@ -341,7 +342,7 @@ namespace Bloom.Api
             var vidNodes = dom.SafeSelectNodes(
                 "//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]"
             );
-            foreach (XmlNode vidNode in vidNodes)
+            foreach (SafeXmlNode vidNode in vidNodes)
             {
                 var placeHolderNode = dom.RawDom.CreateElement("div");
                 placeHolderNode.InnerXml = vidPlaceHolderDivContents;
@@ -350,10 +351,9 @@ namespace Bloom.Api
                 // When we get to this point and we are creating an epub, we have already generated the
                 // temporary IDs needed to determine element visibility. We need to maintain the ID
                 // so we don't try to look up IDs in the dom which don't exist and throw a js error.
-                var vidNodeIdAttribute = vidNode.Attributes["id"];
-                if (vidNodeIdAttribute != null)
+                var vidNodeId = vidNode.GetAttribute("id");
+                if (!string.IsNullOrEmpty(vidNodeId))
                 {
-                    var vidNodeId = vidNodeIdAttribute.Value;
                     if (
                         !string.IsNullOrEmpty(vidNodeId)
                         && vidNodeId.StartsWith(PublishHelper.kTempIdMarker)
@@ -895,6 +895,7 @@ namespace Bloom.Api
         }
 
         private int _missingMapFileCount = 0;
+
         private bool ProcessAnyFileContent(IRequestInfo info, string localPath)
         {
             string modPath = localPath;
@@ -974,7 +975,6 @@ namespace Bloom.Api
                     return false;
                 }
             }
-            
 
             if (
                 !RobustFileExistsWithCaseCheck(path)
@@ -1174,14 +1174,14 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// Requests with ?generateThumbnaiIfNecessary=true are potentially recursive in that we may have to navigate
+        /// Requests with ?generateThumbnailIfNecessary=true are potentially recursive in that we may have to navigate
         /// a browser to the template page in order to construct the thumbnail.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
         protected bool IsRecursiveRequestContext(HttpListenerContext context)
         {
-            return context.Request.QueryString["generateThumbnaiIfNecessary"] == "true";
+            return context.Request.QueryString["generateThumbnailIfNecessary"] == "true";
         }
 
         private bool ProcessCssFile(IRequestInfo info, string incomingPath)

@@ -12,6 +12,9 @@ export class LeveledReaderToolboxTool implements ITool {
     public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
+    public requiresToolId(): boolean {
+        return false;
+    }
     public beginRestoreSettings(opts: string): JQueryPromise<void> {
         return beginInitializeLeveledReaderTool().then(() => {
             if (opts["leveledReaderState"]) {

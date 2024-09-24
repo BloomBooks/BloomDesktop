@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.web.controllers;
+using SIL.Windows.Forms.ImageToolbox;
 
 #if DEBUG
 using System.Media;
@@ -50,7 +51,7 @@ namespace Bloom
             ) =>
             {
                 if (Disposing)
-                    return;     // disposed before initialization completed.  See BL-13593.
+                    return; // disposed before initialization completed.  See BL-13593.
                 if (args.IsSuccess == false)
                 {
                     // One way to get this to fail is to have a zombie Bloom running that has different "accept-lang" arguments.
@@ -629,8 +630,17 @@ namespace Bloom
             };
             _pasteCommand.Implementer = () =>
             {
+                PalasoImage clipboardImage = null;
+                try
+                {
+                    clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
+                }
+                catch (Exception) // anything goes wrong, just assume it's not an image
+                { }
+                var haveClipboardImage = clipboardImage == null ? "false" : "true";
+
                 RunJavascriptAsync(
-                    "editTabBundle?.getEditablePageBundleExports()?.pasteClipboardText()"
+                    $"editTabBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
             };
             _undoCommand.Implementer = () =>

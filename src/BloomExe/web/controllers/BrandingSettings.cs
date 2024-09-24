@@ -27,6 +27,7 @@ namespace Bloom.Api
     public class BrandingSettings
     {
         public const string kBrandingImageUrlPart = "branding/image";
+        private static readonly object _cacheLock = new object();
 
         /// <summary>
         /// Find the requested branding image file for the given branding, looking for a .png file if the .svg file does not exist.
@@ -69,8 +70,13 @@ namespace Bloom.Api
 
         public class PresetItem
         {
+            // this was originally only for data-book, but it may now also used for other presets, in which case it's just the "key" of the preset
             [JsonProperty("data-book")]
             public string DataBook;
+
+            // used when you don't want to introduce a data-book item, just supply a string to something. The `content` is the string.
+            [JsonProperty("key")]
+            public string Key;
 
             [JsonProperty("lang")]
             public string Lang;
@@ -94,6 +100,12 @@ namespace Bloom.Api
             {
                 var x = this.Presets.FirstOrDefault(p => p.DataBook == "xmatter");
                 return x?.Content;
+            }
+
+            public string GetPresetKeyValueOrDefault(string key, string defaultValue)
+            {
+                var kv = this.Presets.FirstOrDefault(p => p.Key == key);
+                return kv?.Content ?? defaultValue;
             }
         }
 
@@ -133,8 +145,29 @@ namespace Bloom.Api
         /// <param name="brandingNameOrFolderPath"> Normally, the branding is just a name, which we look up in the official branding folder
         //but unit tests can instead provide a path to the folder.
         /// </param>
+
+        public static Settings CachedBrandingSettings;
+        private static string CachedBrandingSettingsName;
+        private static string CachedBrandingSettingsPath;
+        private static DateTime CachedBrandingSettingsLastModified;
+
         public static Settings GetSettingsOrNull(string brandingNameOrFolderPath)
         {
+            lock (_cacheLock)
+            {
+                if (CachedBrandingSettingsName == brandingNameOrFolderPath)
+                {
+                    if (
+                        !Debugger.IsAttached // in production, we don't want to check this
+                        || RobustFile.GetLastWriteTimeUtc(CachedBrandingSettingsPath) // during development, we may be changing the branding.json file
+                            == CachedBrandingSettingsLastModified
+                    )
+                    {
+                        return CachedBrandingSettings;
+                    }
+                }
+            }
+
             try
             {
                 ParseBrandingKey(
@@ -161,7 +194,7 @@ namespace Bloom.Api
                     );
                 }
 
-                // if not, fall bck to just "branding.json"
+                // if not, fall back to just "branding.json"
                 if (string.IsNullOrEmpty(settingsPath))
                 {
                     settingsPath = BloomFileLocator.GetOptionalBrandingFile(
@@ -232,6 +265,16 @@ namespace Bloom.Api
                             p.Content = p.Content.Replace("{flavor}", flavor);
                         }
                     });
+                    // lock for thread safety
+                    lock (_cacheLock)
+                    {
+                        CachedBrandingSettings = settings;
+                        CachedBrandingSettingsName = brandingNameOrFolderPath;
+                        CachedBrandingSettingsPath = settingsPath;
+                        CachedBrandingSettingsLastModified = RobustFile.GetLastWriteTimeUtc(
+                            settingsPath
+                        );
+                    }
                     return settings;
                 }
             }

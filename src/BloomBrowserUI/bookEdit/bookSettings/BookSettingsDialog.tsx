@@ -38,16 +38,18 @@ import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
 import {
     post,
     postJson,
+    postString,
     useApiObject,
     useApiStringState
 } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 import { useL10n } from "../../react_components/l10nHooks";
-import { Div } from "../../react_components/l10nComponents";
+import { Div, P } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
+import { StyleAndFontTable } from "./StyleAndFontTable";
 
 let isOpenAlready = false;
 
@@ -151,16 +153,11 @@ export const BookSettingsDialog: React.FunctionComponent<{
     );
     */
 
-    /* unused so far
-    const coverBackgroundLabel = useL10n(
-        "Cover Background",
-        "BookSettings.CoverBackground"
+    const coverBackgroundColorLabel = useL10n(
+        "Background Color",
+        "Common.BackgroundColor"
     );
-    const coverColorLabel = useL10n(
-        "Cover Color",
-        "PublishTab.Android.CoverColor" // reuse the same string localized for the Android tab
-    );
-    */
+
     const whatToShowOnCoverLabel = useL10n(
         "Front Cover",
         "BookSettings.WhatToShowOnCover"
@@ -309,6 +306,18 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
+    function saveSettingsAndCloseDialog() {
+        if (settingsToReturnLater) {
+            // If nothing changed, we don't get any...and don't need to make this call.
+            postJson("book/settings", settingsToReturnLater);
+        }
+        isOpenAlready = false;
+        closeDialog();
+        // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
+        // we can't use a global. It listens to websocket, but we currently can only listen,
+        // we cannot send.
+    }
+
     return (
         <BloomDialog
             css={css`
@@ -377,25 +386,18 @@ export const BookSettingsDialog: React.FunctionComponent<{
                         selectedGroupIndex={props.initiallySelectedGroupIndex}
                     >
                         <ConfigrGroup label={coverLabel} level={1}>
-                            {
-                                // This is not part of the group of four mutually exclusive messages above
-                            }
+                            {appearanceDisabled && (
+                                <NoteBox>
+                                    <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
+                                        The selected page theme does not support
+                                        the following settings.
+                                    </Div>
+                                </NoteBox>
+                            )}
                             <ConfigrSubgroup
                                 label={whatToShowOnCoverLabel}
                                 path={`appearance`}
                             >
-                                {appearanceDisabled && (
-                                    <NoteBox
-                                        css={css`
-                                            margin-left: 20px;
-                                        `}
-                                    >
-                                        <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
-                                            The selected page theme does not
-                                            support the following settings.
-                                        </Div>
-                                    </NoteBox>
-                                )}
                                 <FieldVisibilityGroup
                                     field="cover-title"
                                     labelFrame="Show Title in {0}"
@@ -424,21 +426,19 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     )}
                                 />
                             </ConfigrSubgroup>
-                            {/* <ConfigrSubgroup
-                                label={
-                                    coverBackgroundLabel +
-                                    "  (Not implemented yet)"
-                                }
+                            <ConfigrSubgroup
+                                label={"All Cover Pages"}
                                 path={`appearance`}
                             >
                                 <ConfigrCustomStringInput
-                                    path={`appearance.coverColor`}
-                                    disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
-                                    //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
-                                    label={coverColorLabel}
+                                    label={coverBackgroundColorLabel}
                                     control={ColorPickerForConfigr}
+                                    disabled={appearanceDisabled}
+                                    {...getAdditionalProps<string>(
+                                        `cover-background-color`
+                                    )}
                                 />
-                            </ConfigrSubgroup> */}
+                            </ConfigrSubgroup>
                             {/*
 
                             <ConfigrSubgroup
@@ -626,23 +626,33 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 path={`publish.bloomPUB.imageSettings`}
                             />
                         </ConfigrGroup>
+                        <ConfigrGroup label="Fonts" level={1}>
+                            <NoteBox>
+                                <div>
+                                    <P l10nKey="BookSettings.Fonts.Problematic">
+                                        When you publish a book to the web or as
+                                        an ebook, Bloom will flag any
+                                        problematic fonts. For example, we
+                                        cannot legally host most Microsoft fonts
+                                        on BloomLibrary.org.
+                                    </P>
+                                    <P l10nKey="BookSettings.Fonts.TableDescription">
+                                        The following table shows where fonts
+                                        have been used.
+                                    </P>
+                                </div>
+                            </NoteBox>
+                            <StyleAndFontTable
+                                closeDialog={saveSettingsAndCloseDialog}
+                            />
+                        </ConfigrGroup>
                     </ConfigrPane>
                 )}
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogOkButton
                     default={true}
-                    onClick={() => {
-                        if (settingsToReturnLater) {
-                            // If nothing changed, we don't get any...and don't need to make this call.
-                            postJson("book/settings", settingsToReturnLater);
-                        }
-                        isOpenAlready = false;
-                        closeDialog();
-                        // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
-                        // we can't use a global. It listens to websocket, but we currently can only listen,
-                        // we cannot send.
-                    }}
+                    onClick={saveSettingsAndCloseDialog}
                 />
                 <DialogCancelButton />
             </DialogBottomButtons>

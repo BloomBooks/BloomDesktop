@@ -434,7 +434,7 @@ namespace Bloom.web.controllers
             // browser simply listens to the socket.
             request.PostSucceeded();
             var pathToCollectionFile = "";
-            using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+            using (var dlg = new BloomOpenFileDialog())
             {
                 dlg.Title = LocalizationManager.GetString(
                     "CollectionTab.ChooseCollection",
@@ -448,8 +448,6 @@ namespace Bloom.web.controllers
                         "This shows in the file-open dialog that you use to open a different bloom collection"
                     ) + @"|*.bloomLibrary;*.bloomCollection";
                 dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
-                dlg.CheckFileExists = true;
-                dlg.CheckPathExists = true;
                 if (
                     dlg.ShowDialog() == DialogResult.Cancel
                     || MiscUtils.ReportIfInvalidCollection(dlg.FileName)
@@ -489,6 +487,9 @@ namespace Bloom.web.controllers
         }
 
         // List out all the collections we have loaded
+        // 0) the editable collection of this ".bloomCollection" folder.
+        // 1) "Templates"
+        // etc.
         public void HandleListRequest(ApiRequest request)
         {
             dynamic output = GetCollectionList();
@@ -600,6 +601,7 @@ namespace Bloom.web.controllers
                         id = info.Id,
                         title,
                         collectionId = collection.PathToDirectory,
+                        folderName = info.FolderName,
                         folderPath = info.FolderPath,
                         isFactory = collection.IsFactoryInstalled
                     };
@@ -674,6 +676,12 @@ namespace Bloom.web.controllers
                 {
                     request.ReplyWithStreamContent(stream, "image/png");
                 }
+                return;
+            }
+            string svgPath = Path.Combine(bookInfo.FolderPath, "thumbnail.svg");
+            if (RobustFile.Exists(svgPath))
+            {
+                request.ReplyWithImage(svgPath);
                 return;
             }
 

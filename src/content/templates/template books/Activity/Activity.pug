@@ -40,3 +40,23 @@ html
 		+chooseWordFromPicture
 		+choosePictureFromWord
 
+		//- This will eventually be reinstated in the Games template, but temporarily we will reinstate it here and convert pug to HTML.
+		//-Slider: +page("Word Picture Slider Activity", "An interactive page where the user chooses pictures to match words.").customPage.bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.no-margin-page.numberedPage.activityBlueOnTan#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D58(data-page='extra' data-analyticscategories="drag-activity" data-activity="drag-word-chooser-slider" data-tool-id="dragActivity")
+		//- 	.split-pane-component-inner
+		//- 		//- there's a background image that fills the page. Todo: find a good one that doesn't take much space for a demo
+		//- 		+image
+		//- 			//- this div is moved to the bottom of the page and stretched to fill it by the javascript
+		//- 			//- then we copy images into it and allow them to be slid around.
+		//- 			div.bloom-activity-slider
+		//- 			//- a draggable picture that will be copied into the slider. We probably want two or three for demo purposes, with real pictures
+		//- 			//- and corresponding labels. Remember each pair must have a different data-img-txt value.
+		//- 			div.bloom-textOverPicture.ui-resizable.ui-draggable(data-img-txt="1" data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`]}" style="left: 60px; top: 80px; width: 100px; height: 100px; position: absolute;")
+		//- 				//- tabindex 0 is necessary for TOP image containers so they can properly be set as the active TOP.
+		//- 				.bloom-imageContainer(tabindex="0")
+		//- 					img(src="placeHolder.png", width="100px", alt='This picture, placeHolder.png, is missing or was loading too slowly.')
+		//- 			//- a corresponding text box
+		//- 			div.bloom-textOverPicture.ui-resizable.ui-draggable.bloom-allowAutoShrink.bloom-wordChoice.bloom-activeTextBox(data-txt-img="1" data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`]}" style="left: 60px; top: 20px; width: 91px; height: 31px; position: absolute;")
+		//- 				.bloom-translationGroup(data-default-languages='auto')
+		//- 					+editable('en').Bubble-style( ) Flower
+		//- 			div.bloom-textOverPicture.bloom-change-page-button.bloom-prev-page(style="left: 10px;top: 14px;width: 30px;height: 30px;" data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:9,`backgroundColors`:[`transparent`],`shadowOffset`:0}") &lt;
+		//- 			div.bloom-textOverPicture.bloom-change-page-button.bloom-next-page(style="left: 190px;top: 14px;width: 30px;height: 30px;" data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:9,`backgroundColors`:[`transparent`],`shadowOffset`:0}") &gt;

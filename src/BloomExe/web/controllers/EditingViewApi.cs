@@ -4,18 +4,16 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
 using SIL.Windows.Forms.Miscellaneous;
-using SIL.Xml;
 
 namespace Bloom.web.controllers
 {
@@ -29,14 +27,14 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler("editView/setModalState", HandleSetModalState, true);
-            apiHandler.RegisterEndpointLegacy("editView/chooseWidget", HandleChooseWidget, true);
+            apiHandler.RegisterEndpointHandler("editView/chooseWidget", HandleChooseWidget, true);
             apiHandler.RegisterEndpointHandler(
                 "editView/getColorsUsedInBookOverlays",
                 HandleGetColorsUsedInBookOverlays,
                 true
             );
             apiHandler.RegisterEndpointHandler("editView/pageDomLoaded", HandlePageDomLoaded, true);
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "editView/saveToolboxSetting",
                 HandleSaveToolboxSetting,
                 true
@@ -52,24 +50,24 @@ namespace Bloom.web.controllers
                 true,
                 true // review.
             );
-            apiHandler.RegisterEndpointLegacy("editView/setTopic", HandleSetTopic, true);
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
+            apiHandler.RegisterEndpointHandler(
                 "editView/isTextSelected",
                 HandleIsTextSelected,
                 false
             );
-            apiHandler.RegisterEndpointLegacy("editView/getBookLangs", HandleGetBookLangs, false);
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler("editView/getBookLangs", HandleGetBookLangs, false);
+            apiHandler.RegisterEndpointHandler(
                 "editView/isClipboardBookHyperlink",
                 HandleIsClipboardBookHyperlink,
                 false
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "editView/requestTranslationGroupContent",
                 RequestDefaultTranslationGroupContent,
                 true
             );
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "editView/duplicatePageMany",
                 HandleDuplicatePageMany,
                 true
@@ -90,6 +88,14 @@ namespace Bloom.web.controllers
                 HandlePrevPageSplit,
                 false
             );
+            apiHandler.RegisterEndpointHandler("editView/jumpToPage", HandleJumpToPage, true);
+        }
+
+        private void HandleJumpToPage(ApiRequest request)
+        {
+            var pageId = request.GetPostStringOrNull();
+            request.PostSucceeded();
+            View.Model.SaveThen(() => pageId, () => { });
         }
 
         /// <summary>
@@ -115,7 +121,7 @@ namespace Bloom.web.controllers
                             .SafeSelectNodes(
                                 $".//div[contains(@class, 'split-pane-component') and contains(@class, '{classPosition}')]"
                             )
-                            .Cast<XmlElement>()
+                            .Cast<SafeXmlElement>()
                             .ToArray();
                         // Enhance: this could reasonably do something fancier like finding the top-level split
                         // and using it if horizontal, even if there are other horizontal splits.
@@ -126,8 +132,8 @@ namespace Bloom.web.controllers
                             // it will be at 50%.
                             var split = "50";
 
-                            var style = topSplitPanes[0].Attributes["style"]?.Value;
-                            if (style != null)
+                            var style = topSplitPanes[0].GetAttribute("style");
+                            if (!string.IsNullOrEmpty(style))
                             {
                                 var styleKeyword = orientation == "horizontal" ? "bottom" : "right";
                                 var matches = new Regex($"{styleKeyword}: (.*)%").Match(style);
@@ -176,7 +182,8 @@ namespace Bloom.web.controllers
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
             View.OnPasteImage(
                 data.imageId,
-                UrlPathString.CreateFromUrlEncodedString(data.imageSrc)
+                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                data.imageIsGif
             );
             request.PostSucceeded();
         }
@@ -184,14 +191,21 @@ namespace Bloom.web.controllers
         private void HandleCopyImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            View.OnCopyImage(UrlPathString.CreateFromUrlEncodedString(data.imageSrc));
+            View.OnCopyImage(
+                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                data.imageIsGif
+            );
             request.PostSucceeded();
         }
 
         private void HandleCutImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            View.OnCutImage(data.imageId, UrlPathString.CreateFromUrlEncodedString(data.imageSrc));
+            View.OnCutImage(
+                data.imageId,
+                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                data.imageIsGif
+            );
             request.PostSucceeded();
         }
 
@@ -203,7 +217,8 @@ namespace Bloom.web.controllers
             {
                 View.OnChangeImage(
                     data.imageId,
-                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc)
+                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                    data.imageIsGif
                 );
             });
             request.PostSucceeded();
@@ -240,21 +255,42 @@ namespace Bloom.web.controllers
             request.ReplyWithBoolean(IsBloomHyperlink(clipContent, request.CurrentBook));
         }
 
+        static Regex _bloomHyperlinkRegex = new Regex(
+            @"^bloomnav://book/([-A-Fa-f0-9]+)\?page=([-A-Fa-f0-9]+|cover)$",
+            RegexOptions.Compiled
+        );
+
         private bool IsBloomHyperlink(string text, Book.Book book)
         {
-            if (string.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text) || book == null)
                 return false;
-            // This is simplisitic but enough to prevent most nonsensical URLs being put in links.
-            if (text.StartsWith("http:") || text.StartsWith("https:") || text.StartsWith("mailto:"))
+            // This is simplistic but enough to prevent most nonsensical URLs being put in links.
+            if (
+                text.StartsWith("http://")
+                || text.StartsWith("https://")
+                || text.StartsWith("mailto:")
+            )
                 return true;
-            if (!text.StartsWith("#"))
-                return false;
-            // This is looking like an internal link. It had better be a valid page in this book.
-            // For now it is no good linking to xmatter pages because their IDs change.
-            var id = text.Substring(1);
-            if (book == null)
-                return false;
-            return book.GetPages().Any(page => page.Id == id && !page.IsXMatter);
+            var match = _bloomHyperlinkRegex.Match(text);
+            if (match.Success)
+            {
+                var bookId = match.Groups[1].Value;
+                var pageId = match.Groups[2].Value;
+                // It is no good linking to xmatter pages by id because their IDs change.
+                // We maintain a link to the outside front cover using the id "cover" to get
+                // around this problem.
+                if (bookId == book.ID)
+                {
+                    return pageId == "cover"
+                        || book.GetPages().Any(page => page.Id == pageId && !page.IsXMatter);
+                }
+                else
+                {
+                    return Guid.TryParse(bookId, out var bookGuid)
+                        && (pageId == "cover" || Guid.TryParse(pageId, out var pageGuid));
+                }
+            }
+            return false;
         }
 
         private void RequestDefaultTranslationGroupContent(ApiRequest request)
@@ -299,11 +335,9 @@ namespace Bloom.web.controllers
         private void HandleChooseWidget(ApiRequest request)
         {
             using (
-                var dlg = new DialogAdapters.OpenFileDialogAdapter
+                var dlg = new MiscUI.BloomOpenFileDialog
                 {
-                    Multiselect = false,
-                    CheckFileExists = true,
-                    Filter = "Widget files|*.wdgt;*.html;*.htm"
+                    Filter = "Widget files|*.wdgt;*.html;*.htm",
                 }
             )
             {

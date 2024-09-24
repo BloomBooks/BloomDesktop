@@ -206,7 +206,7 @@ namespace Bloom.web.controllers
                 token = ccLicense.Token,
                 allowCommercial = ccLicense.CommercialUseAllowed ? "yes" : "no",
                 allowDerivatives = GetCcDerivativeRulesAsString(ccLicense.DerivativeRule),
-                intergovernmentalVersion = ccLicense.IntergovernmentalOriganizationQualifier
+                intergovernmentalVersion = ccLicense.IntergovernmentalOrganizationQualifier
             };
         }
 
@@ -287,7 +287,7 @@ namespace Bloom.web.controllers
                     GetCcDerivativeRule(settings.licenseInfo.creativeCommonsInfo.allowDerivatives)
                 )
                 {
-                    IntergovernmentalOriganizationQualifier = settings
+                    IntergovernmentalOrganizationQualifier = settings
                         .licenseInfo
                         .creativeCommonsInfo
                         .intergovernmentalVersion

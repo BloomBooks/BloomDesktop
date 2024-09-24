@@ -125,11 +125,12 @@ namespace Bloom
             IEnumerable<string> sourceRootFolders
         )
         {
+            // e.g. "blah\output\browser\templates"
             foreach (var root in sourceRootFolders.Where(Directory.Exists))
             {
                 foreach (var collectionDir in Directory.GetDirectories(root))
                 {
-                    yield return collectionDir;
+                    yield return collectionDir; // e.g. "output\browser\templates\Sample Shells"
                 }
 
                 //dereference shortcuts to folders living elsewhere

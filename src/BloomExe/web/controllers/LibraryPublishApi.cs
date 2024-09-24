@@ -3,6 +3,7 @@ using Bloom.Publish;
 using Bloom.Publish.BloomLibrary;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
+using L10NSharp;
 using SIL.Progress;
 using SIL.Reporting;
 using System;
@@ -10,7 +11,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Web;
 
 namespace Bloom.web.controllers
 {
@@ -122,6 +122,7 @@ namespace Bloom.web.controllers
                 HandleGoToEditBookCover,
                 true
             );
+            apiHandler.RegisterEndpointHandler("libraryPublish/topic", HandleTopic, true);
         }
 
         private static bool ModelIndicatesSignLanguageChecked =>
@@ -485,6 +486,43 @@ namespace Bloom.web.controllers
             Model.Book.UserPrefs.MostRecentPage = 0;
             GetWorkspaceView()?.ChangeTab(WorkspaceTab.edit);
             request.PostSucceeded();
+        }
+
+        private void HandleTopic(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Get)
+            {
+                var currentTopicKey = Model.Book.BookData
+                    .GetVariableOrNull("topic", "en")
+                    .Unencoded;
+                string result;
+                if (string.IsNullOrEmpty(currentTopicKey))
+                    result = "Missing";
+                else
+                {
+                    result = LocalizationManager.GetDynamicString(
+                        "Bloom",
+                        "Topics." + currentTopicKey,
+                        currentTopicKey
+                    );
+                }
+
+                request.ReplyWithJson(result);
+            }
+            else if (request.HttpMethod == HttpMethods.Post)
+            {
+                var topicKey = request.RequiredPostString();
+                // RequiredPostString cannot be empty, so we use a substitute value for empty.
+                if (topicKey == "<NONE>")
+                    topicKey = "";
+                Model.Book.SetTopic(topicKey);
+                Model.Book.Save();
+
+                // Used by the Publish tab to refresh the UI when the data is saved.
+                _webSocketServer.SendString("publish", "topicChanged", null);
+
+                request.PostSucceeded();
+            }
         }
     }
 }

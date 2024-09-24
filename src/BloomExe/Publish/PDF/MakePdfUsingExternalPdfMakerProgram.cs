@@ -270,6 +270,9 @@ namespace Bloom.Publish.PDF
         private const double Size6x9PortraitHeight = 9 * inchesToMM; // mm
         private const double Size6x9PortraitWidth = 6 * inchesToMM; // mm
 
+        private const double HalfFolioPortraitHeight = 8.5 * inchesToMM;
+        private const double HalfFolioPortraitWidth = 6.5 * inchesToMM;
+
         //BottomMarginInMillimeters = 0,
         //TopMarginInMillimeters = 0,
         //LeftMarginInMillimeters = 0,
@@ -290,6 +293,10 @@ namespace Bloom.Publish.PDF
             else if (specs.PaperSizeName == "USComic")
             {
                 bldr.Append($" -h {USComicPortraitHeight} -w {USComicPortraitWidth}");
+            }
+            else if (specs.PaperSizeName == "HalfFolio")
+            {
+                bldr.Append($" -h {HalfFolioPortraitHeight} -w {HalfFolioPortraitWidth}");
             }
             else if (specs.PaperSizeName == "Size6x9")
             {
@@ -355,6 +362,11 @@ namespace Bloom.Publish.PDF
                 case "uscomic":
                     height = USComicPortraitHeight + bleedExtra;
                     width = USComicPortraitWidth + bleedExtra;
+                    break;
+                case "halffolio":
+                    // added for consistency, but not tested.
+                    height = HalfFolioPortraitHeight + bleedExtra;
+                    width = HalfFolioPortraitWidth + bleedExtra;
                     break;
                 case "size6x9":
                     height = Size6x9PortraitHeight + bleedExtra;

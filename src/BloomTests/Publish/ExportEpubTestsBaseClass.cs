@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
+using Bloom.SafeXml;
 using Bloom.web;
 using BloomTemp;
 using BloomTests.Book;
@@ -712,7 +713,7 @@ namespace BloomTests.Publish
             bool hasFullAudio = false
         )
         {
-            var xdoc = new XmlDocument();
+            var xdoc = SafeXmlDocument.Create();
             xdoc.LoadXml(_manifestContent);
             var source = xdoc.SelectSingleNode("opf:package/opf:metadata/dc:source", _ns);
             Assert.AreEqual(desiredSource, source.InnerXml);
@@ -723,7 +724,7 @@ namespace BloomTests.Publish
             var foundVisual = false;
             var foundOther = false;
             foreach (
-                XmlNode node in xdoc.SelectNodes(
+                var node in xdoc.SafeSelectNodes(
                     "opf:package/opf:metadata/opf:meta[@property='schema:accessMode']",
                     _ns
                 )
@@ -763,7 +764,7 @@ namespace BloomTests.Publish
             );
 
             foreach (
-                XmlNode node in xdoc.SelectNodes(
+                var node in xdoc.SafeSelectNodes(
                     "opf:package/opf:metadata/opf:meta[@property='schema:accessModeSufficient']",
                     _ns
                 )
@@ -824,7 +825,7 @@ namespace BloomTests.Publish
             var foundTableOfContents = false;
 
             foreach (
-                XmlNode node in xdoc.SelectNodes(
+                var node in xdoc.SafeSelectNodes(
                     "opf:package/opf:metadata/opf:meta[@property='schema:accessibilityFeature']",
                     _ns
                 )
@@ -900,7 +901,7 @@ namespace BloomTests.Publish
             var foundNoSoundHazard = false;
             var foundUnknown = false;
             foreach (
-                XmlNode node in xdoc.SelectNodes(
+                var node in xdoc.SafeSelectNodes(
                     "opf:package/opf:metadata/opf:meta[@property='schema:accessibilityHazard']",
                     _ns
                 )
@@ -968,7 +969,7 @@ namespace BloomTests.Publish
 
             var summaryCount = 0;
             foreach (
-                var unused in xdoc.SelectNodes(
+                var unused in xdoc.SafeSelectNodes(
                     "opf:package/opf:metadata/opf:meta[@property='schema:accessibilitySummary']",
                     _ns
                 )

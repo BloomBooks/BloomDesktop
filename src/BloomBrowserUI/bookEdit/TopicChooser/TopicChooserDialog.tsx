@@ -15,6 +15,7 @@ import {
 } from "../../react_components/BloomDialog/BloomDialog";
 import {
     IBloomDialogEnvironmentParams,
+    Mode,
     useSetupBloomDialog
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { DialogCloseButton } from "../../react_components/BloomDialog/commonDialogComponents";
@@ -32,13 +33,13 @@ interface ITopicChoice {
     translated?: string;
 }
 
-interface ITopicChooserdialogProps {
+interface ITopicChooserDialogProps {
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-    currentTopic: string;
+    currentTopic?: string;
     availableTopics?: ITopicChoice[];
 }
 
-export const TopicChooserDialog: React.FunctionComponent<ITopicChooserdialogProps> = props => {
+export const TopicChooserDialog: React.FunctionComponent<ITopicChooserDialogProps> = props => {
     const {
         showDialog,
         closeDialog,
@@ -62,15 +63,20 @@ export const TopicChooserDialog: React.FunctionComponent<ITopicChooserdialogProp
     React.useEffect(() => {
         if (propsForBloomDialog.open === undefined) return;
 
-        postBoolean("editView/setModalState", propsForBloomDialog.open);
-    }, [propsForBloomDialog.open]);
+        if (props.dialogEnvironment?.mode === Mode.Edit)
+            postBoolean("editView/setModalState", propsForBloomDialog.open);
+    }, [propsForBloomDialog.open, props.dialogEnvironment?.mode]);
 
     const onRadioSelectionChanged = (newTopicKey: string) => {
         setCurrentTopic(newTopicKey === "No Topic" ? undefined : newTopicKey);
     };
 
-    const handleOk = () => {
-        postString("editView/setTopic", currentTopic ? currentTopic : "<NONE>");
+    const handleClose = () => {
+        const topicKey = currentTopic ? currentTopic : "<NONE>";
+        if (props.dialogEnvironment?.mode === Mode.Edit) {
+            postString("editView/setTopic", topicKey);
+        } else if (props.dialogEnvironment?.mode === Mode.Publish)
+            postString("libraryPublish/topic", topicKey);
         closeDialog();
     };
 
@@ -164,7 +170,7 @@ export const TopicChooserDialog: React.FunctionComponent<ITopicChooserdialogProp
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogCloseButton
-                    onClick={handleOk}
+                    onClick={handleClose}
                     css={css`
                         font-size: 16px !important; // override MUI default
                         width: 150px;
@@ -179,7 +185,7 @@ let show: () => void = () => {
     window.alert("TopicChooserDialog is not set up yet.");
 };
 
-export function showTopicChooserDialog() {
+export function showTopicChooserDialog(mode: Mode = Mode.Edit) {
     try {
         get("editView/topics", result => {
             const topicsAndCurrent = result.data;
@@ -198,6 +204,11 @@ export function showTopicChooserDialog() {
                     <TopicChooserDialog
                         currentTopic={currentTopic}
                         availableTopics={topics}
+                        dialogEnvironment={{
+                            dialogFrameProvidedExternally: false,
+                            initiallyOpen: false,
+                            mode
+                        }}
                     />,
                     getModalContainer()
                 );
