@@ -316,24 +316,32 @@ export default class BloomField {
                     if (!result.data) {
                         return; // More sanity checks are in bloomEditing.updateCkEditorButtonStatus
                     }
-                    const anchor = document.createElement("a");
-                    anchor.href = result.data;
-                    try {
-                        document
-                            .getSelection()
-                            ?.getRangeAt(0)
-                            ?.surroundContents(anchor);
-                    } catch (ex) {
-                        const englishErrorMessage =
-                            "Bloom was not able to make a link. Try selecting only simple text.";
-                        console.log(`${englishErrorMessage} ${ex}`);
-                        BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
-                            "EditTab.HyperlinkPasteFailure",
-                            englishErrorMessage,
-                            "Shows when a hyperlink cannot be pasted due to invalid selection.",
-                            "CantPasteHyperlink"
+                    get("app/selectedBookInfo", bookInfo => {
+                        if (!bookInfo.data) {
+                            return;
+                        }
+                        const anchor = document.createElement("a");
+                        anchor.href = processPastedHyperlink(
+                            result.data,
+                            bookInfo.data.id
                         );
-                    }
+                        try {
+                            document
+                                .getSelection()
+                                ?.getRangeAt(0)
+                                ?.surroundContents(anchor);
+                        } catch (ex) {
+                            const englishErrorMessage =
+                                "Bloom was not able to make a link. Try selecting only simple text.";
+                            console.log(`${englishErrorMessage} ${ex}`);
+                            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                                "EditTab.HyperlinkPasteFailure",
+                                englishErrorMessage,
+                                "Shows when a hyperlink cannot be pasted due to invalid selection.",
+                                "CantPasteHyperlink"
+                            );
+                        }
+                    });
                 });
                 return true; // probaby means success, but I'm not sure. Typescript says this function has to return a boolean.
             }
@@ -948,4 +956,17 @@ interface FFSelection extends Selection {
 }
 interface JQuery {
     reverse(): JQuery;
+}
+function processPastedHyperlink(dataPaste, dataBookId): string {
+    const url = dataPaste as string;
+    const bookId = dataBookId as string;
+    if (!url || !bookId) {
+        return "";
+    }
+    const currentBookPrefix = `bloomnav://book/${bookId}?page=`;
+    if (url.startsWith(currentBookPrefix)) {
+        return "#" + url.substring(currentBookPrefix.length);
+    } else {
+        return url;
+    }
 }

@@ -559,12 +559,30 @@ namespace Bloom.Publish.BloomPub
                 overwrite: true
             );
             ConvertImagesToBackground(modifiedBook.RawDom);
+            ConvertCoverLinkToRealPageId(modifiedBook);
 
             AddDistributionFile(modifiedBookFolderPath, creator, settings);
 
             modifiedBook.Save();
 
             return modifiedBook;
+        }
+
+        private static void ConvertCoverLinkToRealPageId(Book.Book book)
+        {
+            var coverLinks = book.RawDom.SafeSelectNodes("//a[@href='#cover']");
+            if (coverLinks.Length == 0)
+                return;
+            var coverPage = book.RawDom.SelectSingleNode(
+                "//div[@id and contains(@class, 'outsideFrontCover')]"
+            );
+            if (coverPage == null)
+                return;
+            var coverPageId = coverPage.GetAttribute("id");
+            foreach (var anchor in coverLinks.Cast<SafeXmlElement>())
+            {
+                anchor.SetAttribute("href", "#" + coverPageId);
+            }
         }
 
         /// <summary>

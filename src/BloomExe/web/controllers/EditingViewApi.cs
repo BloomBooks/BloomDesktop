@@ -255,21 +255,42 @@ namespace Bloom.web.controllers
             request.ReplyWithBoolean(IsBloomHyperlink(clipContent, request.CurrentBook));
         }
 
+        static Regex _bloomHyperlinkRegex = new Regex(
+            @"^bloomnav://book/([-A-Fa-f0-9]+)\?page=([-A-Fa-f0-9]+|cover)$",
+            RegexOptions.Compiled
+        );
+
         private bool IsBloomHyperlink(string text, Book.Book book)
         {
-            if (string.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text) || book == null)
                 return false;
-            // This is simplisitic but enough to prevent most nonsensical URLs being put in links.
-            if (text.StartsWith("http:") || text.StartsWith("https:") || text.StartsWith("mailto:"))
+            // This is simplistic but enough to prevent most nonsensical URLs being put in links.
+            if (
+                text.StartsWith("http://")
+                || text.StartsWith("https://")
+                || text.StartsWith("mailto:")
+            )
                 return true;
-            if (!text.StartsWith("#"))
-                return false;
-            // This is looking like an internal link. It had better be a valid page in this book.
-            // For now it is no good linking to xmatter pages because their IDs change.
-            var id = text.Substring(1);
-            if (book == null)
-                return false;
-            return book.GetPages().Any(page => page.Id == id && !page.IsXMatter);
+            var match = _bloomHyperlinkRegex.Match(text);
+            if (match.Success)
+            {
+                var bookId = match.Groups[1].Value;
+                var pageId = match.Groups[2].Value;
+                // It is no good linking to xmatter pages by id because their IDs change.
+                // We maintain a link to the outside front cover using the id "cover" to get
+                // around this problem.
+                if (bookId == book.ID)
+                {
+                    return pageId == "cover"
+                        || book.GetPages().Any(page => page.Id == pageId && !page.IsXMatter);
+                }
+                else
+                {
+                    return Guid.TryParse(bookId, out var bookGuid)
+                        && (pageId == "cover" || Guid.TryParse(pageId, out var pageGuid));
+                }
+            }
+            return false;
         }
 
         private void RequestDefaultTranslationGroupContent(ApiRequest request)
