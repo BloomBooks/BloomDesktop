@@ -89,34 +89,39 @@ namespace BloomTests.Collection
         [Test]
         public void Filter_AcceptsBothHtmlFiles()
         {
-            Assert.That(_filter.Filter(_someBookPath), Is.True);
-            Assert.That(_filter.Filter(_otherBookPath), Is.True);
+            Assert.That(_filter.ShouldAllow(_someBookPath), Is.True);
+            Assert.That(_filter.ShouldAllow(_otherBookPath), Is.True);
         }
 
         [Test]
         public void Filter_DoesNotAcceptUnwantedFiles()
         {
-            Assert.That(_filter.Filter(Path.Combine(_someBookFolderPath, "rubbish.bad")), Is.False);
+            Assert.That(
+                _filter.ShouldAllow(Path.Combine(_someBookFolderPath, "rubbish.bad")),
+                Is.False
+            );
         }
 
         [Test]
         public void Filter_AcceptsRootCssFiles()
         {
             Assert.That(
-                _filter.Filter(
+                _filter.ShouldAllow(
                     Path.Combine(_collectionFolder.FolderPath, "CustomCollectionStyles.css")
                 ),
                 Is.True
             );
             Assert.That(
-                _filter.Filter(
+                _filter.ShouldAllow(
                     Path.Combine(_collectionFolder.FolderPath, "settingsCollectionStyles.css")
                 ),
                 Is.True
             );
             // Not sure we want this
             Assert.That(
-                _filter.Filter(Path.Combine(_collectionFolder.FolderPath, "SomeRandomStyles.css")),
+                _filter.ShouldAllow(
+                    Path.Combine(_collectionFolder.FolderPath, "SomeRandomStyles.css")
+                ),
                 Is.True
             );
         }
@@ -125,16 +130,18 @@ namespace BloomTests.Collection
         public void Filter_RejectsOtherRootFiles()
         {
             Assert.That(
-                _filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Rubbish.png")),
+                _filter.ShouldAllow(Path.Combine(_collectionFolder.FolderPath, "Rubbish.png")),
                 Is.False
             );
             Assert.That(
-                _filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Nonsence.htm")),
+                _filter.ShouldAllow(Path.Combine(_collectionFolder.FolderPath, "Nonsence.htm")),
                 Is.False
             );
             // Not absolutely sure we don't want this
             Assert.That(
-                _filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Blah.bloomCollection")),
+                _filter.ShouldAllow(
+                    Path.Combine(_collectionFolder.FolderPath, "Blah.bloomCollection")
+                ),
                 Is.False
             );
         }

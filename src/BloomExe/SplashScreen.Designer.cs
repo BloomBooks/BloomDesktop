@@ -41,9 +41,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
-            // 
+            //
             // pictureBox1
-            // 
+            //
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox1.Image = global::Bloom.Properties.Resources.Bloom_For_Splash;
             this.pictureBox1.Location = new System.Drawing.Point(81, 85);
@@ -53,13 +53,13 @@
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
-            // 
+            //
             // _fadeOutTimer
-            // 
+            //
             this._fadeOutTimer.Tick += new System.EventHandler(this._fadeOutTimer_Tick);
-            // 
+            //
             // _longVersionInfo
-            // 
+            //
             this._longVersionInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this._longVersionInfo.AutoSize = true;
             this._longVersionInfo.BackColor = System.Drawing.Color.Transparent;
@@ -72,9 +72,9 @@
             this._longVersionInfo.Size = new System.Drawing.Size(107, 25);
             this._longVersionInfo.TabIndex = 13;
             this._longVersionInfo.Text = "Version Info";
-            // 
+            //
             // _feedbackStatusLabel
-            // 
+            //
             this._feedbackStatusLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this._feedbackStatusLabel.AutoSize = true;
             this._feedbackStatusLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -85,9 +85,9 @@
             this._feedbackStatusLabel.Size = new System.Drawing.Size(161, 25);
             this._feedbackStatusLabel.TabIndex = 17;
             this._feedbackStatusLabel.Text = "Feedback Disabled";
-            // 
+            //
             // _copyrightlabel
-            // 
+            //
             this._copyrightlabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this._copyrightlabel.AutoSize = true;
             this._copyrightlabel.BackColor = System.Drawing.Color.Transparent;
@@ -99,11 +99,11 @@
             this._copyrightlabel.Name = "_copyrightlabel";
             this._copyrightlabel.Size = new System.Drawing.Size(255, 25);
             this._copyrightlabel.TabIndex = 19;
-            this._copyrightlabel.Text = "© 2011-{year} SIL International";
+            this._copyrightlabel.Text = "© 2011-{year} SIL Global";
             this._copyrightlabel.Click += new System.EventHandler(this.label2_Click);
-            // 
+            //
             // _shortVersionLabel
-            // 
+            //
             this._shortVersionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this._shortVersionLabel.AutoSize = true;
             this._shortVersionLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -116,9 +116,9 @@
             this._shortVersionLabel.TabIndex = 23;
             this._shortVersionLabel.Text = "19.8.710";
             this._shortVersionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // pictureBox2
-            // 
+            //
             this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
             this.pictureBox2.Location = new System.Drawing.Point(373, 318);
@@ -128,9 +128,9 @@
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox2.TabIndex = 0;
             this.pictureBox2.TabStop = false;
-            // 
+            //
             // _channelLabel
-            // 
+            //
             this._channelLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
             this._channelLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(161)))), ((int)(((byte)(255)))));
             this._channelLabel.Location = new System.Drawing.Point(260, 201);
@@ -141,9 +141,9 @@
             this._channelLabel.TabIndex = 25;
             this._channelLabel.Text = "channel";
             this._channelLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // SplashScreen
-            // 
+            //
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));

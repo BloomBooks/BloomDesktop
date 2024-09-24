@@ -668,11 +668,11 @@ namespace Bloom.Edit
                     }
                 }
 
-				var metadata = imageBeingModified.Metadata;
-				// If the license is not set, default to CC-BY.
-				metadata.SetupReasonableLicenseDefaultBeforeEditing();
+                var metadata = imageBeingModified.Metadata;
+                // If the license is not set, default to CC-BY.
+                metadata.SetupReasonableLicenseDefaultBeforeEditing();
 
-				return metadata;
+                return metadata;
             }
         }
 
@@ -1807,6 +1807,14 @@ namespace Bloom.Edit
                     //Application.Idle += SaveWhenIdle;
                 };
             }
+            // This prevents the built-in ctrl-mousewheel zooming as well as ctrl-+ and ctrl--.
+            // They are a problem because the toolbox zooms too, which causes various problems including
+            // BL-13846 (can't drag new overlays onto the page).
+            // We enable these mouse actions for the main document iframe by handling the events
+            // in Javascript and calling our zoom functions through an API.
+            var settings = (Browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;
+            if (settings != null)
+                settings.IsZoomControlEnabled = false;
         }
 
         public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";

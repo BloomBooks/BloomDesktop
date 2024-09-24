@@ -11,7 +11,6 @@ using Bloom.ToPalaso;
 #else
 using System.Windows.Media;
 #endif
-using Bloom.Api;
 
 namespace Bloom.FontProcessing
 {
@@ -273,7 +272,7 @@ namespace Bloom.FontProcessing
             if (!String.IsNullOrEmpty(license))
             {
                 if (
-                    license.Contains("Open Font License")
+                    license.ToLowerInvariant().Contains("open font license")
                     || license.Contains("OFL")
                     || /* Kmhmu OT has this typo */
                     license.Contains("SIL OpenFont License")
@@ -289,7 +288,7 @@ namespace Bloom.FontProcessing
                 {
                     determinedSuitability = kOK;
                     if (
-                        license.Contains("Open Font License")
+                        license.ToLowerInvariant().Contains("open font license")
                         || license.Contains("OFL")
                         || /* Kmhmu OT has this typo */
                         license.Contains("SIL OpenFont License")
@@ -315,6 +314,45 @@ namespace Bloom.FontProcessing
                     determinedSuitabilityNotes = "Bitstream free license";
                     return;
                 }
+                if (license.Contains("Microsoft supplied font"))
+                {
+                    licenseURL = "https://learn.microsoft.com/en-us/typography/fonts/font-faq";
+                    determinedSuitability = kUnsuitable;
+                    determinedSuitabilityNotes = "Microsoft font";
+                    return;
+                }
+                if (license.ToLowerInvariant().Contains("contact the vendor"))
+                {
+                    determinedSuitability = kUnsuitable;
+                    if (copyright != null && copyright.Contains("Microsoft Corporation"))
+                    {
+                        licenseURL = "https://learn.microsoft.com/en-us/typography/fonts/font-faq";
+                        determinedSuitabilityNotes = "Microsoft font";
+                    }
+                    else
+                    {
+                        determinedSuitabilityNotes = "Contact the vendor";
+                    }
+                    return;
+                }
+                if (license.ToLowerInvariant().Contains("you may not copy or distribute"))
+                {
+                    determinedSuitability = kUnsuitable;
+                    determinedSuitabilityNotes = "You may not copy or distribute";
+                    return;
+                }
+                if (
+                    license
+                        .ToLowerInvariant()
+                        .Contains(
+                            "allow to use without any charges and allow to reproduce, study, adapt and distribute this font"
+                        )
+                )
+                {
+                    determinedSuitability = kOK;
+                    determinedSuitabilityNotes = "Allow to reproduce and distribute";
+                    return;
+                }
             }
             if (licenseURL == "http://dejavu-fonts.org/wiki/License")
             {
@@ -337,6 +375,15 @@ namespace Bloom.FontProcessing
                     determinedSuitabilityNotes = "GNU GPL";
                     return;
                 }
+                if (
+                    copyright.Contains("GNU Lesser General Public License")
+                    || copyright.Contains(" LGPL ")
+                )
+                {
+                    determinedSuitability = kOK;
+                    determinedSuitabilityNotes = "GNU LGPL";
+                    return;
+                }
                 if (copyright.Contains("SIL Open Font License"))
                 {
                     determinedSuitability = kOK;
@@ -349,35 +396,55 @@ namespace Bloom.FontProcessing
                     determinedSuitabilityNotes = "Ubuntu Font Licence";
                     return;
                 }
+                if (copyright == "No Rights Reserved.")
+                {
+                    determinedSuitability = kOK;
+                    determinedSuitabilityNotes = "No rights reserved";
+                    return;
+                }
+                if (copyright.ToLowerInvariant().Contains("freeware"))
+                {
+                    determinedSuitability = kOK;
+                    determinedSuitabilityNotes = "Freeware";
+                    return;
+                }
+                if (copyright.Contains("Creative Commons"))
+                {
+                    determinedSuitability = kOK;
+                    determinedSuitabilityNotes = "Creative Commons";
+                    return;
+                }
+                if (copyright.Contains("Microsoft Corporation"))
+                {
+                    licenseURL = "https://learn.microsoft.com/en-us/typography/fonts/font-faq";
+                    determinedSuitability = kUnsuitable;
+                    determinedSuitabilityNotes = "Microsoft font";
+                    return;
+                }
+                if (copyright.Contains("Do not distribute."))
+                {
+                    determinedSuitability = kUnsuitable;
+                    determinedSuitabilityNotes = "Do not distribute";
+                    return;
+                }
+                if (
+                    copyright.ToLowerInvariant().Contains("all rights reserved")
+                    && string.IsNullOrEmpty(license)
+                )
+                { // standard boilerplate, but let's believe them.
+                    determinedSuitability = kUnsuitable;
+                    determinedSuitabilityNotes = "All rights reserved";
+                    return;
+                }
             }
-            if (fsType == "Restricted License" || fsType == "Bitmaps Only")
+            if (
+                fsType == "Restricted License"
+                || fsType == "Bitmaps Only"
+                || fsType == "Print and preview"
+            )
             {
                 determinedSuitability = kUnsuitable;
                 determinedSuitabilityNotes = "unambiguous fsType value";
-                return;
-            }
-            if (
-                manufacturer == "Microsoft Corporation"
-                || manufacturer == "Microsoft Corp."
-                || (
-                    license != null
-                    && license.Contains("Microsoft supplied font")
-                    && manufacturer != null
-                    && manufacturer.Contains("Monotype")
-                )
-                || (
-                    license == null
-                    && manufacturer == null
-                    && copyright != null
-                    && copyright.Contains("Microsoft Corporation")
-                    && trademark != null
-                    && trademark.Contains("is a trademark of Microsoft Corporation")
-                )
-            )
-            {
-                // Review what about "Print and Preview"?
-                determinedSuitability = kOK;
-                determinedSuitabilityNotes = "fsType from reliable source";
                 return;
             }
             // Give up.  More heuristics may suggest themselves.
@@ -500,6 +567,28 @@ namespace Bloom.FontProcessing
         {
             determinedSuitability = suit;
             determinedSuitabilityNotes = "Testing";
+        }
+
+        public override string ToString()
+        {
+            var bldr = new System.Text.StringBuilder();
+            bldr.AppendLine($"FontMetadata: name={name}");
+            bldr.AppendLine($"  fileExtension={fileExtension}");
+            bldr.AppendLine($"  fsType={fsType}");
+            bldr.AppendLine($"  version={version}");
+            bldr.AppendLine($"  copyright={copyright}");
+            bldr.AppendLine($"  license={license}");
+            bldr.AppendLine($"  licenseURL={licenseURL}");
+            bldr.AppendLine($"  manufacturer={manufacturer}");
+            bldr.AppendLine($"  manufacturerURL={manufacturerURL}");
+            bldr.AppendLine($"  designer={designer}");
+            bldr.AppendLine($"  designerURL={designerURL}");
+            bldr.AppendLine($"  trademark={trademark}");
+            bldr.Append($"  variants=");
+            bldr.AppendLine(variants == null ? "" : string.Join(", ", variants));
+            bldr.AppendLine($"  determinedSuitability={determinedSuitability}");
+            bldr.AppendLine($"  determinedSuitabilityNotes={determinedSuitabilityNotes}");
+            return bldr.ToString();
         }
     }
 }

@@ -44,11 +44,21 @@ const FontInformationPane: React.FunctionComponent<{
         "This shows in the popup when hovering over a font that Bloom can't use in ebooks due to its file format."
     );
 
-    const UnsuitableFontLicenseMessage = useL10n(
+    const GeneralUnsuitableFontLicenseMessage = useL10n(
         "The metadata inside this font tells us that it may not be embedded for free in ebooks and the web. Please use a different font.",
         "FontInformationPane.FontUnsuitable",
         "This shows in the popup when hovering over a font that Bloom can't legally host on its website."
     );
+    const MicrosoftFontsArentFree = useL10n(
+        "This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.",
+        "PublishTab.FontProblem.Microsoft",
+        "This shows in the popup when hovering over a font that Microsoft owns (or distributes)."
+    );
+    const UnsuitableFontLicenseMessage =
+        props.metadata?.licenseURL ===
+        "https://learn.microsoft.com/en-us/typography/fonts/font-faq"
+            ? MicrosoftFontsArentFree
+            : GeneralUnsuitableFontLicenseMessage;
 
     const mainMessage =
         suitability === "ok"
