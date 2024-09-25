@@ -4680,6 +4680,11 @@ export class BubbleManager {
     }
 
     public deleteBubble(): void {
+        // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
+        if (this !== theOneBubbleManager) {
+            theOneBubbleManager.deleteBubble();
+            return;
+        }
         const active = this.getActiveElement();
         if (active) {
             this.deleteTOPBox(active);
@@ -4687,6 +4692,10 @@ export class BubbleManager {
     }
 
     public duplicateBubble(): HTMLElement | undefined {
+        // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
+        if (this !== theOneBubbleManager) {
+            return theOneBubbleManager.duplicateBubble();
+        }
         const active = this.getActiveElement();
         if (active) {
             return this.duplicateTOPBox(active);
@@ -4695,6 +4704,11 @@ export class BubbleManager {
     }
 
     public addChildBubble(): void {
+        // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
+        if (this !== theOneBubbleManager) {
+            theOneBubbleManager.addChildBubble();
+            return;
+        }
         const parentElement = this.getActiveElement();
         if (!parentElement) {
             // No parent to attach to
