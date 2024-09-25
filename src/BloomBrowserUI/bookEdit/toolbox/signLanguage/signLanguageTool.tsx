@@ -524,6 +524,8 @@ export class SignLanguageToolControls extends React.Component<
             }
             if (source) {
                 source.setAttribute("src", url);
+                // Transparent background videos allow the placeholder to show.  See BL-13918.
+                container.classList.remove("bloom-noVideoSelected");
             }
         }
     }
