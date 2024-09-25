@@ -4401,6 +4401,15 @@ export class BubbleManager {
         this.comicEditingSuspendedState = forWhat;
     }
 
+    public checkActiveElementIsVisible() {
+        if (!this.activeElement) {
+            return;
+        }
+        if (window.getComputedStyle(this.activeElement).display === "none") {
+            this.setActiveElement(undefined);
+        }
+    }
+
     public resumeComicEditing() {
         if (this.comicEditingSuspendedState === "none") {
             // This guards against both mouse up events that are nothing to do with
@@ -4798,6 +4807,9 @@ export function updateOverlayClass(imageContainer: HTMLElement) {
     }
 }
 
+// Note: do NOT use this directly in toolbox code; it will import its own copy of
+// bubbleManager and not use the proper one from the page iframe. Instead, use
+// the iframe export getTheOneBubbleManager() or OverlayTool.bubbleManager().
 export let theOneBubbleManager: BubbleManager;
 
 export function initializeBubbleManager() {

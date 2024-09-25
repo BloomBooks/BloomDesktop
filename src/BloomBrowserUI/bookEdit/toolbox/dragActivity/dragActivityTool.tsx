@@ -46,8 +46,8 @@ import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { BubbleSpec } from "comicaljs";
 import { setPlayerUrlPrefixFromWindowLocationHref } from "./narration";
-import { theOneBubbleManager } from "../../js/bubbleManager";
 import { renderGamePromptDialog } from "./GamePromptDialog";
+import { OverlayTool } from "../overlay/overlayTool";
 
 // This is the main code that manages the Bloom Games or Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -87,7 +87,8 @@ export const enableStartPrompts = () => {
     }
 
     const dialogRoot = document.createElement("div");
-    dialogRoot.classList.add("bloom-ui-dialog"); // make sure not permanently saved
+    // The first class makes sure not permanently saved; second is used to find it.
+    dialogRoot.classList.add("bloom-ui", "bloom-ui-dialog");
     page.appendChild(dialogRoot);
     renderGamePromptDialog(dialogRoot, prompt, true);
 };
@@ -430,7 +431,8 @@ const startDraggingTarget = (e: MouseEvent) => {
     targetClickOffsetTop = e.clientY / scale - target.offsetTop;
     page.addEventListener("mouseup", stopDraggingTarget);
     page.addEventListener("mousemove", dragTarget);
-    theOneBubbleManager?.setActiveElement(bubbleOfTarget(target));
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    OverlayTool.bubbleManager()!.setActiveElement(bubbleOfTarget(target));
     dragTarget(e); // some side effects like drawing the arrow we want even if no movement happens.
 };
 
@@ -783,8 +785,9 @@ const DragActivityControls: React.FunctionComponent<{
         ""
     );
 
-    const bubbleManager = theOneBubbleManager;
-    const currentBubbleElement = bubbleManager?.getActiveElement();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const bubbleManager = OverlayTool.bubbleManager()!;
+    const currentBubbleElement = bubbleManager.getActiveElement();
     const currentBubbleTargetId = currentBubbleElement?.getAttribute(
         "data-bubble-id"
     );
@@ -1037,7 +1040,8 @@ const DragActivityControls: React.FunctionComponent<{
         const page = getPage();
         page.setAttribute("data-same-size", newAllSameSize ? "true" : "false");
         if (newAllSameSize) {
-            let someDraggable = theOneBubbleManager?.getActiveElement(); // prefer the selected one
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            let someDraggable = OverlayTool.bubbleManager()!.getActiveElement(); // prefer the selected one
             if (
                 !someDraggable ||
                 !someDraggable.getAttribute("data-bubble-id")
@@ -1533,8 +1537,9 @@ const CorrectWrongControls: React.FunctionComponent<{
 };
 
 export const makeDuplicateOfDragBubble = () => {
-    const old = theOneBubbleManager?.getActiveElement();
-    const duplicate = theOneBubbleManager?.duplicateBubble();
+    const bubbleManager = OverlayTool.bubbleManager();
+    const old = bubbleManager?.getActiveElement();
+    const duplicate = bubbleManager?.duplicateBubble();
     if (!duplicate || !old) {
         // can't be duplicate without an old, but make TS happy
         return;
@@ -1744,7 +1749,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
     public newPageReady() {
         const page = DragActivityTool.getBloomPage();
         const pageFrameExports = getEditablePageBundleExports();
-        if (!theOneBubbleManager || !page || !pageFrameExports) {
+        if (!OverlayTool.bubbleManager() || !page || !pageFrameExports) {
             // probably the toolbox just finished loading before the page.
             // No clean way to fix this
             window.setTimeout(() => this.newPageReady(), 100);
@@ -1764,8 +1769,10 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
         } else {
             this.lastPageId = pageId;
             // useful during development, MAY not need in production.
-            theOneBubbleManager.removeDetachedTargets();
-            theOneBubbleManager.adjustBubbleOrdering();
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const bubbleManager = OverlayTool.bubbleManager()!;
+            bubbleManager.removeDetachedTargets();
+            bubbleManager.adjustBubbleOrdering();
 
             // Force things to Start tab as we change page.
             // If we decide not to do this, we should probably at least find a way to do it
@@ -1958,8 +1965,10 @@ export function setActiveDragActivityTab(tab: number) {
     //     "bloom-activity-slider"
     // )[0] as HTMLElement;
 
+    const bubbleManager = OverlayTool.bubbleManager();
     if (tab === playTabIndex) {
-        theOneBubbleManager?.suspendComicEditing("forGamePlayMode");
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        bubbleManager!.suspendComicEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
         prepareActivity(page, _next => {});
@@ -1967,13 +1976,14 @@ export function setActiveDragActivityTab(tab: number) {
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
         undoPrepareActivity(page);
-        theOneBubbleManager?.resumeComicEditing();
+        bubbleManager?.resumeComicEditing();
+        bubbleManager?.checkActiveElementIsVisible();
         //Slider: wrapper?.addEventListener("click", designTimeClickOnSlider);
     }
     if (tab === correctTabIndex || tab === wrongTabIndex) {
         // We can't currently do this for hidden bubbles, and selecting one of these tabs
         // may cause some previously hidden bubbles to become visible.
-        theOneBubbleManager?.ensureBubblesIntersectParent(page);
+        bubbleManager?.ensureBubblesIntersectParent(page);
     }
     if (tab === startTabIndex) {
         enableDraggingTargets(page);

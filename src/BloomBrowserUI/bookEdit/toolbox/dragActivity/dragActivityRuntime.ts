@@ -674,6 +674,7 @@ function showCorrectOrWrongItems(page: HTMLElement, correct: boolean) {
 
 function playSound(someElt: HTMLElement, soundFile: string) {
     const audio = new Audio(urlPrefix() + "/audio/" + soundFile);
+    audio.classList.add("bloom-ui"); // in case remove code fails, should make sure it doesn't get saved.
     audio.style.visibility = "hidden";
     // To my surprise, in BP storybook it works without adding the audio to any document.
     // But in Bloom proper, it does not. I think it is because this code is part of the toolbox,
