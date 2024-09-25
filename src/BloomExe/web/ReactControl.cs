@@ -49,6 +49,7 @@ namespace Bloom.web
 
         public bool UseEditContextMenu;
         private Browser _browser;
+        private E2ETestingPort _e2eTestingPort = E2ETestingPort.None;
 
         private void ReactControl_Load(object sender, System.EventArgs e)
         {
@@ -67,7 +68,7 @@ namespace Bloom.web
             // The Size setting is needed on Linux to keep the browser from coming up as a small
             // rectangle in the upper left corner...
             //_browser = new GeckoFxBrowser
-            _browser = BrowserMaker.MakeBrowser();
+            _browser = BrowserMaker.MakeBrowser(_e2eTestingPort);
             var browserControl = _browser;
 
             browserControl.Dock = DockStyle.Fill;
@@ -183,6 +184,11 @@ namespace Bloom.web
 				</html>"
             );
             return tempFile;
+        }
+
+        internal void SetE2eTestingPort(E2ETestingPort collectionView)
+        {
+            _e2eTestingPort = collectionView;
         }
     }
 }

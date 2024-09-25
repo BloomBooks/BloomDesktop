@@ -93,7 +93,7 @@ namespace Bloom.Edit
             // This used to be part of InitializeComponent, but we want to make which browser to use
             // configurable. It can possibly move back to the Designer code once we settle on WebView2.
             // Turning off for this PR because it's not working well enough yet.
-            this._browser1 = BrowserMaker.MakeBrowser();
+            this._browser1 = BrowserMaker.MakeBrowser(E2ETestingPort.EditView);
             //
             // _browser1
             //

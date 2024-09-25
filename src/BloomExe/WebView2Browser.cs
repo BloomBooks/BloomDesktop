@@ -29,6 +29,14 @@ using System.Media;
 
 namespace Bloom
 {
+    public enum E2ETestingPort
+    {
+        None = 0,
+        CollectionView = 9222,
+        EditViewPageList = 9223,
+        EditView = 9224
+    }
+
     public partial class WebView2Browser : Browser
     {
         public static string AlternativeWebView2Path;
@@ -38,12 +46,12 @@ namespace Bloom
         private UndoCommand _undoCommand;
         private CutCommand _cutCommand;
 
-        public WebView2Browser()
+        public WebView2Browser(E2ETestingPort e2eTestingPort = E2ETestingPort.None)
         {
             InitializeComponent();
 
             // I don't think anything we're doing here will take long enough for us to need to await it.
-            InitWebView();
+            InitWebView(e2eTestingPort);
 
             _webview.CoreWebView2InitializationCompleted += (
                 object sender,
@@ -202,7 +210,7 @@ namespace Bloom
 
         static int dataFolderCounter = 0;
 
-        private async void InitWebView()
+        private async void InitWebView(E2ETestingPort e2eTestingPort)
         {
             // based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
             // this should disable CORS, but it doesn't seem to work, at least for fixing communication from
@@ -242,6 +250,15 @@ namespace Bloom
             if (!string.IsNullOrEmpty(_uiLanguageOfThisRun))
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
+                // if dev
+#if DEBUG
+                if (e2eTestingPort != E2ETestingPort.None)
+                {
+                    // should match what playwright is expecting for e2e testing
+                    additionalBrowserArgs +=
+                        " --remote-debugging-port=" + ((int)e2eTestingPort).ToString();
+                }
+#endif
             }
 
             var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);

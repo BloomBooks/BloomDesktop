@@ -58,6 +58,7 @@ namespace Bloom.CollectionTab
             BookCollection.CollectionCreated += OnBookCollectionCreated;
 
             InitializeComponent();
+            _reactControl.SetE2eTestingPort(E2ETestingPort.CollectionView);
             _reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
             // JohnT: when changing 5.7 to 6.0, I changed this instead to 6.1. I believe it is a button
             // to launch the new settings dialog, which we are not yet ready to release.

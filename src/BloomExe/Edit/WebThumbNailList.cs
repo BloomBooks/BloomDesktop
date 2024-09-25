@@ -74,7 +74,7 @@ namespace Bloom.Edit
 
             if (!ReallyDesignMode)
             {
-                _browser = BrowserMaker.MakeBrowser();
+                _browser = BrowserMaker.MakeBrowser(E2ETestingPort.EditViewPageList);
                 _browser.BackColor = Color.DarkGray;
                 _browser.Dock = DockStyle.Fill;
                 _browser.Location = new Point(0, 0);

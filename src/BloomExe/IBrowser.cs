@@ -32,9 +32,9 @@ namespace Bloom
         /// We can remove the offScreen parameter when we retire Gecko, even if we decide to keep this
         /// static method for creating browsers.
         /// </remarks>
-        public static Browser MakeBrowser()
+        public static Browser MakeBrowser(E2ETestingPort e2eTestingPort = E2ETestingPort.None)
         {
-            return new WebView2Browser();
+            return new WebView2Browser(e2eTestingPort);
         }
     }
 

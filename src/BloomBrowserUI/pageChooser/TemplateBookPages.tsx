@@ -182,6 +182,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                   >
                       {/* A selection overlay that covers the actual thumbnail image. */}
                       <div
+                          data-testid={`templatePageThumbnailOverlay_${currentPageDiv.id}`}
                           css={css`
                               z-index: 3;
                               position: absolute;

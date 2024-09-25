@@ -189,3 +189,5 @@ src/content/.yarn/*
 !src/content/.yarn/versions
 
 .vite/vitest/results.json
+
+src/BloomBrowserUI/test-results/

@@ -8,11 +8,12 @@
         "test": "test"
     },
     "engines": {
-        "node": ">=16.14.0"
+        "node": ">=22.9.0"
     },
     "scripts": {
         "// COMMENTS: make the action a space rather than empty string so `yarn run` can list the scripts": " ",
         "test": "karma start --browsers Chrome_allow_autoplay  --single-run",
+        "e2e": "cd ./E2ETests && npx playwright test --reporter=list",
         "testWatch": "karma start --browsers Chrome_allow_autoplay",
         "check-that-node-modules-exists-in-content-dir": "cd ../content && node checkForNodeModules.js && cd ../BloomBrowserUI",
         "// 'build': 'does a nice new clean build of the output/browser folder.'": " ",
@@ -114,6 +115,7 @@
         "xregexp": "^4.2.4"
     },
     "devDependencies": {
+        "@playwright/test": "^1.47.2",
         "@babel/cli": "^7.17.10",
         "@babel/core": "^7.18.5",
         "@babel/preset-env": "^7.18.2",
@@ -215,7 +217,7 @@
     },
     "packageManager": "yarn@1.22.19",
     "volta": {
-        "node": "16.14.0",
+        "node": "22.9.0",
         "yarn": "1.22.19"
     }
 }
