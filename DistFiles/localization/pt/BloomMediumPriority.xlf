@@ -135,7 +135,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle" translate="yes">
         <source xml:lang="en">Order Circle</source>
-        <target xml:lang="pt-PT" state="needs-translation">Order Circle</target>
+        <target xml:lang="pt-PT" state="translated">Círculo de pedidos</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircleInstructions" translate="yes">
@@ -199,7 +199,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle" translate="yes">
         <source xml:lang="en">Order Circle</source>
-        <target xml:lang="pt-PT" state="needs-translation">Order Circle</target>
+        <target xml:lang="pt-PT" state="translated">Círculo de pedidos</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets" translate="yes">
