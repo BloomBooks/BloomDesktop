@@ -161,11 +161,13 @@ export class BubbleManager {
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
 
-            this.adjustBubbleHeightToContent(editable);
+            this.adjustBubbleHeightToContentOrMarkOverflow(editable);
         }
         this.alignControlFrameWithActiveElement();
     }
-    public adjustBubbleHeightToContent(editable: HTMLElement): void {
+    public adjustBubbleHeightToContentOrMarkOverflow(
+        editable: HTMLElement
+    ): void {
         if (!this.activeElement) return;
         const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
             editable
@@ -1567,7 +1569,11 @@ export class BubbleManager {
                 );
                 deltaX = newBubbleWidth - this.oldWidth;
                 this.activeElement.style.width = `${newBubbleWidth}px`;
-                theOneBubbleManager.adjustBubbleHeightToContent(editable);
+                // This won't adjust the height of the editable, but it will
+                // mark overflow appropriately.
+                theOneBubbleManager.adjustBubbleHeightToContentOrMarkOverflow(
+                    editable
+                );
                 break;
             case "w":
                 newBubbleWidth = Math.max(
@@ -1577,7 +1583,11 @@ export class BubbleManager {
                 deltaX = this.oldWidth - newBubbleWidth;
                 this.activeElement.style.width = `${newBubbleWidth}px`;
                 this.activeElement.style.left = `${this.oldLeft + deltaX}px`;
-                theOneBubbleManager.adjustBubbleHeightToContent(editable);
+                // This won't adjust the height of the editable, but it will
+                // mark overflow appropriately.
+                theOneBubbleManager.adjustBubbleHeightToContentOrMarkOverflow(
+                    editable
+                );
                 break;
             case "s":
                 newBubbleHeight = Math.max(
@@ -1586,6 +1596,12 @@ export class BubbleManager {
                 );
                 deltaY = newBubbleHeight - this.oldHeight;
                 this.activeElement.style.height = `${newBubbleHeight}px`;
+                // This won't adjust the height of the editable, but it will
+                // mark overflow appropriately.  See BL-13902.
+                theOneBubbleManager.adjustBubbleHeightToContentOrMarkOverflow(
+                    editable
+                );
+                break;
         }
         this.alignControlFrameWithActiveElement();
     }
