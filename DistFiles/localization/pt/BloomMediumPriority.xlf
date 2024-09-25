@@ -120,7 +120,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading" translate="yes">
         <source xml:lang="en">Order Sentence</source>
-        <target xml:lang="pt-PT" state="needs-translation">Order Sentence</target>
+        <target xml:lang="pt-PT" state="translated">por frase</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderSentenceHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceInstructions" translate="yes">
@@ -140,7 +140,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircleInstructions" translate="yes">
         <source xml:lang="en">Put the Order Circles in the correct order. Bloom will shuffle them when it is time to play.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Put the Order Circles in the correct order. Bloom will shuffle them when it is time to play.</target>
+        <target xml:lang="pt-PT" state="translated">Coloque a Ordem dos Círculos na ordem correta. Florescer irá embaralhá-los quando for hora de jogar.</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircleInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswer" translate="yes">
