@@ -4136,6 +4136,10 @@ export class BubbleManager {
         patriarchDuplicateElement.innerHTML = this.safelyCloneHtmlStructure(
             sourceElement
         );
+        // Preserve the Auto Height setting.  See BL-13931.
+        if (sourceElement.classList.contains("bloom-noAutoHeight"))
+            patriarchDuplicateElement.classList.add("bloom-noAutoHeight");
+
         this.setActiveElement(patriarchDuplicateElement);
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
         const container = BubbleManager.getTopLevelImageContainerElement(
@@ -4273,6 +4277,10 @@ export class BubbleManager {
         newChildElement.innerHTML = this.safelyCloneHtmlStructure(
             sourceElement
         );
+        // Preserve the Auto Height setting.  See BL-13931.
+        if (sourceElement.classList.contains("bloom-noAutoHeight"))
+            newChildElement.classList.add("bloom-noAutoHeight");
+
         this.matchSizeOfSource(sourceElement, newChildElement);
         // We just replaced the bloom-editables from the 'addChildInternal' with a clone of the source
         // bubble's HTML. This will undo any event handlers that might have been attached by the
