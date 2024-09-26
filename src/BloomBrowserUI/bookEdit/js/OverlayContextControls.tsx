@@ -11,8 +11,10 @@ import { default as CopyIcon } from "@mui/icons-material/ContentCopy";
 import { default as CheckIcon } from "@mui/icons-material/Check";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
 import { default as PasteIcon } from "@mui/icons-material/ContentPaste";
+import { default as Circle } from "@mui/icons-material/Circle";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import { doImageCommand, getImageUrlFromImageContainer } from "./bloomImages";
+import { doVideoCommand } from "./bloomVideo";
 import {
     copyAndPlaySoundAsync,
     makeDuplicateOfDragBubble,
@@ -41,7 +43,7 @@ interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
 }
 
-// The is the controls bar that appears beneath an overlay when it is selected. It contains buttons
+// This is the controls bar that appears beneath an overlay when it is selected. It contains buttons
 // for the most common operations that apply to the overlay in its current state, and a menu for less common
 // operations.
 
@@ -67,6 +69,9 @@ const OverlayContextControls: React.FunctionComponent<{
         "bloom-videoContainer"
     )[0];
     const hasVideo = !!videoContainer;
+    const video = videoContainer?.getElementsByTagName("video")[0];
+    const videoSource = video?.getElementsByTagName("source")[0];
+    const videoAlreadyChosen = !!videoSource?.getAttribute("src");
     const isPlaceHolder =
         hasImage && img.getAttribute("src")?.startsWith("placeHolder.png");
     // Some of the icons we use for buttons are Material UI ones. They need this CSS to look right.
@@ -344,6 +349,31 @@ const OverlayContextControls: React.FunctionComponent<{
 
         // );
     }
+
+    // Add these for videos
+    if (hasVideo) {
+        menuOptions.unshift(
+            {
+                l10nId: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
+                english: "Choose Video from your computer...",
+                onClick: () => doVideoCommand(videoContainer, "choose"),
+                icon: <SearchIcon css={muiMenIconCss} />
+            },
+            {
+                l10nId: "EditTab.Toolbox.ComicTool.Options.RecordYourself",
+                english: "Record yourself...",
+                onClick: () => doVideoCommand(videoContainer, "record"),
+                icon: <Circle css={muiMenIconCss} viewBox="0 0 28 28" />
+            },
+            {
+                l10nId: "-",
+                english: "",
+                onClick: () => {
+                    /*do nothing*/
+                }
+            }
+        );
+    }
     const autoHeight = !props.overlay.classList.contains("bloom-noAutoHeight");
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
@@ -589,23 +619,73 @@ const OverlayContextControls: React.FunctionComponent<{
                         </div>
                     </div>
                 )}
-                <BloomTooltip
-                    id="format"
-                    placement="top"
-                    tip={{
-                        l10nKey: "EditTab.Toolbox.ComicTool.Options.Duplicate"
-                    }}
-                >
-                    <button
-                        css={svgIconCss}
-                        onClick={() => {
-                            if (!props.overlay) return;
-                            makeDuplicateOfDragBubble();
+                {!hasVideo && (
+                    <BloomTooltip
+                        id="format"
+                        placement="top"
+                        tip={{
+                            l10nKey:
+                                "EditTab.Toolbox.ComicTool.Options.Duplicate"
                         }}
                     >
-                        <img src="/bloom/bookEdit/img/Duplicate.svg" />
-                    </button>
-                </BloomTooltip>
+                        <button
+                            css={svgIconCss}
+                            onClick={() => {
+                                if (!props.overlay) return;
+                                makeDuplicateOfDragBubble();
+                            }}
+                        >
+                            <img src="/bloom/bookEdit/img/Duplicate.svg" />
+                        </button>
+                    </BloomTooltip>
+                )}
+                {hasVideo && !videoAlreadyChosen && (
+                    <Fragment>
+                        <BloomTooltip
+                            id="chooseVideo"
+                            placement="top"
+                            tip={{
+                                l10nKey:
+                                    "EditTab.Toolbox.ComicTool.Options.ChooseVideo"
+                            }}
+                        >
+                            <button
+                                css={svgIconCss}
+                                onClick={() =>
+                                    doVideoCommand(videoContainer, "choose")
+                                }
+                            >
+                                <SearchIcon
+                                    color="primary"
+                                    viewBox="0 0 23 23" // a bit bigger
+                                />
+                            </button>
+                        </BloomTooltip>
+                        <BloomTooltip
+                            id="recordVideo"
+                            placement="top"
+                            tip={{
+                                l10nKey:
+                                    "EditTab.Toolbox.ComicTool.Options.RecordYourself"
+                            }}
+                        >
+                            <button
+                                css={svgIconCss}
+                                onClick={() =>
+                                    doVideoCommand(videoContainer, "record")
+                                }
+                            >
+                                <Circle
+                                    color="primary"
+                                    viewBox="0 0 29 29" // somewhat smaller
+                                    css={css`
+                                        top: 2px;
+                                    `}
+                                />
+                            </button>
+                        </BloomTooltip>
+                    </Fragment>
+                )}
                 <BloomTooltip
                     id="trash"
                     placement="top"

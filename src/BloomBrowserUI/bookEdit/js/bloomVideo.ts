@@ -1,5 +1,5 @@
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { get } from "../../utils/bloomApi";
+import { get, post, postThatMightNavigate } from "../../utils/bloomApi";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
 // It sets things up for the button (plural eventually) to appear when hovering over the video.
@@ -218,4 +218,43 @@ export function showSignLanguageTool() {
     getToolboxBundleExports()
         ?.getTheOneToolbox()
         .activateToolFromId(SignLanguageToolControls.kToolID);
+}
+
+export function doVideoCommand(
+    videoContainer: Element,
+    command: "choose" | "record"
+) {
+    if (command === "choose" && videoContainer) {
+        post("signLanguage/importVideo", result => {
+            if (result.data) {
+                updateVideoInContainer(videoContainer, result.data);
+                // Makes sure the page gets saved with a reference to the new video,
+                // and incidentally that everything gets updated to be consistent with the
+                // new state of things.
+                postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+            }
+        });
+    } else if (command === "record") {
+        showSignLanguageTool();
+    }
+}
+
+export function updateVideoInContainer(container: Element, url: string): void {
+    let video = container.getElementsByTagName("video")[0];
+    if (!video && container.ownerDocument) {
+        video = container.ownerDocument.createElement("video");
+        container.appendChild(video);
+    }
+    if (video) {
+        let source = video.getElementsByTagName("source")[0];
+        if (!source && container.ownerDocument) {
+            source = container.ownerDocument.createElement("source");
+            video.appendChild(source);
+        }
+        if (source) {
+            source.setAttribute("src", url);
+            // Transparent background videos allow the placeholder to show.  See BL-13918.
+            container.classList.remove("bloom-noVideoSelected");
+        }
+    }
 }
