@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es2018",
+        "target": "es2019",
         "module": "commonjs",
         "sourceMap": true,
         "jsx": "react-jsx",
@@ -9,7 +9,7 @@
             /*"@emotion/core",*/
             "@emotion/react/types/css-prop"
         ],
-        "lib": ["dom", "es6", "scripthost", "es2017"],
+        "lib": ["dom", "es6", "scripthost", "es2019"],
         "experimentalDecorators": true,
         "alwaysStrict": true,
         "noImplicitReturns": true,

@@ -9,6 +9,7 @@ import Typography from "@mui/material/Typography";
 import {
     getPageLabel,
     getTemplatePageImageSource,
+    IBookGroup,
     ITemplateBookInfo
 } from "./PageChooserDialog";
 import PageThumbnail from "./PageThumbnail";
@@ -25,7 +26,7 @@ interface ITemplateBookPagesProps {
     // If neither of the 2 above props are defined and this is the first group, fire onTemplatePageSelect
     // on my first page.
     firstGroup: boolean;
-    templateBook: ITemplateBookInfo;
+    titleGroup: IBookGroup;
     orientation: string;
     forChooseLayout: boolean;
     onTemplatePageSelect: (
@@ -33,7 +34,6 @@ interface ITemplateBookPagesProps {
         selectedTemplateBookUrl: string
     ) => void;
     onTemplatePageDoubleClick: (selectedPageDiv: HTMLDivElement) => void;
-    onLoad?: () => void; // signal that we have the actual pages back from the network... or not.
 }
 
 const transparentHighlightColor = kBloomBlue50Transparent;
@@ -43,8 +43,7 @@ const enterpriseMarkerChar = "\u25cf";
 
 export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps> = ({
     forChooseLayout,
-    templateBook,
-    onLoad,
+    titleGroup,
     orientation,
     selectedPageId,
     defaultPageIdToSelect,
@@ -55,87 +54,43 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
     const [pageData, setPageData] = useState<HTMLDivElement[] | undefined>(
         undefined
     );
-    const [groupTitle, setGroupTitle] = useState("");
-    const [errorState, setErrorState] = useState(false);
+    const groupTitle = titleGroup.title;
 
     const isLandscape = orientation === "landscape";
 
-    // Here we grab the actual html file contents so we can process what's
-    // available to us in terms of template pages and the content of those pages (especially for the
-    // "change layout" functionality).
-    // Theoretically a lot more of the processing of template books and their pages could be done on
-    // the C# side of things. Then we could just pass a JSON array (perhaps) of template page data.
-    // I think that's beyond the scope of what I'm trying to do right now, but it could be tackled later.
     useEffect(() => {
-        axios
-            .get(
-                getBloomApiPrefix(false) +
-                    encodeURIComponent(templateBook.templateBookPath)
-            )
-            .then(result => {
-                const resultPageData: HTMLElement = new DOMParser().parseFromString(
-                    result.data,
-                    "text/html"
-                ).body;
-                let bloomPages: HTMLDivElement[] = Array.from(
-                    resultPageData.querySelectorAll(".bloom-page")
-                );
-                if (forChooseLayout) {
-                    // This filters out the (empty) custom page, which is currently never a useful layout change,
-                    // since all data would be lost.
-                    bloomPages = bloomPages.filter(
-                        elem =>
-                            elem.id != "5dcd48df-e9ab-4a07-afd4-6a24d0398386"
-                    );
-                }
-                // By previous usage, 'extra' pages are ones we can add (multiples of) to a book.
-                // I'm not entirely clear why we call them 'extra', I think the term pre-dates me.
-                // This filter by it's very nature eliminates pages with 'data-page' = 'singleton'.
-                const filteredBloomPages = bloomPages.filter(
-                    elem =>
-                        elem.id && elem.getAttribute("data-page") === "extra"
-                );
-
-                // Don't add a group for books that don't have template pages; just move on.
-                // (This will always be true for a newly created template.)
-                if (filteredBloomPages.length === 0) {
-                    console.log(
-                        "Could not find any template pages in " +
-                            templateBook.templateBookPath
-                    );
-                    return;
-                }
-
-                const bookTitleElement = resultPageData.querySelector(
-                    "div[data-book='bookTitle']"
-                );
-                if (bookTitleElement?.textContent?.trim() === "Games") {
-                    // For 6.1, We don't want to show the games book in the page chooser.
-                    // If you take this out to play with Games, you need to Refresh or restart Bloom to see the change.
-                    return;
-                }
-                if (bookTitleElement) {
-                    setGroupTitle(
-                        bookTitleElement.textContent
-                            ? bookTitleElement.textContent.trim()
-                            : ""
-                    );
-                }
-                setPageData(filteredBloomPages);
-            })
-            .catch(reason => {
-                console.log(reason);
-                // We couldn't load a template file that the JSON says should be there.
-                // Just display a message.
-                setErrorState(true);
-            });
-    }, [forChooseLayout, templateBook.templateBookPath]);
-
-    useEffect(() => {
-        if (onLoad) {
-            onLoad();
+        let bloomPages = titleGroup.books
+            .map(book => book.pages)
+            .flat() as HTMLDivElement[];
+        if (forChooseLayout) {
+            // This filters out the (empty) custom page, which is currently never a useful layout change,
+            // since all data would be lost.
+            bloomPages = bloomPages.filter(
+                elem => elem.id != "5dcd48df-e9ab-4a07-afd4-6a24d0398386"
+            );
         }
-    }, [pageData, errorState, onLoad]);
+        // By previous usage, 'extra' pages are ones we can add (multiples of) to a book.
+        // I'm not entirely clear why we call them 'extra', I think the term pre-dates me.
+        // This filter by it's very nature eliminates pages with 'data-page' = 'singleton'.
+        const filteredBloomPages = bloomPages.filter(
+            elem => elem.id && elem.getAttribute("data-page") === "extra"
+        );
+
+        // Don't add a group for books that don't have template pages; just move on.
+        // (This will always be true for a newly created template.)
+        if (filteredBloomPages.length === 0) {
+            console.log(
+                "Could not find any template pages in " + titleGroup.title
+            );
+            return;
+        }
+
+        setPageData(filteredBloomPages);
+    }, [forChooseLayout]);
+
+    const getBookForPageDiv = (pageDiv: HTMLDivElement) => {
+        return titleGroup.books.find(b => b.pages!.indexOf(pageDiv) >= 0);
+    };
 
     const pages = pageData
         ? pageData.map((currentPageDiv: HTMLDivElement, index) => {
@@ -202,7 +157,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                       />
                       <PageThumbnail
                           imageSource={getTemplatePageImageSource(
-                              templateBook.templateBookFolderUrl,
+                              getBookForPageDiv(currentPageDiv)!.url,
                               getPageLabel(currentPageDiv),
                               orientation
                           )}
@@ -214,7 +169,10 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         : undefined;
 
     const templatePageClickHandler = (currentPageDiv: HTMLDivElement) => {
-        onTemplatePageSelect(currentPageDiv, templateBook.templateBookPath);
+        onTemplatePageSelect(
+            currentPageDiv,
+            getBookForPageDiv(currentPageDiv)!.path
+        );
     };
 
     const templatePageDoubleClickHandler = (currentPageDiv: HTMLDivElement) => {
@@ -277,9 +235,9 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                     </div>
                 </div>
             )}
-            {errorState && (
+            {titleGroup.errorPath && (
                 <TemplateBookErrorReplacement
-                    templateBookPath={templateBook.templateBookPath}
+                    templateBookPath={titleGroup.errorPath}
                 />
             )}
         </React.Fragment>
