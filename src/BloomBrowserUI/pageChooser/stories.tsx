@@ -136,86 +136,86 @@ storiesOf("Page Chooser", module)
             </PreviewFrame>
         );
     })
-    .add("TemplateBookPages", () => {
-        const book: ITemplateBookInfo = {
-            templateBookFolderUrl:
-                "c:/bloomdesktop/output/browser/templates/template books/basic book",
-            templateBookPath:
-                "c:/bloomdesktop/output/browser/templates/template books/basic book/basic book.html"
-        };
-        return (
-            <PreviewFrame>
-                <TemplateBookPages
-                    firstGroup={false}
-                    templateBook={book}
-                    orientation="portrait"
-                    forChooseLayout={false}
-                    onTemplatePageSelect={() => {}}
-                    onTemplatePageDoubleClick={() => {}}
-                />
-            </PreviewFrame>
-        );
-    })
-    .add("TemplateBookPages-activity-portrait", () => {
-        const book: ITemplateBookInfo = {
-            templateBookFolderUrl:
-                "c:/bloomdesktop/output/browser/templates/template books/activity",
-            templateBookPath:
-                "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html"
-        };
-        return (
-            <PreviewFrame>
-                <TemplateBookPages
-                    firstGroup={false}
-                    templateBook={book}
-                    orientation="portrait"
-                    forChooseLayout={false}
-                    onTemplatePageSelect={() => {}}
-                    onTemplatePageDoubleClick={() => {}}
-                />
-            </PreviewFrame>
-        );
-    })
-    .add("TemplateBookPages-activity-landscape", () => {
-        const book: ITemplateBookInfo = {
-            templateBookFolderUrl:
-                "c:/bloomdesktop/output/browser/templates/template books/activity",
-            templateBookPath:
-                "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html"
-        };
-        return (
-            <PreviewFrame>
-                <TemplateBookPages
-                    firstGroup={false}
-                    templateBook={book}
-                    orientation="landscape"
-                    forChooseLayout={true}
-                    onTemplatePageSelect={() => {}}
-                    onTemplatePageDoubleClick={() => {}}
-                />
-            </PreviewFrame>
-        );
-    })
-    .add("TemplateBookPages-custom", () => {
-        const book: ITemplateBookInfo = {
-            templateBookFolderUrl:
-                "c:/users/gordon/documents/bloom/sokoro books test/gaadi template",
-            templateBookPath:
-                "c:/users/gordon/documents/bloom/sokoro books test/gaadi template/gaadi template.htm"
-        };
-        return (
-            <PreviewFrame>
-                <TemplateBookPages
-                    firstGroup={false}
-                    templateBook={book}
-                    orientation="portrait"
-                    forChooseLayout={false}
-                    onTemplatePageSelect={() => {}}
-                    onTemplatePageDoubleClick={() => {}}
-                />
-            </PreviewFrame>
-        );
-    })
+    // .add("TemplateBookPages", () => {
+    //     const book: ITemplateBookInfo = {
+    //         templateBookFolderUrl:
+    //             "c:/bloomdesktop/output/browser/templates/template books/basic book",
+    //         templateBookPath:
+    //             "c:/bloomdesktop/output/browser/templates/template books/basic book/basic book.html"
+    //     };
+    //     return (
+    //         <PreviewFrame>
+    //             <TemplateBookPages
+    //                 firstGroup={false}
+    //                 templateBook={book}
+    //                 orientation="portrait"
+    //                 forChooseLayout={false}
+    //                 onTemplatePageSelect={() => {}}
+    //                 onTemplatePageDoubleClick={() => {}}
+    //             />
+    //         </PreviewFrame>
+    //     );
+    // })
+    // .add("TemplateBookPages-activity-portrait", () => {
+    //     const book: ITemplateBookInfo = {
+    //         templateBookFolderUrl:
+    //             "c:/bloomdesktop/output/browser/templates/template books/activity",
+    //         templateBookPath:
+    //             "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html"
+    //     };
+    //     return (
+    //         <PreviewFrame>
+    //             <TemplateBookPages
+    //                 firstGroup={false}
+    //                 templateBook={book}
+    //                 orientation="portrait"
+    //                 forChooseLayout={false}
+    //                 onTemplatePageSelect={() => {}}
+    //                 onTemplatePageDoubleClick={() => {}}
+    //             />
+    //         </PreviewFrame>
+    //     );
+    // })
+    // .add("TemplateBookPages-activity-landscape", () => {
+    //     const book: ITemplateBookInfo = {
+    //         templateBookFolderUrl:
+    //             "c:/bloomdesktop/output/browser/templates/template books/activity",
+    //         templateBookPath:
+    //             "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html"
+    //     };
+    //     return (
+    //         <PreviewFrame>
+    //             <TemplateBookPages
+    //                 firstGroup={false}
+    //                 templateBook={book}
+    //                 orientation="landscape"
+    //                 forChooseLayout={true}
+    //                 onTemplatePageSelect={() => {}}
+    //                 onTemplatePageDoubleClick={() => {}}
+    //             />
+    //         </PreviewFrame>
+    //     );
+    // })
+    // .add("TemplateBookPages-custom", () => {
+    //     const book: ITemplateBookInfo = {
+    //         templateBookFolderUrl:
+    //             "c:/users/gordon/documents/bloom/sokoro books test/gaadi template",
+    //         templateBookPath:
+    //             "c:/users/gordon/documents/bloom/sokoro books test/gaadi template/gaadi template.htm"
+    //     };
+    //     return (
+    //         <PreviewFrame>
+    //             <TemplateBookPages
+    //                 firstGroup={false}
+    //                 templateBook={book}
+    //                 orientation="portrait"
+    //                 forChooseLayout={false}
+    //                 onTemplatePageSelect={() => {}}
+    //                 onTemplatePageDoubleClick={() => {}}
+    //             />
+    //         </PreviewFrame>
+    //     );
+    // })
     .add("TemplateBookErrorReplacement", () => (
         <PreviewFrame>
             <TemplateBookErrorReplacement templateBookPath="Some bizarre location/My messed up Template/My messed up Template.htm" />
