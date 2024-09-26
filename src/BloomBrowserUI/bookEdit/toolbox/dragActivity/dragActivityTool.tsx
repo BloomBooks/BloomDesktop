@@ -48,6 +48,7 @@ import { BubbleSpec } from "comicaljs";
 import { setPlayerUrlPrefixFromWindowLocationHref } from "./narration";
 import { renderGamePromptDialog } from "./GamePromptDialog";
 import { OverlayTool } from "../overlay/overlayTool";
+import { theOneBubbleManager } from "../../js/bubbleManager";
 
 // This is the main code that manages the Bloom Games or Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -90,6 +91,9 @@ export const enableStartPrompts = () => {
     // The first class makes sure not permanently saved; second is used to find it.
     dialogRoot.classList.add("bloom-ui", "bloom-ui-dialog");
     page.appendChild(dialogRoot);
+    // Things are simpler if no bubble is active. We don't have to worry if we delete the
+    // active one, for example.
+    theOneBubbleManager.setActiveElement(undefined);
     renderGamePromptDialog(dialogRoot, prompt, true);
 };
 
@@ -868,7 +872,14 @@ const DragActivityControls: React.FunctionComponent<{
             currentBubbleTarget
         ) {
             bubbleToTargetObserver.current = new MutationObserver(_ => {
-                copyContentToTarget(currentBubbleElement);
+                // if it's no longer current, we just haven't removed the observer yet,
+                // don't do it.
+                if (
+                    currentBubbleElement ===
+                    OverlayTool.bubbleManager()?.getActiveElement()
+                ) {
+                    copyContentToTarget(currentBubbleElement);
+                }
             });
             bubbleToTargetObserver.current.observe(currentBubbleElement, {
                 childList: true,

@@ -799,14 +799,17 @@ export class BubbleManager {
     public refreshBubbleEditing(
         imageContainer: HTMLElement,
         bubble: Bubble | undefined,
-        attachEventsToEditables: boolean
+        attachEventsToEditables: boolean,
+        activateBubble: boolean
     ): void {
         Comical.startEditing([imageContainer]);
         // necessary if we added the very first bubble, and Comical was not previously initialized
         Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
         if (bubble) {
             const newTextOverPictureElement = bubble.content;
-            Comical.activateBubble(bubble);
+            if (activateBubble) {
+                Comical.activateBubble(bubble);
+            }
             this.updateComicalForSelectedElement(newTextOverPictureElement);
 
             // SetupElements (below) will do most of what we need, but when it gets to
@@ -826,7 +829,10 @@ export class BubbleManager {
                     attachEventsToEditables
                 );
             }
-            SetupElements(imageContainer, bubble.content);
+            SetupElements(
+                imageContainer,
+                activateBubble ? bubble.content : undefined
+            );
 
             // Since we may have just added an element, check if the container has at least one
             // overlay element and add the 'hasOverlay' class.
@@ -920,9 +926,10 @@ export class BubbleManager {
             clickedElement.closest("#overlay-control-frame") ||
             clickedElement.closest("#overlay-context-controls") ||
             clickedElement.closest(".MuiMenu-list") ||
-            clickedElement.closest(".above-page-control-container")
+            clickedElement.closest(".above-page-control-container") ||
+            clickedElement.closest(".MuiDialog-container")
         ) {
-            // clicking things in here (such as menu item in the pull-down) should not
+            // clicking things in here (such as menu item in the pull-down, or a prompt dialog) should not
             // clear the active element
             return;
         }
@@ -3023,6 +3030,10 @@ export class BubbleManager {
             // Otherwise, we handle it as a move (or context menu request, or...).
             return true;
         }
+        if (targetElement.closest(".MuiDialog-container")) {
+            // Dialog boxes (e.g., letter game prompt) get to handle their own events.
+            return true;
+        }
         return false;
     }
 
@@ -3554,7 +3565,8 @@ export class BubbleManager {
         this.refreshBubbleEditing(
             BubbleManager.getTopLevelImageContainerElement(parentElement)!,
             new Bubble(childElement),
-            false
+            false,
+            true
         );
         return childElement;
     }
@@ -3927,7 +3939,7 @@ export class BubbleManager {
         );
         bubble.setBubbleSpec(bubbleSpec);
         const imageContainer = imageContainerJQuery.get(0);
-        this.refreshBubbleEditing(imageContainer, bubble, true);
+        this.refreshBubbleEditing(imageContainer, bubble, true, true);
         const editable = contentElement.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
@@ -4048,7 +4060,7 @@ export class BubbleManager {
         Comical.deleteBubbleFromFamily(textOverPicDiv, containerElement);
 
         // Update UI and make sure things get redrawn correctly.
-        this.refreshBubbleEditing(containerElement, undefined, false);
+        this.refreshBubbleEditing(containerElement, undefined, false, false);
         // We no longer have an active element, but the old active element may be
         // needed by the removeControlFrame method called by refreshBubbleEditing
         // to remove a popup menu.
@@ -4177,6 +4189,7 @@ export class BubbleManager {
         this.refreshBubbleEditing(
             container,
             new Bubble(patriarchDuplicateElement),
+            true,
             true
         );
         const childBubbles = Comical.findRelatives(patriarchSourceBubble);
@@ -4289,6 +4302,7 @@ export class BubbleManager {
         this.refreshBubbleEditing(
             BubbleManager.getTopLevelImageContainerElement(parentElement)!,
             new Bubble(newChildElement),
+            true,
             true
         );
     }
@@ -4809,7 +4823,7 @@ export function updateOverlayClass(imageContainer: HTMLElement) {
 
 // Note: do NOT use this directly in toolbox code; it will import its own copy of
 // bubbleManager and not use the proper one from the page iframe. Instead, use
-// the iframe export getTheOneBubbleManager() or OverlayTool.bubbleManager().
+// the OverlayTool.bubbleManager().
 export let theOneBubbleManager: BubbleManager;
 
 export function initializeBubbleManager() {

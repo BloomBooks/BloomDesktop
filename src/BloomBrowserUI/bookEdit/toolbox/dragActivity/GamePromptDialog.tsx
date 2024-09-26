@@ -16,6 +16,8 @@ import { setGeneratedBubbleId } from "../overlay/overlayItem";
 import { adjustTarget, makeTargetForBubble } from "./dragActivityTool";
 import ReactDOM = require("react-dom");
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
+import { theOneBubbleManager } from "../../js/bubbleManager";
+import { Bubble } from "comicaljs";
 
 export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");
@@ -24,7 +26,7 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
     const localTg = useRef<HTMLElement | null>();
     return (
         <ThemeProvider theme={lightTheme}>
-            <Dialog open={props.open}>
+            <Dialog open={props.open} onClose={() => props.setOpen(false)}>
                 <div
                     css={css`
                         border: 2px solid black;
@@ -131,10 +133,11 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         const draggables = Array.from(
             page.getElementsByClassName("bloom-textOverPicture draggable-text")
         ) as HTMLElement[];
+        const newBubbles: HTMLElement[] = [];
         if (draggables.length > letters.length) {
             // We have more draggables than letters. We'll remove the extra ones.
             draggables
-                .slice(Math.max(letters.length, 1))
+                .splice(Math.max(letters.length, 1)) // nb removes and returns them
                 .forEach((elt: HTMLElement) => {
                     getTarget(elt)?.remove();
                     elt.remove();
@@ -150,6 +153,7 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 lastDraggable.parentElement?.appendChild(newDraggable);
                 makeTargetForBubble(newDraggable);
                 draggables.push(newDraggable);
+                newBubbles.push(newDraggable);
             }
         }
         for (let i = 0; i < letters.length; i++) {
@@ -174,6 +178,19 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
             }
         }
         adjustTarget(draggables[0], getTarget(draggables[0]), true);
+        // Must do this AFTER we finish setting the content. Among many other things it does,
+        // it will attach a ckeditor to the new editable. That does very complex things
+        // involving timeouts, and by the end of the process, the text gets set back to
+        // what it was when we started adding the ckeditor. So changes we make after that
+        // get lost.
+        newBubbles.forEach((newDraggable: HTMLElement) => {
+            theOneBubbleManager!.refreshBubbleEditing(
+                newDraggable.closest(".bloom-imageContainer") as HTMLElement,
+                new Bubble(newDraggable),
+                true,
+                false
+            );
+        });
     });
     promptObserver.observe(editable, {
         childList: true,
