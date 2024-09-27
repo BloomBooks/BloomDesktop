@@ -127,6 +127,14 @@ body {
     -height: 1px;
 }
 
+// Now that most of our outline effects are conditional on the page being hovered, we get some sort of
+// default on a focused content-editable div. It's an ugly solid black. When we're not hovering,
+// we don't want any edit-only outlines at all, so the user can see the page as it will be.
+// So we have this rule to suppress that default outline.
+.bloom-page:not(:hover) .bloom-editable:focus {
+    outline: none !important;
+}
+
 // Keep together here all the effects we want when hovering (previously: also when focus-within)
 // the bloom-page. All of them need to also apply when the overlay context controls are hovered,
 // even though that is no longer a child of the bloom-page. (That's what the second rule is for.)
@@ -137,6 +145,18 @@ body:has(#overlay-context-controls:hover) .bloom-page {
     div.pageLabel[contenteditable="true"] {
         outline: thin solid var(--unselectedEdit-color);
         outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
+    }
+    textarea:focus,
+    div.bloom-editable:focus,
+    div.pageLabel[contenteditable="true"]:focus {
+        outline: 1px solid var(--selectedEdit-color) !important;
+        outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
+        // box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+        //     0 0 8px rgba(82, 168, 236, 0.6);
+    }
+    .bloom-textOverPicture div.bloom-editable:focus {
+        // editable in an overlay has the control frame, so any outline just produces a double border
+        outline: none !important;
     }
     div.bloom-imageContainer {
         // Allow book templates to define a custom borderColor, otherwise fallback to the default color
@@ -626,13 +646,6 @@ img.hoverUp {
     outline: 1px outset black;
 }
 
-textarea:focus,
-div.bloom-editable:focus,
-div.pageLabel[contenteditable="true"]:focus {
-    outline: 1px solid var(--selectedEdit-color) !important;
-    // box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
-    //     0 0 8px rgba(82, 168, 236, 0.6);
-}
 // I'm not sure why the rule above is !important, but this one has to be to beat it.
 // In edit mode we don't want such an automatic outline, because the control frame
 // provides one, and typically they don't even line up, becuase we grow the control
