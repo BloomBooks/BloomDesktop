@@ -7,7 +7,8 @@
 @focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
 
-.bloom-page {
+// should apply to everything, even dialogs.
+body {
     --page-structure-color: #1d94a41a;
     --language-tag-color: #1d94a488;
     --selectedEdit-color: #1d94a4c2; //transparent;
@@ -153,8 +154,12 @@ body:has(.MuiPaper-root:hover) > .qtip {
 // Keep together here all the effects we want when hovering (previously: also when focus-within)
 // the bloom-page. All of them need to also apply when the overlay context controls are hovered,
 // even though that is no longer a child of the bloom-page. (That's what the second rule is for.)
+// The third rule is for the prompt input, which is not a child of the bloom-page. In a dialog,
+// In that case, I don't think there's any reason to limit the effects to hovering; we're not wanting to
+// show the user what the dialog will look like in the printed book.
 .bloom-page:hover,
-body:has(#overlay-context-controls:hover) .bloom-page {
+body:has(#overlay-context-controls:hover) .bloom-page,
+#promptDialog {
     textarea,
     div.bloom-editable,
     div.pageLabel[contenteditable="true"] {
@@ -162,7 +167,7 @@ body:has(#overlay-context-controls:hover) .bloom-page {
         outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
     }
     textarea:focus,
-    div.bloom-editable:focus,
+    div.bloom-editable:focus-within,
     div.pageLabel[contenteditable="true"]:focus {
         outline: 1px solid var(--selectedEdit-color) !important;
         outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
@@ -1464,4 +1469,12 @@ canvas.moving {
         display: none;
     }
     pointer-events: none; // overridden for children, but the outer bit that's just for positioning should not be clickable
+}
+
+#promptButton {
+    visibility: hidden;
+}
+
+.drag-activity-start #promptButton {
+    visibility: unset;
 }

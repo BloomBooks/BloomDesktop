@@ -71,11 +71,13 @@ export const enableDraggingTargets = (startingPoint: HTMLElement) => {
     // }
 };
 
-export const enableStartPrompts = () => {
+// Must only be called in the right iframe, not imported elsewhere; otherwise,
+// React rendering will be confused.
+export const enableStartPrompts = (onlyIfEmpty: boolean) => {
     const page = document.getElementsByClassName(
         "bloom-page"
     )[0] as HTMLElement;
-    if (!page || !page.closest(".drag-activity-start")) return;
+    if (!page) return;
     const prompt = page.getElementsByClassName(
         "bloom-game-prompt"
     )[0] as HTMLElement;
@@ -87,18 +89,33 @@ export const enableStartPrompts = () => {
         return;
     }
 
-    const dialogRoot = document.createElement("div");
-    // The first class makes sure not permanently saved; second is used to find it.
-    dialogRoot.classList.add("bloom-ui", "bloom-ui-dialog");
-    page.appendChild(dialogRoot);
+    if (onlyIfEmpty) {
+        const editable = prompt.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on"
+        )[0];
+        if (editable && editable.textContent?.trim()) {
+            return;
+        }
+    }
+    let dialogRoot = page.ownerDocument.getElementsByClassName(
+        "bloom-ui-dialog"
+    )[0] as HTMLElement;
+    if (!dialogRoot) {
+        dialogRoot = page.ownerDocument.createElement("div");
+        // The first class makes sure not permanently saved; second is used to find it.
+        dialogRoot.classList.add("bloom-ui", "bloom-ui-dialog");
+        page.appendChild(dialogRoot);
+    }
     // Things are simpler if no bubble is active. We don't have to worry if we delete the
     // active one, for example.
-    theOneBubbleManager.setActiveElement(undefined);
+    OverlayTool.bubbleManager()?.setActiveElement(undefined);
     renderGamePromptDialog(dialogRoot, prompt, true);
 };
 
-export const disableStartPrompts = () => {
-    const dialogRoot = document.getElementsByClassName("bloom-ui-dialog")[0];
+export const disableStartPrompts = (page: HTMLElement) => {
+    const dialogRoot = page.ownerDocument.getElementsByClassName(
+        "bloom-ui-dialog"
+    )[0];
     if (dialogRoot) {
         ReactDOM.unmountComponentAtNode(dialogRoot);
         dialogRoot.remove();
@@ -1998,10 +2015,10 @@ export function setActiveDragActivityTab(tab: number) {
     }
     if (tab === startTabIndex) {
         enableDraggingTargets(page);
-        //enableStartPrompts();
+        pageFrameExports.enableStartPrompts(true);
     } else {
         disableDraggingTargets(page);
-        disableStartPrompts();
+        disableStartPrompts(page);
     }
 }
 

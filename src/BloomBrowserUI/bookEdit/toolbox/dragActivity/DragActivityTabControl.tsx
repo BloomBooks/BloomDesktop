@@ -57,11 +57,14 @@ export const DragActivityTabControl: React.FunctionComponent<{
                 `}
             >
                 {promptButtonContent && (
+                    // This button in only visible in start mode. I'd prefer to control that here but it's
+                    // difficult. See the comment on the promptButton rule in Games.less.
                     <div
+                        id="promptButton"
                         css={css`
                             display: flex;
                         `}
-                        onClick={() => enableStartPrompts()}
+                        onClick={() => enableStartPrompts(false)}
                     >
                         <PencilIcon
                             color="primary"

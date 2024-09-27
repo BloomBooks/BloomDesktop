@@ -528,3 +528,18 @@
 
 .bloom-game-prompt-input {
 }
+
+// Tricky. We only want to see the prompt button in start mode, when it makes sense to be editing the
+// draggable content. I'd rather have the visibility (like everything else about the control) be handled
+// by the React code that manages the button. But that doesn't have any easy way to know whether we're
+// in Start mode. Even if we gave the root element another prop, it would be hard to set it correctly,
+// because we actually do the outer ReactDOM.render as we switch tabs and before the class we're looking
+// for gets set. So it seems easiest to let React give it an ID and use these rules to hide it.
+// I'm using visibility rather than display so that React can have control of the display mode (currently flex).
+#promptButton {
+    visibility: hidden;
+}
+
+.drag-activity-start #promptButton {
+    visibility: unset;
+}

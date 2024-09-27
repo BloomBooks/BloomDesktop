@@ -28,6 +28,7 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
         <ThemeProvider theme={lightTheme}>
             <Dialog open={props.open} onClose={() => props.setOpen(false)}>
                 <div
+                    id="promptDialog"
                     css={css`
                         border: 2px solid black;
                         border-radius: 5px;
@@ -110,7 +111,8 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 true
             );
         }
-    }, 1000);
+        editable.focus();
+    }, 0);
 
     // From here on is specific to the letter drag activity.
     // capture where the top left draggable and target are (before we add or remove any)
