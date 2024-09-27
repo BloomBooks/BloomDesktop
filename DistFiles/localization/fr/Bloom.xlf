@@ -2449,9 +2449,9 @@
         <target xml:lang="fr" state="final">Vieille Dentelle</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true" translate="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true" translate="yes" approved="yes">
         <source xml:lang="en">Choose Video from your Computer...</source>
-        <target xml:lang="fr" state="needs-translation">Choose Video from your Computer...</target>
+        <target xml:lang="fr" state="final">Choisissez la Vidéo à partir de votre Ordinateur...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ChooseVideo</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" translate="yes" approved="yes">
@@ -2489,9 +2489,9 @@
         <target xml:lang="fr" state="final">Coller le Texte</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.RecordYourself" sil:dynamic="true" translate="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.RecordYourself" sil:dynamic="true" translate="yes" approved="yes">
         <source xml:lang="en">Record yourself...</source>
-        <target xml:lang="fr" state="needs-translation">Record yourself...</target>
+        <target xml:lang="fr" state="final">Enregistrez-vous...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.RecordYourself</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true" approved="yes">
