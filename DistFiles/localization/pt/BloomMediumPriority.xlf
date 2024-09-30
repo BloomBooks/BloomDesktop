@@ -6,14 +6,14 @@
     </header>
     <body>
       <!-- Drag Activity Tool -->
-      <trans-unit id="EditTab.Toolbox.DragActivity.Check" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Check" translate="yes" approved="yes">
         <source xml:lang="en">Check</source>
-        <target xml:lang="pt-PT" state="translated">Verificar</target>
+        <target xml:lang="pt-PT" state="final">Verificar</target>
         <note>ID: EditTab.Toolbox.DragActivity.Check</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.CheckAnswer" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.CheckAnswer" translate="yes" approved="yes">
         <source xml:lang="en">Check Answer</source>
-        <target xml:lang="pt-PT" state="translated">Verificar a Resposta</target>
+        <target xml:lang="pt-PT" state="final">Verificar a Resposta</target>
         <note>ID: EditTab.Toolbox.DragActivity.CheckAnswer</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CheckHint" translate="yes">
@@ -23,14 +23,14 @@
         <note>ID: EditTab.Toolbox.DragActivity.CheckHint</note>
         <target xml:lang="pt-PT" state="translated">Clicando aqui vai validar as posições onde os objetos foram arrastados.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound" translate="yes" approved="yes">
         <source xml:lang="en">Choose...</source>
-        <target xml:lang="pt-PT" state="translated">Escolher...</target>
+        <target xml:lang="pt-PT" state="final">Escolher...</target>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile" translate="yes" approved="yes">
         <source xml:lang="en">Choose Sound File</source>
-        <target xml:lang="pt-PT" state="translated">Escolher o arquivo de som</target>
+        <target xml:lang="pt-PT" state="final">Escolher o arquivo de som</target>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Correct" translate="yes">
@@ -93,14 +93,14 @@
         <target xml:lang="pt-PT" state="translated">Formato fixo</target>
         <note>ID: EditTab.Toolbox.DragActivity.FixedShape</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Instructions" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Instructions" translate="yes" approved="yes">
         <source xml:lang="en">Instructions</source>
-        <target xml:lang="pt-PT" state="translated">Instruções</target>
+        <target xml:lang="pt-PT" state="final">Instruções</target>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.InstructionsOrLabels" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.InstructionsOrLabels" translate="yes" approved="yes">
         <source xml:lang="en">Instructions or other labels</source>
-        <target xml:lang="pt-PT" state="translated">Instruções ou outros rótulos</target>
+        <target xml:lang="pt-PT" state="final">Instruções ou outros rótulos</target>
         <note>ID: EditTab.Toolbox.DragActivity.InstructionsOrLabels</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Item" translate="yes">
