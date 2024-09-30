@@ -2451,7 +2451,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Choose Video from your Computer...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose Video from your Computer...</target>
+        <target xml:lang="pt-PT" state="translated">Escolha um vídeo do seu computador...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ChooseVideo</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" translate="yes">
@@ -2491,7 +2491,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RecordYourself" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Record yourself...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Record yourself...</target>
+        <target xml:lang="pt-PT" state="translated">Grave a sua voz...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.RecordYourself</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true" approved="yes">
