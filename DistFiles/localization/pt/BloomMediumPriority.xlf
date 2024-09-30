@@ -103,19 +103,19 @@
         <target xml:lang="pt-PT" state="final">Instruções ou outros rótulos</target>
         <note>ID: EditTab.Toolbox.DragActivity.InstructionsOrLabels</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Item" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Item" translate="yes" approved="yes">
         <source xml:lang="en">Item:</source>
-        <target xml:lang="pt-PT" state="translated">Artigo:</target>
+        <target xml:lang="pt-PT" state="final">Item:</target>
         <note>ID: EditTab.Toolbox.DragActivity.Item</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Letter" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Letter" translate="yes" approved="yes">
         <source xml:lang="en">M</source>
-        <target xml:lang="pt-PT" state="translated">M</target>
+        <target xml:lang="pt-PT" state="final">M</target>
         <note>ID: EditTab.Toolbox.DragActivity.Letter</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.None" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.None" translate="yes" approved="yes">
         <source xml:lang="en">None</source>
-        <target xml:lang="pt-PT" state="translated">Nenhum</target>
+        <target xml:lang="pt-PT" state="final">Nenhum</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading" translate="yes">
@@ -123,14 +123,14 @@
         <target xml:lang="pt-PT" state="translated">por frase</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderSentenceHeading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceInstructions" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceInstructions" translate="yes" approved="yes">
         <source xml:lang="en">Type a sentence. Bloom will shuffle the words for the student to fix.</source>
-        <target xml:lang="pt-PT" state="translated">Digite uma frase. Bloom irá misturar as palavras para que o aluno corrija.</target>
+        <target xml:lang="pt-PT" state="final">Digite uma frase. Bloom irá misturar as palavras para que o aluno corrija.</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderSentenceInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Options" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Options" translate="yes" approved="yes">
         <source xml:lang="en">Options</source>
-        <target xml:lang="pt-PT" state="translated">Opções</target>
+        <target xml:lang="pt-PT" state="final">Opções</target>
         <note>ID: EditTab.Toolbox.DragActivity.Options</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle" translate="yes">
@@ -148,18 +148,18 @@
         <target xml:lang="pt-PT" state="translated">Parte da resposta certa</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore" translate="yes" approved="yes">
         <source xml:lang="en">Untick this item if it is not part of the right answer</source>
-        <target xml:lang="pt-PT" state="translated">Desmarque este item se não fizer parte da resposta correta</target>
+        <target xml:lang="pt-PT" state="final">Desmarque este item se não fizer parte da resposta correta</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
       </trans-unit>
       <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled" translate="yes">
         <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled</note>
       </trans-unit-->
-      <trans-unit id="EditTab.Toolbox.DragActivity.Play" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Play" translate="yes" approved="yes">
         <source xml:lang="en">Play</source>
-        <target xml:lang="pt-PT" state="translated">Jogar</target>
+        <target xml:lang="pt-PT" state="final">Jogar</target>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PlayAudio" translate="yes">
@@ -167,9 +167,9 @@
         <target xml:lang="pt-PT" state="translated">Reproduzir áudio</target>
         <note>ID: EditTab.Toolbox.DragActivity.PlayAudio</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.None" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.None" translate="yes" approved="yes">
         <source xml:lang="en">None</source>
-        <target xml:lang="pt-PT" state="translated">Nenhum</target>
+        <target xml:lang="pt-PT" state="final">Nenhum</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SameSize" translate="yes">
@@ -237,14 +237,14 @@
         <target xml:lang="pt-PT" state="translated">Quando a resposta está errada</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Word" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Word" translate="yes" approved="yes">
         <source xml:lang="en">Word</source>
-        <target xml:lang="pt-PT" state="translated">Palavra</target>
+        <target xml:lang="pt-PT" state="final">Palavra</target>
         <note>ID: EditTab.Toolbox.DragActivity.Word</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Wrong" translate="yes">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Wrong" translate="yes" approved="yes">
         <source xml:lang="en">Wrong</source>
-        <target xml:lang="pt-PT" state="translated">Incorreto</target>
+        <target xml:lang="pt-PT" state="final">Incorreto</target>
         <note>ID: EditTab.Toolbox.DragActivity.Wrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongInstructions" translate="yes">
