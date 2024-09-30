@@ -1057,7 +1057,7 @@ namespace Bloom.Book
             new Feature()
             {
                 FeatureId = "bloomGames6.1",
-                FeaturePhrase = "Bloom Games added in 6.1",
+                FeaturePhrase = "Bloom Games added in 6.2",
                 BloomDesktopMinVersion = "6.1",
                 BloomReaderMinVersion = "3.3",
                 XPath =

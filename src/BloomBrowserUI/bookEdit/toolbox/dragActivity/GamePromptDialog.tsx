@@ -18,6 +18,7 @@ import ReactDOM = require("react-dom");
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { theOneBubbleManager } from "../../js/bubbleManager";
 import { Bubble } from "comicaljs";
+import { getToolboxBundleExports } from "../../editViewFrame";
 
 export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");
@@ -94,6 +95,9 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
     const editable = tg.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
+    if (editable) {
+        getToolboxBundleExports()?.loadLongpressInstructions($(editable));
+    }
     const promptEditable = promptTg.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
@@ -131,10 +135,22 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
     const promptObserver = new MutationObserver(() => {
         promptEditable.innerHTML = editable.innerHTML; // copy back to the permanent element so it gets saved.
         const promptText = editable.textContent ?? "";
-        const letters = Array.from(promptText); // Todo: obey digraph etc rules, maybe allow | to split.
+        // Split the prompt text into letter groups consisting of a base letter and any combining marks.
+        // This is necessary because the draggables are based on the letters, but the editable is based on the graphemes.
+        const letters = splitIntoGraphemes(promptText);
         const draggables = Array.from(
             page.getElementsByClassName("bloom-textOverPicture draggable-text")
         ) as HTMLElement[];
+        const separation = draggables[0].offsetWidth + 15; // enhance: may want to increase this
+        const maxBubbles = Math.floor(
+            (draggables[0].parentElement?.offsetWidth ?? 0 - draggableX) /
+                separation
+        );
+        // truncate to the number of draggables we can display
+        // This is important because (e.g., with autorepeat or paste) we can get a massive number of draggables
+        // very quickly, and performance degrades badly, making it hard to recover. Also, until the page relaods,
+        // ones beyond this would be off-page and difficult to deal with.
+        letters.splice(maxBubbles);
         const newBubbles: HTMLElement[] = [];
         if (draggables.length > letters.length) {
             // We have more draggables than letters. We'll remove the extra ones.
@@ -167,7 +183,6 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
             copyContentToTarget(draggables[i]);
         }
         let shuffledDraggables = draggables.slice();
-        const separation = draggables[0].offsetWidth + 15; // enhance: may want to increase this
         shuffle(shuffledDraggables);
         for (let i = 0; i < draggables.length; i++) {
             shuffledDraggables[i].style.left = `${draggableX +
@@ -200,6 +215,12 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         characterData: true
     });
 };
+
+export function splitIntoGraphemes(text: string): string[] {
+    // Regular expression to match a base character (or space) followed by any number of diacritics
+    const graphemeRegex = /(\p{L}| )\p{M}*/gu;
+    return text.match(graphemeRegex) || [];
+}
 
 export function renderGamePromptDialog(
     root: HTMLElement,
