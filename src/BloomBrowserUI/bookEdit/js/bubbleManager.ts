@@ -4140,6 +4140,15 @@ export class BubbleManager {
         if (sourceElement.classList.contains("bloom-noAutoHeight"))
             patriarchDuplicateElement.classList.add("bloom-noAutoHeight");
 
+        // copy any data-sound
+        const sourceDataSound = sourceElement.getAttribute("data-sound");
+        if (sourceDataSound) {
+            patriarchDuplicateElement.setAttribute(
+                "data-sound",
+                sourceDataSound
+            );
+        }
+
         this.setActiveElement(patriarchDuplicateElement);
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
         const container = BubbleManager.getTopLevelImageContainerElement(
