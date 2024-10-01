@@ -19,58 +19,46 @@ import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { theOneBubbleManager } from "../../js/bubbleManager";
 import { Bubble } from "comicaljs";
 import { getToolboxBundleExports } from "../../editViewFrame";
+import {
+    BloomDialog,
+    DialogBottomButtons,
+    DialogMiddle,
+    DialogTitle
+} from "../../../react_components/BloomDialog/BloomDialog";
+import {
+    DialogCancelButton,
+    DialogOkButton
+} from "../../../react_components/BloomDialog/commonDialogComponents";
 
 export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");
     const caption = useL10n("", promptL10nId);
-    const closeText = useL10n("Close", "Common.Close");
     const localTg = useRef<HTMLElement | null>();
     return (
-        <ThemeProvider theme={lightTheme}>
-            <Dialog open={props.open} onClose={() => props.setOpen(false)}>
+        <BloomDialog
+            id="promptDialog"
+            open={props.open}
+            // Review: should one or both of these set things in the main page back the way they were when
+            // we opened the dialog? Probably what is expected of a Cancel button but maybe not when
+            // just clicking outside the dialog or pressing ESC?
+            onClose={() => props.setOpen(false)}
+            onCancel={() => props.setOpen(false)}
+        >
+            <DialogTitle title={caption} icon={false}></DialogTitle>
+            <DialogMiddle>
                 <div
-                    id="promptDialog"
-                    css={css`
-                        border: 2px solid black;
-                        border-radius: 5px;
-                        background-color: white;
-                        color: black;
-                        padding: 10px;
-                    `}
-                >
-                    <div
-                        css={css`
-                            font-size: 20px;
-                            font-weight: bold;
-                            margin-bottom: 10px;
-                        `}
-                    >
-                        {caption}
-                    </div>
-                    <div
-                        id="promptInput"
-                        ref={ref => {
-                            localTg.current = ref;
-                            initializeTg(props.prompt, localTg.current);
-                        }}
-                    />
-                    <div
-                        css={css`
-                            display: flex;
-                            justify-content: right;
-                        `}
-                    >
-                        <Button
-                            variant="text"
-                            color="primary"
-                            onClick={() => props.setOpen(false)}
-                        >
-                            {closeText}
-                        </Button>
-                    </div>
-                </div>
-            </Dialog>
-        </ThemeProvider>
+                    id="promptInput"
+                    ref={ref => {
+                        localTg.current = ref;
+                        initializeTg(props.prompt, localTg.current);
+                    }}
+                />
+            </DialogMiddle>
+            <DialogBottomButtons>
+                <DialogOkButton onClick={() => props.setOpen(false)} />
+                <DialogCancelButton />
+            </DialogBottomButtons>
+        </BloomDialog>
     );
 };
 
