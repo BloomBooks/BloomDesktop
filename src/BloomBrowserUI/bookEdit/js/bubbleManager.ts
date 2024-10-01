@@ -2546,6 +2546,24 @@ export class BubbleManager {
             return;
         }
 
+        const startDraggingBubble = (bubble: Bubble) => {
+            // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
+            this.setActiveElement(bubble.content);
+            const positionInfo = bubble.content.getBoundingClientRect();
+
+            // Possible move action started
+            this.bubbleToDrag = bubble;
+            this.activeContainer = container;
+            // in case this is somehow left from earlier, we want a fresh start for the new move.
+            this.animationFrame = 0;
+
+            // Remember the offset between the top-left of the content box and the initial
+            // location of the mouse pointer.
+            const deltaX = event.pageX - positionInfo.left;
+            const deltaY = event.pageY - positionInfo.top;
+            this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
+        };
+
         if (bubble) {
             if (
                 window.getComputedStyle(bubble.content).pointerEvents === "none"
@@ -2554,6 +2572,26 @@ export class BubbleManager {
                 // use it to manipulate a child. If the child is not supposed to be responding to
                 // pointer events, we should not be manipulating it here either.
                 return;
+            }
+            if (event.altKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                // using this trick for a bubble that is part of a family doesn't work well.
+                // We can only drag one bubble at once, so where should we put the other duplicate?
+                // Maybe we can come up with an answer, but for now, I'm just going to ignore the alt key.
+                if (Comical.findRelatives(bubble).length === 0) {
+                    // duplicate the bubble and drag that.
+                    // currently duplicateTOPBox actually dupliates the current active element,
+                    // not the one it is passed. So make sure the one we clicked is active, though it won't be for long.
+                    this.setActiveElement(bubble.content);
+                    const newBubble = this.duplicateTOPBox(
+                        bubble.content,
+                        true
+                    );
+                    if (!newBubble) return;
+                    startDraggingBubble(new Bubble(newBubble));
+                    return;
+                }
             }
             // We clicked on a bubble that's not disabled. If we clicked inside the bubble we are
             // text editing, and neither ctrl nor alt is down, we handle it normally. Otherwise, we
@@ -2571,21 +2609,7 @@ export class BubbleManager {
                 event.preventDefault();
                 event.stopPropagation();
             }
-            // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
-            this.setActiveElement(bubble.content);
-            const positionInfo = bubble.content.getBoundingClientRect();
-
-            // Possible move action started
-            this.bubbleToDrag = bubble;
-            this.activeContainer = container;
-            // in case this is somehow left from earlier, we want a fresh start for the new move.
-            this.animationFrame = 0;
-
-            // Remember the offset between the top-left of the content box and the initial
-            // location of the mouse pointer.
-            const deltaX = event.pageX - positionInfo.left;
-            const deltaY = event.pageY - positionInfo.top;
-            this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
+            startDraggingBubble(bubble);
         }
     };
 
@@ -2594,12 +2618,6 @@ export class BubbleManager {
     private onMouseMove = (event: MouseEvent) => {
         if (BubbleManager.inPlayMode(event.currentTarget as HTMLElement)) {
             return; // no edit mode functionality is relevant
-        }
-        if (event.altKey) {
-            // Don't resize or move with Alt. See BL-13899.
-            event.preventDefault();
-            event.stopPropagation();
-            return;
         }
         if (event.buttons === 0 && this.mouseIsDown) {
             // we missed the mouse up...maybe because we're debugging? In any case, we don't want to go
@@ -3992,7 +4010,10 @@ export class BubbleManager {
     }
 
     // We verify that 'textElement' is the active element before calling this method.
-    public duplicateTOPBox(textElement: HTMLElement): HTMLElement | undefined {
+    public duplicateTOPBox(
+        textElement: HTMLElement,
+        sameLocation?: boolean
+    ): HTMLElement | undefined {
         // simple guard
         if (!textElement || !textElement.parentElement) {
             return undefined;
@@ -4019,9 +4040,10 @@ export class BubbleManager {
                 return;
             }
 
-            var result = this.duplicateBubbleFamily(
+            const result = this.duplicateBubbleFamily(
                 patriarchBubble,
-                bubbleSpecToDuplicate
+                bubbleSpecToDuplicate,
+                sameLocation
             );
 
             // The JQuery resizable event handler needs to be removed after the duplicate bubble
@@ -4045,14 +4067,15 @@ export class BubbleManager {
     // This method handles all needed refreshing of the duplicate bubbles.
     private duplicateBubbleFamily(
         patriarchSourceBubble: Bubble,
-        bubbleSpecToDuplicate: BubbleSpec
+        bubbleSpecToDuplicate: BubbleSpec,
+        sameLocation: boolean = false
     ): HTMLElement | undefined {
         const sourceElement = patriarchSourceBubble.content;
         const proposedOffset = 15;
         const newPoint = this.findBestLocationForNewBubble(
             sourceElement,
-            proposedOffset + sourceElement.clientWidth, // try to not overlap too much
-            proposedOffset
+            sameLocation ? 0 : proposedOffset + sourceElement.clientWidth, // try to not overlap too much
+            sameLocation ? 0 : proposedOffset
         );
         if (!newPoint) {
             return;
