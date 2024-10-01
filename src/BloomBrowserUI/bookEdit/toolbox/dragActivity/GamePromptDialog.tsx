@@ -9,7 +9,6 @@ interface IGamePromptDialogProps {
     open: boolean;
     setOpen(open: boolean): void;
 }
-import { ThemeProvider } from "@mui/material/styles";
 import { useRef } from "react";
 import { copyContentToTarget, getTarget, shuffle } from "./dragActivityRuntime";
 import { setGeneratedBubbleId } from "../overlay/overlayItem";
@@ -33,6 +32,8 @@ import {
 export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");
     const caption = useL10n("", promptL10nId);
+    // The translation group that React creates in the dialog, kept in sync with the one in the prompt
+    // element in the page.
     const localTg = useRef<HTMLElement | null>();
     return (
         <BloomDialog
@@ -62,11 +63,16 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
     );
 };
 
+// Very large initial number; a loop resets them to be the minimum of the actual values
+// for the top left of all draggables and the top left of all targets.
+// These are our starting points for making a new row.
 let draggableX = 20000;
 let draggableY = 20000;
 let targetX = 20000;
 let targetY = 20000;
 
+// prompt is the hidden element in the page where we store the 'word'.
+// tg is the copy of the prompt TG that we make as part of the dialog.
 const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
     const promptTg = prompt.getElementsByClassName(
         "bloom-translationGroup"
@@ -84,7 +90,7 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
     if (editable) {
-        getToolboxBundleExports()?.loadLongpressInstructions($(editable));
+        getToolboxBundleExports()?.activateLongPressFor($(editable));
     }
     const promptEditable = promptTg.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
@@ -93,18 +99,16 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         "bloom-page"
     )[0] as HTMLElement;
 
-    setTimeout(() => {
-        const bubbles = BloomSourceBubbles.ProduceSourceBubbles(tg);
-        if (bubbles) {
-            BloomSourceBubbles.MakeSourceBubblesIntoQtips(
-                tg,
-                bubbles,
-                undefined,
-                true
-            );
-        }
-        editable.focus();
-    }, 0);
+    const bubbles = BloomSourceBubbles.ProduceSourceBubbles(tg);
+    if (bubbles) {
+        BloomSourceBubbles.MakeSourceBubblesIntoQtips(
+            tg,
+            bubbles,
+            undefined,
+            true
+        );
+    }
+    editable.focus();
 
     // From here on is specific to the letter drag activity.
     // capture where the top left draggable and target are (before we add or remove any)
@@ -124,12 +128,12 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         promptEditable.innerHTML = editable.innerHTML; // copy back to the permanent element so it gets saved.
         const promptText = editable.textContent ?? "";
         // Split the prompt text into letter groups consisting of a base letter and any combining marks.
-        // This is necessary because the draggables are based on the letters, but the editable is based on the graphemes.
         const letters = splitIntoGraphemes(promptText);
         const draggables = Array.from(
             page.getElementsByClassName("bloom-textOverPicture draggable-text")
         ) as HTMLElement[];
         const separation = draggables[0].offsetWidth + 15; // enhance: may want to increase this
+        // How many can we fit in one row inside the parent?
         const maxBubbles = Math.floor(
             (draggables[0].parentElement?.offsetWidth ?? 0 - draggableX) /
                 separation
@@ -137,13 +141,14 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         // truncate to the number of draggables we can display
         // This is important because (e.g., with autorepeat or paste) we can get a massive number of draggables
         // very quickly, and performance degrades badly, making it hard to recover. Also, until the page relaods,
-        // ones beyond this would be off-page and difficult to deal with.
+        // ones beyond this would be off-page and difficult to deal with. And when it does reload they will all
+        // be on top of each other and only just visible.
         letters.splice(maxBubbles);
         const newBubbles: HTMLElement[] = [];
         if (draggables.length > letters.length) {
             // We have more draggables than letters. We'll remove the extra ones.
             draggables
-                .splice(Math.max(letters.length, 1)) // nb removes and returns them
+                .splice(Math.max(letters.length, 1)) // nb removes and returns them. Keep at least one as prototype.
                 .forEach((elt: HTMLElement) => {
                     getTarget(elt)?.remove();
                     elt.remove();
@@ -158,7 +163,9 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 setGeneratedBubbleId(newDraggable);
                 lastDraggable.parentElement?.appendChild(newDraggable);
                 makeTargetForBubble(newDraggable);
+                // It's available to push letter groups into
                 draggables.push(newDraggable);
+                // It needs refreshBubbleEditing to be called on it later.
                 newBubbles.push(newDraggable);
             }
         }
@@ -170,7 +177,7 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
             p.textContent = letters[i];
             copyContentToTarget(draggables[i]);
         }
-        let shuffledDraggables = draggables.slice();
+        const shuffledDraggables = draggables.slice();
         shuffle(shuffledDraggables);
         for (let i = 0; i < draggables.length; i++) {
             shuffledDraggables[i].style.left = `${draggableX +
@@ -192,8 +199,8 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
             theOneBubbleManager!.refreshBubbleEditing(
                 newDraggable.closest(".bloom-imageContainer") as HTMLElement,
                 new Bubble(newDraggable),
-                true,
-                false
+                true, // attach events
+                false // don't make it active.
             );
         });
     });
@@ -206,6 +213,8 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
 
 export function splitIntoGraphemes(text: string): string[] {
     // Regular expression to match a base character (or space) followed by any number of diacritics
+    // Enhance: could make use of data from Decodable Reader to allow characters that are not
+    // normally word-forming to be treated as such here.
     const graphemeRegex = /(\p{L}| )\p{M}*/gu;
     return text.match(graphemeRegex) || [];
 }
@@ -219,6 +228,7 @@ export function renderGamePromptDialog(
         <GamePromptDialog
             prompt={prompt}
             open={open}
+            // We don't actually store the open state anywhere, just re-render with the new value.
             setOpen={(o: boolean) => renderGamePromptDialog(root, prompt, o)}
         />,
         root

@@ -908,7 +908,7 @@ export function SetupElements(
 
     const editableJQuery = $(container).find(".bloom-editable");
 
-    loadLongpressInstructions(editableJQuery);
+    activateLongPressFor(editableJQuery);
 
     //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed,
     //a blank line is shown and the letter pressed shows up after that.
@@ -1484,7 +1484,7 @@ async function pasteImpl(imageAvailable: boolean) {
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
 }
 
-export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
+export function activateLongPressFor(jQuerySetOfMatchedElements) {
     // using axios directly because we already have a catch...though not obviously better than the Bloom Api one?
     axios
         .get("/bloom/api/keyboarding/useLongpress")

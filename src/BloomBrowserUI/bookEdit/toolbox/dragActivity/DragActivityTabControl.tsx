@@ -11,7 +11,7 @@ import ReactDOM = require("react-dom");
 import { getToolboxBundleExports } from "../../js/bloomFrames";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { default as PencilIcon } from "@mui/icons-material/Edit";
-import { enableStartPrompts } from "./dragActivityTool";
+import { showGamePromptDialog } from "./dragActivityTool";
 
 // This component is responsible for the Game Setup mode tabs in the Game tool.
 // Although the code seems to belong in this folder with the other Game code, it is actually
@@ -57,14 +57,14 @@ export const DragActivityTabControl: React.FunctionComponent<{
                 `}
             >
                 {promptButtonContent && (
-                    // This button in only visible in start mode. I'd prefer to control that here but it's
+                    // This button is only visible in start mode. I'd prefer to control that here but it's
                     // difficult. See the comment on the promptButton rule in Games.less.
                     <div
                         id="promptButton"
                         css={css`
                             display: flex;
                         `}
-                        onClick={() => enableStartPrompts(false)}
+                        onClick={() => showGamePromptDialog(false)}
                     >
                         <PencilIcon
                             color="primary"

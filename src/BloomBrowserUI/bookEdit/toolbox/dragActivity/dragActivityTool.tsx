@@ -73,7 +73,7 @@ export const enableDraggingTargets = (startingPoint: HTMLElement) => {
 
 // Must only be called in the right iframe, not imported elsewhere; otherwise,
 // React rendering will be confused.
-export const enableStartPrompts = (onlyIfEmpty: boolean) => {
+export const showGamePromptDialog = (onlyIfEmpty: boolean) => {
     const page = document.getElementsByClassName(
         "bloom-page"
     )[0] as HTMLElement;
@@ -112,7 +112,7 @@ export const enableStartPrompts = (onlyIfEmpty: boolean) => {
     renderGamePromptDialog(dialogRoot, prompt, true);
 };
 
-export const disableStartPrompts = (page: HTMLElement) => {
+export const hideGamePromptDialog = (page: HTMLElement) => {
     const dialogRoot = page.ownerDocument.getElementsByClassName(
         "bloom-ui-dialog"
     )[0];
@@ -2015,10 +2015,10 @@ export function setActiveDragActivityTab(tab: number) {
     }
     if (tab === startTabIndex) {
         enableDraggingTargets(page);
-        pageFrameExports.enableStartPrompts(true);
+        pageFrameExports.showGamePromptDialog(true);
     } else {
         disableDraggingTargets(page);
-        disableStartPrompts(page);
+        hideGamePromptDialog(page);
     }
 }
 

@@ -64,7 +64,7 @@ export interface IPageFrameExports {
 
     SayHello(): void;
     renderDragActivityTabControl(currentTab: number): void;
-    enableStartPrompts: (onlyIfEmpty: boolean) => void;
+    showGamePromptDialog: (onlyIfEmpty: boolean) => void;
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
@@ -83,7 +83,7 @@ import {
     removeImageId,
     changeImage
 } from "./js/bloomEditing";
-import { enableStartPrompts } from "../bookEdit/toolbox/dragActivity/dragActivityTool";
+import { showGamePromptDialog } from "../bookEdit/toolbox/dragActivity/dragActivityTool";
 export {
     getBodyContentForSavePage,
     requestPageContent,
@@ -99,7 +99,7 @@ export {
     changeImage,
     renderDragActivityTabControl,
     getTheOneBubbleManager,
-    enableStartPrompts
+    showGamePromptDialog
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
