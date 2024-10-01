@@ -26,8 +26,11 @@ require("./jquery.mousewheel.js");
     // We originally set out to include the normal no-break space (\u00A0),
     // but browsers consistently convert this into a space if you type anything before or after them.
     const narrowNoBreakSpace = "\u202F";
+    const nonBreakingHyphen = "\u2011";
+    const enDash = "\u2013";
+    const emDash = "\u2014";
 
-    var characterSets = splitCharacterSetsByGrapheme({
+    const characterSets = splitCharacterSetsByGrapheme({
         // extended latin (and african latin)
         // upper
         A: "ĀĂÀÁÂÃÄÅĄẠA̱ⱭÆ∀",
@@ -99,7 +102,7 @@ require("./jquery.mousewheel.js");
         "?": "¿‽",
         "%": "‰",
         ".": "…•",
-        "-": "±‐–—",
+        "-": nonBreakingHyphen + enDash + emDash + "±",
         "+": "±†‡",
         "\\": "′″‴‘’‚‛",
         "'": "ꞌʼ",
@@ -295,7 +298,11 @@ require("./jquery.mousewheel.js");
     }
     const charactersRepresentedByAlternativeText = {
         [narrowNoBreakSpace]:
-            "narrow non-breaking space / espace fine insécable"
+            "narrow non-breaking space / espace fine insécable",
+        [nonBreakingHyphen]:
+            "- (non-breaking hyphen / trait d'union insécable)",
+        [enDash]: "– (en dash / tiret demi-cadratin)",
+        [emDash]: "— (em dash / tiret cadratin)"
     };
     function createOneButton(replacementText, shortcutText) {
         let cssClass = "long-press-letter";
