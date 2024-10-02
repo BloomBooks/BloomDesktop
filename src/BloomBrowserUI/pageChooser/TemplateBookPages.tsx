@@ -17,7 +17,7 @@ import TemplateBookErrorReplacement from "./TemplateBookErrorReplacement";
 import { kBloomBlue50Transparent, kBloomPurple } from "../bloomMaterialUITheme";
 import { Span } from "../react_components/l10nComponents";
 
-interface ITemplateBookPagesProps {
+export interface ITemplateBookPagesProps {
     // If defined, either the default selection, or a user selection has been made. Highlight this page
     // when you come across it.
     selectedPageId?: string;

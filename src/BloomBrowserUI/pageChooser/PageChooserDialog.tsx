@@ -366,7 +366,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     // another group above the selected one and scrolling it off the screen again.
     useEffect(() => {
         // In order to scroll predictably to the last page added when we open the dialog, we must ensure that
-        // of the axios calls to get the pages of the various templates have returned BEFORE we try to scroll.
+        // all of the axios calls to get the pages of the various templates have returned BEFORE we try to scroll.
         if (bookData.length === 0) return;
         const selectedNode = document.getElementsByClassName(
             "selectedTemplatePage"
