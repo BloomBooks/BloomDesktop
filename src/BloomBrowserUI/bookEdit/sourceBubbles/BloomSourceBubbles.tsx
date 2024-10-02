@@ -467,6 +467,12 @@ export default class BloomSourceBubbles {
     private static CreateAndShowQtipBubbleFromDiv(
         group: HTMLElement,
         divForBubble: JQuery,
+        // When this is true, the bubble is shown always, without regard to whether it might overlap
+        // any others, and it is put on the body rather than the page scaling container. This us useful
+        // for dialogs that are not part of the page content, like the spell-words prompt dialog.
+        // Since the dialog is outside the scaling container, it isn't scaled, so scaling the bubble
+        // will make it look wrong in both size and position. And it only shows when hovering the dialog,
+        // so conflicting with other bubbles is not an issue.
         forceShowAlwaysOnBody?: boolean
     ): void {
         let showEvents = false;

@@ -1058,7 +1058,7 @@ namespace Bloom.Book
             {
                 FeatureId = "bloomGames6.1",
                 FeaturePhrase = "Bloom Games added in 6.2",
-                BloomDesktopMinVersion = "6.1",
+                BloomDesktopMinVersion = "6.2",
                 BloomReaderMinVersion = "3.3",
                 XPath =
                     "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"

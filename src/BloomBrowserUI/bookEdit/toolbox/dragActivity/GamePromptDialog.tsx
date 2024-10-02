@@ -28,6 +28,7 @@ import {
     DialogCancelButton,
     DialogOkButton
 } from "../../../react_components/BloomDialog/commonDialogComponents";
+import { splitIntoGraphemes } from "../../../utils/textUtils";
 
 export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");
@@ -210,14 +211,6 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         characterData: true
     });
 };
-
-export function splitIntoGraphemes(text: string): string[] {
-    // Regular expression to match a base character (or space) followed by any number of diacritics
-    // Enhance: could make use of data from Decodable Reader to allow characters that are not
-    // normally word-forming to be treated as such here.
-    const graphemeRegex = /(\p{L}| )\p{M}*/gu;
-    return text.match(graphemeRegex) || [];
-}
 
 export function renderGamePromptDialog(
     root: HTMLElement,
