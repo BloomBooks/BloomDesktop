@@ -29,7 +29,14 @@ html
 			| .Prompt-style { font-size: 18pt !important; line-height: 1.5 !important; word-spacing: normal !important; font-weight: font-style: normal !important; text-decoration: none !important; text-align: center !important; color: white; }
 	body
 		+dataDiv
-			+bookVariable-title('en', 'Activity')
+			//- This book's title is deliberately not the same as the file name.
+			//- It deliberately matches the title of another book.
+			//- This causes the pages of the two books to be combined in the Add Page dialog.
+			//- Why not just merge the two books? Activities is done as a pug, but Games is
+			//- more convenient to maintain as HTML. Also, they want quite different
+			//- stylesheets. Moreover, quite a lot of our code knows about Activities.css,
+			//- so getting rid of that is a bit of problem.
+			+bookVariable-title('en', 'Games')
 			+bookVariable('styleNumberSequence', '*', '0')
 
 		//- Make sure any pages you (developers) add here include the '.enterprise-only' class at the page level.

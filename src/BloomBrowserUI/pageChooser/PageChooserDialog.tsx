@@ -18,6 +18,7 @@ import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
 import { useEnterpriseAvailable } from "../react_components/requiresBloomEnterprise";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
+import axios from "axios";
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;
@@ -26,6 +27,17 @@ interface IPageChooserDialogProps {
 export interface ITemplateBookInfo {
     templateBookFolderUrl: string;
     templateBookPath: string;
+}
+
+export interface IBookGroup {
+    title: string;
+    books: {
+        path: string;
+        url: string;
+        dom: HTMLElement | undefined;
+        pages: HTMLElement[];
+    }[];
+    errorPath: string; // nonempty if there was an error loading one of the books or parsing it
 }
 
 export const getPageLabel = (templatePageDiv: HTMLDivElement): string => {
@@ -105,13 +117,6 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         HTMLDivElement | undefined
     >(undefined);
 
-    // In order to scroll predictably to the last page added when we open the dialog, we must ensure that
-    // of the axios calls to get the pages of the various templates have returned BEFORE we try to scroll.
-    // To do that, we count all the template books and make sure they've all returned (successfully or not),
-    // before we set allPagesLoaded, which triggers the scrolling.
-    const [templateBooksLoadedCount, setTemplateBooksLoadedCount] = useState(0);
-    const [allPagesLoaded, setAllPagesLoaded] = useState(false);
-
     const isEnterpriseAvailable = useEnterpriseAvailable();
 
     // Tell edit tab to disable everything when the dialog is up.
@@ -123,6 +128,8 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
 
         postBoolean("editView/setModalState", open);
     }, [open]);
+
+    const [bookData, setBookData] = useState<IBookGroup[]>([]);
 
     // The purpose of this callback:
     //   1) If TemplateBookPages goes to find a template page .svg file, and there isn't one for a
@@ -171,6 +178,79 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
             );
         };
     }, [thumbnailUpdatedListener]);
+
+    // Here we grab the actual html file contents so we can process what's
+    // available to us in terms of template pages and the content of those pages (especially for the
+    // "change layout" functionality).
+    // Theoretically a lot more of the processing of template books and their pages could be done on
+    // the C# side of things. Then we could just pass a JSON array (perhaps) of template page data.
+    // I think that's beyond the scope of what I'm trying to do right now, but it could be tackled later.
+    useEffect(() => {
+        if (templateBooks.length === 0) return;
+        // we're going to run this function once, now. Being async, it won't finish before the
+        // useEffect function finishes. But that's fine; when we get the data, we'll call setBookData
+        // and that will trigger another render.
+        const getTemplateFileDataAsync = async () => {
+            const bookData: IBookGroup[] = [];
+            // optimize: could we do this in parallel somehow?
+            for (const bookInfo of templateBooks) {
+                let title = "";
+                let dom: HTMLElement | undefined = undefined;
+                let pages: HTMLElement[] = [];
+                let errorPath = "";
+                try {
+                    const result = await axios.get(
+                        getBloomApiPrefix(false) +
+                            encodeURIComponent(bookInfo.templateBookPath)
+                    );
+                    dom = new DOMParser().parseFromString(
+                        result.data,
+                        "text/html"
+                    ).body;
+                    title =
+                        dom
+                            .querySelector("div[data-book='bookTitle']")
+                            ?.textContent?.trim() ?? "";
+                    pages = Array.from(dom.querySelectorAll(".bloom-page"));
+                } catch (error) {
+                    console.error(error);
+                    // We couldn't load a template file that the JSON says should be there.
+                    // Just display a message. This should be vanishingly rare except just possibly
+                    // during development, so I'm not worried that we can only handle one error book.
+                    errorPath = bookInfo.templateBookPath;
+                }
+                const bookGroup = bookData.find(b => b.title === title);
+                const book = {
+                    path: bookInfo.templateBookPath,
+                    url: bookInfo.templateBookFolderUrl,
+                    dom,
+                    pages
+                };
+                if (bookGroup) {
+                    bookGroup.books.push(book);
+                } else {
+                    bookData.push({
+                        title,
+                        books: [book],
+                        errorPath
+                    });
+                }
+            }
+            // Note that this happens considerably later, when all the axios calls have returned
+            // and all the books been processed.
+            // Sort all but the first group by title.
+            // (This wasn't necessary when each book was its own group because the titles matched the
+            // file names and we sort the files on the C# side. But C# can't get at the titles without doing its
+            // own parsing. So we sort them here. The first one, however, is the template that this
+            // book was made from, and we want it to stay first.)
+            const booksToSort = bookData.slice(1);
+            booksToSort.sort((a, b) => a.title.localeCompare(b.title));
+
+            setBookData([bookData[0], ...booksToSort]);
+        };
+        // deliberately not awaited. When we have all the data, setBookData will cause another render.
+        getTemplateFileDataAsync();
+    }, [templateBooks]);
 
     const getToolId = (templatePageDiv: HTMLDivElement | undefined): string => {
         return templatePageDiv
@@ -254,21 +334,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         );
     };
 
-    const bookLoadedHandler = () => {
-        const newCount = templateBooksLoadedCount + 1;
-        if (newCount === templateBooks.length) {
-            setTemplateBooksLoadedCount(0);
-            setAllPagesLoaded(true);
-        } else if (!allPagesLoaded) {
-            setTemplateBooksLoadedCount(newCount);
-        }
-    };
-
     const getTemplateBooks = (): JSX.Element[] | undefined => {
-        if (templateBooks.length === 0) {
+        if (bookData.length === 0) {
             return undefined;
         }
-        return templateBooks.map((book, index) => {
+        return bookData.map((titleGroup, index) => {
             return (
                 <TemplateBookPages
                     selectedPageId={
@@ -280,13 +350,12 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                         selectedTemplatePageDiv ? undefined : defaultPageId
                     }
                     firstGroup={index === 0}
-                    templateBook={book}
+                    titleGroup={titleGroup}
                     orientation={orientation}
                     forChooseLayout={props.forChooseLayout}
                     key={index}
                     onTemplatePageSelect={templatePageClickHandler}
                     onTemplatePageDoubleClick={templatePageDoubleClickHandler}
-                    onLoad={bookLoadedHandler}
                 />
             );
         });
@@ -296,7 +365,9 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     // the entire dialog (left half anyway) to render before we scroll, otherwise we may end up rendering
     // another group above the selected one and scrolling it off the screen again.
     useEffect(() => {
-        if (!allPagesLoaded) return;
+        // In order to scroll predictably to the last page added when we open the dialog, we must ensure that
+        // all of the axios calls to get the pages of the various templates have returned BEFORE we try to scroll.
+        if (bookData.length === 0) return;
         const selectedNode = document.getElementsByClassName(
             "selectedTemplatePage"
         )[0];
@@ -314,7 +385,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         // template books have returned from their respective axios calls with their pages (or errored out).
         // This keeps the scrolling linked to the actual size of the dialog, since the groupDisplay section
         // of the dialog grows to accomodate all the pages as it's being rendered.
-    }, [defaultPageId, selectedTemplatePageDiv, allPagesLoaded]);
+    }, [defaultPageId, selectedTemplatePageDiv, bookData.length]);
 
     // Return true if choosing the current layout will cause loss of data
     const willLoseData = (
