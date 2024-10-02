@@ -1,7 +1,7 @@
 import { splitIntoGraphemes } from "./textUtils";
 
 describe("split into grapheme tests", () => {
-    fit("handles diacritics followed by space", () => {
+    it("handles diacritics followed by space", () => {
         const letters = splitIntoGraphemes("ceatṽ̛̆ s");
         console.log(letters);
         expect(letters.length).toBe(7);

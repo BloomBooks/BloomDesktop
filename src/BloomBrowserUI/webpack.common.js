@@ -60,7 +60,8 @@ module.exports = merge(core, {
             "./publish/**/*Spec.ts",
             "./publish/**/*Spec.js",
             "./react_components/**/*Spec.ts",
-            "./react_components/**/*.spec.ts"
+            "./react_components/**/*.spec.ts",
+            "./utils/**/*Spec.ts"
         ]),
 
         // These work with c# ReactControl:
