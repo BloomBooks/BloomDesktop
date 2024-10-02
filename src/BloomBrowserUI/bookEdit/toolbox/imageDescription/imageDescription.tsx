@@ -13,6 +13,8 @@ import { Checkbox } from "../../../react_components/checkbox";
 import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
+import { OverlayTool } from "../overlay/overlayTool";
+import { showImageDescriptions } from "./imageDescriptionUtils";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -323,7 +325,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     public detachFromPage() {
         const page = ToolBox.getPage();
         if (page) {
-            page.classList.remove("bloom-showImageDescriptions");
+            showImageDescriptions(page, false);
         }
     }
 
@@ -364,8 +366,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
             if (!page) {
                 return;
             }
-            // turn on special layout to make image descriptions visible (might already be on)
-            page.classList.add("bloom-showImageDescriptions");
+            showImageDescriptions(page, true);
             // Make sure every image container has a child bloom-translationGroup to hold the image description.
             setupImageDescriptions(
                 page,
