@@ -7,7 +7,8 @@
 @focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
 
-.bloom-page {
+// should apply to everything, even dialogs.
+body {
     --page-structure-color: #1d94a41a;
     --language-tag-color: #1d94a488;
     --selectedEdit-color: #1d94a4c2; //transparent;
@@ -127,6 +128,21 @@ body {
     -height: 1px;
 }
 
+body:has(.bloom-page:hover),
+body:has(#overlay-context-controls:hover) {
+    .qtip {
+        opacity: 1 !important;
+        transition: opacity 200ms ease-out;
+    }
+}
+// A special case for qtips that belong to Mui dialogs (current example is the Game Prompt dialog).
+// These are not inside the scaling container where we usually put them, so we put the qtip in the body.
+// That allows us to make a rule targeting just those tooltips when the dialog is hovered.
+body:has(.MuiPaper-root:hover) > .qtip {
+    opacity: 1 !important;
+    transition: opacity 200ms ease-out;
+}
+
 // Now that most of our outline effects are conditional on the page being hovered, we get some sort of
 // default on a focused content-editable div. It's an ugly solid black. When we're not hovering,
 // we don't want any edit-only outlines at all, so the user can see the page as it will be.
@@ -138,8 +154,12 @@ body {
 // Keep together here all the effects we want when hovering (previously: also when focus-within)
 // the bloom-page. All of them need to also apply when the overlay context controls are hovered,
 // even though that is no longer a child of the bloom-page. (That's what the second rule is for.)
+// The third rule is for the prompt input, which is not a child of the bloom-page.
+// In that case, I don't think there's any reason to limit the effects to hovering; we're not wanting to
+// show the user what the dialog will look like in the printed book.
 .bloom-page:hover,
-body:has(#overlay-context-controls:hover) .bloom-page {
+body:has(#overlay-context-controls:hover) .bloom-page,
+#promptDialog {
     textarea,
     div.bloom-editable,
     div.pageLabel[contenteditable="true"] {
@@ -147,7 +167,7 @@ body:has(#overlay-context-controls:hover) .bloom-page {
         outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
     }
     textarea:focus,
-    div.bloom-editable:focus,
+    div.bloom-editable:focus-within,
     div.pageLabel[contenteditable="true"]:focus {
         outline: 1px solid var(--selectedEdit-color) !important;
         outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
@@ -195,10 +215,7 @@ body:has(#overlay-context-controls:hover) .bloom-page {
             color: black;
         }
     }
-    .qtip {
-        opacity: 1 !important;
-        transition: opacity 200ms ease-out;
-    }
+
     /*Put in little grey language tooltips in the bottom-right of the editable divs*/
     .languageTip,
     .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
@@ -1254,6 +1271,7 @@ body.hideAllCKEditors .cke_chrome {
 #drag-activity-tab-control {
     position: relative;
     top: -8px;
+    width: 100%;
 }
 
 // we want :blank, but it's not in browsers yet. So we simulate it by a mutation observer
@@ -1451,4 +1469,12 @@ canvas.moving {
         display: none;
     }
     pointer-events: none; // overridden for children, but the outer bit that's just for positioning should not be clickable
+}
+
+#promptButton {
+    visibility: hidden;
+}
+
+.drag-activity-start #promptButton {
+    visibility: unset;
 }

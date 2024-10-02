@@ -10,6 +10,8 @@ import {
 import ReactDOM = require("react-dom");
 import { getToolboxBundleExports } from "../../js/bloomFrames";
 import { useL10n } from "../../../react_components/l10nHooks";
+import { default as PencilIcon } from "@mui/icons-material/Edit";
+import { showGamePromptDialog } from "./dragActivityTool";
 
 // This component is responsible for the Game Setup mode tabs in the Game tool.
 // Although the code seems to belong in this folder with the other Game code, it is actually
@@ -34,6 +36,13 @@ export const DragActivityTabControl: React.FunctionComponent<{
     );
     const wrongLabel = useL10n("Wrong", "EditTab.Toolbox.DragActivity.Wrong");
     const playLabel = useL10n("Play", "EditTab.Toolbox.DragActivity.Play");
+
+    const prompt = document.getElementsByClassName(
+        "bloom-game-prompt"
+    )[0] as HTMLElement;
+    const promptL10nId = prompt?.getAttribute("data-prompt-button-l10nid");
+    const promptButtonContent = useL10n("", promptL10nId);
+
     return (
         <ThemeProvider theme={toolboxTheme}>
             <div
@@ -47,6 +56,42 @@ export const DragActivityTabControl: React.FunctionComponent<{
                     margin-top: 2px;
                 `}
             >
+                {promptButtonContent && (
+                    // This button is only visible in start mode. I'd prefer to control that here but it's
+                    // difficult. See the comment on the promptButton rule in Games.less.
+                    <div
+                        id="promptButton"
+                        css={css`
+                            display: flex;
+                        `}
+                        onClick={() => showGamePromptDialog(false)}
+                    >
+                        <PencilIcon
+                            color="primary"
+                            css={css`
+                                margin-top: auto;
+                                font-size: 14px;
+                                margin-bottom: 2px;
+                                margin-right: 2px;
+                            `}
+                        />
+                        <div
+                            css={css`
+                                margin-top: auto;
+                                text-transform: uppercase;
+                                color: ${kBloomBlue};
+                            `}
+                        >
+                            {promptButtonContent}
+                        </div>
+                    </div>
+                )}
+                <div
+                    // right-aligns what comes after it.
+                    css={css`
+                        flex-grow: 1;
+                    `}
+                ></div>
                 <div
                     css={css`
                         margin-top: 8px;

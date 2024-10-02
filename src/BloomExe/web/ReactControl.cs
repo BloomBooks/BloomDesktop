@@ -100,6 +100,8 @@ namespace Bloom.web
             // If the control gets added before it has navigated somewhere,
             // it shows as solid black, despite setting the BackColor to white.
             // So just don't show it at all until it contains what we want to see.
+            // Note, this means any alerts that come up in the initialization code will freeze things,
+            // since the user can't see them to respond. Don't use alerts in the initialization code!
             _browser.DocumentCompleted += (unused, args) =>
             {
                 if (this.IsDisposed)

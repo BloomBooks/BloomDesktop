@@ -799,14 +799,17 @@ export class BubbleManager {
     public refreshBubbleEditing(
         imageContainer: HTMLElement,
         bubble: Bubble | undefined,
-        attachEventsToEditables: boolean
+        attachEventsToEditables: boolean,
+        activateBubble: boolean
     ): void {
         Comical.startEditing([imageContainer]);
         // necessary if we added the very first bubble, and Comical was not previously initialized
         Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
         if (bubble) {
             const newTextOverPictureElement = bubble.content;
-            Comical.activateBubble(bubble);
+            if (activateBubble) {
+                Comical.activateBubble(bubble);
+            }
             this.updateComicalForSelectedElement(newTextOverPictureElement);
 
             // SetupElements (below) will do most of what we need, but when it gets to
@@ -826,7 +829,10 @@ export class BubbleManager {
                     attachEventsToEditables
                 );
             }
-            SetupElements(imageContainer, bubble.content);
+            SetupElements(
+                imageContainer,
+                activateBubble ? bubble.content : undefined
+            );
 
             // Since we may have just added an element, check if the container has at least one
             // overlay element and add the 'hasOverlay' class.
@@ -920,9 +926,10 @@ export class BubbleManager {
             clickedElement.closest("#overlay-control-frame") ||
             clickedElement.closest("#overlay-context-controls") ||
             clickedElement.closest(".MuiMenu-list") ||
-            clickedElement.closest(".above-page-control-container")
+            clickedElement.closest(".above-page-control-container") ||
+            clickedElement.closest(".MuiDialog-container")
         ) {
-            // clicking things in here (such as menu item in the pull-down) should not
+            // clicking things in here (such as menu item in the pull-down, or a prompt dialog) should not
             // clear the active element
             return;
         }
@@ -2479,6 +2486,10 @@ export class BubbleManager {
     };
 
     private activeElementAtMouseDown: HTMLElement | undefined;
+    // Keeps track of whether we think the mouse is down (that is, we've handled a mouseDown but not
+    // yet a mouseUp)). Does not get set if our mouseDown handler finds that isMouseEventAlreadyHandled
+    // returns true.
+    private mouseIsDown = false;
 
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
@@ -2490,6 +2501,7 @@ export class BubbleManager {
             return;
         }
         this.gotAMoveWhileMouseDown = false;
+        this.mouseIsDown = true;
 
         // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
         const coordinates = this.getPointRelativeToCanvas(event, container);
@@ -2534,6 +2546,24 @@ export class BubbleManager {
             return;
         }
 
+        const startDraggingBubble = (bubble: Bubble) => {
+            // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
+            this.setActiveElement(bubble.content);
+            const positionInfo = bubble.content.getBoundingClientRect();
+
+            // Possible move action started
+            this.bubbleToDrag = bubble;
+            this.activeContainer = container;
+            // in case this is somehow left from earlier, we want a fresh start for the new move.
+            this.animationFrame = 0;
+
+            // Remember the offset between the top-left of the content box and the initial
+            // location of the mouse pointer.
+            const deltaX = event.pageX - positionInfo.left;
+            const deltaY = event.pageY - positionInfo.top;
+            this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
+        };
+
         if (bubble) {
             if (
                 window.getComputedStyle(bubble.content).pointerEvents === "none"
@@ -2542,6 +2572,26 @@ export class BubbleManager {
                 // use it to manipulate a child. If the child is not supposed to be responding to
                 // pointer events, we should not be manipulating it here either.
                 return;
+            }
+            if (event.altKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                // using this trick for a bubble that is part of a family doesn't work well.
+                // We can only drag one bubble at once, so where should we put the other duplicate?
+                // Maybe we can come up with an answer, but for now, I'm just going to ignore the alt key.
+                if (Comical.findRelatives(bubble).length === 0) {
+                    // duplicate the bubble and drag that.
+                    // currently duplicateTOPBox actually dupliates the current active element,
+                    // not the one it is passed. So make sure the one we clicked is active, though it won't be for long.
+                    this.setActiveElement(bubble.content);
+                    const newBubble = this.duplicateTOPBox(
+                        bubble.content,
+                        true
+                    );
+                    if (!newBubble) return;
+                    startDraggingBubble(new Bubble(newBubble));
+                    return;
+                }
             }
             // We clicked on a bubble that's not disabled. If we clicked inside the bubble we are
             // text editing, and neither ctrl nor alt is down, we handle it normally. Otherwise, we
@@ -2559,21 +2609,7 @@ export class BubbleManager {
                 event.preventDefault();
                 event.stopPropagation();
             }
-            // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
-            this.setActiveElement(bubble.content);
-            const positionInfo = bubble.content.getBoundingClientRect();
-
-            // Possible move action started
-            this.bubbleToDrag = bubble;
-            this.activeContainer = container;
-            // in case this is somehow left from earlier, we want a fresh start for the new move.
-            this.animationFrame = 0;
-
-            // Remember the offset between the top-left of the content box and the initial
-            // location of the mouse pointer.
-            const deltaX = event.pageX - positionInfo.left;
-            const deltaY = event.pageY - positionInfo.top;
-            this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
+            startDraggingBubble(bubble);
         }
     };
 
@@ -2583,13 +2619,9 @@ export class BubbleManager {
         if (BubbleManager.inPlayMode(event.currentTarget as HTMLElement)) {
             return; // no edit mode functionality is relevant
         }
-        if (event.altKey) {
-            // Don't resize or move with Alt. See BL-13899.
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-        }
-        if (event.buttons === 0) {
+        if (event.buttons === 0 && this.mouseIsDown) {
+            // we missed the mouse up...maybe because we're debugging? In any case, we don't want to go
+            // on doing drag-type things; best to simulate the mouse up we missed.
             this.onMouseUp(event);
             return;
         }
@@ -2609,12 +2641,6 @@ export class BubbleManager {
         }
 
         const container = event.currentTarget as HTMLElement;
-        // Prevent two event handlers from triggering if the text box is currently being resized
-        if (this.isJQueryResizing(container)) {
-            this.bubbleToDrag = undefined;
-            this.activeContainer = undefined;
-            return;
-        }
 
         if (!this.bubbleToDrag) {
             this.handleMouseMoveHover(event, container);
@@ -2627,7 +2653,6 @@ export class BubbleManager {
     // and add or remove the classes we use to indicate this
     private handleMouseMoveHover(event: MouseEvent, container: HTMLElement) {
         if (this.isMouseEventAlreadyHandled(event)) {
-            this.cleanupMouseMoveHover(container);
             return;
         }
 
@@ -2648,7 +2673,6 @@ export class BubbleManager {
 
         if (!hoveredBubble) {
             // Cleanup the previous iteration's state
-            this.cleanupMouseMoveHover(container);
             if (this.activeElement) {
                 tryRemoveImageEditingButtons(
                     this.activeElement.getElementsByClassName(
@@ -2668,15 +2692,11 @@ export class BubbleManager {
         if (!event.altKey) {
             // event.altKey test is probably redundant due to BL-13899.
             if (isVideo) {
-                // Don't add "grabbable" to video over picture, because click will play the video,
-                // not drag it (unless we're holding the Ctrl key down).
                 if (event.ctrlKey) {
                     // In this case, we want to drag the container.
-                    container.classList.add("grabbable");
                     targetElement.removeAttribute("controls");
                 } else {
                     // In this case, we want to play the video, if we click on it.
-                    container.classList.remove("grabbable");
                     targetElement.setAttribute("controls", "");
                 }
             }
@@ -2703,49 +2723,6 @@ export class BubbleManager {
                 coordinates.getUnscaledY()
             ) ?? null
         );
-    }
-
-    /**
-     * Applies resizing UI, including:
-     * - Make the mouse cursor reflect the direction in which the currently hovered bubble can be resized.
-     * - Remove video controls
-     *
-     * @param hoveredBubble The bubble currently being hovered
-     * @param container The current main bloom-imageContainer which contains the currently hovered bubble (if applicable)
-     * @param event The most recent mouse event.
-     * @param isVideo Whether ${hoveredBubble} is a video overlay.
-     */
-    public applyResizingUI(
-        hoveredBubble: Bubble,
-        container: HTMLElement,
-        event: MouseEvent,
-        isVideo: boolean
-    ) {
-        this.cleanupMouseMoveHover(container); // Need to clear both grabbable and *-resizables
-
-        const resizeMode = this.getResizeMode(hoveredBubble.content, event);
-        container.classList.add(`${resizeMode}-resizable`);
-
-        if (isVideo && event.target instanceof Element) {
-            event.target.removeAttribute("controls");
-        }
-    }
-
-    /**
-     * Attempts to apply resizing UI, given only the current image container.
-     * Will find the currently hovered bubble (if any)
-     * Does nothing if no bubble is currently being hovered
-     * @param container The current main bloom-imageContainer which contains the currently hovered bubble (if any)
-     */
-    public tryApplyResizingUI(container: HTMLElement) {
-        const mouseEvent = this.lastMoveEvent;
-        const hoveredBubble = this.getBubbleUnderMouse(mouseEvent, container);
-        if (!hoveredBubble) {
-            return;
-        }
-
-        const isVideo = this.isVideoOverPictureElement(hoveredBubble.content);
-        this.applyResizingUI(hoveredBubble, container, mouseEvent, isVideo);
     }
 
     private animationFrame: number;
@@ -2874,6 +2851,7 @@ export class BubbleManager {
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseUp = (event: MouseEvent) => {
+        this.mouseIsDown = false;
         const container = event.currentTarget as HTMLElement;
         if (BubbleManager.inPlayMode(container)) {
             return;
@@ -2934,26 +2912,7 @@ export class BubbleManager {
     };
 
     public turnOffResizing(container: Element) {
-        this.clearResizeModeClasses(container);
         this.activeContainer = undefined;
-    }
-
-    public isResizing(container: Element) {
-        return this.isJQueryResizing(container);
-    }
-
-    // Returns true if any of the container's children are currently being resized using JQuery
-    private isJQueryResizing(container: Element) {
-        // First check the class that we try to always apply when starting a JQuery resize
-        // (the class is applied so that we know one is in progress even before the mouse moves.)
-        if (container.classList.contains("ui-jquery-resizing-in-progress")) {
-            return true;
-        }
-
-        // Double-check using the JQuery class
-        return (
-            container.getElementsByClassName("ui-resizable-resizing").length > 0
-        );
     }
 
     // If we get a click (without movement) on a text bubble, we treat subsequent mouse events on
@@ -3021,6 +2980,10 @@ export class BubbleManager {
             // an editable is allowed to handle its own events only if it's parent bubble has
             // been established as active for text editing and it's not a right-click.
             // Otherwise, we handle it as a move (or context menu request, or...).
+            return true;
+        }
+        if (targetElement.closest(".MuiDialog-container")) {
+            // Dialog boxes (e.g., letter game prompt) get to handle their own events.
             return true;
         }
         return false;
@@ -3308,18 +3271,6 @@ export class BubbleManager {
         return { x: centerX, y: centerY };
     }
 
-    private cleanupMouseMoveHover(element: Element): void {
-        element.classList.remove("grabbable");
-        this.clearResizeModeClasses(element);
-    }
-
-    public clearResizeModeClasses(element: Element): void {
-        element.classList.remove("ne-resizable");
-        element.classList.remove("nw-resizable");
-        element.classList.remove("sw-resizable");
-        element.classList.remove("se-resizable");
-    }
-
     public turnOffBubbleEditing(): void {
         if (this.isComicEditingOn === false) {
             return; // Already off. No work needs to be done.
@@ -3554,7 +3505,8 @@ export class BubbleManager {
         this.refreshBubbleEditing(
             BubbleManager.getTopLevelImageContainerElement(parentElement)!,
             new Bubble(childElement),
-            false
+            false,
+            true
         );
         return childElement;
     }
@@ -3927,7 +3879,7 @@ export class BubbleManager {
         );
         bubble.setBubbleSpec(bubbleSpec);
         const imageContainer = imageContainerJQuery.get(0);
-        this.refreshBubbleEditing(imageContainer, bubble, true);
+        this.refreshBubbleEditing(imageContainer, bubble, true, true);
         const editable = contentElement.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
@@ -4048,7 +4000,7 @@ export class BubbleManager {
         Comical.deleteBubbleFromFamily(textOverPicDiv, containerElement);
 
         // Update UI and make sure things get redrawn correctly.
-        this.refreshBubbleEditing(containerElement, undefined, false);
+        this.refreshBubbleEditing(containerElement, undefined, false, false);
         // We no longer have an active element, but the old active element may be
         // needed by the removeControlFrame method called by refreshBubbleEditing
         // to remove a popup menu.
@@ -4058,7 +4010,10 @@ export class BubbleManager {
     }
 
     // We verify that 'textElement' is the active element before calling this method.
-    public duplicateTOPBox(textElement: HTMLElement): HTMLElement | undefined {
+    public duplicateTOPBox(
+        textElement: HTMLElement,
+        sameLocation?: boolean
+    ): HTMLElement | undefined {
         // simple guard
         if (!textElement || !textElement.parentElement) {
             return undefined;
@@ -4085,9 +4040,10 @@ export class BubbleManager {
                 return;
             }
 
-            var result = this.duplicateBubbleFamily(
+            const result = this.duplicateBubbleFamily(
                 patriarchBubble,
-                bubbleSpecToDuplicate
+                bubbleSpecToDuplicate,
+                sameLocation
             );
 
             // The JQuery resizable event handler needs to be removed after the duplicate bubble
@@ -4111,14 +4067,15 @@ export class BubbleManager {
     // This method handles all needed refreshing of the duplicate bubbles.
     private duplicateBubbleFamily(
         patriarchSourceBubble: Bubble,
-        bubbleSpecToDuplicate: BubbleSpec
+        bubbleSpecToDuplicate: BubbleSpec,
+        sameLocation: boolean = false
     ): HTMLElement | undefined {
         const sourceElement = patriarchSourceBubble.content;
         const proposedOffset = 15;
         const newPoint = this.findBestLocationForNewBubble(
             sourceElement,
-            proposedOffset + sourceElement.clientWidth, // try to not overlap too much
-            proposedOffset
+            sameLocation ? 0 : proposedOffset + sourceElement.clientWidth, // try to not overlap too much
+            sameLocation ? 0 : proposedOffset
         );
         if (!newPoint) {
             return;
@@ -4177,6 +4134,7 @@ export class BubbleManager {
         this.refreshBubbleEditing(
             container,
             new Bubble(patriarchDuplicateElement),
+            true,
             true
         );
         const childBubbles = Comical.findRelatives(patriarchSourceBubble);
@@ -4289,6 +4247,7 @@ export class BubbleManager {
         this.refreshBubbleEditing(
             BubbleManager.getTopLevelImageContainerElement(parentElement)!,
             new Bubble(newChildElement),
+            true,
             true
         );
     }
@@ -4399,6 +4358,15 @@ export class BubbleManager {
         // But we don't need to prevent it because if it's suspended by a tool (e.g., origami layout),
         // any mouse events will find that comic editing is off and won't get this far.
         this.comicEditingSuspendedState = forWhat;
+    }
+
+    public checkActiveElementIsVisible() {
+        if (!this.activeElement) {
+            return;
+        }
+        if (window.getComputedStyle(this.activeElement).display === "none") {
+            this.setActiveElement(undefined);
+        }
     }
 
     public resumeComicEditing() {
@@ -4798,6 +4766,9 @@ export function updateOverlayClass(imageContainer: HTMLElement) {
     }
 }
 
+// Note: do NOT use this directly in toolbox code; it will import its own copy of
+// bubbleManager and not use the proper one from the page iframe. Instead, use
+// the OverlayTool.bubbleManager().
 export let theOneBubbleManager: BubbleManager;
 
 export function initializeBubbleManager() {

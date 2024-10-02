@@ -73,6 +73,10 @@
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell" translate="no">
+        <source xml:lang="en">Edit word to spell</source>
+        <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.FixedShape" translate="yes">
         <source xml:lang="en">Fixed Shape</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedShape</note>
@@ -202,6 +206,10 @@
         <source xml:lang="en">Word</source>
         <note>ID: EditTab.Toolbox.DragActivity.Word</note>
         <note>This is the label of an item that can be dragged onto the canvas to hold text, typically about the length of a word.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell" translate="no">
+        <source xml:lang="en">Enter the word to spell</source>
+        <note>ID: EditTab.Toolbox.DragActivity.WordToSpell</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Wrong" translate="yes">
         <source xml:lang="en">Wrong</source>

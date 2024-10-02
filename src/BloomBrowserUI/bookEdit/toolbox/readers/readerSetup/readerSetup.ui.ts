@@ -1238,8 +1238,6 @@ $(document).ready(() => {
     // http://stackoverflow.com/questions/3032770/execute-javascript-function-in-a-another-iframe-when-parent-is-from-different-do
     const container = $("body");
     //   const pageIframe = parent.frames['page'];
-    //   pageIframe.toolboxBundle.loadLongpressInstructions(container.find('textarea'));
-    getToolboxBundleExports()?.loadLongpressInstructions(
-        container.find("textarea")
-    );
+    //   pageIframe.toolboxBundle.activateLongPressFor(container.find('textarea'));
+    getToolboxBundleExports()?.activateLongPressFor(container.find("textarea"));
 });

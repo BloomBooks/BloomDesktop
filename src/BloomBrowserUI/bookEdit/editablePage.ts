@@ -12,7 +12,14 @@ import { renderDragActivityTabControl } from "./toolbox/dragActivity/DragActivit
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
-    if (!page) throw new Error("Could not find the div.bloom-page");
+    if (!page) {
+        // alert is tempting here. But possibly the browser control has not yet been added
+        // to its parent, so we won't see it, and the loading code will be frozen waiting for
+        // a response to the alert. Hopefully the error will show up somewhere.
+        throw new Error(
+            "Could not find the div.bloom-page; this often means editablePage.ts is being compiled into a bundle where it does not belong"
+        );
+    }
     return page.getAttribute("id")!;
 }
 // This notification lets the C# know that this partciular page is ready to edit.
@@ -22,7 +29,16 @@ document.addEventListener("DOMContentLoaded", () => {
     postString("editView/pageDomLoaded", getPageId());
 });
 
-// This allows strong typing to be done for exported functions
+// This allows strong typing to be done for exported functions.
+// Note: although these function are exported, which I think is necessary to make this cross-iframe
+// calling possible, they MUST not simply be imported. Doing so will pull this file into the importing
+// bundle, which will cause errors when it is loaded into a page that does not have a .bloom-page
+// and other things that are expected to be here. Rather, use code like this:
+//      const exports = getEditablePageBundleExports();
+//      return exports ? exports.getTheOneBubbleManager() : undefined;
+// It is theoreically OK to import these functions to code that is only included in the page bundle,
+// but I think it is unwise. It is so easy for an extra file to get imported into another bundle,
+// and then it will bring this along, with disastrous results.
 export interface IPageFrameExports {
     requestPageContent(): void;
     pageUnloading(): void;
@@ -48,6 +64,7 @@ export interface IPageFrameExports {
 
     SayHello(): void;
     renderDragActivityTabControl(currentTab: number): void;
+    showGamePromptDialog: (onlyIfEmpty: boolean) => void;
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
@@ -66,6 +83,7 @@ import {
     removeImageId,
     changeImage
 } from "./js/bloomEditing";
+import { showGamePromptDialog } from "../bookEdit/toolbox/dragActivity/dragActivityTool";
 export {
     getBodyContentForSavePage,
     requestPageContent,
@@ -79,7 +97,9 @@ export {
     attachToCkEditor,
     removeImageId,
     changeImage,
-    renderDragActivityTabControl
+    renderDragActivityTabControl,
+    getTheOneBubbleManager,
+    showGamePromptDialog
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
@@ -103,7 +123,7 @@ const styleSheets = [
     "bookEdit/css/legacyQuizEditing.css"
 ];
 
-export function getTheOneBubbleManager(): BubbleManager {
+function getTheOneBubbleManager(): BubbleManager {
     return theOneBubbleManager;
 }
 

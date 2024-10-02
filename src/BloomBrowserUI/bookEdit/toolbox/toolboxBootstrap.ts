@@ -29,7 +29,7 @@ export interface IToolboxFrameExports {
         callback: () => void
     ): void;
 
-    loadLongpressInstructions(jQuerySetOfMatchedElements): void;
+    activateLongPressFor(jQuerySetOfMatchedElements): void;
 
     getTheOneToolbox(): ToolBox;
 
@@ -54,7 +54,7 @@ export {
     beginSaveChangedSettings,
     makeLetterWordList
 } from "./readers/readerTools";
-export { loadLongpressInstructions } from "../js/bloomEditing";
+export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
 
 export { getTheOneToolbox };
