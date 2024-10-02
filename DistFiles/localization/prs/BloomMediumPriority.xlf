@@ -88,6 +88,11 @@
         <target xml:lang="prs" state="needs-translation">Place the targets in the places needed for the correct answer.</target>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell" translate="no">
+        <source xml:lang="en">Edit word to spell</source>
+        <target xml:lang="prs" state="needs-translation">Edit word to spell</target>
+        <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.FixedShape" translate="yes">
         <source xml:lang="en">Fixed Shape</source>
         <target xml:lang="prs" state="needs-translation">Fixed Shape</target>
@@ -241,6 +246,11 @@
         <source xml:lang="en">Word</source>
         <target xml:lang="prs" state="needs-translation">Word</target>
         <note>ID: EditTab.Toolbox.DragActivity.Word</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell" translate="no">
+        <source xml:lang="en">Enter the word to spell</source>
+        <target xml:lang="prs" state="needs-translation">Enter the word to spell</target>
+        <note>ID: EditTab.Toolbox.DragActivity.WordToSpell</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Wrong" translate="yes">
         <source xml:lang="en">Wrong</source>
