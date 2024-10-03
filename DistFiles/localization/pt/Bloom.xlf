@@ -2339,9 +2339,9 @@
         <target xml:lang="pt-PT" state="final">Inclua o nome da língua usando {lang}. Por exemplo: "Digite a cor em {lang}".</target>
         <note>ID: EditTab.TextBoxProperties.IncludeLang</note>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.LanguageTab" sil:dynamic="true">
+      <trans-unit id="EditTab.TextBoxProperties.LanguageTab" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Language</source>
-        <target xml:lang="pt-PT" state="translated">Língua</target>
+        <target xml:lang="pt-PT" state="final">Língua</target>
         <note>ID: EditTab.TextBoxProperties.LanguageTab</note>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Normal" sil:dynamic="true" approved="yes">
@@ -3431,7 +3431,7 @@
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.LearnAboutNewFeatures" approved="yes">
         <source xml:lang="en">learn about new features</source>
-        <target xml:lang="pt-PT" state="final">saiba mais sobre novas funções</target>
+        <target xml:lang="pt-PT" state="final">saber mais sobre novas funções</target>
         <note>ID: ForumInvitationDialog.LearnAboutNewFeatures</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.RequestAndVote" approved="yes">
