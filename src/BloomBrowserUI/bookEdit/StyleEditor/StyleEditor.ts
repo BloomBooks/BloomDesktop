@@ -1001,8 +1001,11 @@ export default class StyleEditor {
     public AdjustFormatButton(element: Element): void {
         const scale = EditableDivUtils.getPageScale();
         const eltBounds = element.getBoundingClientRect();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const parentBounds = element.parentElement!.getBoundingClientRect();
+        const parent = element.parentElement;
+        if (!parent) {
+            return; // the element we're trying to adjust for may have been removed
+        }
+        const parentBounds = parent.getBoundingClientRect();
         const bottom = eltBounds.bottom - parentBounds.top;
         const fmtButton = document.getElementById("formatButton");
 
