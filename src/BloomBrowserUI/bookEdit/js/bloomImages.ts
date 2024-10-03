@@ -79,6 +79,7 @@ export function SetupImagesInContainer(container) {
 
 export function SetupImage(image: JQuery) {
     // Remove any obsolete explicit image size and position left over from earlier versions of Bloom, before we had object-fit:contain.
+    // Note: any changes to this should probably also be made to (C#) Book.RemoveObsoleteImageAttributes(), if it still exists.
     if (image.style) {
         // Note, in BL-9460 we had to return to having width and height in some cases.
         // As of 6.1, overlay images make use of explicit width, left, and top in styles for cropping.
