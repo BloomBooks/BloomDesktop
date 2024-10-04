@@ -4,6 +4,7 @@ using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using SIL.IO;
 
 namespace Bloom.TeamCollection
@@ -36,6 +37,12 @@ namespace Bloom.TeamCollection
     /// </summary>
     public class TeamCollectionManager : IDisposable, ITeamCollectionManager
     {
+        // This is the most recent TeamCollectionManager created. It is used by the
+        // CurrentMachine static property, which needs some instance data.
+        // We should try to minimize use of this, but I think using it in
+        // some cases is less painful than the alternatives.
+        private static TeamCollectionManager _mostRecentManager;
+
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly BookStatusChangeEvent _bookStatusChangeEvent;
         private BookCollectionHolder _bookCollectionHolder;
@@ -213,6 +220,7 @@ namespace Bloom.TeamCollection
         )
         {
             Lock = theLock;
+            _mostRecentManager = this;
             _webSocketServer = webSocketServer;
             _bookStatusChangeEvent = bookStatusChangeEvent;
             _localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
@@ -503,8 +511,45 @@ namespace Bloom.TeamCollection
         /// <summary>
         /// This is what the BookStatus.lockedWhere must be for a book to be considered
         /// checked out locally. For all sharing code, this should be the one place to get this.
+        /// Typically it is simply the current machine (if the current collection is at the
+        /// standard location for its name). If it is not, it includes the actual location in parens.
+        /// This allows two or more clones of a TC to be running on the same machine and correctly
+        /// report that a book is checked out elsewhere if it is checked out in a different clone.
+        /// Don't change this lightly, since it may be saved in BookStatus JSON in various TCs.
         /// </summary>
-        public static string CurrentMachine => _overrideMachineName ?? Environment.MachineName;
+        /// <remarks>This method doesn't want to be static, because it needs some current instance
+        /// data to know where the local collection is and would be by default. However, we
+        /// want it to be static because it is used in several methods of BookStatus,
+        /// an object which is often created from JSON (not by Autofac) and so can't just
+        /// automatically get a reference to a TC instance. Many calls to several methods
+        /// would have to be changed (in rather unnatural ways) to pass them a TC, or else
+        /// something similarly awkward would have to be done to make one an instance variable
+        /// and always get it initialized.
+        /// In the end I decided one more static is less painful. There is only one active TC
+        /// unless we change to allowing Bloom to open two collections at once, which will
+        /// break many things.</remarks>
+        public static string CurrentMachine
+        {
+            get
+            {
+                var machineName = _overrideMachineName ?? Environment.MachineName;
+                if (_mostRecentManager?.Settings?.CollectionName != null)
+                {
+                    var expectedFolder = Path.Combine(
+                        NewCollectionWizard.DefaultParentDirectoryForCollections,
+                        _mostRecentManager.Settings.CollectionName
+                    );
+                    if (_mostRecentManager._localCollectionFolder == expectedFolder)
+                        return machineName;
+                    return machineName + " (" + _mostRecentManager._localCollectionFolder + ")";
+                }
+                else
+                {
+                    // presumably unit testing
+                    return machineName;
+                }
+            }
+        }
 
         public void Dispose()
         {
