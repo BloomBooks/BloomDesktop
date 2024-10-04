@@ -40,9 +40,15 @@ export interface IBloomDialogProps extends DialogProps {
     // The available reasons come from MUI's DialogProps.
     onClose: (evt?: object, reason?: "escapeKeyDown" | "backdropClick") => void;
 
-    // If you define this, then ways of leaving the dialog other than the OK/accept button (escape, clicking out, the cancel button)
-    // will call it.
-    onCancel?: () => void;
+    // If you define this, then ways of leaving the dialog other than the OK/accept button (escape, clicking out,
+    // the cancel button, the BloomTitle close button) will call it.
+    onCancel?: (
+        reason?:
+            | "escapeKeyDown"
+            | "backdropClick"
+            | "titleCloseClick"
+            | "cancelClicked"
+    ) => void;
 
     // we know of at least one scenario (CopyrightAndLicenseDialog) which needs to do
     // this because enabling it causes a react render loop. Our theory is that there is
@@ -143,9 +149,6 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
 
         const hasTitle = hasChildOfType("DialogTitle");
 
-        //const cancellable = hasChildOfType("DialogCancelButton");
-        const cancellable = props.onCancel != undefined;
-
         function getPaperComponent() {
             if (disableDragging) {
                 return undefined;
@@ -172,7 +175,7 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                                 ) => {
                                     // MUI.Dialog onClose() is only called if you click outside the dialog or escape, so that's
                                     // the same as canceling for dialogs that have a notion of canceling.
-                                    if (props.onCancel) props.onCancel();
+                                    if (props.onCancel) props.onCancel(reason);
                                     else props.onClose(event, reason);
                                 }}
                                 // maxWidth={false} Instead, if you want more than the default (600px?) then add maxWidth={false} in the props.
@@ -222,6 +225,8 @@ export const DialogTitle: FunctionComponent<{
     // to show an arbitrary React thing for the icon seemed uglier.)
     icon?: React.ReactNode | string;
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
+    // true: no close button. otherwise: close button iff BloomDialogContext has onCancel.
+    preventCloseButton?: boolean;
 }> = props => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
@@ -291,7 +296,7 @@ export const DialogTitle: FunctionComponent<{
             </h1>
             {/* Example child would be a Spinner in a progress dialog. */}
             {props.children}
-            {context.onCancel && (
+            {context.onCancel && !props.preventCloseButton && (
                 <IconButton
                     aria-label={closeText}
                     title={closeText}
@@ -303,7 +308,7 @@ export const DialogTitle: FunctionComponent<{
                         padding: unset;
                         display: flex;
                     `}
-                    onClick={context.onCancel}
+                    onClick={() => context.onCancel?.("titleCloseClick")}
                 >
                     <CloseIcon />
                 </IconButton>
@@ -436,7 +441,13 @@ const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
 
 // This used to pass down things to components of the dialog
 type BloomDialogContextArgs = {
-    onCancel?: () => void;
+    onCancel?: (
+        reason?:
+            | "escapeKeyDown"
+            | "backdropClick"
+            | "titleCloseClick"
+            | "cancelClicked" // an instance of DialogCancelButton was clicked
+    ) => void;
     disableDragging: boolean;
 };
 export const BloomDialogContext = React.createContext<BloomDialogContextArgs>({

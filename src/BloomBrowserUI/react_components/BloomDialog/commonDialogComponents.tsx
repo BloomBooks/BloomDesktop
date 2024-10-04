@@ -150,6 +150,8 @@ export const DialogOkButton: React.FunctionComponent<{
 export const DialogCancelButton: React.FunctionComponent<{
     // Use of onClick is deprecated. Instead, use the onCancel function on BloomDialog, so that
     // we get consistent behavior with Escape, upper-right close button, etc.
+    // Note that if the context onCancel is set, onClick_DEPRECATED will not be called,
+    // even if one is passed.
     onClick_DEPRECATED?: () => void;
     default?: boolean;
 }> = props => {
@@ -161,7 +163,13 @@ export const DialogCancelButton: React.FunctionComponent<{
             enabled={true}
             // by default, Cancel is NOT the default button
             variant={props.default === true ? "contained" : "outlined"}
-            onClick={context.onCancel ?? props.onClick_DEPRECATED}
+            onClick={() => {
+                if (context.onCancel) {
+                    context.onCancel("cancelClicked");
+                } else {
+                    props.onClick_DEPRECATED?.();
+                }
+            }}
         >
             Cancel
         </BloomButton>
