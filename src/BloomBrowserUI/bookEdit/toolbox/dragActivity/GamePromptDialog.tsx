@@ -40,13 +40,24 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
         <BloomDialog
             id="promptDialog"
             open={props.open}
-            // Review: should one or both of these set things in the main page back the way they were when
-            // we opened the dialog? Probably what is expected of a Cancel button but maybe not when
-            // just clicking outside the dialog or pressing ESC?
             onClose={() => props.setOpen(false)}
-            onCancel={() => props.setOpen(false)}
+            onCancel={reason => {
+                // For this dialog, effects are immediate. It seems more natural that most ways
+                // of closing the dialog keep the currently visible changes. So if the dialog is
+                // closed by the main Cancel button at the bottom, we undo the changes.
+                // Other ways of closing the dialog (e.g., clicking outside it) leave the changes,
+                // even though our code normally treats them as equivalent to Cancel.
+                if (reason === "cancelClicked") {
+                    cancel();
+                }
+                props.setOpen(false);
+            }}
         >
-            <DialogTitle title={caption} icon={false}></DialogTitle>
+            <DialogTitle
+                title={caption}
+                icon={false}
+                preventCloseButton={true}
+            ></DialogTitle>
             <DialogMiddle>
                 <div
                     id="promptInput"
@@ -57,20 +68,31 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
                 />
             </DialogMiddle>
             <DialogBottomButtons>
-                <DialogOkButton onClick={() => props.setOpen(false)} />
+                <DialogOkButton
+                    onClick={() => props.setOpen(false)}
+                    default={true}
+                />
                 <DialogCancelButton />
             </DialogBottomButtons>
         </BloomDialog>
     );
 };
 
-// Very large initial number; a loop resets them to be the minimum of the actual values
-// for the top left of all draggables and the top left of all targets.
-// These are our starting points for making a new row.
-let draggableX = 20000;
-let draggableY = 20000;
-let targetX = 20000;
-let targetY = 20000;
+// These all get initialized in initializeTg, which is called each time the dialog is opened.
+// Some are used by the observer that updates the page; most are needed only for cancel().
+let draggableX = 0;
+let draggableY = 0;
+let targetX = 0;
+let targetY = 0;
+let originalDraggables: HTMLElement[] = [];
+let originalClassLists: string[] = [];
+let originalStyles: string[] = [];
+let originalContents: string[] = [];
+let createdBubbles: HTMLElement[] = [];
+let originalTargetStyles: string[] = [];
+let originalTargetContents: string[] = [];
+let promptEditable: HTMLElement | null = null;
+let originalPromptHtml = "";
 
 // prompt is the hidden element in the page where we store the 'word'.
 // tg is the copy of the prompt TG that we make as part of the dialog.
@@ -93,9 +115,13 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
     if (editable) {
         getToolboxBundleExports()?.activateLongPressFor($(editable));
     }
-    const promptEditable = promptTg.getElementsByClassName(
+    promptEditable = promptTg.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
+    if (!promptEditable) {
+        throw new Error("No editable in dragActivity");
+    }
+    originalPromptHtml = promptEditable.innerHTML;
     const page = document.getElementsByClassName(
         "bloom-page"
     )[0] as HTMLElement;
@@ -112,20 +138,44 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
     editable.focus();
 
     // From here on is specific to the letter drag activity.
-    // capture where the top left draggable and target are (before we add or remove any)
-    const originalDraggables = Array.from(
+    // capture where the top left draggable and target are (before we add or remove any).
+    // Also capture various bits of initial state that cancel() might need.
+    originalDraggables = Array.from(
         page.getElementsByClassName("bloom-textOverPicture draggable-text")
     ) as HTMLElement[];
+    createdBubbles = [];
+    originalClassLists = [];
+    originalStyles = [];
+    originalTargetStyles = [];
+    originalContents = [];
+    originalTargetContents = [];
+    draggableX = draggableY = targetX = targetY = 1000000; // will get reduced to minimums
     for (let i = 0; i < originalDraggables.length; i++) {
+        originalClassLists.push(
+            originalDraggables[i].getAttribute("class") ?? ""
+        );
+        originalStyles.push(originalDraggables[i].getAttribute("style") ?? "");
+        originalContents.push(originalDraggables[i].innerHTML);
+        if (originalDraggables[i]?.classList.contains("bloom-unused-in-lang")) {
+            // it won't have a meaningful position, so it would throw our calculations off.
+            continue;
+        }
         const target = getTarget(originalDraggables[i]);
         if (target) {
             targetX = Math.min(targetX, target.offsetLeft);
             targetY = Math.min(targetY, target.offsetTop);
         }
+        originalTargetStyles.push(target?.getAttribute("style") ?? "");
+        originalTargetContents.push(target?.innerHTML ?? "");
+
         draggableX = Math.min(draggableX, originalDraggables[i].offsetLeft);
         draggableY = Math.min(draggableY, originalDraggables[i].offsetTop);
     }
+    // Set up an observer to keep the draggables in sync with the prompt during typing.
     const promptObserver = new MutationObserver(() => {
+        if (!promptEditable) {
+            throw new Error("No promptEditable in dragActivity");
+        }
         promptEditable.innerHTML = editable.innerHTML; // copy back to the permanent element so it gets saved.
         const promptText = editable.textContent ?? "";
         // Split the prompt text into letter groups consisting of a base letter and any combining marks.
@@ -146,15 +196,7 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         // be on top of each other and only just visible.
         letters.splice(maxBubbles);
         const newBubbles: HTMLElement[] = [];
-        if (draggables.length > letters.length) {
-            // We have more draggables than letters. We'll remove the extra ones.
-            draggables
-                .splice(Math.max(letters.length, 1)) // nb removes and returns them. Keep at least one as prototype.
-                .forEach((elt: HTMLElement) => {
-                    getTarget(elt)?.remove();
-                    elt.remove();
-                });
-        } else if (draggables.length < letters.length) {
+        if (draggables.length < letters.length) {
             // We have more letters than draggables. We'll add more draggables.
             const lastDraggable = draggables[draggables.length - 1];
             for (let i = draggables.length; i < letters.length; i++) {
@@ -168,22 +210,41 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 draggables.push(newDraggable);
                 // It needs refreshBubbleEditing to be called on it later.
                 newBubbles.push(newDraggable);
+                // It should be removed if we Cancel. This list has a longer lifetime.
+                createdBubbles.push(newDraggable);
             }
         }
-        for (let i = 0; i < letters.length; i++) {
+        // We deliberately don't remove draggables we don't need for this word. They might be in use
+        // in some other language. This loop, as well as making the ones we want have the right content,
+        // makes the ones we don't want invisible and empty.
+        for (let i = 0; i < draggables.length; i++) {
             const ed = draggables[i].getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
             const p = ed.getElementsByTagName("p")[0];
-            p.textContent = letters[i];
+            // Ones after the number of letters we have should be empty. This helps with
+            // automatically deciding which ones should be visible based on language.
+            p.textContent = letters[i] ?? "";
+            // up to the number of letters we have, they should be visible; others, not.
+            draggables[i].classList.toggle(
+                "bloom-unused-in-lang",
+                i >= letters.length
+            );
+            getTarget(draggables[i])?.classList.toggle(
+                "bloom-unused-in-lang",
+                i >= letters.length
+            );
             copyContentToTarget(draggables[i]);
         }
         const shuffledDraggables = draggables.slice();
+        shuffledDraggables.splice(letters.length); // don't want any invisible ones taking up space
         shuffle(shuffledDraggables);
-        for (let i = 0; i < draggables.length; i++) {
+        for (let i = 0; i < shuffledDraggables.length; i++) {
             shuffledDraggables[i].style.left = `${draggableX +
                 i * separation}px`;
             shuffledDraggables[i].style.top = `${draggableY}px`;
+            // Note that we use draggables, not shuffledDraggables, here. We want the targets
+            // in the correct order, not the random order.
             const t = getTarget(draggables[i]);
             if (t) {
                 t.style.left = `${targetX + i * separation}px`;
@@ -211,6 +272,28 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         characterData: true
     });
 };
+
+function cancel() {
+    promptEditable!.innerHTML = originalPromptHtml;
+    for (let i = 0; i < originalDraggables.length; i++) {
+        originalDraggables[i].setAttribute("class", originalClassLists[i]);
+        originalDraggables[i].setAttribute("style", originalStyles[i]);
+        originalDraggables[i].innerHTML = originalContents[i];
+        const target = getTarget(originalDraggables[i]);
+        if (target) {
+            target.setAttribute("style", originalTargetStyles[i]);
+            target.classList.toggle(
+                "bloom-unused-in-lang",
+                originalDraggables[i].classList.contains("bloom-unused-in-lang")
+            );
+            target.innerHTML = originalTargetContents[i];
+        }
+    }
+    createdBubbles.forEach(b => {
+        getTarget(b)?.remove();
+        b.remove();
+    });
+}
 
 export function renderGamePromptDialog(
     root: HTMLElement,

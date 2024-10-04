@@ -423,6 +423,9 @@
 .bloom-textOverPicture.draggable-text {
     background-color: var(--draggable-background-color);
     color: var(--draggable-color);
+    &.bloom-unused-in-lang {
+        display: none;
+    }
 }
 .drag-item-correct,
 .drag-item-wrong {
@@ -448,6 +451,9 @@
     &:focus {
         box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
             0 0 8px var(--draggable-background-color);
+    }
+    &.bloom-unused-in-lang {
+        display: none;
     }
 }
 

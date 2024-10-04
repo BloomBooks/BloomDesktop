@@ -24,6 +24,7 @@ import {
 } from "../overlay/overlayItem";
 import { ToolBox } from "../toolbox";
 import {
+    adjustDraggablesForLanguage,
     classSetter,
     copyContentToTarget,
     doShowAnswersInTargets,
@@ -1783,6 +1784,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
             window.setTimeout(() => this.newPageReady(), 100);
             return;
         }
+        adjustDraggablesForLanguage(page);
 
         setPlayerUrlPrefixFromWindowLocationHref(
             page.ownerDocument.defaultView!.location.href
