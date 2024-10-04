@@ -1,3 +1,7 @@
+import {
+    hideImageDescriptions,
+    showImageDescriptions
+} from "../imageDescription/imageDescriptionUtils";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
 import { getTheOneToolbox, ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
@@ -141,7 +145,7 @@ export default class TalkingBookTool implements ITool {
         }
         const page = ToolBox.getPage();
         if (page) {
-            page.classList.remove("bloom-showImageDescriptions");
+            hideImageDescriptions(page);
             TalkingBookTool.enshroudPhraseDelimiters(page);
         }
     }
@@ -185,7 +189,7 @@ export default class TalkingBookTool implements ITool {
             for (let j = 0; j < imageDescriptions.length; j++) {
                 const text = imageDescriptions[j].textContent;
                 if (text && text.trim().length > 0) {
-                    page.classList.add("bloom-showImageDescriptions");
+                    showImageDescriptions(page);
                     return;
                 }
             }
