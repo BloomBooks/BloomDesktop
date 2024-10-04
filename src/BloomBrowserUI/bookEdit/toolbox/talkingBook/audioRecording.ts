@@ -52,6 +52,10 @@ import { getMd5 } from "./md5Util";
 import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { TalkingBookAdvancedSection } from "./talkingBookAdvancedSection";
 import { EditableDivUtils } from "../../js/editableDivUtils";
+import {
+    hideImageDescriptions,
+    showImageDescriptions
+} from "../imageDescription/imageDescriptionUtils";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -1944,8 +1948,10 @@ export default class AudioRecording {
         this.showingImageDescriptions = isOn;
         const page = ToolBox.getPage();
         if (this.showingImageDescriptions) {
-            // makes them visible
-            page?.classList.add("bloom-showImageDescriptions");
+            if (page) {
+                // we should always have a page, but testing makes lint happy
+                showImageDescriptions(page);
+            }
             // If we don't already have them, set them up
             let changed = false;
             if (page) {
@@ -1966,7 +1972,7 @@ export default class AudioRecording {
         } else if (page) {
             // page should always be set, just making compiler happy
             // hides them
-            page?.classList.remove("bloom-showImageDescriptions");
+            hideImageDescriptions(page);
         }
         // If the highlight was on something not currently visible, move the selection
         const current = this.getCurrentHighlight();

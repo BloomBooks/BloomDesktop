@@ -4648,6 +4648,12 @@ namespace Bloom.Book
                     img.ParentNode
                         .GetOptionalStringAttribute("class", "")
                         .Contains("bloom-scale-with-code")
+                    // Compare JS function SetupImage in bloomImages.ts. We stopped using explicit image
+                    // sizes in 2018 and added image overlays in 2022, so it should be very safe to
+                    // NOT remove explicit sizes from images in overlays. And in 6.1 (late 2024)
+                    // we started using explicit sizes in overlays for cropping, so removing them
+                    // is harmful.
+                    || img.ParentWithClass("bloom-textOverPicture") != null
                 )
                     continue;
                 var style = img.GetOptionalStringAttribute("style", "");
@@ -4663,12 +4669,12 @@ namespace Bloom.Book
 
         private string RemoveSizeStyling(string style)
         {
-            // For example, style="width: 404px; height: 334px; margin-left: 1px; margin-top: 0px;"
+            // For example, style="width: 404.334px; height: 334px; margin-left: 1px; margin-top: 0px;"
             // should reduce to "".
-            var style1 = Regex.Replace(style, "width: *[0-9a-z]+;", "");
-            var style2 = Regex.Replace(style1, "height: *[0-9a-z]+;", "");
-            var style3 = Regex.Replace(style2, "margin-left: *[0-9a-z]+;", "");
-            var style4 = Regex.Replace(style3, "margin-top: *[0-9a-z]+;", "");
+            var style1 = Regex.Replace(style, "width: *[0-9a-z.]+;", "");
+            var style2 = Regex.Replace(style1, "height: *[0-9a-z.]+;", "");
+            var style3 = Regex.Replace(style2, "margin-left: *[0-9a-z.]+;", "");
+            var style4 = Regex.Replace(style3, "margin-top: *[0-9a-z.]+;", "");
             return style4.Trim();
         }
 
