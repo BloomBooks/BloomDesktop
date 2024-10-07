@@ -78,16 +78,15 @@ export const BooksOfCollection: React.FunctionComponent<{
     );
 
     useEffect(() => {
-        if (unfilteredBooks.length > 0) {
-            if (props.filter) {
-                setBooks(unfilteredBooks.filter(props.filter));
-            } else setBooks(unfilteredBooks);
-
-            // once the books variable has been updated with the book-on-blorg statuses,
-            // unset the reloadParameter so we don't keep reloading the book-on-blorg statuses
-            setReloadParameter("");
+        if (unfilteredBooks.length > 0 && props.filter) {
+            setBooks(unfilteredBooks.filter(props.filter));
+        } else {
+            setBooks(unfilteredBooks);
         }
-    }, [unfilteredBooks]);
+        // once the books variable has been updated with the book-on-blorg statuses,
+        // unset the reloadParameter so we don't keep reloading the book-on-blorg statuses
+        setReloadParameter("");
+    }, [unfilteredBooks, props.filter]);
 
     //const selectedBookInfo = useMonitorBookSelection();
     const collection: ICollection = useApiData(
