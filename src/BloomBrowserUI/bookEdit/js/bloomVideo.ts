@@ -222,7 +222,7 @@ export function showSignLanguageTool() {
 
 export function doVideoCommand(
     videoContainer: Element,
-    command: "choose" | "record"
+    command: "choose" | "record" | "playEarlier" | "playLater"
 ) {
     if (command === "choose" && videoContainer) {
         post("signLanguage/importVideo", result => {
@@ -239,7 +239,64 @@ export function doVideoCommand(
         // one we want to record into is selected.  See comments in BL-13930.
         videoContainer.classList.add("bloom-selected");
         showSignLanguageTool();
+    } else if (command === "playEarlier") {
+        // Find the preceding video container element, if any, and play it
+        const previousVideoContainer = findPreviousVideoContainer(
+            videoContainer
+        );
+        if (previousVideoContainer) {
+            videoContainer.getElementsByTagName("video")[0].pause(); // should we try harder to find a currently playing video?
+            previousVideoContainer.getElementsByTagName("video")[0].play();
+            // REVIEW/UX: is there anything else to do here?
+        }
+    } else if (command === "playLater") {
+        // Find the next video container element, if any, and play it
+        const nextVideoContainer = findNextVideoContainer(videoContainer);
+        if (nextVideoContainer) {
+            videoContainer.getElementsByTagName("video")[0].pause(); // should we try harder to find a currently playing video?
+            nextVideoContainer.getElementsByTagName("video")[0].play();
+            // REVIEW/UX: is there anything else to do here?
+        }
     }
+}
+
+export function findNextVideoContainer(
+    videoContainer: Element
+): Element | undefined {
+    const overlay = videoContainer.closest(".bloom-textOverPicture"); // unfortunate name for picture and video overlay containers
+    if (overlay) {
+        let next = overlay.nextElementSibling;
+        while (next) {
+            if (
+                next.firstElementChild?.classList.contains(
+                    "bloom-videoContainer"
+                )
+            ) {
+                return next.firstElementChild;
+            }
+            next = next.nextElementSibling;
+        }
+    }
+    return undefined;
+}
+export function findPreviousVideoContainer(
+    videoContainer: Element
+): Element | undefined {
+    const overlay = videoContainer.closest(".bloom-textOverPicture"); // unfortunate classname for picture and video overlay containers
+    if (overlay) {
+        let previous = overlay.previousElementSibling;
+        while (previous) {
+            if (
+                previous.firstElementChild?.classList.contains(
+                    "bloom-videoContainer"
+                )
+            ) {
+                return previous.firstElementChild;
+            }
+            previous = previous.previousElementSibling;
+        }
+    }
+    return undefined;
 }
 
 export function updateVideoInContainer(container: Element, url: string): void {
