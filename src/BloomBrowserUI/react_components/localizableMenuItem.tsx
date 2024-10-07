@@ -59,6 +59,13 @@ interface ILocalizableCheckboxMenuItemProps
     apiEndpoint: string;
 }
 
+export const divider: ILocalizableMenuItemProps = {
+    l10nId: "-",
+    english: "",
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    onClick: () => {}
+};
+
 const kIconCheckboxAffordance = 28;
 const kEnterpriseStickerAffordance = 28;
 const menuItemColor = "black";
