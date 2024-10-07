@@ -86,8 +86,12 @@ export const BooksOfCollection: React.FunctionComponent<{
             // once the books variable has been updated with the book-on-blorg statuses,
             // unset the reloadParameter so we don't keep reloading the book-on-blorg statuses
             setReloadParameter("");
+        } else {
+            // We need to reset for an empty list, or we'll keep showing the last
+            // remaining book that was just deleted.  See BL-13970.
+            setBooks(unfilteredBooks);
         }
-    }, [unfilteredBooks]);
+    }, [unfilteredBooks, props.filter]);
 
     //const selectedBookInfo = useMonitorBookSelection();
     const collection: ICollection = useApiData(
