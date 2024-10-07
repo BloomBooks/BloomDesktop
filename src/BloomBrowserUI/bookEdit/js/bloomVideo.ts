@@ -235,6 +235,9 @@ export function doVideoCommand(
             }
         });
     } else if (command === "record") {
+        // There may be more than one video container on the page.  Make sure the
+        // one we want to record into is selected.  See comments in BL-13930.
+        videoContainer.classList.add("bloom-selected");
         showSignLanguageTool();
     }
 }
