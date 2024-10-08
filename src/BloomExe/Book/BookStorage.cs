@@ -1668,10 +1668,10 @@ namespace Bloom.Book
             return relocatableDom;
         }
 
-        private static bool ShouldWeChangeFolderName(
-            string sanitizedFilename,
+        private static string GetActualPathToSave(
+            string idealFolderName,
             string currentFolderName,
-            string idealFolderName
+            string idealFolderPath
         )
         {
             // As of 16 Dec 2019 we changed our definition of "sanitized" to include some more characters that can
@@ -1680,21 +1680,17 @@ namespace Bloom.Book
             // we go ahead and do the rename.
             // The various cases of sanitized names and folders and existing book names (e.g. Foo1) are tricky
             // to tease apart. We can't just let it go, though, since the new higher level of sanitization is
-            // necessary to keep bloom-player from throwing an error.
+            // necessary to keep bloom-player from throwing an error. However, idealFolderName is
+            // sanitized by the new system, so it can't be equal to currentFolderName if the latter has a problem.
 
-            // 1. If the current folder name needs sanitizing, we definitely can't use it; keep going.
-            if (currentFolderName != SanitizeNameForFileSystem(currentFolderName))
-                return true;
-            // 2. If the name we are already using is the name we want, keep using it (don't change anything)
-            if (currentFolderName == sanitizedFilename)
-                return false;
-            // 3. If our most prefered sanitized filename works (doesn't exist), go ahead and change to it; keep going.
-            if (!Directory.Exists(idealFolderName))
-                return true;
-            // 4. If our current folder name is one of the possible work-arounds (because preferred name is in use),
-            //    then return early and don't change. (We don't need to generate another alternative.)
-            // 5. Otherwise change to some other (sanitized) name, ensuring availability.
-            return !currentFolderName.StartsWith(sanitizedFilename);
+            // 1. If the name we are already using is the name we want, keep using it
+            if (currentFolderName.ToLowerInvariant() == idealFolderName.ToLowerInvariant())
+                return idealFolderPath; // might be a change of case, we will just change it.
+            // 2. If our most preferred sanitized filename works (doesn't exist), go ahead and change to it.
+            if (!Directory.Exists(idealFolderPath))
+                return idealFolderPath;
+            // 3. ideal name is in use, so find a variant that isn't.
+            return GetUniqueFolderPath(idealFolderPath);
         }
 
         public void SetBookName(string name)
@@ -1720,12 +1716,10 @@ namespace Bloom.Book
 
             var currentFilePath = PathToExistingHtml;
             var currentFolderName = Path.GetFileNameWithoutExtension(currentFilePath);
-            var idealFolderName = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
-            if (!ShouldWeChangeFolderName(name, currentFolderName, idealFolderName))
-                return;
-
-            // Figure out what name we're really going to use (might need to add a number suffix).
-            idealFolderName = GetUniqueFolderPath(idealFolderName);
+            var idealFolderPath = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
+            var actualSavePath = GetActualPathToSave(name, currentFolderName, idealFolderPath);
+            if (actualSavePath == Path.GetDirectoryName(currentFilePath))
+                return; // for this path they must be exactly the same, even by case.
 
             // Next, rename the file
             Guard.Against(
@@ -1735,42 +1729,27 @@ namespace Bloom.Book
                 ),
                 "Cannot rename template books!"
             );
-            Logger.WriteEvent(
-                "Renaming html from '{0}' to '{1}.htm'",
-                currentFilePath,
-                idealFolderName
-            );
-            var newFilePath = Path.Combine(FolderPath, Path.GetFileName(idealFolderName) + ".htm");
-            if (RobustFile.Exists(newFilePath))
-            {
-                // The folder already contains two HTML files, one with the name we were going to change to.
-                // Just get rid of it.
-                // (This is a weird state of affairs that should never occur but did once (BL-10200).
-                // Extra HTML files in the book folder are an anomaly. We could recycle it, report it,
-                // etc...but this has only happened once. I don't think it's worth it. Just clean up
-                // and so prevent a crash.)
-                RobustFile.Delete(newFilePath);
-            }
 
-            RobustFile.Move(currentFilePath, newFilePath);
+            var newFilePath = Path.Combine(FolderPath, Path.GetFileName(actualSavePath) + ".htm");
+            Logger.WriteEvent("Renaming html from '{0}' to '{1}'", currentFilePath, newFilePath);
 
-            var fromToPair = new KeyValuePair<string, string>(FolderPath, idealFolderName);
+            MoveFilePossiblyOnlyChangingCaseAllowReplace(currentFilePath, newFilePath);
+
+            var fromToPair = new KeyValuePair<string, string>(FolderPath, actualSavePath);
             try
             {
                 Logger.WriteEvent(
                     "Renaming folder from '{0}' to '{1}'",
                     FolderPath,
-                    idealFolderName
+                    actualSavePath
                 );
 
-                //This one can't handle network paths and isn't necessary, since we know these are on the same volume:
-                //SIL.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
-                SIL.IO.RobustIO.MoveDirectory(FolderPath, idealFolderName);
+                MoveDirectoryPossiblyOnlyChangingCase(FolderPath, actualSavePath);
 
                 _fileLocator.RemovePath(FolderPath);
-                _fileLocator.AddPath(idealFolderName);
+                _fileLocator.AddPath(actualSavePath);
 
-                FolderPath = idealFolderName;
+                FolderPath = actualSavePath;
             }
             catch (Exception e)
             {
@@ -1781,6 +1760,59 @@ namespace Bloom.Book
             RaiseBookRenamedEvent(fromToPair);
 
             OnFolderPathChanged();
+        }
+
+        // Move a file, possibly only changing the case of the name.
+        // Only handles case changes in the actual file name; changes elsewhere
+        // in the path are ignored. May not handle changing volume.
+        public static void MoveFilePossiblyOnlyChangingCaseAllowReplace(
+            string oldPath,
+            string newPath
+        )
+        {
+            if (oldPath == newPath)
+                return;
+            if (oldPath.ToLowerInvariant() == newPath.ToLowerInvariant())
+            {
+                var tempName = new Guid().ToString();
+                var tempPath = Path.Combine(Path.GetDirectoryName(oldPath), tempName);
+                // This is a case-only change. We can't just rename the file, because that throws.
+                // So we move the file to a temporary name, and then rename again to what we want.
+                RobustFile.Move(oldPath, tempPath);
+                RobustFile.Move(tempPath, newPath);
+            }
+            else
+            {
+                // Allow overwrite in case the folder already contains two HTML files,
+                // one with the name we were going to change to.
+                // Just allow the extra to get overwritten.
+                // (This is a weird state of affairs that should never occur but did once (BL-10200).
+                // Extra HTML files in the book folder are an anomaly. We could recycle it, report it,
+                // etc...but this has only happened once. I don't think it's worth it. Just prevent a crash.)
+                RobustFile.Move(oldPath, newPath, true);
+            }
+        }
+
+        // Move a directory, which may involve only changing the case of the name.
+        // Case differences other than the leaf directory are ignored.
+        // Won't handle moving between volumes.
+        public static void MoveDirectoryPossiblyOnlyChangingCase(string oldPath, string newPath)
+        {
+            if (oldPath == newPath)
+                return;
+            if (oldPath.ToLowerInvariant() == newPath.ToLowerInvariant())
+            {
+                var tempName = new Guid().ToString();
+                var tempPath = Path.Combine(Path.GetDirectoryName(oldPath), tempName);
+                // This is a case-only change. We can't just rename the directory, because that throws.
+                // So we move the directory to the new name, and then move again to the one we want.
+                RobustIO.MoveDirectory(oldPath, tempPath);
+                RobustIO.MoveDirectory(tempPath, newPath);
+            }
+            else
+            {
+                RobustIO.MoveDirectory(oldPath, newPath);
+            }
         }
 
         /// <summary>

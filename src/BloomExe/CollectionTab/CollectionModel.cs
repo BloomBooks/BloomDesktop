@@ -1010,7 +1010,9 @@ namespace Bloom.CollectionTab
         {
             var collectionPath = Path.GetDirectoryName(path);
             var collection = GetBookCollections()
-                .FirstOrDefault(c => c.PathToDirectory == collectionPath);
+                .FirstOrDefault(
+                    c => c.PathToDirectory.ToLowerInvariant() == collectionPath.ToLowerInvariant()
+                );
             if (collection == null)
                 return null;
             return collection.GetBookInfoByFolderPath(path);
