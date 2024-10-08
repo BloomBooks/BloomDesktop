@@ -818,6 +818,7 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane-component-inner
         > .bloom-translationGroup,
     //      Matches include: Start with image on bottom, split the image to have a text below it. (e.g. Angola project's bilingual template)
+    //       (note, this varies just slightly from the built-in "picture-in-middle" page above by having one fewer split-pane-component-inner layer)
     &
         > .split-pane.horizontal-percent
         > .split-pane-component.position-bottom
@@ -832,6 +833,21 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         .mixinRightTgPadding;
         .mixinBottomTgPadding;
     }
+
+    // Start with image on top, split the image to have text above it. (visually the same as picture-in-middle)
+    &
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-top
+        > .split-pane.horizontal-percent
+        > .split-pane-component.position-top
+        > .split-pane-component-inner
+        > .bloom-translationGroup {
+        .mixinTopTgPadding;
+        .mixinLeftTgPadding;
+        .mixinRightTgPadding;
+        padding-bottom: var(--topLevel-text-padding-bottom);
+    }
+
     // This one handles the text box at the bottom left of a Big Video Diglot.
     // Review: it's not obvious what to do about the outer edges here. In the simpler cases,
     // we DO have outer-edge padding when there is no other margin and the top-level split is vertical.
