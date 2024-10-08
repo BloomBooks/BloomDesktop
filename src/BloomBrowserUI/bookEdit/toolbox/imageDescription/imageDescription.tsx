@@ -231,7 +231,19 @@ export function setupImageDescriptions(
     // This function is called for each image container that gets modified by adding an image description
     doIfContentAdded: () => void
 ) {
-    const imageContainers = page.getElementsByClassName("bloom-imageContainer");
+    const bubbleManager = OverlayTool.bubbleManager();
+    if (!bubbleManager) {
+        // try again later...maybe we're still bootstrapping? Haven't finished loading that iframe?
+        setTimeout(() => {
+            setupImageDescriptions(
+                page,
+                doToImageDescriptions,
+                doIfContentAdded
+            );
+        }, 100);
+        return;
+    }
+    const imageContainers = bubbleManager.getAllPrimaryImageContainersOnPage(); // don't add to overlay images!
 
     for (let i = 0; i < imageContainers.length; i++) {
         const container = imageContainers[i];
@@ -253,7 +265,7 @@ export function setupImageDescriptions(
                 imageDescriptions = container.getElementsByClassName(
                     "bloom-imageDescription"
                 );
-                if (result && imageDescriptions.length == 0) {
+                if (result && imageDescriptions.length === 0) {
                     appendTranslationGroup(result.data, container);
                     doIfContentAdded();
                     imageDescriptions = container.getElementsByClassName(
