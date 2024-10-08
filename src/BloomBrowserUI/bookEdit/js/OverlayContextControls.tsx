@@ -11,10 +11,16 @@ import { default as CopyIcon } from "@mui/icons-material/ContentCopy";
 import { default as CheckIcon } from "@mui/icons-material/Check";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
 import { default as PasteIcon } from "@mui/icons-material/ContentPaste";
-import { default as Circle } from "@mui/icons-material/Circle";
+import { default as CircleIcon } from "@mui/icons-material/Circle";
+import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
+import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import { doImageCommand, getImageUrlFromImageContainer } from "./bloomImages";
-import { doVideoCommand } from "./bloomVideo";
+import {
+    doVideoCommand,
+    findNextVideoContainer,
+    findPreviousVideoContainer
+} from "./bloomVideo";
 import {
     copyAndPlaySoundAsync,
     makeDuplicateOfDragBubble,
@@ -65,6 +71,9 @@ const OverlayContextControls: React.FunctionComponent<{
     const hasImage = !!imgContainer;
     const img = imgContainer?.getElementsByTagName("img")[0];
     //const hasLicenseProblem = hasImage && !img.getAttribute("data-copyright");
+    const videoContainers = props.overlay.parentElement?.getElementsByClassName(
+        "bloom-videoContainer"
+    );
     const videoContainer = props.overlay.getElementsByClassName(
         "bloom-videoContainer"
     )[0];
@@ -363,7 +372,32 @@ const OverlayContextControls: React.FunctionComponent<{
                 l10nId: "EditTab.Toolbox.ComicTool.Options.RecordYourself",
                 english: "Record yourself...",
                 onClick: () => doVideoCommand(videoContainer, "record"),
-                icon: <Circle css={muiMenIconCss} viewBox="0 0 28 28" />
+                icon: <CircleIcon css={muiMenIconCss} viewBox="0 0 28 28" />
+            },
+            {
+                l10nId: "-",
+                english: "",
+                onClick: () => {
+                    /*do nothing*/
+                }
+            },
+            {
+                l10nId: "EditTab.Toolbox.ComicTool.Options.PlayEarlier",
+                english: "Play Earlier",
+                onClick: () => {
+                    doVideoCommand(videoContainer, "playEarlier");
+                },
+                icon: <ArrowUpwardIcon css={muiMenIconCss} />,
+                disabled: !videoContainers || videoContainers.length <= 1
+            },
+            {
+                l10nId: "EditTab.Toolbox.ComicTool.Options.PlayLater",
+                english: "Play Later",
+                onClick: () => {
+                    doVideoCommand(videoContainer, "playLater");
+                },
+                icon: <ArrowDownwardIcon css={muiMenIconCss} />,
+                disabled: !videoContainers || videoContainers.length <= 1
             },
             {
                 l10nId: "-",
@@ -374,6 +408,20 @@ const OverlayContextControls: React.FunctionComponent<{
             }
         );
     }
+    const setMenuItemDisabled = (option: IMenuItemWithSubmenu): boolean => {
+        if (option.disabled) return option.disabled;
+
+        if (option.l10nId === "EditTab.Toolbox.ComicTool.Options.PlayEarlier") {
+            // check if the current video is the first one
+            return !findPreviousVideoContainer(videoContainer);
+        } else if (
+            option.l10nId === "EditTab.Toolbox.ComicTool.Options.PlayLater"
+        ) {
+            // check if the current video is the last one
+            return !findNextVideoContainer(videoContainer);
+        }
+        return false;
+    };
     const autoHeight = !props.overlay.classList.contains("bloom-noAutoHeight");
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
@@ -675,7 +723,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                     doVideoCommand(videoContainer, "record")
                                 }
                             >
-                                <Circle
+                                <CircleIcon
                                     color="primary"
                                     viewBox="0 0 29 29" // somewhat smaller
                                     css={css`
@@ -765,6 +813,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                     icon={option.icon}
                                     truncateMainLabel={true}
                                     subLabelL10nId={option.subLabelL10nId}
+                                    disabled={option.disabled}
                                 >
                                     {option.subMenu.map(
                                         (subOption, subIndex) => (
@@ -774,6 +823,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                                 english={subOption.english}
                                                 onClick={subOption.onClick}
                                                 icon={subOption.icon}
+                                                disabled={subOption.disabled}
                                             />
                                         )
                                     )}
@@ -789,6 +839,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                     setMenuOpen(false);
                                     option.onClick(e);
                                 }}
+                                disabled={setMenuItemDisabled(option)}
                                 icon={option.icon}
                                 variant="body1"
                                 subLabelL10nId={option.subLabelL10nId}
