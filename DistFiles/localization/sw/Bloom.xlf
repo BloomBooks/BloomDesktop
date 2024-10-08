@@ -2085,7 +2085,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Badilisha Picha</target>
         <note>ID: EditTab.Image.ChangeImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.ChooseImage" translate="yes">
+      <trans-unit id="EditTab.Image.ChooseImage">
         <source xml:lang="en">Choose image from your computer...</source>
         <target xml:lang="sw" state="needs-translation">Choose image from your computer...</target>
         <note>ID: EditTab.Image.ChooseImage</note>
@@ -2125,12 +2125,12 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Hariri Sifa za Picha, Haki ya kunakili, na Leseni</target>
         <note>ID: EditTab.Image.EditMetadata</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true" translate="yes">
+      <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true">
         <source xml:lang="en">Set Image Information...</source>
         <target xml:lang="sw" state="needs-translation">Set Image Information...</target>
         <note>ID: EditTab.Image.EditMetadataOverlay</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true" translate="yes">
+      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true">
         <source xml:lang="en">Image Credits, Copyright, &amp; License</source>
         <target xml:lang="sw" state="needs-translation">Image Credits, Copyright, &amp; License</target>
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
@@ -2450,12 +2450,12 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Rangi ya manjano-machungwa</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true" translate="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true">
         <source xml:lang="en">Choose Video from your Computer...</source>
         <target xml:lang="sw" state="needs-translation">Choose Video from your Computer...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ChooseVideo</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" translate="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true">
         <source xml:lang="en">Copy Text</source>
         <target xml:lang="sw" state="needs-translation">Copy Text</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
@@ -2465,7 +2465,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Nakili</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true" translate="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
         <source xml:lang="en">Format Text...</source>
         <target xml:lang="sw" state="needs-translation">Format Text...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
@@ -2485,12 +2485,22 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Hamna</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true" translate="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true">
         <source xml:lang="en">Paste Text</source>
         <target xml:lang="sw" state="needs-translation">Paste Text</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.RecordYourself" sil:dynamic="true" translate="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayEarlier" sil:dynamic="true">
+        <source xml:lang="en">Play Earlier</source>
+        <target xml:lang="sw" state="needs-translation">Play Earlier</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PlayEarlier</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayLater" sil:dynamic="true">
+        <source xml:lang="en">Play Later</source>
+        <target xml:lang="sw" state="needs-translation">Play Later</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PlayLater</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.RecordYourself" sil:dynamic="true">
         <source xml:lang="en">Record yourself...</source>
         <target xml:lang="sw" state="needs-translation">Record yourself...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.RecordYourself</note>
@@ -3630,7 +3640,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Kifaa 16X9 Kurasa wima</target>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
-      <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true" translate="yes">
+      <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true">
         <source xml:lang="en">Half Folio Portrait</source>
         <target xml:lang="sw" state="needs-translation">Half Folio Portrait</target>
         <note>ID: LayoutChoices.HalfFolioPortrait</note>
@@ -5160,7 +5170,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="needs-translation">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web.</target>
         <note>ID: PublishTab.FontProblem.License</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.Microsoft" translate="yes">
+      <trans-unit id="PublishTab.FontProblem.Microsoft">
         <source xml:lang="en">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</source>
         <target xml:lang="sw" state="needs-translation">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</target>
         <note>ID: PublishTab.FontProblem.Microsoft</note>
@@ -5170,7 +5180,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="needs-translation">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</target>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog" translate="yes">
+      <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog">
         <source xml:lang="en">Check the Fonts section of the Book Settings dialog to locate this font.</source>
         <target xml:lang="sw" state="needs-translation">Check the Fonts section of the Book Settings dialog to locate this font.</target>
         <note>ID: PublishTab.FontProblem.CheckInBookSettingsDialog</note>
@@ -6909,7 +6919,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Weka swali la ufahamu hapa</target>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
       </trans-unit>
-      <trans-unit id="Topic" sil:dynamic="true" translate="yes">
+      <trans-unit id="Topic" sil:dynamic="true">
         <source xml:lang="en">Topic</source>
         <target xml:lang="sw" state="needs-translation">Topic</target>
         <note>ID: Topic</note>
