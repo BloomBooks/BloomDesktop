@@ -558,7 +558,8 @@ namespace Bloom.Collection
 
         public BookInfo GetBookInfoByFolderPath(string path)
         {
-            return GetBookInfos().FirstOrDefault(b => b.FolderPath == path);
+            return GetBookInfos()
+                .FirstOrDefault(b => b.FolderPath.ToLowerInvariant() == path.ToLowerInvariant());
         }
 
         public BookInfo GetBookInfoById(string id)
