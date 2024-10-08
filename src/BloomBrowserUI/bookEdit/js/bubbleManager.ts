@@ -4486,6 +4486,19 @@ export class BubbleManager {
     };
 
     public initializeOverPictureEditing(): void {
+        // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
+        // load, so that bubble editing works even when the Overlay tool is not active. So it definitely
+        // needs to be called there when we're calling SetupElements during page load. It's possible
+        // that's the only time it needs to be called from there, but I'm not sure so I'm leaving it
+        // called always. However, there's at least one situation where we call SetupElements but do
+        // NOT want comic editing turned on: when we're createing an image description translation group
+        // in the process of switching to the image description tool. Comic editing is deliberately
+        // suspended while that tool is active. For now I'm going with a more-or-less minimal change:
+        // if comcic edting is not only already initialized, but suspended, we won't turn it on again
+        // here.
+        if (this.comicEditingSuspendedState !== "none") {
+            return;
+        }
         // Cleanup old .bloom-ui elements and old drag handles etc.
         // We want to clean these up sooner rather than later so that there's less chance of accidentally blowing away
         // a UI element that we'll actually need now
