@@ -1,5 +1,5 @@
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { get } from "../../utils/bloomApi";
+import { get, post, postThatMightNavigate } from "../../utils/bloomApi";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
 // It sets things up for the button (plural eventually) to appear when hovering over the video.
@@ -218,4 +218,121 @@ export function showSignLanguageTool() {
     getToolboxBundleExports()
         ?.getTheOneToolbox()
         .activateToolFromId(SignLanguageToolControls.kToolID);
+}
+
+export function doVideoCommand(
+    videoContainer: Element,
+    command: "choose" | "record" | "playEarlier" | "playLater"
+) {
+    if (command === "choose" && videoContainer) {
+        post("signLanguage/importVideo", result => {
+            if (result.data) {
+                updateVideoInContainer(videoContainer, result.data);
+                // Makes sure the page gets saved with a reference to the new video,
+                // and incidentally that everything gets updated to be consistent with the
+                // new state of things.
+                postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+            }
+        });
+    } else if (command === "record") {
+        // There may be more than one video container on the page.  Make sure the
+        // one we want to record into is selected.  See comments in BL-13930.
+        videoContainer.classList.add("bloom-selected");
+        showSignLanguageTool();
+    } else if (command === "playEarlier") {
+        // Find the preceding video container element, if any, and move it after the current one
+        const previousVideoContainer = findPreviousVideoContainer(
+            videoContainer
+        );
+        if (previousVideoContainer) {
+            SwapVideoPositionsInDom(previousVideoContainer, videoContainer);
+        }
+    } else if (command === "playLater") {
+        // Find the next video container element, if any, and move it before the current one
+        const nextVideoContainer = findNextVideoContainer(videoContainer);
+        if (nextVideoContainer) {
+            SwapVideoPositionsInDom(videoContainer, nextVideoContainer);
+        }
+    }
+}
+
+export function findNextVideoContainer(
+    videoContainer: Element
+): Element | undefined {
+    const overlay = videoContainer.closest(".bloom-textOverPicture"); // unfortunate name for picture and video overlay containers
+    if (overlay) {
+        let next = overlay.nextElementSibling;
+        while (next) {
+            if (
+                next.firstElementChild?.classList.contains(
+                    "bloom-videoContainer"
+                )
+            ) {
+                return next.firstElementChild;
+            }
+            next = next.nextElementSibling;
+        }
+    }
+    return undefined;
+}
+export function findPreviousVideoContainer(
+    videoContainer: Element
+): Element | undefined {
+    const overlay = videoContainer.closest(".bloom-textOverPicture"); // unfortunate classname for picture and video overlay containers
+    if (overlay) {
+        let previous = overlay.previousElementSibling;
+        while (previous) {
+            if (
+                previous.firstElementChild?.classList.contains(
+                    "bloom-videoContainer"
+                )
+            ) {
+                return previous.firstElementChild;
+            }
+            previous = previous.previousElementSibling;
+        }
+    }
+    return undefined;
+}
+// Swap the positions of two video containers (actually their parent overlays) in the DOM.
+function SwapVideoPositionsInDom(
+    firstVideoContainer: Element,
+    secondVideoContainer: Element
+) {
+    const firstOverlay = firstVideoContainer.closest(".bloom-textOverPicture");
+    const secondOverlay = secondVideoContainer.closest(
+        ".bloom-textOverPicture"
+    );
+    if (!firstOverlay || !secondOverlay) {
+        return;
+    }
+    const overlayContainer = firstOverlay.parentElement;
+    if (!overlayContainer || overlayContainer !== secondOverlay.parentElement) {
+        return;
+    }
+    const thirdOverlay = secondOverlay.nextElementSibling; // may be null, but that's okay
+    overlayContainer.insertBefore(secondOverlay, firstOverlay);
+    if (firstOverlay.nextElementSibling !== thirdOverlay) {
+        overlayContainer.insertBefore(firstOverlay, thirdOverlay);
+    }
+}
+
+export function updateVideoInContainer(container: Element, url: string): void {
+    let video = container.getElementsByTagName("video")[0];
+    if (!video && container.ownerDocument) {
+        video = container.ownerDocument.createElement("video");
+        container.appendChild(video);
+    }
+    if (video) {
+        let source = video.getElementsByTagName("source")[0];
+        if (!source && container.ownerDocument) {
+            source = container.ownerDocument.createElement("source");
+            video.appendChild(source);
+        }
+        if (source) {
+            source.setAttribute("src", url);
+            // Transparent background videos allow the placeholder to show.  See BL-13918.
+            container.classList.remove("bloom-noVideoSelected");
+        }
+    }
 }

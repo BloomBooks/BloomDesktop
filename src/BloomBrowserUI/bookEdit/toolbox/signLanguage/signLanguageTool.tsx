@@ -18,6 +18,7 @@ import { Expandable } from "../../../react_components/expandable";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
+import { updateVideoInContainer } from "../../js/bloomVideo";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; red record button shows; stop button and all labels hidden
@@ -511,21 +512,7 @@ export class SignLanguageToolControls extends React.Component<
         if (!url) return;
         const container = this.getSelectedVideoContainer();
         if (!container) return;
-        let video = container.getElementsByTagName("video")[0];
-        if (!video && container.ownerDocument) {
-            video = container.ownerDocument.createElement("video");
-            container.appendChild(video);
-        }
-        if (video) {
-            let source = video.getElementsByTagName("source")[0];
-            if (!source && container.ownerDocument) {
-                source = container.ownerDocument.createElement("source");
-                video.appendChild(source);
-            }
-            if (source) {
-                source.setAttribute("src", url);
-            }
-        }
+        updateVideoInContainer(container, url);
     }
 
     private importRecording() {

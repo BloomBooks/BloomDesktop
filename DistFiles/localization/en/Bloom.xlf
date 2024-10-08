@@ -2129,6 +2129,10 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
         <note>A background color that looks like old lace</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true" translate="yes">
+        <source xml:lang="en">Choose Video from your Computer...</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ChooseVideo</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Copy Text</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
@@ -2159,6 +2163,18 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true" translate="yes">
         <source xml:lang="en">Paste Text</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayEarlier" sil:dynamic="true" translate="yes">
+        <source xml:lang="en">Play Earlier</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PlayEarlier</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayLater" sil:dynamic="true" translate="yes">
+        <source xml:lang="en">Play Later</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PlayLater</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.RecordYourself" sil:dynamic="true" translate="yes">
+        <source xml:lang="en">Record yourself...</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.RecordYourself</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true">
         <source xml:lang="en">Rounded Corners</source>

@@ -251,8 +251,11 @@
     // and does NOT specify 'transparent' as the value of that background color.
     // (Of course, there could be other ways of specifying transparent. But AFIK Bloom has never used them.)
     // (Thus, if it has backgroundColors and isn't explicitly transparent the centering applies.)
-    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]),
-    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) {
+    // 3) But if the text overflows the box, we don't want to center it, because that would make the top
+    // and bottom of the text to disappear. So we exclude any box that has text overflow marked.  (Scrolling
+    // doesn't work when the contents are forcibly centered.)  See BL-13606 (and BL-12750).
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow)),
+    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow)) {
         // Center the translationGroup within the textOverPic box,
         // instead of having the 2 px difference all at the bottom.
         display: flex;

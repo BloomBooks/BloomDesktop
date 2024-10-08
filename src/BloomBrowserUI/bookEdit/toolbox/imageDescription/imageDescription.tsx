@@ -13,6 +13,11 @@ import { Checkbox } from "../../../react_components/checkbox";
 import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
+import { OverlayTool } from "../overlay/overlayTool";
+import {
+    hideImageDescriptions,
+    showImageDescriptions
+} from "./imageDescriptionUtils";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -226,7 +231,19 @@ export function setupImageDescriptions(
     // This function is called for each image container that gets modified by adding an image description
     doIfContentAdded: () => void
 ) {
-    const imageContainers = page.getElementsByClassName("bloom-imageContainer");
+    const bubbleManager = OverlayTool.bubbleManager();
+    if (!bubbleManager) {
+        // try again later...maybe we're still bootstrapping? Haven't finished loading that iframe?
+        setTimeout(() => {
+            setupImageDescriptions(
+                page,
+                doToImageDescriptions,
+                doIfContentAdded
+            );
+        }, 100);
+        return;
+    }
+    const imageContainers = bubbleManager.getAllPrimaryImageContainersOnPage(); // don't add to overlay images!
 
     for (let i = 0; i < imageContainers.length; i++) {
         const container = imageContainers[i];
@@ -248,7 +265,7 @@ export function setupImageDescriptions(
                 imageDescriptions = container.getElementsByClassName(
                     "bloom-imageDescription"
                 );
-                if (result && imageDescriptions.length == 0) {
+                if (result && imageDescriptions.length === 0) {
                     appendTranslationGroup(result.data, container);
                     doIfContentAdded();
                     imageDescriptions = container.getElementsByClassName(
@@ -323,7 +340,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     public detachFromPage() {
         const page = ToolBox.getPage();
         if (page) {
-            page.classList.remove("bloom-showImageDescriptions");
+            hideImageDescriptions(page);
         }
     }
 
@@ -364,8 +381,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
             if (!page) {
                 return;
             }
-            // turn on special layout to make image descriptions visible (might already be on)
-            page.classList.add("bloom-showImageDescriptions");
+            showImageDescriptions(page);
             // Make sure every image container has a child bloom-translationGroup to hold the image description.
             setupImageDescriptions(
                 page,

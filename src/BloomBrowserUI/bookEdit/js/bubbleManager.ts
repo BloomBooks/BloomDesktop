@@ -161,11 +161,13 @@ export class BubbleManager {
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
 
-            this.adjustBubbleHeightToContent(editable);
+            this.adjustBubbleHeightToContentOrMarkOverflow(editable);
         }
         this.alignControlFrameWithActiveElement();
     }
-    public adjustBubbleHeightToContent(editable: HTMLElement): void {
+    public adjustBubbleHeightToContentOrMarkOverflow(
+        editable: HTMLElement
+    ): void {
         if (!this.activeElement) return;
         const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
             editable
@@ -1559,6 +1561,11 @@ export class BubbleManager {
         let deltaY = event.clientY - this.startSideDragY;
         let newBubbleWidth = this.oldWidth; // default
         let newBubbleHeight = this.oldHeight; // default
+        console.assert(
+            this.currentDragSide === "e" ||
+                this.currentDragSide === "w" ||
+                this.currentDragSide === "s"
+        );
         switch (this.currentDragSide) {
             case "e":
                 newBubbleWidth = Math.max(
@@ -1567,7 +1574,6 @@ export class BubbleManager {
                 );
                 deltaX = newBubbleWidth - this.oldWidth;
                 this.activeElement.style.width = `${newBubbleWidth}px`;
-                theOneBubbleManager.adjustBubbleHeightToContent(editable);
                 break;
             case "w":
                 newBubbleWidth = Math.max(
@@ -1577,7 +1583,6 @@ export class BubbleManager {
                 deltaX = this.oldWidth - newBubbleWidth;
                 this.activeElement.style.width = `${newBubbleWidth}px`;
                 this.activeElement.style.left = `${this.oldLeft + deltaX}px`;
-                theOneBubbleManager.adjustBubbleHeightToContent(editable);
                 break;
             case "s":
                 newBubbleHeight = Math.max(
@@ -1587,6 +1592,9 @@ export class BubbleManager {
                 deltaY = newBubbleHeight - this.oldHeight;
                 this.activeElement.style.height = `${newBubbleHeight}px`;
         }
+        // This won't adjust the height of the editable, but it will mark overflow appropriately.
+        // See BL-13902.
+        theOneBubbleManager.adjustBubbleHeightToContentOrMarkOverflow(editable);
         this.alignControlFrameWithActiveElement();
     }
 
@@ -4128,6 +4136,19 @@ export class BubbleManager {
         patriarchDuplicateElement.innerHTML = this.safelyCloneHtmlStructure(
             sourceElement
         );
+        // Preserve the Auto Height setting.  See BL-13931.
+        if (sourceElement.classList.contains("bloom-noAutoHeight"))
+            patriarchDuplicateElement.classList.add("bloom-noAutoHeight");
+
+        // copy any data-sound
+        const sourceDataSound = sourceElement.getAttribute("data-sound");
+        if (sourceDataSound) {
+            patriarchDuplicateElement.setAttribute(
+                "data-sound",
+                sourceDataSound
+            );
+        }
+
         this.setActiveElement(patriarchDuplicateElement);
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
         const container = BubbleManager.getTopLevelImageContainerElement(
@@ -4265,6 +4286,10 @@ export class BubbleManager {
         newChildElement.innerHTML = this.safelyCloneHtmlStructure(
             sourceElement
         );
+        // Preserve the Auto Height setting.  See BL-13931.
+        if (sourceElement.classList.contains("bloom-noAutoHeight"))
+            newChildElement.classList.add("bloom-noAutoHeight");
+
         this.matchSizeOfSource(sourceElement, newChildElement);
         // We just replaced the bloom-editables from the 'addChildInternal' with a clone of the source
         // bubble's HTML. This will undo any event handlers that might have been attached by the
@@ -4461,6 +4486,19 @@ export class BubbleManager {
     };
 
     public initializeOverPictureEditing(): void {
+        // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
+        // load, so that bubble editing works even when the Overlay tool is not active. So it definitely
+        // needs to be called there when we're calling SetupElements during page load. It's possible
+        // that's the only time it needs to be called from there, but I'm not sure so I'm leaving it
+        // called always. However, there's at least one situation where we call SetupElements but do
+        // NOT want comic editing turned on: when we're creating an image description translation group
+        // in the process of switching to the image description tool. Comic editing is deliberately
+        // suspended while that tool is active. For now I'm going with a more-or-less minimal change:
+        // if comic editing is not only already initialized, but suspended, we won't turn it on again
+        // here.
+        if (this.comicEditingSuspendedState !== "none") {
+            return;
+        }
         // Cleanup old .bloom-ui elements and old drag handles etc.
         // We want to clean these up sooner rather than later so that there's less chance of accidentally blowing away
         // a UI element that we'll actually need now
@@ -4672,6 +4710,11 @@ export class BubbleManager {
     }
 
     public deleteBubble(): void {
+        // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
+        if (this !== theOneBubbleManager) {
+            theOneBubbleManager.deleteBubble();
+            return;
+        }
         const active = this.getActiveElement();
         if (active) {
             this.deleteTOPBox(active);
@@ -4679,6 +4722,10 @@ export class BubbleManager {
     }
 
     public duplicateBubble(): HTMLElement | undefined {
+        // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
+        if (this !== theOneBubbleManager) {
+            return theOneBubbleManager.duplicateBubble();
+        }
         const active = this.getActiveElement();
         if (active) {
             return this.duplicateTOPBox(active);
@@ -4687,6 +4734,11 @@ export class BubbleManager {
     }
 
     public addChildBubble(): void {
+        // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
+        if (this !== theOneBubbleManager) {
+            theOneBubbleManager.addChildBubble();
+            return;
+        }
         const parentElement = this.getActiveElement();
         if (!parentElement) {
             // No parent to attach to
