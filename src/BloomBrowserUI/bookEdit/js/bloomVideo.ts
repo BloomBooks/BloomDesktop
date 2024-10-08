@@ -222,7 +222,7 @@ export function showSignLanguageTool() {
 
 export function doVideoCommand(
     videoContainer: Element,
-    command: "choose" | "record"
+    command: "choose" | "record" | "playEarlier" | "playLater"
 ) {
     if (command === "choose" && videoContainer) {
         post("signLanguage/importVideo", result => {
@@ -235,7 +235,85 @@ export function doVideoCommand(
             }
         });
     } else if (command === "record") {
+        // There may be more than one video container on the page.  Make sure the
+        // one we want to record into is selected.  See comments in BL-13930.
+        videoContainer.classList.add("bloom-selected");
         showSignLanguageTool();
+    } else if (command === "playEarlier") {
+        // Find the preceding video container element, if any, and move it after the current one
+        const previousVideoContainer = findPreviousVideoContainer(
+            videoContainer
+        );
+        if (previousVideoContainer) {
+            SwapVideoPositionsInDom(previousVideoContainer, videoContainer);
+        }
+    } else if (command === "playLater") {
+        // Find the next video container element, if any, and move it before the current one
+        const nextVideoContainer = findNextVideoContainer(videoContainer);
+        if (nextVideoContainer) {
+            SwapVideoPositionsInDom(videoContainer, nextVideoContainer);
+        }
+    }
+}
+
+export function findNextVideoContainer(
+    videoContainer: Element
+): Element | undefined {
+    const overlay = videoContainer.closest(".bloom-textOverPicture"); // unfortunate name for picture and video overlay containers
+    if (overlay) {
+        let next = overlay.nextElementSibling;
+        while (next) {
+            if (
+                next.firstElementChild?.classList.contains(
+                    "bloom-videoContainer"
+                )
+            ) {
+                return next.firstElementChild;
+            }
+            next = next.nextElementSibling;
+        }
+    }
+    return undefined;
+}
+export function findPreviousVideoContainer(
+    videoContainer: Element
+): Element | undefined {
+    const overlay = videoContainer.closest(".bloom-textOverPicture"); // unfortunate classname for picture and video overlay containers
+    if (overlay) {
+        let previous = overlay.previousElementSibling;
+        while (previous) {
+            if (
+                previous.firstElementChild?.classList.contains(
+                    "bloom-videoContainer"
+                )
+            ) {
+                return previous.firstElementChild;
+            }
+            previous = previous.previousElementSibling;
+        }
+    }
+    return undefined;
+}
+// Swap the positions of two video containers (actually their parent overlays) in the DOM.
+function SwapVideoPositionsInDom(
+    firstVideoContainer: Element,
+    secondVideoContainer: Element
+) {
+    const firstOverlay = firstVideoContainer.closest(".bloom-textOverPicture");
+    const secondOverlay = secondVideoContainer.closest(
+        ".bloom-textOverPicture"
+    );
+    if (!firstOverlay || !secondOverlay) {
+        return;
+    }
+    const overlayContainer = firstOverlay.parentElement;
+    if (!overlayContainer || overlayContainer !== secondOverlay.parentElement) {
+        return;
+    }
+    const thirdOverlay = secondOverlay.nextElementSibling; // may be null, but that's okay
+    overlayContainer.insertBefore(secondOverlay, firstOverlay);
+    if (firstOverlay.nextElementSibling !== thirdOverlay) {
+        overlayContainer.insertBefore(firstOverlay, thirdOverlay);
     }
 }
 
