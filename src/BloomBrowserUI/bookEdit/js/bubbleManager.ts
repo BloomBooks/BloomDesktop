@@ -4494,7 +4494,7 @@ export class BubbleManager {
         // NOT want comic editing turned on: when we're creating an image description translation group
         // in the process of switching to the image description tool. Comic editing is deliberately
         // suspended while that tool is active. For now I'm going with a more-or-less minimal change:
-        // if comcic edting is not only already initialized, but suspended, we won't turn it on again
+        // if comic editing is not only already initialized, but suspended, we won't turn it on again
         // here.
         if (this.comicEditingSuspendedState !== "none") {
             return;
