@@ -312,6 +312,13 @@ function appendTranslationGroup(innerHtml, container: Element) {
         .makeElement(newElementHtml)
         .get(0);
 
+    for (const editable of Array.from(
+        newTg.getElementsByClassName("bloom-editable")
+    )) {
+        editable.classList.add("ImageDescriptionEdit-style");
+        editable.classList.remove("normal-style");
+    }
+
     container.appendChild(newTg);
 
     // This is necessary for the data-language tooltip to appear, probably among other things.
