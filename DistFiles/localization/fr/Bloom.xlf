@@ -2489,14 +2489,14 @@
         <target xml:lang="fr" state="final">Coller le Texte</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayEarlier" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayEarlier" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Play Earlier</source>
-        <target xml:lang="fr" state="needs-translation">Play Earlier</target>
+        <target xml:lang="fr" state="final">Jouer Plus Tôt</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PlayEarlier</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayLater" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayLater" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Play Later</source>
-        <target xml:lang="fr" state="needs-translation">Play Later</target>
+        <target xml:lang="fr" state="final">Jouer Plus Tard</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PlayLater</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RecordYourself" sil:dynamic="true" approved="yes">
