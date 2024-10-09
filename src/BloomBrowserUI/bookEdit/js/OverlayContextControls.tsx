@@ -72,9 +72,6 @@ const OverlayContextControls: React.FunctionComponent<{
     const hasImage = !!imgContainer;
     const img = imgContainer?.getElementsByTagName("img")[0];
     //const hasLicenseProblem = hasImage && !img.getAttribute("data-copyright");
-    const videoContainers = props.overlay.parentElement?.getElementsByClassName(
-        "bloom-videoContainer"
-    );
     const videoContainer = props.overlay.getElementsByClassName(
         "bloom-videoContainer"
     )[0];
@@ -84,18 +81,6 @@ const OverlayContextControls: React.FunctionComponent<{
     const videoAlreadyChosen = !!videoSource?.getAttribute("src");
     const isPlaceHolder =
         hasImage && img.getAttribute("src")?.startsWith("placeHolder.png");
-
-    const runMetadataDialog = () => {
-        if (!props.overlay) return;
-        const imgContainer = props.overlay.getElementsByClassName(
-            "bloom-imageContainer"
-        )[0] as HTMLElement;
-        if (!imgContainer) return;
-        showCopyrightAndLicenseDialog(
-            getImageUrlFromImageContainer(imgContainer)
-        );
-    };
-
     const setMenuOpen = (open: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the bubble manager
@@ -128,21 +113,6 @@ const OverlayContextControls: React.FunctionComponent<{
         // on a new page has the same currentBubbleTargetId.
     }, [currentBubbleTargetId]);
 
-    const toggleIsPartOfRightAnswer = () => {
-        if (!currentBubbleTargetId) {
-            return;
-        }
-        if (currentBubbleTarget) {
-            currentBubbleTarget.ownerDocument
-                .getElementById("target-arrow")
-                ?.remove();
-            currentBubbleTarget.remove();
-            setCurrentBubbleTarget(undefined);
-        } else {
-            setCurrentBubbleTarget(makeTargetForBubble(props.overlay));
-        }
-    };
-
     // Currently we only allow associating an extra audio with images (and gifs), which have
     // no other audio (except possibly image descriptions?). If we get an actual user request
     // it may be clearer how attaching one to a text or video would work, given that they
@@ -153,23 +123,6 @@ const OverlayContextControls: React.FunctionComponent<{
     useEffect(() => {
         setImageSound(props.overlay.getAttribute("data-sound") ?? "none");
     }, [props.overlay]);
-
-    // This is uncomfortably similar to the method by the same name in dragActivityTool.
-    // And indeed that method has a case for handling an image sound, which is no longer
-    // handled on the toolbox side. But both methods make use of component state in
-    // ways that make sharing code difficult.
-    const updateSoundShowingDialog = async () => {
-        const newSoundId = await showDialogToChooseSoundFileAsync();
-        if (!newSoundId) {
-            return;
-        }
-
-        const page = props.overlay.closest(".bloom-page") as HTMLElement;
-        const copyBuiltIn = false; // already copied, and not in our sounds folder
-        props.overlay.setAttribute("data-sound", newSoundId);
-        setImageSound(newSoundId);
-        copyAndPlaySoundAsync(newSoundId, page, copyBuiltIn);
-    };
 
     // These commands apply to all overlays.
     const menuOptions: IMenuItemWithSubmenu[] = [
@@ -193,165 +146,31 @@ const OverlayContextControls: React.FunctionComponent<{
             onClick: theOneBubbleManager?.addChildBubble
         });
     }
-    if (currentBubbleTargetId || canChooseAudioForElement) {
-        menuOptions.push(divider);
-    }
     if (currentBubbleTargetId) {
-        menuOptions.push({
-            l10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswer",
-            english: "Part of the right answer",
-            subLabelL10nId:
-                "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore",
-            onClick: toggleIsPartOfRightAnswer,
-            icon: currentBubbleTarget ? (
-                <CheckIcon css={getMenuIconCss()} />
-            ) : (
-                undefined
-            )
-        });
+        addMenuItemsForDraggable(
+            menuOptions,
+            props.overlay,
+            currentBubbleTargetId,
+            currentBubbleTarget,
+            setCurrentBubbleTarget
+        );
     }
     if (canChooseAudioForElement) {
-        const imageSoundLabel = imageSound.replace(/.mp3$/, "");
-        const mainLabel = imageSound === "none" ? noneLabel : imageSoundLabel;
-        const subMenu: ILocalizableMenuItemProps[] = [
-            {
-                l10nId: "EditTab.Toolbox.DragActivity.None",
-                english: "None",
-                onClick: () => {
-                    props.overlay.removeAttribute("data-sound");
-                    setImageSound("none");
-                    setMenuOpen(false);
-                }
-            },
-            {
-                l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
-                english: "Choose...",
-                onClick: () => {
-                    setMenuOpen(false);
-                    updateSoundShowingDialog();
-                }
-            }
-        ];
-        menuOptions.push({
-            l10nId: null,
-            english: mainLabel,
-            subLabelL10nId: "EditTab.Image.PlayWhenTouched",
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick: () => {},
-            icon: <VolumeUpIcon css={getMenuIconCss()} />,
-            subMenu
-        });
-        if (imageSound !== "none") {
-            subMenu.splice(1, 0, {
-                l10nId: null,
-                english: imageSoundLabel,
-                onClick: () => {
-                    playSound(
-                        imageSound,
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                        props.overlay.closest(".bloom-page")!
-                    );
-                    setMenuOpen(false);
-                },
-                icon: <CheckIcon css={getMenuIconCss()} />
-            });
-        }
+        addAudioMenuItems(
+            menuOptions,
+            props.overlay,
+            imageSound,
+            noneLabel,
+            setImageSound,
+            setMenuOpen
+        );
     }
-
-    // Add these for images
     if (hasImage) {
-        menuOptions.unshift(
-            {
-                l10nId: "EditTab.Image.ChooseImage",
-                english: "Choose image from your computer...",
-                onClick: () => doImageCommand(img, "change"),
-                icon: <SearchIcon css={getMenuIconCss()} />
-            },
-            {
-                l10nId: "EditTab.Image.PasteImage",
-                english: "Paste image",
-                onClick: () => doImageCommand(img, "paste"),
-                icon: <PasteIcon css={getMenuIconCss()} />
-            },
-            {
-                l10nId: "EditTab.Image.CopyImage",
-                english: "Copy image",
-                onClick: () => doImageCommand(img, "copy"),
-                icon: <CopyIcon css={getMenuIconCss()} />
-            },
-            {
-                l10nId: "EditTab.Image.EditMetadataOverlay",
-                english: "Set Image Information...",
-                subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
-                onClick: runMetadataDialog,
-                icon: <CopyrightIcon css={getMenuIconCss()} />
-            },
-            divider
-        );
-
-        // menuOptions.push(
-        //     divider,
-        //     {
-        //         l10nId: "EditTab.Image.CutImage",
-        //         english: "Cut Image",
-        //         onClick: () => doImageCommand(img, "cut"),
-        //         icon: <CutIcon css={muiMenIconCss} />
-        //     },
-        // );
+        addImageMenuOptions(menuOptions, props.overlay, img);
     }
-
-    // Add these for videos
     if (hasVideo) {
-        menuOptions.unshift(
-            {
-                l10nId: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
-                english: "Choose Video from your Computer...",
-                onClick: () => doVideoCommand(videoContainer, "choose"),
-                icon: <SearchIcon css={getMenuIconCss()} />
-            },
-            {
-                l10nId: "EditTab.Toolbox.ComicTool.Options.RecordYourself",
-                english: "Record yourself...",
-                onClick: () => doVideoCommand(videoContainer, "record"),
-                icon: <CircleIcon css={getMenuIconCss(0.85)} />
-            },
-            divider,
-            {
-                l10nId: "EditTab.Toolbox.ComicTool.Options.PlayEarlier",
-                english: "Play Earlier",
-                onClick: () => {
-                    doVideoCommand(videoContainer, "playEarlier");
-                },
-                icon: <ArrowUpwardIcon css={getMenuIconCss()} />,
-                disabled: !videoContainers || videoContainers.length <= 1
-            },
-            {
-                l10nId: "EditTab.Toolbox.ComicTool.Options.PlayLater",
-                english: "Play Later",
-                onClick: () => {
-                    doVideoCommand(videoContainer, "playLater");
-                },
-                icon: <ArrowDownwardIcon css={getMenuIconCss()} />,
-                disabled: !videoContainers || videoContainers.length <= 1
-            },
-            divider
-        );
+        addVideoMenuItems(menuOptions, videoContainer);
     }
-    const setMenuItemDisabled = (option: IMenuItemWithSubmenu): boolean => {
-        if (option.disabled) return option.disabled;
-
-        if (option.l10nId === "EditTab.Toolbox.ComicTool.Options.PlayEarlier") {
-            // check if the current video is the first one
-            return !findPreviousVideoContainer(videoContainer);
-        } else if (
-            option.l10nId === "EditTab.Toolbox.ComicTool.Options.PlayLater"
-        ) {
-            // check if the current video is the last one
-            return !findNextVideoContainer(videoContainer);
-        }
-        return false;
-    };
-    const autoHeight = !props.overlay.classList.contains("bloom-noAutoHeight");
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
         e.preventDefault();
@@ -363,49 +182,13 @@ const OverlayContextControls: React.FunctionComponent<{
         e.stopPropagation();
         setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
     };
-    const toggleAutoHeight = () => {
-        props.overlay.classList.toggle("bloom-noAutoHeight");
-        theOneBubbleManager.updateAutoHeight();
-        // In most contexts, we would need to do something now to make the control render, so we get
-        // an updated value for autoHeight. But the menu is going to be hidden, and showing it again
-        // will involve a re-render, and we don't care until then.
-    };
     const editable = props.overlay.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
     const langName = editable?.getAttribute("data-languagetipcontent");
     // and these for text boxes
     if (editable) {
-        menuOptions.unshift(
-            {
-                l10nId: "EditTab.Toolbox.ComicTool.Options.Format",
-                english: "Format",
-                onClick: () => GetEditor().runFormatDialog(editable),
-                icon: <CogIcon css={getMenuIconCss()} />
-            },
-            {
-                l10nId: "EditTab.Toolbox.ComicTool.Options.CopyText",
-                english: "Copy Text",
-                onClick: () => copySelection(),
-                icon: <CopyIcon css={getMenuIconCss()} />
-            },
-            {
-                l10nId: "EditTab.Toolbox.ComicTool.Options.PasteText",
-                english: "Paste Text",
-                // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
-                onClick: () => pasteClipboard(false),
-                icon: <PasteIcon css={getMenuIconCss()} />
-            },
-            divider,
-            {
-                l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
-                english: "Auto Height",
-                // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
-                onClick: () => toggleAutoHeight(),
-                icon: autoHeight && <CheckIcon css={getMenuIconCss()} />
-            },
-            divider
-        );
+        addTextMenuItems(menuOptions, editable, props.overlay);
     }
 
     return (
@@ -444,37 +227,6 @@ const OverlayContextControls: React.FunctionComponent<{
                 >
                     {hasImage && (
                         <Fragment>
-                            {
-                                // latest card says we don't want this as a button ever.
-                                // But I think it's worth keeping the code around a bit longer.
-                                // Note: if we do reinstate this, we need to use ButtonWithTooltip instead and
-                                // we should create a new component which wraps the svg in an SvgIcon.
-                                // (See DuplicateIcon.tsx for an example.)
-                                // isPlaceHolder || (
-                                //     <BloomTooltip
-                                //         id="metadata"
-                                //         placement="top"
-                                //         tip={{
-                                //             l10nKey: "EditTab.Image.EditMetadata"
-                                //         }}
-                                //     >
-                                //         <button
-                                //             css={
-                                //                 hasLicenseProblem
-                                //                     ? svgIconCss
-                                //                     : materialIconCss
-                                //             }
-                                //             onClick={runMetadataDialog}
-                                //         >
-                                //             {hasLicenseProblem ? (
-                                //                 <img src="/bloom/bookEdit/img/Missing Metadata.svg" />
-                                //             ) : (
-                                //                 <CopyrightIcon color="primary" />
-                                //             )}
-                                //         </button>
-                                //     </BloomTooltip>
-                                // )
-                            }
                             {// Choose image is only a LIKELY choice if we don't yet have one.
                             isPlaceHolder && (
                                 <ButtonWithTooltip
@@ -662,7 +414,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                         setMenuOpen(false);
                                         option.onClick(e);
                                     }}
-                                    disabled={setMenuItemDisabled(option)}
+                                    disabled={option.disabled}
                                     icon={option.icon}
                                     variant="body1"
                                     subLabelL10nId={option.subLabelL10nId}
@@ -769,4 +521,239 @@ function getMenuIconCss(relativeSize?: number) {
         color: black;
         font-size: ${fontSize}rem;
     `;
+}
+
+function addTextMenuItems(
+    menuOptions: IMenuItemWithSubmenu[],
+    editable: HTMLElement,
+    overlay: HTMLElement
+) {
+    const autoHeight = !overlay.classList.contains("bloom-noAutoHeight");
+    const toggleAutoHeight = () => {
+        overlay.classList.toggle("bloom-noAutoHeight");
+        theOneBubbleManager.updateAutoHeight();
+        // In most contexts, we would need to do something now to make the control render, so we get
+        // an updated value for autoHeight. But the menu is going to be hidden, and showing it again
+        // will involve a re-render, and we don't care until then.
+    };
+    menuOptions.unshift(
+        {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.Format",
+            english: "Format",
+            onClick: () => GetEditor().runFormatDialog(editable),
+            icon: <CogIcon css={getMenuIconCss()} />
+        },
+        {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.CopyText",
+            english: "Copy Text",
+            onClick: () => copySelection(),
+            icon: <CopyIcon css={getMenuIconCss()} />
+        },
+        {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.PasteText",
+            english: "Paste Text",
+            // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
+            onClick: () => pasteClipboard(false),
+            icon: <PasteIcon css={getMenuIconCss()} />
+        },
+        divider,
+        {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
+            english: "Auto Height",
+            // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
+            onClick: () => toggleAutoHeight(),
+            icon: autoHeight && <CheckIcon css={getMenuIconCss()} />
+        },
+        divider
+    );
+}
+
+function addVideoMenuItems(
+    menuOptions: IMenuItemWithSubmenu[],
+    videoContainer: Element
+) {
+    menuOptions.unshift(
+        {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
+            english: "Choose Video from your Computer...",
+            onClick: () => doVideoCommand(videoContainer, "choose"),
+            icon: <SearchIcon css={getMenuIconCss()} />
+        },
+        {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.RecordYourself",
+            english: "Record yourself...",
+            onClick: () => doVideoCommand(videoContainer, "record"),
+            icon: <CircleIcon css={getMenuIconCss(0.85)} />
+        },
+        divider,
+        {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.PlayEarlier",
+            english: "Play Earlier",
+            onClick: () => {
+                doVideoCommand(videoContainer, "playEarlier");
+            },
+            icon: <ArrowUpwardIcon css={getMenuIconCss()} />,
+            disabled: !findPreviousVideoContainer(videoContainer)
+        },
+        {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.PlayLater",
+            english: "Play Later",
+            onClick: () => {
+                doVideoCommand(videoContainer, "playLater");
+            },
+            icon: <ArrowDownwardIcon css={getMenuIconCss()} />,
+            disabled: !findNextVideoContainer(videoContainer)
+        },
+        divider
+    );
+}
+
+function addImageMenuOptions(
+    menuOptions: IMenuItemWithSubmenu[],
+    overlay: HTMLElement,
+    img: HTMLElement
+) {
+    const runMetadataDialog = () => {
+        if (!overlay) return;
+        const imgContainer = overlay.getElementsByClassName(
+            "bloom-imageContainer"
+        )[0] as HTMLElement;
+        if (!imgContainer) return;
+        showCopyrightAndLicenseDialog(
+            getImageUrlFromImageContainer(imgContainer)
+        );
+    };
+    menuOptions.unshift(
+        {
+            l10nId: "EditTab.Image.ChooseImage",
+            english: "Choose image from your computer...",
+            onClick: () => doImageCommand(img, "change"),
+            icon: <SearchIcon css={getMenuIconCss()} />
+        },
+        {
+            l10nId: "EditTab.Image.PasteImage",
+            english: "Paste image",
+            onClick: () => doImageCommand(img, "paste"),
+            icon: <PasteIcon css={getMenuIconCss()} />
+        },
+        {
+            l10nId: "EditTab.Image.CopyImage",
+            english: "Copy image",
+            onClick: () => doImageCommand(img, "copy"),
+            icon: <CopyIcon css={getMenuIconCss()} />
+        },
+        {
+            l10nId: "EditTab.Image.EditMetadataOverlay",
+            english: "Set Image Information...",
+            subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
+            onClick: runMetadataDialog,
+            icon: <CopyrightIcon css={getMenuIconCss()} />
+        },
+        divider
+    );
+}
+
+function addMenuItemsForDraggable(
+    menuOptions: IMenuItemWithSubmenu[],
+    overlay: HTMLElement,
+    currentBubbleTargetId: string,
+    currentBubbleTarget: HTMLElement | undefined,
+    setCurrentBubbleTarget: (target: HTMLElement | undefined) => void
+) {
+    const toggleIsPartOfRightAnswer = () => {
+        if (!currentBubbleTargetId) {
+            return;
+        }
+        if (currentBubbleTarget) {
+            currentBubbleTarget.ownerDocument
+                .getElementById("target-arrow")
+                ?.remove();
+            currentBubbleTarget.remove();
+            setCurrentBubbleTarget(undefined);
+        } else {
+            setCurrentBubbleTarget(makeTargetForBubble(overlay));
+        }
+    };
+    menuOptions.push(divider, {
+        l10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswer",
+        english: "Part of the right answer",
+        subLabelL10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore",
+        onClick: toggleIsPartOfRightAnswer,
+        icon: currentBubbleTarget ? (
+            <CheckIcon css={getMenuIconCss()} />
+        ) : (
+            undefined
+        )
+    });
+}
+
+function addAudioMenuItems(
+    menuOptions: IMenuItemWithSubmenu[],
+    overlay: HTMLElement,
+    imageSound: string,
+    noneLabel: string,
+    setImageSound: (sound: string) => void,
+    setMenuOpen: (open: boolean) => void
+) {
+    // This is uncomfortably similar to the method by the same name in dragActivityTool.
+    // And indeed that method has a case for handling an image sound, which is no longer
+    // handled on the toolbox side. But both methods make use of component state in
+    // ways that make sharing code difficult.
+    const updateSoundShowingDialog = async () => {
+        const newSoundId = await showDialogToChooseSoundFileAsync();
+        if (!newSoundId) {
+            return;
+        }
+
+        const page = overlay.closest(".bloom-page") as HTMLElement;
+        const copyBuiltIn = false; // already copied, and not in our sounds folder
+        overlay.setAttribute("data-sound", newSoundId);
+        setImageSound(newSoundId);
+        copyAndPlaySoundAsync(newSoundId, page, copyBuiltIn);
+    };
+    const imageSoundLabel = imageSound.replace(/.mp3$/, "");
+    const mainLabel = imageSound === "none" ? noneLabel : imageSoundLabel;
+    const subMenu: ILocalizableMenuItemProps[] = [
+        {
+            l10nId: "EditTab.Toolbox.DragActivity.None",
+            english: "None",
+            onClick: () => {
+                overlay.removeAttribute("data-sound");
+                setImageSound("none");
+                setMenuOpen(false);
+            }
+        },
+        {
+            l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
+            english: "Choose...",
+            onClick: () => {
+                setMenuOpen(false);
+                updateSoundShowingDialog();
+            }
+        }
+    ];
+    menuOptions.push(divider, {
+        l10nId: null,
+        english: mainLabel,
+        subLabelL10nId: "EditTab.Image.PlayWhenTouched",
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        onClick: () => {},
+        icon: <VolumeUpIcon css={getMenuIconCss()} />,
+        subMenu
+    });
+    if (imageSound !== "none") {
+        subMenu.splice(1, 0, {
+            l10nId: null,
+            english: imageSoundLabel,
+            onClick: () => {
+                playSound(
+                    imageSound,
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    overlay.closest(".bloom-page")!
+                );
+                setMenuOpen(false);
+            },
+            icon: <CheckIcon css={getMenuIconCss()} />
+        });
+    }
 }
