@@ -155,7 +155,7 @@ namespace Bloom.Collection
             if (isSignLanguage)
                 return;
             xml.Add(new XElement($"DefaultLanguage{langNumTag}FontName", FontName));
-            xml.Add(new XElement($"IsLanguage{langNumTag}IsRtl", IsRightToLeft));
+            xml.Add(new XElement($"IsLanguage{langNumTag}Rtl", IsRightToLeft));
             xml.Add(new XElement($"Language{langNumTag}LineHeight", LineHeight));
             xml.Add(
                 new XElement(
