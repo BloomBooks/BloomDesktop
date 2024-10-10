@@ -395,7 +395,9 @@ namespace Bloom.Publish.Epub
             //else if (BookHasAudio)
             //	audioSituationClass = "isTalkingBook";
 
-            var targetFile = Path.Combine(root, "index.html");
+            var rtl = _bookSelection.CurrentSelection.BookData.Language1.IsRightToLeft;
+
+            var targetFile = Path.Combine(root, rtl ? "indexRtl.html" : "index.html");
             var manifestPath = ReadiumManifest.MakeReadiumManifest(StagingDirectory);
 
             var iframeSource =

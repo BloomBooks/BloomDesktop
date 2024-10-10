@@ -34,6 +34,16 @@ easier to keep the way we were already doing these buttons for Readium 1.)
 - I made a few tweaks moving things in style attributes of index.html to rules in bloom-readium.css
 (Possibly it would be better to do this in R2D2BC so there's less to tweak if we make further changes there.
 I think I had a vague thought of changing as little as possible, but most of this stuff is new.)
+- I copied index.html to indexRtl.html, and swapped the calls to previousPage and nextPage so the buttons will
+go the right way. (I also added class rtl to the body, though nothing uses this yet. The hope was that we could
+detect being on the front or back cover page, and disable the appropriate button using the rtl class. But I can
+find no easy way to detect what page we're on. Even something like body:has(.outsideFrontCover) won't work
+because the pages are inside another level of iframe from the buttons.)
+(This is a kludge. I'm sure there is a more elegant way to automatically generate a different index.html
+file. Or find another way to make the buttons do the opposite thing for RTL. Or pull from R2CdBC (there's a commit
+d799f2627a88435e3599e783ae178d023736686e on 12/13/2023 that adds some degree of RTL support, including for
+swiping...but I don't think it would fix our buttons).
+But unless we're somewhat regularly generating new versions of this, I just don't think it's worth it.)
 
 It might be better to make an npm module of our fork of R2D2BC and import it. I am reluctant to do this for various reasons.
 - I don't really expect our fork of R2D2BC to be useful to anyone else or any of our other projects,
