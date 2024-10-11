@@ -1,0 +1,29 @@
+{
+    "presets": [
+        {
+            "data-book": "insideFontCover",
+            "lang": "*",
+            "content": "<p class='branding-text'><strong>TENY FISAORANA</strong></p><p><br/></p><p class='branding-text'>Manantena aho fa ireo angano voalaza ato amin'ity boky ity dia hamporisika ny mpianatra ho tia vakiteny sy hampiakatra hatrany ny lentam-pahaizana mamaky teny. Tiako ny maneho fisaorana feno ny USAID izay mpanohana ara-teknika sy ara-bola ny asa rehetra, sy ireo rehetra nandray anjara tamin'ny fanatontosana azy. Singaniko manokana ny fianakaviana avy any amin'ny Faritra Atsimo Atsinanana sy Androy izay nizara tamim-pitiavana ny angano, ny mpanadihady sy mpanangona angano, ny mpanakanto, ny MEN, ny DREN Atsimo Atsinanana sy Androy, ary ny FHI 360 sy ny mpiara-miasa aminy ( Sofiasive, FFF Malagasy Mahomby, FLM/AKAMA, Education Network ary SIL LEAD ).</p><p><br/></p><p class='branding-text'>Ny Minisitry ny Fanabeazam-pirenena</p>",
+            "condition": "always"
+        },
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "content": "Le Ministère de l'Éducation Nationale",
+            "condition": "always"
+        },
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by-nc-nd/4.0/",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding agency-logos' src='back-cover-logos.svg'/><img class='branding bloom-badge' src='made-with-bloom-badge.svg'/><div class='branding-text'>Tsy azo amidy</div>",
+            "condition": "always"
+        }
+    ],
+    "appearance": {}
+}
