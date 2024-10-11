@@ -1343,7 +1343,8 @@ namespace Bloom.TeamCollection
             var localStatus = GetLocalStatus(bookName);
             return localStatus.checksum != GetStatus(bookName).checksum
                 || (
-                    DoLocalAndRemoteNamesDifferByCase(bookName) && !IsCheckedOutHereBy(localStatus)
+                    DoLocalAndRemoteNamesDifferOnlyByCase(bookName)
+                    && !IsCheckedOutHereBy(localStatus)
                 );
         }
 
@@ -1468,9 +1469,9 @@ namespace Bloom.TeamCollection
         /// Given that the specified book exists in both the repo and locally,
         /// if the names differ only by case, rename the local book to match the repo.
         /// </summary>
-        public abstract void FixPossibleCaseChange(string bookBaseName);
+        public abstract void EnsureConsistentCasingInLocalName(string bookBaseName);
 
-        public abstract bool DoLocalAndRemoteNamesDifferByCase(string bookBaseName);
+        public abstract bool DoLocalAndRemoteNamesDifferOnlyByCase(string bookBaseName);
 
         internal static string GetIdFrom(string metadataString, string file)
         {
@@ -2437,7 +2438,7 @@ namespace Bloom.TeamCollection
                         }
                         // Possibly it has been renamed remotely, but we did not detect it normally because
                         // the only change is the case of letters in the name, which Windows ignores.
-                        FixPossibleCaseChange(bookName);
+                        EnsureConsistentCasingInLocalName(bookName);
 
                         // whether or not we updated it, if it's not checked out there's no more to do.
                         continue;

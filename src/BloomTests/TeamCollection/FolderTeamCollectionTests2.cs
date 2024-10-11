@@ -207,13 +207,13 @@ namespace BloomTests.TeamCollection
                     RobustFile.WriteAllText(metaDataPath, new BookMetaData().Json);
 
                     // sut 1: we made the case of the repo and local book differ, so this should be true.
-                    Assert.That(tc.DoLocalAndRemoteNamesDifferByCase("Old Name"), Is.True);
+                    Assert.That(tc.DoLocalAndRemoteNamesDifferOnlyByCase("Old Name"), Is.True);
 
                     // sut 2: fix it
-                    tc.FixPossibleCaseChange("Old Name");
+                    tc.EnsureConsistentCasingInLocalName("Old Name");
 
                     // and that should have fixed it
-                    Assert.That(tc.DoLocalAndRemoteNamesDifferByCase("Old Name"), Is.False);
+                    Assert.That(tc.DoLocalAndRemoteNamesDifferOnlyByCase("Old Name"), Is.False);
 
                     var realRepoName = Path.GetFileNameWithoutExtension(
                         Directory

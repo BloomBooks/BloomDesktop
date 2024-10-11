@@ -363,10 +363,10 @@ namespace Bloom.TeamCollection
         /// consistent after a remote rename.
         /// </summary>
         /// <param name="bookBaseName"></param>
-        public override void FixPossibleCaseChange(string bookBaseName)
+        public override void EnsureConsistentCasingInLocalName(string bookBaseName)
         {
             var localFolderPath = Path.Combine(_localCollectionFolder, bookBaseName);
-            if (DoLocalAndRemoteNamesDifferByCase(bookBaseName))
+            if (DoLocalAndRemoteNamesDifferOnlyByCase(bookBaseName))
             {
                 var tempName = Guid.NewGuid().ToString();
                 var tempPath = Path.Combine(_localCollectionFolder, tempName);
@@ -395,7 +395,16 @@ namespace Bloom.TeamCollection
             }
         }
 
-        public override bool DoLocalAndRemoteNamesDifferByCase(string bookBaseName)
+        /// <summary>
+        /// Finds the file bookBaseName.bloom in the repo and the folder bookBaseName in the local
+        /// directory. Returns true if both exist and have different case.
+        /// (It's not possible that they differ in any way other than by case, since we won't find
+        /// a file or folder by any other name in either place. Without any wild cards in the searchPattern,
+        /// I don't think it's possible to find a file that is not an exact match, except for case.)
+        /// </summary>
+        /// <param name="bookBaseName"></param>
+        /// <returns></returns>
+        public override bool DoLocalAndRemoteNamesDifferOnlyByCase(string bookBaseName)
         {
             var repoPath = GetPathToBookFileInRepo(bookBaseName);
             var localFolderPath = Path.Combine(_localCollectionFolder, bookBaseName);

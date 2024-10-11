@@ -173,12 +173,12 @@ namespace Bloom.TeamCollection
             throw new NotImplementedException();
         }
 
-        public override void FixPossibleCaseChange(string bookBaseName)
+        public override void EnsureConsistentCasingInLocalName(string bookBaseName)
         {
             throw new NotImplementedException();
         }
 
-        public override bool DoLocalAndRemoteNamesDifferByCase(string bookBaseName)
+        public override bool DoLocalAndRemoteNamesDifferOnlyByCase(string bookBaseName)
         {
             throw new NotImplementedException();
         }
