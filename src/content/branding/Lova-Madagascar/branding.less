@@ -1,0 +1,37 @@
+@import "../branding-base.less";
+
+.insideFrontCover .branding-text {
+    text-align: center;
+}
+.outsideBackCover {
+    .bloom-translationGroup {
+        display: none;
+    }
+    [data-book="outside-back-cover-branding-bottom-html"] {
+        height: 100%;
+        margin-top: 0 !important;
+
+        .branding-text {
+            text-align: center;
+            font-size: 0.75cm;
+            line-height: 1;
+            padding-top: 0.25cm;
+        }
+        img.branding {
+            &:not(.bloom-badge) {
+                margin-top: auto;
+                margin-left: auto;
+                margin-right: auto;
+                height: calc(100% - 1.9cm - 1cm); // leave room for badge + text
+            }
+
+            &.bloom-badge {
+                height: 1.5cm;
+                padding-top: 0.4cm; // acts as a minimum top margin
+                margin-top: auto;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    }
+}
