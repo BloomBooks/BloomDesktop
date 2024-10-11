@@ -1689,7 +1689,21 @@ namespace Bloom.Book
             // 2. If our most preferred sanitized filename works (doesn't exist), go ahead and change to it.
             if (!Directory.Exists(idealFolderPath))
                 return idealFolderPath;
-            // 3. ideal name is in use, so find a variant that isn't.
+            // 3. If our current folder name is one of the possible work-arounds (because idealFolderName
+            // is in use by some other book), then stick with the name we have.
+            // (A very unlikely exception to this is if there is something invalid in the current name.)
+            // There is a pathological case we're not handling here, I think. Suppose we have two books,
+            // "A nice story" and "A nice story about Bob". If the second one is renamed to "A nice story",
+            // we can't use that as a file name because the first book exists, but it will pass this check,
+            // so "A nice story about Bob" will be kept when we might prefer "A nice story 2". But this
+            // won't cause dreadful problems and is pretty unlikely.
+            if (
+                currentFolderName.StartsWith(idealFolderName)
+                && currentFolderName == SanitizeNameForFileSystem(currentFolderName)
+            )
+                return Path.Combine(Path.GetDirectoryName(idealFolderPath), currentFolderName);
+            // 4. ideal name is in use, and currentFolderName is not a variant of it,
+            // so find a new variant that is not in use.
             return GetUniqueFolderPath(idealFolderPath);
         }
 
