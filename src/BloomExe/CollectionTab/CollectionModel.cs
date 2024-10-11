@@ -1009,8 +1009,12 @@ namespace Bloom.CollectionTab
         public BookInfo GetBookInfoByFolderPath(string path)
         {
             var collectionPath = Path.GetDirectoryName(path);
+            // This might need adjustment if we ever get Linux/Mac versions working. But I think not. See the
+            // comment in BookCollection.GetBookInfoByFolderPath.
             var collection = GetBookCollections()
-                .FirstOrDefault(c => c.PathToDirectory == collectionPath);
+                .FirstOrDefault(
+                    c => c.PathToDirectory.ToLowerInvariant() == collectionPath.ToLowerInvariant()
+                );
             if (collection == null)
                 return null;
             return collection.GetBookInfoByFolderPath(path);

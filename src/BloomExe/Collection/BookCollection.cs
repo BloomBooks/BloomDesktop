@@ -558,7 +558,14 @@ namespace Bloom.Collection
 
         public BookInfo GetBookInfoByFolderPath(string path)
         {
-            return GetBookInfos().FirstOrDefault(b => b.FolderPath == path);
+            // This might need adjustment if we ever get Linux/Mac versions working. But I think even if we do we
+            // should forbid two books in the same collection with names differing only by case. For one thing,
+            // it will be a nightmare to make a TC work on Windows if Linux has created two such books.
+            // Assuming that, this change is helpful on Windows (e.g., when renaming a book and only case changed)
+            // and should be harmless (maybe even helpful in the same way) on Linux/Mac.
+            // If it does need fixing, check out the similar method in CollectionModel.
+            return GetBookInfos()
+                .FirstOrDefault(b => b.FolderPath.ToLowerInvariant() == path.ToLowerInvariant());
         }
 
         public BookInfo GetBookInfoById(string id)

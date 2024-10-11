@@ -1187,17 +1187,27 @@ namespace Bloom.TeamCollection
         internal void HandleDeletedRepoFile(string fileName)
         {
             var bookBaseName = GetBookNameWithoutSuffix(fileName);
+            //Debug.WriteLine("Delete " + bookBaseName);
             // Maybe the deletion was just a temporary part of an update?
             if (IsBookPresentInRepo(bookBaseName))
+            {
+                //Debug.WriteLine("Delete false alarm: " + bookBaseName);
                 return;
+            }
+
             // Maybe the book is being renamed rather than deleted? Or something weird is going on?
             // Anyway, we'll only delete it locally if there is a tombstone in the TC indicating that
             // someone, somewhere, deliberately deleted it.
             if (!KnownToHaveBeenDeleted(bookBaseName))
+            {
+                //Debug.WriteLine("Delete already known: " + bookBaseName);
                 return;
+            }
+
             var status = GetLocalStatus(bookBaseName);
             if (status.IsCheckedOutHereBy(TeamCollectionManager.CurrentUser))
             {
+                //Debug.WriteLine("Deleted checked out book: " + bookBaseName);
                 // Argh! Somebody deleted the book I'm working on! This is an error, but Reloading the collection
                 // won't help; I just need to check it in to undo the deletion, or delete the local copy myself.
                 // So unlike most errors, having this in the message log is not cause to show the Reload button.
@@ -1217,6 +1227,7 @@ namespace Bloom.TeamCollection
                 (_tcManager?.BookSelection?.CurrentSelection?.FolderPath ?? "") == deletedBookFolder
             )
             {
+                //Debug.WriteLine("Deleted selected book: " + bookBaseName);
                 // Argh! Somebody deleted the selected book! We might be right in the middle of any form
                 // of publication, or generating a preview, or anything! Just keep it, and let the user know
                 // a reload is needed.
@@ -1229,6 +1240,7 @@ namespace Bloom.TeamCollection
                 TeamCollectionManager.RaiseTeamCollectionStatusChanged();
                 return;
             }
+            //Debug.WriteLine("Deleting for real: " + bookBaseName);
             PathUtilities.DeleteToRecycleBin(deletedBookFolder);
             _bookCollectionHolder?.TheOneEditableCollection?.HandleBookDeletedFromCollection(
                 deletedBookFolder
@@ -1320,7 +1332,20 @@ namespace Bloom.TeamCollection
         {
             if (_remotelyRenamedBooks.Contains(bookName))
                 return true;
-            return GetLocalStatus(bookName).checksum != GetStatus(bookName).checksum;
+            // It's debatable whether a case-only change should be considered a remote
+            // rename or a remote change. Usually a rename results from a title change,
+            // in which case the book content is also modified; but we do allow just
+            // changing the name. Because a case-only change still allows us to find
+            // matching repo and local files, it's more convenient to treat it as a change
+            // that is not a rename. However, unlike the local checksum, the local name
+            // can change because of local editing. So we don't consider that a remote
+            // change if the book is checked out here.
+            var localStatus = GetLocalStatus(bookName);
+            return localStatus.checksum != GetStatus(bookName).checksum
+                || (
+                    DoLocalAndRemoteNamesDifferOnlyByCase(bookName)
+                    && !IsCheckedOutHereBy(localStatus)
+                );
         }
 
         /// <summary>
@@ -1342,6 +1367,10 @@ namespace Bloom.TeamCollection
         /// and there is no problem, add a NewStuff message. If there is a problem,
         /// add an error message. Send an UpdateBookStatus. (If it's the current book,
         /// a handler for book status may upgrade the problem to 'clobber pending'.)
+        /// This is also called when we detect a rename in the shared folder.
+        /// (For LAN collections, a rename is typically the last and only reported step in
+        /// any modification to the file, because our zip writer makes a temp file and then
+        /// renames it to overwrite the original.)
         /// </summary>
         /// <param name="args"></param>
         public void HandleModifiedFile(BookRepoChangeEventArgs args)
@@ -1349,6 +1378,7 @@ namespace Bloom.TeamCollection
             if (args.BookFileName.EndsWith(".bloom"))
             {
                 var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
+                //Debug.WriteLine("Modified: " + bookBaseName);
 
                 // It's quite likely in the case of a shared LAN folder that a file has been modified, but the
                 // other Bloom instance hasn't finished writing it yet. If we can't get its status,
@@ -1405,11 +1435,17 @@ namespace Bloom.TeamCollection
                 }
                 else if (!Directory.Exists(Path.Combine(_localCollectionFolder, bookBaseName)))
                 {
+                    if (HandlePossibleRename(bookBaseName))
+                    {
+                        //Debug.WriteLine("Detected rename in HandleModifiedFile");
+                        return;
+                    }
                     // No local version at all. Possibly it was just now created, and we will get a
                     // new book notification any moment, or already have one. Possibly there have
                     // been additional checkins between creation and when this user reloads.
                     // In any case, we don't need any new messages or status change beyond
                     // the NewBook message that should be generated at some point.
+                    //Debug.WriteLine("No local version of " + bookBaseName);
                     return;
                 }
                 else if (HasBeenChangedRemotely(bookBaseName))
@@ -1422,10 +1458,20 @@ namespace Bloom.TeamCollection
                         null
                     );
                 }
+
+                //Debug.WriteLine("Updated status for " + bookBaseName);
                 // This needs to be AFTER we update the message log, data which it may use.
                 UpdateBookStatus(bookBaseName, true);
             }
         }
+
+        /// <summary>
+        /// Given that the specified book exists in both the repo and locally,
+        /// if the names differ only by case, rename the local book to match the repo.
+        /// </summary>
+        public abstract void EnsureConsistentCasingInLocalName(string bookBaseName);
+
+        public abstract bool DoLocalAndRemoteNamesDifferOnlyByCase(string bookBaseName);
 
         internal static string GetIdFrom(string metadataString, string file)
         {
@@ -1483,6 +1529,25 @@ namespace Bloom.TeamCollection
             return metaData?.Id;
         }
 
+        private bool HandlePossibleRename(string bookBaseName)
+        {
+            var oldName = NewBookRenamedFrom(bookBaseName);
+            if (oldName == null)
+                return false;
+            //Debug.WriteLine("Detected that " + bookBaseName + " was renamed from " + oldName);
+            _remotelyRenamedBooks.Add(oldName);
+            _tcLog.WriteMessage(
+                MessageAndMilestoneType.NewStuff,
+                "TeamCollection.RenameFromRemote",
+                "The book \"{0}\" has been renamed to \"{1}\" by a teammate.",
+                oldName,
+                bookBaseName
+            );
+            // This needs to be AFTER we update the message log, data which it may use.
+            UpdateBookStatus(oldName, true);
+            return true;
+        }
+
         /// <summary>
         /// Given that newBookName is the name of a book in the repo
         /// that does not occur locally, can we determine that it is a rename
@@ -1531,9 +1596,14 @@ namespace Bloom.TeamCollection
         public void HandleNewBook(NewBookEventArgs args)
         {
             var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
+            //Debug.WriteLine("New: " + bookBaseName);
             // Bizarrely, we can get a new book notification when a book is being deleted.
             if (!IsBookPresentInRepo(bookBaseName))
+            {
+                //Debug.WriteLine("New book not found: " + bookBaseName);
                 return;
+            }
+
             if (args.BookFileName.EndsWith(".bloom"))
             {
                 HandleNewBook(bookBaseName);
@@ -1550,6 +1620,7 @@ namespace Bloom.TeamCollection
             if (!TryGetBookStatusJsonFromRepo(bookBaseName, out var status, false))
             {
                 MiscUtils.SetTimeout(() => HandleNewBook(bookBaseName), 2000);
+                //Debug.WriteLine("Could not get status for " + bookBaseName);
                 return;
             }
             var statusFilePath = GetStatusFilePath(bookBaseName, _localCollectionFolder);
@@ -1558,9 +1629,10 @@ namespace Bloom.TeamCollection
             // so we don't want a message about it.
             if (!RobustFile.Exists(statusFilePath))
             {
-                var oldName = NewBookRenamedFrom(bookBaseName);
-                if (oldName == null)
+                //Debug.WriteLine("could not find status at " + statusFilePath);
+                if (!HandlePossibleRename(bookBaseName))
                 {
+                    //Debug.WriteLine("New book arrived: " + bookBaseName);
                     _tcLog.WriteMessage(
                         MessageAndMilestoneType.NewStuff,
                         "TeamCollection.NewBookArrived",
@@ -1569,25 +1641,15 @@ namespace Bloom.TeamCollection
                         null
                     );
                 }
-                else
-                {
-                    _remotelyRenamedBooks.Add(oldName);
-                    _tcLog.WriteMessage(
-                        MessageAndMilestoneType.NewStuff,
-                        "TeamCollection.RenameFromRemote",
-                        "The book \"{0}\" has been renamed to \"{1}\" by a teammate.",
-                        oldName,
-                        bookBaseName
-                    );
-                }
             }
-
+            //Debug.WriteLine("Updated status in NewBook for " + bookBaseName);
             // This needs to be AFTER we update the message log, data which it may use.
             // In case by any chance this is the only notification we get when checkout status changed
             // remotely, we do this even if we think the notiication is spurious.
             UpdateBookStatus(bookBaseName, true);
         }
 
+        // This handles a LOCAL rename. Detecting a remote rename is handled in HandleModifiedFile.
         public void HandleBookRename(string oldName, string newName)
         {
             var status = GetLocalStatus(newName); // folder has already moved!
@@ -2374,6 +2436,9 @@ namespace Bloom.TeamCollection
                                     )
                             ); // updates everything local.
                         }
+                        // Possibly it has been renamed remotely, but we did not detect it normally because
+                        // the only change is the case of letters in the name, which Windows ignores.
+                        EnsureConsistentCasingInLocalName(bookName);
 
                         // whether or not we updated it, if it's not checked out there's no more to do.
                         continue;

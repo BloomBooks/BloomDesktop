@@ -357,6 +357,75 @@ namespace Bloom.TeamCollection
             RobustZip.WriteAllTopLevelFilesToZip(destPath, sourceDir);
         }
 
+        /// <summary>
+        /// Given a book name matching a book in the repo, if there is a corresponding local
+        /// folder, make sure it has the same case as the repo. This helps keep things
+        /// consistent after a remote rename.
+        /// </summary>
+        /// <param name="bookBaseName"></param>
+        public override void EnsureConsistentCasingInLocalName(string bookBaseName)
+        {
+            var localFolderPath = Path.Combine(_localCollectionFolder, bookBaseName);
+            if (DoLocalAndRemoteNamesDifferOnlyByCase(bookBaseName))
+            {
+                var tempName = Guid.NewGuid().ToString();
+                var tempPath = Path.Combine(_localCollectionFolder, tempName);
+                RobustIO.MoveDirectory(localFolderPath, tempPath);
+                RobustIO.MoveDirectory(tempPath, localFolderPath);
+                var htmFileName = Path.Combine(localFolderPath, bookBaseName + ".htm");
+                if (RobustFile.Exists(htmFileName))
+                {
+                    // This looks like a no-op, but it actually forces the file system to
+                    // rename the file to the correct case. The source file matches irrespective of case.
+                    var tempBookPath = Path.Combine(localFolderPath, tempName);
+                    RobustFile.Move(htmFileName, tempBookPath);
+                    RobustFile.Move(tempBookPath, htmFileName);
+                }
+                // Possibly the remote name change involved changing whether the name is locked.
+                // So when we need to update this, we will update meta.json, which stores that.
+                // It's just possible that this will bring something to local that we don't want,
+                // like which tool is open, but I think it's more important for the local repo
+                // to be consistent about whether the name is locked.
+                var metaJson = GetRepoBookFile(bookBaseName, "meta.json");
+                if (!string.IsNullOrEmpty(metaJson))
+                {
+                    var metaDataPath = Path.Combine(localFolderPath, "meta.json");
+                    RobustFile.WriteAllText(metaDataPath, metaJson);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds the file bookBaseName.bloom in the repo and the folder bookBaseName in the local
+        /// directory. Returns true if both exist and have different case.
+        /// (It's not possible that they differ in any way other than by case, since we won't find
+        /// a file or folder by any other name in either place. Without any wild cards in the searchPattern,
+        /// I don't think it's possible to find a file that is not an exact match, except for case.)
+        /// </summary>
+        /// <param name="bookBaseName"></param>
+        /// <returns></returns>
+        public override bool DoLocalAndRemoteNamesDifferOnlyByCase(string bookBaseName)
+        {
+            var repoPath = GetPathToBookFileInRepo(bookBaseName);
+            var localFolderPath = Path.Combine(_localCollectionFolder, bookBaseName);
+            // Get the actual file name on disk, which may have a different case.
+            var realRepoName = Path.GetFileNameWithoutExtension(
+                Directory
+                    .EnumerateFiles(Path.GetDirectoryName(repoPath), bookBaseName + ".bloom")
+                    .FirstOrDefault()
+            );
+            var realLocalFolderName = Path.GetFileName(
+                Directory
+                    .EnumerateDirectories(_localCollectionFolder, bookBaseName)
+                    .FirstOrDefault()
+            );
+            return (
+                !string.IsNullOrEmpty(realRepoName)
+                && !string.IsNullOrEmpty(realLocalFolderName)
+                && realRepoName != realLocalFolderName
+            );
+        }
+
         public override string RepoDescription => _repoFolderPath;
 
         // The standard place where we store zip files for a collection-level folder.

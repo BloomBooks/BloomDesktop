@@ -927,7 +927,8 @@ namespace BloomTests.TeamCollection
             string collectionFolder,
             string name,
             string content,
-            string folderNameIfDifferent = null
+            string folderNameIfDifferent = null,
+            string metaJsonIfDifferent = null
         )
         {
             var bookBuilder = new BookFolderBuilder()
@@ -935,6 +936,7 @@ namespace BloomTests.TeamCollection
                 .WithBookFolderName(folderNameIfDifferent)
                 .WithTitle(name)
                 .WithHtm("<html><body>" + content + "</body></html>")
+                .WithMetaDataJson(metaJsonIfDifferent)
                 .Build();
 
             return bookBuilder.BuiltBookFolderPath;

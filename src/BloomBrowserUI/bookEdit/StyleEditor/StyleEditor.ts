@@ -1130,12 +1130,6 @@ export default class StyleEditor {
 
         this._previousBox = targetBox;
 
-        let formatButtonFilename = "cogGrey.svg";
-        const isTextOverPicture = targetBox.closest(".bloom-textOverPicture");
-        if (isTextOverPicture) {
-            formatButtonFilename = "cog.svg";
-        }
-
         // Put the format button in the parent translation group. This prevents it being editable,
         // and avoids various complications; also, in WebView2, having it inside the content-editable
         // element somehow prevents ctrl-A from working (BL-12118).
@@ -1151,7 +1145,7 @@ export default class StyleEditor {
         $(targetBox).after(
             '<div id="formatButton" contenteditable="false" class="bloom-ui"><img contenteditable="false" src="' +
                 this._supportFilesRoot +
-                `/img/${formatButtonFilename}"></div>`
+                `/img/cogGrey.svg"></div>`
         );
 
         this.AdjustFormatButton(targetBox);

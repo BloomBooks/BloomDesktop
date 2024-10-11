@@ -173,6 +173,16 @@ namespace Bloom.TeamCollection
             throw new NotImplementedException();
         }
 
+        public override void EnsureConsistentCasingInLocalName(string bookBaseName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool DoLocalAndRemoteNamesDifferOnlyByCase(string bookBaseName)
+        {
+            throw new NotImplementedException();
+        }
+
         public override bool CannotDeleteBecauseDisconnected(string bookFolderPath)
         {
             // The only books we allow to be deleted while disconnected are newly created ones
