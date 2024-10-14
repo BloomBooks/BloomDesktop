@@ -2972,6 +2972,14 @@ export class BubbleManager {
             targetElement.closest(".bloom-videoReplayIcon") ||
             targetElement.closest(".bloom-videoPauseIcon")
         ) {
+            // The play button has special code in onMouseUp to handle a click on it.
+            // It does NOT have its own click handler (in overlays), because we want to allow the overlay
+            // to be dragged normally if a mouseDown on it is followed by sufficient mouse
+            // movement to be considered a drag.
+            // But I decided not to do that for the other two buttons, which only appear
+            // when the video is playing after a click on the play button. They have normal
+            // click handlers, and we don't want our mouse down/move/up handlers to respond
+            // when they are clicked.
             return true;
         }
         if (ev.ctrlKey || ev.altKey) {
