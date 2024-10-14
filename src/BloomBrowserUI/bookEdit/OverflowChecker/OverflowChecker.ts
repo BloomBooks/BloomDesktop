@@ -127,16 +127,22 @@ export default class OverflowChecker {
         // so we'll apply the same 'fudge' factor to both comparisons.
         const focusedBorderFudgeFactor = 2;
 
+        // I'm going to leave this comment and variable as a reminder that at one point we had to fudge things a
+        // little to make it look right. This might be because we weren't correctly preventing flex grow and shrink
+        // before measuring the content height.
+        // At present we don't seem to need a fudge factor to get an accurate indication of overflow or to make
+        // a good decision about whether to grow the box.
+        // Original comment:
         //In the Picture Dictionary template, all words have a scrollHeight that is 3 greater than the client height.
         //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
         // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
-        const shortBoxFudgeFactor = 4;
+        const shortBoxFudgeFactor = 0;
 
         // Fonts like Andika New Basic have internal metric data that indicates
         // a descent a bit larger than what letters typically have...I think
         // intended to leave room for diacritics. Gecko calculates the space
         // needed to render the text as including this, so it is part of the
-        // element.scrollHeight. But in the absense of such diacritics, the extra
+        // element.scrollHeight. But in the absence of such diacritics, the extra
         // space is not needed. This is particularly annoying for auto-sized elements
         // like the front cover title, which (due to line-height specs) may auto-size
         // to leave room for the actually visible text, but not the extra white space
@@ -155,7 +161,7 @@ export default class OverflowChecker {
         element.classList.add("disableTOPControls");
 
         const overflowY =
-            element.scrollHeight -
+            this.contentHeight(element) -
             fontFudgeFactor -
             (element.clientHeight +
                 focusedBorderFudgeFactor +
@@ -167,6 +173,57 @@ export default class OverflowChecker {
         element.classList.remove("disableTOPControls");
 
         return [overflowX, overflowY];
+    }
+
+    private static contentHeight(element: HTMLElement): number {
+        let maxContentBottom = 0;
+        const children = Array.from(element.children);
+        // First, we need to make sure that the size and position of the children are not affected
+        // by flex grow or shrink. Possibly at some point we might need to remember the old values
+        // of these styles, but currently we only mess with them using stylesheets, so setting them
+        // back to empty at the end is sufficient.
+        // Conceivably, there could be some flicker from setting and clearing these, but I haven't
+        // noticed it. Typically we use the results of this function to make overlays the right size,
+        // and then grow/shrink don't do anything.
+        if (element.childNodes.length === 0) {
+            return 0;
+        }
+        // Note that there may be no children, even though there are childNodes. We can only set style
+        // for elements, but we need to measure all the nodes (at least for one unit test).
+        children.forEach((e: HTMLElement) => {
+            e.style.flexGrow = "0";
+            e.style.flexShrink = "0";
+        });
+        // The element itself must not shrink, lest its scrollHeight or clientHeight be inaccurate.
+        element.style.flexGrow = "0";
+        element.style.flexShrink = "0";
+        // This is a reliable way to get the information if it is greater than the clientHeight,
+        // and means we don't have to worry about scroll position.
+        let result = element.scrollHeight;
+        if (element.scrollHeight <= element.clientHeight) {
+            // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
+            //
+            element.childNodes.forEach((x: HTMLElement) => {
+                if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
+                if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
+                // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
+                // But in case it is, we don't want to shrink the content height. And often there is only one
+                // child so we'll get an accurate figure this way even if there is some scrolling.
+                const xbottom = Math.max(x.offsetTop, 0) + x.offsetHeight;
+                if (xbottom > maxContentBottom) {
+                    maxContentBottom = xbottom;
+                }
+            });
+            result = maxContentBottom;
+        }
+        // return control to stylesheet
+        children.forEach((e: HTMLElement) => {
+            e.style.flexGrow = "";
+            e.style.flexShrink = "";
+        });
+        element.style.flexGrow = "";
+        element.style.flexShrink = "";
+        return result;
     }
 
     // Actual testable determination of Type II overflow or not
