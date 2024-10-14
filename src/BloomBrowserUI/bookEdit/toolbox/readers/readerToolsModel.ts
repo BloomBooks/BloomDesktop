@@ -1061,7 +1061,11 @@ export class ReaderToolsModel {
                 this.currentMarkupType === MarkupType.Leveled
             )
                 bookmarksForEachEditable = EditableDivUtils.doCkEditorCleanup(
-                    editableElements.toArray(),
+                    editableElements
+                        .filter(
+                            (index, element) => !!(element as HTMLDivElement)
+                        )
+                        .toArray() as HTMLDivElement[],
                     createCkEditorBookMarks
                 );
         }
@@ -1139,7 +1143,9 @@ export class ReaderToolsModel {
 
         if (bookmarksForEachEditable.length)
             EditableDivUtils.restoreSelectionFromCkEditorBookmarks(
-                editableElements.toArray(),
+                editableElements
+                    .filter((index, element) => !!(element as HTMLDivElement))
+                    .toArray() as HTMLDivElement[],
                 bookmarksForEachEditable
             );
 
