@@ -2855,7 +2855,7 @@ export class BubbleManager {
             !this.gotAMoveWhileMouseDown &&
             (event.target as HTMLElement).closest(".bloom-videoPlayIcon")
         ) {
-            handlePlayClick(event);
+            handlePlayClick(event, true);
             return;
         }
 

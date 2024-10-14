@@ -33,6 +33,7 @@ export function SetupVideoEditing(container) {
             // debugging, and just might prevent a problem in normal operation.
             videoElement.parentElement?.classList.remove("playing");
             videoElement.parentElement?.classList.remove("paused");
+            videoElement.addEventListener("click", handleVideoClick);
             const playButton = wrapVideoIcon(
                 videoElement,
                 // Alternatively, we could import the Material UI icon, make this file a TSX, and use
@@ -43,13 +44,7 @@ export function SetupVideoEditing(container) {
                 getPlayIcon("#ffffff", videoElement),
                 "bloom-videoPlayIcon"
             );
-            // We  only add a click handler to this button if the video is
-            // not in an overlay, because for overlays we want to use some
-            // smarts in bubbleManager to decide whether mouse activity here is
-            // a click on the button or a drag on the overlay.
-            if (!videoElement.closest(kTextOverPictureSelector)) {
-                playButton.addEventListener("click", handlePlayClick);
-            }
+            playButton.addEventListener("click", handlePlayClick);
             const pauseButton = wrapVideoIcon(
                 videoElement,
                 getPauseIcon("#ffffff", videoElement),
@@ -201,7 +196,11 @@ function isOverPicture(element: Element): boolean {
 function SetupClickToShowSignLanguageTool(containerDiv: Element) {
     // if the user clicks on the video placeholder (or the video for that matter--see BL-6149),
     // bring up the sign language tool
-    $(containerDiv).click(() => {
+    $(containerDiv).click(ev => {
+        if ((ev.currentTarget as HTMLElement).closest(".drag-activity-play")) {
+            return;
+        }
+
         // In comic mode (overlay tool), suppress the click handler of video-over-picture elements so it won't take us to the sign
         // language tool, but everywhere else we want a click on a video element to take us to the SL tool
         const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
@@ -364,19 +363,31 @@ function wrapVideoIcon(
 // we don't start from the beginning.
 let currentVideoElement: HTMLVideoElement | null = null;
 
-// Handles a click on the play button.
+// Handles a click on the play button. This is ignored here if the video is in an overlay
+// and we're not in Play mode, so the bubbleManager can decide if it's a drag or a click.
 // (This is also called by code in bubbleManager, when it determines that mouse activity
-// on the button should be considered a click, not a drag of the overlay. The event is
-// then actually from the mouseup. It's also called in the usual way for non-overlay videos.)
-export function handlePlayClick(ev: MouseEvent) {
-    ev.stopPropagation();
-    ev.preventDefault();
+// on the button SHOULD be considered a click, not a drag of the overlay. The event is
+// then actually from the mouseup, and forcePlay is true.)
+export function handlePlayClick(ev: MouseEvent, forcePlay?: boolean) {
     const video = (ev.target as HTMLElement)
         ?.closest(".bloom-videoContainer")
         ?.getElementsByTagName("video")[0];
     if (!video) {
         return; // should not happen
     }
+    // If we're in an overlay, we don't want this handler to play the video,
+    // becuse the click might be a drag on the overlay. We'll let bubbleManager
+    // decide and call playVideo if appropriate. That is, if we're not in Play mode,
+    // where dragging is not applicable, or being called FROM the bubbleManager.
+    if (
+        !forcePlay &&
+        video.closest(kTextOverPictureSelector) &&
+        !video.closest(".drag-activity-play")
+    ) {
+        return;
+    }
+    ev.stopPropagation();
+    ev.preventDefault();
     if (video !== currentVideoElement) {
         // a video we were not currently playing, start from the beginning.
         video.currentTime = 0;
@@ -416,3 +427,28 @@ function handlePauseClick(ev: MouseEvent) {
     video?.parentElement?.classList.remove("playing");
     video?.pause();
 }
+
+// In Bloom player, videos respond to a simple click on the video by either playing or
+// pausing. In Bloom editor, we only want this behavior in Game Play mode, where we
+// are simulating the player. (BloomPub preview uses actual BloomPlayer code). This would
+// be a natural bit of code to put in dragActivityRuntime.ts, except we don't need
+// it there, because BloomPlayer has this behavior for all videos, not just in Games.)
+const handleVideoClick = (ev: MouseEvent) => {
+    const video = ev.currentTarget as HTMLVideoElement;
+
+    // If we're not in Play mode, we don't need these behaviors.
+    // At least I don't think so. Outside Play mode, clicking on overlays is mainly about moving
+    // them, but we have a visible Play button in case you want to play one. In BP (and Play mode), you
+    // can't move them (unless one day we make them something you can drag to a target), so it
+    // makes sense that a click anywhere on the video would play it; there's nothing else useful
+    // to do in response.
+    if (!video.closest(".drag-activity-play")) {
+        return;
+    }
+
+    if (video.paused) {
+        handlePlayClick(ev, true);
+    } else {
+        handlePauseClick(ev);
+    }
+};
