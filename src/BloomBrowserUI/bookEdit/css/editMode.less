@@ -1479,3 +1479,62 @@ canvas.moving {
 .drag-activity-start #promptButton {
     visibility: unset;
 }
+
+@videoIconSize: 30px;
+@videoIconPadding: 0px;
+
+div.bloom-videoControlContainer {
+    position: absolute;
+    top: calc(50% - @videoIconSize / 2);
+    height: @videoIconSize + 2 * @videoIconPadding;
+    width: @videoIconSize + 2 * @videoIconPadding;
+    padding: @videoIconPadding;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+svg.bloom-videoControl {
+    height: @videoIconSize;
+}
+
+// never shown at the same time, so same location is fine.
+.bloom-videoPlayIcon,
+.bloom-videoPauseIcon {
+    left: calc(50% - @videoIconSize - 5px); // always the left of two icons
+}
+
+.bloom-videoReplayIcon {
+    left: calc(50% + 5px); // always the right of two icons
+}
+
+// Show play and replay when paused
+.bloom-videoContainer.paused {
+    .bloom-videoControlContainer {
+        &.bloom-videoPlayIcon,
+        &.bloom-videoReplayIcon {
+            display: flex;
+        }
+    }
+}
+
+// Show pause and replay when playing and hovered.
+.bloom-videoContainer.playing:hover {
+    .bloom-videoControlContainer {
+        &.bloom-videoPauseIcon,
+        &.bloom-videoReplayIcon {
+            display: flex;
+        }
+    }
+}
+
+// Show play, centered, when hovering a video that is not paused or playing
+.bloom-videoContainer:not(.paused):not(.playing):hover {
+    .bloom-videoPlayIcon {
+        display: flex;
+        left: calc(50% - @videoIconSize / 2);
+    }
+}
