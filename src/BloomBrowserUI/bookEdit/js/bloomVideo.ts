@@ -437,6 +437,11 @@ const handleVideoClick = (ev: MouseEvent) => {
     const video = ev.currentTarget as HTMLVideoElement;
 
     // If we're not in Play mode, we don't need these behaviors.
+    // At least I don't think so. Outside Play mode, clicking on overlays is mainly about moving
+    // them, but we have a visible Play button in case you want to play one. In BP (and Play mode), you
+    // can't move them (unless one day we make them something you can drag to a target), so it
+    // makes sense that a click anywhere on the video would play it; there's nothing else useful
+    // to do in response.
     if (!video.closest(".drag-activity-play")) {
         return;
     }
