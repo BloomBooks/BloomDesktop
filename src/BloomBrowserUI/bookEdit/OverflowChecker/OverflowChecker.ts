@@ -122,22 +122,22 @@ export default class OverflowChecker {
         )
             return [0, 0]; //display:inline always returns zero width, so there's no way to know if it's overflowing
 
-        // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
-        // This is because of the thin grey border on a focused input box.
-        // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
-        // so we'll apply the same 'fudge' factor to both comparisons.
-        const focusedBorderFudgeFactor = 2;
-
+        // I'm going to leave this comment and variable as a reminder that at one point we had to fudge things a
+        // little to make it look right. This might be because we weren't correctly preventing flex grow and shrink
+        // before measuring the content height.
+        // At present we don't seem to need a fudge factor to get an accurate indication of overflow or to make
+        // a good decision about whether to grow the box.
+        // Original comment:
         //In the Picture Dictionary template, all words have a scrollHeight that is 3 greater than the client height.
         //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
         // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
-        const shortBoxFudgeFactor = 4;
+        const shortBoxFudgeFactor = 0;
 
         // Fonts like Andika New Basic have internal metric data that indicates
         // a descent a bit larger than what letters typically have...I think
         // intended to leave room for diacritics. Gecko calculates the space
         // needed to render the text as including this, so it is part of the
-        // element.scrollHeight. But in the absense of such diacritics, the extra
+        // element.scrollHeight. But in the absence of such diacritics, the extra
         // space is not needed. This is particularly annoying for auto-sized elements
         // like the front cover title, which (due to line-height specs) may auto-size
         // to leave room for the actually visible text, but not the extra white space
@@ -145,6 +145,14 @@ export default class OverflowChecker {
         // To avoid spuriously reporting overflow in such cases (BL-6338), we adjust
         // for the discrepancy.
         const measurements = MeasureText.getDescentMeasurementsOfBox(element);
+        // console.log(
+        //     "actual descent: " +
+        //         measurements.actualDescent +
+        //         " layout descent: " +
+        //         measurements.layoutDescent +
+        //         " font descent: " +
+        //         measurements.fontDescent
+        // );
         const fontFudgeFactor = Math.max(
             measurements.fontDescent - measurements.actualDescent,
             0
@@ -158,12 +166,20 @@ export default class OverflowChecker {
         const overflowY =
             this.contentHeight(element) -
             fontFudgeFactor -
-            (element.clientHeight +
-                focusedBorderFudgeFactor +
-                shortBoxFudgeFactor);
-        const overflowX =
-            element.scrollWidth -
-            (element.clientWidth + focusedBorderFudgeFactor);
+            (element.clientHeight + shortBoxFudgeFactor);
+        // console.log(
+        //     "overflowY: " +
+        //         overflowY +
+        //         " contentHeight: " +
+        //         this.contentHeight(element) +
+        //         " fontFudgeFactor: " +
+        //         fontFudgeFactor +
+        //         " clientHeight: " +
+        //         element.clientHeight +
+        //         " shortBoxFudgeFactor: " +
+        //         shortBoxFudgeFactor
+        // );
+        const overflowX = element.scrollWidth - element.clientWidth;
 
         element.classList.remove("disableTOPControls");
 
