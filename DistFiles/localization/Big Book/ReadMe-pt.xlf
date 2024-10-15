@@ -22,7 +22,9 @@
 A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="pt-PT" state="translated">Para tornar as coisas mais simples, este modelo é definido em A4 horizontal, com fontes grandes. Você pode facilmente produzir livros que são A3 (duas vezes mais grande). Só leve seu PDF A4 para uma impressora e pedir-lhes para ampliá-lo para A3.</target>
+        <target xml:lang="pt-PT" state="translated">Para ficar mais simples, este modelo está configurado para imprimir no tamanho A4, orientação paisagem, com fontes grandes. 
+A orientação retrato no tamanho A4 é também possível.
+É simples produzir livros que são do tamanho A3 (duas vezes maior). Simplesmente levar o seu PDF A4 para uma gráfica ou LAN house e peça que amplie para tamanho A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
