@@ -1261,14 +1261,13 @@ export class BubbleManager {
         this.oldHeight = BubbleManager.pxToNumber(style.height);
         this.oldTop = BubbleManager.pxToNumber(style.top);
         this.oldLeft = BubbleManager.pxToNumber(style.left);
-        const imgC = this.activeElement.getElementsByClassName(
-            "bloom-imageContainer"
-        )[0];
-        const img = imgC?.getElementsByTagName("img")[0];
-        if (img && img.style.width) {
-            this.oldImageWidth = BubbleManager.pxToNumber(img.style.width);
-            this.oldImageTop = BubbleManager.pxToNumber(img.style.top);
-            this.oldImageLeft = BubbleManager.pxToNumber(img.style.left);
+        const imgOrVideo = this.getImageOrVideo();
+        if (imgOrVideo && imgOrVideo.style.width) {
+            this.oldImageWidth = BubbleManager.pxToNumber(
+                imgOrVideo.style.width
+            );
+            this.oldImageTop = BubbleManager.pxToNumber(imgOrVideo.style.top);
+            this.oldImageLeft = BubbleManager.pxToNumber(imgOrVideo.style.left);
         }
         document.addEventListener("mousemove", this.continueResizeDrag, {
             capture: true
@@ -1291,6 +1290,18 @@ export class BubbleManager {
     private minWidth = 30; // @MinTextBoxWidth in bubble.less
     private minHeight = 30; // @MinTextBoxHeight in bubble.less
 
+    private getImageOrVideo(): HTMLElement | undefined {
+        const imgC = this.activeElement?.getElementsByClassName(
+            "bloom-imageContainer"
+        )[0];
+        const img = imgC?.getElementsByTagName("img")[0];
+        const videoC = this.activeElement?.getElementsByClassName(
+            "bloom-videoContainer"
+        )[0];
+        const video = videoC?.getElementsByTagName("video")[0];
+        return img || video; // only one of these will be non-null
+    }
+
     // handles mouse move while dragging a resize handle.
     private continueResizeDrag = (event: MouseEvent) => {
         if (event.buttons !== 1 || !this.activeElement) {
@@ -1310,14 +1321,11 @@ export class BubbleManager {
         const deltaX = event.clientX - this.startResizeDragX;
         const deltaY = event.clientY - this.startResizeDragY;
         const style = this.activeElement.style;
-        const imgC = this.activeElement.getElementsByClassName(
-            "bloom-imageContainer"
-        )[0];
-        const img = imgC?.getElementsByTagName("img")[0];
+        const imgOrVideo = this.getImageOrVideo();
         // The slope of a line from nw to se (since y is positive down, this is a positive slope).
         // If we're moving one of the other points we will negate it to get the slope of the line
         // from ne to sw
-        let slope = img ? this.oldHeight / this.oldWidth : 0;
+        let slope = imgOrVideo ? this.oldHeight / this.oldWidth : 0;
 
         // Default is all unchanged...we will adjust the appropriate ones depending on how far
         // the mouse moved and which corner is being dragged.
@@ -1447,12 +1455,12 @@ export class BubbleManager {
         // Now, if the image is not cropped, it will resize automatically (width: 100% from
         // stylesheet, height unset so automatically scales with width). If it is cropped,
         // we need to resize it so that it stays the same amount cropped visually.
-        if (img?.style.width) {
+        if (imgOrVideo?.style.width) {
             const scale = newWidth / this.oldWidth;
-            img.style.width = this.oldImageWidth * scale + "px";
+            imgOrVideo.style.width = this.oldImageWidth * scale + "px";
             // to keep the same part of it showing, we need to scale left and top the same way.
-            img.style.left = this.oldImageLeft * scale + "px";
-            img.style.top = this.oldImageTop * scale + "px";
+            imgOrVideo.style.left = this.oldImageLeft * scale + "px";
+            imgOrVideo.style.top = this.oldImageTop * scale + "px";
         }
         // Finally, adjust various things that are affected by the new size.
         this.alignControlFrameWithActiveElement();
@@ -1817,23 +1825,36 @@ export class BubbleManager {
     // dimensions have the same aspect ratio as the image, make it so, reducing either height or
     // width as necessary.
     private matchContainerToImage(overlay: HTMLElement) {
-        const container = overlay.getElementsByClassName(
-            "bloom-imageContainer"
-        )[0];
-        // Don't go straight from overlay to img. A text box, for example, contains an img
-        // that is the cog wheel for the format dialog. We don't want to match the overlay
-        // aspect ratio to that.
-        const img = container?.getElementsByTagName("img")[0];
-        if (!img) return;
-        if (img.style.width) {
+        const imgOrVideo = this.getImageOrVideo();
+        if (!imgOrVideo) return;
+        if (imgOrVideo.style.width) {
             // we've already done cropping on this image, so we should not force the
             // container back to the original image shape.
             return;
         }
         const containerWidth = overlay.clientWidth;
         const containerHeight = overlay.clientHeight;
-        const imgWidth = img.naturalWidth;
-        const imgHeight = img.naturalHeight;
+        let imgWidth = 1;
+        let imgHeight = 1;
+        if (imgOrVideo instanceof HTMLImageElement) {
+            imgWidth = imgOrVideo.naturalWidth;
+            imgHeight = imgOrVideo.naturalHeight;
+        } else {
+            const video = imgOrVideo as HTMLVideoElement;
+            imgWidth = video.videoWidth;
+            imgHeight = video.videoHeight;
+            if (imgWidth === 0 || imgHeight === 0) {
+                // video not ready yet, try again later.
+                // I'm not sure this has ever been tested; the dimensions seem to be
+                // always available by the time this routine is called.
+                video.addEventListener(
+                    "loadedmetadata",
+                    () => this.matchContainerToImage(overlay),
+                    { once: true }
+                );
+                return;
+            }
+        }
         const imgRatio = imgWidth / imgHeight;
         const containerRatio = containerWidth / containerHeight;
         let newHeight = containerHeight;
