@@ -12,37 +12,10 @@ import {
     SignLanguageTool
 } from "../toolbox/signLanguage/signLanguageTool";
 import { kOverlayToolId } from "../toolbox/toolIds";
-
-const mouseOverFunction = e => {
-    const target = e.target as HTMLElement;
-    if (!target) {
-        return; // can this happen?
-    }
-    if (target.tagName.toLowerCase() === "video") {
-        if (
-            (e.altKey ||
-                e.ctrlKey ||
-                target.classList.contains("bloom-ui-no-controls")) &&
-            target.closest(".bloom-textOverPicture")
-        ) {
-            // trying to move/resize video container, or in some other state where we
-            // don't want controls
-            target.removeAttribute("controls");
-        } else {
-            target.setAttribute("controls", ""); // attribute just has to exist to work
-        }
-    }
-};
-
-const mouseOutFunction = e => {
-    const target = e.target as HTMLElement;
-    if (!target) {
-        return; // can this happen?
-    }
-    if (target.tagName.toLowerCase() === "video") {
-        target.removeAttribute("controls");
-    }
-};
+import { getPlayIcon } from "../img/playIcon";
+import { getPauseIcon } from "../img/pauseIcon";
+import { getReplayIcon } from "../img/replayIcon";
+import { kTextOverPictureSelector } from "./bubbleManager";
 
 export function SetupVideoEditing(container) {
     get("settings/enterpriseEnabled", result => {
@@ -52,32 +25,56 @@ export function SetupVideoEditing(container) {
             .each((index, vc) => {
                 SetupVideoContainer(vc, isEnterpriseEnabled);
             });
-        // We use mouseover rather than mouseenter and mouseout rather than mouseleave
-        // and attach to the body rather than individual videos so that we only have
-        // to do it once, and don't have to worry about attaching them to newly
-        // created videos. However, this function can be called again, and we only
-        // want one, so we remove before adding.
-        document.body.removeEventListener("mouseover", mouseOverFunction);
-        document.body.addEventListener("mouseover", mouseOverFunction);
-        document.body.removeEventListener("mouseout", mouseOutFunction);
-        document.body.addEventListener("mouseout", mouseOutFunction);
     });
+    Array.from(container.getElementsByTagName("video")).forEach(
+        (videoElement: HTMLVideoElement) => {
+            videoElement.removeAttribute("controls");
+            // I don't think we need to do this in normal operation, but it's useful when
+            // debugging, and just might prevent a problem in normal operation.
+            videoElement.parentElement?.classList.remove("playing");
+            videoElement.parentElement?.classList.remove("paused");
+            videoElement.addEventListener("click", handleVideoClick);
+            const playButton = wrapVideoIcon(
+                videoElement,
+                // Alternatively, we could import the Material UI icon, make this file a TSX, and use
+                // ReactDom.render to render the icon into the div. But just creating the SVG
+                // ourselves (as these methods do) seems more natural to me. We would not be using
+                // React for anything except to make use of an image which unfortunately is only
+                // available by default as a component.
+                getPlayIcon("#ffffff", videoElement),
+                "bloom-videoPlayIcon"
+            );
+            playButton.addEventListener("click", handlePlayClick);
+            const pauseButton = wrapVideoIcon(
+                videoElement,
+                getPauseIcon("#ffffff", videoElement),
+                "bloom-videoPauseIcon"
+            );
+            pauseButton.addEventListener("click", handlePauseClick);
+            const replayButton = wrapVideoIcon(
+                videoElement,
+                getReplayIcon("#ffffff", videoElement),
+                "bloom-videoReplayIcon"
+            );
+            replayButton.addEventListener("click", handleReplayClick);
+        }
+    );
 }
 
 function SetupVideoContainer(
-    containerDiv: Element,
+    videoContainerDiv: Element,
     isEnterpriseEnabled: boolean
 ) {
-    const videoElts = containerDiv.getElementsByTagName("video");
+    const videoElts = videoContainerDiv.getElementsByTagName("video");
     for (let i = 0; i < videoElts.length; i++) {
         const video = videoElts[i] as HTMLVideoElement;
         // Early sign language code included this; now we do it only on hover.
         video.removeAttribute("controls");
         video.addEventListener("playing", e => videoPlayingEventHandler(e));
-        video.addEventListener("ended", e => videoSetupEventHandler(e));
+        video.addEventListener("ended", e => videoEndedEventHandler(e));
     }
 
-    SetupClickToShowSignLanguageTool(containerDiv);
+    SetupClickToShowSignLanguageTool(videoContainerDiv);
 
     // BL-6133 - Only set up the Change Video button on the container,
     //   if Enterprise features are enabled.
@@ -89,7 +86,7 @@ function SetupVideoContainer(
                 ""
             )
             .done(changeVideoText => {
-                $(containerDiv)
+                $(videoContainerDiv)
                     .mouseenter(function() {
                         const $this = $(this);
 
@@ -119,10 +116,11 @@ function SetupVideoContainer(
     }
 }
 
-function videoSetupEventHandler(e: Event) {
+function videoEndedEventHandler(e: Event) {
     const video = e.target as HTMLVideoElement;
     const start: number = getVideoStartSeconds(video);
     SignLanguageTool.setCurrentVideoPoint(start, video);
+    video.parentElement?.classList.remove("playing");
 }
 
 function videoPlayingEventHandler(e: Event) {
@@ -132,7 +130,10 @@ function videoPlayingEventHandler(e: Event) {
     // It is conceivable that we won't need this code if we can figure out why Bloom's Geckofx isn't respecting
     // the timings. Currently running our code on Geckofx60 gets us a NotImplementedException inside of
     // the SignLanguageApi C# code (in Geckofx-Core).
-    const video = e.target as HTMLVideoElement;
+    const video = e.currentTarget as HTMLVideoElement;
+    video.parentElement?.classList.add("playing");
+    video.parentElement?.classList.remove("paused");
+    currentVideoElement = video;
     let end: number = getVideoEndSeconds(video);
     const untrimmedEndPoint: number = 0.0;
     if (end == untrimmedEndPoint) {
@@ -195,7 +196,11 @@ function isOverPicture(element: Element): boolean {
 function SetupClickToShowSignLanguageTool(containerDiv: Element) {
     // if the user clicks on the video placeholder (or the video for that matter--see BL-6149),
     // bring up the sign language tool
-    $(containerDiv).click(() => {
+    $(containerDiv).click(ev => {
+        if ((ev.currentTarget as HTMLElement).closest(".drag-activity-play")) {
+            return;
+        }
+
         // In comic mode (overlay tool), suppress the click handler of video-over-picture elements so it won't take us to the sign
         // language tool, but everywhere else we want a click on a video element to take us to the SL tool
         const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
@@ -336,3 +341,114 @@ export function updateVideoInContainer(container: Element, url: string): void {
         }
     }
 }
+
+// configure one of the icons we display over videos. We put a div around it and apply
+// various classes and append it to the parent of the video.
+function wrapVideoIcon(
+    videoElement: HTMLVideoElement,
+    icon: HTMLElement,
+    iconClass: string
+): HTMLElement {
+    const wrapper = videoElement.ownerDocument.createElement("div");
+    wrapper.classList.add("bloom-videoControlContainer");
+    wrapper.classList.add("bloom-ui"); // don't save as part of document
+    wrapper.appendChild(icon);
+    wrapper.classList.add(iconClass);
+    icon.classList.add("bloom-videoControl");
+    videoElement.parentElement?.appendChild(wrapper);
+    return icon;
+}
+
+// The one we most recently started playing or paused. If we hit play on this one,
+// we don't start from the beginning.
+let currentVideoElement: HTMLVideoElement | null = null;
+
+// Handles a click on the play button. This is ignored here if the video is in an overlay
+// and we're not in Play mode, so the bubbleManager can decide if it's a drag or a click.
+// (This is also called by code in bubbleManager, when it determines that mouse activity
+// on the button SHOULD be considered a click, not a drag of the overlay. The event is
+// then actually from the mouseup, and forcePlay is true.)
+export function handlePlayClick(ev: MouseEvent, forcePlay?: boolean) {
+    const video = (ev.target as HTMLElement)
+        ?.closest(".bloom-videoContainer")
+        ?.getElementsByTagName("video")[0];
+    if (!video) {
+        return; // should not happen
+    }
+    // If we're in an overlay, we don't want this handler to play the video,
+    // becuse the click might be a drag on the overlay. We'll let bubbleManager
+    // decide and call playVideo if appropriate. That is, if we're not in Play mode,
+    // where dragging is not applicable, or being called FROM the bubbleManager.
+    if (
+        !forcePlay &&
+        video.closest(kTextOverPictureSelector) &&
+        !video.closest(".drag-activity-play")
+    ) {
+        return;
+    }
+    ev.stopPropagation();
+    ev.preventDefault();
+    if (video !== currentVideoElement) {
+        // a video we were not currently playing, start from the beginning.
+        video.currentTime = 0;
+    }
+    play(video);
+}
+
+function handleReplayClick(ev: MouseEvent) {
+    ev.stopPropagation();
+    ev.preventDefault();
+    const video = (ev.target as HTMLElement)
+        ?.closest(".bloom-videoContainer")
+        ?.getElementsByTagName("video")[0];
+    if (!video) {
+        return; // should not happen
+    }
+    video.currentTime = 0;
+    play(video);
+}
+
+function play(video: HTMLVideoElement) {
+    video.play();
+}
+
+// This is called when the user clicks the pause button on a video.
+// Unlike when pause is done from the control bar, we add a class that shows some buttons.
+function handlePauseClick(ev: MouseEvent) {
+    ev.stopPropagation();
+    ev.preventDefault();
+    const video = (ev.target as HTMLElement)
+        ?.closest(".bloom-videoContainer")
+        ?.getElementsByTagName("video")[0];
+    if (!video) return;
+    // just possibly, the one we paused is not the one we most recently started playing.
+    currentVideoElement = video;
+    video?.parentElement?.classList.add("paused");
+    video?.parentElement?.classList.remove("playing");
+    video?.pause();
+}
+
+// In Bloom player, videos respond to a simple click on the video by either playing or
+// pausing. In Bloom editor, we only want this behavior in Game Play mode, where we
+// are simulating the player. (BloomPub preview uses actual BloomPlayer code). This would
+// be a natural bit of code to put in dragActivityRuntime.ts, except we don't need
+// it there, because BloomPlayer has this behavior for all videos, not just in Games.)
+const handleVideoClick = (ev: MouseEvent) => {
+    const video = ev.currentTarget as HTMLVideoElement;
+
+    // If we're not in Play mode, we don't need these behaviors.
+    // At least I don't think so. Outside Play mode, clicking on overlays is mainly about moving
+    // them, but we have a visible Play button in case you want to play one. In BP (and Play mode), you
+    // can't move them (unless one day we make them something you can drag to a target), so it
+    // makes sense that a click anywhere on the video would play it; there's nothing else useful
+    // to do in response.
+    if (!video.closest(".drag-activity-play")) {
+        return;
+    }
+
+    if (video.paused) {
+        handlePlayClick(ev, true);
+    } else {
+        handlePauseClick(ev);
+    }
+};

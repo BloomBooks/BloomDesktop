@@ -141,20 +141,6 @@ export function prepareActivity(
         elt.addEventListener("pointerdown", startDrag, { capture: true });
     });
 
-    const videos = Array.from(page.getElementsByTagName("video"));
-    videos.forEach(video => {
-        video.addEventListener("pointerdown", playVideo);
-        if (
-            video
-                .closest(".bloom-textOverPicture")
-                ?.hasAttribute("data-bubble-id")
-        ) {
-            // don't want to show controls on these, because they are typically too small,
-            // and the play time is short enough that just click-to-play is fine
-            video.classList.add("bloom-ui-no-controls");
-        }
-    });
-
     // Add event listeners to (other) text items that should play audio when clicked.
     const dontPlayWhenClicked = draggables.concat(targets);
     const otherTextItems = Array.from(
