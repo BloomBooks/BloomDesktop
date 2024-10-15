@@ -127,6 +127,7 @@ export default class OverflowChecker {
         // before measuring the content height.
         // At present we don't seem to need a fudge factor to get an accurate indication of overflow or to make
         // a good decision about whether to grow the box.
+        // Original comment:
         //In the Picture Dictionary template, all words have a scrollHeight that is 3 greater than the client height.
         //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
         // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
@@ -136,7 +137,7 @@ export default class OverflowChecker {
         // a descent a bit larger than what letters typically have...I think
         // intended to leave room for diacritics. Gecko calculates the space
         // needed to render the text as including this, so it is part of the
-        // element.scrollHeight. But in the absense of such diacritics, the extra
+        // element.scrollHeight. But in the absence of such diacritics, the extra
         // space is not needed. This is particularly annoying for auto-sized elements
         // like the front cover title, which (due to line-height specs) may auto-size
         // to leave room for the actually visible text, but not the extra white space
