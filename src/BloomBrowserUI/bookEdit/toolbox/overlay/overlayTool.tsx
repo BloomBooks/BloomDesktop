@@ -464,32 +464,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                     </div>
                 );
             case "video":
-                return (
-                    <div id="videoOrImageSubstituteSection">
-                        <Button
-                            css={css`
-                                // Had to add "!important"s because .MuiButton-contained overrode them!
-                                background-color: ${kBloomBlue} !important;
-                                text-align: center;
-                                margin: 20px 10px 5px 10px !important;
-                                padding: 5px 0 !important; // defeat huge 'contained' style padding-right
-                            `}
-                            onClick={showSignLanguageTool}
-                            size="large"
-                            variant="contained"
-                        >
-                            <Typography
-                                css={css`
-                                    color: white;
-                                `}
-                            >
-                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool">
-                                    Show Sign Language Tool
-                                </Span>
-                            </Typography>
-                        </Button>
-                    </div>
-                );
+                return <div id="videoOrImageSubstituteSection"></div>;
             case undefined:
             case "text":
                 return (
