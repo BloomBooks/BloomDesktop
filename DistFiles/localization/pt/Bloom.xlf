@@ -2491,12 +2491,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayEarlier" sil:dynamic="true">
         <source xml:lang="en">Play Earlier</source>
-        <target xml:lang="pt-PT" state="needs-translation">Play Earlier</target>
+        <target xml:lang="pt-PT" state="translated">Tocar antes</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PlayEarlier</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayLater" sil:dynamic="true">
         <source xml:lang="en">Play Later</source>
-        <target xml:lang="pt-PT" state="needs-translation">Play Later</target>
+        <target xml:lang="pt-PT" state="translated">Tocar depois</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PlayLater</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RecordYourself" sil:dynamic="true">
@@ -5169,9 +5169,9 @@
         <target xml:lang="pt-PT" state="final">Os metadados dentro desta fonte dizem-nos que ela não pode ser incorporada gratuitamente em e-books (livros eletrónicos) e no internet. Por favor, use uma fonte diferente.</target>
         <note>ID: PublishTab.FontProblem.License</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.Microsoft">
+      <trans-unit id="PublishTab.FontProblem.Microsoft" approved="yes">
         <source xml:lang="en">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</source>
-        <target xml:lang="pt-PT" state="translated">Esta é uma fonte fornecida pela Microsoft para uso apenas no seu computador. A Microsoft não permite o uso livre de suas fontes na internet ou em eBooks. Use outra fonte.</target>
+        <target xml:lang="pt-PT" state="final">Esta é uma fonte fornecida pela Microsoft para uso apenas no seu computador. A Microsoft não permite o uso livre de suas fontes na internet ou em eBooks. Use outra fonte.</target>
         <note>ID: PublishTab.FontProblem.Microsoft</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Result" approved="yes">
