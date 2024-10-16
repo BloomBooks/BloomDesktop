@@ -271,9 +271,9 @@ export default class OverflowChecker {
             // search ancestors starting with nearest
             const currentAncestor = $(parents[i]);
             const parentBottom =
-                currentAncestor.offset().top / scaleY +
+                (currentAncestor.offset()?.top ?? 0) / scaleY +
                 currentAncestor.outerHeight(true);
-            const elemTop = $(element).offset().top / scaleY;
+            const elemTop = ($(element).offset()?.top ?? 0) / scaleY;
             const elemBottom = elemTop + $(element).outerHeight(false);
             // console.log("Offset top: " + elemTop + " Outer Height: " + $(element).outerHeight(false));
             // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.

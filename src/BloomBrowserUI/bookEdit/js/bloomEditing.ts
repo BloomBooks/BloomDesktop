@@ -66,6 +66,7 @@ import { removeToolboxMarkup } from "../toolbox/toolbox";
 import { IBloomWebSocketEvent } from "../../utils/WebSocketManager";
 import { setupDragActivityTabControl } from "../toolbox/dragActivity/dragActivityTool";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
+import { addScrollbarsToPage, cleanupNiceScroll } from "./niceScrollBars";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -153,6 +154,7 @@ function Cleanup() {
 
     cleanupImages();
     cleanupOrigami();
+    cleanupNiceScroll();
 }
 
 //add a delete button which shows up when you hover
@@ -1161,7 +1163,9 @@ export function bootstrap() {
         .each((index: number, element: Element) => {
             attachToCkEditor(element);
         });
-
+    if ($("div.bloom-page").length === 1) {
+        addScrollbarsToPage($("div.bloom-page")[0]);
+    }
     // We want to do this as late in the page setup process as possible because a
     // mouse zoom event will regenerate the page, and various things we do in the process
     // of starting up a page don't like it if the page we are loading is already unloading.
@@ -1244,6 +1248,7 @@ function removeOrigami() {
     for (let i = 0; i < textLabels.length; i++) {
         textLabels[i].remove();
     }
+    cleanupNiceScroll(); // don't leave the nicescroll debris around
 }
 
 // This is invoked from C# when we are about to change pages. It removes markup we don't want to save.
@@ -1574,14 +1579,14 @@ export function attachToCkEditor(element) {
         // (Note that offsets are not defined if it's not visible.)
         if (show) {
             updateCkEditorButtonStatus(editor);
-            const barTop = bar.offset().top;
+            const barTop = bar.offset()?.top ?? 0;
             const div = mapCkeditDiv[editor.id];
             const rect = div.getBoundingClientRect();
             const parent = bar.scrollParent();
             const scrollTop = parent ? parent.scrollTop() : 0;
             const boxTop = rect.top + scrollTop;
             if (boxTop - barTop < 5) {
-                const barLeft = bar.offset().left;
+                const barLeft = bar.offset()?.left ?? 0;
                 const barHeight = bar.height();
                 bar.offset({ top: boxTop - barHeight, left: barLeft });
             }
