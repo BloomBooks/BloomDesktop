@@ -1385,6 +1385,7 @@ namespace Bloom.Book
         {
             if (
                 desiredStyleByLang.Count == 0
+                || !(child is SafeXmlElement) // can be a whitespace node (BL-13977)
                 || !child.GetAttribute("class").Contains(requiredClass)
             )
                 return;
