@@ -4739,6 +4739,147 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void RepairMissingStylesAndLangZInTranslationGroups_Works()
+        {
+            _bookDom = new HtmlDom(
+                @"<html>
+<head></head>
+<body>
+  <div class='bloom-page numberedPage customPage bloom-combinedPage side-left HalfLetterPortrait bloom-monolingual' id='84764793-08e7-4795-b236-d1b69f1fcdd3' data-pagelineage='45a5fcd2-8523-4e9c-be3b-6ffe057315a6' data-page-number='1' lang=''>
+    <div class='marginBox'>
+      <div class='bloom-translationGroup bloom-trailingElement bloom-vertical-align-center' data-hasqtip='true' style=''>
+        <!-- lang='z' is missing, lang='sv' and lang='de' both have a -style class. -->
+        <div class='bloom-editable Encabezado1-style bloom-visibility-code-on bloom-content1' lang='sv' contenteditable='true' style='' tabindex='0' spellcheck='false' role='textbox' aria-label='false' data-languagetipcontent='Swedish'>
+          <p>Swedish cat!</p>
+        </div>
+        <div class='bloom-editable Encabezado1-style bloom-contentNational1' lang='de' contenteditable='true' style='' tabindex='0' spellcheck='false' role='textbox' aria-label='false' data-languagetipcontent='German'>
+	  <p>German cat?</p>
+	</div>
+      </div>
+      <div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto' style='font-size: 18.6667px;'>
+        <!-- lang='z', lang='sv', and lang='de' all exist and have -style class. -->
+        <div class='bloom-editable normal-style bloom-visibility-code-on bloom-content1' style='min-height: 24.2667px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' lang='sv' contenteditable='true' data-languagetipcontent='Swedish'><p></p></div>
+        <div class='bloom-editable normal-style bloom-contentNational1' style='min-height: 24.2667px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' lang='de' contenteditable='true' data-languagetipcontent='German'><p></p></div>
+        <div class='bloom-editable normal-style' style='' lang='z' contenteditable='true'><p></p></div>
+      </div>
+    </div>
+  </div>
+  <div class='bloom-page numberedPage customPage bloom-combinedPage side-right HalfLetterPortrait bloom-monolingual' id='a3b94685-edf6-4a36-8529-5d8734e458ef' data-pagelineage='45a5fcd2-8523-4e9c-be3b-6ffe057315a6' data-page-number='2' lang=''>
+    <div class='marginBox'>
+      <div class='bloom-translationGroup bloom-trailingElement bloom-vertical-align-center' data-hasqtip='true' style='font-size: 21.3333px;'>
+        <!-- lang='z' has -style class, but not lang='sv' or lang='de'. -->
+        <div class='bloom-editable Encabezado1-style' lang='z' contenteditable='true' style=''><p></p></div>
+        <div class='bloom-editable bloom-content1' lang='sv' contenteditable='true' style='min-height: 27.7333px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' data-languagetipcontent='Swedish'>
+          <p>Swedish cat!</p>
+        </div>
+        <div class='bloom-editable bloom-contentNational1' lang='de' contenteditable='true' style='' tabindex='0' spellcheck='false' role='textbox' aria-label='false' data-languagetipcontent='German'></div>
+      </div>
+      <div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto' style='font-size: 18.6667px;'>
+        <!-- lang='z' is missing, lang='sv' and lang='de' do not have a -style class. -->
+        <div class='bloom-editable bloom-visibility-code-on bloom-content1' style='min-height: 24.2667px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' lang='sv' contenteditable='true' data-languagetipcontent='Swedish'><p></p></div>
+        <div class='bloom-editable bloom-contentNational1' style='min-height: 24.2667px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' lang='de' contenteditable='true' data-languagetipcontent='German'><p></p></div>
+      </div>
+    </div>
+  </div>
+</body></html>"
+            );
+            // test initial (broken) state
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable')]",
+                    10
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='sv']",
+                    4
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='de']",
+                    4
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='z']",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and contains(@class,'-style')]",
+                    6
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and not(contains(@class,'-style'))]",
+                    4
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'Encabezado1-style')]",
+                    3
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'normal-style')]", 3);
+
+            Bloom.Book.Book.RepairMissingStylesAndLangZInTranslationGroups(_bookDom);
+
+            // test final (repaired) state
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable')]",
+                    12
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='sv']",
+                    4
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='de']",
+                    4
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='z']",
+                    4
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and contains(@class,'-style')]",
+                    12
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[contains(@class,'bloom-editable') and not(contains(@class,'-style'))]"
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'Encabezado1-style')]",
+                    6
+                );
+            AssertThatXmlIn
+                .Dom(_bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'normal-style')]", 6);
+        }
+
+        [Test]
         public void RemoveBlankPages_BlankPageRemoved()
         {
             // This page should be deleted, despite containing a visible div (but with only whitespace content),
