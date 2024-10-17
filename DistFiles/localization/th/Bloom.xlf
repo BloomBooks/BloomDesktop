@@ -940,6 +940,11 @@
         <target xml:lang="th" state="final">แบบเทมเพลต</target>
         <note>ID: CollectionTab.Templates</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.Specialized Templates" sil:dynamic="true">
+        <source xml:lang="en">Specialized Templates</source>
+        <target xml:lang="th" state="needs-translation">Specialized Templates</target>
+        <note>ID: CollectionTab.Specialized Templates</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing">
         <source xml:lang="en">Title Missing</source>
         <target xml:lang="th" state="needs-translation">Title Missing</target>
@@ -2079,6 +2084,11 @@
         <target xml:lang="th" state="final">เปลี่ยนรูป</target>
         <note>ID: EditTab.Image.ChangeImage</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.ChooseImage">
+        <source xml:lang="en">Choose image from your computer...</source>
+        <target xml:lang="th" state="needs-translation">Choose image from your computer...</target>
+        <note>ID: EditTab.Image.ChooseImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true">
         <source xml:lang="en">Copy Image</source>
         <target xml:lang="th" state="needs-translation">Copy Image</target>
@@ -2094,6 +2104,16 @@
         <target xml:lang="th" state="needs-translation">Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: </target>
         <note>ID: EditTab.Image.Corrupt</note>
       </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.Corrupt" sil:dynamic="true">
+        <source xml:lang="en">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</source>
+        <target xml:lang="th" state="needs-translation">Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.</target>
+        <note>ID: EditTab.ImageMetadata.Corrupt</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ImageMetadata.Corrupt.MoreInfo" sil:dynamic="true">
+        <source xml:lang="en">More Information</source>
+        <target xml:lang="th" state="needs-translation">More Information</target>
+        <note>ID: EditTab.ImageMetadata.Corrupt.MoreInfo</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
         <source xml:lang="en">Cut Image</source>
         <target xml:lang="th" state="needs-translation">Cut Image</target>
@@ -2103,6 +2123,21 @@
         <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
         <target xml:lang="th" state="final">แก้ไขเครดิตภาพ, ลิขสิทธิ์และใบอนุญาต</target>
         <note>ID: EditTab.Image.EditMetadata</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true">
+        <source xml:lang="en">Set Image Information...</source>
+        <target xml:lang="th" state="needs-translation">Set Image Information...</target>
+        <note>ID: EditTab.Image.EditMetadataOverlay</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true">
+        <source xml:lang="en">Image Credits, Copyright, &amp; License</source>
+        <target xml:lang="th" state="needs-translation">Image Credits, Copyright, &amp; License</target>
+        <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This sound will play when the item is touched.</source>
+        <target xml:lang="th" state="needs-translation">This sound will play when the item is touched.</target>
+        <note>ID: EditTab.Image.PlayWhenTouched</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
@@ -2374,10 +2409,35 @@
         <target xml:lang="th" state="needs-translation">Drag any of these overlays onto the image:</target>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
+        <source xml:lang="en">Change Shape</source>
+        <target xml:lang="th" state="needs-translation">Change Shape</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.ChangeShape</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
+        <source xml:lang="en">Crop</source>
+        <target xml:lang="th" state="needs-translation">Crop</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
+        <source xml:lang="en">Resize</source>
+        <target xml:lang="th" state="needs-translation">Resize</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
+        <source xml:lang="en">Shift Picture</source>
+        <target xml:lang="th" state="needs-translation">Shift Picture</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Shift</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
         <source xml:lang="en">Add Child Bubble</source>
         <target xml:lang="th" state="needs-translation">Add Child Bubble</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.AddChildBubble</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.AutoHeight" sil:dynamic="true">
+        <source xml:lang="en">Auto Height</source>
+        <target xml:lang="th" state="needs-translation">Auto Height</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.AutoHeight</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background Color</source>
@@ -2389,10 +2449,25 @@
         <target xml:lang="th" state="needs-translation">Old Lace</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true">
+        <source xml:lang="en">Choose Video from your Computer...</source>
+        <target xml:lang="th" state="needs-translation">Choose Video from your Computer...</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ChooseVideo</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true">
+        <source xml:lang="en">Copy Text</source>
+        <target xml:lang="th" state="needs-translation">Copy Text</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>
         <target xml:lang="th" state="needs-translation">Duplicate</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
+        <source xml:lang="en">Format Text...</source>
+        <target xml:lang="th" state="needs-translation">Format Text...</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
         <source xml:lang="en">There are no options for this kind of overlay</source>
@@ -2408,6 +2483,26 @@
         <source xml:lang="en">None</source>
         <target xml:lang="th" state="needs-translation">None</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true">
+        <source xml:lang="en">Paste Text</source>
+        <target xml:lang="th" state="needs-translation">Paste Text</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayEarlier" sil:dynamic="true">
+        <source xml:lang="en">Play Earlier</source>
+        <target xml:lang="th" state="needs-translation">Play Earlier</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PlayEarlier</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayLater" sil:dynamic="true">
+        <source xml:lang="en">Play Later</source>
+        <target xml:lang="th" state="needs-translation">Play Later</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PlayLater</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.RecordYourself" sil:dynamic="true">
+        <source xml:lang="en">Record yourself...</source>
+        <target xml:lang="th" state="needs-translation">Record yourself...</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.RecordYourself</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true">
         <source xml:lang="en">Rounded Corners</source>
@@ -3165,8 +3260,8 @@
         <note>ID: Errors.BookProblem</note>
       </trans-unit>
       <trans-unit id="Errors.CopyImageMetadata">
-        <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. Try restarting your computer. If that does not fix the problem, please send us a report and we will help you fix it.</source>
-        <target xml:lang="th" state="needs-translation">Bloom was not able to copy the metadata to {0} image(s): {1}. Try restarting your computer. If that does not fix the problem, please send us a report and we will help you fix it.</target>
+        <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. The files may be corrupted. Please try other images, or try with Bloom 6.0 or newer.</source>
+        <target xml:lang="th" state="needs-translation">Bloom was not able to copy the metadata to {0} image(s): {1}. The files may be corrupted. Please try other images, or try with Bloom 6.0 or newer.</target>
         <note>ID: Errors.BookProblem</note>
       </trans-unit>
       <trans-unit id="Errors.CannotAccessFile" sil:dynamic="true">
@@ -3543,6 +3638,11 @@
         <source xml:lang="en">Device16x9 Portrait</source>
         <target xml:lang="th" state="needs-translation">Device16x9 Portrait</target>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true">
+        <source xml:lang="en">Half Folio Portrait</source>
+        <target xml:lang="th" state="needs-translation">Half Folio Portrait</target>
+        <note>ID: LayoutChoices.HalfFolioPortrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true">
         <source xml:lang="en">HalfLetter Landscape</source>
@@ -5071,10 +5171,20 @@
         <target xml:lang="th" state="needs-translation">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web.</target>
         <note>ID: PublishTab.FontProblem.License</note>
       </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.Microsoft">
+        <source xml:lang="en">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</source>
+        <target xml:lang="th" state="needs-translation">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</target>
+        <note>ID: PublishTab.FontProblem.Microsoft</note>
+      </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Result">
         <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</source>
         <target xml:lang="th" state="needs-translation">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</target>
         <note>ID: PublishTab.FontProblem.Result</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog">
+        <source xml:lang="en">Check the Fonts section of the Book Settings dialog to locate this font.</source>
+        <target xml:lang="th" state="needs-translation">Check the Fonts section of the Book Settings dialog to locate this font.</target>
+        <note>ID: PublishTab.FontProblem.CheckInBookSettingsDialog</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem uploading your book.</source>
@@ -6809,6 +6919,11 @@
         <source xml:lang="en">Put a comprehension question here</source>
         <target xml:lang="th" state="needs-translation">Put a comprehension question here</target>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
+      </trans-unit>
+      <trans-unit id="Topic" sil:dynamic="true">
+        <source xml:lang="en">Topic</source>
+        <target xml:lang="th" state="needs-translation">Topic</target>
+        <note>ID: Topic</note>
       </trans-unit>
       <trans-unit id="TopicChooser.Title" sil:dynamic="true">
         <source xml:lang="en">Choose Topic</source>
