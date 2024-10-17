@@ -1818,6 +1818,7 @@ namespace Bloom.Book
             BringXmatterHtmlUpToDate(OurHtmlDom);
             RepairBrokenSmallCoverCredits(OurHtmlDom);
             RepairCoverImageDescriptions(OurHtmlDom);
+            RepairMissingStylesAndLangZInTranslationGroups(OurHtmlDom);
             DetectAndMarkDarkCoverColor();
 
             progress.WriteStatus("Repair page label localization");
@@ -2279,6 +2280,61 @@ namespace Bloom.Book
                 // back to 4.6 with the single lang="*" entry, then all of the entries got filled in with the same obsolete data,
                 // so all of them have to be removed.
                 dataDiv.RemoveChild(coverImageDescription);
+            }
+        }
+
+        internal static void RepairMissingStylesAndLangZInTranslationGroups(HtmlDom bookDom)
+        {
+            foreach (var pageDiv in bookDom.GetContentPageElements())
+            {
+                foreach (
+                    var groupDiv in pageDiv.SafeSelectNodes(
+                        ".//div[contains(@class, 'bloom-translationGroup') and not(contains(@class, 'bloom-userCannotModifyStyles'))]"
+                    )
+                )
+                {
+                    var langZExists = false;
+                    var styleForRepair = "normal-style"; // default just in case.
+                    foreach (
+                        var editableDiv in groupDiv.SafeSelectNodes(
+                            "./div[contains(@class,'bloom-editable')]"
+                        )
+                    )
+                    {
+                        if (editableDiv.GetAttribute("lang") == "z")
+                            langZExists = true;
+                        var classList = editableDiv.GetAttribute("class").Trim().Split(' ', '\t');
+                        var style = classList.FirstOrDefault(x => x.EndsWith("-style"));
+                        if (string.IsNullOrEmpty(style))
+                        {
+                            editableDiv.SetAttribute(
+                                "class",
+                                $"{string.Join(" ", classList)} {styleForRepair}"
+                            );
+                            //Debug.WriteLine(
+                            //    $"DEBUG Repair: added {styleForRepair} to editableDiv @class: {editableDiv.OuterXml}"
+                            //);
+                        }
+                        else
+                        {
+                            styleForRepair = style; // we expect the style to stay the same inside a translationGroup.
+                        }
+                    }
+                    if (!langZExists)
+                    {
+                        var newDiv = groupDiv.OwnerDocument.CreateElement("div");
+                        newDiv.SetAttribute("class", $"bloom-editable {styleForRepair}");
+                        newDiv.SetAttribute("lang", "z");
+                        newDiv.SetAttribute("contenteditable", "true");
+                        newDiv.SetAttribute("style", "");
+                        groupDiv.AppendChild(newDiv);
+                        var newP = groupDiv.OwnerDocument.CreateElement("p");
+                        newDiv.AppendChild(newP);
+                        //Debug.WriteLine(
+                        //    $"DEBUG Repair: added lang='z' div to group: {groupDiv.OuterXml}"
+                        //);
+                    }
+                }
             }
         }
 

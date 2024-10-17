@@ -1395,6 +1395,16 @@ namespace Bloom.Book
                 langAttr = defaultLangKey;
             string defaultStyle;
             desiredStyleByLang.TryGetValue(defaultLangKey, out defaultStyle); // if unsuccessful, 'defaultStyle' will be ""
+            if (string.IsNullOrEmpty(defaultStyle))
+            {
+                // If there is no default style, the copied text will not have a style, and the
+                // Styles gear icon will not show up in the text box.  So we need a default style.
+                // See BL-13977.
+                if (desiredStyleByLang.Count > 0)
+                    defaultStyle = desiredStyleByLang.First().Value; // just grab the first one (often the only one if there are any defined)
+                else
+                    defaultStyle = "normal-style"; // as vanilla as can be, but better than nothing.
+            }
             string newStyle;
             if (!desiredStyleByLang.TryGetValue(langAttr, out newStyle))
                 newStyle = defaultStyle;
