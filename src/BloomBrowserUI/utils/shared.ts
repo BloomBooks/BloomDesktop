@@ -16,3 +16,14 @@ export const ckeditableSelector =
     ".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true']," +
     ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']," +
     ".bloom-contentNational2[contenteditable='true'],.Equation-style[contenteditable='true']";
+
+export function getPageIFrame(): HTMLIFrameElement {
+    return parent.window.document.getElementById("page") as HTMLIFrameElement;
+}
+
+// The body of the editable page, a root for searching for document content.
+export function getPageIframeBody(): HTMLElement | null {
+    const page = getPageIFrame();
+    if (!page || !page.contentWindow) return null;
+    return page.contentWindow.document.body;
+}

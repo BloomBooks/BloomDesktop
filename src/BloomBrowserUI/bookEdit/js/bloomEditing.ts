@@ -20,6 +20,7 @@ import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import {
+    bubbleDescription,
     BubbleManager,
     initializeBubbleManager,
     kTextOverPictureClass,
@@ -440,6 +441,7 @@ export function SetupElements(
     elementToFocus?: HTMLElement
 ) {
     recordWhatThisPageLooksLikeForSanityCheck(container);
+    BubbleManager.recordInitialZoom(container);
 
     SetupImagesInContainer(container);
 
@@ -864,10 +866,13 @@ export function SetupElements(
                     (window.top as any).lastPageId = currentPageId;
                 }
             }
-            if (!elementToFocus) {
-                // Make sure the active element is cleared if we're not setting it.
-                theOneBubbleManager.setActiveElement(undefined);
-            }
+            // We were doing this before but I don't know why. When we're loading a page, it
+            // will be unset initially. If something (e.g., sign language tool) sets an initial
+            // active element, we don't want to unset it.
+            // if (!elementToFocus) {
+            //     // Make sure the active element is cleared if we're not setting it.
+            //     theOneBubbleManager.setActiveElement(undefined);
+            // }
 
             const focusable = elementToFocus
                 ? $(elementToFocus).find(":focusable")

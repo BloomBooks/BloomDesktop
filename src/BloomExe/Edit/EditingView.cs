@@ -2058,6 +2058,12 @@ namespace Bloom.Edit
                     // Store the desired zoom level for use later when the previous request has
                     // finished its UI refresh.
                     _desiredZoomLevel = zoom;
+                    // I don't see how this is necessary, but I've seen Zoom locked in a state
+                    // where it never zooms because the timer is supposedly running, the interval is 1,
+                    // but the HandleDelayedZoom is never called. This might help: if we're
+                    // postponing zoom because the timer is running, we want to be quite sure
+                    // that the delayed zoom function is set to be called when the timer ticks.
+                    _zoomTimer.Tick += HandleDelayedZoom;
                     return;
                 }
                 _previousZoomTime = DateTime.Now;
@@ -2078,14 +2084,14 @@ namespace Bloom.Edit
 
                 Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
                 Settings.Default.Save();
-                // The main current reason a zoom change requires us to reload the page is that
-                // Text-over-picture boxes don't otherwise adjust their size and position properly.
-                // If that gets fixed, we could consider reinstating a JS function we used to call
-                // here, SetZoom, which originally just changed the transform on the scaling container.
-                // However, when it was later changed to post a request for reloading the page,
-                // it became cleaner to just do the reload directly here.
-                _model.RethinkPageAndReloadItAndReportIfItFails();
             }
+            // The main current reason a zoom change requires us to reload the page is that
+            // Text-over-picture boxes don't otherwise adjust their size and position properly.
+            // If that gets fixed, we could consider reinstating a JS function we used to call
+            // here, SetZoom, which originally just changed the transform on the scaling container.
+            // However, when it was later changed to post a request for reloading the page,
+            // it became cleaner to just do the reload directly here.
+            _model.RethinkPageAndReloadItAndReportIfItFails();
         }
 
         private void HandleDelayedZoom(object sender, EventArgs e)

@@ -45,6 +45,7 @@ import {
     OverlayTextItem
 } from "./overlayItem";
 import { isPageBloomGame } from "../dragActivity/dragActivityTool";
+import { getBubbleManager } from "./overlayUtils";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -829,9 +830,10 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
         }
     }
 
+    // In the process of moving this to a minimal-dependency utility file, but a lot of
+    // code still expects to find it here.
     public static bubbleManager(): BubbleManager | undefined {
-        const exports = getEditablePageBundleExports();
-        return exports ? exports.getTheOneBubbleManager() : undefined;
+        return getBubbleManager();
     }
 }
 
