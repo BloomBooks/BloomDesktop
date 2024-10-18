@@ -7,7 +7,11 @@ import axios from "axios";
 import { get, postString, wrapAxios } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { hookupLinkHandler } from "../../utils/linkHandler";
-import { ckeditableSelector } from "../../utils/shared";
+import {
+    ckeditableSelector,
+    getPageIFrame,
+    getPageIframeBody
+} from "../../utils/shared";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import { DragActivityTool } from "./dragActivity/dragActivityTool";
 
@@ -232,17 +236,17 @@ export class ToolBox {
         return toolName;
     }
 
+    // In the process of moving this to shared.ts, but a lot of
+    // code still expects to find it here.
     public static getPageFrame(): HTMLIFrameElement {
-        return parent.window.document.getElementById(
-            "page"
-        ) as HTMLIFrameElement;
+        return getPageIFrame();
     }
 
+    // In the process of moving this to shared.ts as getPageIframeBody, but a lot of
+    // code still expects to find it here.
     // The body of the editable page, a root for searching for document content.
     public static getPage(): HTMLElement | null {
-        const page = ToolBox.getPageFrame();
-        if (!page || !page.contentWindow) return null;
-        return page.contentWindow.document.body;
+        return getPageIframeBody();
     }
 
     public static isXmatterPage(): boolean {

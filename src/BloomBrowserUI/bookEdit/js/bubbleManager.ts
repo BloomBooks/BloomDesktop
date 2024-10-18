@@ -36,6 +36,7 @@ import { kBloomBlue } from "../../bloomMaterialUITheme";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { MeasureText } from "../../utils/measureText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
+import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 
 export interface ITextColorInfo {
     color: string;
@@ -46,11 +47,11 @@ const kComicalGeneratedClass: string = "comical-generated";
 // We could rename this class to "bloom-overPictureElement", but that would involve a migration.
 // For now we're keeping this name for backwards-compatibility, even though now the element could be
 // a video or even another picture.
+// In the process of moving these two definitions to overlayUtils.ts, but duplicating here for now.
 export const kTextOverPictureClass = "bloom-textOverPicture";
 export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kImageContainerClass = "bloom-imageContainer";
 const kImageContainerSelector = `.${kImageContainerClass}`;
-const kVideoContainerClass = "bloom-videoContainer";
 
 const kOverlayClass = "hasOverlay";
 
@@ -275,18 +276,6 @@ export class BubbleManager {
         );
         imageContainers.forEach(container => {
             BubbleManager.hideImageButtonsIfHasOverlays(container);
-        });
-    }
-
-    // When switching to the comicTool from elsewhere (notably the sign language tool), we remove
-    // the 'bloom-selected' class, so the container doesn't have a yellow border like it does in the
-    // sign language tool.
-    public deselectVideoContainers() {
-        const videoContainers: HTMLElement[] = Array.from(
-            document.getElementsByClassName(kVideoContainerClass) as any
-        );
-        videoContainers.forEach(container => {
-            container.classList.remove("bloom-selected");
         });
     }
 
@@ -778,7 +767,7 @@ export class BubbleManager {
         });
     }
 
-    private handleFocusInEvent(ev: Event) {
+    private handleFocusInEvent(ev: FocusEvent) {
         BubbleManager.onFocusSetActiveElement(ev);
     }
 
@@ -858,15 +847,56 @@ export class BubbleManager {
         });
     }
 
+    private static kTransformPropName = "bloom-zoomTransformForInitialFocus";
+
+    // If we haven't already, note (in a variable of the top window) the initial zoom level.
+    // This is used by a hack in onFocusSetActiveElement.
+    public static recordInitialZoom(container: HTMLElement) {
+        const zoomTransform = container.ownerDocument.getElementById(
+            "page-scaling-container"
+        )?.style.transform;
+        const topWindowZoomTransfrom = window.top?.[this.kTransformPropName];
+        if (window.top && zoomTransform && !topWindowZoomTransfrom) {
+            window.top[this.kTransformPropName] = zoomTransform;
+        }
+    }
+
     // The event handler to be called when something relevant on the page frame gets focus.
     // This will set the active textOverPicture element.
-    public static onFocusSetActiveElement(event: Event) {
+    public static onFocusSetActiveElement(event: FocusEvent) {
         if (BubbleManager.ignoreFocusChanges) return;
         if (BubbleManager.inPlayMode(event.currentTarget as Element)) {
             return;
         }
+
         // The current target is the element we attached the event listener to
         const focusedElement = event.currentTarget as Element;
+
+        // This is a hack to prevent the active bubble changing when we change zoom level.
+        // For some reason I can't track down, the first focusable thing on the page is
+        // given focus during the reload after a zoom change. I think somehow the
+        // browser itself is trying to focus something, and it's not the thing we want.
+        // We have mechanisms to focus what we do want, so we use this trick to ignore
+        // focus events immediately after a zoom change.
+        const zoomTransform = focusedElement.ownerDocument.getElementById(
+            "page-scaling-container"
+        )?.style.transform;
+        const topWindowZoomTransfrom = window.top?.[this.kTransformPropName];
+        if (window.top && zoomTransform !== topWindowZoomTransfrom) {
+            // We eventually want to reset the saved zoom level to the new one, so
+            // that this method can do its job...mainly allowing the user to tab between overlays.
+            // We don't do it immediately because experience indicates that there may be more than
+            // one focus event to suppress as we load the page. On my fast dev machine a 50ms
+            // delay is enough to catch them all, so I'm going with ten times that. It's not
+            // a catastrophe if we miss a tab key very soon after a zoom change, nor if the delay
+            // is not enough for a very slow machine and so the active bubble moves when it shouldn't.
+            setTimeout(() => {
+                if (window.top) {
+                    window.top[this.kTransformPropName] = zoomTransform;
+                }
+            }, 500);
+            return;
+        }
 
         // If we focus something on the page that isn't in a bubble, we need to switch
         // to having no active bubble element. Note: we don't want to use focusout
@@ -1025,6 +1055,20 @@ export class BubbleManager {
             // Restore hiding these when we activate a bubble, so they don't get in the way of working on
             // that bubble.
             theOneBubbleManager.turnOnHidingImageButtons();
+        }
+        if (this.activeElement) {
+            // We should call this if there is an active element, even if it is not a video,
+            // because it will turn off the 'active video' class that might be on some
+            // non-overlay video.
+            // But if there is no active element we should not, because we might be wanting to
+            // record a non-overlay video and wanting to show that one as active.
+            // Indeed, we might have been called from the code that makes that so.
+            selectVideoContainer(
+                this.activeElement.getElementsByClassName(
+                    "bloom-videoContainer"
+                )[0] as HTMLElement,
+                false
+            );
         }
     }
 
@@ -4844,6 +4888,9 @@ export function updateOverlayClass(imageContainer: HTMLElement) {
     }
 }
 
+// Don't use this from the toolbox iframe. Use getBubbleManager() from overlayUtils instead.
+// (If you use this from the toolbox iframe, you'll get a different instance of BubbleManager,
+// and it's supposed to be a singleton across both iframes.)
 export let theOneBubbleManager: BubbleManager;
 
 export function initializeBubbleManager() {
@@ -4875,6 +4922,10 @@ export function bubbleDescription(e: Element | null | undefined): string {
         if (img) {
             return result + "with image : " + img.getAttribute("src");
         }
+    }
+    const videoSrc = elt.getElementsByTagName("source")[0];
+    if (videoSrc) {
+        return result + "with video " + videoSrc.getAttribute("src");
     }
     // Enhance: look for videoContainer similarly
     else {

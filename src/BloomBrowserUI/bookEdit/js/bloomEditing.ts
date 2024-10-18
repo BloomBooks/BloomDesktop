@@ -20,6 +20,7 @@ import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import {
+    bubbleDescription,
     BubbleManager,
     initializeBubbleManager,
     kTextOverPictureClass,
@@ -440,6 +441,7 @@ export function SetupElements(
     elementToFocus?: HTMLElement
 ) {
     recordWhatThisPageLooksLikeForSanityCheck(container);
+    BubbleManager.recordInitialZoom(container);
 
     SetupImagesInContainer(container);
 
@@ -864,10 +866,32 @@ export function SetupElements(
                     (window.top as any).lastPageId = currentPageId;
                 }
             }
-            if (!elementToFocus) {
-                // Make sure the active element is cleared if we're not setting it.
-                theOneBubbleManager.setActiveElement(undefined);
-            }
+            // If we don't have some specific reason to focus on a particular overlay, we
+            // don't want to arbitrarily select one. It seems the browser will try
+            // to focus something, and sometimes it doesn't make a good choice, especially after
+            // changing zoom, which for some unknown reason seems to make it want to focus the
+            // first thing on the page that CAN be focused. And usually we automatically activate
+            // an overlay that gets focus.
+            // Prior to /4d9ff2a0860d78ecd96771a93a839ce60ab7a8d3, we made a call here to bubbleManager
+            // to tell it to ignore the next focusIn event. That was dubious and fragile.
+            // Then just prior to this commit, we were explicitly setting the active element to undefined
+            // here, but (since this is in a timeout) that could undo (for example) the sign language tool's
+            // attempt to pick some video as the one it applies to.
+            // In this commit, I've added code to specifically ignore focus events that immediately
+            // follow change of zoom. As far as I can tell, it is therefore no longer necessary
+            // to set the active element to undefined here. When we're loading a page, active element
+            // will be unset initially. If something (e.g., sign language tool) sets an initial
+            // active element, we don't want to unset it.
+            // There may, of course, be other circumstances we haven't discovered yet where the
+            // browser tries to focus the wrong thing. But if we restore this, we need to find
+            // some other way that the sign language tool can set an initial active element
+            // that will not be undone by this code. It's possible that data-bloom-active could be
+            // used, but note that currently it only applies if we're re-loading the same page.
+            // The sign language tool wants to be able to select a video (if any) on any page we load.
+            // if (!elementToFocus) {
+            //     // Make sure the active element is cleared if we're not setting it.
+            //     theOneBubbleManager.setActiveElement(undefined);
+            // }
 
             const focusable = elementToFocus
                 ? $(elementToFocus).find(":focusable")

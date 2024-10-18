@@ -544,6 +544,21 @@ body.bloom-fullBleed {
         border: solid 2px @bloom-yellow;
     }
 }
+.bloom-videoContainer:focus-visible {
+    // we show the active video container in other ways, and the browser's focus ring is just distracting
+    outline: none;
+}
+// We don't need the yellow border indicating the active video when the selected thing is an overlay.
+// We have a distinct mechanism for showing the selected overlay.
+// (We don't have overlay widgets and probably won't ever, but I included them just in case.)
+.bloom-textOverPicture {
+    .bloom-videoContainer,
+    .bloom-widgetContainer {
+        &.bloom-selected {
+            border: none;
+        }
+    }
+}
 
 .hoverUp .imageButton {
     border: 2px outset @ImageButtonBorder !important;
