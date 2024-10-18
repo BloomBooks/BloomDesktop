@@ -74,7 +74,7 @@ namespace Bloom.CollectionCreating
 
 		#endregion
 
-		private SIL.Windows.Forms.WritingSystems.LanguageLookupControl _lookupModel;
+		private web.ReactControl _lookupModel;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }

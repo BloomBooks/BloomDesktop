@@ -45,7 +45,7 @@ namespace Bloom.CollectionCreating
             this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
             this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
 			this._welcomeHtml = new SIL.Windows.Forms.Widgets.BetterLabel();
-			this._vernacularLanguageIdControl = new Bloom.CollectionCreating.LanguageIdControl();
+			this._vernacularLanguageIdControl = 
 			this._fontDetails = new Bloom.MiscUI.LanguageFontDetails();
 			this._languageLocationControl = new Bloom.CollectionCreating.LanguageLocationControl();
 			this._collectionNameControl = new Bloom.CollectionCreating.CollectionNameControl();
@@ -90,7 +90,8 @@ namespace Bloom.CollectionCreating
 			this._vernacularLanguagePage.Controls.Add(this._vernacularLanguageIdControl);
 			this._vernacularLanguagePage.Name = "_vernacularLanguagePage";
 			this._vernacularLanguagePage.NextPage = this._languageFontPage;
-			this._vernacularLanguagePage.Size = new System.Drawing.Size(712, 309);
+			// TODO
+			this._vernacularLanguagePage.Size = new System.Drawing.Size(950, 500);
 			this._vernacularLanguagePage.TabIndex = 1;
 			this._vernacularLanguagePage.Text = "Choose the main language for this collection.";
 			//

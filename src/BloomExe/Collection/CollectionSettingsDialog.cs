@@ -346,42 +346,33 @@ namespace Bloom.Collection
             ChangeThatRequiresRestart();
         }
 
-        public static LanguageInfo ChangeLanguage(
+        public static void ChangeLanguage(
+            // IWin32Window owner,
             string languageIdentifier,
+            Action<LanguageInfo> onLanguageChange,
             string potentiallyCustomName = null,
             bool showScriptAndVariantLink = true
         )
         {
-            using (var dlg = new LanguageLookupDialog())
+            var language = new LanguageInfo() { LanguageTag = languageIdentifier };
+
+            using (var dlg = new ReactDialog("languageChooserBundle", language))
             {
-                //at this point, we don't let them customize the national languages
-                dlg.IsDesiredLanguageNameFieldVisible = potentiallyCustomName != null;
-                dlg.IsShowRegionalDialectsCheckBoxVisible = true;
-                dlg.IsScriptAndVariantLinkVisible = showScriptAndVariantLink;
+                dlg.Width = 600;
+                dlg.Height = 1000;
+                // TODO
+                // //at this point, we don't let them customize the national languages
+                // dlg.IsDesiredLanguageNameFieldVisible = potentiallyCustomName != null;
+                // dlg.IsShowRegionalDialectsCheckBoxVisible = true;
+                // dlg.IsScriptAndVariantLinkVisible = showScriptAndVariantLink;
+                //                 // Following should be consistent with LanguageIdControl constructor.
+                // dlg.UseSimplifiedChinese();
 
-                var language = new LanguageInfo() { LanguageTag = languageIdentifier };
-                if (!string.IsNullOrEmpty(potentiallyCustomName))
-                {
-                    language.DesiredName = potentiallyCustomName; // to be noticed, must set before dlg.SelectedLanguage
-                }
-                dlg.SelectedLanguage = language;
-                // if languageIdentifier includes Script/Region/Variant codes... which it might now...
-                // limit the SearchText to the part before the first hyphen (the iso 639 code).
-                dlg.SearchText = languageIdentifier.Split('-')[0];
-
-                // Following should be consistent with LanguageIdControl constructor.
-                dlg.UseSimplifiedChinese();
-
-                // Avoid showing gratuitous script markers in language tags.
-                // See https://issues.bloomlibrary.org/youtrack/issue/BL-7641.
-                dlg.IncludeScriptMarkers = false;
-
-                if (DialogResult.OK != dlg.ShowDialog(Shell.GetShellOrOtherOpenForm()))
-                {
-                    return null;
-                }
-                return dlg.SelectedLanguage;
+                dlg.ShowDialog();
+                // dlg.ShowDialog(this);
+                CollectionSettingsApi.LanguageChanged += (sender, args) => onLanguageChange(args);
             }
+            // TODO how to clear?
         }
 
         private void _okButton_Click(object sender, EventArgs e)

@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
+using SIL.WritingSystems;
 
 namespace Bloom.web.controllers
 {
@@ -52,6 +53,8 @@ namespace Bloom.web.controllers
         private readonly List<object> _numberingStyles = new List<object>();
         private readonly XMatterPackFinder _xmatterPackFinder;
         private readonly BookSelection _bookSelection;
+
+        public static EventHandler<LanguageInfo> LanguageChanged;
 
         public CollectionSettingsApi(
             CollectionSettings collectionSettings,
@@ -291,6 +294,18 @@ namespace Bloom.web.controllers
                     }
                 },
                 false
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "changeLanguage",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                        return; // Should be a post
+                    var data = DynamicJson.Parse(request.RequiredPostJson());
+                    LanguageChanged?.Invoke(this, data.languageSelection);
+                    request.PostSucceeded();
+                },
+                true
             );
             // Calls to handle communication with new FontScriptControl on Book Making tab
             apiHandler.RegisterEndpointHandler(
