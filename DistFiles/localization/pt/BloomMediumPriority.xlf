@@ -207,9 +207,9 @@
         <target xml:lang="pt-PT" state="translated">Círculo de pedidos</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets" approved="yes">
         <source xml:lang="en">Show Answer even during Play</source>
-        <target xml:lang="pt-PT" state="translated">Mostrar resposta mesmo durante o jogo</target>
+        <target xml:lang="pt-PT" state="final">Mostrar resposta mesmo durante o jogo</target>
         <note>ID: EditTab.Toolbox.DragActivity.ShowAnswersInTargets</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Start" approved="yes">
@@ -814,14 +814,14 @@
         <target xml:lang="pt-PT" state="translated">A tabela a seguir mostra onde as fontes foram usadas.</target>
         <note>ID: BookSettings.Fonts.TableDescription</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true">
+      <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">First Page</source>
-        <target xml:lang="pt-PT" state="translated">Primeira Página</target>
+        <target xml:lang="pt-PT" state="final">Primeira Página</target>
         <note>ID: BookSettings.Fonts.FirstPage</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.All" sil:dynamic="true">
+      <trans-unit id="BookSettings.Fonts.All" sil:dynamic="true" approved="yes">
         <source xml:lang="en">(all)</source>
-        <target xml:lang="pt-PT" state="translated">(tudo)</target>
+        <target xml:lang="pt-PT" state="final">(tudo)</target>
         <note>ID: BookSettings.Fonts.All</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true">
