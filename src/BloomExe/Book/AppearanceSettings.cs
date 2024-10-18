@@ -281,9 +281,12 @@ public class AppearanceSettings
         string substituteAppearance = null;
         if (Program.RunningHarvesterMode || bookDom.HasOverlays())
         {
-            // We'll preserve the current appearance of older books we are harvesting.
-            // This should only apply to temporary copies on their way to becoming artifacts,
+            // We'll preserve the current appearance of older books we are harvesting,
+            // and books that have overlays even when editing.
+            // The harvester restriction should only apply to temporary copies on their way to becoming artifacts,
             // so it doesn't interfere with getting books migrated when they are to be edited.
+            // The overlay restriction will have some impact on getting books migrated, but we think the
+            // downside of subtly breaking overlay positioning without any opt-in is worse (BL-14007)
             CssThemeName = "legacy-5-6";
             return null;
         }
