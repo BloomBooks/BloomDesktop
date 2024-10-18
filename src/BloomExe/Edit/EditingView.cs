@@ -2063,6 +2063,7 @@ namespace Bloom.Edit
                     // but the HandleDelayedZoom is never called. This might help: if we're
                     // postponing zoom because the timer is running, we want to be quite sure
                     // that the delayed zoom function is set to be called when the timer ticks.
+                    _zoomTimer.Tick -= HandleDelayedZoom; // in case already subscribed
                     _zoomTimer.Tick += HandleDelayedZoom;
                     return;
                 }
@@ -2079,6 +2080,7 @@ namespace Bloom.Edit
                 // The timer is also used (with the Interval reset to 1 msec) to call SetZoom indirectly
                 // from inside the ZoomDocumentCompleted handler, which is needed for WebView2.
                 _zoomTimer.Interval = 6000;
+                _zoomTimer.Tick -= HandleDelayedZoom; // in case already subscribed
                 _zoomTimer.Tick += HandleDelayedZoom;
                 _zoomTimer.Start();
 

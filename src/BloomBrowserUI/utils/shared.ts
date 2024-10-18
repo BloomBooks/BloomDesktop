@@ -1,5 +1,6 @@
-// This file is just a place to put items which are needed by both the page editing bundle and the toolbox bundle.
-// Its first (and currently only) item is ckeditableSelector which was originally exported by bloomEditing.ts to be used by toolbox.ts.
+// This file is just a place to put items which are needed by both the page editing bundle and the toolbox bundle,
+// and which don't seem to fit elsewhere, such as in utils files in a particular tool.
+// Its first  item is ckeditableSelector which was originally exported by bloomEditing.ts to be used by toolbox.ts.
 // But somehow that caused significantly inflated build times and bundle sizes. Thus, this file was created...
 
 // We want to attach ckeditor to the contenteditable="true" class="bloom-content1"

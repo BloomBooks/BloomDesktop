@@ -36,7 +36,7 @@ import { kBloomBlue } from "../../bloomMaterialUITheme";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { MeasureText } from "../../utils/measureText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
-import { selectVideoContainer } from "./videoUtils";
+import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 
 export interface ITextColorInfo {
     color: string;
@@ -52,7 +52,6 @@ export const kTextOverPictureClass = "bloom-textOverPicture";
 export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kImageContainerClass = "bloom-imageContainer";
 const kImageContainerSelector = `.${kImageContainerClass}`;
-const kVideoContainerClass = "bloom-videoContainer";
 
 const kOverlayClass = "hasOverlay";
 
@@ -278,22 +277,6 @@ export class BubbleManager {
         imageContainers.forEach(container => {
             BubbleManager.hideImageButtonsIfHasOverlays(container);
         });
-    }
-
-    // When switching to the comicTool from elsewhere (notably the sign language tool), we remove
-    // the 'bloom-selected' class, so the container doesn't have a yellow border like it does in the
-    // sign language tool. We only need to do this for non-overlay video containers,
-    // since the yellow box is hidden in overlays, and we would like the same one (that is our active
-    // overlay) to be selected in the sign langauge tool if we switch back.)
-    public deselectVideoContainers() {
-        const videoContainers: HTMLElement[] = Array.from(
-            document.getElementsByClassName(kVideoContainerClass) as any
-        );
-        videoContainers
-            .filter(x => !x.closest(kTextOverPictureSelector))
-            .forEach(container => {
-                container.classList.remove("bloom-selected");
-            });
     }
 
     // A visible, editable div is generally focusable, but sometimes (e.g. in Bloom games),
@@ -894,7 +877,7 @@ export class BubbleManager {
         // given focus during the reload after a zoom change. I think somehow the
         // browser itself is trying to focus something, and it's not the thing we want.
         // We have mechanisms to focus what we do want, so we use this trick to ignore
-        // the first focus event after a zoom change.
+        // focus events immediately after a zoom change.
         const zoomTransform = focusedElement.ownerDocument.getElementById(
             "page-scaling-container"
         )?.style.transform;

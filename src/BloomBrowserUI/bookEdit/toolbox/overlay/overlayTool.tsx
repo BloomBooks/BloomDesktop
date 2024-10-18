@@ -46,6 +46,7 @@ import {
 } from "./overlayItem";
 import { isPageBloomGame } from "../dragActivity/dragActivityTool";
 import { getBubbleManager } from "./overlayUtils";
+import { deselectVideoContainers } from "../../js/videoUtils";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -121,7 +122,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
 
         bubbleManager.turnOnBubbleEditing();
         bubbleManager.turnOnHidingImageButtons();
-        bubbleManager.deselectVideoContainers();
+        deselectVideoContainers();
 
         const bubbleSpec = bubbleManager.getSelectedFamilySpec();
 
