@@ -308,6 +308,45 @@ namespace BloomTests.Book
             css = settings.ToCss();
             Assert.That(css, Does.Contain("--pageNumber-show-multiplicand: 1;"));
         }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetThemeAndSubstituteCss_BookHasOverlays_UsesLegacy(bool hasOverlays)
+        {
+            var settings = new AppearanceSettingsTest();
+            var cssFilesToCheck = new[]
+            {
+                Tuple.Create("customBookStyles.css", ""),
+                Tuple.Create("customCollectionStyles.css", "")
+            };
+            var dom = hasOverlays
+                ? new HtmlDom(
+                    @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
+			<body><div class='bloom-page'>
+				<div class='bloom-imageContainer'>
+					<div class='bloom-textOverPicture' data-bubble='"
+                        + BookStorageTests.MinimalDataBubbleValue
+                        + @"'/>
+				</div>
+			</div></body></html>"
+                )
+                : GetTrivialBookDom();
+            var pathToCustomCss = settings.GetThemeAndSubstituteCss(cssFilesToCheck, dom);
+
+            Assert.That(pathToCustomCss, Is.Null);
+            Assert.That(settings.CssThemeName, Is.EqualTo(hasOverlays ? "legacy-5-6" : "default"));
+        }
+
+        public static HtmlDom GetTrivialBookDom()
+        {
+            return new HtmlDom(
+                @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
+			<body><div class='bloom-page'>
+				<div class='bloom-imageContainer'>
+				</div>
+			</div></body></html>"
+            );
+        }
     }
 
     /// <summary>
@@ -344,7 +383,10 @@ namespace BloomTests.Book
                     AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme
                 )
             };
-            _pathToCustomCss = _settings.GetThemeAndSubstituteCss(cssFilesToCheck);
+            _pathToCustomCss = _settings.GetThemeAndSubstituteCss(
+                cssFilesToCheck,
+                AppearanceSettingsTests.GetTrivialBookDom()
+            );
             var jsonSettings = Newtonsoft.Json.Linq.JObject.Parse("{\"page-margin-top\":\"15mm\"}");
             _settings.UpdateFromJson(jsonSettings.ToString());
             _settings.WriteToFolder(_bookFolder);
