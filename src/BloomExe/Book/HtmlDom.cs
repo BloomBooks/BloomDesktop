@@ -2784,7 +2784,8 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// True if it has any overlays at all.
+        /// True if it has any overlays at all. (Text-only ones don't require a ComicalJs SVG, but they
+        /// could still get misplaced by a migration to Default appearance.)
         /// </summary>
         public bool HasOverlays()
         {
