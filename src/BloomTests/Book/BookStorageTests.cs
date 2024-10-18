@@ -1675,7 +1675,7 @@ namespace BloomTests.Book
             Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
         }
 
-        private const string MinimalDataBubbleValue =
+        public const string MinimalDataBubbleValue =
             "{`version`:`1.0`,`level`:1,`style`:`none`,`tails`:[]}";
 
         [Test]
