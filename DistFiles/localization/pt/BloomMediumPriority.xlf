@@ -824,9 +824,9 @@
         <target xml:lang="pt-PT" state="final">(tudo)</target>
         <note>ID: BookSettings.Fonts.All</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true">
+      <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page {0}</source>
-        <target xml:lang="pt-PT" state="translated">Página {0}</target>
+        <target xml:lang="pt-PT" state="final">Página {0}</target>
         <note>ID: BookSettings.Fonts.PageNumber</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.UnnumberedPage" sil:dynamic="true">
