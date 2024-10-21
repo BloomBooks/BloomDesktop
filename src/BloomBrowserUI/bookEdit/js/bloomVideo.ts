@@ -12,6 +12,7 @@ import {
     SignLanguageTool
 } from "../toolbox/signLanguage/signLanguageTool";
 import { kOverlayToolId } from "../toolbox/toolIds";
+import { selectVideoContainer } from "./videoUtils";
 import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
@@ -242,7 +243,7 @@ export function doVideoCommand(
     } else if (command === "record") {
         // There may be more than one video container on the page.  Make sure the
         // one we want to record into is selected.  See comments in BL-13930.
-        videoContainer.classList.add("bloom-selected");
+        selectVideoContainer(videoContainer);
         showSignLanguageTool();
     } else if (command === "playEarlier") {
         // Find the preceding video container element, if any, and move it after the current one

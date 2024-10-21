@@ -45,6 +45,8 @@ import {
     OverlayTextItem
 } from "./overlayItem";
 import { isPageBloomGame } from "../dragActivity/dragActivityTool";
+import { getBubbleManager } from "./overlayUtils";
+import { deselectVideoContainers } from "../../js/videoUtils";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -120,7 +122,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
 
         bubbleManager.turnOnBubbleEditing();
         bubbleManager.turnOnHidingImageButtons();
-        bubbleManager.deselectVideoContainers();
+        deselectVideoContainers();
 
         const bubbleSpec = bubbleManager.getSelectedFamilySpec();
 
@@ -464,32 +466,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                     </div>
                 );
             case "video":
-                return (
-                    <div id="videoOrImageSubstituteSection">
-                        <Button
-                            css={css`
-                                // Had to add "!important"s because .MuiButton-contained overrode them!
-                                background-color: ${kBloomBlue} !important;
-                                text-align: center;
-                                margin: 20px 10px 5px 10px !important;
-                                padding: 5px 0 !important; // defeat huge 'contained' style padding-right
-                            `}
-                            onClick={showSignLanguageTool}
-                            size="large"
-                            variant="contained"
-                        >
-                            <Typography
-                                css={css`
-                                    color: white;
-                                `}
-                            >
-                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool">
-                                    Show Sign Language Tool
-                                </Span>
-                            </Typography>
-                        </Button>
-                    </div>
-                );
+                return <div id="videoOrImageSubstituteSection"></div>;
             case undefined:
             case "text":
                 return (
@@ -854,9 +831,10 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
         }
     }
 
+    // In the process of moving this to a minimal-dependency utility file, but a lot of
+    // code still expects to find it here.
     public static bubbleManager(): BubbleManager | undefined {
-        const exports = getEditablePageBundleExports();
-        return exports ? exports.getTheOneBubbleManager() : undefined;
+        return getBubbleManager();
     }
 }
 

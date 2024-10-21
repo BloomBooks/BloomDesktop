@@ -3800,7 +3800,10 @@ namespace Bloom.Book
             }
 
             var cssFiles = GetCssFilesToCheckForAppearanceCompatibility(true);
-            var substituteCssPath = BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(cssFiles);
+            var substituteCssPath = BookInfo.AppearanceSettings.GetThemeAndSubstituteCss(
+                cssFiles,
+                Dom
+            );
             if (substituteCssPath != null)
             {
                 var destPath = Path.Combine(FolderPath, "customBookStyles2.css");

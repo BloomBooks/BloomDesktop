@@ -540,10 +540,10 @@ namespace Bloom.Api
             }
             if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8089/bloom/current-bloompub-url will always show the page we're on.
             {
-                info.ResponseContentType = "text/html";
-                info.WriteCompleteOutput(
-                    $"<meta http-equiv=\"Refresh\" content=\"0; url='{PublishApi.PreviewUrl}'\" />"
-                );
+                info.ResponseContentType = "application/json";
+                // send url:{PublishApi.PreviewUrl}
+                info.WriteCompleteOutput("{\"url\":\"" + PublishApi.PreviewUrl + "\"}");
+
                 return true;
             }
 
