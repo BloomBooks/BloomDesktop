@@ -1474,3 +1474,76 @@ canvas.moving {
     }
     pointer-events: none; // overridden for children, but the outer bit that's just for positioning should not be clickable
 }
+
+@videoIconSize: 30px;
+@videoIconPadding: 0px;
+
+div.bloom-videoControlContainer {
+    position: absolute;
+    top: calc(50% - @videoIconSize / 2);
+    height: @videoIconSize + 2 * @videoIconPadding;
+    width: @videoIconSize + 2 * @videoIconPadding;
+    padding: @videoIconPadding;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+svg.bloom-videoControl {
+    height: @videoIconSize;
+}
+
+// never shown at the same time, so same location is fine.
+.bloom-videoPlayIcon,
+.bloom-videoPauseIcon {
+    left: calc(50% - @videoIconSize - 5px); // always the left of two icons
+}
+
+.bloom-videoReplayIcon {
+    left: calc(50% + 5px); // always the right of two icons
+}
+
+// Show play and replay when paused
+.bloom-videoContainer.paused {
+    .bloom-videoControlContainer {
+        &.bloom-videoPlayIcon,
+        &.bloom-videoReplayIcon {
+            display: flex;
+        }
+    }
+}
+
+// Show pause and replay when playing and hovered.
+.bloom-videoContainer.playing:hover {
+    .bloom-videoControlContainer {
+        &.bloom-videoPauseIcon,
+        &.bloom-videoReplayIcon {
+            display: flex;
+        }
+    }
+}
+
+// Show play, centered, when hovering a video that is not paused or playing
+.bloom-videoContainer:not(.paused):not(.playing):hover {
+    .bloom-videoPlayIcon {
+        display: flex;
+        left: calc(50% - @videoIconSize / 2);
+    }
+}
+
+// ...except in Game Play mode. This is tricky. It needs to override the rule above, but not
+// override the rule that makes Play visible when we are paused. We could put a :not(.drag-activity-play)
+// on the rule above, but I'm worried about the performance of a rule with a top-level negation.
+// We could use !important here, but we really need at least the .drag-activity-play and
+// the .bloom-videoContainer:not(.paused) or the !important will hide it when paused.
+// (This rule would be more at home in Games.less, but we don't need any other Game-specific
+// rules about the video controls, so I think it's more helpful to keep it with the rules
+// it modifies.)
+.drag-activity-play .bloom-videoContainer:not(.paused):not(.playing):hover {
+    .bloom-videoPlayIcon {
+        display: none;
+    }
+}
