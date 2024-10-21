@@ -271,6 +271,20 @@ namespace Bloom.SafeXml
             return null;
         }
 
+        public SafeXmlElement ParentElement
+        {
+            get
+            {
+                lock (_doc.Lock)
+                {
+                    var parent = _wrappedNode.ParentNode;
+                    while (parent != null && !(parent is XmlElement))
+                        parent = parent.ParentNode;
+                    return WrapNode(parent, _doc) as SafeXmlElement;
+                }
+            }
+        }
+
         public virtual string GetOptionalStringAttribute(string name, string defaultValue)
         {
             return null;

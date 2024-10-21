@@ -38,6 +38,7 @@ import { MeasureText } from "../../utils/measureText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { handlePlayClick } from "./bloomVideo";
+import { kcodeResizeClass } from "../toolbox/overlay/overlayUtils";
 
 export interface ITextColorInfo {
     color: string;
@@ -53,6 +54,7 @@ export const kTextOverPictureClass = "bloom-textOverPicture";
 export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kImageContainerClass = "bloom-imageContainer";
 const kImageContainerSelector = `.${kImageContainerClass}`;
+const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 
 const kOverlayClass = "hasOverlay";
 
@@ -358,6 +360,7 @@ export class BubbleManager {
             return; // Already on. No work needs to be done
         }
         this.isComicEditingOn = true;
+        this.handleResizeAdjustments();
 
         Comical.setActiveBubbleListener(activeElement => {
             // No longer want to focus a bubble when activated.
@@ -848,17 +851,15 @@ export class BubbleManager {
         });
     }
 
-    private static kTransformPropName = "bloom-zoomTransformForInitialFocus";
-
     // If we haven't already, note (in a variable of the top window) the initial zoom level.
     // This is used by a hack in onFocusSetActiveElement.
     public static recordInitialZoom(container: HTMLElement) {
         const zoomTransform = container.ownerDocument.getElementById(
             "page-scaling-container"
         )?.style.transform;
-        const topWindowZoomTransfrom = window.top?.[this.kTransformPropName];
+        const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform && !topWindowZoomTransfrom) {
-            window.top[this.kTransformPropName] = zoomTransform;
+            window.top[kTransformPropName] = zoomTransform;
         }
     }
 
@@ -882,7 +883,7 @@ export class BubbleManager {
         const zoomTransform = focusedElement.ownerDocument.getElementById(
             "page-scaling-container"
         )?.style.transform;
-        const topWindowZoomTransfrom = window.top?.[this.kTransformPropName];
+        const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform !== topWindowZoomTransfrom) {
             // We eventually want to reset the saved zoom level to the new one, so
             // that this method can do its job...mainly allowing the user to tab between overlays.
@@ -893,7 +894,7 @@ export class BubbleManager {
             // is not enough for a very slow machine and so the active bubble moves when it shouldn't.
             setTimeout(() => {
                 if (window.top) {
-                    window.top[this.kTransformPropName] = zoomTransform;
+                    window.top[kTransformPropName] = zoomTransform;
                 }
             }, 500);
             return;
@@ -4925,6 +4926,350 @@ export class BubbleManager {
         }
 
         return [offsetX, offsetY];
+    }
+
+    private handleResizeAdjustments() {
+        const primaryImageContainers = this.getAllPrimaryImageContainersOnPage();
+        primaryImageContainers.forEach(container => {
+            this.switchToCodeResizingIfNeeded(container);
+            this.AdjustChildrenIfSizeChanged(container);
+        });
+    }
+    private switchToCodeResizingIfNeeded(container: HTMLElement) {
+        if (
+            container.getElementsByClassName(kTextOverPictureClass).length >
+                0 &&
+            !container.classList.contains(kcodeResizeClass)
+        ) {
+            this.switchToCodeResizing(container);
+        }
+    }
+
+    private switchToCodeResizing(container: HTMLElement) {
+        container.classList.add(kcodeResizeClass);
+        this.updateImgSizeData(container);
+        const img = container.getElementsByTagName("img")[0];
+
+        if (!img) return;
+        const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+        const containerAspectRatio =
+            container.clientWidth / container.clientHeight;
+        if (imgAspectRatio > containerAspectRatio) {
+            // size of image is width-limited
+            img.style.width = container.clientWidth + "px";
+            img.style.left = "0px";
+            img.style.top =
+                (container.clientHeight - img.clientHeight) / 2 + "px";
+        } else {
+            // size of image is height-limited. We still set the width
+            // and let the height be automatic.
+            img.style.width = container.clientHeight * imgAspectRatio + "px";
+            img.style.top = "0px";
+            img.style.left =
+                (container.clientWidth - img.clientWidth) / 2 + "px";
+        }
+    }
+
+    private updateImgSizeData(container: HTMLElement) {
+        container.setAttribute(
+            "data-imgSizeBasedOn",
+            `${container.clientWidth},${container.clientHeight}`
+        );
+    }
+
+    private AdjustChildrenIfSizeChanged(container: HTMLElement): void {
+        const oldSizeData = container.getAttribute("data-imgSizeBasedOn");
+        if (!oldSizeData) return; // not in the computed image system
+        const oldSizeDataArray = oldSizeData.split(",");
+        const oldWidth = parseInt(oldSizeDataArray[0]);
+        const oldHeight = parseInt(oldSizeDataArray[1]);
+        const newWidth = container.clientWidth;
+        const newHeight = container.clientHeight;
+        if (oldWidth === newWidth && oldHeight === newHeight) return; // allow small discrepancy?
+        // Leave out of this calculation the canvas and any image descriptions or controls.
+        const children = (Array.from(
+            container.children
+        ) as HTMLElement[]).filter(
+            c =>
+                c.style.left !== "" &&
+                c.classList.contains("bloom-ui") === false
+        );
+        if (children.length === 0) return;
+        // Figure out the rectangle that contains all the children, that is, any main image plus
+        // all overlays. We'll adjust the size and position of this rectangle to fit the new container.
+        // Review: should we consider any data-bubble-alternate values on other language bloom-editables?
+        // In most cases it won't make much difference since the alternat is in nearly the same place.
+        // If an alternate is in a very different place, leaving it out here could mean it gets clipped
+        // in the new layout. OTOH, if we include it, the results for this language could be quite
+        // puzzling, and there might be no way to get things to stay where they are wanted.
+        // These initial settings mean that anything that was already clipped is allowed to remain so.
+        let top = oldHeight;
+        let bottom = 0;
+        let left = oldWidth;
+        let right = 0;
+        children.forEach((child: HTMLElement) => {
+            const childTop = child.offsetTop;
+            const childLeft = child.offsetLeft;
+            if (childTop < top) top = childTop;
+            if (childLeft < left) left = childLeft;
+            if (childTop + child.clientHeight > bottom)
+                bottom = childTop + child.clientHeight;
+            if (childLeft + child.clientWidth > right)
+                right = childLeft + child.clientWidth;
+        });
+        const childrenHeight = bottom - top;
+        const childrenWidth = right - left;
+        const childrenAspectRatio = childrenWidth / childrenHeight;
+        // The goal is to figure out the new size and position of the rectangle
+        // defined by top, left, childrenWidth, childrenHeight, which are relative
+        // to oldWidth and oldHeight, in view of the newWidth and newHeight.
+        // Ideally the new height, width, top, and left would be the same percentages
+        //as before of the new container height and width. But we need to preserve
+        // aspect ratio. If the ideal adjustment breaks this, we will
+        // - increase the dimension that is too small for the aspect ratio until the aspect ratio is correct or it fills the container.
+        // - if that didn't make things right, decrease the other dimension.
+        // What fraction of the old padding was on the left?
+        const widthPadding = oldWidth - childrenWidth;
+        const heightPadding = oldHeight - childrenHeight;
+        // if there was significant padding before, we'll try to keep the same ratio.
+        // if not, and we now need padding in that direction, we'll center things.
+        const oldLeftFraction = widthPadding > 1 ? left / widthPadding : 0.5;
+        const oldTopFraction = heightPadding > 1 ? top / heightPadding : 0.5;
+        const oldWidthFraction = childrenWidth / oldWidth;
+        const oldHeightFraction = childrenHeight / oldHeight;
+        let newChildrenWidth = oldWidthFraction * newWidth;
+        let newChildrenHeight = oldHeightFraction * newHeight;
+        if (newChildrenWidth / newChildrenHeight > childrenAspectRatio) {
+            // the initial calculation will distort things as if squeezed vertically.
+            // try increasing height
+            newChildrenHeight = newChildrenWidth / childrenAspectRatio;
+            if (newChildrenHeight > newHeight) {
+                // can't grow enough vertically, instead, reduce width
+                newChildrenHeight = newHeight;
+                newChildrenWidth = newChildrenHeight * childrenAspectRatio;
+            }
+        } else {
+            // the initial calculation will distort things as if squeezed horizontally.
+            // try increasing width
+            newChildrenWidth = newChildrenHeight * childrenAspectRatio;
+            if (newChildrenWidth > newWidth) {
+                // can't grow enough horizontally, instead, reduce height
+                newChildrenWidth = newWidth;
+                newChildrenHeight = newChildrenWidth / childrenAspectRatio;
+            }
+        }
+        // after the adjustments above, this is how we will scale things in both directions.
+        const scale = newChildrenWidth / childrenWidth;
+        // The new topLeft is calculated to distribute any whitespace in the same proportions as before.
+        const newWidthPadding = newWidth - newChildrenWidth;
+        const newHeightPadding = newHeight - newChildrenHeight;
+        const newLeft = oldLeftFraction * newWidthPadding;
+        const newTop = oldTopFraction * newHeightPadding;
+        // OK, so the rectangle that represents the union of all the children is going to
+        // be scaled by 'scale' and moved to (newLeft, newTop).
+        // Now we need to adjust the position and possibly size of each child.
+        //
+        children.forEach((child: HTMLElement) => {
+            const childTop = child.offsetTop;
+            const childLeft = child.offsetLeft;
+            // a first approximation
+            let newChildTop = newTop + (childTop - top) * scale;
+            let newChildLeft = newLeft + (childLeft - left) * scale;
+            let newChildWidth = child.clientWidth;
+            let newChildHeight = child.clientHeight;
+            let reposition = true;
+            if (
+                child instanceof HTMLImageElement ||
+                Array.from(child.children).some(
+                    (c: HTMLElement) =>
+                        c.classList.contains("bloom-imageContainer") ||
+                        c.classList.contains("bloom-videoContainer")
+                )
+            ) {
+                // the main image, or an image or video overlay: we want to scale the size.
+                newChildWidth = child.clientWidth * scale;
+                newChildHeight = child.clientHeight * scale;
+            } else if (child.classList.contains(kTextOverPictureClass)) {
+                // text overlay: we want to leave the size alone and preserve the position of the center.
+                const oldCenterX = childLeft + child.clientWidth / 2;
+                const oldCenterY = childTop + child.clientHeight / 2;
+                const newCenterX = newLeft + (oldCenterX - left) * scale;
+                const newCenterY = newTop + (oldCenterY - top) * scale;
+                newChildTop = newCenterY - newChildHeight / 2;
+                newChildLeft = newCenterX - newChildWidth / 2;
+            } else {
+                // image description? UI artifact? leave it alone
+                reposition = false;
+            }
+            if (reposition) {
+                child.style.top = newChildTop + "px";
+                child.style.left = newChildLeft + "px";
+                child.style.width = newChildWidth + "px";
+                if (child.classList.contains(kTextOverPictureClass)) {
+                    // base image does not want a height, jsut let it come naturally
+                    // from the width and aspect ratio.
+                    child.style.height = newChildHeight + "px";
+                }
+            }
+            if (child.classList.contains(kTextOverPictureClass)) {
+                const tails: TailSpec[] = Bubble.getBubbleSpec(child).tails;
+                tails.forEach(tail => {
+                    tail.tipX = newLeft + (tail.tipX - left) * scale;
+                    tail.tipY = newTop + (tail.tipY - top) * scale;
+                    tail.midpointX = newLeft + (tail.midpointX - left) * scale;
+                    tail.midpointY = newTop + (tail.midpointY - top) * scale;
+                });
+                const bubble = new Bubble(child);
+                bubble.mergeWithNewBubbleProps({ tails: tails });
+                if (
+                    !Array.from(child.children).some(
+                        (c: HTMLElement) =>
+                            c.classList.contains("bloom-imageContainer") ||
+                            c.classList.contains("bloom-videoContainer")
+                    )
+                ) {
+                    // This must be done after we adjust the overlay, since its new settings are
+                    // written into the alternate for the current language.
+                    // Review: adjusting the data-bubble-alternate means that the bubbles in
+                    // other languages will look right if we go in and edit them. However,
+                    // to make things look right automatically in publications, we'd need to
+                    // switch each alternative to be the live one, fire up Comical, and adjust the SVG.
+                    // I think this would cause flicker, and certainly delay. If we decide we want
+                    // to make that fully automatic, I think it might be better to do it
+                    // as a publishing step when we know what languages will be published.
+                    BubbleManager.adjustBubbleAlternates(
+                        child,
+                        scale,
+                        left,
+                        top,
+                        newLeft,
+                        newTop
+                    );
+                }
+            }
+        });
+        this.updateImgSizeData(container);
+    }
+
+    public static adjustBubbleAlternates(
+        overlay: HTMLElement,
+        scale: number,
+        oldLeft: number,
+        oldTop: number,
+        newLeft: number,
+        newTop: number
+    ) {
+        const overlayLang = GetSettings().languageForNewTextBoxes;
+        Array.from(overlay.getElementsByClassName("bloom-editable")).forEach(
+            editable => {
+                const lang = editable.getAttribute("lang");
+                if (lang === overlayLang) {
+                    const alternate = {
+                        style: overlay.getAttribute("style"),
+                        tails: Bubble.getBubbleSpec(overlay).tails
+                    };
+                    editable.setAttribute(
+                        "data-bubble-alternate",
+                        JSON.stringify(alternate).replace(/"/g, "`")
+                    );
+                } else {
+                    const alternatesString = editable.getAttribute(
+                        "data-bubble-alternate"
+                    );
+                    if (alternatesString) {
+                        const alternate = JSON.parse(
+                            alternatesString.replace(/`/g, '"')
+                        ) as IAlternate;
+                        const style = alternate.style;
+                        const width = BubbleManager.getLabeledNumber(
+                            "width",
+                            style
+                        );
+                        const height = BubbleManager.getLabeledNumber(
+                            "height",
+                            style
+                        );
+                        let newStyle = BubbleManager.adjustCenterOfTextBox(
+                            "left",
+                            style,
+                            scale,
+                            oldLeft,
+                            newLeft,
+                            width
+                        );
+                        newStyle = BubbleManager.adjustCenterOfTextBox(
+                            "top",
+                            newStyle,
+                            scale,
+                            oldTop,
+                            newTop,
+                            height
+                        );
+
+                        const tails = alternate.tails;
+                        tails.forEach(
+                            (tail: {
+                                tipX: number;
+                                tipY: number;
+                                midpointX: number;
+                                midpointY: number;
+                            }) => {
+                                tail.tipX =
+                                    newLeft + (tail.tipX - oldLeft) * scale;
+                                tail.tipY =
+                                    newTop + (tail.tipY - oldTop) * scale;
+                                tail.midpointX =
+                                    newLeft +
+                                    (tail.midpointX - oldLeft) * scale;
+                                tail.midpointY =
+                                    newTop + (tail.midpointY - oldTop) * scale;
+                            }
+                        );
+                        const newAlternate = { style: newStyle, tails };
+                        editable.setAttribute(
+                            "data-bubble-alternate",
+                            JSON.stringify(newAlternate).replace(/"/g, "`")
+                        );
+                    }
+                }
+            }
+        );
+    }
+
+    private static numberPxRegex = ": ?(-?\\d+.?\\d*)px";
+
+    // Find in 'style' the label followed by a number (e.g., left).
+    // Let oldRange be the size of the object in that direction, e.g., width.
+    // We want to move the center of the object on the basis that the container that
+    // the labeled value is relative to is being scaled by 'scale',
+    // and moved from oldC to newC, and put the new value back in the style, and yield that new style
+    // as the result.
+    public static adjustCenterOfTextBox(
+        label: string,
+        style: string,
+        scale: number,
+        oldC: number,
+        newC: number,
+        oldRange: number
+    ): string {
+        const old = BubbleManager.getLabeledNumber(label, style);
+        const center = old + oldRange / 2;
+        const newCenter = newC + (center - oldC) * scale;
+        const newVal = newCenter - oldRange / 2;
+        return style.replace(
+            new RegExp(label + this.numberPxRegex),
+            label + ": " + newVal + "px"
+        );
+    }
+
+    // Typical source is something like "left: 224px; top: 79.6px; width: 66px; height: 30px;"
+    // We want to pass "top" and get 79.6.
+    public static getLabeledNumber(label: string, source: string): number {
+        const match = source.match(new RegExp(label + this.numberPxRegex));
+        if (match) {
+            return parseFloat(match[1]);
+        }
+        return 9;
     }
 }
 

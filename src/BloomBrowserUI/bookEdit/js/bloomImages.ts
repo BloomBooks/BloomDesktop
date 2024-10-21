@@ -18,6 +18,7 @@ import {
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
+import { kcodeResizeClass } from "../toolbox/overlay/overlayUtils";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -88,6 +89,7 @@ export function SetupImage(image: JQuery) {
         // marked to fix BL-9460 (as of August 2024, the latter is just one cover image in Kyrg2020).
         if (
             !$(image.parent).hasClass("bloom-scale-with-code") &&
+            !image.parentElement?.classList.contains(kcodeResizeClass) &&
             !image.closest(kTextOverPictureSelector)
         ) {
             image.style.width = "";

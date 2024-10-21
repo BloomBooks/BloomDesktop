@@ -51,7 +51,7 @@ textarea,
 
 // Centers the img in the container making it as large as possible while preserving aspect ratio
 // (for all current pages, which currently have a child img element)
-.bloom-imageContainer img {
+.bloom-imageContainer:not(.bloom-codeResize) img {
     width: 100%;
     height: 100%;
     object-fit: contain;

@@ -4645,17 +4645,25 @@ namespace Bloom.Book
             )
             {
                 if (
-                    img.ParentNode
-                        .GetOptionalStringAttribute("class", "")
-                        .Contains("bloom-scale-with-code")
-                    // Compare JS function SetupImage in bloomImages.ts. We stopped using explicit image
+                    // Compare JS function SetupImage in bloomImages.ts. This class has been used to
+                    // suppress the removal of explicit sizes since we started doing so.
+                    img.ParentElement.HasClass("bloom-scale-with-code")
+                    // In 6.2 we started setting explicit sizes on top-level images that have overlays
+                    // or have been manually resized/positioned within their containers. We needed a
+                    // new class to identify these because bloom-scale-with-code has some other
+                    // associated behaviors not appropriate for this situation.
+                    || img.ParentElement.HasClass("bloom-codeResize")
+                    // We stopped using explicit image
                     // sizes in 2018 and added image overlays in 2022, so it should be very safe to
                     // NOT remove explicit sizes from images in overlays. And in 6.1 (late 2024)
                     // we started using explicit sizes in overlays for cropping, so removing them
                     // is harmful.
                     || img.ParentWithClass("bloom-textOverPicture") != null
                 )
+                {
                     continue;
+                }
+
                 var style = img.GetOptionalStringAttribute("style", "");
                 var fixedStyle = RemoveSizeStyling(style);
                 if (String.IsNullOrEmpty(fixedStyle))
