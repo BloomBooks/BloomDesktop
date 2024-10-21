@@ -37,6 +37,7 @@ import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { MeasureText } from "../../utils/measureText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
+import { handlePlayClick } from "./bloomVideo";
 
 export interface ITextColorInfo {
     color: string;
@@ -248,7 +249,7 @@ export class BubbleManager {
     // Convert string ending in pixels to a number
     public static pxToNumber(px: string): number {
         if (!px) return 0;
-        return parseInt(px.replace("px", ""));
+        return parseFloat(px.replace("px", ""));
     }
 
     // We usually don't show the image editing buttons on an overlay page.
@@ -1922,7 +1923,10 @@ export class BubbleManager {
             }
         }
         const oldHeight = BubbleManager.pxToNumber(overlay.style.height);
-        overlay.style.height = `${newHeight}px`;
+        if (Math.abs(oldHeight - newHeight) > 0.1) {
+            // don't let small rounding errors accumulate
+            overlay.style.height = `${newHeight}px`;
+        }
         // and move container down so image does not move
         const oldTop = BubbleManager.pxToNumber(overlay.style.top);
         overlay.style.top = `${oldTop + (oldHeight - newHeight) / 2}px`;
@@ -1930,7 +1934,9 @@ export class BubbleManager {
         overlay.style.width = `${newWidth}px`;
         // and move container right so image does not move
         const oldLeft = BubbleManager.pxToNumber(overlay.style.left);
-        overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
+        if (Math.abs(oldWidth - newWidth) > 0.1) {
+            overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
+        }
     }
 
     // When the image is changed in a bubble (e.g., choose or paste image),
@@ -2547,6 +2553,12 @@ export class BubbleManager {
     };
 
     private activeElementAtMouseDown: HTMLElement | undefined;
+    // Keeps track of whether we think the mouse is down (that is, we've handled a mouseDown but not
+    // yet a mouseUp)). Does not get set if our mouseDown handler finds that isMouseEventAlreadyHandled
+    // returns true.
+    private mouseIsDown = false;
+    private clientXAtMouseDown: number;
+    private clientYAtMouseDown: number;
 
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
@@ -2558,6 +2570,9 @@ export class BubbleManager {
             return;
         }
         this.gotAMoveWhileMouseDown = false;
+        this.mouseIsDown = true;
+        this.clientXAtMouseDown = event.clientX;
+        this.clientYAtMouseDown = event.clientY;
 
         // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
         const coordinates = this.getPointRelativeToCanvas(event, container);
@@ -2657,14 +2672,19 @@ export class BubbleManager {
             event.stopPropagation();
             return;
         }
-        if (event.buttons === 0) {
+        if (event.buttons === 0 && this.mouseIsDown) {
             this.onMouseUp(event);
             return;
         }
         // Capture the most recent data to use when our animation frame request is satisfied.
         // or so keyboard events can reference the current mouse position.
         this.lastMoveEvent = event;
-        if (event.buttons === 1 && (event.movementX || event.movementY)) {
+        const deltaX = event.clientX - this.clientXAtMouseDown;
+        const deltaY = event.clientY - this.clientYAtMouseDown;
+        if (
+            event.buttons === 1 &&
+            Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3
+        ) {
             this.gotAMoveWhileMouseDown = true;
             const controlFrame = document.getElementById(
                 "overlay-control-frame"
@@ -2674,6 +2694,9 @@ export class BubbleManager {
             document
                 .getElementById("overlay-context-controls")
                 ?.classList?.add("moving");
+        }
+        if (!this.gotAMoveWhileMouseDown) {
+            return; // don't actually move until the distance is enough to be sure it's not a click.
         }
 
         const container = event.currentTarget as HTMLElement;
@@ -2742,10 +2765,6 @@ export class BubbleManager {
                     // In this case, we want to drag the container.
                     container.classList.add("grabbable");
                     targetElement.removeAttribute("controls");
-                } else {
-                    // In this case, we want to play the video, if we click on it.
-                    container.classList.remove("grabbable");
-                    targetElement.setAttribute("controls", "");
                 }
             }
         }
@@ -2947,6 +2966,14 @@ export class BubbleManager {
             return;
         }
         this.stopMoving();
+        if (
+            !this.gotAMoveWhileMouseDown &&
+            (event.target as HTMLElement).closest(".bloom-videoPlayIcon")
+        ) {
+            handlePlayClick(event, true);
+            return;
+        }
+        this.mouseIsDown = false;
 
         if (this.bubbleToDrag) {
             // if we're doing a resize or drag, we don't want ordinary mouseup activity
@@ -3074,6 +3101,20 @@ export class BubbleManager {
         }
         if (targetElement.closest("[data-target-of")) {
             // Bloom game targets want to handle their own dragging.
+            return true;
+        }
+        if (
+            targetElement.closest(".bloom-videoReplayIcon") ||
+            targetElement.closest(".bloom-videoPauseIcon")
+        ) {
+            // The play button has special code in onMouseUp to handle a click on it.
+            // It does NOT have its own click handler (in overlays), because we want to allow the overlay
+            // to be dragged normally if a mouseDown on it is followed by sufficient mouse
+            // movement to be considered a drag.
+            // But I decided not to do that for the other two buttons, which only appear
+            // when the video is playing after a click on the play button. They have normal
+            // click handlers, and we don't want our mouse down/move/up handlers to respond
+            // when they are clicked.
             return true;
         }
         if (ev.ctrlKey || ev.altKey) {
@@ -4607,7 +4648,17 @@ export class BubbleManager {
         allOverPictureElements.each((index, element) => {
             const thisOverPictureElement = $(element);
 
-            thisOverPictureElement.find(".bloom-ui").remove(); // Just in case somehow one is stuck in there
+            // Not sure about keeping this. Apparently at one point there could be some left-over controls.
+            // But we clean out everything bloom-ui when we save a page, so they couldn't persist long.
+            // And now I've added these video controls, which get added before we call this, so it was
+            // destroying stuff we want. For now I'm just filtering out the new controls and NOT removing them.
+            thisOverPictureElement
+                .find(".bloom-ui")
+                .filter(
+                    (_, x) =>
+                        !x.classList.contains("bloom-videoControlContainer")
+                )
+                .remove();
             thisOverPictureElement.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
         });
     }
