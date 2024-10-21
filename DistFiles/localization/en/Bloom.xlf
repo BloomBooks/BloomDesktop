@@ -2185,6 +2185,7 @@
         <source xml:lang="en">Show Sign Language Tool</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool</note>
         <note>This button shows if a video bubble is selected.</note>
+        <note>Obsolete as of Bloom 6.1</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true">
         <source xml:lang="en">Show Tail</source>

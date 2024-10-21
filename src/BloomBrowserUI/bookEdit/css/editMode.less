@@ -556,6 +556,21 @@ body.bloom-fullBleed {
         border: solid 2px @bloom-yellow;
     }
 }
+.bloom-videoContainer:focus-visible {
+    // we show the active video container in other ways, and the browser's focus ring is just distracting
+    outline: none;
+}
+// We don't need the yellow border indicating the active video when the selected thing is an overlay.
+// We have a distinct mechanism for showing the selected overlay.
+// (We don't have overlay widgets and probably won't ever, but I included them just in case.)
+.bloom-textOverPicture {
+    .bloom-videoContainer,
+    .bloom-widgetContainer {
+        &.bloom-selected {
+            border: none;
+        }
+    }
+}
 
 .hoverUp .imageButton {
     border: 2px outset @ImageButtonBorder !important;
@@ -739,17 +754,18 @@ div.bloom-templateMode {
     }
 }
 
-.bloom-page[class*="Device"] {
-    .bloom-editable.overflow {
-        overflow-y: scroll;
-
-        // the language label at the bottom gets messed up once scrolling is on, so anchor it to the top
-        &:after {
-            top: 0 !important;
-            bottom: unset !important;
-        }
-    }
-}
+// The fix for the language label does not work with niceScroll, so I've commented it out.
+// .bloom-page[class*="Device"] {
+//     .bloom-editable.overflow {
+//         overflow-y: scroll;
+//
+//         // the language label at the bottom gets messed up once scrolling is on, so anchor it to the top
+//         &:after {
+//             top: 0 !important;
+//             bottom: unset !important;
+//         }
+//     }
+// }
 
 .childOverflowingThis {
     border-bottom: solid thick @OverflowColor !important;

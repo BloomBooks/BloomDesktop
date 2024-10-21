@@ -269,18 +269,22 @@ public class AppearanceSettings
     /// return a path to the file that should be copied there.
     /// Also leaves this object in a state where it represents the settings that should be written to appearance.json.
     /// </summary>
-    public string GetThemeAndSubstituteCss(Tuple<string, string>[] cssFilesToCheck)
+    public string GetThemeAndSubstituteCss(Tuple<string, string>[] cssFilesToCheck, HtmlDom bookDom)
     {
         // cssThemeName will already be set to "legacy-5-6" by UpdateFromFolder, but for new books we want to
         // try to use the default or some substitute theme, and only switch back to the legacy theme,
-        // if we don't know of a substitute theme and its associated customBookStyles2.css file.
+        // if we don't know of a substitute theme and its associated customBookStyles2.css file,
+        // or if something about the book DOM forces us to use the legacy theme.
         CssThemeName = "default";
         string substituteAppearance = null;
-        if (Program.RunningHarvesterMode)
+        if (Program.RunningHarvesterMode || bookDom.HasOverlays())
         {
-            // We'll preserve the current appearance of older books we are harvesting.
-            // This should only apply to temporary copies on their way to becoming artifacts,
+            // We'll preserve the current appearance of older books we are harvesting,
+            // and books that have overlays even when editing.
+            // The harvester restriction should only apply to temporary copies on their way to becoming artifacts,
             // so it doesn't interfere with getting books migrated when they are to be edited.
+            // The overlay restriction will have some impact on getting books migrated, but we think the
+            // downside of subtly breaking overlay positioning without any opt-in is worse (BL-14007)
             CssThemeName = "legacy-5-6";
             return null;
         }
