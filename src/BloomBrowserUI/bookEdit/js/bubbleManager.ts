@@ -249,7 +249,7 @@ export class BubbleManager {
     // Convert string ending in pixels to a number
     public static pxToNumber(px: string): number {
         if (!px) return 0;
-        return parseInt(px.replace("px", ""));
+        return parseFloat(px.replace("px", ""));
     }
 
     // We usually don't show the image editing buttons on an overlay page.
@@ -1923,7 +1923,10 @@ export class BubbleManager {
             }
         }
         const oldHeight = BubbleManager.pxToNumber(overlay.style.height);
-        overlay.style.height = `${newHeight}px`;
+        if (Math.abs(oldHeight - newHeight) > 0.1) {
+            // don't let small rounding errors accumulate
+            overlay.style.height = `${newHeight}px`;
+        }
         // and move container down so image does not move
         const oldTop = BubbleManager.pxToNumber(overlay.style.top);
         overlay.style.top = `${oldTop + (oldHeight - newHeight) / 2}px`;
@@ -1931,7 +1934,9 @@ export class BubbleManager {
         overlay.style.width = `${newWidth}px`;
         // and move container right so image does not move
         const oldLeft = BubbleManager.pxToNumber(overlay.style.left);
-        overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
+        if (Math.abs(oldWidth - newWidth) > 0.1) {
+            overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
+        }
     }
 
     // When the image is changed in a bubble (e.g., choose or paste image),
@@ -2667,7 +2672,7 @@ export class BubbleManager {
             event.stopPropagation();
             return;
         }
-        if (event.buttons === 0) {
+        if (event.buttons === 0 && this.mouseIsDown) {
             this.onMouseUp(event);
             return;
         }
@@ -2760,10 +2765,6 @@ export class BubbleManager {
                     // In this case, we want to drag the container.
                     container.classList.add("grabbable");
                     targetElement.removeAttribute("controls");
-                } else {
-                    // In this case, we want to play the video, if we click on it.
-                    container.classList.remove("grabbable");
-                    targetElement.setAttribute("controls", "");
                 }
             }
         }
@@ -2972,6 +2973,7 @@ export class BubbleManager {
             handlePlayClick(event, true);
             return;
         }
+        this.mouseIsDown = false;
 
         if (this.bubbleToDrag) {
             // if we're doing a resize or drag, we don't want ordinary mouseup activity
