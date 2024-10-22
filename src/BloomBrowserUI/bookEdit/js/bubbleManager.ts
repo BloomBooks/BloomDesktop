@@ -38,6 +38,7 @@ import { MeasureText } from "../../utils/measureText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
+import { handlePlayClick } from "./bloomVideo";
 
 export interface ITextColorInfo {
     color: string;
@@ -249,7 +250,7 @@ export class BubbleManager {
     // Convert string ending in pixels to a number
     public static pxToNumber(px: string): number {
         if (!px) return 0;
-        return parseInt(px.replace("px", ""));
+        return parseFloat(px.replace("px", ""));
     }
 
     // We usually don't show the image editing buttons on an overlay page.
@@ -1930,7 +1931,10 @@ export class BubbleManager {
             }
         }
         const oldHeight = BubbleManager.pxToNumber(overlay.style.height);
-        overlay.style.height = `${newHeight}px`;
+        if (Math.abs(oldHeight - newHeight) > 0.1) {
+            // don't let small rounding errors accumulate
+            overlay.style.height = `${newHeight}px`;
+        }
         // and move container down so image does not move
         const oldTop = BubbleManager.pxToNumber(overlay.style.top);
         overlay.style.top = `${oldTop + (oldHeight - newHeight) / 2}px`;
@@ -1938,7 +1942,9 @@ export class BubbleManager {
         overlay.style.width = `${newWidth}px`;
         // and move container right so image does not move
         const oldLeft = BubbleManager.pxToNumber(overlay.style.left);
-        overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
+        if (Math.abs(oldWidth - newWidth) > 0.1) {
+            overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
+        }
     }
 
     // When the image is changed in a bubble (e.g., choose or paste image),
@@ -2926,6 +2932,7 @@ export class BubbleManager {
             handlePlayClick(event, true);
             return;
         }
+        this.mouseIsDown = false;
 
         if (this.bubbleToDrag) {
             // if we're doing a resize or drag, we don't want ordinary mouseup activity
@@ -4593,7 +4600,7 @@ export class BubbleManager {
             // Not sure about keeping this. Apparently at one point there could be some left-over controls.
             // But we clean out everything bloom-ui when we save a page, so they couldn't persist long.
             // And now I've added these video controls, which get added before we call this, so it was
-            // destroying stff we want. For now I'm just filtering out the new controls and NOT removing them.
+            // destroying stuff we want. For now I'm just filtering out the new controls and NOT removing them.
             thisOverPictureElement
                 .find(".bloom-ui")
                 .filter(
