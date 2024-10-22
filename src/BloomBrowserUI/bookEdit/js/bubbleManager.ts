@@ -38,7 +38,6 @@ import { MeasureText } from "../../utils/measureText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
-import { handlePlayClick } from "./bloomVideo";
 
 export interface ITextColorInfo {
     color: string;
