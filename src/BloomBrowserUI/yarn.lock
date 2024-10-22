@@ -3888,6 +3888,11 @@
   dependencies:
     "@types/istanbul-lib-report" "*"
 
+"@types/jquery@^1.0":
+  version "1.10.45"
+  resolved "https://registry.yarnpkg.com/@types/jquery/-/jquery-1.10.45.tgz#c31d8d66726a6887552b048220c7c89d33c007bb"
+  integrity sha512-JvoVtPbu1wrcOldn5gvuyJqr7DLX6I657N68Fqj5S7AUutdYZqabQjfP7dY6Gee7/Afo1uajwcORVlQfnsjkLQ==
+
 "@types/json-schema@*", "@types/json-schema@^7.0.8", "@types/json-schema@^7.0.9":
   version "7.0.11"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.11.tgz#d421b6c527a3037f7c84433fd2c4229e016863d3"
@@ -5538,9 +5543,9 @@ bindings@^1.5.0:
     file-uri-to-path "1.0.0"
 
 bloom-player@^2.3.0:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.5.1.tgz#8ed3ae9f0b1e1eab72dc75f0cfec09954dabb496"
-  integrity sha512-MTUIfupk4yvr16tQU0IPKlkKI+kNuMl5fyr23Sqes7Bk5tu5MxIO80xeeMEG+vhsBe5mmDMwFuyOh1FIKjiHpw==
+  version "2.6.3"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.6.3.tgz#d890a2177d922c49df3c3e0409aa844e00d4bcd6"
+  integrity sha512-9ooC7V1m/5/9zbT4Zh2/6fnRqTNDpbzAXeOzjAGb9hKWyUSzWsCMjIe1EjQJH9mm12I2Leh5KELmAPyGHav5Mg==
 
 bluebird@^3.3.5, bluebird@^3.5.5:
   version "3.7.2"
@@ -10690,10 +10695,22 @@ jquery.hotkeys@^0.1.0:
   resolved "https://registry.yarnpkg.com/jquery.hotkeys/-/jquery.hotkeys-0.1.0.tgz#a88f636494fe75de41e4b753a059e5a523b83273"
   integrity sha1-qI9jZJT+dd5B5LdToFnlpSO4MnM=
 
+jquery.nicescroll@^3.7.6:
+  version "3.7.6"
+  resolved "https://registry.yarnpkg.com/jquery.nicescroll/-/jquery.nicescroll-3.7.6.tgz#afeff3e80658dabe4f78d2d2e84250060fea0852"
+  integrity sha512-H4XOzQDw/fJIFftYGemNDAr9sz52zr35+JEubsTNGrTAtxQra4qnu6UnOe+avEHVPy8HnyoHgIpvPXedGSCfTw==
+  dependencies:
+    jquery ">=1.8.3"
+
 jquery@>=1.12.0:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.6.0.tgz#c72a09f15c1bdce142f49dbf1170bdf8adac2470"
   integrity sha512-JVzAR/AjBvVt2BmYhxRCSYysDsPcssdmTFnzyLEts9qNwmjmu4JTAMYubEfwVOSwpQ1I1sKKFcxhZCI2buerfw==
+
+jquery@>=1.8.3:
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.7.1.tgz#083ef98927c9a6a74d05a6af02806566d16274de"
+  integrity sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg==
 
 jquery@^1.12.4:
   version "1.12.4"

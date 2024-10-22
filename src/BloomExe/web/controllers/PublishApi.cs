@@ -152,14 +152,14 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterBooleanEndpointHandler(
                 "publish/comicEnabled",
-                request => Model.Book.HasOverlayPages,
+                request => Model.Book.HasComicalOverlays,
                 null,
                 true
             );
             apiHandler.RegisterBooleanEndpointHandler(
                 "publish/comic",
                 request =>
-                    Model.Book.HasOverlayPages
+                    Model.Book.HasComicalOverlays
                     && Model.Book.BookInfo.PublishSettings.BloomLibrary.Comic,
                 (request, val) =>
                 {

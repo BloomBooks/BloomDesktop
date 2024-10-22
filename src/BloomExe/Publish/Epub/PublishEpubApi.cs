@@ -83,7 +83,7 @@ namespace Bloom.Publish.Epub
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        if (request.CurrentBook.OurHtmlDom.HasOverlayPages())
+                        if (request.CurrentBook.OurHtmlDom.HasComicalOverlays())
                             // If we have comic pages (now), we have to use fixed layout, even if flowable was set at some point.
                             request.ReplyWithText("fixed");
                         else
@@ -167,7 +167,7 @@ namespace Bloom.Publish.Epub
             );
             apiHandler.RegisterBooleanEndpointHandler(
                 kApiUrlPart + "overlays",
-                request => request.CurrentBook.OurHtmlDom.HasOverlayPages(),
+                request => request.CurrentBook.OurHtmlDom.HasComicalOverlays(),
                 null,
                 false
             );
