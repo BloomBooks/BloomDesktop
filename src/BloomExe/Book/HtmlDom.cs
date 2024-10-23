@@ -2883,16 +2883,6 @@ namespace Bloom.Book
             return _dom.SelectSingleNode(BookStorage.ComicalXpath) != null;
         }
 
-        /// <summary>
-        /// True if it has any overlays at all. (Text-only ones don't require a ComicalJs SVG, but they
-        /// could still get misplaced by a migration to Default appearance.)
-        /// </summary>
-        public bool HasOverlays()
-        {
-            return _dom.SelectSingleNode("//div[contains(@class, 'bloom-textOverPicture')]")
-                != null;
-        }
-
         public bool HasImageDescriptions =>
             _dom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]")
                 .Cast<XmlElement>()
