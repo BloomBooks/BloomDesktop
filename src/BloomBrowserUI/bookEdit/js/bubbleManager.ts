@@ -53,6 +53,7 @@ export const kTextOverPictureClass = "bloom-textOverPicture";
 export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kImageContainerClass = "bloom-imageContainer";
 const kImageContainerSelector = `.${kImageContainerClass}`;
+const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 
 const kOverlayClass = "hasOverlay";
 
@@ -848,17 +849,15 @@ export class BubbleManager {
         });
     }
 
-    private static kTransformPropName = "bloom-zoomTransformForInitialFocus";
-
     // If we haven't already, note (in a variable of the top window) the initial zoom level.
     // This is used by a hack in onFocusSetActiveElement.
     public static recordInitialZoom(container: HTMLElement) {
         const zoomTransform = container.ownerDocument.getElementById(
             "page-scaling-container"
         )?.style.transform;
-        const topWindowZoomTransfrom = window.top?.[this.kTransformPropName];
+        const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform && !topWindowZoomTransfrom) {
-            window.top[this.kTransformPropName] = zoomTransform;
+            window.top[kTransformPropName] = zoomTransform;
         }
     }
 
@@ -882,7 +881,7 @@ export class BubbleManager {
         const zoomTransform = focusedElement.ownerDocument.getElementById(
             "page-scaling-container"
         )?.style.transform;
-        const topWindowZoomTransfrom = window.top?.[this.kTransformPropName];
+        const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform !== topWindowZoomTransfrom) {
             // We eventually want to reset the saved zoom level to the new one, so
             // that this method can do its job...mainly allowing the user to tab between overlays.
@@ -893,7 +892,7 @@ export class BubbleManager {
             // is not enough for a very slow machine and so the active bubble moves when it shouldn't.
             setTimeout(() => {
                 if (window.top) {
-                    window.top[this.kTransformPropName] = zoomTransform;
+                    window.top[kTransformPropName] = zoomTransform;
                 }
             }, 500);
             return;
