@@ -104,14 +104,21 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
         }
     }
 
+    // mousedownHandler variables that need to be accessible to mousemoveHandler or mouseUpHandler
+    let moveFunction = null;
+    let moveEvent;
+    let $divider;
+    let $resizeShim;
+
     function mousedownHandler(event) {
         event.preventDefault();
+        $divider = $(this);
         var isTouchEvent = event.type.match(/^touch/),
-            moveEvent = isTouchEvent ? "touchmove" : "mousemove",
             endEvent = isTouchEvent ? "touchend" : "mouseup",
-            $divider = $(this),
-            $splitPane = $divider.parent(),
-            $resizeShim = $divider.siblings(".split-pane-resize-shim");
+            $splitPane = $divider.parent();
+
+        $resizeShim = $divider.siblings(".split-pane-resize-shim");
+        moveEvent = isTouchEvent ? "touchmove" : "mousemove";
         $resizeShim.show();
         $divider.addClass("dragged");
         if (isTouchEvent) {
@@ -123,16 +130,25 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
         } else {
             document.body.classList.add("origami-drag-vertical");
         }
-        $(document).on(
-            moveEvent,
-            createMousemove($splitPane, pageXof(event), pageYof(event))
+        moveFunction = createMousemove(
+            $splitPane,
+            pageXof(event),
+            pageYof(event)
         );
-        $(document).one(endEvent, function(event) {
-            $(document).unbind(moveEvent);
-            $divider.removeClass("dragged touch");
-            $resizeShim.hide();
-            document.body.classList.remove("origami-drag");
+        document.addEventListener(moveEvent, moveFunction, { capture: true });
+        document.addEventListener(endEvent, mouseUpHandler, {
+            capture: true,
+            once: true
         });
+    }
+
+    function mouseUpHandler(event) {
+        document.removeEventListener(moveEvent, moveFunction, {
+            capture: true
+        });
+        $divider.removeClass("dragged touch");
+        $resizeShim.hide();
+        document.body.classList.remove("origami-drag");
     }
 
     function mouseenterHandler(event) {
@@ -418,6 +434,11 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
                 topOffset = divider.offsetTop - scaledY;
             return function(event) {
                 event.preventDefault();
+                if (event.buttons === 0) {
+                    // somehow we missed the mouseup event, so clean up
+                    mouseUpHandler(event);
+                    return;
+                }
                 const top = Math.min(
                     Math.max(
                         firstComponentMinHeight,
@@ -437,6 +458,11 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
                 bottomOffset = lastComponent.offsetHeight + scaledY;
             return function(event) {
                 event.preventDefault();
+                if (event.buttons === 0) {
+                    // somehow we missed the mouseup event, so clean up
+                    mouseUpHandler(event);
+                    return;
+                }
                 const bottom = Math.min(
                     Math.max(
                         lastComponentMinHeight,
