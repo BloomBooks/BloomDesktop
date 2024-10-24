@@ -1574,7 +1574,11 @@ namespace BloomTests.Publish
 
             public Dictionary<string, string[]> FilesForFont = new Dictionary<string, string[]>();
 
-            public IEnumerable<string> GetFilesForFont(string fontName)
+            public IEnumerable<string> GetFilesForFont(
+                string fontName,
+                string fontStyle,
+                string fontWeight
+            )
             {
                 string[] result;
                 FilesForFont.TryGetValue(fontName, out result);
@@ -1670,12 +1674,47 @@ namespace BloomTests.Publish
                     ".someStyle {font-family:'Calibre';} .otherStyle {font-family: 'NotFound';} .yetAnother {font-family:'NotAllowed';}"
                 );
 
-                HashSet<string> fontsWanted = new HashSet<string>();
-                fontsWanted.Add("Times New Roman");
-                fontsWanted.Add("Wen Yei");
-                fontsWanted.Add("Calibre");
-                fontsWanted.Add("NotAllowed");
-                fontsWanted.Add("NotFound"); // probably wouldn't happen with new approach for fonts, but leave in the test
+                HashSet<PublishHelper.FontInfo> fontsWanted = new HashSet<PublishHelper.FontInfo>();
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "Times New Roman",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "Wen Yei",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "Calibre",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "NotAllowed",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "NotFound",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                ); // probably wouldn't happen with new approach for fonts, but leave in the test
 
                 BloomPubMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
 
