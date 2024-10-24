@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -2116,6 +2117,190 @@ namespace BloomTests.Book
             );
             var page = (SafeXmlElement)doc.SelectSingleNode("//div[contains(@class,'bloom-page')]");
             Assert.That(TranslationGroupManager.IsPageAffectedByLanguageMenu(page, false), Is.True);
+        }
+
+        [Test]
+        public void MakeElementWithLanguageForOneGroup_EnsuresStyleClassExists()
+        {
+            var bookDom = new HtmlDom(
+                @"<html>
+<head></head>
+<body>
+  <div class='bloom-page numberedPage customPage bloom-combinedPage side-left HalfLetterPortrait bloom-monolingual' id='84764793-08e7-4795-b236-d1b69f1fcdd3' data-pagelineage='45a5fcd2-8523-4e9c-be3b-6ffe057315a6' data-page-number='1' lang=''>
+    <div class='marginBox'>
+      <div class='bloom-translationGroup bloom-trailingElement bloom-vertical-align-center' data-hasqtip='true' style=''>
+        <!-- lang='z' is missing, lang='sv' and lang='de' both have a -style class. -->
+        <div class='bloom-editable Encabezado1-style bloom-visibility-code-on bloom-content1' lang='sv' contenteditable='true' style='' tabindex='0' spellcheck='false' role='textbox' aria-label='false' data-languagetipcontent='Swedish'>
+          <p>Swedish cat!</p>
+        </div>
+        <div class='bloom-editable Encabezado1-style bloom-contentNational1' lang='de' contenteditable='true' style='' tabindex='0' spellcheck='false' role='textbox' aria-label='false' data-languagetipcontent='German'>
+	  <p>German cat?</p>
+	</div>
+      </div>
+      <div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto' style='font-size: 18.6667px;'>
+        <!-- lang='z', lang='sv', and lang='de' all exist and have -style class. -->
+        <div class='bloom-editable normal-style bloom-visibility-code-on bloom-content1' style='min-height: 24.2667px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' lang='sv' contenteditable='true' data-languagetipcontent='Swedish'><p></p></div>
+        <div class='bloom-editable normal-style bloom-contentNational1' style='min-height: 24.2667px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' lang='de' contenteditable='true' data-languagetipcontent='German'><p></p></div>
+        <div class='bloom-editable normal-style' style='' lang='z' contenteditable='true'><p></p></div>
+      </div>
+    </div>
+  </div>
+  <div class='bloom-page numberedPage customPage bloom-combinedPage side-right HalfLetterPortrait bloom-monolingual' id='a3b94685-edf6-4a36-8529-5d8734e458ef' data-pagelineage='45a5fcd2-8523-4e9c-be3b-6ffe057315a6' data-page-number='2' lang=''>
+    <div class='marginBox'>
+      <div class='bloom-translationGroup bloom-trailingElement bloom-vertical-align-center' data-hasqtip='true' style='font-size: 21.3333px;'>
+        <!-- lang='z' has -style class, but not lang='sv' or lang='de'. -->
+        <div class='bloom-editable Encabezado1-style' lang='z' contenteditable='true' style=''><p></p></div>
+        <div class='bloom-editable bloom-content1' lang='sv' contenteditable='true' style='min-height: 27.7333px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' data-languagetipcontent='Swedish'>
+          <p>Swedish cat!</p>
+        </div>
+        <div class='bloom-editable bloom-contentNational1' lang='de' contenteditable='true' style='' tabindex='0' spellcheck='false' role='textbox' aria-label='false' data-languagetipcontent='German'></div>
+      </div>
+      <div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto' style='font-size: 18.6667px;'>
+        <!-- lang='z' is missing, lang='sv' and lang='de' do not have a -style class. -->
+        <div class='bloom-editable bloom-visibility-code-on bloom-content1' style='min-height: 24.2667px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' lang='sv' contenteditable='true' data-languagetipcontent='Swedish'><p></p></div>
+        <div class='bloom-editable bloom-contentNational1' style='min-height: 24.2667px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' lang='de' contenteditable='true' data-languagetipcontent='German'><p></p></div>
+      </div>
+    </div>
+  </div>
+  <div class='bloom-page numberedPage customPage bloom-combinedPage side-right HalfLetterPortrait bloom-monolingual' id='a3b94685-edf6-4a36-8529-5d8734e458ef' data-pagelineage='45a5fcd2-8523-4e9c-be3b-6ffe057315a6' data-page-number='2' lang=''>
+    <div class='marginBox'>
+      <div class='bloom-translationGroup Different-style' data-hasqtip='true' style='font-size: 21.3333px;'>
+        <!-- group element and lang='z' have differing -style classes, but lang='sv' and lang='de' lack style classes. -->
+        <div class='bloom-editable Encabezado1-style' lang='z' contenteditable='true' style=''><p></p></div>
+        <div class='bloom-editable bloom-content1' lang='sv' contenteditable='true' style='min-height: 27.7333px;' tabindex='0' spellcheck='false' role='textbox' aria-label='false' data-languagetipcontent='Swedish'>
+          <p>Swedish cat!</p>
+        </div>
+        <div class='bloom-editable bloom-contentNational1' lang='de' contenteditable='true' style='' tabindex='0' spellcheck='false' role='textbox' aria-label='false' data-languagetipcontent='German'></div>
+      </div>
+    </div>
+  </div>
+</body></html>"
+            );
+            // test initial (broken) state
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable')]",
+                    13
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='sv']",
+                    5
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='de']",
+                    5
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='z']",
+                    3
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and contains(@class,'-style')]",
+                    7
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and not(contains(@class,'-style'))]",
+                    6
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'Encabezado1-style')]",
+                    4
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'normal-style')]", 3);
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'Different-style')]",
+                    1
+                );
+
+            var groupElements = bookDom.RawDom
+                .SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")
+                .Cast<SafeXmlElement>();
+            Assert.That(groupElements.Count(), Is.EqualTo(5));
+
+            foreach (var group in groupElements)
+            {
+                var german = TranslationGroupManager.MakeElementWithLanguageForOneGroup(
+                    group,
+                    "de"
+                );
+                Assert.That(HtmlDom.GetStyle(german), Is.Not.Null);
+                Assert.That(HtmlDom.GetStyle(german).Contains("-style"), Is.True);
+                var swedish = TranslationGroupManager.MakeElementWithLanguageForOneGroup(
+                    group,
+                    "sv"
+                );
+                Assert.That(HtmlDom.GetStyle(swedish), Is.Not.Null);
+                Assert.That(HtmlDom.GetStyle(swedish).Contains("-style"), Is.True);
+            }
+
+            // test final (repaired) state
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable')]",
+                    13
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='sv']",
+                    5
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='de']",
+                    5
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and @lang='z']",
+                    3
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable') and contains(@class,'-style')]",
+                    13
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[contains(@class,'bloom-editable') and not(contains(@class,'-style'))]"
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'Encabezado1-style')]",
+                    6
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'normal-style')]", 5);
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'Different-style')]",
+                    3
+                );
         }
     }
 }

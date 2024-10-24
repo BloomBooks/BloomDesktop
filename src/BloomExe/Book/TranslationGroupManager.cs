@@ -925,8 +925,12 @@ namespace Bloom.Book
                 where x.GetAttribute("lang") == langTag
                 select x;
             if (elementsAlreadyInThisLanguage.Any())
-                //don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
-                return elementsAlreadyInThisLanguage.First();
+            {
+                // don't create a new element for this language, it already has one.
+                var element = elementsAlreadyInThisLanguage.First();
+                EnsureStyleClassOnElement(groupElement, editableChildrenOfTheGroup, element);
+                return element;
+            }
 
             if (
                 groupElement
@@ -986,9 +990,38 @@ namespace Bloom.Book
 
                 //OK, now any text in there will belong to the prototype language, so remove it, while retaining everything else
                 StripOutText(newElementInThisLanguage);
+                EnsureStyleClassOnElement(
+                    groupElement,
+                    editableChildrenOfTheGroup,
+                    newElementInThisLanguage
+                );
             }
             newElementInThisLanguage.SetAttribute("lang", langTag);
             return newElementInThisLanguage;
+        }
+
+        internal static void EnsureStyleClassOnElement(
+            SafeXmlElement groupElement,
+            SafeXmlNode[] editableChildrenOfTheGroup,
+            SafeXmlElement element
+        )
+        {
+            // We need to ensure that the style is set on the element.
+            if (string.IsNullOrEmpty(HtmlDom.GetStyle(element)))
+            {
+                var defaultStyle = HtmlDom.GetStyle(groupElement); // groupElement setting takes precedence
+                if (string.IsNullOrEmpty(defaultStyle))
+                {
+                    var node = editableChildrenOfTheGroup.FirstOrDefault(
+                        x => !string.IsNullOrEmpty(HtmlDom.GetStyle(x))
+                    );
+                    if (node != null)
+                        defaultStyle = HtmlDom.GetStyle(node);
+                }
+                if (string.IsNullOrEmpty(defaultStyle))
+                    defaultStyle = "normal-style";
+                element.AddClass(defaultStyle);
+            }
         }
 
         /// <summary>
