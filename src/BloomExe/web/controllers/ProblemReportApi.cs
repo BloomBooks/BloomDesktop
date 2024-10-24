@@ -1208,14 +1208,17 @@ namespace Bloom.web.controllers
                     if (!string.IsNullOrEmpty(historyEvent.Message))
                         AddLine(bldr, $"  {historyEvent.Message}");
                 }
-
-                bldr.AppendLine("</details>");
-                bldr.AppendLine();
             }
             catch (Exception e)
             {
                 Console.WriteLine("GetBookHistoryEvents says: " + e);
                 bldr.AppendLine("GetBookHistoryEvents says: " + e.Message);
+            }
+            finally
+            {
+                if (bldr.ToString().Contains("<details>"))
+                    bldr.AppendLine("</details>");
+                bldr.AppendLine();
             }
         }
 
