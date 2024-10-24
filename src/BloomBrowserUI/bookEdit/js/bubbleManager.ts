@@ -2079,9 +2079,23 @@ export class BubbleManager {
             controlFrameRect.width / 2 -
             (contextControlsWidth / 2) * scale;
         let top = controlFrameRect.top + window.scrollY;
+        contextControl.style.visibility = "visible";
         if (controlsAbove) {
             // Bottom 11 px above the top of the control frame.
-            top -= contextControlRect.height + 11;
+            if (contextControlRect.height > 0) {
+                top -= contextControlRect.height + 11;
+            } else {
+                // We get a zero height when it is initially hidden. Place it in about the right
+                // place so we can measure it and try again once it is (invisibly) rendered.
+                top -= 30 + 11;
+                contextControl.style.visibility = "hidden";
+                setTimeout(() => {
+                    this.adjustContextControlPosition(
+                        controlFrame,
+                        controlsAbove
+                    );
+                }, 0);
+            }
         } else {
             // Top 11 px below the bottom of the control frame
             top += controlFrameRect.height + 11;
