@@ -1402,24 +1402,33 @@ namespace Bloom.Book
                 // Styles gear icon will not show up in the text box.  So we need a default style.
                 // See BL-13977.
                 string defaultStyle = null;
-                // child has already been added to the translationGroup copied from the template.
-                var group =
-                    child.SelectSingleNode(
-                        "ancestor::div[contains(@class,'bloom-translationGroup')]"
-                    ) as SafeXmlElement;
-                if (group != null)
-                    defaultStyle = GetStyle(group);
-                if (string.IsNullOrEmpty(defaultStyle))
-                    desiredStyleByLang.TryGetValue(defaultLangKey, out defaultStyle); // if unsuccessful, 'defaultStyle' will be ""
+                // First, try a default set by the template in the default bloom-editable (lang='z').
+                desiredStyleByLang.TryGetValue(defaultLangKey, out defaultStyle); // if unsuccessful, 'defaultStyle' will be ""
                 if (string.IsNullOrEmpty(defaultStyle))
                 {
+                    // If the template doesn't set a default, try the translationGroup's style, if any.
+                    // child has already been added to the translationGroup copied from the template.
+                    var group =
+                        child.SelectSingleNode(
+                            "ancestor::div[contains(@class,'bloom-translationGroup')]"
+                        ) as SafeXmlElement;
+                    if (group != null)
+                        defaultStyle = GetStyle(group);
+                }
+                if (string.IsNullOrEmpty(defaultStyle))
+                {
+                    // If the translationGroup doesn't have a style, try the first bloom-editable div in the
+                    // template's translationGroup that has a style.
                     defaultStyle = desiredStyleByLang.Values.FirstOrDefault(
                         x => x != null && x.EndsWith("-style")
                     );
                     if (string.IsNullOrEmpty(defaultStyle))
+                    {
+                        // If all else fails, either retain the current style or use Normal.
                         defaultStyle = string.IsNullOrEmpty(childStyle)
                             ? "normal-style" // Normal is better than nothing.
                             : childStyle; // Retain original style if template doesn't have one.
+                    }
                 }
                 newStyle = defaultStyle;
             }
