@@ -27,6 +27,11 @@ export default class OverflowChecker {
 
         //Add the handler so that when the elements change, we test for overflow
         editablePageElements.on("keyup paste", e => {
+            // Don't test for overflow on navigation keys.
+            if (e.keyCode >= 33 && e.keyCode <= 40) {
+                return;
+            }
+
             // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
             // If we allow an embedded paste target (e.g. <p>) to get tested for overflow, it will overflow artificially.
             const target = $(e.target).closest(editablePageElements)[0];
@@ -155,10 +160,8 @@ export default class OverflowChecker {
             0
         );
 
-        // Adds a class so that the scroll height can be calculated without text-over-picture element controls affecting the height/width
-        // (Currently, only done so for text-over-picture elements because the format gear and language tip are OUTSIDE the box,
-        // but in a normal text box they are inside the box)
-        element.classList.add("disableTOPControls");
+        // So the scroll height can be calculated without the language label affecting the height/width...
+        element.classList.add("hideLanguageLabel");
 
         const overflowY =
             this.contentHeight(element) -
@@ -170,7 +173,7 @@ export default class OverflowChecker {
             element.scrollWidth -
             (element.clientWidth + focusedBorderFudgeFactor);
 
-        element.classList.remove("disableTOPControls");
+        element.classList.remove("hideLanguageLabel");
 
         return [overflowX, overflowY];
     }
@@ -296,7 +299,12 @@ export default class OverflowChecker {
         if ($box.hasClass("overflow")) {
             OverflowChecker.RemoveOverflowQtip($box);
         }
-        $box.removeClass("overflow");
+
+        // We use to do this unconditionally, then add it if needed.
+        // But in 6.0, that started causing the box to scroll back to the top sometimes. See BL-13942.
+        // Now we leave it in place until we determine if it should be there.
+        // $box.removeClass("overflow");
+
         $box.removeClass("thisOverflowingParent");
         $box.off("mousemove.overflow");
         $box.off("mouseleave.overflow");
@@ -364,6 +372,8 @@ export default class OverflowChecker {
                         });
                     });
             }
+        } else {
+            $box.removeClass("overflow");
         }
 
         const container = $box.closest(".marginBox");
