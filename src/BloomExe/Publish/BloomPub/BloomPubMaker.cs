@@ -476,7 +476,7 @@ namespace Bloom.Publish.BloomPub
             }
 
             // Do this after processing interactive pages, as they can satisfy the criteria for being 'blank'
-            HashSet<string> fontsUsed = null;
+            HashSet<PublishHelper.FontInfo> fontsUsed = null;
             using (var helper = new PublishHelper())
             {
                 helper.ControlForInvoke = ControlForInvoke;
@@ -840,13 +840,66 @@ namespace Bloom.Publish.BloomPub
         public static void EmbedFonts(
             Book.Book book,
             IWebSocketProgress progress,
-            HashSet<string> fontsWanted,
+            HashSet<PublishHelper.FontInfo> fontsWanted,
             IFontFinder fontFileFinder
         )
         {
             const string defaultFont = "Andika"; // "Andika" already in BR, don't need to embed or make rule.
-            fontsWanted.Remove(defaultFont);
-            fontsWanted.Remove("Andika New Basic"); // This will be handled by the Andika font which is available in BR.
+
+            fontsWanted.RemoveWhere(
+                x => x.fontName == defaultFont && x.fontStyle == "normal" && x.fontWeight == "400"
+            );
+            var boldAndika =
+                fontsWanted.FirstOrDefault(
+                    x =>
+                        x.fontName == defaultFont
+                        && x.fontStyle == "normal"
+                        && x.fontWeight == "700"
+                ) != null;
+            var italicAndika =
+                fontsWanted.FirstOrDefault(
+                    x =>
+                        x.fontName == defaultFont
+                        && x.fontStyle == "italic"
+                        && x.fontWeight == "400"
+                ) != null;
+            var boldItalicAndika =
+                fontsWanted.FirstOrDefault(
+                    x =>
+                        x.fontName == defaultFont
+                        && x.fontStyle == "italic"
+                        && x.fontWeight == "700"
+                ) != null;
+            // We don't need to embed Andika New Basic Regular, because Andika Regular will handle it.
+            fontsWanted.RemoveWhere( // The default Andika Regular font will handle Andika New Basic Regular
+                x =>
+                    x.fontName == "Andika New Basic"
+                    && x.fontStyle == "normal"
+                    && x.fontWeight == "400"
+            );
+            // Don't include bold/italic variant of both Andika New Basic and Andika.
+            if (boldAndika)
+                fontsWanted.RemoveWhere(
+                    x =>
+                        x.fontName == "Andika New Basic"
+                        && x.fontStyle == "normal"
+                        && x.fontWeight == "700"
+                );
+            if (italicAndika)
+                fontsWanted.RemoveWhere(
+                    x =>
+                        x.fontName == "Andika New Basic"
+                        && x.fontStyle == "italic"
+                        && x.fontWeight == "400"
+                );
+            if (boldItalicAndika)
+                fontsWanted.RemoveWhere(
+                    x =>
+                        x.fontName == "Andika New Basic"
+                        && x.fontStyle == "italic"
+                        && x.fontWeight == "700"
+                );
+
             PublishHelper.CheckFontsForEmbedding(
                 progress,
                 fontsWanted,
@@ -862,14 +915,14 @@ namespace Bloom.Publish.BloomPub
             }
             // Create the fonts.css file, which tells the browser where to find the fonts for those families.
             var sb = new StringBuilder();
-            foreach (var font in fontsWanted)
+            foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
-                if (badFonts.Contains(font))
+                if (badFonts.Contains(font.fontName))
                     continue;
-                var group = fontFileFinder.GetGroupForFont(font);
+                var group = fontFileFinder.GetGroupForFont(font.fontName);
                 if (group != null)
                 {
-                    EpubMaker.AddFontFace(sb, font, "normal", "normal", group.Normal);
+                    EpubMaker.AddFontFace(sb, font, group);
                 }
                 // We don't need (or want) a rule to use Andika instead.
                 // The reader typically WILL use Andika, because we have a rule making it the default font
