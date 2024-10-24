@@ -1534,6 +1534,7 @@ export class BubbleManager {
     private initialCropBubbleHeight: number;
     private initialCropBubbleTop: number;
     private initialCropBubbleLeft: number;
+    private cropSnapDisabled: boolean = false;
 
     private currentDragSide: string | undefined;
     // For both resize and crop
@@ -1579,6 +1580,32 @@ export class BubbleManager {
                     this.activeElement.style.left
                 );
                 this.lastCropControl = event.currentTarget as HTMLElement;
+            }
+            switch (side) {
+                case "n":
+                    this.cropSnapDisabled = this.oldImageTop === 0;
+                    break;
+                case "w":
+                    this.cropSnapDisabled = this.oldImageLeft === 0;
+                    break;
+                case "s":
+                    // LHS is where the bottom of the image is. RHS is where the bottom of the overlay is.
+                    this.cropSnapDisabled =
+                        Math.abs(
+                            this.initialCropImageTop +
+                                this.initialCropImageHeight -
+                                this.oldHeight
+                        ) < 1;
+                    break;
+                case "e":
+                    // LHS is where the right of the image is. RHS is where the right of the overlay is.
+                    this.cropSnapDisabled =
+                        Math.abs(
+                            this.initialCropImageLeft +
+                                this.initialCropImageWidth -
+                                this.oldWidth
+                        ) < 1;
+                    break;
             }
             if (!img.style.width) {
                 // From here on it should stay this width unless we decide otherwise.
@@ -1676,8 +1703,23 @@ export class BubbleManager {
 
         let newBubbleWidth = this.oldWidth; // default
         let newBubbleHeight = this.oldHeight;
+        // ctrl key suppresses snapping, and we also suppress it if we started
+        // snapped and haven't moved far. This is to allow very small adjustments.
+        const snapping = !event.ctrlKey && !this.cropSnapDisabled;
+        const snapDelta = 5;
         switch (this.currentDragSide) {
             case "n":
+                if (
+                    snapping &&
+                    Math.abs(this.oldImageTop - deltaY) < snapDelta
+                ) {
+                    deltaY = this.oldImageTop;
+                }
+                if (Math.abs(this.oldImageTop - deltaY) > snapDelta) {
+                    // The distance moved is substantial, time to re-enable snapping
+                    // for future moves (without ctrl-key).
+                    this.cropSnapDisabled = false;
+                }
                 newBubbleHeight = Math.max(
                     this.oldHeight - deltaY,
                     this.minHeight
@@ -1693,6 +1735,34 @@ export class BubbleManager {
                 img.style.top = `${this.oldImageTop - deltaY}px`;
                 break;
             case "s":
+                // const heightThatMathchesBottomOfImage = this.initialCropImageTop + this.initialCropImageHeight;
+                // const newHeight = this.oldHeight + deltaY;
+                if (
+                    snapping &&
+                    Math.abs(
+                        this.initialCropImageTop +
+                            this.initialCropImageHeight -
+                            this.oldHeight -
+                            deltaY
+                    ) < snapDelta
+                ) {
+                    deltaY =
+                        this.initialCropImageTop +
+                        this.initialCropImageHeight -
+                        this.oldHeight;
+                }
+                if (
+                    Math.abs(
+                        this.initialCropImageTop +
+                            this.initialCropImageHeight -
+                            this.oldHeight -
+                            deltaY
+                    ) > snapDelta
+                ) {
+                    // The distance moved is substantial, time to re-enable snapping
+                    // for future moves (without ctrl-key).
+                    this.cropSnapDisabled = false;
+                }
                 newBubbleHeight = Math.max(
                     this.oldHeight + deltaY,
                     this.minHeight
@@ -1701,6 +1771,34 @@ export class BubbleManager {
                 this.activeElement.style.height = `${newBubbleHeight}px`;
                 break;
             case "e":
+                // const widthThatMathchesRightOfImage = this.initialCropImageLeft + this.initialCropImageWidth;
+                // const newWidth = this.oldWidth + deltaX;
+                if (
+                    snapping &&
+                    Math.abs(
+                        this.initialCropImageLeft +
+                            this.initialCropImageWidth -
+                            this.oldWidth -
+                            deltaX
+                    ) < snapDelta
+                ) {
+                    deltaX =
+                        this.initialCropImageLeft +
+                        this.initialCropImageWidth -
+                        this.oldWidth;
+                }
+                if (
+                    Math.abs(
+                        this.initialCropImageLeft +
+                            this.initialCropImageWidth -
+                            this.oldWidth -
+                            deltaX
+                    ) > snapDelta
+                ) {
+                    // The distance moved is substantial, time to re-enable snapping
+                    // for future moves (without ctrl-key).
+                    this.cropSnapDisabled = false;
+                }
                 newBubbleWidth = Math.max(
                     this.oldWidth + deltaX,
                     this.minWidth
@@ -1709,6 +1807,17 @@ export class BubbleManager {
                 this.activeElement.style.width = `${newBubbleWidth}px`;
                 break;
             case "w":
+                if (
+                    snapping &&
+                    Math.abs(this.oldImageLeft - deltaX) < snapDelta
+                ) {
+                    deltaX = this.oldImageLeft;
+                }
+                if (Math.abs(this.oldImageLeft - deltaX) > snapDelta) {
+                    // The distance moved is substantial, time to re-enable snapping
+                    // for future moves (without ctrl-key).
+                    this.cropSnapDisabled = false;
+                }
                 newBubbleWidth = Math.max(
                     this.oldWidth - deltaX,
                     this.minWidth
