@@ -53,6 +53,7 @@ export const kTextOverPictureClass = "bloom-textOverPicture";
 export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kImageContainerClass = "bloom-imageContainer";
 const kImageContainerSelector = `.${kImageContainerClass}`;
+const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 
 const kOverlayClass = "hasOverlay";
 
@@ -854,17 +855,15 @@ export class BubbleManager {
         });
     }
 
-    private static kTransformPropName = "bloom-zoomTransformForInitialFocus";
-
     // If we haven't already, note (in a variable of the top window) the initial zoom level.
     // This is used by a hack in onFocusSetActiveElement.
     public static recordInitialZoom(container: HTMLElement) {
         const zoomTransform = container.ownerDocument.getElementById(
             "page-scaling-container"
         )?.style.transform;
-        const topWindowZoomTransfrom = window.top?.[this.kTransformPropName];
+        const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform && !topWindowZoomTransfrom) {
-            window.top[this.kTransformPropName] = zoomTransform;
+            window.top[kTransformPropName] = zoomTransform;
         }
     }
 
@@ -888,7 +887,7 @@ export class BubbleManager {
         const zoomTransform = focusedElement.ownerDocument.getElementById(
             "page-scaling-container"
         )?.style.transform;
-        const topWindowZoomTransfrom = window.top?.[this.kTransformPropName];
+        const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform !== topWindowZoomTransfrom) {
             // We eventually want to reset the saved zoom level to the new one, so
             // that this method can do its job...mainly allowing the user to tab between overlays.
@@ -899,7 +898,7 @@ export class BubbleManager {
             // is not enough for a very slow machine and so the active bubble moves when it shouldn't.
             setTimeout(() => {
                 if (window.top) {
-                    window.top[this.kTransformPropName] = zoomTransform;
+                    window.top[kTransformPropName] = zoomTransform;
                 }
             }, 500);
             return;
@@ -2087,9 +2086,23 @@ export class BubbleManager {
             controlFrameRect.width / 2 -
             (contextControlsWidth / 2) * scale;
         let top = controlFrameRect.top + window.scrollY;
+        contextControl.style.visibility = "visible";
         if (controlsAbove) {
             // Bottom 11 px above the top of the control frame.
-            top -= contextControlRect.height + 11;
+            if (contextControlRect.height > 0) {
+                top -= contextControlRect.height + 11;
+            } else {
+                // We get a zero height when it is initially hidden. Place it in about the right
+                // place so we can measure it and try again once it is (invisibly) rendered.
+                top -= 30 + 11;
+                contextControl.style.visibility = "hidden";
+                setTimeout(() => {
+                    this.adjustContextControlPosition(
+                        controlFrame,
+                        controlsAbove
+                    );
+                }, 0);
+            }
         } else {
             // Top 11 px below the bottom of the control frame
             top += controlFrameRect.height + 11;
