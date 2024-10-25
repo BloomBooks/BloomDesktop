@@ -842,11 +842,16 @@ const ColorPickerForConfigr: React.FunctionComponent<{
     disabled: boolean;
     onChange: (value: string) => void;
 }> = props => {
+    const coverBackgroundColorLabel = useL10n(
+        "Background Color",
+        "Common.BackgroundColor"
+    );
+
     return (
         <ColorDisplayButton
             disabled={props.disabled}
             initialColor={props.value}
-            localizedTitle={"foo"}
+            localizedTitle={coverBackgroundColorLabel}
             transparency={false}
             palette={BloomPalette.CoverBackground}
             width={75}
