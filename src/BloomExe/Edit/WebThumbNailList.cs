@@ -171,12 +171,21 @@ namespace Bloom.Edit
         protected override void OnLoad(EventArgs e)
         {
             var settings = (_browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;
+            CounteractWindowsTextSizeScaling();
+
             // If we switch to a single Browser instance, this setting would lose the CTRL-plus and
             // CTRL-minus zooming of the book page in the Edit pane if applied to the single Browser.
             // The CTRL-mousewheel and clicking on the + and - icons apparently would still work.
             if (settings != null)
                 settings.IsZoomControlEnabled = false;
             base.OnLoad(e);
+        }
+
+        private void CounteractWindowsTextSizeScaling()
+        {
+            var webview2 = (_browser as WebView2Browser)?.InternalBrowser;
+            if (webview2 != null)
+                webview2.ZoomFactor = 1.0 / MiscUtils.GetWindowsTextScaleFactor();
         }
 
         protected override void OnSizeChanged(EventArgs e)
