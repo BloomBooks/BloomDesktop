@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
+using Microsoft.Win32;
 using Mono.Unix;
 using NAudio.Wave;
 using SIL.IO;
@@ -432,7 +433,7 @@ namespace Bloom.Utils
             var repeat = false;
             do
             {
-                using (var dlg = new SaveFileDialog())
+                using (var dlg = new System.Windows.Forms.SaveFileDialog())
                 {
                     dlg.AddExtension = true;
                     dlg.DefaultExt = defaultExtension;
@@ -738,6 +739,30 @@ namespace Bloom.Utils
             {
                 return false;
             }
+        }
+
+        public static double GetWindowsTextScaleFactor()
+        {
+            double scale = 1.0;
+            try
+            {
+                using (
+                    RegistryKey regKey = Registry.CurrentUser.OpenSubKey(
+                        @"Software\Microsoft\Accessibility"
+                    )
+                )
+                {
+                    if (regKey != null)
+                    {
+                        object rawScaleObj = regKey.GetValue("TextScaleFactor");
+                        if (rawScaleObj != null)
+                            scale = Convert.ToUInt32(rawScaleObj) / 100.0;
+                    }
+                }
+            }
+            catch { }
+
+            return scale;
         }
     }
 }
