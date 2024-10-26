@@ -53,6 +53,7 @@ export const kTextOverPictureClass = "bloom-textOverPicture";
 export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kImageContainerClass = "bloom-imageContainer";
 const kImageContainerSelector = `.${kImageContainerClass}`;
+const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 
 const kOverlayClass = "hasOverlay";
 
@@ -249,7 +250,7 @@ export class BubbleManager {
     // Convert string ending in pixels to a number
     public static pxToNumber(px: string): number {
         if (!px) return 0;
-        return parseInt(px.replace("px", ""));
+        return parseFloat(px.replace("px", ""));
     }
 
     // We usually don't show the image editing buttons on an overlay page.
@@ -854,17 +855,15 @@ export class BubbleManager {
         });
     }
 
-    private static kTransformPropName = "bloom-zoomTransformForInitialFocus";
-
     // If we haven't already, note (in a variable of the top window) the initial zoom level.
     // This is used by a hack in onFocusSetActiveElement.
     public static recordInitialZoom(container: HTMLElement) {
         const zoomTransform = container.ownerDocument.getElementById(
             "page-scaling-container"
         )?.style.transform;
-        const topWindowZoomTransfrom = window.top?.[this.kTransformPropName];
+        const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform && !topWindowZoomTransfrom) {
-            window.top[this.kTransformPropName] = zoomTransform;
+            window.top[kTransformPropName] = zoomTransform;
         }
     }
 
@@ -888,7 +887,7 @@ export class BubbleManager {
         const zoomTransform = focusedElement.ownerDocument.getElementById(
             "page-scaling-container"
         )?.style.transform;
-        const topWindowZoomTransfrom = window.top?.[this.kTransformPropName];
+        const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform !== topWindowZoomTransfrom) {
             // We eventually want to reset the saved zoom level to the new one, so
             // that this method can do its job...mainly allowing the user to tab between overlays.
@@ -899,7 +898,7 @@ export class BubbleManager {
             // is not enough for a very slow machine and so the active bubble moves when it shouldn't.
             setTimeout(() => {
                 if (window.top) {
-                    window.top[this.kTransformPropName] = zoomTransform;
+                    window.top[kTransformPropName] = zoomTransform;
                 }
             }, 500);
             return;
@@ -1542,6 +1541,17 @@ export class BubbleManager {
     private initialCropBubbleHeight: number;
     private initialCropBubbleTop: number;
     private initialCropBubbleLeft: number;
+    // If we're dragging a crop control, we generally want to snap when the edege
+    // of the (underlying, uncropped) image is close to the corresponding edge
+    // of the overlay in which it is cropped...that is, no cropping on that edge,
+    // nor have we (this cycle) expanded the image by dragging the crop handle outward.
+    // However, if the drag started in the crop position we disable cropping so small
+    // adjustments can be made. If the pointer moves more than the snap distance,
+    // we resume cropping. (Cropping can also be disabled by holding down the ctrl key).
+    // This variable is true when we are in that state where cropping is disabled
+    // because we've made only a small movement from an uncropped state. It is
+    // independent of the ctrl key state (though irrelevant if it is down).
+    private cropSnapDisabled: boolean = false;
 
     private currentDragSide: string | undefined;
     // For both resize and crop
@@ -1587,6 +1597,37 @@ export class BubbleManager {
                     this.activeElement.style.left
                 );
                 this.lastCropControl = event.currentTarget as HTMLElement;
+            }
+            // Determine whether the drag is starting in the "no cropping" position
+            // and we therefore want to disable cropping until we move a bit.
+            switch (side) {
+                case "n":
+                    this.cropSnapDisabled = this.oldImageTop === 0;
+                    break;
+                case "w":
+                    this.cropSnapDisabled = this.oldImageLeft === 0;
+                    break;
+                case "s":
+                    // initialCropImageTop + initialCropImageHeight is where the bottom of the image is.
+                    // this.oldHeight is where the bottom of the overlay is. We're in this state if
+                    // they are equal. There can be fractions of pixels involved, so we allow up to
+                    // a pixel and still consider it uncropped.
+                    this.cropSnapDisabled =
+                        Math.abs(
+                            this.initialCropImageTop +
+                                this.initialCropImageHeight -
+                                this.oldHeight
+                        ) < 1;
+                    break;
+                case "e":
+                    // Similarly figure whether the right edge is uncropped.
+                    this.cropSnapDisabled =
+                        Math.abs(
+                            this.initialCropImageLeft +
+                                this.initialCropImageWidth -
+                                this.oldWidth
+                        ) < 1;
+                    break;
             }
             if (!img.style.width) {
                 // From here on it should stay this width unless we decide otherwise.
@@ -1684,8 +1725,28 @@ export class BubbleManager {
 
         let newBubbleWidth = this.oldWidth; // default
         let newBubbleHeight = this.oldHeight;
+        // ctrl key suppresses snapping, and we also suppress it if we started
+        // snapped and haven't moved far. This is to allow very small adjustments.
+        const snapping = !event.ctrlKey && !this.cropSnapDisabled;
+        const snapDelta = 5;
+        // Each case begins by figuring out whether, if we are snapping, we should snap.
+        // Next it figures out whether we've moved far enough to end the "start at zero"
+        // non-snapping. Then it figures out a first approximation of how the overlay and image
+        // position and size should change, without considering the possibility that
+        // dragging outward would leave white space. A later step adjusts for that.
         switch (this.currentDragSide) {
             case "n":
+                if (
+                    snapping &&
+                    Math.abs(this.oldImageTop - deltaY) < snapDelta
+                ) {
+                    deltaY = this.oldImageTop;
+                }
+                if (Math.abs(this.oldImageTop - deltaY) > snapDelta) {
+                    // The distance moved is substantial, time to re-enable snapping
+                    // for future moves (without ctrl-key).
+                    this.cropSnapDisabled = false;
+                }
                 newBubbleHeight = Math.max(
                     this.oldHeight - deltaY,
                     this.minHeight
@@ -1701,6 +1762,37 @@ export class BubbleManager {
                 img.style.top = `${this.oldImageTop - deltaY}px`;
                 break;
             case "s":
+                // These variables would make the next line more comprehensible, but they only apply
+                // to this case and lint does not like declaring variables inside a switch.
+                // Essentially we're trying to determine how far apart the bottom of the image and the bottom of the overlay are.
+                // const heightThatMathchesBottomOfImage = this.initialCropImageTop + this.initialCropImageHeight;
+                // const newHeight = this.oldHeight + deltaY;
+                if (
+                    snapping &&
+                    Math.abs(
+                        this.initialCropImageTop +
+                            this.initialCropImageHeight -
+                            this.oldHeight -
+                            deltaY
+                    ) < snapDelta
+                ) {
+                    deltaY =
+                        this.initialCropImageTop +
+                        this.initialCropImageHeight -
+                        this.oldHeight;
+                }
+                if (
+                    Math.abs(
+                        this.initialCropImageTop +
+                            this.initialCropImageHeight -
+                            this.oldHeight -
+                            deltaY
+                    ) > snapDelta
+                ) {
+                    // The distance moved is substantial, time to re-enable snapping
+                    // for future moves (without ctrl-key).
+                    this.cropSnapDisabled = false;
+                }
                 newBubbleHeight = Math.max(
                     this.oldHeight + deltaY,
                     this.minHeight
@@ -1709,6 +1801,34 @@ export class BubbleManager {
                 this.activeElement.style.height = `${newBubbleHeight}px`;
                 break;
             case "e":
+                // const widthThatMathchesRightOfImage = this.initialCropImageLeft + this.initialCropImageWidth;
+                // const newWidth = this.oldWidth + deltaX;
+                if (
+                    snapping &&
+                    Math.abs(
+                        this.initialCropImageLeft +
+                            this.initialCropImageWidth -
+                            this.oldWidth -
+                            deltaX
+                    ) < snapDelta
+                ) {
+                    deltaX =
+                        this.initialCropImageLeft +
+                        this.initialCropImageWidth -
+                        this.oldWidth;
+                }
+                if (
+                    Math.abs(
+                        this.initialCropImageLeft +
+                            this.initialCropImageWidth -
+                            this.oldWidth -
+                            deltaX
+                    ) > snapDelta
+                ) {
+                    // The distance moved is substantial, time to re-enable snapping
+                    // for future moves (without ctrl-key).
+                    this.cropSnapDisabled = false;
+                }
                 newBubbleWidth = Math.max(
                     this.oldWidth + deltaX,
                     this.minWidth
@@ -1717,6 +1837,17 @@ export class BubbleManager {
                 this.activeElement.style.width = `${newBubbleWidth}px`;
                 break;
             case "w":
+                if (
+                    snapping &&
+                    Math.abs(this.oldImageLeft - deltaX) < snapDelta
+                ) {
+                    deltaX = this.oldImageLeft;
+                }
+                if (Math.abs(this.oldImageLeft - deltaX) > snapDelta) {
+                    // The distance moved is substantial, time to re-enable snapping
+                    // for future moves (without ctrl-key).
+                    this.cropSnapDisabled = false;
+                }
                 newBubbleWidth = Math.max(
                     this.oldWidth - deltaX,
                     this.minWidth
@@ -1930,7 +2061,10 @@ export class BubbleManager {
             }
         }
         const oldHeight = BubbleManager.pxToNumber(overlay.style.height);
-        overlay.style.height = `${newHeight}px`;
+        if (Math.abs(oldHeight - newHeight) > 0.1) {
+            // don't let small rounding errors accumulate
+            overlay.style.height = `${newHeight}px`;
+        }
         // and move container down so image does not move
         const oldTop = BubbleManager.pxToNumber(overlay.style.top);
         overlay.style.top = `${oldTop + (oldHeight - newHeight) / 2}px`;
@@ -1938,7 +2072,9 @@ export class BubbleManager {
         overlay.style.width = `${newWidth}px`;
         // and move container right so image does not move
         const oldLeft = BubbleManager.pxToNumber(overlay.style.left);
-        overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
+        if (Math.abs(oldWidth - newWidth) > 0.1) {
+            overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
+        }
     }
 
     // When the image is changed in a bubble (e.g., choose or paste image),
@@ -2082,9 +2218,23 @@ export class BubbleManager {
             controlFrameRect.width / 2 -
             (contextControlsWidth / 2) * scale;
         let top = controlFrameRect.top + window.scrollY;
+        contextControl.style.visibility = "visible";
         if (controlsAbove) {
             // Bottom 11 px above the top of the control frame.
-            top -= contextControlRect.height + 11;
+            if (contextControlRect.height > 0) {
+                top -= contextControlRect.height + 11;
+            } else {
+                // We get a zero height when it is initially hidden. Place it in about the right
+                // place so we can measure it and try again once it is (invisibly) rendered.
+                top -= 30 + 11;
+                contextControl.style.visibility = "hidden";
+                setTimeout(() => {
+                    this.adjustContextControlPosition(
+                        controlFrame,
+                        controlsAbove
+                    );
+                }, 0);
+            }
         } else {
             // Top 11 px below the bottom of the control frame
             top += controlFrameRect.height + 11;
@@ -2926,6 +3076,7 @@ export class BubbleManager {
             handlePlayClick(event, true);
             return;
         }
+        this.mouseIsDown = false;
 
         if (this.bubbleToDrag) {
             // if we're doing a resize or drag, we don't want ordinary mouseup activity
@@ -4593,7 +4744,7 @@ export class BubbleManager {
             // Not sure about keeping this. Apparently at one point there could be some left-over controls.
             // But we clean out everything bloom-ui when we save a page, so they couldn't persist long.
             // And now I've added these video controls, which get added before we call this, so it was
-            // destroying stff we want. For now I'm just filtering out the new controls and NOT removing them.
+            // destroying stuff we want. For now I'm just filtering out the new controls and NOT removing them.
             thisOverPictureElement
                 .find(".bloom-ui")
                 .filter(

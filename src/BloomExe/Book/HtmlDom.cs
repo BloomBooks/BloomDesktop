@@ -1377,6 +1377,9 @@ namespace Bloom.Book
             return classAttr.Split(' ').FirstOrDefault(x => x.EndsWith("-style"));
         }
 
+        /// <remarks>
+        /// Child may already have a style, but we want it to have the style used by the template.
+        /// </remarks>
         private static void FixStyle(
             SafeXmlNode child,
             string requiredClass,
@@ -1384,8 +1387,7 @@ namespace Bloom.Book
         )
         {
             if (
-                desiredStyleByLang.Count == 0
-                || !(child is SafeXmlElement) // can be a whitespace node (BL-13977)
+                !(child is SafeXmlElement) // can be a whitespace node (BL-13977)
                 || !child.GetAttribute("class").Contains(requiredClass)
             )
                 return;
@@ -1393,17 +1395,46 @@ namespace Bloom.Book
             var langAttr = child.GetAttribute("lang");
             if (langAttr == null || langAttr == "*" || langAttr == "z")
                 langAttr = defaultLangKey;
-            string defaultStyle;
-            desiredStyleByLang.TryGetValue(defaultLangKey, out defaultStyle); // if unsuccessful, 'defaultStyle' will be ""
             string newStyle;
             if (!desiredStyleByLang.TryGetValue(langAttr, out newStyle))
+            {
+                // If there is no default style, the copied text will not have a style, and the
+                // Styles gear icon will not show up in the text box.  So we need a default style.
+                // See BL-13977.
+                string defaultStyle = null;
+                // First, try a default set by the template in the default bloom-editable (lang='z').
+                desiredStyleByLang.TryGetValue(defaultLangKey, out defaultStyle); // if unsuccessful, 'defaultStyle' will be ""
+                if (string.IsNullOrEmpty(defaultStyle))
+                {
+                    // If the template doesn't set a default, try the translationGroup's style, if any.
+                    // child has already been added to the translationGroup copied from the template.
+                    var group =
+                        child.SelectSingleNode(
+                            "ancestor::div[contains(@class,'bloom-translationGroup')]"
+                        ) as SafeXmlElement;
+                    if (group != null)
+                        defaultStyle = GetStyle(group);
+                }
+                if (string.IsNullOrEmpty(defaultStyle))
+                {
+                    // If the translationGroup doesn't have a style, try the first bloom-editable div in the
+                    // template's translationGroup that has a style.
+                    defaultStyle = desiredStyleByLang.Values.FirstOrDefault(
+                        x => x != null && x.EndsWith("-style")
+                    );
+                    if (string.IsNullOrEmpty(defaultStyle))
+                    {
+                        // If all else fails, either retain the current style or use Normal.
+                        defaultStyle = string.IsNullOrEmpty(childStyle)
+                            ? "normal-style" // Normal is better than nothing.
+                            : childStyle; // Retain original style if template doesn't have one.
+                    }
+                }
                 newStyle = defaultStyle;
-            string newclass;
-            if (childStyle != null)
-                newclass = child.GetAttribute("class").Replace(childStyle, newStyle);
-            else
-                newclass = child.GetAttribute("class") + " " + newStyle;
-            child.SetAttribute("class", newclass);
+            }
+            if (!string.IsNullOrEmpty(childStyle))
+                (child as SafeXmlElement).RemoveClass(childStyle);
+            (child as SafeXmlElement).AddClass(newStyle);
         }
 
         // relative to the DOM's Head element
