@@ -370,6 +370,11 @@ const OverlayContextControls: React.FunctionComponent<{
         // an updated value for autoHeight. But the menu is going to be hidden, and showing it again
         // will involve a re-render, and we don't care until then.
     };
+    const handlePasteClick = () => {
+        // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
+        pasteClipboard(false);
+        theOneBubbleManager.updateAutoHeight(); // update the bubble height (BL-14004)
+    };
     const editable = props.overlay.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
@@ -392,8 +397,7 @@ const OverlayContextControls: React.FunctionComponent<{
             {
                 l10nId: "EditTab.Toolbox.ComicTool.Options.PasteText",
                 english: "Paste Text",
-                // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
-                onClick: () => pasteClipboard(false),
+                onClick: () => handlePasteClick(),
                 icon: <PasteIcon css={getMenuIconCss()} />
             },
             divider,
