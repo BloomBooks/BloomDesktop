@@ -445,7 +445,12 @@ namespace Bloom.Utils
                     dlg.FileOk += (sender, args) =>
                     {
                         // Truly enforce the filter. See BL-12929 and BL-13552.
-                        if (!MiscUI.BloomOpenFileDialog.DoubleCheckFileFilter(dlg.Filter, dlg.FileName))
+                        if (
+                            !MiscUI.BloomOpenFileDialog.DoubleCheckFileFilter(
+                                dlg.Filter,
+                                dlg.FileName
+                            )
+                        )
                             args.Cancel = true;
                     };
                     if (DialogResult.Cancel == dlg.ShowDialog())
@@ -763,6 +768,31 @@ namespace Bloom.Utils
             catch { }
 
             return scale;
+        }
+
+        public static string NormalizeLanguageTagCapitalization(string tag)
+        {
+            // Capitalization is significant in tags. We don't want to treat "en" and "En" as different languages.
+            // The full format is xxx-Yyyy-ZZ, where xxx is the ISO 639-3 code (or xx can be a ISO 639-2 code),
+            // Yyyy is the script code, and ZZ is the country code.  ZZ and Yyyy are both optional.
+            // Ensure the language code is lowercase.  (BL-14038)
+            var pieces = tag.Split('-');
+            pieces[0] = pieces[0].ToLowerInvariant();
+            if (pieces.Length >= 2)
+            {
+                if (pieces[1].Length == 4)
+                    pieces[1] =
+                        pieces[1].Substring(0, 1).ToUpperInvariant()
+                        + pieces[1].Substring(1).ToLowerInvariant();
+                else if (pieces.Length == 2 && pieces[1].Length == 2)
+                    pieces[1] = pieces[1].ToUpperInvariant();
+                if (pieces.Length > 2 && pieces[1].Length == 4)
+                {
+                    if (pieces[2].Length == 2)
+                        pieces[2] = pieces[2].ToUpperInvariant();
+                }
+            }
+            return string.Join("-", pieces);
         }
     }
 }

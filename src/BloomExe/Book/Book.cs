@@ -1142,6 +1142,8 @@ namespace Bloom.Book
             FixBadFontFamilyFromXMatter(bookDOM);
             // Fix bug reported in BL-12287: improper audio highlighting of padded sentences.
             FixImproperAudioHighlightingOfPaddedSentences(bookDOM);
+            // Fix bug reported in BL-14038: improper capitalization of language tags.
+            FixImproperCapitalizationOfLanguageTags(bookDOM);
         }
 
         /// <summary>
@@ -1168,6 +1170,48 @@ namespace Bloom.Book
             if (userStylesNode == null)
                 return; // shouldn't happen, but paranoia sometimes pays off, especially in running tests.
             HtmlDom.AddMissingAudioHighlightRules(userStylesNode);
+        }
+
+        private void FixImproperCapitalizationOfLanguageTags(HtmlDom bookDOM)
+        {
+            var langs = bookDOM.GatherDataBookLanguages();
+            foreach (var lang in langs)
+            {
+                var tag = MiscUtils.NormalizeLanguageTagCapitalization(lang);
+                if (lang != tag)
+                {
+                    var badNodes = bookDOM
+                        .SafeSelectNodes($"//div[@lang='{lang}']")
+                        .Cast<SafeXmlElement>()
+                        .ToList();
+                    // A language like the one we want already exists.  We may need to update
+                    // some nodes with the proper language tag, and we do need to either delete
+                    // nodes with the bad language tag, or change the language tag to the good
+                    // value.
+                    foreach (var badDiv in badNodes)
+                    {
+                        var dataBook = badDiv.GetAttribute("data-book");
+                        string selector;
+                        if (string.IsNullOrEmpty(dataBook))
+                            selector = $"./div[@lang='{tag}']";
+                        else
+                            selector = $"./div[@lang='{tag}' and @data-book='{dataBook}']";
+                        var goodDiv = badDiv.ParentNode.SelectSingleNode(selector);
+                        if (goodDiv == null)
+                        {
+                            badDiv.SetAttribute("lang", tag);
+                        }
+                        else if (
+                            string.IsNullOrWhiteSpace(goodDiv.InnerText)
+                            && !string.IsNullOrWhiteSpace(badDiv.InnerText)
+                        )
+                        {
+                            goodDiv.InnerXml = badDiv.InnerXml;
+                        }
+                        badDiv.ParentNode.RemoveChild(badDiv);
+                    }
+                }
+            }
         }
 
         /// <summary>
