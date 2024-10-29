@@ -160,8 +160,10 @@ export default class OverflowChecker {
             0
         );
 
-        // So the scroll height can be calculated without the language label affecting the height/width...
-        element.classList.add("hideLanguageLabel");
+        // Add a class so that the scroll height can be calculated without the language label affecting the height/width.
+        // (Currently, only done so for text-over-picture elements because the language label is OUTSIDE the box,
+        // but in a normal text box it is inside the box.)
+        element.classList.add("hideTOPLanguageLabel");
 
         const overflowY =
             this.contentHeight(element) -
@@ -173,59 +175,60 @@ export default class OverflowChecker {
             element.scrollWidth -
             (element.clientWidth + focusedBorderFudgeFactor);
 
-        element.classList.remove("hideLanguageLabel");
+        element.classList.remove("hideTOPLanguageLabel");
 
         return [overflowX, overflowY];
     }
 
     private static contentHeight(element: HTMLElement): number {
-        let maxContentBottom = 0;
-        const children = Array.from(element.children);
-        // First, we need to make sure that the size and position of the children are not affected
-        // by flex grow or shrink. Possibly at some point we might need to remember the old values
-        // of these styles, but currently we only mess with them using stylesheets, so setting them
-        // back to empty at the end is sufficient.
-        // Conceivably, there could be some flicker from setting and clearing these, but I haven't
-        // noticed it. Typically we use the results of this function to make overlays the right size,
-        // and then grow/shrink don't do anything.
-        if (element.childNodes.length === 0) {
-            return 0;
-        }
-        // Note that there may be no children, even though there are childNodes. We can only set style
-        // for elements, but we need to measure all the nodes (at least for one unit test).
-        children.forEach((e: HTMLElement) => {
-            e.style.flexGrow = "0";
-            e.style.flexShrink = "0";
-        });
-        // The element itself must not shrink, lest its scrollHeight or clientHeight be inaccurate.
-        element.style.flexGrow = "0";
-        element.style.flexShrink = "0";
-        // This is a reliable way to get the information if it is greater than the clientHeight,
-        // and means we don't have to worry about scroll position.
-        let result = element.scrollHeight;
-        if (element.scrollHeight <= element.clientHeight) {
-            // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
-            //
-            element.childNodes.forEach((x: HTMLElement) => {
-                if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
-                if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
-                // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
-                // But in case it is, we don't want to shrink the content height. And often there is only one
-                // child so we'll get an accurate figure this way even if there is some scrolling.
-                const xbottom = Math.max(x.offsetTop, 0) + x.offsetHeight;
-                if (xbottom > maxContentBottom) {
-                    maxContentBottom = xbottom;
-                }
+        // Use a temporary clone so we don't modify the actual element.
+        // Otherwise, the text box can get scrolled back to the top when the user types. See BL-13942.
+        const elementClone = element.cloneNode(true) as HTMLElement;
+        elementClone.style.visibility = "hidden";
+        element.parentElement!.appendChild(elementClone);
+
+        let result = 0;
+        try {
+            let maxContentBottom = 0;
+            const children = Array.from(elementClone.children);
+            // First, we need to make sure that the size and position of the children are not affected
+            // by flex grow or shrink. Currently, there is no reason to set these back because we
+            // operating on a temporary clone.
+            if (elementClone.childNodes.length === 0) {
+                return 0;
+            }
+            // Note that there may be no children, even though there are childNodes. We can only set style
+            // for elements, but we need to measure all the nodes (at least for one unit test).
+            children.forEach((e: HTMLElement) => {
+                e.style.flexGrow = "0";
+                e.style.flexShrink = "0";
             });
-            result = maxContentBottom;
+            // The element itself must not shrink, lest its scrollHeight or clientHeight be inaccurate.
+            elementClone.style.flexGrow = "0";
+            elementClone.style.flexShrink = "0";
+            // This is a reliable way to get the information if it is greater than the clientHeight,
+            // and means we don't have to worry about scroll position.
+            result = elementClone.scrollHeight;
+            if (elementClone.scrollHeight <= elementClone.clientHeight) {
+                // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
+                elementClone.childNodes.forEach((x: HTMLElement) => {
+                    if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
+                    if (window.getComputedStyle(x).position === "absolute")
+                        return; // special element like format button
+                    // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
+                    // But in case it is, we don't want to shrink the content height. And often there is only one
+                    // child so we'll get an accurate figure this way even if there is some scrolling.
+                    const xbottom = Math.max(x.offsetTop, 0) + x.offsetHeight;
+                    if (xbottom > maxContentBottom) {
+                        maxContentBottom = xbottom;
+                    }
+                });
+                result = maxContentBottom;
+            }
+        } finally {
+            // Remove the temporary clone we added.
+            element.parentElement!.removeChild(elementClone);
         }
-        // return control to stylesheet
-        children.forEach((e: HTMLElement) => {
-            e.style.flexGrow = "";
-            e.style.flexShrink = "";
-        });
-        element.style.flexGrow = "";
-        element.style.flexShrink = "";
         return result;
     }
 
