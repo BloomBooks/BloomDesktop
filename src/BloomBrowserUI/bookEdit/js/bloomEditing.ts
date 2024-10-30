@@ -1399,12 +1399,18 @@ async function cutSelectionImpl() {
     //sel.deleteFromDocument();
 }
 
-// See comment on copySelection
-export const pasteClipboard = (imageAvailable: boolean) => {
-    pasteImpl(imageAvailable);
+// See comment on copySelection.
+// The comment about being asynchronous but not needing to await because nothing is using the
+// result isn't quite true. The result may be used to determine the height of an autosizing
+// bubble, for instance.  So we provide an optional callback method as a second argument.
+export const pasteClipboard = (
+    imageAvailable: boolean,
+    followup?: () => void
+) => {
+    pasteImpl(imageAvailable, followup);
 };
 
-async function pasteImpl(imageAvailable: boolean) {
+async function pasteImpl(imageAvailable: boolean, followup?: () => void) {
     const bubbleManager = theOneBubbleManager;
     // Enhance: in what case would we consider a non-overlay image container to be the natural destination for pasting?
     const activeBubble = bubbleManager?.getActiveElement();
@@ -1459,6 +1465,7 @@ async function pasteImpl(imageAvailable: boolean) {
             editor.insertText(textToPaste);
             manager.unlock();
             manager.save(true);
+            if (followup) followup();
         }
         // It shouldn't happen that we don't have an editor, but if we don't, we just don't paste.
         // Otherwise, the paste is likely to go somewhere unexpected, wherever a ckeditor last had
@@ -1474,6 +1481,7 @@ async function pasteImpl(imageAvailable: boolean) {
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
     CKEDITOR.currentInstance.insertText(textToPaste);
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
+    if (followup) followup();
 }
 
 export function loadLongpressInstructions(jQuerySetOfMatchedElements) {

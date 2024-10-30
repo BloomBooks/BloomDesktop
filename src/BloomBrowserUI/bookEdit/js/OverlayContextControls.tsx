@@ -372,8 +372,9 @@ const OverlayContextControls: React.FunctionComponent<{
     };
     const handlePasteClick = () => {
         // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
-        pasteClipboard(false);
-        theOneBubbleManager.updateAutoHeight(); // update the bubble height (BL-14004)
+        // We need to update the bubble height (BL-14004).  pasteClipboard is actually asynchronous in
+        // its implementation, so we need to adjust the height in a callback.
+        pasteClipboard(false, () => theOneBubbleManager.updateAutoHeight());
     };
     const editable = props.overlay.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
