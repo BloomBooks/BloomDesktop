@@ -17,6 +17,7 @@ using Mono.Unix;
 using NAudio.Wave;
 using SIL.IO;
 using SIL.PlatformUtilities;
+using SIL.WritingSystems;
 #if __MonoCS__
 using Bloom.ToPalaso;
 #endif
@@ -445,7 +446,12 @@ namespace Bloom.Utils
                     dlg.FileOk += (sender, args) =>
                     {
                         // Truly enforce the filter. See BL-12929 and BL-13552.
-                        if (!MiscUI.BloomOpenFileDialog.DoubleCheckFileFilter(dlg.Filter, dlg.FileName))
+                        if (
+                            !MiscUI.BloomOpenFileDialog.DoubleCheckFileFilter(
+                                dlg.Filter,
+                                dlg.FileName
+                            )
+                        )
                             args.Cancel = true;
                     };
                     if (DialogResult.Cancel == dlg.ShowDialog())
@@ -763,6 +769,48 @@ namespace Bloom.Utils
             catch { }
 
             return scale;
+        }
+
+        /// <summary>
+        /// Capitalization is significant in tags. We don't want to treat "en" and "En" as different languages.
+        /// The full format (without variants) is xxx-Yyyy-ZZ, where xxx is the ISO 639-3 code (or xx can be a
+        /// ISO 639-2 code), Yyyy is the script code, and ZZ is the country code.  ZZ and Yyyy are both optional.
+        /// We need to ensure the pieces are properly capitalized.  (BL-14038)
+        /// </summary>
+        /// <returns>possibly recapitalized language tag</returns>
+        public static string NormalizeLanguageTagCapitalization(string tag)
+        {
+            // The IetfLanguageTag parser appears to be case insensitive.
+            // We need to ensure the pieces are properly capitalized.
+            if (
+                IetfLanguageTag.TryGetParts(
+                    tag,
+                    out var language,
+                    out var script,
+                    out var region,
+                    out var variant
+                )
+            )
+            {
+                if (!string.IsNullOrEmpty(language))
+                    language = language.ToLowerInvariant();
+                if (!string.IsNullOrEmpty(script))
+                    script =
+                        script.Substring(0, 1).ToUpperInvariant()
+                        + script.Substring(1).ToLowerInvariant();
+                if (!string.IsNullOrEmpty(region))
+                    region = region.ToUpperInvariant();
+                // Variants are freeform, so we don't try to recapitalize them.
+                if (IetfLanguageTag.TryCreate(language, script, region, variant, out var newTag))
+                {
+                    //if (newTag != tag)
+                    //    Debug.WriteLine(
+                    //        $"DEBUG NormalizeLanguageTag(): tag: {tag} normalized to {newTag}"
+                    //    );
+                    return newTag;
+                }
+            }
+            return tag; // failed to parse: return the original
         }
     }
 }
