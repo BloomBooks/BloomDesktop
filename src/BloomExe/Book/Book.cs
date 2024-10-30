@@ -1217,6 +1217,13 @@ namespace Bloom.Book
                         }
                         badDiv.ParentNode.RemoveChild(badDiv);
                     }
+                    // Also clean up the publish settings (stored in a separate json file)
+                    if (BookInfo.PublishSettings.BloomLibrary.TextLangs.ContainsKey(lang))
+                        BookInfo.PublishSettings.BloomLibrary.TextLangs.Remove(lang);
+                    if (BookInfo.PublishSettings.BloomLibrary.AudioLangs.ContainsKey(lang))
+                        BookInfo.PublishSettings.BloomLibrary.AudioLangs.Remove(lang);
+                    if (BookInfo.PublishSettings.BloomLibrary.SignLangs.ContainsKey(lang))
+                        BookInfo.PublishSettings.BloomLibrary.SignLangs.Remove(lang);
                 }
             }
         }
