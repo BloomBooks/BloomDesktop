@@ -1217,7 +1217,54 @@ namespace Bloom.Book
                         }
                         badDiv.ParentNode.RemoveChild(badDiv);
                     }
+                    // Also clean up the publish settings (stored in a separate json file).
+                    // Copy the setting for the bad tag if the good tag does not have a setting.
+                    // (essentially the same approach used in cleaning up the div content above)
+                    RepairPublishLanguageSetting(
+                        BookInfo.PublishSettings.BloomLibrary.TextLangs,
+                        lang,
+                        tag
+                    );
+                    RepairPublishLanguageSetting(
+                        BookInfo.PublishSettings.BloomLibrary.AudioLangs,
+                        lang,
+                        tag
+                    );
+                    RepairPublishLanguageSetting(
+                        BookInfo.PublishSettings.BloomLibrary.SignLangs,
+                        lang,
+                        tag
+                    );
+                    RepairPublishLanguageSetting(
+                        BookInfo.PublishSettings.BloomPub.TextLangs,
+                        lang,
+                        tag
+                    );
+                    RepairPublishLanguageSetting(
+                        BookInfo.PublishSettings.BloomPub.AudioLangs,
+                        lang,
+                        tag
+                    );
+                    RepairPublishLanguageSetting(
+                        BookInfo.PublishSettings.BloomPub.SignLangs,
+                        lang,
+                        tag
+                    );
                 }
+            }
+        }
+
+        private void RepairPublishLanguageSetting(
+            Dictionary<string, InclusionSetting> langSettings,
+            string badTag,
+            string goodTag
+        )
+        {
+            if (langSettings.ContainsKey(badTag))
+            {
+                if (!langSettings.ContainsKey(goodTag))
+                    langSettings[goodTag] = langSettings[badTag];
+                langSettings.Remove(badTag);
             }
         }
 
