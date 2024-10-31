@@ -47,6 +47,36 @@ export function addScrollbarsToPage(bloomPage: Element): void {
                     // no children, can't be overflowing
                     return;
                 }
+
+                // We need to know the scale of the page, because nicescroll doesn't handle
+                // scaling when it comes to the padding that we add to the top and left of
+                // the translationGroup element.  See BL-13796.
+                let scale = 1;
+                const scaleContainer = elt.closest(
+                    "#page-scaling-container"
+                ) as HTMLElement;
+                if (scaleContainer) {
+                    const scaleValue = scaleContainer.style.transform;
+                    if (scaleValue && scaleValue.startsWith("scale(")) {
+                        scale = parseFloat(
+                            scaleValue.substring(6, scaleValue.length - 1)
+                        );
+                    }
+                }
+                let topAdjust = 0;
+                let leftAdjust = 0;
+                if (scale !== 1) {
+                    const compStyles = window.getComputedStyle(
+                        elt.parentElement!
+                    );
+                    const topPadding =
+                        compStyles.getPropertyValue("padding-top") ?? "0";
+                    const leftPadding =
+                        compStyles.getPropertyValue("padding-left") ?? "0";
+                    topAdjust = parseFloat(topPadding) * (scale - 1);
+                    leftAdjust = parseFloat(leftPadding) * (scale - 1);
+                }
+
                 // We don't really want continuous observation, but this is an elegant
                 // way to find out whether each child is entirely contained within its
                 // parent. Unlike computations involving coordinates, we don't have to
@@ -170,6 +200,10 @@ export function addScrollbarsToPage(bloomPage: Element): void {
                                 // configure nicescroll...ideally only once for all of them
                                 $(scrollBlocks).niceScroll({
                                     autohidemode: false,
+                                    railoffset: {
+                                        top: -topAdjust,
+                                        left: -leftAdjust
+                                    },
                                     cursorwidth: "12px",
                                     cursorcolor: "#000000",
                                     cursoropacitymax: 0.1,
