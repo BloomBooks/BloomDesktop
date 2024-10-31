@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
+using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
 
@@ -65,10 +68,13 @@ namespace Bloom.Spreadsheet
 
         public int LangCount => Languages.Count;
 
+        List<string> _languages;
         public List<string> Languages
         {
             get
             {
+                if (_languages != null && _languages.Count > 0)
+                    return _languages;
                 var result = new List<string>();
                 for (int i = StandardLeadingColumns.Length; i < Header.ColumnCount; i++)
                 {
@@ -94,10 +100,20 @@ namespace Bloom.Spreadsheet
                     //	continue; // main audio column, audio alignment column
                     //if (content == VideoSourceColumnLabel || content == WidgetSourceColumnLabel |...)
                     //	continue;
-                    result.Add(content.Substring(1, content.Length - 2));
-                }
 
-                return result;
+                    var tag = content.Substring(1, content.Length - 2);
+                    string langTag = MiscUtils.NormalizeLanguageTagCapitalization(tag);
+                    if (langTag != tag)
+                    {
+                        var message =
+                            $"Spreadsheet Import - Language tag {tag} was normalized to {langTag}";
+                        Debug.WriteLine(message);
+                        SIL.Reporting.Logger.WriteEvent(message);
+                    }
+                    result.Add(langTag);
+                }
+                _languages = result;
+                return _languages;
             }
         }
 
@@ -198,6 +214,8 @@ namespace Bloom.Spreadsheet
             return GetColumnForTag(AlignmentColumnName(langCode));
         }
 
+        Regex _languageTagHeader = new Regex("^\\[[a-zA-Z0-9-]*\\]$", RegexOptions.Compiled);
+
         /// <summary>
         /// Gets the index for the specified column.
         /// </summary>
@@ -208,8 +226,16 @@ namespace Bloom.Spreadsheet
         {
             for (var i = 0; i < Header.ColumnCount; i++)
             {
-                if (Header.ColumnIdRow.GetCell(i).Content.Equals(columnLabel))
+                var content = Header.ColumnIdRow.GetCell(i).Content;
+                if (content.Equals(columnLabel))
                     return i;
+                if (content.Length >= 4 && _languageTagHeader.IsMatch(content)) // eg, "[fr]" or "[en-US]"
+                {
+                    var tag = content.Substring(1, content.Length - 2);
+                    var langTag = MiscUtils.NormalizeLanguageTagCapitalization(tag);
+                    if ($"[{langTag}]" == columnLabel)
+                        return i;
+                }
             }
 
             return -1;

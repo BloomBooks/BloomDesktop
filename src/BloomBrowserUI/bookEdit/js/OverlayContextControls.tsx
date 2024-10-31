@@ -182,6 +182,10 @@ const OverlayContextControls: React.FunctionComponent<{
         e.stopPropagation();
         setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
     };
+    const handlePasteClick = () => {
+        // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
+        pasteClipboard(false);
+    };
     const editable = props.overlay.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
@@ -552,8 +556,7 @@ function addTextMenuItems(
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.PasteText",
             english: "Paste Text",
-            // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
-            onClick: () => pasteClipboard(false),
+            onClick: () => handlePasteClick(),
             icon: <PasteIcon css={getMenuIconCss()} />
         },
         divider,

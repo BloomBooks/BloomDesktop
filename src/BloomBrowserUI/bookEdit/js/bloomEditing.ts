@@ -1459,6 +1459,8 @@ async function pasteImpl(imageAvailable: boolean) {
             editor.insertText(textToPaste);
             manager.unlock();
             manager.save(true);
+            // We need to update the bubble height (BL-14004).
+            bubbleManager.updateAutoHeight();
         }
         // It shouldn't happen that we don't have an editor, but if we don't, we just don't paste.
         // Otherwise, the paste is likely to go somewhere unexpected, wherever a ckeditor last had
@@ -1474,6 +1476,13 @@ async function pasteImpl(imageAvailable: boolean) {
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
     CKEDITOR.currentInstance.insertText(textToPaste);
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
+    // We need to update the bubble height (BL-14004).
+    if (
+        activeBubbleEditable &&
+        activeBubble === bubbleManager.theBubbleWeAreTextEditing
+    ) {
+        bubbleManager.updateAutoHeight();
+    }
 }
 
 export function activateLongPressFor(jQuerySetOfMatchedElements) {
