@@ -2296,6 +2296,35 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
+"@ethnolib/find-language@0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@ethnolib/find-language/-/find-language-0.0.9.tgz#d19723342e95b06ef461c1524934a690e769b83c"
+  integrity sha512-TvrBxxQTNcYJvfMg1dWJ9d4eUjR5zIihstNITSCt5xI02DsGpObDUUL2LeNYVe2BWXPhvKw2XlpXa6jItClpCg==
+  dependencies:
+    fuse.js "^7.0.0"
+    iso-15924 "^3.2.0"
+    iso-3166 "^4.3.0"
+
+"@ethnolib/language-chooser-react-hook@0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-hook/-/language-chooser-react-hook-0.0.3.tgz#8e955a92032c5ee6e9fbcf0113052075ee24cbbb"
+  integrity sha512-oH0skNfxpbvsrX0Gl6T3ggkVE68qs/nlOz4HJbdQwcG3Zzc6/upryQqTp5omMPe/W7pSpIADysQjkjKQttaYmQ==
+  dependencies:
+    "@ethnolib/find-language" "0.0.9"
+    fuse.js "^7.0.0"
+    iso-15924 "^3.2.0"
+    iso-3166 "^4.3.0"
+
+"@ethnolib/language-chooser-react-mui@^0.0.15":
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-mui/-/language-chooser-react-mui-0.0.15.tgz#1e68cdaa0fbf857a59be19206d380dbc691ab045"
+  integrity sha512-l+uEF6w6yoglC2dsqDWbghzQgWiU0NhZYDM5VoszVnPOWtfqAPgLItrdfwTmrQ9SgyJ2P9Pa+PCA2EgxaE3SdQ==
+  dependencies:
+    "@ethnolib/find-language" "0.0.9"
+    "@ethnolib/language-chooser-react-hook" "0.0.3"
+    lodash "^4.17.21"
+    react-lazyload "^3.2.1"
+
 "@floating-ui/core@^1.0.5":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.1.0.tgz#0a1dee4bbce87ff71602625d33f711cafd8afc08"
@@ -8910,6 +8939,11 @@ functions-have-names@^1.2.2:
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.2.tgz#98d93991c39da9361f8e50b337c4f6e41f120e21"
   integrity sha512-bLgc3asbWdwPbx2mNk2S49kmJCuQeu0nfmaOgbs8WIyzzkw3r4htszdIi9Q9EMezDPTYuJx2wvjZ/EwgAthpnA==
 
+fuse.js@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/fuse.js/-/fuse.js-7.0.0.tgz#6573c9fcd4c8268e403b4fc7d7131ffcf99a9eb2"
+  integrity sha512-14F4hBIxqKvD4Zz/XjDc3y94mNZN6pRv3U13Udo0lNLCWRBUsrMv2xwcF/y/Z5sV6+FQW+/ow68cHpm4sunt8Q==
+
 gauge@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/gauge/-/gauge-3.0.2.tgz#03bf4441c044383908bcfa0656ad91803259b395"
@@ -10548,6 +10582,16 @@ isexe@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha1-6PvzdNxVb/iUehDcsFctYz8s+hA=
+
+iso-15924@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/iso-15924/-/iso-15924-3.2.0.tgz#f520e89c2ec2b3b26b5390f0267e2b8e71be1eb5"
+  integrity sha512-MHjWc+yIdAqx5w5d0+KdHzOaA+jJUGhP7BSKvIkSarRQzDURbmHSjO6B2Ea2TWdFZwb845d5OG2kotApIHkJtQ==
+
+iso-3166@^4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/iso-3166/-/iso-3166-4.3.0.tgz#3eb4cbf26f6baaddc1e1bd34a0bc27079d61b94a"
+  integrity sha512-H4kM/sVbxTjSl9xnQCYOrNWdpN0R8Uz26j1BuXI9E6U+kw5wmd3HyPgr/v4+NCuvV/NcvwTfZxd5XZ4lPKvBNA==
 
 isobject@^2.0.0:
   version "2.1.0"
@@ -14030,6 +14074,11 @@ react-lazyload@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/react-lazyload/-/react-lazyload-3.2.0.tgz#497bd06a6dbd7015e3376e1137a67dc47d2dd021"
   integrity sha512-zJlrG8QyVZz4+xkYZH5v1w3YaP5wEFaYSUWC4CT9UXfK75IfRAIEdnyIUF+dXr3kX2MOtL1lUaZmaQZqrETwgw==
+
+react-lazyload@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/react-lazyload/-/react-lazyload-3.2.1.tgz#320087741ee6aaf693369b67690799423ed4d7a3"
+  integrity sha512-oDLlLOI/rRLY0fUh/HYFCy4CqCe7zdJXv6oTl2pC30tN3ezWxvwcdHYfD/ZkrGOMOOT5pO7hNLSvg7WsmAij1w==
 
 react-lifecycles-compat@^3.0.4:
   version "3.0.4"

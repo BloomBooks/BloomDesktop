@@ -8,7 +8,7 @@
         "test": "test"
     },
     "engines": {
-        "node": ">=16.14.0"
+        "node": ">=22.11.0"
     },
     "scripts": {
         "// COMMENTS: make the action a space rather than empty string so `yarn run` can list the scripts": " ",
@@ -53,6 +53,7 @@
     "dependencies": {
         "@emotion/react": "^11.10.5",
         "@emotion/styled": "^11.10.5",
+        "@ethnolib/language-chooser-react-mui": "^0.0.15",
         "@fortawesome/fontawesome-svg-core": "^6.4.0",
         "@fortawesome/free-solid-svg-icons": "^6.4.0",
         "@fortawesome/react-fontawesome": "^0.2.0",
