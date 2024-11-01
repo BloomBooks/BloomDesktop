@@ -572,6 +572,28 @@ body.bloom-fullBleed {
     }
 }
 
+// while doing an origami drag, most overlays won't resize.
+// If there's a background image (which will), hide the others (and the canvas
+// or svg, which shows their graphics, and also won't resize).
+// If not, it's probably less disturbing if they just stay where they are
+// until the origami drag is finished.
+.origami-drag {
+    .bloom-imageContainer:has(.bloom-backgroundImage) {
+        .bloom-textOverPicture:not(.bloom-backgroundImage),
+        .comical-generated {
+            display: none !important;
+        }
+    }
+}
+
+// New controls are replacing these in image containers that have overlays.
+.bloom-imageContainer:has(.bloom-textOverPicture) {
+    .imageButton,
+    .imageOverlayButton {
+        display: none;
+    }
+}
+
 .hoverUp .imageButton {
     border: 2px outset @ImageButtonBorder !important;
     border-radius: 3px !important;
@@ -1337,6 +1359,13 @@ canvas.moving {
     outline: 1px solid @bloom-blue;
     box-sizing: border-box;
     pointer-events: none;
+
+    // background images can't be manually resized
+    &.bloom-backgroundImage {
+        .bloom-ui-overlay-resize-handle {
+            display: none;
+        }
+    }
 
     // The handles and toolbox are hidden when the overlay is being moved, resized or cropped
     // (except for the resize or crop control we are operating).

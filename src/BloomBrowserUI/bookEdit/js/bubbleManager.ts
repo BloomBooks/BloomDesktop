@@ -54,6 +54,7 @@ export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kImageContainerClass = "bloom-imageContainer";
 const kImageContainerSelector = `.${kImageContainerClass}`;
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
+export const kbackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
 
 const kOverlayClass = "hasOverlay";
 
@@ -359,6 +360,7 @@ export class BubbleManager {
             return; // Already on. No work needs to be done
         }
         this.isComicEditingOn = true;
+        this.handleResizeAdjustments();
 
         Comical.setActiveBubbleListener(activeElement => {
             // No longer want to focus a bubble when activated.
@@ -1129,8 +1131,6 @@ export class BubbleManager {
             this.removeControlFrame();
             return;
         }
-        // if the overlay is not the right shape for a contained image, fix it now.
-        this.adjustContainerAspectRatio(eltToPutControlsOn);
 
         if (!controlFrame) {
             controlFrame = eltToPutControlsOn.ownerDocument.createElement(
@@ -1213,7 +1213,10 @@ export class BubbleManager {
         // to reduce flicker we don't show this when switching to a different bubble until we determine
         // that it is wanted.
         controlFrame.classList.remove("bloom-ui-overlay-show-move-crop-handle");
-        this.alignControlFrameWithActiveElement();
+        // If the overlay is not the right shape for a contained image, fix it now.
+        // This also aligns the overlay controls with the image (possibly after waiting
+        // for the image dimensions)
+        this.adjustContainerAspectRatio(eltToPutControlsOn);
         renderOverlayContextControls(eltToPutControlsOn, false);
     }
 
@@ -1658,6 +1661,15 @@ export class BubbleManager {
             capture: true
         });
         this.currentDragControl?.classList.remove("active-control");
+        if (this.activeElement?.classList.contains(kbackgroundImageClass)) {
+            this.adjustBackgroundImageSize(
+                this.activeElement.closest(kImageContainerSelector)!,
+                this.activeElement,
+                false
+            );
+            // an additional move makes continuing the last crop invalid.
+            this.lastCropControl = undefined;
+        }
     };
     private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
         if (!this.activeElement) return; // should never happen, but makes lint happy
@@ -2009,13 +2021,15 @@ export class BubbleManager {
 
     // If this overlay contains an image, and it has not already been adjusted so that the overlay
     // dimensions have the same aspect ratio as the image, make it so, reducing either height or
-    // width as necessary.
-    private adjustContainerAspectRatio(overlay: HTMLElement) {
+    // width as necessary, or possibly increasing one if the usual adjustment would make it too small.
+    // After making the adjustment if necessary (which might be delayed if the image dimensions
+    // are not available), align the control frame with the active element.
+    private adjustContainerAspectRatio(overlay: HTMLElement): void {
         const imgOrVideo = this.getImageOrVideo();
-        if (!imgOrVideo) return;
-        if (imgOrVideo.style.width) {
-            // we've already done cropping on this image, so we should not force the
+        if (!imgOrVideo || imgOrVideo.style.width) {
+            // We don't have an image, or we've already done cropping on it, so we should not force the
             // container back to the original image shape.
+            this.alignControlFrameWithActiveElement();
             return;
         }
         const containerWidth = overlay.clientWidth;
@@ -2025,6 +2039,15 @@ export class BubbleManager {
         if (imgOrVideo instanceof HTMLImageElement) {
             imgWidth = imgOrVideo.naturalWidth;
             imgHeight = imgOrVideo.naturalHeight;
+            if (imgHeight === 0) {
+                // image not ready yet, try again later.
+                imgOrVideo.addEventListener(
+                    "load",
+                    () => this.adjustContainerAspectRatio(overlay),
+                    { once: true }
+                );
+                return; // control frame will be aligned when the image is loaded
+            }
         } else {
             const video = imgOrVideo as HTMLVideoElement;
             imgWidth = video.videoWidth;
@@ -2075,6 +2098,7 @@ export class BubbleManager {
         if (Math.abs(oldWidth - newWidth) > 0.1) {
             overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
         }
+        this.alignControlFrameWithActiveElement();
     }
 
     // When the image is changed in a bubble (e.g., choose or paste image),
@@ -2094,10 +2118,16 @@ export class BubbleManager {
         img.style.height = "";
         img.style.left = "";
         img.style.top = "";
-        // Get the aspect ratio right
-        this.adjustContainerAspectRatio(overlay);
-        // and align the controls with the new image size
-        this.alignControlFrameWithActiveElement();
+        // Get the aspect ratio right (aligns control frame)
+        if (overlay.classList.contains(kbackgroundImageClass)) {
+            this.adjustBackgroundImageSize(
+                overlay.closest(kImageContainerSelector)!,
+                overlay,
+                true
+            );
+        } else {
+            this.adjustContainerAspectRatio(overlay);
+        }
     }
 
     private async getHandleTitlesAsync(
@@ -2129,9 +2159,18 @@ export class BubbleManager {
         const controlFrame = document.getElementById("overlay-control-frame");
         let controlsAbove = false;
         if (controlFrame && this.activeElement) {
+            if (
+                controlFrame.parentElement !== this.activeElement.parentElement
+            ) {
+                this.activeElement.parentElement?.appendChild(controlFrame);
+            }
             controlFrame.classList.toggle(
                 "bloom-noAutoHeight",
                 this.activeElement.classList.contains("bloom-noAutoHeight")
+            );
+            controlFrame.classList.toggle(
+                kbackgroundImageClass,
+                this.activeElement.classList.contains(kbackgroundImageClass)
             );
             const hasText = controlFrame.classList.contains("has-text");
             // We don't need to await these, they are just async so the handle titles can be updated
@@ -2831,6 +2870,10 @@ export class BubbleManager {
             if (event.altKey || event.ctrlKey || !clickOnBubbleWeAreEditing) {
                 event.preventDefault();
                 event.stopPropagation();
+            }
+            if (bubble.content.classList.contains(kbackgroundImageClass)) {
+                this.setActiveElement(bubble.content); // usually done by startDraggingBubble, but we're not going to drag it.
+                return; // these can't be dragged, they are locked to a computed position like content-fit.
             }
             startDraggingBubble(bubble);
         }
@@ -4113,6 +4156,9 @@ export class BubbleManager {
         );
         bubble.setBubbleSpec(bubbleSpec);
         const imageContainer = imageContainerJQuery.get(0);
+        // background image in parent imageContainer may need to become overlay
+        // (before we refreshBubbleEditing, since we may change some bubbles here.)
+        this.handleResizeAdjustments();
         this.refreshBubbleEditing(imageContainer, bubble, true, true);
         const editable = contentElement.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
@@ -4323,6 +4369,7 @@ export class BubbleManager {
         if (!patriarchDuplicateElement) {
             return;
         }
+        patriarchDuplicateElement.classList.remove(kbackgroundImageClass);
         patriarchDuplicateElement.style.color = sourceElement.style.color; // preserve text color
         patriarchDuplicateElement.innerHTML = this.safelyCloneHtmlStructure(
             sourceElement
@@ -4570,6 +4617,65 @@ export class BubbleManager {
         | "forTool"
         | "forGamePlayMode" = "none";
 
+    private splitterResizeObservers: ResizeObserver[] = [];
+    public startDraggingSplitter() {
+        this.getAllPrimaryImageContainersOnPage().forEach(container => {
+            const backgroundOverlay = container.getElementsByClassName(
+                kbackgroundImageClass
+            )[0] as HTMLElement;
+            if (backgroundOverlay) {
+                // These two attributes are what the resize observer will mess with to make
+                // the background resize as the splitter moves. We will restore them in
+                // endDraggingSplitter so the code that adjusts all the overlays has the
+                // correct starting size.
+                backgroundOverlay.setAttribute(
+                    "data-oldStyle",
+                    backgroundOverlay.getAttribute("style") ?? ""
+                );
+                const img = this.getImageFromOverlay(backgroundOverlay);
+                img?.setAttribute(
+                    "data-oldStyle",
+                    img.getAttribute("style") ?? ""
+                );
+                const resizeObserver = new ResizeObserver(() => {
+                    this.adjustBackgroundImageSize(
+                        container,
+                        backgroundOverlay,
+                        false
+                    );
+                });
+                resizeObserver.observe(container);
+                this.splitterResizeObservers.push(resizeObserver);
+            }
+        });
+    }
+
+    public endDraggingSplitter() {
+        this.getAllPrimaryImageContainersOnPage().forEach(container => {
+            const backgroundOverlay = container.getElementsByClassName(
+                kbackgroundImageClass
+            )[0] as HTMLElement;
+            // We need to remove the results of the continuous adjustments so that we can make the change again,
+            // but this time adjust all the other overlays with it.
+            if (backgroundOverlay) {
+                backgroundOverlay.setAttribute(
+                    "style",
+                    backgroundOverlay.getAttribute("data-oldStyle") ?? ""
+                );
+                backgroundOverlay.removeAttribute("data-oldStyle");
+                const img = this.getImageFromOverlay(backgroundOverlay);
+                img?.setAttribute(
+                    "style",
+                    img.getAttribute("data-oldStyle") ?? ""
+                );
+                img?.removeAttribute("data-oldStyle");
+            }
+            while (this.splitterResizeObservers.length) {
+                this.splitterResizeObservers.pop()?.disconnect();
+            }
+        });
+    }
+
     public suspendComicEditing(
         forWhat: "forDrag" | "forTool" | "forGamePlayMode"
     ) {
@@ -4580,6 +4686,9 @@ export class BubbleManager {
             return;
         }
         this.turnOffBubbleEditing();
+        if (forWhat === "forDrag") {
+            this.startDraggingSplitter();
+        }
 
         if (forWhat === "forGamePlayMode") {
             const allOverPictureElements = Array.from(
@@ -4618,6 +4727,9 @@ export class BubbleManager {
             // splitters and (if this is even possible) a resume that matches a suspend
             // call when comic editing wasn't on to begin with.
             return;
+        }
+        if (this.comicEditingSuspendedState === "forDrag") {
+            this.endDraggingSplitter();
         }
         if (this.comicEditingSuspendedState === "forTool") {
             // after a forTool suspense, we might have new dividers to put handlers on.
@@ -4678,13 +4790,18 @@ export class BubbleManager {
     // We don't want it turned back on for a tool or in game play mode, because we'll
     // still be in that state after the mouseup.
     private documentMouseUp = (ev: Event) => {
-        if (
-            this.comicEditingSuspendedState === "forTool" ||
-            this.comicEditingSuspendedState === "forGamePlayMode"
-        ) {
-            return;
+        if (this.comicEditingSuspendedState === "forDrag") {
+            // the mousedown was in an origami slider
+            // clean up and don't let it affect anything else
+            ev.preventDefault();
+            ev.stopPropagation();
+            setTimeout(() => {
+                // in timeout so that another mouseup handler will have removed
+                // the origami-drag class from the document, so we can get the right
+                // resize behavior when turning back on.
+                this.resumeComicEditing();
+            }, 0);
         }
-        this.resumeComicEditing();
     };
 
     public initializeOverPictureEditing(): void {
@@ -4733,7 +4850,9 @@ export class BubbleManager {
         Array.from(
             document.getElementsByClassName("split-pane-divider")
         ).forEach(d => d.addEventListener("mousedown", this.dividerMouseDown));
-        document.addEventListener("mouseup", this.documentMouseUp);
+        document.addEventListener("mouseup", this.documentMouseUp, {
+            capture: true
+        });
     }
 
     public cleanupOverPictureElements() {
@@ -5018,6 +5137,629 @@ export class BubbleManager {
         }
 
         return [offsetX, offsetY];
+    }
+
+    private handleResizeAdjustments() {
+        const primaryImageContainers = this.getAllPrimaryImageContainersOnPage();
+        primaryImageContainers.forEach(imageContainer => {
+            this.switchBackgroundToOverlayIfNeeded(imageContainer);
+            this.AdjustChildrenIfSizeChanged(imageContainer);
+        });
+    }
+
+    // The canonical way to find the main image in an image container.
+    // Better than getImageByTagName, which could find images in overlays.
+    private getImageFromContainer(
+        imageContainer: HTMLElement
+    ): HTMLImageElement | null {
+        return Array.from(imageContainer.children).find(
+            x => x instanceof HTMLImageElement
+        ) as HTMLImageElement;
+    }
+
+    private getImageFromOverlay(overlay: HTMLElement): HTMLImageElement | null {
+        const imageContainer = overlay.getElementsByClassName(
+            kImageContainerClass
+        )[0];
+        if (!imageContainer) {
+            return null;
+        }
+        return this.getImageFromContainer(imageContainer as HTMLElement);
+    }
+
+    // If an image container has overlays and a background image, we switch the
+    // background image to an image overlay. This allows it to be manipuluated more easily.
+    // More importantly, it prevents the difficult-to-account-for movement of the
+    // background image when the container is resized. Once it is an overlay,
+    // we can apply our algorithm to adjust all the overlays together when the container
+    // is resized. A further benefit is that it is somewhat backwards compatible:
+    // older code will not mess with overlay positioning like it would tend to
+    // if we put position and size attributes on the background image directly.
+    private switchBackgroundToOverlayIfNeeded(imageContainer: HTMLElement) {
+        const image = this.getImageFromContainer(imageContainer);
+        if (
+            !image ||
+            !image.src ||
+            image.getAttribute("src")?.startsWith("placeHolder.png")
+        ) {
+            // don't switch the placeholder to an overlay; it would happen again the next time
+            // we called this and we'd get an endless succession of them.
+            // And if somehow we don't have an image or src, we can't do anything useful.
+            return;
+        }
+        if (
+            imageContainer.getElementsByClassName(kTextOverPictureClass)
+                .length > 0
+        ) {
+            this.switchBackgroundToOverlay(imageContainer);
+        }
+    }
+
+    private switchBackgroundToOverlay(imageContainer: HTMLElement) {
+        this.updateImgSizeData(imageContainer);
+        const img = this.getImageFromContainer(imageContainer);
+        if (!img) return; // or throw? Should not happen.
+        // Title typically contained info about the resolution of the image we are moving
+        // to the overlay. It doesn't apply to the placeholder we will leave behind,
+        // and we don't do this for overlays, so we don't want it on the copy, either.
+        imageContainer.setAttribute("data-title", "");
+        const overlay = document.createElement("div");
+        overlay.classList.add(kTextOverPictureClass);
+        imageContainer
+            .getElementsByClassName(kbackgroundImageClass)[0]
+            ?.classList?.remove(kbackgroundImageClass);
+        overlay.classList.add(kbackgroundImageClass);
+
+        // Make a new image container to hold just the background image, inside the new overlay.
+        // We don't want a deep clone...that will copy all the overlays, too.
+        const newImgContainer = imageContainer.cloneNode(false) as HTMLElement;
+        overlay.appendChild(newImgContainer);
+        const newImg = img.cloneNode(false) as HTMLImageElement;
+        newImgContainer.appendChild(newImg);
+
+        // Set level so Comical will consider the new overlay to be under the existing ones.
+        const overlayElements = Array.from(
+            imageContainer.getElementsByClassName("bloom-textOverPicture")
+        );
+        let minLevel = Math.min(
+            ...overlayElements.map(
+                b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
+            )
+        );
+        if (minLevel <= 1) {
+            // bump all the others up so we can insert one at level 1 below them all
+            // We don't want to use zero as a level...some Comical code complains that
+            // the bubble doesn't have a level at all. And I'm nervous about using
+            // negative numbers...something that wants a level one higher might get zero.
+            overlayElements.forEach(b => {
+                const bubble = new Bubble(b as HTMLElement);
+                const spec = bubble.getBubbleSpec();
+                // the one previously at minLevel will now be at 2, others higher in same sequence.
+                spec.level += 2 - minLevel;
+                bubble.persistBubbleSpec();
+            });
+            minLevel = 2;
+        }
+        const bubble = new Bubble(overlay as HTMLElement);
+        bubble.getBubbleSpec().level = minLevel - 1;
+        bubble.persistBubbleSpec();
+        overlay.style.visibility = "none"; // hide it until we adjust its shape and position
+        // consistent with level, we want it in front of the (new, placeholder) background image
+        // and behind the other overlays.
+        imageContainer.insertBefore(overlay, img.nextSibling);
+        this.adjustBackgroundImageSize(imageContainer, overlay, true);
+        overlay.style.visibility = "";
+
+        // remove all attributes from img and set src to make it a plain vanilla placeholder.
+        // set "src" first since this will make it disappear, hopefully reducing flicker.
+        img.setAttribute("src", "placeHolder.png");
+        for (let i = img.attributes.length - 1; i >= 0; i--) {
+            const name = img.attributes[i].name;
+            if (name !== "src") {
+                img.removeAttribute(name);
+            }
+        }
+    }
+
+    private adjustBackgroundImageSize(
+        imageContainer: HTMLElement,
+        overlay: HTMLElement,
+        // if this is set true, we've updated the src of the background image and want to
+        // ignore any cropping (assumes the img doesn't have any
+        // cropping-related style settings) and just adjust the overlay to fit the image.
+        // We'll always have to wait for it to load in this case, otherwise, we may get
+        // the dimensions of a previous image.
+        useSizeOfNewImage: boolean,
+        // This is set true when we arrange an onload callback and receive it
+        gotSizeOfNewImage = false
+    ) {
+        let imgAspectRatio = overlay.clientWidth / overlay.clientHeight;
+        const img = this.getImageFromOverlay(overlay);
+        if (useSizeOfNewImage) {
+            // We don't ever expect there not to be an img. If it happens, we'll just go
+            // ahead and adjust based on the current shape of the overlay.
+            if (img) {
+                // if we don't have a height and width, or we know the image src changed
+                // and have not yet waited for new dimensions, go ahead and wait.
+                if (
+                    img.naturalHeight === 0 ||
+                    img.naturalWidth === 0 ||
+                    !gotSizeOfNewImage
+                ) {
+                    // image not ready yet, try again later.
+                    img.addEventListener(
+                        "load",
+                        () =>
+                            this.adjustBackgroundImageSize(
+                                imageContainer,
+                                overlay,
+                                useSizeOfNewImage,
+                                true // when we get here, we know we have the updated size.
+                            ),
+                        { once: true }
+                    );
+                    return;
+                }
+                imgAspectRatio = img.naturalWidth / img.naturalHeight;
+            }
+        }
+
+        const oldWidth = overlay.clientWidth;
+        const containerAspectRatio =
+            imageContainer.clientWidth / imageContainer.clientHeight;
+        if (imgAspectRatio > containerAspectRatio) {
+            // size of image is width-limited
+            overlay.style.width = imageContainer.clientWidth + "px";
+            overlay.style.left = "0px";
+            const imgHeight = imageContainer.clientWidth / imgAspectRatio;
+            overlay.style.top =
+                (imageContainer.clientHeight - imgHeight) / 2 + "px";
+            overlay.style.height = imgHeight + "px";
+        } else {
+            const imgWidth = imageContainer.clientHeight * imgAspectRatio;
+            overlay.style.width = imgWidth + "px";
+            overlay.style.top = "0px";
+            overlay.style.left =
+                (imageContainer.clientWidth - imgWidth) / 2 + "px";
+            overlay.style.height = imageContainer.clientHeight + "px";
+        }
+        if (!useSizeOfNewImage && img?.style.width) {
+            // need to adjust image settings to preserve cropping
+            const scale = overlay.clientWidth / oldWidth;
+            img.style.width =
+                BubbleManager.pxToNumber(img.style.width) * scale + "px";
+            img.style.left =
+                BubbleManager.pxToNumber(img.style.left) * scale + "px";
+            img.style.top =
+                BubbleManager.pxToNumber(img.style.top) * scale + "px";
+        }
+        this.alignControlFrameWithActiveElement();
+    }
+
+    // This function implements all variations of the "Set as Background" command for an image overlay.
+    // Typically it makes the current overlay be a background image. If there was a previous background
+    // image, it swaps the two. If the current overlay is already the background image, it turns it back
+    // into an ordinary overlay.
+    public setAsBackground() {
+        if (!this.activeElement) {
+            return;
+        }
+        const activeContainer = this.activeElement.closest(
+            kImageContainerSelector
+        ) as HTMLElement;
+        const backgroundOverlay = activeContainer?.getElementsByClassName(
+            kbackgroundImageClass
+        )[0] as HTMLElement;
+        if (backgroundOverlay === this.activeElement) {
+            // Just turn it off, don't have a background image any more
+            backgroundOverlay.classList.remove(kbackgroundImageClass);
+            return;
+        }
+        if (backgroundOverlay) {
+            // swap the images
+            const imgBackground = this.getImageFromOverlay(backgroundOverlay);
+            const imgActive = this.getImageFromOverlay(this.activeElement);
+            if (imgBackground && imgActive) {
+                const srcOldBackground =
+                    imgBackground?.getAttribute("src") ?? "";
+                const srcOldActive = imgActive?.getAttribute("src") ?? "";
+                imgBackground.setAttribute("src", srcOldActive);
+                imgActive.setAttribute("src", srcOldBackground);
+                // copying these two attributes gives the background image the same cropping as the
+                // active one. Then it will get adjusted to content-fit as cropped.
+                backgroundOverlay.setAttribute(
+                    "style",
+                    this.activeElement.getAttribute("style") ?? ""
+                );
+                imgBackground.setAttribute(
+                    "style",
+                    imgActive.getAttribute("style") ?? ""
+                );
+                // For now we'll clear any cropping on the (old) background image. If this approach is kept,
+                // we may want to figure out how to preserve it. It will take some scaling to keep
+                // it the old cropped aspect ratio and the new size. But it's quite likely that image should
+                // be removed. That's what Canva does. I just hate doing a delete that might be unexpected,
+                // when we don't yet have Undo.
+                imgActive.removeAttribute("style");
+                // Fix the aspect ratio of the element that now has the old background image
+                this.adjustContainerAspectRatio(this.activeElement);
+                this.adjustBackgroundImageSize(
+                    activeContainer,
+                    backgroundOverlay,
+                    false
+                );
+            }
+            return;
+        }
+        // no background image yet, so make this one the background
+        this.activeElement.classList.add(kbackgroundImageClass);
+        const oldLevel = Bubble.getBubbleSpec(this.activeElement).level ?? 0;
+        // move it behind the others
+        const overlayElements = Array.from(
+            activeContainer.getElementsByClassName(kTextOverPictureClass)
+        );
+        this.activeElement.parentElement?.insertBefore(
+            this.activeElement,
+            overlayElements[0]
+        );
+        // It also needs to have a level less than any others, so Comical doesn't give it
+        // preference when evaluating clicks
+        overlayElements.forEach(b => {
+            const bubble = new Bubble(b as HTMLElement);
+            const spec = bubble.getBubbleSpec();
+            if (spec.level ?? 0 < oldLevel) {
+                // the one previously at minLevel will now be at 2, others higher in same sequence.
+                spec.level++;
+                bubble.persistBubbleSpec();
+            }
+        });
+        const bubble = new Bubble(this.activeElement);
+        const spec = bubble.getBubbleSpec();
+        spec.level = 1;
+        bubble.persistBubbleSpec();
+        this.adjustBackgroundImageSize(
+            activeContainer,
+            this.activeElement,
+            false
+        );
+        // Get comical up to date with the changes, especially the changed levels
+        this.refreshBubbleEditing(
+            this.activeElement.parentElement as HTMLElement,
+            new Bubble(this.activeElement),
+            false,
+            true
+        );
+    }
+
+    // Store away the current size of the image container. At any later time if we notice that
+    // this does not match the current size, we adjust everything according to how the size has changed.
+    private updateImgSizeData(container: HTMLElement) {
+        container.setAttribute(
+            "data-imgSizeBasedOn",
+            `${container.clientWidth},${container.clientHeight}`
+        );
+    }
+
+    private AdjustChildrenIfSizeChanged(container: HTMLElement): void {
+        const oldSizeData = container.getAttribute("data-imgSizeBasedOn");
+        if (!oldSizeData) return; // not using this system for sizing
+        // Get the width it was the last time the user was working on it
+        const oldSizeDataArray = oldSizeData.split(",");
+        const oldWidth = parseInt(oldSizeDataArray[0]);
+        const oldHeight = parseInt(oldSizeDataArray[1]);
+
+        const newWidth = container.clientWidth;
+        const newHeight = container.clientHeight;
+        if (oldWidth === newWidth && oldHeight === newHeight) return; // allow small discrepancy?
+        // Leave out of this calculation the canvas and any image descriptions or controls.
+        const children = (Array.from(
+            container.children
+        ) as HTMLElement[]).filter(
+            c =>
+                c.style.left !== "" &&
+                c.classList.contains("bloom-ui") === false
+        );
+        if (children.length === 0) return;
+
+        // Figure out the rectangle that contains all the overlays. We'll adjust the size and position
+        // of this rectangle to fit the new container. (But if there's a background image, we'll instead
+        // adjust to keep it in the content-fit position.)
+        // Review: should we consider any data-bubble-alternate values on other language bloom-editables?
+        // In most cases it won't make much difference since the alternate is in nearly the same place.
+        // If an alternate is in a very different place, leaving it out here could mean it gets clipped
+        // in the new layout. OTOH, if we include it, the results for this language could be quite
+        // puzzling, and there might be no way to get things to stay where they are wanted without adjusting
+        // the alternate language version.
+        let top = Number.MAX_VALUE;
+        let bottom = -Number.MAX_VALUE;
+        let left = Number.MAX_VALUE;
+        let right = -Number.MAX_VALUE;
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            const childTop = child.offsetTop;
+            const childLeft = child.offsetLeft;
+            // Clip the rectangle to the old container. If the author previously placed
+            // something so that it was partly clipped, we don't need to 'correct' that.
+            // (We're not trying to ensure that it stays clipped by the same amount,
+            // just that we don't scale things down more than otherwise necessary to make
+            // more of it visible.)
+            if (childTop < top) top = Math.max(childTop, 0);
+            if (childLeft < left) left = Math.max(childLeft, 0);
+            if (childTop + child.clientHeight > bottom)
+                bottom = Math.min(childTop + child.clientHeight, oldHeight);
+            if (childLeft + child.clientWidth > right)
+                right = Math.min(childLeft + child.clientWidth, oldWidth);
+
+            // If found, it should be the first one; we'll make it the whole rectangle we try
+            // to fit to the new container size.
+            if (child.classList.contains(kbackgroundImageClass)) {
+                break;
+            }
+        }
+        const childrenHeight = bottom - top;
+        const childrenWidth = right - left;
+        const childrenAspectRatio = childrenWidth / childrenHeight;
+        // The goal is to figure out the new size and position of the rectangle
+        // defined by top, left, childrenWidth, childrenHeight, which are relative
+        // to oldWidth and oldHeight, in view of the newWidth and newHeight.
+        // Ideally the new height, width, top, and left would be the same percentages
+        // as before of the new container height and width. But we need to preserve
+        // aspect ratio. If the ideal adjustment breaks this, we will
+        // - increase the dimension that is too small for the aspect ratio until the aspect ratio is correct or it fills the container.
+        // - if that didn't make things right, decrease the other dimension.
+        // Conveniently this algorithm also achieves the goal of keeping any background image
+        // emultating content-fit (assuming it was before).
+        // What fraction of the old padding was on the left?
+        const widthPadding = oldWidth - childrenWidth;
+        const heightPadding = oldHeight - childrenHeight;
+        // if there was significant padding before, we'll try to keep the same ratio.
+        // if not, and we now need padding in that direction, we'll center things.
+        const oldLeftPaddingFraction =
+            widthPadding > 1 ? left / widthPadding : 0.5;
+        const oldTopPaddingFraction =
+            heightPadding > 1 ? top / heightPadding : 0.5;
+        const oldWidthFraction = childrenWidth / oldWidth;
+        const oldHeightFraction = childrenHeight / oldHeight;
+        let newChildrenWidth = oldWidthFraction * newWidth;
+        let newChildrenHeight = oldHeightFraction * newHeight;
+        if (newChildrenWidth / newChildrenHeight > childrenAspectRatio) {
+            // the initial calculation will distort things as if squeezed vertically.
+            // try increasing height
+            newChildrenHeight = newChildrenWidth / childrenAspectRatio;
+            if (newChildrenHeight > newHeight) {
+                // can't grow enough vertically, instead, reduce width
+                newChildrenHeight = newHeight;
+                newChildrenWidth = newChildrenHeight * childrenAspectRatio;
+            }
+        } else {
+            // the initial calculation will distort things as if squeezed horizontally.
+            // try increasing width
+            newChildrenWidth = newChildrenHeight * childrenAspectRatio;
+            if (newChildrenWidth > newWidth) {
+                // can't grow enough horizontally, instead, reduce height
+                newChildrenWidth = newWidth;
+                newChildrenHeight = newChildrenWidth / childrenAspectRatio;
+            }
+        }
+        // after the adjustments above, this is how we will scale things in both directions.
+        const scale = newChildrenWidth / childrenWidth;
+        // The new topLeft is calculated to distribute any whitespace in the same proportions as before.
+        const newWidthPadding = newWidth - newChildrenWidth;
+        const newHeightPadding = newHeight - newChildrenHeight;
+        const newLeft = oldLeftPaddingFraction * newWidthPadding;
+        const newTop = oldTopPaddingFraction * newHeightPadding;
+        // OK, so the rectangle that represents the union of all the children (or the background image) is going to
+        // be scaled by 'scale' and moved to (newLeft, newTop).
+        // Now we need to adjust the position and possibly size of each child.
+        children.forEach((child: HTMLElement) => {
+            const childTop = child.offsetTop;
+            const childLeft = child.offsetLeft;
+            // a first approximation
+            let newChildTop = newTop + (childTop - top) * scale;
+            let newChildLeft = newLeft + (childLeft - left) * scale;
+            let newChildWidth = child.clientWidth;
+            let newChildHeight = child.clientHeight;
+            let reposition = true;
+            if (
+                Array.from(child.children).some(
+                    (c: HTMLElement) =>
+                        c.classList.contains("bloom-imageContainer") ||
+                        c.classList.contains("bloom-videoContainer")
+                )
+            ) {
+                // an image or video overlay: the position is OK, we want to scale the size.
+                newChildWidth = child.clientWidth * scale;
+                newChildHeight = child.clientHeight * scale;
+                const img = child.getElementsByTagName("img")[0];
+                if (img && img.style.width) {
+                    // The image has been cropped. We want to keep the crop looking the same,
+                    // which means we need to scale its width, left, and top.
+                    const imgLeft = BubbleManager.pxToNumber(img.style.left);
+                    const imgTop = BubbleManager.pxToNumber(img.style.top);
+                    const imgWidth = BubbleManager.pxToNumber(img.style.width);
+                    img.style.left = imgLeft * scale + "px";
+                    img.style.top = imgTop * scale + "px";
+                    img.style.width = imgWidth * scale + "px";
+                }
+            } else if (child.classList.contains(kTextOverPictureClass)) {
+                // text overlay: we want to leave the size alone and preserve the position of the center.
+                const oldCenterX = childLeft + child.clientWidth / 2;
+                const oldCenterY = childTop + child.clientHeight / 2;
+                const newCenterX = newLeft + (oldCenterX - left) * scale;
+                const newCenterY = newTop + (oldCenterY - top) * scale;
+                newChildTop = newCenterY - newChildHeight / 2;
+                newChildLeft = newCenterX - newChildWidth / 2;
+            } else {
+                // image description? UI artifact? leave it alone
+                reposition = false;
+            }
+            if (reposition) {
+                child.style.top = newChildTop + "px";
+                child.style.left = newChildLeft + "px";
+                child.style.width = newChildWidth + "px";
+                child.style.height = newChildHeight + "px";
+            }
+            if (child.classList.contains(kTextOverPictureClass)) {
+                const tails: TailSpec[] = Bubble.getBubbleSpec(child).tails;
+                tails.forEach(tail => {
+                    tail.tipX = newLeft + (tail.tipX - left) * scale;
+                    tail.tipY = newTop + (tail.tipY - top) * scale;
+                    tail.midpointX = newLeft + (tail.midpointX - left) * scale;
+                    tail.midpointY = newTop + (tail.midpointY - top) * scale;
+                });
+                const bubble = new Bubble(child);
+                bubble.mergeWithNewBubbleProps({ tails: tails });
+                if (
+                    !Array.from(child.children).some(
+                        (c: HTMLElement) =>
+                            c.classList.contains("bloom-imageContainer") ||
+                            c.classList.contains("bloom-videoContainer")
+                    )
+                ) {
+                    // This must be done after we adjust the overlay, since its new settings are
+                    // written into the alternate for the current language.
+                    // Review: adjusting the data-bubble-alternate means that the bubbles in
+                    // other languages will look right if we go in and edit them. However,
+                    // to make things look right automatically in publications, we'd need to
+                    // switch each alternative to be the live one, fire up Comical, and adjust the SVG.
+                    // I think this would cause flicker, and certainly delay. If we decide we want
+                    // to make that fully automatic, I think it might be better to do it
+                    // as a publishing step when we know what languages will be published.
+                    BubbleManager.adjustBubbleAlternates(
+                        child,
+                        scale,
+                        left,
+                        top,
+                        newLeft,
+                        newTop
+                    );
+                }
+            }
+        });
+        this.updateImgSizeData(container);
+    }
+
+    public static adjustBubbleAlternates(
+        overlay: HTMLElement,
+        scale: number,
+        oldLeft: number,
+        oldTop: number,
+        newLeft: number,
+        newTop: number
+    ) {
+        const overlayLang = GetSettings().languageForNewTextBoxes;
+        Array.from(overlay.getElementsByClassName("bloom-editable")).forEach(
+            editable => {
+                const lang = editable.getAttribute("lang");
+                if (lang === overlayLang) {
+                    // We want to update this lang's alternate to the current data we already figured out.
+                    const alternate = {
+                        style: overlay.getAttribute("style"),
+                        tails: Bubble.getBubbleSpec(overlay).tails
+                    };
+                    editable.setAttribute(
+                        "data-bubble-alternate",
+                        JSON.stringify(alternate).replace(/"/g, "`")
+                    );
+                } else {
+                    const alternatesString = editable.getAttribute(
+                        "data-bubble-alternate"
+                    );
+                    if (alternatesString) {
+                        const alternate = JSON.parse(
+                            alternatesString.replace(/`/g, '"')
+                        ) as IAlternate;
+                        const style = alternate.style;
+                        const width = BubbleManager.getLabeledNumber(
+                            "width",
+                            style
+                        );
+                        const height = BubbleManager.getLabeledNumber(
+                            "height",
+                            style
+                        );
+                        let newStyle = BubbleManager.adjustCenterOfTextBox(
+                            "left",
+                            style,
+                            scale,
+                            oldLeft,
+                            newLeft,
+                            width
+                        );
+                        newStyle = BubbleManager.adjustCenterOfTextBox(
+                            "top",
+                            newStyle,
+                            scale,
+                            oldTop,
+                            newTop,
+                            height
+                        );
+
+                        const tails = alternate.tails;
+                        tails.forEach(
+                            (tail: {
+                                tipX: number;
+                                tipY: number;
+                                midpointX: number;
+                                midpointY: number;
+                            }) => {
+                                tail.tipX =
+                                    newLeft + (tail.tipX - oldLeft) * scale;
+                                tail.tipY =
+                                    newTop + (tail.tipY - oldTop) * scale;
+                                tail.midpointX =
+                                    newLeft +
+                                    (tail.midpointX - oldLeft) * scale;
+                                tail.midpointY =
+                                    newTop + (tail.midpointY - oldTop) * scale;
+                            }
+                        );
+                        alternate.style = newStyle;
+                        alternate.tails = tails;
+                        editable.setAttribute(
+                            "data-bubble-alternate",
+                            JSON.stringify(alternate).replace(/"/g, "`")
+                        );
+                    }
+                }
+            }
+        );
+    }
+
+    private static numberPxRegex = ": ?(-?\\d+.?\\d*)px";
+
+    // Find in 'style' the label followed by a number (e.g., left).
+    // Let oldRange be the size of the object in that direction, e.g., width.
+    // We want to move the center of the object on the basis that the container that
+    // the labeled value is relative to is being scaled by 'scale',
+    // and moved from oldC to newC, and put the new value back in the style, and yield that new style
+    // as the result.
+    public static adjustCenterOfTextBox(
+        label: string,
+        style: string,
+        scale: number,
+        oldC: number,
+        newC: number,
+        oldRange: number
+    ): string {
+        const old = BubbleManager.getLabeledNumber(label, style);
+        const center = old + oldRange / 2;
+        const newCenter = newC + (center - oldC) * scale;
+        const newVal = newCenter - oldRange / 2;
+        return style.replace(
+            new RegExp(label + this.numberPxRegex),
+            label + ": " + newVal + "px"
+        );
+    }
+
+    // Typical source is something like "left: 224px; top: 79.6px; width: 66px; height: 30px;"
+    // We want to pass "top" and get 79.6.
+    public static getLabeledNumber(label: string, source: string): number {
+        const match = source.match(new RegExp(label + this.numberPxRegex));
+        if (match) {
+            return parseFloat(match[1]);
+        }
+        return 9;
     }
 }
 

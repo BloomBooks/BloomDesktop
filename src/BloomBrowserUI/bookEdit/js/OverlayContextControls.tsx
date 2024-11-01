@@ -16,6 +16,8 @@ import { default as CircleIcon } from "@mui/icons-material/Circle";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
+// MUI thinks of this icon as "Texture", but we're using it for commands that affect the background image.
+import { default as BackgroundIcon } from "@mui/icons-material/Texture";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import { doImageCommand, getImageUrlFromImageContainer } from "./bloomImages";
 import {
@@ -40,7 +42,11 @@ import {
 import Menu from "@mui/material/Menu";
 import { Divider } from "@mui/material";
 import { DuplicateIcon } from "./DuplicateIcon";
-import { BubbleManager, theOneBubbleManager } from "./bubbleManager";
+import {
+    BubbleManager,
+    kbackgroundImageClass,
+    theOneBubbleManager
+} from "./bubbleManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -625,6 +631,24 @@ function addImageMenuOptions(
             getImageUrlFromImageContainer(imgContainer)
         );
     };
+    const setAsBackground = () => {
+        theOneBubbleManager?.setAsBackground();
+    };
+
+    const currentIsBackground = overlay.classList.contains(
+        kbackgroundImageClass
+    );
+    const isThereABackground =
+        currentIsBackground ||
+        overlay.parentElement?.getElementsByClassName(kbackgroundImageClass)[0];
+
+    let setBackgroundId = "EditTab.Image.SetBackground"; // default when no background is set
+    if (currentIsBackground) {
+        setBackgroundId = "EditTab.Image.SetBackgroundRemove";
+    } else if (isThereABackground) {
+        setBackgroundId = "EditTab.Image.SetBackgroundReplace";
+    }
+
     menuOptions.unshift(
         {
             l10nId: "EditTab.Image.ChooseImage",
@@ -650,6 +674,12 @@ function addImageMenuOptions(
             subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
             onClick: runMetadataDialog,
             icon: <CopyrightIcon css={getMenuIconCss()} />
+        },
+        {
+            l10nId: setBackgroundId,
+            english: "Set Image as background",
+            onClick: setAsBackground,
+            icon: <BackgroundIcon css={getMenuIconCss()} />
         },
         divider
     );
