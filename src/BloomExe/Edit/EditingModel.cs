@@ -1663,45 +1663,74 @@ namespace Bloom.Edit
 
         public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
         {
-            // we don't need to wait. Even if our caller kicks off a save, its call to RunJavascriptAsync() will come in after ours.
+            // We generally don't need to wait. Even if we decide to save, its call to RunJavascriptAsync() will come in after ours.
+            // But be careful about depending on that (or any subsequent running Javascript) on pages that might have overlays:
+            // updating the image on an overlay page can involve async code that adjusts things after the image is loaded
+            // enough to get its dimensions, and that adjustment might not complete before the next Javascript is run from C#
             GetEditingBrowser()
                 .RunJavascriptFireAndForget(
                     $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                 );
 
-            /* We're Saving to the DOM here:
-             * 1) Makes it transparent if it should be:
+            /* We're Saving to the DOM here only if it's a cover page, because that lets us make the image transparent if it should be:
              *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,
-             *        so the check to see if we need to make it tranparent says "no".
+             *        so the check to see if we need to make it transparent says "no".
              *        This could probably be done in a smarter way that isn't occuring to me at the moment.
-             * 2) It is needed if we're going to update the thumbnail (we could live without this)
+             *  [JT idea: we could update our version of the DOM, just setting the src of the image. Or, we could
+             *  talk directly to the BloomServer and tell it that image needs transparency.]
+             * Another possible reason to Save is that it is needed if we're going to update the thumbnail, but we decided
+             * we can live without this...probably we can get that behavior back once the page list is in the same browser.
+             * And as noted above, a reason not to save is that it's a problem to run the Javascript that gets the page
+             * content before any async consequences of running the changeImage above (that affect the saved DOM content)
+             * have completed.
+             * For now, it's OK to Save on the cover, because we don't support overlays there, and overlays are the only
+             * known case where the async consequences of the changeImage might affect the saved DOM.
+             * But this is more fragile than I like. Hope we can soon find a better way to get the cover image transparency
+             * and maybe even update the thumbnails without forcing a save.
              */
-            SaveThen(
-                doAfterSaving: () =>
-                {
-                    try
+            if (CurrentPage.IsCoverPage)
+            {
+                SaveThen(
+                    doAfterSaving: () =>
                     {
-                        _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+                        try
+                        {
+                            _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 
-                        Logger.WriteMinorEvent("Finished ChangePicture {0}", (object)args.src);
-                        Analytics.Track("Change Picture");
-                        Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
-                    }
-                    catch (Exception e)
-                    {
-                        var msg = LocalizationManager.GetString(
-                            "Errors.ProblemImportingPicture",
-                            "Bloom had a problem importing this picture."
-                        );
-                        e.Data["ProblemImagePath"] = args.src;
-                        ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
-                    }
-                    return _pageSelection.CurrentSelection.Id; // we're not changing pages
-                },
-                doIfNotInRightStateToSave: () => { },
-                forceFullSave: false,
-                skipSaveToDisk: false // we can wait for the normal save to disk
-            );
+                            Logger.WriteMinorEvent(
+                                "Finished ChangePicture with save {0}",
+                                (object)args.src
+                            );
+                            Analytics.Track("Change Picture");
+                            Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
+                        }
+                        catch (Exception e)
+                        {
+                            var msg = LocalizationManager.GetString(
+                                "Errors.ProblemImportingPicture",
+                                "Bloom had a problem importing this picture."
+                            );
+                            e.Data["ProblemImagePath"] = args.src;
+                            ErrorReport.NotifyUserOfProblem(
+                                e,
+                                msg + Environment.NewLine + e.Message
+                            );
+                        }
+
+                        return _pageSelection.CurrentSelection.Id; // we're not changing pages
+                    },
+                    doIfNotInRightStateToSave: () => { },
+                    forceFullSave: false,
+                    skipSaveToDisk: false // we can wait for the normal save to disk
+                );
+            }
+            else
+            {
+                // not saving, but we still want to log etc.
+                Logger.WriteMinorEvent("Finished ChangePicture without save {0}", (object)args.src);
+                Analytics.Track("Change Picture");
+                Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
+            }
         }
 
         public void SetView(EditingView view)

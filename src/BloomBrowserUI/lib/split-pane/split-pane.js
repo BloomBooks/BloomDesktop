@@ -136,6 +136,10 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
             pageYof(event)
         );
         document.addEventListener(moveEvent, moveFunction, { capture: true });
+        // MUST be on the document, both for the usual reason that the mouse can move out of the element
+        // where the mouse down happened, and also because there is another capturing document-level mouseup
+        // handler in bubblemanager that uses stopPropagation to prevent the event from reaching
+        // any descendants.
         document.addEventListener(endEvent, mouseUpHandler, {
             capture: true,
             once: true
@@ -781,11 +785,21 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
         ) {
             return -1;
         }
+        // by default the image percent is based on the image that is a direct child of the imageContainer
         const img = Array.from(imageContainer.children).filter(
             c => c.nodeName === "IMG"
         )[0];
         if (!img) {
             return -1;
+        }
+        let aspectRatio = img.naturalWidth / img.naturalHeight;
+        // but if there is a bloom-backgroundImage, common in images used for overlays, use that instead
+        const backgroundOverlay = imageContainer.getElementsByClassName(
+            "bloom-backgroundImage"
+        )[0];
+        if (backgroundOverlay) {
+            aspectRatio =
+                backgroundOverlay.clientWidth / backgroundOverlay.clientHeight;
         }
         const horizontal = isPaneHorizontal(splitPane);
         const splitPaneComponent = img.closest(".split-pane-component"); // the element that has the percent
@@ -793,9 +807,7 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 
         if (horizontal) {
             const width = splitPane.offsetWidth;
-            const height = isForSquareSplit
-                ? width
-                : (width * img.naturalHeight) / img.naturalWidth;
+            const height = isForSquareSplit ? width : width / aspectRatio;
             // At some point we apparently had 3px of margin on the top pane, possibly something to do
             // with the splitter control. Somewhere about 6.0 we lost it, so this correction is no longer needed.
             // I'm leaving it here commented out in case losing that margin was a mistake and we also need
@@ -820,9 +832,7 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
             return ((height + extraHeight) * 100) / splitPane.offsetHeight;
         } else {
             const height = splitPane.offsetHeight;
-            const width = isForSquareSplit
-                ? height
-                : (height * img.naturalWidth) / img.naturalHeight;
+            const width = isForSquareSplit ? height : height * aspectRatio;
             // See comment above in horizontal block.
             // if (isForFirstChildPane) {
             //     width += 3;
