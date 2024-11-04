@@ -4791,13 +4791,15 @@ export class BubbleManager {
     // still be in that state after the mouseup.
     private documentMouseUp = (ev: Event) => {
         if (this.comicEditingSuspendedState === "forDrag") {
-            // the mousedown was in an origami slider
-            // clean up and don't let it affect anything else
+            // The mousedown was in an origami slider.
+            // Clean up and don't let the mouse up affect anything else.
+            // (Note: we're not stopping IMMEDATE propagation, so another mouseup handler
+            // on the document can remove the origami-drag class.)
             ev.preventDefault();
             ev.stopPropagation();
             setTimeout(() => {
-                // in timeout so that another mouseup handler will have removed
-                // the origami-drag class from the document, so we can get the right
+                // in timeout to be sure that another mouseup handler will have removed
+                // the origami-drag class from the body, so we can get the right
                 // resize behavior when turning back on.
                 this.resumeComicEditing();
             }, 0);
@@ -5670,11 +5672,11 @@ export class BubbleManager {
                             alternatesString.replace(/`/g, '"')
                         ) as IAlternate;
                         const style = alternate.style;
-                        const width = BubbleManager.getLabeledNumber(
+                        const width = BubbleManager.getLabeledNumberInPx(
                             "width",
                             style
                         );
-                        const height = BubbleManager.getLabeledNumber(
+                        const height = BubbleManager.getLabeledNumberInPx(
                             "height",
                             style
                         );
@@ -5742,7 +5744,7 @@ export class BubbleManager {
         newC: number,
         oldRange: number
     ): string {
-        const old = BubbleManager.getLabeledNumber(label, style);
+        const old = BubbleManager.getLabeledNumberInPx(label, style);
         const center = old + oldRange / 2;
         const newCenter = newC + (center - oldC) * scale;
         const newVal = newCenter - oldRange / 2;
@@ -5754,8 +5756,10 @@ export class BubbleManager {
 
     // Typical source is something like "left: 224px; top: 79.6px; width: 66px; height: 30px;"
     // We want to pass "top" and get 79.6.
-    public static getLabeledNumber(label: string, source: string): number {
-        const match = source.match(new RegExp(label + this.numberPxRegex));
+    public static getLabeledNumberInPx(label: string, source: string): number {
+        const match = source.match(
+            new RegExp(label + BubbleManager.numberPxRegex)
+        );
         if (match) {
             return parseFloat(match[1]);
         }
