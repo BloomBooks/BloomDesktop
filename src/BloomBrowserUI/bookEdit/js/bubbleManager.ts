@@ -5198,7 +5198,6 @@ export class BubbleManager {
     }
 
     private switchBackgroundToOverlay(imageContainer: HTMLElement) {
-        this.updateImgSizeData(imageContainer);
         const img = this.getImageFromContainer(imageContainer);
         if (!img) return; // or throw? Should not happen.
         // Title typically contained info about the resolution of the image we are moving
@@ -5444,7 +5443,17 @@ export class BubbleManager {
 
     private AdjustChildrenIfSizeChanged(container: HTMLElement): void {
         const oldSizeData = container.getAttribute("data-imgSizeBasedOn");
-        if (!oldSizeData) return; // not using this system for sizing
+        if (!oldSizeData) {
+            // Can't make a useful adjustment now, with no previous size to work from.
+            // But if this is an image with overlays, we'll want to remember the size for next time.
+            if (
+                container.getElementsByClassName(kTextOverPictureClass).length >
+                0
+            ) {
+                this.updateImgSizeData(container);
+            }
+            return; // not using this system for sizing
+        }
         // Get the width it was the last time the user was working on it
         const oldSizeDataArray = oldSizeData.split(",");
         const oldWidth = parseInt(oldSizeDataArray[0]);
@@ -5583,8 +5592,11 @@ export class BubbleManager {
                     img.style.top = imgTop * scale + "px";
                     img.style.width = imgWidth * scale + "px";
                 }
-            } else if (child.classList.contains(kTextOverPictureClass)) {
-                // text overlay: we want to leave the size alone and preserve the position of the center.
+            } else if (
+                child.classList.contains(kTextOverPictureClass) ||
+                child.hasAttribute("data-target-of")
+            ) {
+                // text overlay (or target): we want to leave the size alone and preserve the position of the center.
                 const oldCenterX = childLeft + child.clientWidth / 2;
                 const oldCenterY = childTop + child.clientHeight / 2;
                 const newCenterX = newLeft + (oldCenterX - left) * scale;
