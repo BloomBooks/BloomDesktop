@@ -789,7 +789,7 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
             return -1;
         }
         let aspectRatio = img.naturalWidth / img.naturalHeight;
-        // but if there is a bloom-backgroundImage, common in imqges used for overlays, use that instead
+        // but if there is a bloom-backgroundImage, common in images used for overlays, use that instead
         const backgroundOverlay = imageContainer.getElementsByClassName(
             "bloom-backgroundImage"
         )[0];

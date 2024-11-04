@@ -642,11 +642,11 @@ function addImageMenuOptions(
         currentIsBackground ||
         overlay.parentElement?.getElementsByClassName(kbackgroundImageClass)[0];
 
-    let setBackgroundId = "EditTab.Image.SetBackground"; // default when no background is set
+    let backgroundMenuItemL10nId = "EditTab.Image.SetBackground"; // default when no background is set
     if (currentIsBackground) {
-        setBackgroundId = "EditTab.Image.SetBackgroundRemove";
+        backgroundMenuItemL10nId = "EditTab.Image.SetBackgroundRemove";
     } else if (isThereABackground) {
-        setBackgroundId = "EditTab.Image.SetBackgroundReplace";
+        backgroundMenuItemL10nId = "EditTab.Image.SetBackgroundReplace";
     }
 
     menuOptions.unshift(
@@ -676,7 +676,7 @@ function addImageMenuOptions(
             icon: <CopyrightIcon css={getMenuIconCss()} />
         },
         {
-            l10nId: setBackgroundId,
+            l10nId: backgroundMenuItemL10nId,
             english: "Set Image as background",
             onClick: setAsBackground,
             icon: <BackgroundIcon css={getMenuIconCss()} />

@@ -5670,11 +5670,11 @@ export class BubbleManager {
                             alternatesString.replace(/`/g, '"')
                         ) as IAlternate;
                         const style = alternate.style;
-                        const width = BubbleManager.getLabeledNumber(
+                        const width = BubbleManager.getLabeledNumberInPx(
                             "width",
                             style
                         );
-                        const height = BubbleManager.getLabeledNumber(
+                        const height = BubbleManager.getLabeledNumberInPx(
                             "height",
                             style
                         );
@@ -5742,7 +5742,7 @@ export class BubbleManager {
         newC: number,
         oldRange: number
     ): string {
-        const old = BubbleManager.getLabeledNumber(label, style);
+        const old = BubbleManager.getLabeledNumberInPx(label, style);
         const center = old + oldRange / 2;
         const newCenter = newC + (center - oldC) * scale;
         const newVal = newCenter - oldRange / 2;
@@ -5754,8 +5754,10 @@ export class BubbleManager {
 
     // Typical source is something like "left: 224px; top: 79.6px; width: 66px; height: 30px;"
     // We want to pass "top" and get 79.6.
-    public static getLabeledNumber(label: string, source: string): number {
-        const match = source.match(new RegExp(label + this.numberPxRegex));
+    public static getLabeledNumberInPx(label: string, source: string): number {
+        const match = source.match(
+            new RegExp(label + BubbleManager.numberPxRegex)
+        );
         if (match) {
             return parseFloat(match[1]);
         }

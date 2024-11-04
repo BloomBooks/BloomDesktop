@@ -3,7 +3,7 @@ import { BubbleManager } from "./bubbleManager";
 
 // A (currently very incomplete) set of tests for BubbleManager.
 
-fdescribe("BubbleManager.getLabeledNumber", () => {
+describe("BubbleManager.getLabeledNumber", () => {
     // beforeEach(() => {
     // });
 
@@ -11,7 +11,7 @@ fdescribe("BubbleManager.getLabeledNumber", () => {
     // afterAll(removeTestRoot);
 
     it("extracts integer size from style", () => {
-        const result = BubbleManager.getLabeledNumber(
+        const result = BubbleManager.getLabeledNumberInPx(
             "width",
             "left: 224px; top: 79.6px; width: 66px; height: 30px;"
         );
@@ -19,14 +19,14 @@ fdescribe("BubbleManager.getLabeledNumber", () => {
     });
 
     it("extracts float size from style", () => {
-        const result = BubbleManager.getLabeledNumber(
+        const result = BubbleManager.getLabeledNumberInPx(
             "top",
             "left: 224px; top: 79.6px; width: 66px; height: 30px;"
         );
         expect(result).toBe(79.6);
     });
     it("extracts negative size from style", () => {
-        const result = BubbleManager.getLabeledNumber(
+        const result = BubbleManager.getLabeledNumberInPx(
             "left",
             "left: -10.4px; top: 79.6px; width: 66px; height: 30px;"
         );
@@ -34,7 +34,7 @@ fdescribe("BubbleManager.getLabeledNumber", () => {
     });
 });
 
-fdescribe("BubbleManager.adjustLabeledNumber", () => {
+describe("BubbleManager.adjustLabeledNumber", () => {
     // beforeEach(() => {
     // });
 

@@ -1672,7 +1672,7 @@ namespace Bloom.Edit
                     $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                 );
 
-            /* We're Saving to the DOM here only if it's a cover page, because lets us make the image transparent if it should be:
+            /* We're Saving to the DOM here only if it's a cover page, because that lets us make the image transparent if it should be:
              *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,
              *        so the check to see if we need to make it transparent says "no".
              *        This could probably be done in a smarter way that isn't occuring to me at the moment.
