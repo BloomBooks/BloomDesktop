@@ -30,6 +30,7 @@ namespace Bloom.web.controllers
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
+        // See also PageTemplateApi.
         {
             // Both of these display UI, expect to require UI thread.
             apiHandler

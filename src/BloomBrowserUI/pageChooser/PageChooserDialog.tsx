@@ -29,14 +29,16 @@ export interface ITemplateBookInfo {
     templateBookPath: string;
 }
 
+export interface ITemplateBook {
+    path: string;
+    url: string;
+    dom: HTMLElement | undefined;
+    pages: HTMLElement[];
+}
+
 export interface IBookGroup {
     title: string;
-    books: {
-        path: string;
-        url: string;
-        dom: HTMLElement | undefined;
-        pages: HTMLElement[];
-    }[];
+    books: ITemplateBook[];
     errorPath: string; // nonempty if there was an error loading one of the books or parsing it
 }
 
@@ -84,7 +86,6 @@ export const getTemplatePageImageSource = (
 
 export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps> = props => {
     const [open, setOpen] = useState(true);
-    const [redoCounter, setRedoCounter] = useState(0);
 
     const closeDialog = () => {
         WebSocketManager.closeSocket("page-chooser");
@@ -136,32 +137,31 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     //      particular page, the thumbnailer will attempt to generate one.
     //   2) When the thumbnailer returns from its task, this allows us to display the newly created
     //      thumbnail.
-    const thumbnailUpdatedListener = useCallback(
-        e => {
-            if (e.id !== "thumbnail-updated") {
-                return;
+    const thumbnailUpdatedListener = useCallback(e => {
+        if (e.id !== "thumbnail-updated") {
+            return;
+        }
+        const updatedThumbUrl = ((e as any).src as string).replace(/%21/g, "!");
+        const images = document.getElementsByTagName("img");
+        for (let i = 0; i < images.length; i++) {
+            const img = images[i];
+            const imgSrc = img.src.replace(/%2F/g, "/");
+            // The 'if' condition here is to make sure we're dealing with the correct image element.
+            // We use 'startsWith' because the original 'imgSrc' has the parameter
+            // "?generateThumbnailIfNecessary=true" tacked onto the end
+            // [See getTemplatePageImageSource()], whereas 'updatedThumbUrl' is just the url
+            // to the updated thumbnail image.
+            if (imgSrc.startsWith(updatedThumbUrl)) {
+                // We want a random thing without a decimal, which gets treated as a file extension.
+                const newSrc =
+                    imgSrc +
+                    "?reload=" +
+                    (Math.random() * 100000000).toFixed(0);
+                // Force the image to be reloaded by replacing its src attribute with something different.
+                img.src = newSrc;
             }
-            const updatedThumbUrl = (e as any).src as string;
-            const images = document.getElementsByTagName("img");
-            let internalCounter = redoCounter;
-            for (let i = 0; i < images.length; i++) {
-                const img = images[i];
-                const imgSrc = img.src.replace(/%2F/g, "/");
-                // The 'if' condition here is to make sure we're dealing with the correct image element.
-                // We use 'startsWith' because the original 'imgSrc' has the parameter
-                // "?generateThumbnailIfNecessary=true" tacked onto the end
-                // [See getTemplatePageImageSource()], whereas 'updatedThumbUrl' is just the url
-                // to the updated thumbnail image.
-                if (imgSrc.startsWith(updatedThumbUrl)) {
-                    const newSrc = imgSrc + "?reload=" + internalCounter++;
-                    // Force the image to be reloaded by replacing its src attribute with something different.
-                    img.src = newSrc;
-                }
-            }
-            setRedoCounter(internalCounter);
-        },
-        [redoCounter]
-    );
+        }
+    }, []);
 
     useEffect(() => {
         WebSocketManager.addListener("page-chooser", thumbnailUpdatedListener);
@@ -353,6 +353,17 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                     titleGroup={titleGroup}
                     orientation={orientation}
                     forChooseLayout={props.forChooseLayout}
+                    // This is a bit dubious. It allows a TemplateBookPages component to be reused
+                    // for a different titleGroup at the same position. If something causes us to
+                    // re-parse the template books, we'll get a new titleGroup at the same index.
+                    // It will probably have the same content, since there's no way for the templates
+                    // list to change while the dialog is open. But the fact that it's a different
+                    // object instance can cause problems, as happened in BL-13948. I don't see how
+                    // to improve it, though. A new titleGroup will probably have the same title, and
+                    // key has to be a number or string. I don't think we have any current situation
+                    // that re-parses the template books while the dialog is open, so I'm leaving it
+                    // for now. https://stackoverflow.com/questions/31394774/reactjs-using-object-ref-as-key
+                    // has some ideas that may be useful if we ever need to fix this.
                     key={index}
                     onTemplatePageSelect={templatePageClickHandler}
                     onTemplatePageDoubleClick={templatePageDoubleClickHandler}

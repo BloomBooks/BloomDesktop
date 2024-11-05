@@ -10,6 +10,7 @@ import {
     getPageLabel,
     getTemplatePageImageSource,
     IBookGroup,
+    ITemplateBook,
     ITemplateBookInfo
 } from "./PageChooserDialog";
 import PageThumbnail from "./PageThumbnail";
@@ -41,6 +42,11 @@ const transparentHighlightColor = kBloomBlue50Transparent;
 // Unicode bullet character used to mark pages that are only available to enterprise users.
 const enterpriseMarkerChar = "\u25cf";
 
+interface IPageData {
+    page: HTMLDivElement;
+    book: ITemplateBook;
+}
+
 export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps> = ({
     forChooseLayout,
     titleGroup,
@@ -51,7 +57,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
     onTemplatePageSelect,
     onTemplatePageDoubleClick
 }) => {
-    const [pageData, setPageData] = useState<HTMLDivElement[] | undefined>(
+    const [pageData, setPageData] = useState<IPageData[] | undefined>(
         undefined
     );
     const groupTitle = titleGroup.title;
@@ -60,20 +66,21 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
 
     useEffect(() => {
         let bloomPages = titleGroup.books
-            .map(book => book.pages)
-            .flat() as HTMLDivElement[];
+            .map(book => book.pages.map(page => ({ page, book })))
+            .flat() as IPageData[];
         if (forChooseLayout) {
             // This filters out the (empty) custom page, which is currently never a useful layout change,
             // since all data would be lost.
             bloomPages = bloomPages.filter(
-                elem => elem.id != "5dcd48df-e9ab-4a07-afd4-6a24d0398386"
+                elem => elem.page.id !== "5dcd48df-e9ab-4a07-afd4-6a24d0398386"
             );
         }
         // By previous usage, 'extra' pages are ones we can add (multiples of) to a book.
         // I'm not entirely clear why we call them 'extra', I think the term pre-dates me.
         // This filter by it's very nature eliminates pages with 'data-page' = 'singleton'.
         const filteredBloomPages = bloomPages.filter(
-            elem => elem.id && elem.getAttribute("data-page") === "extra"
+            elem =>
+                elem.page.id && elem.page.getAttribute("data-page") === "extra"
         );
 
         // Don't add a group for books that don't have template pages; just move on.
@@ -86,21 +93,18 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         }
 
         setPageData(filteredBloomPages);
-    }, [forChooseLayout]);
-
-    const getBookForPageDiv = (pageDiv: HTMLDivElement) => {
-        return titleGroup.books.find(b => b.pages!.indexOf(pageDiv) >= 0);
-    };
+    }, [forChooseLayout, titleGroup.books, titleGroup.title]);
 
     const pages = pageData
-        ? pageData.map((currentPageDiv: HTMLDivElement, index) => {
+        ? pageData.map((currentPageDiv: IPageData, index) => {
               // Process each page and create a pageThumbnail div containing a page thumbnail image and data
               // and a clickable overlay.
-              const pageIsEnterpriseOnly = currentPageDiv.classList.contains(
+              const pageIsEnterpriseOnly = currentPageDiv.page.classList.contains(
                   "enterprise-only"
               );
 
-              const thisPageIsSelected = currentPageDiv.id === selectedPageId;
+              const thisPageIsSelected =
+                  currentPageDiv.page.id === selectedPageId;
 
               const enterpriseOnlyRules = pageIsEnterpriseOnly
                   ? `:after {
@@ -157,8 +161,8 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                       />
                       <PageThumbnail
                           imageSource={getTemplatePageImageSource(
-                              getBookForPageDiv(currentPageDiv)!.url,
-                              getPageLabel(currentPageDiv),
+                              currentPageDiv.book.url,
+                              getPageLabel(currentPageDiv.page),
                               orientation
                           )}
                           isLandscape={isLandscape}
@@ -168,16 +172,13 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
           })
         : undefined;
 
-    const templatePageClickHandler = (currentPageDiv: HTMLDivElement) => {
-        onTemplatePageSelect(
-            currentPageDiv,
-            getBookForPageDiv(currentPageDiv)!.path
-        );
+    const templatePageClickHandler = (currentPage: IPageData) => {
+        onTemplatePageSelect(currentPage.page, currentPage.book.path);
     };
 
-    const templatePageDoubleClickHandler = (currentPageDiv: HTMLDivElement) => {
-        templatePageClickHandler(currentPageDiv); // Do the default click action too.
-        onTemplatePageDoubleClick(currentPageDiv);
+    const templatePageDoubleClickHandler = (currentPage: IPageData) => {
+        templatePageClickHandler(currentPage); // Do the default click action too.
+        onTemplatePageDoubleClick(currentPage.page);
     };
 
     // Fire off the selection mechanism if we don't already have a selection,
@@ -186,7 +187,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         if (pageData && !selectedPageId) {
             if (defaultPageIdToSelect) {
                 const matchingPageDivs = pageData.filter(
-                    p => p.id === defaultPageIdToSelect
+                    p => p.page.id === defaultPageIdToSelect
                 );
                 if (matchingPageDivs.length > 0) {
                     templatePageClickHandler(matchingPageDivs[0]);
