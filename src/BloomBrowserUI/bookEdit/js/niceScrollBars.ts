@@ -255,5 +255,9 @@ export function cleanupNiceScroll() {
                 );
                 groupParent.classList.add("bloom-vertical-align-bottom");
             }
+            // Remove more debris left by niceScroll. See BL-14052.
+            (group as HTMLElement).style.overflow = "";
+            (group as HTMLElement).style.outline = "";
+            (group as HTMLElement).style.width = "";
         });
 }
