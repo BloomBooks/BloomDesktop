@@ -64,7 +64,9 @@ const TemplateBookPagesWrapper: React.FunctionComponent<ITemplateBookPagesWrappe
                             path: props.templateBook.templateBookPath,
                             url: props.templateBook.templateBookFolderUrl,
                             dom: resultPageData,
-                            pages: bloomPages
+                            pages: bloomPages,
+                            id: "",
+                            pageToolId: ""
                         }
                     ],
                     errorPath: ""
@@ -136,6 +138,7 @@ storiesOf("Page Chooser", module)
                     pageId="1235"
                     templateBookPath="somePath"
                     isLandscape={false}
+                    dataToolId=""
                 ></SelectedTemplatePageControls>
             </PreviewFrame>
         );
@@ -162,6 +165,7 @@ storiesOf("Page Chooser", module)
                     templateBookPath="somePath"
                     learnMoreLink="some-strange-link"
                     isLandscape={true}
+                    dataToolId=""
                 ></SelectedTemplatePageControls>
             </PreviewFrame>
         );
@@ -189,6 +193,7 @@ storiesOf("Page Chooser", module)
                     forChangeLayout={true}
                     willLoseData={true}
                     isLandscape={true}
+                    dataToolId=""
                 ></SelectedTemplatePageControls>
             </PreviewFrame>
         );

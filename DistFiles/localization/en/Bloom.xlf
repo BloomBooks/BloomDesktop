@@ -5602,10 +5602,16 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
         <source xml:lang="en">Activity</source>
         <note>ID: TemplateBooks.BookName.Activity</note>
+        <note>obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
         <source xml:lang="en">Arithmetic</source>
         <note>ID: TemplateBooks.BookName.Arithmetic</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true">
+        <source xml:lang="en">Arithmetic Pages</source>
+        <note>ID: TemplateBooks.BookName.Arithmetic Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Template</source>
@@ -5614,6 +5620,11 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
         <source xml:lang="en">Basic Book</source>
         <note>ID: TemplateBooks.BookName.Basic Book</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Basic Pages" sil:dynamic="true">
+        <source xml:lang="en">Basic Pages</source>
+        <note>ID: TemplateBooks.BookName.Basic Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true">
         <source xml:lang="en">Big Book</source>
@@ -5626,6 +5637,15 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Digital Comic Book" sil:dynamic="true">
         <source xml:lang="en">Digital Comic Book</source>
         <note>ID: TemplateBooks.BookName.Digital Comic Book</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Digital Comic Book Pages" sil:dynamic="true">
+        <source xml:lang="en">Digital Comic Book Pages</source>
+        <note>ID: TemplateBooks.BookName.Digital Comic Book Pages</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Games Pages" sil:dynamic="true">
+        <source xml:lang="en">Games Pages</source>
+        <note>ID: TemplateBooks.BookName.Games Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
         <source xml:lang="en">Leveled Reader</source>
@@ -5634,6 +5654,11 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Paper Comic Book" sil:dynamic="true">
         <source xml:lang="en">Paper Comic Book</source>
         <note>ID: TemplateBooks.BookName.Paper Comic Book</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Paper Comic Book Pages" sil:dynamic="true">
+        <source xml:lang="en">Paper Comic Book Pages</source>
+        <note>ID: TemplateBooks.BookName.Paper Comic Book Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true">
         <source xml:lang="en">Picture Dictionary</source>
@@ -5643,9 +5668,19 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Sign Language</source>
         <note>ID: TemplateBooks.BookName.Sign Language</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true">
+        <source xml:lang="en">Sign Language Pages</source>
+        <note>ID: TemplateBooks.BookName.Sign Language Pages</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special" sil:dynamic="true">
         <source xml:lang="en">Special</source>
         <note>ID: TemplateBooks.BookName.Special</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Special Pages" sil:dynamic="true">
+        <source xml:lang="en">Special Pages</source>
+        <note>ID: TemplateBooks.BookName.Special Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
         <source xml:lang="en">Template Starter</source>
