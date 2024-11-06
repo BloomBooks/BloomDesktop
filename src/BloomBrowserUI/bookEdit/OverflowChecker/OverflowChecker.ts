@@ -7,6 +7,7 @@ import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
 import { BubbleManager, theOneBubbleManager } from "../js/bubbleManager";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
+import { addScrollbarsToPage, cleanupNiceScroll } from "../js/niceScrollBars";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -360,6 +361,12 @@ export default class OverflowChecker {
         }
         if (overflowY > 0 || overflowX > 0) {
             $box.addClass("overflow");
+            const page = $box.closest(".bloom-page");
+            if (overflowY > 0 && page.length) {
+                cleanupNiceScroll();
+                addScrollbarsToPage(page[0]);
+            }
+
             if ($box.parents("[class*=Device]").length === 0) {
                 // don't show an overflow warning if we have scrolling available
                 theOneLocalizationManager
@@ -385,6 +392,10 @@ export default class OverflowChecker {
             }
         } else {
             $box.removeClass("overflow");
+            const page = $box.closest(".bloom-page");
+            if (page.length) {
+                cleanupNiceScroll();
+            }
         }
 
         const container = $box.closest(".marginBox");
