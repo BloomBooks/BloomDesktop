@@ -55,30 +55,25 @@ namespace Bloom.FontProcessing
         /// has some ideas; the result would be Windows-specific.
         ///
         /// 'AFontName' -> AFontNameRegular.ttf
-        /// 'AFontName Bold' -> AFontNameBold.ttf/AFontNameRegular.ttf
+        /// 'AFontName Bold' -> AFontNameBold.ttf
         /// 'AFontName Italic' -> AFontNameItalic.ttf
-        /// 'AFontName Bold Italic'-> AFontNameBoldItalic.ttf,AFontNameBold.ttf,AFontNameItalic.ttf,AFontNameRegular.ttf
-        /// If the italic variants do not exist, then the lists would look like:
+        /// 'AFontName Bold Italic'-> AFontNameBoldItalic.ttf
+        /// If the italic variants do not exist, then the result would look like:
         /// 'BFont' -> BFontRegular.ttf
-        /// 'BFont Bold' -> BFontBold.ttf/BFontRegular.ttf
+        /// 'BFont Bold' -> BFontBold.ttf
         /// 'BFont Italic' -> BFontRegular.ttf
-        /// 'BFont Bold Italic' -> BFontBold.ttf/BFontRegular.ttf
+        /// 'BFont Bold Italic' -> BFontBold.ttf
         /// </summary>
-        /// <returns>enumeration of file paths (possibly none) that contain data for the specified font name, and which
-        /// (as far as we can tell) we are allowed to embed.
-        /// Note that the enumeration contains either one file or none.  If a file specific to the requested style
-        /// or weight is not found, we fall back to the closest match.  If nothing is found, we return an empty
-        /// enumeration.
+        /// <returns>file path (possibly null) that contains data for the specified font name, style and weight,
+        /// and which (as far as we can tell) we are allowed to embed.
+        /// If a file specific to the requested style or weight is not found, we fall back to the closest match.
+        /// If nothing is found, we return null.
         /// </returns>
         /// <remarks>
         /// Once variable-weight fonts are supported, or multiple weights (SemiBold, etc), then this needs to be
         /// reworked.  The Debug.Asserts and Log message are meant to be reminders of this.
         /// </remarks>
-        public IEnumerable<string> GetFilesForFont(
-            string fontName,
-            string fontStyle,
-            string fontWeight
-        )
+        public string GetFileForFont(string fontName, string fontStyle, string fontWeight)
         {
             var group = GetGroupForFont(fontName);
             if (group != null)
@@ -104,34 +99,35 @@ namespace Bloom.FontProcessing
                 if (fontStyle == "italic" && fontWeight == "700")
                 {
                     if (!string.IsNullOrEmpty(group.BoldItalic))
-                        yield return group.BoldItalic;
+                        return group.BoldItalic;
                     else if (!string.IsNullOrEmpty(group.Bold))
-                        yield return group.Bold;
+                        return group.Bold;
                     else if (!string.IsNullOrEmpty(group.Italic))
-                        yield return group.Italic;
+                        return group.Italic;
                     else if (!string.IsNullOrEmpty(group.Normal))
-                        yield return group.Normal;
+                        return group.Normal;
                 }
                 if (fontStyle == "italic" && fontWeight == "400")
                 {
                     if (!string.IsNullOrEmpty(group.Italic))
-                        yield return group.Italic;
+                        return group.Italic;
                     else if (!string.IsNullOrEmpty(group.Normal))
-                        yield return group.Normal;
+                        return group.Normal;
                 }
                 if (fontStyle == "normal" && fontWeight == "700")
                 {
                     if (!string.IsNullOrEmpty(group.Bold))
-                        yield return group.Bold;
+                        return group.Bold;
                     else if (!string.IsNullOrEmpty(group.Normal))
-                        yield return group.Normal;
+                        return group.Normal;
                 }
                 if (fontStyle == "normal" && fontWeight == "400")
                 {
                     if (!string.IsNullOrEmpty(group.Normal))
-                        yield return group.Normal;
+                        return group.Normal;
                 }
             }
+            return null;
         }
 
         public HashSet<string> FontsWeCantInstall { get; private set; }
@@ -405,7 +401,7 @@ namespace Bloom.FontProcessing
     // its public interface (for purposes of test stubbing)
     public interface IFontFinder
     {
-        IEnumerable<string> GetFilesForFont(string fontName, string fontStyle, string fontWeight);
+        string GetFileForFont(string fontName, string fontStyle, string fontWeight);
         bool NoteFontsWeCantInstall { get; set; }
         HashSet<string> FontsWeCantInstall { get; }
         FontGroup GetGroupForFont(string fontName);

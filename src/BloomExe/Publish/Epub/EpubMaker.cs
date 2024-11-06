@@ -2750,15 +2750,16 @@ namespace Bloom.Publish.Epub
             {
                 if (badFonts.Contains(font.fontName))
                     continue;
+                var file = fontFileFinder.GetFileForFont(
+                    font.fontName,
+                    font.fontStyle,
+                    font.fontWeight
+                );
                 if (
-                    !fontFileFinder
-                        .GetFilesForFont(font.fontName, font.fontStyle, font.fontWeight)
-                        .Any(
-                            file =>
-                                FontMetadata.fontFileTypesBloomKnows.Contains(
-                                    Path.GetExtension(file).ToLowerInvariant()
-                                )
-                        )
+                    file == null
+                    || !FontMetadata.fontFileTypesBloomKnows.Contains(
+                        Path.GetExtension(file).ToLowerInvariant()
+                    )
                 )
                 {
                     // If we can't embed the font, no reason to refer to it in the css.
