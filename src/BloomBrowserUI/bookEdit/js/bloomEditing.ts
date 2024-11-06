@@ -1353,25 +1353,10 @@ async function copyImpl() {
         const activeBubbleEditable = activeBubble?.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
-        if (
-            activeBubbleEditable &&
-            activeBubble !== theOneBubbleManager.theBubbleWeAreTextEditing
-        ) {
-            // no active text selection to copy, but we do have an active...but not for editing...text bubble.
-            // Copy its entire content.
-            navigator.clipboard.writeText(activeBubbleEditable.innerText);
-            // Something in the above line causes focus to move back to wherever it last was.
-            // We want to keep the active bubble active, so we have to set it again.
-            // Doing it right away doesn't work, it needs to be fixed in a later event cycle,
-            // presumably after whatever is messing things up. There is a slight flicker,
-            // but this is the best I can figure out. It's probably fairly rare to copy a bubble
-            // you haven't recently been editing.
-            setTimeout(
-                () => theOneBubbleManager.setActiveElement(activeBubble),
-                0
-            );
-        }
-        return; // even if we didn't find a bubble, don't copy an empty string to the clipboard.
+
+        // No active text selection to copy; copy the bubble's entire content.
+        navigator.clipboard.writeText(activeBubbleEditable.innerText);
+        return;
     }
     navigator.clipboard.writeText(sel.toString());
 }
