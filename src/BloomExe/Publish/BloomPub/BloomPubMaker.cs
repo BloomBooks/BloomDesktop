@@ -831,8 +831,8 @@ namespace Bloom.Publish.BloomPub
         /// Given a book, typically one in a temporary folder made just for exporting (or testing),
         /// and given the set of fonts found while creating that book and removing hidden elements,
         /// find the files needed for those fonts.
-        /// Copy the font file for the normal style of that font family from the system font folder,
-        /// if permitted; or post a warning in progress if we can't embed it.
+        /// Copy the font files for the styles of that font family used in the book from the system font folder,
+        /// if permitted; or post a warning in progress if we can't embed them.
         /// Create an extra css file (fonts.css) which tells the book to find the font files for those font families
         /// in the local folder, and insert a link to it into the book.
         /// </summary>
@@ -844,32 +844,12 @@ namespace Bloom.Publish.BloomPub
             IFontFinder fontFileFinder
         )
         {
-            const string defaultFont = "Andika"; // "Andika" already in BR, don't need to embed or make rule.
+            const string defaultFont = "Andika";
 
+            // "Andika" already in BR, don't need to embed or make rule.
             fontsWanted.RemoveWhere(
                 x => x.fontName == defaultFont && x.fontStyle == "normal" && x.fontWeight == "400"
             );
-            var boldAndika =
-                fontsWanted.FirstOrDefault(
-                    x =>
-                        x.fontName == defaultFont
-                        && x.fontStyle == "normal"
-                        && x.fontWeight == "700"
-                ) != null;
-            var italicAndika =
-                fontsWanted.FirstOrDefault(
-                    x =>
-                        x.fontName == defaultFont
-                        && x.fontStyle == "italic"
-                        && x.fontWeight == "400"
-                ) != null;
-            var boldItalicAndika =
-                fontsWanted.FirstOrDefault(
-                    x =>
-                        x.fontName == defaultFont
-                        && x.fontStyle == "italic"
-                        && x.fontWeight == "700"
-                ) != null;
             // We don't need to embed Andika New Basic Regular, because Andika Regular will handle it.
             fontsWanted.RemoveWhere( // The default Andika Regular font will handle Andika New Basic Regular
                 x =>
@@ -878,27 +858,16 @@ namespace Bloom.Publish.BloomPub
                     && x.fontWeight == "400"
             );
             // Don't include bold/italic variant of both Andika New Basic and Andika.
-            if (boldAndika)
-                fontsWanted.RemoveWhere(
-                    x =>
-                        x.fontName == "Andika New Basic"
-                        && x.fontStyle == "normal"
-                        && x.fontWeight == "700"
-                );
-            if (italicAndika)
-                fontsWanted.RemoveWhere(
-                    x =>
-                        x.fontName == "Andika New Basic"
-                        && x.fontStyle == "italic"
-                        && x.fontWeight == "400"
-                );
-            if (boldItalicAndika)
-                fontsWanted.RemoveWhere(
-                    x =>
-                        x.fontName == "Andika New Basic"
-                        && x.fontStyle == "italic"
-                        && x.fontWeight == "700"
-                );
+            fontsWanted.RemoveWhere(
+                x =>
+                    x.fontName == "Andika New Basic"
+                    && fontsWanted.Any(
+                        y =>
+                            y.fontName == defaultFont
+                            && y.fontStyle == x.fontStyle
+                            && y.fontWeight == x.fontWeight
+                    )
+            );
 
             PublishHelper.CheckFontsForEmbedding(
                 progress,

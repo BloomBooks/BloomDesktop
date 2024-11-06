@@ -1572,18 +1572,11 @@ namespace BloomTests.Publish
                 FontsWeCantInstall = new HashSet<string>();
             }
 
-            public Dictionary<string, string[]> FilesForFont = new Dictionary<string, string[]>();
+            public Dictionary<string, string> FilesForFont = new Dictionary<string, string>();
 
-            public IEnumerable<string> GetFilesForFont(
-                string fontName,
-                string fontStyle,
-                string fontWeight
-            )
+            public string GetFileForFont(string fontName, string fontStyle, string fontWeight)
             {
-                string[] result;
-                FilesForFont.TryGetValue(fontName, out result);
-                if (result == null)
-                    result = new string[0];
+                FilesForFont.TryGetValue(fontName, out string result);
                 return result;
             }
 
@@ -1654,11 +1647,11 @@ namespace BloomTests.Publish
                 FontsApi.AvailableFontMetadataDictionary.Add("Calibre", calibreMeta);
 
                 fontFileFinder.FontGroups["Times New Roman"] = tnrGroup;
-                fontFileFinder.FilesForFont["Times New Roman"] = new[] { tnrPath };
+                fontFileFinder.FilesForFont["Times New Roman"] = tnrPath;
                 fontFileFinder.FontGroups["Wen Yei"] = wenYeiGroup;
-                fontFileFinder.FilesForFont["Wen Yei"] = new[] { wenYeiPath };
+                fontFileFinder.FilesForFont["Wen Yei"] = wenYeiPath;
                 fontFileFinder.FontGroups["Calibre"] = calibreGroup;
-                fontFileFinder.FilesForFont["Calibre"] = new[] { calibrePath };
+                fontFileFinder.FilesForFont["Calibre"] = calibrePath;
                 fontFileFinder.FontsWeCantInstall.Add("NotAllowed");
                 // And "NotFound" just doesn't get a mention anywhere.
                 PublishHelper.ClearFontMetadataMapForTests();
