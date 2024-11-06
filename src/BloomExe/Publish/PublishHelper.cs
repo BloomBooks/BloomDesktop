@@ -225,11 +225,7 @@ namespace Bloom.Publish
 
             public static bool operator !=(FontInfo info1, FontInfo info2)
             {
-                if (ReferenceEquals(info1, info2))
-                    return false;
-                if (ReferenceEquals(info1, null) || ReferenceEquals(info2, null))
-                    return true;
-                return !info1.Equals(info2);
+                return !(info1 == info2);
             }
         }
 
@@ -603,7 +599,7 @@ namespace Bloom.Publish
             // we actually can get a comma-separated list with fallback font options: split into an array so we can
             // use just the first one.  We don't need to worry about the fallback fonts, just the primary one.  It
             // would be very unusual for the user not to have the primary font installed, but to have a fallback font
-            // installed that.
+            // installed instead that is always used.
             var fonts = fontFamily.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             // Fonts whose names contain spaces are quoted: remove the quotes.
             return fonts[0].Replace("\"", "");
@@ -878,7 +874,7 @@ namespace Bloom.Publish
         /// </summary>
         /// <remarks>
         /// fontFileFinder must be either a new instance or a stub for testing.
-        /// Setting fontFileFinder.NoteFontsWeCantInstall ensures that fontFileFinder.GetFilesForFont(font)
+        /// Setting fontFileFinder.NoteFontsWeCantInstall ensures that fontFileFinder. GetFilesForFont(font)
         /// will not return any files for fonts that we know cannot be embedded without reference to the
         /// license details.
         /// </remarks>
@@ -904,12 +900,12 @@ namespace Bloom.Publish
             var filesAlreadyAdded = new HashSet<string>();
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
-                var fontFiles = fontFileFinder.GetFilesForFont(
+                var fontFile = fontFileFinder.GetFileForFont(
                     font.fontName,
                     font.fontStyle,
                     font.fontWeight
                 );
-                var filesFound = fontFiles.Any(); // unembeddable fonts determined don't have any files recorded
+                var filesFound = fontFile != null; // unembeddable fonts determined don't have any files recorded
                 var badLicense = false;
                 var missingLicense = false;
                 var badFileType = false;
@@ -943,13 +939,13 @@ namespace Bloom.Publish
                     // This is usually covered by the case kInvalid above, but needed if no metadata at all.
                     if (filesFound)
                     {
-                        fileExtension = Path.GetExtension(fontFiles.First()).ToLowerInvariant();
+                        fileExtension = Path.GetExtension(fontFile).ToLowerInvariant();
                         badFileType = !FontMetadata.fontFileTypesBloomKnows.Contains(fileExtension);
                     }
                 }
                 if (filesFound && !badFileType && !badLicense)
                 {
-                    var fileToEmbed = fontFiles.First();
+                    var fileToEmbed = fontFile;
                     if (!filesAlreadyAdded.Contains(fileToEmbed))
                     {
                         filesToEmbed.Add(fileToEmbed);
@@ -976,7 +972,7 @@ namespace Bloom.Publish
                             font
                         );
                     // Assumes only one font file per font; if we embed multiple font files, will need to enhance this.
-                    var size = new FileInfo(fontFiles.First()).Length;
+                    var size = new FileInfo(fontFile).Length;
                     var sizeToReport = (size / 1000000.0).ToString("F2"); // purposely locale-specific; might be e.g. 1,2
                     progress.MessageWithParams(
                         "PublishTab.Android.File.Progress.Embedding",
