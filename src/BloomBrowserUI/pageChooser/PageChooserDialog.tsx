@@ -30,10 +30,12 @@ export interface ITemplateBookInfo {
 }
 
 export interface ITemplateBook {
+    pageToolId: any;
     path: string;
     url: string;
     dom: HTMLElement | undefined;
     pages: HTMLElement[];
+    id: string; // from meta bloomBookId
 }
 
 export interface IBookGroup {
@@ -198,20 +200,32 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                 let dom: HTMLElement | undefined = undefined;
                 let pages: HTMLElement[] = [];
                 let errorPath = "";
+                let id = "";
+                let pageToolId = "";
                 try {
                     const result = await axios.get(
                         getBloomApiPrefix(false) +
                             encodeURIComponent(bookInfo.templateBookPath)
                     );
-                    dom = new DOMParser().parseFromString(
+                    const fullDom = new DOMParser().parseFromString(
                         result.data,
                         "text/html"
-                    ).body;
+                    );
+                    dom = fullDom.body;
                     title =
                         dom
                             .querySelector("div[data-book='bookTitle']")
                             ?.textContent?.trim() ?? "";
                     pages = Array.from(dom.querySelectorAll(".bloom-page"));
+                    id =
+                        fullDom.head
+                            .querySelector(`meta[name="bloomBookId"]`)
+                            ?.getAttribute("content") ?? "";
+
+                    pageToolId =
+                        fullDom.head
+                            .querySelector(`meta[name="pageToolId"]`)
+                            ?.getAttribute("content") ?? "";
                 } catch (error) {
                     console.error(error);
                     // We couldn't load a template file that the JSON says should be there.
@@ -224,7 +238,9 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                     path: bookInfo.templateBookPath,
                     url: bookInfo.templateBookFolderUrl,
                     dom,
-                    pages
+                    pages,
+                    id,
+                    pageToolId
                 };
                 if (bookGroup) {
                     bookGroup.books.push(book);
@@ -246,7 +262,42 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
             const booksToSort = bookData.slice(1);
             booksToSort.sort((a, b) => a.title.localeCompare(b.title));
 
-            setBookData([bookData[0], ...booksToSort]);
+            if (
+                bookData[0].books[0].pages.filter(
+                    elem =>
+                        elem.id && elem.getAttribute("data-page") === "extra"
+                ).length === 0
+            ) {
+                // The first book (often the template the book was made from) has no pages
+                // that can be used in this dialog. It won't show. For such books we want
+                // the basic pages book to be first. First, find that book.
+                const basicBookIndex = booksToSort.findIndex(
+                    // Basic book should always be the first (and only) book in its group
+                    x =>
+                        x.books[0].id === "056B6F11-4A6C-4942-B2BC-8861E62B03B3"
+                );
+                if (basicBookIndex >= 0) {
+                    // paranoia
+                    //we'll remove it and later use it in place of the old first book.
+                    const basicBook = booksToSort.splice(basicBookIndex, 1)[0];
+                    // if the first book has a value it wants set on data-tool-id for
+                    // the pages from basic book, add them.
+                    // Note that adding them here will not directly cause them to be
+                    // in the added pages, because the source for the cloning is the
+                    // C# version of the corresponding page. We do some extra magic
+                    // to send it to the add page API. But setting it here is the
+                    // source that magic works from, and one day we might be making
+                    // the clone directly from the DOM here, so it's good to put it in.
+                    const pageToolId = bookData[0].books[0].pageToolId;
+                    if (pageToolId)
+                        basicBook.books[0].pages.forEach(page => {
+                            page.setAttribute("data-tool-id", pageToolId);
+                        });
+                    setBookData([basicBook, ...booksToSort]);
+                }
+            } else {
+                setBookData([bookData[0], ...booksToSort]);
+            }
         };
         // deliberately not awaited. When we have all the data, setBookData will cause another render.
         getTemplateFileDataAsync();
@@ -330,6 +381,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
             willLoseData(selectedPageDiv),
             convertWholeBookCheckbox ? convertWholeBookCheckbox.checked : false,
             props.forChooseLayout ? -1 : 1,
+            selectedPageDiv.getAttribute("data-tool-id") ?? "",
             getToolId(selectedPageDiv)
         );
     };
@@ -472,6 +524,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         willLoseData: boolean,
         convertWholeBookChecked: boolean,
         numberToAdd: number,
+        dataToolId: string,
         requiredTool?: string
     ): void => {
         if (forChangeLayout) {
@@ -483,7 +536,8 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                 templateBookPath: templateBookPath,
                 convertWholeBook: convertWholeBookChecked,
                 numberToAdd: 1, // meaningless here, but prevents throwing an exception in C#
-                allowDataLoss: convertAnywayChecked
+                allowDataLoss: convertAnywayChecked,
+                dataToolId
             });
         } else {
             postData("addPage", {
@@ -491,7 +545,8 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                 pageId: pageId,
                 convertWholeBook: false, // meaningless here, but keeps C# happy
                 numberToAdd: numberToAdd,
-                allowDataLoss: convertAnywayChecked // meaningless here, but keeps C# happy
+                allowDataLoss: convertAnywayChecked, // meaningless here, but keeps C# happy
+                dataToolId
             });
         }
         if (requiredTool) {
@@ -622,6 +677,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                             learnMoreLink={learnMoreLink}
                             requiredTool={getToolId(selectedTemplatePageDiv)}
                             onSubmit={handleAddPageOrChooseLayoutButtonClick}
+                            dataToolId={
+                                selectedTemplatePageDiv.getAttribute(
+                                    "data-tool-id"
+                                ) ?? ""
+                            }
                         />
                     )}
                 </div>

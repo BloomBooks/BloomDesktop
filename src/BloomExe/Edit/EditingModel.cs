@@ -2091,7 +2091,7 @@ namespace Bloom.Edit
             //
             // Enhance: I suspect all the problems here are related to us changing the page id's each time we load, which I don't understand.
             // It may just be a mistake.
-            if (_weHaveSeenAJsonChange)
+            if (_weHaveSeenAJsonChange && _currentlyDisplayedBook != null)
             {
                 var pageIndex = _pageSelection.CurrentSelection.GetIndex();
                 CurrentBook.BringBookUpToDate(new NullProgress());
