@@ -17,6 +17,8 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Reporting;
 using Bloom.ToPalaso;
+using System.IO;
+using Bloom.CollectionTab;
 
 namespace Bloom.web.controllers
 {
@@ -38,6 +40,7 @@ namespace Bloom.web.controllers
         internal BloomPubPublishSettings _lastSettings;
         internal Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color <--- why not?
         private Color _lastThumbnailBackgroundColor;
+        private CollectionModel _collectionModel;
 
         // This constant must match the ID that is used for the listener set up in the client
         private const string kWebsocketEventId_Preview = "bloomPubPreview";
@@ -71,7 +74,8 @@ namespace Bloom.web.controllers
             BookServer bookServer,
             BookUpload bookTransferrer,
             PublishModel model,
-            WorkspaceTabSelection tabSelection
+            WorkspaceTabSelection tabSelection,
+            CollectionModel collectionModel
         )
         {
             _webSocketServer = webSocketServer;
@@ -80,6 +84,7 @@ namespace Bloom.web.controllers
             _bookTransferrer = bookTransferrer;
             _publishModel = model;
             _tabSelection = tabSelection;
+            _collectionModel = collectionModel;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -404,6 +409,68 @@ namespace Bloom.web.controllers
                 },
                 false
             );
+            // This is a bit different than the other publish APIs, but is here because it
+            // is used in the publish tab.
+            apiHandler.RegisterEndpointHandler("bloomnav", HandleBloomNav, false);
+        }
+
+        public void HandleBloomNav(ApiRequest request)
+        {
+            var href = request.GetPostStringOrNull(true);
+            request.PostSucceeded();
+            if (!string.IsNullOrEmpty(href))
+            {
+                var bookId = href.Replace("bloomnav://book/", "");
+                var idx = bookId.IndexOf("?page=", StringComparison.Ordinal);
+                string pageId = null;
+                if (idx > 0)
+                {
+                    pageId = bookId.Substring(idx + 6);
+                    bookId = bookId.Substring(0, idx);
+                }
+                // Searching the current collection doesn't need to scan any disk files: the information
+                // is already available in memory.
+                var info = _collectionModel.TheOneEditableCollection.GetBookInfoById(bookId);
+                var workingSent = false;
+                var newUrlSent = false;
+                if (info != null)
+                {
+                    var path = info.FolderPath;
+                    var htmlPath = BookStorage.FindBookHtmlInFolder(path);
+                    _webSocketServer.SendString(
+                        kWebSocketContext,
+                        kWebsocketEventId_Preview,
+                        "working"
+                    );
+                    workingSent = true;
+                    var bookInfo = new Book.BookInfo(path, false);
+                    var book = _bookServer.GetBookFromBookInfo(bookInfo);
+                    var url = MakeFastFakeBloomPubForPreviewLink(
+                        book,
+                        _bookServer,
+                        _progress,
+                        _thumbnailBackgroundColor,
+                        _lastSettings
+                    );
+                    var pageDiv = book.RawDom.SelectSingleNode(
+                        $"//div[@id='{pageId}' and @data-page-number]"
+                    );
+                    var pageNumber = pageDiv?.GetAttribute("data-page-number");
+                    if (!string.IsNullOrEmpty(pageNumber))
+                        url += "&start-page=" + pageNumber; // & instead of ? simplifies javascript
+                    _webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, url);
+                    newUrlSent = true;
+                }
+                if (workingSent && !newUrlSent)
+                {
+                    // restore original book, even if page isn't maintained.
+                    _webSocketServer.SendString(
+                        kWebSocketContext,
+                        kWebsocketEventId_Preview,
+                        PreviewUrl
+                    );
+                }
+            }
         }
 
         public void getInitialPublishTabInfo(ApiRequest request)
@@ -733,6 +800,47 @@ namespace Bloom.web.controllers
                 _webSocketServer.SendBundle("publishPageLabels", "ready", messageBundle);
             }
 
+            return modifiedBook.GetPathHtmlFile().ToLocalhost();
+        }
+
+        /// <summary>
+        /// This does no compressing or other really slow operations.  It does update the
+        /// book to use the Device XMatter which is needed to make it look like a real
+        /// bloompub book.
+        /// </summary>
+        public string MakeFastFakeBloomPubForPreviewLink(
+            Book.Book book,
+            BookServer bookServer,
+            WebSocketProgress progress,
+            Color backColor,
+            BloomPubPublishSettings settings
+        )
+        {
+            if (!IsBookLicenseOK(book, settings, progress))
+                return null;
+            _webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
+            _stagingFolder?.Dispose();
+            var originalHtmlPath = BookStorage.FindBookHtmlInFolder(book.FolderPath);
+            var dirName = BookStorage.SanitizeNameForFileSystem(
+                Path.GetFileNameWithoutExtension(originalHtmlPath)
+            );
+            _stagingFolder = new TemporaryFolder(kStagingFolder);
+            CurrentPublicationFolder = _stagingFolder.FolderPath;
+            var tempBookFolderPath = Path.Combine(_stagingFolder.FolderPath, dirName);
+            var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(
+                book.FolderPath,
+                bookServer,
+                tempBookFolderPath,
+                book.IsTemplateBook,
+                narrationLanguages: settings?.AudioLanguagesToInclude,
+                wantMusic: true,
+                wantFontFaceDeclarations: false,
+                processVideos: false
+            );
+            RobustFile.WriteAllText(
+                Path.Combine(tempBookFolderPath, ".distribution"),
+                "bloom-direct"
+            );
             return modifiedBook.GetPathHtmlFile().ToLocalhost();
         }
 
