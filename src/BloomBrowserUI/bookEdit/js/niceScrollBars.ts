@@ -255,5 +255,16 @@ export function cleanupNiceScroll() {
                 );
                 groupParent.classList.add("bloom-vertical-align-bottom");
             }
+            // Remove more debris left by niceScroll. See BL-14052.
+            let styleValue = group.getAttribute("style");
+            if (styleValue && styleValue.includes("overflow: auto hidden;")) {
+                styleValue = styleValue.replace(
+                    / *overflow: auto hidden;/g,
+                    ""
+                );
+                styleValue = styleValue.replace(/ *outline: none;/g, "");
+                styleValue = styleValue.replace(/ *width: [0-9]+px;/g, "");
+                group.setAttribute("style", styleValue);
+            }
         });
 }
