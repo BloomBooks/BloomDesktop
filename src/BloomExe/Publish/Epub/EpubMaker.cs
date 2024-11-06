@@ -177,7 +177,8 @@ namespace Bloom.Publish.Epub
         private BookThumbNailer _thumbNailer;
         public bool PublishWithoutAudio { get; set; }
         private PublishHelper _publishHelper = new PublishHelper();
-        private HashSet<string> _fontsUsedInBook = new HashSet<string>();
+        private HashSet<PublishHelper.FontInfo> _fontsUsedInBook =
+            new HashSet<PublishHelper.FontInfo>();
         private BookServer _bookServer;
 
         // Ordered list of Table of Content entries.
@@ -2745,51 +2746,45 @@ namespace Bloom.Publish.Epub
                 }
             }
             var sb = new StringBuilder();
-            foreach (var font in _fontsUsedInBook)
+            foreach (var font in _fontsUsedInBook.OrderBy(x => x.ToString()))
             {
-                if (badFonts.Contains(font))
+                if (badFonts.Contains(font.fontName))
                     continue;
+                var file = fontFileFinder.GetFileForFont(
+                    font.fontName,
+                    font.fontStyle,
+                    font.fontWeight
+                );
                 if (
-                    !fontFileFinder
-                        .GetFilesForFont(font)
-                        .Any(
-                            file =>
-                                FontMetadata.fontFileTypesBloomKnows.Contains(
-                                    Path.GetExtension(file).ToLowerInvariant()
-                                )
-                        )
+                    file == null
+                    || !FontMetadata.fontFileTypesBloomKnows.Contains(
+                        Path.GetExtension(file).ToLowerInvariant()
+                    )
                 )
                 {
                     // If we can't embed the font, no reason to refer to it in the css.
                     continue;
                 }
-                var group = fontFileFinder.GetGroupForFont(font);
+                var group = fontFileFinder.GetGroupForFont(font.fontName);
                 if (group != null)
                 {
                     // The fonts.css file is stored in a subfolder as are the font files.  They are in different
                     // subfolders, and the reference to the font file has to take the relative path to fonts.css
                     // into account.
-                    AddFontFace(
-                        sb,
-                        font,
-                        "normal",
-                        "normal",
-                        group.Normal,
-                        "../" + kFontsFolder + "/",
-                        true
-                    );
-                    // We are currently not including the other faces (nor their files...see FontFileFinder.GetFilesForFont().
-                    // BL-4202 contains a discussion of this. Basically,
-                    // - embedding them takes a good deal of extra space
-                    // - usually they do no good at all; it's nontrivial to figure out whether the book actually has any bold or italic
-                    // - even if the book has bold or italic, nearly all readers that display it at all do a reasonable
-                    //   job of synthesizing it from the normal face.
-                    //AddFontFace(sb, font, "bold", "normal", group.Bold);
-                    //AddFontFace(sb, font, "normal", "italic", group.Italic);
-                    //AddFontFace(sb, font, "bold", "italic", group.BoldItalic);
+                    AddFontFace(sb, font, group, "../" + kFontsFolder + "/", true);
                 }
             }
-            if (badFonts.Any() && !_fontsUsedInBook.Contains(defaultFont))
+            if (
+                badFonts.Any()
+                && !_fontsUsedInBook
+                    .Where(
+                        x =>
+                            x.fontName == defaultFont
+                            && x.fontStyle == "normal"
+                            && x.fontWeight != "700"
+                    )
+                    .Any()
+            )
                 AddFontFace(
                     sb,
                     defaultFont,
@@ -2844,6 +2839,35 @@ namespace Bloom.Publish.Epub
                 )
                     bookDoc.Save(xhtmlFileName);
             }
+        }
+
+        internal static void AddFontFace(
+            StringBuilder sb,
+            PublishHelper.FontInfo font,
+            FontGroup group,
+            string relativePathFromCss = "",
+            bool sanitizeFileName = false
+        )
+        {
+            var weight = font.fontWeight == "700" ? "bold" : "normal";
+            string path = null;
+            if (font.fontStyle == "italic" && font.fontWeight == "700")
+                path = group.BoldItalic;
+            if (string.IsNullOrEmpty(path) && font.fontStyle == "italic")
+                path = group.Italic;
+            if (string.IsNullOrEmpty(path) && font.fontWeight == "700")
+                path = group.Bold;
+            if (string.IsNullOrEmpty(path))
+                path = group.Normal;
+            AddFontFace(
+                sb,
+                font.fontName,
+                weight,
+                font.fontStyle,
+                path,
+                relativePathFromCss,
+                sanitizeFileName
+            );
         }
 
         internal static void AddFontFace(
