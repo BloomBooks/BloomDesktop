@@ -599,7 +599,10 @@ namespace Bloom.Publish.Epub
             var internalHyperlinks = Book.OurHtmlDom.SafeSelectNodes(
                 "//a[starts-with(@href, '#')]"
             );
-            if (internalHyperlinks.Length > 0)
+            var externalHyperlinks = Book.OurHtmlDom.SafeSelectNodes(
+                "//a[starts-with(@href, 'bloomnav://')]"
+            );
+            if (internalHyperlinks.Length > 0 || externalHyperlinks.Length > 0)
             {
                 var msg = LocalizationManager.GetString(
                     "PublishTab.Epub.LocalLinksProblem",
@@ -607,6 +610,10 @@ namespace Bloom.Publish.Epub
                 );
                 progress.MessageWithoutLocalizing(msg, ProgressKind.Warning);
                 foreach (var link in internalHyperlinks.Cast<SafeXmlElement>().ToArray())
+                {
+                    link.UnwrapElement();
+                }
+                foreach (var link in externalHyperlinks.Cast<SafeXmlElement>().ToArray())
                 {
                     link.UnwrapElement();
                 }
