@@ -195,6 +195,11 @@ export default class OverflowChecker {
         const elementClone = element.cloneNode(true) as HTMLElement;
         elementClone.style.visibility = "hidden";
         elementClone.style.position = "absolute"; // prevent any inadvertent layout effects
+        // position:absolute is not enough to prevent layout effects, we also need to make sure the
+        // width and height is the same.  (It seems that position:absolute doesn't take into account
+        // the padding of the parent.)  See BL-14053.
+        elementClone.style.width = element.clientWidth + "px";
+        elementClone.style.height = element.clientHeight + "px";
         element.parentElement!.appendChild(elementClone);
 
         let result = 0;
@@ -216,7 +221,8 @@ export default class OverflowChecker {
             elementClone.style.flexGrow = "0";
             elementClone.style.flexShrink = "0";
             // This is a reliable way to get the information if it is greater than the clientHeight,
-            // and means we don't have to worry about scroll position.
+            // and means we don't have to worry about scroll position.  (scrollHeight is never less than
+            // clientHeight.  See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight.)
             result = elementClone.scrollHeight;
             if (elementClone.scrollHeight <= elementClone.clientHeight) {
                 // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
