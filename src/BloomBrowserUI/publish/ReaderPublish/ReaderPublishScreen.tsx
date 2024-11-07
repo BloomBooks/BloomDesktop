@@ -47,6 +47,8 @@ export const ReaderPublishScreen = () => {
         <ReaderPublishScreenInternal
             key={keyForReset} // NOTE: Updating the key mounts a new component instance (beware of trying to keep state after reset... it's not the same instance!)
             onReset={() => {
+                // This causes props.showPreview to be true, which cases the progress dialog to show,
+                // which causes the preview to be generated.
                 setKeyForReset(keyForReset + 1);
             }}
             showPreview={keyForReset > 0}
@@ -269,6 +271,10 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         </SettingsPanel>
     );
 
+    // props.showPreview is false until the first time the user clicks the Preview button.
+    // Therefore we don't show the progress dialog until then.
+    // That also is what prevents us from actually generating the preview until the user asks for it,
+    // because generating it is a side effect of showing the dialog.
     const showProgressDialog = props.showPreview || publishStarted;
 
     return (

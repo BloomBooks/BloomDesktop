@@ -46,7 +46,6 @@ import {
     Typography
 } from "@mui/material";
 import { kBloomRed } from "../../utils/colorUtils";
-import { SimplePreview } from "./simplePreview";
 import { AudioVideoOptionsGroup } from "./AudioVideoOptionsGroup";
 import { Div, Span } from "../../react_components/l10nComponents";
 import { ErrorBox, NoteBox } from "../../react_components/boxes";
@@ -55,6 +54,7 @@ import { isLinux } from "../../utils/isLinux";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { EmbeddedProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import { BloomStepper } from "../../react_components/BloomStepper";
+import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 
 export const PublishAudioVideo = () => {
     // When the user changes some features, included languages, etc., we
@@ -97,6 +97,7 @@ export const PublishAudioVideo = () => {
             onReset={() => {
                 setKeyForReset(keyForReset + 1);
             }}
+            showPreview={keyForReset > 0}
         />
     );
 };
@@ -120,6 +121,7 @@ interface IAudioVideoSettings {
 
 const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     onReset: () => void;
+    showPreview: boolean;
 }> = props => {
     const inStorybookMode = useContext(StorybookContext);
     const heading = useL10n(
@@ -247,7 +249,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
 
             try {
                 const msg = JSON.parse(data.data);
-                if (msg.messageType == "playbackComplete") {
+                if (msg.messageType === "playbackComplete") {
                     pause();
                 }
             } catch (ex) {
@@ -301,6 +303,13 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     max-width: ${landscapeWidth}px;
     margin-bottom:5px;
     color: grey;`;
+    const arePlayAndResetDisabled =
+        !isLicenseOK ||
+        !props.showPreview ||
+        progressState === ProgressState.Working;
+    const playAndResetColor = arePlayAndResetDisabled
+        ? kBloomBlue50Transparent
+        : kBloomBlue;
     const mainPanel = (
         <PublishPanel>
             <BloomStepper
@@ -323,23 +332,33 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     options, you will see a row of red buttons.
                                     Use these to set up the book for recording.
                                 </Div>
-                                <SimplePreview
+                                <DeviceAndControls
                                     // using this key ensures that the preview is regenerated when motion changes,
                                     // which would not otherwise happen because it's not part of the props
                                     key={avSettings.motion.toString()}
-                                    landscape={
-                                        defaultLandscape || avSettings.motion
-                                    }
-                                    landscapeWidth={landscapeWidth}
+                                    defaultLandscape={defaultLandscape}
+                                    canRotate={false}
+                                    // The following leaves a blank screen until the Preview button is pressed
                                     url={
-                                        "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
-                                        debouncedPageTurnDelay +
-                                        "&url=" +
-                                        encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                                        `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
-                                        videoSettingsParam +
-                                        pageRangeSetting
+                                        props.showPreview
+                                            ? "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
+                                              debouncedPageTurnDelay +
+                                              "&url=" +
+                                              encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
+                                              `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
+                                              videoSettingsParam +
+                                              pageRangeSetting
+                                            : ""
                                     }
+                                    showPreviewButton={true}
+                                    // Any controls that would make this be on?
+                                    highlightPreviewButton={false}
+                                    onPreviewButtonClicked={() => {
+                                        // The first call to this has a side effect of causing props.showPreview to become true,
+                                        // which also causes the progress dialog to appear, which has a side effect of
+                                        // actually generating the preview.
+                                        props.onReset();
+                                    }}
                                 />
                                 <div
                                     css={css`
@@ -350,7 +369,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                 >
                                     <Button
                                         onClick={reset}
-                                        disabled={!isLicenseOK}
+                                        disabled={arePlayAndResetDisabled}
                                     >
                                         <SkipPreviousIcon
                                             // unfortunately this icon doesn't come in a variant with a built-in circle.
@@ -365,7 +384,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                         <div
                                             css={css`
                                                 border: ${circleHeight} solid
-                                                    ${kBloomBlue};
+                                                    ${playAndResetColor};
                                                 border-radius: ${circleHeight};
                                                 position: absolute;
                                                 top: 0.5rem;
@@ -385,11 +404,14 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     ) : (
                                         <Button
                                             onClick={play}
-                                            disabled={!isLicenseOK}
+                                            disabled={
+                                                !isLicenseOK ||
+                                                !props.showPreview
+                                            }
                                         >
                                             <PlayIcon
                                                 css={css`
-                                                    color: ${kBloomBlue};
+                                                    color: ${playAndResetColor};
                                                     font-size: 2rem !important;
                                                 `}
                                             />
@@ -629,19 +651,20 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                 {mainPanel}
             </PublishScreenTemplate>
             {/* In storybook, there's no bloom backend to run the progress dialog */}
-            {inStorybookMode || (
-                <PublishProgressDialog
-                    heading={heading}
-                    apiForStartingTask="publish/av/updatePreview"
-                    onTaskComplete={setClosePendingToTrue}
-                    webSocketClientContext="publish-bloompub"
-                    progressState={progressState}
-                    setProgressState={setProgressState}
-                    closePending={closePending}
-                    setClosePending={setClosePending}
-                    onUserStopped={setClosePendingToTrue}
-                />
-            )}
+            {inStorybookMode ||
+                (props.showPreview && (
+                    <PublishProgressDialog
+                        heading={heading}
+                        apiForStartingTask="publish/av/updatePreview"
+                        onTaskComplete={setClosePendingToTrue}
+                        webSocketClientContext="publish-bloompub"
+                        progressState={progressState}
+                        setProgressState={setProgressState}
+                        closePending={closePending}
+                        setClosePending={setClosePending}
+                        onUserStopped={setClosePendingToTrue}
+                    />
+                ))}
             <EmbeddedProgressDialog id="avPublish" />
         </Typography>
     );
