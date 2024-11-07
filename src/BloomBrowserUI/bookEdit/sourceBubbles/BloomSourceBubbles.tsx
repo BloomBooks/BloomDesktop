@@ -39,6 +39,22 @@ export default class BloomSourceBubbles {
         return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newLangTag);
     }
 
+    // remvoe tooltips from every TG in the container (and the container itself, if it IS a TG).
+    public static removeSourceBubbles(
+        container: HTMLElement | null | undefined
+    ): void {
+        if (!container) return; // saves every client checking (often only because of eslint)
+        const groups = Array.from(
+            container.getElementsByClassName("bloom-translationGroup")
+        );
+        if (container.classList.contains("bloom-translationGroup")) {
+            groups.push(container);
+        }
+        groups.forEach(group => {
+            $(group).qtip("destroy");
+        });
+    }
+
     public static MakeSourceBubblesIntoQtips(
         elementThatHasBubble: HTMLElement,
         contentsOfBubble: JQuery,
