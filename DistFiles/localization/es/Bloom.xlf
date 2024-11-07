@@ -6377,7 +6377,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Pages</source>
-        <target xml:lang="es-ES" state="needs-translation">Arithmetic Pages</target>
+        <target xml:lang="es-ES" state="translated">Páginas de aritmética</target>
         <note>ID: TemplateBooks.BookName.Arithmetic Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true" approved="yes">
@@ -6392,7 +6392,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Basic Pages" sil:dynamic="true">
         <source xml:lang="en">Basic Pages</source>
-        <target xml:lang="es-ES" state="needs-translation">Basic Pages</target>
+        <target xml:lang="es-ES" state="translated">Páginas básicas</target>
         <note>ID: TemplateBooks.BookName.Basic Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true" approved="yes">
@@ -6412,12 +6412,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Digital Comic Book Pages" sil:dynamic="true">
         <source xml:lang="en">Digital Comic Book Pages</source>
-        <target xml:lang="es-ES" state="needs-translation">Digital Comic Book Pages</target>
+        <target xml:lang="es-ES" state="translated">Páginas de cómic digital</target>
         <note>ID: TemplateBooks.BookName.Digital Comic Book Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Games Pages" sil:dynamic="true">
         <source xml:lang="en">Games Pages</source>
-        <target xml:lang="es-ES" state="needs-translation">Games Pages</target>
+        <target xml:lang="es-ES" state="translated">Páginas de juegos</target>
         <note>ID: TemplateBooks.BookName.Games Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true" approved="yes">
@@ -6432,7 +6432,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Paper Comic Book Pages" sil:dynamic="true">
         <source xml:lang="en">Paper Comic Book Pages</source>
-        <target xml:lang="es-ES" state="needs-translation">Paper Comic Book Pages</target>
+        <target xml:lang="es-ES" state="translated">Páginas de cómic impreso</target>
         <note>ID: TemplateBooks.BookName.Paper Comic Book Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
@@ -6447,7 +6447,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true">
         <source xml:lang="en">Sign Language Pages</source>
-        <target xml:lang="es-ES" state="needs-translation">Sign Language Pages</target>
+        <target xml:lang="es-ES" state="translated">Páginas de lenguaje de señas</target>
         <note>ID: TemplateBooks.BookName.Sign Language Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special" sil:dynamic="true" approved="yes">
@@ -6457,7 +6457,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special Pages" sil:dynamic="true">
         <source xml:lang="en">Special Pages</source>
-        <target xml:lang="es-ES" state="needs-translation">Special Pages</target>
+        <target xml:lang="es-ES" state="translated">Páginas especiales</target>
         <note>ID: TemplateBooks.BookName.Special Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true" approved="yes">
