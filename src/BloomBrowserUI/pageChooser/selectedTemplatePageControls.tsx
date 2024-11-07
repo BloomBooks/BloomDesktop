@@ -25,6 +25,7 @@ interface ISelectedTemplatePageProps {
     learnMoreLink?: string;
     requiredTool?: string;
     isLandscape: boolean;
+    dataToolId: string;
     onSubmit?: (
         forChangeLayout: boolean,
         pageId: string,
@@ -33,6 +34,7 @@ interface ISelectedTemplatePageProps {
         willLoseData: boolean,
         convertWholeBookChecked: boolean,
         numberToAdd: number,
+        dataToolId: string,
         requiredTool?: string
     ) => void;
 }
@@ -255,6 +257,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                                         props.forChangeLayout
                                             ? -1
                                             : numberToAdd,
+                                        props.dataToolId,
                                         props.requiredTool
                                     );
                             }}
