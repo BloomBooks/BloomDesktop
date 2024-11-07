@@ -189,6 +189,11 @@ export default class OverflowChecker {
         if (element.childNodes.length === 0) {
             return 0;
         }
+        // scrollHeight is accurate if it's greater than clientHeight, but not if it's equal.
+        // (It never seems to be less.)  See BL-14053.
+        if (element.scrollHeight > element.clientHeight) {
+            return element.scrollHeight;
+        }
 
         // Use a temporary clone so we don't modify the actual element.
         // Otherwise, the text box can get scrolled back to the top when the user types. See BL-13942.
