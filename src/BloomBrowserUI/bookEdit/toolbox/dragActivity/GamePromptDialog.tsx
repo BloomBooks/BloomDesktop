@@ -36,11 +36,21 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
     // The translation group that React creates in the dialog, kept in sync with the one in the prompt
     // element in the page.
     const localTg = useRef<HTMLElement | null>();
+    const closeDialog = () => {
+        BloomSourceBubbles.removeSourceBubbles(localTg.current!);
+        props.setOpen(false);
+    };
     return (
         <BloomDialog
             id="promptDialog"
             open={props.open}
-            onClose={() => props.setOpen(false)}
+            onKeyDownCapture={e => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    closeDialog();
+                }
+            }}
+            onClose={closeDialog}
             onCancel={reason => {
                 // For this dialog, effects are immediate. It seems more natural that most ways
                 // of closing the dialog keep the currently visible changes. So if the dialog is
@@ -50,7 +60,7 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
                 if (reason === "cancelClicked") {
                     cancel();
                 }
-                props.setOpen(false);
+                closeDialog();
             }}
         >
             <DialogTitle
@@ -63,15 +73,16 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
                     id="promptInput"
                     ref={ref => {
                         localTg.current = ref;
-                        initializeTg(props.prompt, localTg.current);
+                        if (props.open) {
+                            // I don't understand how this gets called again when the dialog is being closed,
+                            // but it does, and it can re-create the source bubble.
+                            initializeTg(props.prompt, localTg.current);
+                        }
                     }}
                 />
             </DialogMiddle>
             <DialogBottomButtons>
-                <DialogOkButton
-                    onClick={() => props.setOpen(false)}
-                    default={true}
-                />
+                <DialogOkButton onClick={closeDialog} default={true} />
                 <DialogCancelButton />
             </DialogBottomButtons>
         </BloomDialog>
