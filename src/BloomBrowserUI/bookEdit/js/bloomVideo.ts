@@ -11,7 +11,7 @@ import {
     SignLanguageToolControls,
     SignLanguageTool
 } from "../toolbox/signLanguage/signLanguageTool";
-import { kOverlayToolId } from "../toolbox/toolIds";
+import { kGameToolId, kOverlayToolId } from "../toolbox/toolIds";
 import { selectVideoContainer } from "./videoUtils";
 import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
@@ -209,10 +209,11 @@ function SetupClickToShowSignLanguageTool(containerDiv: Element) {
 
         if (
             toolbox?.toolboxIsShowing() &&
-            currentToolId === kOverlayToolId &&
+            (currentToolId === kOverlayToolId ||
+                currentToolId === kGameToolId) &&
             isOverPicture(containerDiv)
         ) {
-            // Looks like a video-over-picture, and we're showing the overlay tool. Don't switch to SL tool.
+            // Looks like a video-over-picture, and we're showing the overlay or game tool. Don't switch to SL tool.
             return;
         }
 
