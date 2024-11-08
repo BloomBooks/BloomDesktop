@@ -6375,9 +6375,9 @@
         <target xml:lang="fr" state="final">Arithmétique</target>
         <note>ID: TemplateBooks.BookName.Arithmetic</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Arithmetic Pages</source>
-        <target xml:lang="fr" state="needs-translation">Arithmetic Pages</target>
+        <target xml:lang="fr" state="final">Pages Arithmétiques</target>
         <note>ID: TemplateBooks.BookName.Arithmetic Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true" approved="yes">
@@ -6390,9 +6390,9 @@
         <target xml:lang="fr" state="final">Livre simple</target>
         <note>ID: TemplateBooks.BookName.Basic Book</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Basic Pages" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Basic Pages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Pages</source>
-        <target xml:lang="fr" state="needs-translation">Basic Pages</target>
+        <target xml:lang="fr" state="final">Pages de Base</target>
         <note>ID: TemplateBooks.BookName.Basic Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true" approved="yes">
@@ -6410,14 +6410,14 @@
         <target xml:lang="fr" state="final">Bande Dessinée Numérique</target>
         <note>ID: TemplateBooks.BookName.Digital Comic Book</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Digital Comic Book Pages" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Digital Comic Book Pages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Digital Comic Book Pages</source>
-        <target xml:lang="fr" state="needs-translation">Digital Comic Book Pages</target>
+        <target xml:lang="fr" state="final">Pages BD numérique</target>
         <note>ID: TemplateBooks.BookName.Digital Comic Book Pages</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Games Pages" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Games Pages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Games Pages</source>
-        <target xml:lang="fr" state="needs-translation">Games Pages</target>
+        <target xml:lang="fr" state="final">Pages de Jeux</target>
         <note>ID: TemplateBooks.BookName.Games Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true" approved="yes">
@@ -6430,9 +6430,9 @@
         <target xml:lang="fr" state="final">Bande Dessinée version Papier</target>
         <note>ID: TemplateBooks.BookName.Paper Comic Book</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Paper Comic Book Pages" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Paper Comic Book Pages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Comic Book Pages</source>
-        <target xml:lang="fr" state="needs-translation">Paper Comic Book Pages</target>
+        <target xml:lang="fr" state="final">Pages BD version Papier</target>
         <note>ID: TemplateBooks.BookName.Paper Comic Book Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
@@ -6445,9 +6445,9 @@
         <target xml:lang="fr" state="final">Langue des Signes</target>
         <note>ID: TemplateBooks.BookName.Sign Language</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sign Language Pages</source>
-        <target xml:lang="fr" state="needs-translation">Sign Language Pages</target>
+        <target xml:lang="fr" state="final">Pages en Langue des Signes</target>
         <note>ID: TemplateBooks.BookName.Sign Language Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special" sil:dynamic="true" approved="yes">
@@ -6455,9 +6455,9 @@
         <target xml:lang="fr" state="final">Spécial</target>
         <note>ID: TemplateBooks.BookName.Special</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Special Pages" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Special Pages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Pages</source>
-        <target xml:lang="fr" state="needs-translation">Special Pages</target>
+        <target xml:lang="fr" state="final">Pages Spéciales</target>
         <note>ID: TemplateBooks.BookName.Special Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true" approved="yes">
