@@ -38,27 +38,28 @@ import { EmbeddedProgressDialog } from "../../react_components/Progress/Progress
 import { MustBeCheckedOut } from "../../react_components/MustBeCheckedOut";
 
 export const ReaderPublishScreen = () => {
-    // When the user changes some features, included languages, etc., we
+    // When the user changes some features, included languages, etc.,
+    // and wants an updated preview, we
     // need to rebuild the book and re-run all of our Bloom API queries.
     // This requires a hard-reset of the whole screen, which we do by
     // incrementing a `key` prop on the core of this screen.
-    const [keyForReset, setKeyForReset] = useState(0);
+    const [keyForUpdatingPreview, setKeyForUpdatingPreview] = useState(0);
     return (
         <ReaderPublishScreenInternal
-            key={keyForReset} // NOTE: Updating the key mounts a new component instance (beware of trying to keep state after reset... it's not the same instance!)
-            onReset={() => {
+            key={keyForUpdatingPreview} // NOTE: Updating the key mounts a new component instance (beware of trying to keep state after reset... it's not the same instance!)
+            onUpdatePreview={() => {
                 // This causes props.showPreview to be true, which cases the progress dialog to show,
                 // which causes the preview to be generated.
-                setKeyForReset(keyForReset + 1);
+                setKeyForUpdatingPreview(keyForUpdatingPreview + 1);
             }}
-            showPreview={keyForReset > 0}
+            showPreview={keyForUpdatingPreview > 0}
         />
     );
 };
 
 const kUpdatePreviewApi = "publish/bloompub/updatePreview";
 const ReaderPublishScreenInternal: React.FunctionComponent<{
-    onReset: () => void;
+    onUpdatePreview: () => void;
     showPreview: boolean;
 }> = props => {
     const inStorybookMode = useContext(StorybookContext);
@@ -191,7 +192,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     showPreviewButton={true}
                     highlightPreviewButton={highlightPreview}
                     onPreviewButtonClicked={() => {
-                        props.onReset();
+                        props.onUpdatePreview();
                     }}
                 />
             </PreviewPanel>
