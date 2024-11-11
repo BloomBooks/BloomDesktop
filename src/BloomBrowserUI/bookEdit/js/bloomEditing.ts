@@ -1355,7 +1355,11 @@ async function copyImpl() {
         )[0] as HTMLElement;
 
         // No active text selection to copy; copy the bubble's entire content.
-        navigator.clipboard.writeText(activeBubbleEditable.innerText);
+        // There's a slight chance that the user wanted to copy some trailing
+        // whitespace. But there's a greater chance they **don't** want unintended
+        // trailing line breaks. This ".trimEnd()" works around an issue where multiple
+        // copy/pastes can result in an extra line break being added. See BL-14051.
+        navigator.clipboard.writeText(activeBubbleEditable.innerText.trimEnd());
         return;
     }
     navigator.clipboard.writeText(sel.toString());
