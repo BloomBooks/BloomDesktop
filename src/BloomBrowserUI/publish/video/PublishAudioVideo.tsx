@@ -94,7 +94,7 @@ export const PublishAudioVideo = () => {
     return (
         <PublishAudioVideoInternalInternal
             key={keyForReset}
-            onReset={() => {
+            onUpdatePreview={() => {
                 setKeyForReset(keyForReset + 1);
             }}
             showPreview={keyForReset > 0}
@@ -120,7 +120,7 @@ interface IAudioVideoSettings {
 }
 
 const PublishAudioVideoInternalInternal: React.FunctionComponent<{
-    onReset: () => void;
+    onUpdatePreview: () => void;
     showPreview: boolean;
 }> = props => {
     const inStorybookMode = useContext(StorybookContext);
@@ -207,17 +207,24 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     );
 
     const [playing, setPlaying] = useState(false);
+    const [havePreviewForOrientation, setHavePreviewForOrientation] = useState(
+        false
+    );
     useSubscribeToWebSocketForStringMessage(
         "publish-bloompub",
         "bloomPubPreview",
         url => {
             setBookUrl(url);
+            setHavePreviewForOrientation(true);
         }
     );
+    useEffect(() => {
+        setHavePreviewForOrientation(false);
+    }, [avSettings.motion]);
 
     const sendMessageToPlayer = (msg: any) => {
         const preview = document.getElementById(
-            "simple-preview"
+            "preview-iframe"
         ) as HTMLIFrameElement;
         msg.messageType = "control";
         preview.contentWindow?.postMessage(JSON.stringify(msg), "*");
@@ -336,11 +343,15 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     // using this key ensures that the preview is regenerated when motion changes,
                                     // which would not otherwise happen because it's not part of the props
                                     key={avSettings.motion.toString()}
-                                    defaultLandscape={defaultLandscape}
+                                    // since we're setting canRotate false, this determines orientation absolutely.
+                                    defaultLandscape={
+                                        defaultLandscape || avSettings.motion
+                                    }
                                     canRotate={false}
                                     // The following leaves a blank screen until the Preview button is pressed
+                                    // (and again after orientation changes, until it is pressed again)
                                     url={
-                                        props.showPreview
+                                        havePreviewForOrientation
                                             ? "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
                                               debouncedPageTurnDelay +
                                               "&url=" +
@@ -351,13 +362,16 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                             : ""
                                     }
                                     showPreviewButton={true}
-                                    // Any controls that would make this be on?
+                                    // We might want to highlight it if props.showPreview is false, or perhaps if
+                                    // avSettings has changed? But we don't need to regenerate if we just changed the
+                                    // page range. Moreover, it isn't necessary to create a preview to make things work.
+                                    // I think always false is at least a reasonable choice.
                                     highlightPreviewButton={false}
                                     onPreviewButtonClicked={() => {
                                         // The first call to this has a side effect of causing props.showPreview to become true,
                                         // which also causes the progress dialog to appear, which has a side effect of
                                         // actually generating the preview.
-                                        props.onReset();
+                                        props.onUpdatePreview();
                                     }}
                                 />
                                 <div
@@ -404,10 +418,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     ) : (
                                         <Button
                                             onClick={play}
-                                            disabled={
-                                                !isLicenseOK ||
-                                                !props.showPreview
-                                            }
+                                            disabled={arePlayAndResetDisabled}
                                         >
                                             <PlayIcon
                                                 css={css`

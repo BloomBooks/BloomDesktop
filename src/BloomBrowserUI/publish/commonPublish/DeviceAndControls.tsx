@@ -120,7 +120,7 @@ export const DeviceAndControls: React.FunctionComponent<{
                 }
             >
                 <iframe
-                    id="simple-preview"
+                    id="preview-iframe"
                     css={css`
                         background-color: black;
                         border: none;
