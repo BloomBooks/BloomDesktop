@@ -1738,7 +1738,7 @@ export class BubbleManager {
         // ctrl key suppresses snapping, and we also suppress it if we started
         // snapped and haven't moved far. This is to allow very small adjustments.
         const snapping = !event.ctrlKey && !this.cropSnapDisabled;
-        const snapDelta = 5;
+        const snapDelta = 15;
         // Each case begins by figuring out whether, if we are snapping, we should snap.
         // Next it figures out whether we've moved far enough to end the "start at zero"
         // non-snapping. Then it figures out a first approximation of how the overlay and image
