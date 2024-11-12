@@ -331,6 +331,30 @@ export function useApiState<T>(
     return [value, setFunction];
 }
 
+// A vairiant of useApiState which returns a third value indicating whether we actually got the data yet.
+// Possibly this could just replace useApiState, and clients that don't want the third argument could
+// ignore it. But I'm not sure that there might not be an extra render resulting from setting the
+// extra state variable, so I think it's worth having a separate function.
+export function useApiStateWithStatus<T>(
+    urlSuffix: string,
+    defaultValue: T
+): [T, (value: T) => void, boolean] {
+    const [value, setValue] = useState<T>(defaultValue);
+    const [gotit, setGotIt] = useState(false);
+    useEffect(() => {
+        get(urlSuffix, c => {
+            setValue(c.data);
+            setGotIt(true);
+        });
+    }, []);
+
+    const setFunction = (value: T) => {
+        postData(urlSuffix, value);
+        setValue(value);
+    };
+    return [value, setFunction, gotit];
+}
+
 // Like useApiState, except it doesn't send the state back to the server when something changes.
 // This is useful when you're going to wait for the user to click "OK" before sending all the
 // state back.
