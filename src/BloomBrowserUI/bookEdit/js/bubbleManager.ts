@@ -582,18 +582,6 @@ export class BubbleManager {
                 this.setMouseDragHandlers(container);
             }
         );
-
-        // The container's onmousemove handler isn't capable of reliably detecting in all cases
-        // when it goes out of bounds, because the mouse is no longer over the container.
-        // So we need a handler on the .bloom-page instead, which surrounds the image container.
-        Array.from(document.getElementsByClassName("bloom-page")).forEach(
-            (pageElement: HTMLElement) => {
-                pageElement.addEventListener(
-                    "mousemove",
-                    BubbleManager.onPageMouseMove
-                );
-            }
-        );
     }
     // declare this strange way so it has the right 'this' when added as event listener.
     private bubbleLosingFocus = event => {
@@ -2521,42 +2509,6 @@ export class BubbleManager {
             if (!topBox) return;
             topBox.classList.remove("bloom-allowAutoShrink");
         };
-    }
-
-    // Checks to see if the mouse has gone outside of the active container
-    private static onPageMouseMove(event: MouseEvent) {
-        // Ensures the singleton is ready. (Normally basically a NO-OP because it should already be initialized)
-        initializeBubbleManager();
-
-        if (
-            !theOneBubbleManager.bubbleToDrag ||
-            !theOneBubbleManager.activeContainer
-        ) {
-            return;
-        }
-
-        const container = theOneBubbleManager.activeContainer;
-        const containerBounds = container.getBoundingClientRect();
-
-        // Oops, the mouse cursor has left the image container
-        // Current requirements are to end the drag in this case
-        // If adjusting this, be careful to use pairs of event/object properties
-        // that are consistent even if the page is scrolled and/or zoomed.
-        if (
-            event.clientX < containerBounds.left ||
-            event.clientX > containerBounds.right ||
-            event.clientY < containerBounds.top ||
-            event.clientY > containerBounds.bottom
-        ) {
-            // FYI: If you use the drag handle (which uses JQuery), it enforces the content box to stay entirely within the imageContainer.
-            // This code currently doesn't do that.
-            theOneBubbleManager.bubbleToDrag = undefined;
-            theOneBubbleManager.activeContainer = undefined;
-            container.classList.remove("grabbing");
-        }
-
-        // Note: Resize is not stopped here. IMO I think this is more natural, and it also lines up with our current JQuery Resize code
-        // (Which does not constrain the resize at all. It also lets you to come back into the container and have the resize continue.)
     }
 
     // Move all child bubbles as necessary so they are at least partly inside their container
