@@ -141,14 +141,7 @@ namespace Bloom.Publish.Video
                             ShouldRecordAsLandscape(request.CurrentBook, format),
                             request.CurrentBook.GetLayout()
                         );
-                        if (settings.Motion != oldMotion)
-                        {
-                            UpdatePreview(request); // does its own success/fail
-                        }
-                        else
-                        {
-                            request.PostSucceeded();
-                        }
+                        request.PostSucceeded();
                     }
                 },
                 true,
