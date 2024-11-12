@@ -3232,6 +3232,11 @@ export class BubbleManager {
             // deal with things, and is a good thing even when ctrl or alt is down.
             return true;
         }
+        if (targetElement.closest(".bloom-dragHandleAnimation")) {
+            // These are used by the motion tool drag handles. Don't want bubble code
+            // interfering.
+            return true;
+        }
         if (targetElement.classList.contains("ui-resizable-handle")) {
             // Ignore clicks on the JQuery resize handles.
             return true;
