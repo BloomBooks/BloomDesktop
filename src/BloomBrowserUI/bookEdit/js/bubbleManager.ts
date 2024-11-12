@@ -1034,7 +1034,17 @@ export class BubbleManager {
             // But we definitely don't want to show the CkEditor toolbar until there is some
             // new range selection, so just set up the usual class to hide it.
             document.body.classList.add("hideAllCKEditors");
-            window.getSelection()?.removeAllRanges();
+            const focusNode = window.getSelection()?.focusNode;
+            if (
+                focusNode &&
+                this.activeElement &&
+                this.activeElement.contains(focusNode as Node)
+            ) {
+                // clear any text selection that is part of the previously selected bubble.
+                // (but, we don't want to remove a selection we may just have made by
+                // clicking in a text block that is not a bubble)
+                window.getSelection()?.removeAllRanges();
+            }
             this.removeFocusClass();
         }
         // Some of this could probably be avoided if this.activeElement is not changing.
