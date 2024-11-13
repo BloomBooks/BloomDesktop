@@ -26,7 +26,7 @@ import {
     getBoolean,
     post,
     useApiBoolean,
-    useApiState,
+    useApiStateWithStatus,
     useApiString,
     useWatchBooleanEvent
 } from "../../utils/bloomApi";
@@ -64,6 +64,14 @@ export const PublishAudioVideo = () => {
     // incrementing a `key` prop on the core of this screen.
     const [keyForUpdatingPreview, setKeyForUpdatingPreview] = useState(0);
 
+    // I promoted this out of the 'internal' component because I don't think it can change without
+    // leaving publish mode and starting over, and the flicker of orientation as we regenerate
+    // the internal component is annoying.
+    const [defaultLandscape] = useApiBoolean(
+        "publish/bloompub/defaultLandscape",
+        false
+    );
+
     if (isLinux()) {
         return (
             <div
@@ -95,6 +103,7 @@ export const PublishAudioVideo = () => {
     return (
         <PublishAudioVideoInternalInternal
             key={keyForUpdatingPreview}
+            defaultLandscape={defaultLandscape}
             onUpdatePreview={() => {
                 setKeyForUpdatingPreview(keyForUpdatingPreview + 1);
             }}
@@ -122,6 +131,7 @@ interface IAudioVideoSettings {
 
 const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     onUpdatePreview: () => void;
+    defaultLandscape: boolean;
     showPreview: boolean;
 }> = props => {
     const inStorybookMode = useContext(StorybookContext);
@@ -143,15 +153,14 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     );
     const save = useL10n("Save", "Common.Save");
     const [closePending, setClosePending] = useState(false);
-    const [avSettings, setAvSettings] = useApiState<IAudioVideoSettings>(
-        "publish/av/settings",
-        {
-            format: "facebook",
-            pageTurnDelay: 3,
-            motion: false,
-            pageRange: []
-        }
-    );
+    const [avSettings, setAvSettings, gotAvSettings] = useApiStateWithStatus<
+        IAudioVideoSettings
+    >("publish/av/settings", {
+        format: "facebook",
+        pageTurnDelay: 3,
+        motion: false,
+        pageRange: []
+    });
 
     const recording = useWatchBooleanEvent(false, "recordVideo", "recording");
 
@@ -195,11 +204,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
             : // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd.
               //BloomPlayer recognizes "working" as a special value; it will show some spinner or some such.
               "working"
-    );
-
-    const [defaultLandscape] = useApiBoolean(
-        "publish/bloompub/defaultLandscape",
-        false
     );
 
     const [useOriginalPageSize, setUseOriginalPageSize] = useApiBoolean(
@@ -346,7 +350,8 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     key={avSettings.motion.toString()}
                                     // since we're setting canRotate false, this determines orientation absolutely.
                                     defaultLandscape={
-                                        defaultLandscape || avSettings.motion
+                                        props.defaultLandscape ||
+                                        avSettings.motion
                                     }
                                     canRotate={false}
                                     // The following leaves a blank screen until the Preview button is pressed
@@ -374,6 +379,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                         // actually generating the preview.
                                         props.onUpdatePreview();
                                     }}
+                                    hidePreview={!gotAvSettings}
                                 />
                                 <div
                                     css={css`
