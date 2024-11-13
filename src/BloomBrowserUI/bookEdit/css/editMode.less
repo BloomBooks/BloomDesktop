@@ -1506,6 +1506,24 @@ canvas.moving {
         height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ew-resize;
     }
+
+    // the background image is hard up against the side of the container on at least two edges,
+    // and can't be moved. Half the default crop handle is clipped at best, and sometimes the
+    // origami control gets in the way even more. So we move them inwards.
+    &.bloom-backgroundImage {
+        .bloom-ui-overlay-side-handle-n {
+            top: 0;
+        }
+        .bloom-ui-overlay-side-handle-e {
+            right: 0;
+        }
+        .bloom-ui-overlay-side-handle-s {
+            bottom: 0;
+        }
+        .bloom-ui-overlay-side-handle-w {
+            left: 0;
+        }
+    }
 }
 
 #overlay-context-controls {
