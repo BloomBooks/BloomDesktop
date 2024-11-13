@@ -273,6 +273,9 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<INestedMenuItemP
               overflow: hidden;
               white-space: nowrap;
               text-overflow: ellipsis;
+              // This is how our other menu items are currently coming out. Make these the same.
+              // As noted below, haven't been able to get MUI Typography to apply to these elements.
+              font-size: 0.857rem !important;
           `
         : css``;
     return (
@@ -290,7 +293,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<INestedMenuItemP
                     margin-left: ${kIconCheckboxAffordance}px !important;
                     font-weight: 400 !important;
                     font-family: ${kUiFontStack};
-                    font-size: 1rem !important;
+                    font-size: 1rem !important; // Don't think this takes effect, MUI has a rule that applies to child.
                     color: ${menuItemColor} !important;
                     // probably need this back if we return to dense layout
                     //padding: 4px 6px 0 6px !important; // adjust for denser layout
