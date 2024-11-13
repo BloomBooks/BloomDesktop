@@ -313,15 +313,15 @@ namespace Bloom.Book
                 "Put a comprehension question here"
             );
 
-            AddTranslationToDictionaryUsingKey(d, "EditTab.Image.PasteImage", "Paste Image");
-            AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image");
+            AddTranslationToDictionaryUsingKey(d, "EditTab.Image.PasteImage", "Paste image");
+            AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change image");
             AddTranslationToDictionaryUsingKey(
                 d,
                 "EditTab.Image.EditMetadata",
-                "Edit Image Credits, Copyright, & License"
+                "Edit image credits, copyright, & license"
             );
-            AddTranslationToDictionaryUsingKey(d, "EditTab.Image.CopyImage", "Copy Image");
-            AddTranslationToDictionaryUsingKey(d, "EditTab.Image.CutImage", "Cut Image");
+            AddTranslationToDictionaryUsingKey(d, "EditTab.Image.CopyImage", "Copy image");
+            AddTranslationToDictionaryUsingKey(d, "EditTab.Image.CutImage", "Cut image");
 
             // tool tips for style editor
             AddTranslationToDictionaryUsingKey(
