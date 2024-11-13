@@ -21,14 +21,13 @@ const batch = require("gulp-batch");
 const watch = require("gulp-watch");
 const path = require("path");
 const sourcemaps = require("gulp-sourcemaps");
-// Remove webpackStream and replace with rspack
-const { build } = require("@rspack/core");
 const del = require("del");
 const gulpCopy = require("gulp-copy");
 const gulpFlatten = require("gulp-flatten");
-const glob = require("fast-glob");
+var globule = require("globule");
 const child_process = require("child_process");
 const { Buffer } = require("buffer");
+const rspack = require("@rspack/core");
 
 // Ensure the version of node we are running is the one we require
 const version = engines.node;
@@ -92,10 +91,10 @@ const paths = {
 };
 
 // Expand the wildcards to get actual file list for translated Xliff.
-const allXliffFiles = glob.sync(paths.xliff);
+const allXliffFiles = globule.find(paths.xliff);
 // Check for the existence of the SIL mono, which flags we're on Linux
 // and need to use it to execute HtmlXliff.exe
-const IsLinux = glob.sync(["/opt/mono5-sil/**/mono"]).length > 0;
+const IsLinux = globule.find(["/opt/mono5-sil/**/mono"]).length > 0;
 
 gulp.task("less", function() {
     const less = require("gulp-less");
@@ -129,20 +128,31 @@ gulp.task("pug", function() {
         .pipe(gulp.dest(outputDir)); //drop all html's into the same dirs.
 });
 
-gulp.task("bundle", function() {
-    const rspackConfig = require("./rspack.config.ts");
-    return build(rspackConfig).catch(err => {
-        console.error(err);
-        process.exit(1);
+gulp.task("bundle", function(done) {
+    child_process.exec("rspack", function(err, stdout, stderr) {
+        if (err) {
+            console.error(stderr);
+            done(err);
+        } else {
+            console.log(stdout);
+            done();
+        }
     });
 });
 
-// Replace webpack-prod task
-gulp.task("bundle-prod", function() {
-    const rspackConfig = require("./rspack.config-prod.js");
-    return build(rspackConfig).catch(err => {
-        console.error(err);
-        process.exit(1);
+gulp.task("bundle-prod", function(done) {
+    child_process.exec("rspack --config rspack.config.prod.ts", function(
+        err,
+        stdout,
+        stderr
+    ) {
+        if (err) {
+            console.error(stderr);
+            done(err);
+        } else {
+            console.log(stdout);
+            done();
+        }
     });
 });
 
