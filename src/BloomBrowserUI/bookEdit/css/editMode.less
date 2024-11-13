@@ -767,7 +767,7 @@ div.bloom-templateMode {
 .bloom-page:not([class*="Device"]) {
     .overflow {
         color: @OverflowColor !important;
-        border: solid thin @OverflowColor !important; //NB: can't afford to go "thick" because it throws off the calculation
+        outline: solid thin @OverflowColor !important; //outline rather than border so as not to affect layout.
 
         p:empty:after {
             //br:after would be great but it doesn't work
