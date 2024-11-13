@@ -7,7 +7,7 @@
 
 import Button from "@mui/material/Button";
 import * as React from "react";
-import "App.less";
+import "./App.less";
 import { CollectionsTabPane } from "../collectionsTab/CollectionsTabPane";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { kBloomBlue, kPanelBackground } from "../bloomMaterialUITheme";

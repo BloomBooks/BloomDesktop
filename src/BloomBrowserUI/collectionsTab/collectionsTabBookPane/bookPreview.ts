@@ -1,6 +1,6 @@
 import * as $ from "jquery";
-import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
-import "errorHandler";
+import "../../bookEdit/js/jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
+import "../../lib/errorHandler";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { CollectionsTabBookPane } from "./CollectionsTabBookPane";
 

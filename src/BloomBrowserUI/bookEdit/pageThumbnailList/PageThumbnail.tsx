@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 
-import "errorHandler";
+import "../../lib/errorHandler";
 import { get } from "../../utils/bloomApi";
 import { IPage } from "./pageThumbnailList";
 

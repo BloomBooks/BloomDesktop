@@ -16,7 +16,7 @@ import { MotionTool } from "./motion/motionTool";
 import TalkingBookTool from "./talkingBook/talkingBook";
 import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
-import "errorHandler";
+import "../../lib/errorHandler";
 import { OverlayTool } from "./overlay/overlayTool";
 import {
     DragActivityTool,

@@ -1,32 +1,34 @@
 /// <binding />
-var gulp = require("gulp");
-var semver = require("semver");
-var { engines } = require("./package");
-var tap = require("gulp-tap");
-var replaceExt = require("replace-ext");
-var ts = require("gulp-typescript");
+const gulp = require("gulp");
+const semver = require("semver");
+const { engines } = require("./package");
+const tap = require("gulp-tap");
+const replaceExt = require("replace-ext");
+const ts = require("gulp-typescript");
 
 //set up markdown with the extensions that we use to mark lines for localization
-var markdownIt = require("markdown-it")({
+const markdownIt = require("markdown-it")({
     html: true, // enable HTML tags in source
     linkify: true // autoconvert URL-like text to links
 });
-var markdownItContainer = require("markdown-it-container");
-var markdownItAttrs = require("markdown-it-attrs");
+const markdownItContainer = require("markdown-it-container");
+const markdownItAttrs = require("markdown-it-attrs");
 markdownIt.use(markdownItContainer);
 markdownIt.use(markdownItAttrs);
 
-var debug = require("gulp-debug");
-var batch = require("gulp-batch");
-var watch = require("gulp-watch");
-var path = require("path");
-var sourcemaps = require("gulp-sourcemaps");
-var webpackStream = require("webpack-stream");
-var del = require("del");
-var gulpCopy = require("gulp-copy");
-var gulpFlatten = require("gulp-flatten");
-var globule = require("globule");
-var child_process = require("child_process");
+const debug = require("gulp-debug");
+const batch = require("gulp-batch");
+const watch = require("gulp-watch");
+const path = require("path");
+const sourcemaps = require("gulp-sourcemaps");
+// Remove webpackStream and replace with rspack
+const { build } = require("@rspack/core");
+const del = require("del");
+const gulpCopy = require("gulp-copy");
+const gulpFlatten = require("gulp-flatten");
+const glob = require("fast-glob");
+const child_process = require("child_process");
+const { Buffer } = require("buffer");
 
 // Ensure the version of node we are running is the one we require
 const version = engines.node;
@@ -39,10 +41,10 @@ if (!semver.satisfies(process.version, version)) {
 
 //this is where we eventually want everything. Note: the same value must be in the webpack config.
 //This one is really only used for 'clean';
-var outputDir = "../../output/browser";
+const outputDir = "../../output/browser";
 
 //todo: can remove these output exclusions now that output/ is now 2 levels up with the c# outputs
-var paths = {
+const paths = {
     help: ["./help/**/*.md"],
     templateReadme: ["../content/templates/**/ReadMe*.md"],
     infoPages: ["./infoPages/*.md"],
@@ -90,13 +92,13 @@ var paths = {
 };
 
 // Expand the wildcards to get actual file list for translated Xliff.
-var allXliffFiles = globule.find(paths.xliff);
+const allXliffFiles = glob.sync(paths.xliff);
 // Check for the existence of the SIL mono, which flags we're on Linux
 // and need to use it to execute HtmlXliff.exe
-var IsLinux = globule.find(["/opt/mono5-sil/**/mono"]).length > 0;
+const IsLinux = glob.sync(["/opt/mono5-sil/**/mono"]).length > 0;
 
 gulp.task("less", function() {
-    var less = require("gulp-less");
+    const less = require("gulp-less");
     return gulp
         .src(paths.less)
         .pipe(debug({ title: "less:" }))
@@ -115,7 +117,7 @@ gulp.task("less", function() {
 });
 
 gulp.task("pug", function() {
-    var pug = require("gulp-pug");
+    const pug = require("gulp-pug");
     return gulp
         .src(paths.pug)
         .pipe(debug({ title: "pug:" }))
@@ -127,20 +129,21 @@ gulp.task("pug", function() {
         .pipe(gulp.dest(outputDir)); //drop all html's into the same dirs.
 });
 
-gulp.task("webpack", function() {
-    var webpackconfig = require("./webpack.config.js");
-    return gulp
-        .src("unused", { allowEmpty: true }) // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
-        .pipe(webpackStream(webpackconfig, require("webpack")))
-        .pipe(gulp.dest(outputDir));
+gulp.task("bundle", function() {
+    const rspackConfig = require("./rspack.config.ts");
+    return build(rspackConfig).catch(err => {
+        console.error(err);
+        process.exit(1);
+    });
 });
 
-gulp.task("webpack-prod", function() {
-    var webpackconfig = require("./webpack.config-prod.js");
-    return gulp
-        .src("unused", { allowEmpty: true }) // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
-        .pipe(webpackStream(webpackconfig, require("webpack")))
-        .pipe(gulp.dest(outputDir));
+// Replace webpack-prod task
+gulp.task("bundle-prod", function() {
+    const rspackConfig = require("./rspack.config-prod.js");
+    return build(rspackConfig).catch(err => {
+        console.error(err);
+        process.exit(1);
+    });
 });
 
 gulp.task("clean", function() {
@@ -218,7 +221,7 @@ gulp.task("watchlp", gulp.series(gulp.parallel("less", "pug"), "watchInner"));
 
 gulp.task("watch", async function() {
     console.log(
-        '****** PLEASE run "webpack --watch" in a separate console *********'
+        '****** PLEASE run "rspack --watch" in a separate console *********'
     );
     gulp.series(
         "clean",
@@ -250,7 +253,7 @@ gulp.task("markdownTemplateReadme", function() {
         .pipe(debug({ title: "md:" }))
         .pipe(
             tap(function(file) {
-                var result = markdownIt.render(file.contents.toString());
+                const result = markdownIt.render(file.contents.toString());
                 // wrap the generated HTML in a document and make it use our standard stylesheet.
                 // strip out the string we insert to obfuscate email addresses in source code.
                 file.contents = Buffer.from(
@@ -282,11 +285,11 @@ gulp.task("translateHtmlFiles", function() {
         .pipe(debug({ title: "translateHtmlFiles:" }))
         .pipe(
             tap(function(file) {
-                var xliffFiles = getXliffFiles(file.path);
+                const xliffFiles = getXliffFiles(file.path);
                 for (i = 0; i < xliffFiles.length; ++i) {
-                    var xliffFile = xliffFiles[i]; // needed for error message to work
-                    var outfile = getOutputFilename(file.path, xliffFile);
-                    var cmd = "";
+                    const xliffFile = xliffFiles[i]; // needed for error message to work
+                    const outfile = getOutputFilename(file.path, xliffFile);
+                    let cmd = "";
                     if (IsLinux)
                         cmd =
                             "/opt/mono5-sil/bin/mono --debug ../../lib/dotnet/HtmlXliff.exe --inject";
@@ -313,8 +316,8 @@ gulp.task("createXliffFiles", function() {
         .pipe(debug({ title: "createXliffFiles:" }))
         .pipe(
             tap(function(file) {
-                var xliffFile = getXliffFilename(file.path);
-                var cmd = "";
+                const xliffFile = getXliffFilename(file.path);
+                let cmd = "";
                 if (IsLinux)
                     cmd =
                         "/opt/mono5-sil/bin/mono --debug ../../lib/dotnet/HtmlXliff.exe --extract --preserve";
@@ -347,7 +350,7 @@ gulp.task("compileTemplateTypescript", function() {
     // approach. But in that case, we'll probably want to switch to webpack anyway
     // in order to produce a single minimal bundle as output. This is good enough for
     // a simple transformation of simple typescript.
-    var tsProject = ts.createProject("tsconfig.json", { typeRoots: [] });
+    const tsProject = ts.createProject("tsconfig.json", { typeRoots: [] });
     return gulp
         .src("./templates/template books/**/*.ts")
         .pipe(tsProject())
@@ -368,7 +371,7 @@ gulp.task(
             "markdownInfoPages",
             "markdownDistInfo"
         ),
-        gulp.parallel("webpack", "compileTemplateTypescript")
+        gulp.parallel("bundle", "compileTemplateTypescript")
     )
 );
 
@@ -379,7 +382,7 @@ gulp.task(
         "clean",
         "copy",
         gulp.parallel("less", "pug"),
-        gulp.parallel("webpack")
+        gulp.parallel("bundle")
     )
 );
 
@@ -407,7 +410,7 @@ gulp.task(
             "markdownDistInfo"
         ),
         gulp.parallel(
-            "webpack-prod",
+            "bundle-prod",
             "translateHtmlFiles",
             "createXliffFiles",
             "compileTemplateTypescript"
@@ -418,19 +421,19 @@ gulp.task(
 // Find which of the translated xliff files match up with the given html file.
 // Note that allXliffFiles uses / to separate directories even on Windows, but
 // htmFile uses / on Linux and \ on Windows.
-var getXliffFiles = function(htmFile) {
-    var pathPieces = htmFile.split("/");
+const getXliffFiles = function(htmFile) {
+    let pathPieces = htmFile.split("/");
     if (htmFile.includes("\\")) pathPieces = htmFile.split("\\");
-    var basename = pathPieces[pathPieces.length - 1];
+    let basename = pathPieces[pathPieces.length - 1];
     if (basename == "ReadMe-en.htm") {
         basename = "/" + pathPieces[pathPieces.length - 2] + "/ReadMe-";
     } else {
-        var pos = basename.search("-en.htm");
+        const pos = basename.search("-en.htm");
         if (pos > 0) basename = "/" + basename.substring(0, pos);
     }
-    var retval = [];
-    for (i = 0; i < allXliffFiles.length; i++) {
-        var pos = allXliffFiles[i].search(basename);
+    const retval = [];
+    for (let i = 0; i < allXliffFiles.length; i++) {
+        const pos = allXliffFiles[i].search(basename);
         if (pos > 0) retval.push(allXliffFiles[i]);
     }
     return retval;
@@ -438,8 +441,8 @@ var getXliffFiles = function(htmFile) {
 
 // Get the language code from the xlfFile path and put it into the htmFile path
 // (replacing the English language code) for an output file pathname.
-var getOutputFilename = function(htmFile, xlfFile) {
-    var langCode = "";
+const getOutputFilename = function(htmFile, xlfFile) {
+    let langCode = "";
     if (xlfFile.search("/ReadMe-") > 0)
         // as in "blah/foo/ReadMe-en.htm"
         langCode = xlfFile.replace(/.*\/ReadMe-/, "").replace(".xlf", "");
@@ -449,10 +452,10 @@ var getOutputFilename = function(htmFile, xlfFile) {
 };
 
 // Get the name of the English Xliff file corresponding to the English HTML file.
-var getXliffFilename = function(htmFile) {
-    var htmPieces = htmFile.split("/");
+const getXliffFilename = function(htmFile) {
+    const htmPieces = htmFile.split("/");
     if (htmFile.includes("\\")) htmPieces = htmFile.split("\\");
-    var basename = htmPieces[htmPieces.length - 1];
+    const basename = htmPieces[htmPieces.length - 1];
     if (basename == "ReadMe-en.htm") {
         return (
             "../../DistFiles/localization/" +
@@ -468,13 +471,13 @@ var getXliffFilename = function(htmFile) {
     }
 };
 
-var basicMarkdown = function(files, style, folder) {
+const basicMarkdown = function(files, style, folder) {
     return gulp
         .src(files)
         .pipe(debug({ title: "md:" }))
         .pipe(
             tap(function(file) {
-                var result = markdownIt.render(file.contents.toString());
+                const result = markdownIt.render(file.contents.toString());
                 // convert to full HTML, ensuring that the file is known to be utf-8.
                 file.contents = Buffer.from(
                     `<html><head><meta charset='utf-8'>` +

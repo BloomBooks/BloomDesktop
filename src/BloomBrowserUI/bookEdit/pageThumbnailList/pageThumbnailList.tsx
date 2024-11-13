@@ -15,7 +15,7 @@ import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 import * as toastr from "toastr";
-import "errorHandler";
+import "../../lib/errorHandler";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { Responsive } from "react-grid-layout";
 import { get, postJson, postString, useApiData } from "../../utils/bloomApi";

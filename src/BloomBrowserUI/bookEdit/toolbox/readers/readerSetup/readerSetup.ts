@@ -1,10 +1,10 @@
 import * as _ from "underscore";
 import * as $ from "jquery";
 import "../../../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
-import "errorHandler";
-import "jquery.i18n.custom.ts"; //localize()
-import "long-press/jquery.mousewheel.js";
-import "long-press/jquery.longpress.js";
+import "../../../../lib/errorHandler";
+import "../../../../lib/jquery.i18n.custom.ts"; //localize()
+import "../../../../lib/long-press/jquery.mousewheel.js";
+import "../../../../lib/long-press/jquery.longpress.js";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 
 import "../jquery.div-columns.ts";
