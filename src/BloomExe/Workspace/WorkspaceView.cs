@@ -912,11 +912,33 @@ namespace Bloom.Workspace
                     new TabChangedDetails() { From = _previouslySelectedControl, To = null }
                 );
 
+                var oldSelectedControl = _previouslySelectedControl;
                 _previouslySelectedControl = null;
 
                 Invoke(
                     (Action)(
-                        () => Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell)
+                        () =>
+                        {
+                            var didOpen = Program.ChooseACollection(
+                                Shell.GetShellOrOtherOpenForm() as Shell
+                            );
+                            if (!didOpen)
+                            {
+                                // We want to resume whatever tab we were in.
+                                // There is some overkill here...the old tab can only be the collection tab,
+                                // and currently it doesn't care about these events. The critical thing is to
+                                // restore _previouslySelectedControl, which is required so we can remove it
+                                // if we subsequently switch to another tab. But it seemed best to be consistent.
+                                // If we're not shutting down, we're switching the previously selected tab back on.
+                                _selectedTabAboutToChangeEvent.Raise(
+                                    new TabChangedDetails() { From = null, To = oldSelectedControl }
+                                );
+                                _selectedTabChangedEvent.Raise(
+                                    new TabChangedDetails() { From = null, To = oldSelectedControl }
+                                );
+                                _previouslySelectedControl = oldSelectedControl;
+                            }
+                        }
                     )
                 );
                 return DialogResult.OK;
