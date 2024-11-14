@@ -26,6 +26,20 @@ namespace Bloom.web.controllers
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
+            apiHandler.RegisterEndpointHandler(
+                "editView/runJavascriptOnEditFrame", // review name
+                request =>
+                {
+                    lock (request)
+                    {
+                        _ = View.RunJavascriptAsync(
+                            "window.editTabBundle." + request.RequiredPostString()
+                        );
+                        request.PostSucceeded();
+                    }
+                },
+                handleOnUiThread: true // because we can only run javascript on UI thread
+            );
             apiHandler.RegisterEndpointHandler("editView/setModalState", HandleSetModalState, true);
             apiHandler.RegisterEndpointHandler("editView/chooseWidget", HandleChooseWidget, true);
             apiHandler.RegisterEndpointHandler(

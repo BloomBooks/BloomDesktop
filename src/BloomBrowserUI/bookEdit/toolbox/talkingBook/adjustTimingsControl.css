@@ -1,0 +1,15 @@
+::part(region-content) {
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 5px;
+}
+::part(region-handle-right) {
+    border-right: dashed;
+
+    border-right-color: #d65649;
+}
+/* hide the start-marker handles */
+::part(region-handle-left) {
+    display: none;
+}
