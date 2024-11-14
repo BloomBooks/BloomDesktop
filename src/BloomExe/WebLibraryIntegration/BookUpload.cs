@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Amazon.Runtime;
 using Amazon.S3;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
@@ -955,6 +956,7 @@ namespace Bloom.WebLibraryIntegration
                 var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(bookObjectId);
                 book.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishWeb, url);
 
+                BloomWebSocketServer.Instance.SendEvent("booksOnBlorg", "reload");
                 return bookObjectId;
             }
             finally
