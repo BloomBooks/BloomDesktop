@@ -5,6 +5,9 @@ using System.IO;
 using Bloom.Api;
 using SIL.IO;
 using System.Threading;
+using System.Diagnostics;
+using SIL.Reporting;
+
 #if __MonoCS__
 using SharpFont; // Linux only (interface to libfreetype.so.6)
 #else
@@ -49,23 +52,82 @@ namespace Bloom.FontProcessing
         /// <summary>
         /// This is really hard. We somehow need to figure out what font file(s) are used for a particular font.
         /// http://stackoverflow.com/questions/16769758/get-a-font-filename-based-on-the-font-handle-hfont
-        /// has some ideas; the result would be Windows-specific. And at some point we should ideally consider
-        /// what faces are needed.
-        /// For now we use brute force.
-        /// 'Andika New Basic' -> AndikaNewBasic-{R,B,I,BI}.ttf
-        /// Arial -> arial.ttf/ariali.ttf/arialbd.ttf/arialbi.ttf
-        /// 'Charis SIL' -> CharisSIL{R,B,I,BI}.ttf (note: no hyphen)
-        /// Doulos SIL -> DoulosSILR
+        /// has some ideas; the result would be Windows-specific.
+        ///
+        /// 'AFontName' -> AFontNameRegular.ttf
+        /// 'AFontName Bold' -> AFontNameBold.ttf
+        /// 'AFontName Italic' -> AFontNameItalic.ttf
+        /// 'AFontName Bold Italic'-> AFontNameBoldItalic.ttf
+        /// If the italic variants do not exist, then the result would look like:
+        /// 'BFont' -> BFontRegular.ttf
+        /// 'BFont Bold' -> BFontBold.ttf
+        /// 'BFont Italic' -> BFontRegular.ttf
+        /// 'BFont Bold Italic' -> BFontBold.ttf
         /// </summary>
-        /// <param name="fontName"></param>
-        /// <returns>enumeration of file paths (possibly none) that contain data for the specified font name, and which
-        /// (as far as we can tell) we are allowed to embed.
-        /// Currently we only embed the normal face...see BL-4202 and comments in EpubMaker.EmbedFonts()</returns>
-        public IEnumerable<string> GetFilesForFont(string fontName)
+        /// <returns>file path (possibly null) that contains data for the specified font name, style and weight,
+        /// and which (as far as we can tell) we are allowed to embed.
+        /// If a file specific to the requested style or weight is not found, we fall back to the closest match.
+        /// If nothing is found, we return null.
+        /// </returns>
+        /// <remarks>
+        /// Once variable-weight fonts are supported, or multiple weights (SemiBold, etc), then this needs to be
+        /// reworked.  The Debug.Asserts and Log message are meant to be reminders of this.
+        /// </remarks>
+        public string GetFileForFont(string fontName, string fontStyle, string fontWeight)
         {
             var group = GetGroupForFont(fontName);
-            if (group != null && !string.IsNullOrEmpty(group.Normal))
-                yield return group.Normal;
+            if (group != null)
+            {
+                Debug.Assert(
+                    fontStyle == "italic" || fontStyle == "normal",
+                    $"Unexpected fontStyle: {fontStyle}"
+                );
+                Debug.Assert(
+                    fontWeight == "400" || fontWeight == "700",
+                    $"Unexpected fontWeight: {fontWeight}"
+                );
+                if (
+                    (fontStyle != "italic" && fontStyle != "normal")
+                    || (fontWeight != "400" && fontWeight != "700")
+                )
+                {
+                    Logger.WriteEvent(
+                        $"Unexpected font settings: name=\"{fontName}\", weight=\"{fontWeight}\", style=\"{fontStyle}\""
+                    );
+                }
+
+                if (fontStyle == "italic" && fontWeight == "700")
+                {
+                    if (!string.IsNullOrEmpty(group.BoldItalic))
+                        return group.BoldItalic;
+                    else if (!string.IsNullOrEmpty(group.Bold))
+                        return group.Bold;
+                    else if (!string.IsNullOrEmpty(group.Italic))
+                        return group.Italic;
+                    else if (!string.IsNullOrEmpty(group.Normal))
+                        return group.Normal;
+                }
+                if (fontStyle == "italic" && fontWeight == "400")
+                {
+                    if (!string.IsNullOrEmpty(group.Italic))
+                        return group.Italic;
+                    else if (!string.IsNullOrEmpty(group.Normal))
+                        return group.Normal;
+                }
+                if (fontStyle == "normal" && fontWeight == "700")
+                {
+                    if (!string.IsNullOrEmpty(group.Bold))
+                        return group.Bold;
+                    else if (!string.IsNullOrEmpty(group.Normal))
+                        return group.Normal;
+                }
+                if (fontStyle == "normal" && fontWeight == "400")
+                {
+                    if (!string.IsNullOrEmpty(group.Normal))
+                        return group.Normal;
+                }
+            }
+            return null;
         }
 
         public HashSet<string> FontsWeCantInstall { get; private set; }
@@ -339,7 +401,7 @@ namespace Bloom.FontProcessing
     // its public interface (for purposes of test stubbing)
     public interface IFontFinder
     {
-        IEnumerable<string> GetFilesForFont(string fontName);
+        string GetFileForFont(string fontName, string fontStyle, string fontWeight);
         bool NoteFontsWeCantInstall { get; set; }
         HashSet<string> FontsWeCantInstall { get; }
         FontGroup GetGroupForFont(string fontName);
