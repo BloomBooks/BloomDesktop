@@ -21,7 +21,7 @@
         This is unfortunate, but our code for getting localization of hints is tricky to make async.-->
         <source xml:lang="en">Clicking this validates the positions things have been dragged to.</source>
         <note>ID: EditTab.Toolbox.DragActivity.CheckHint</note>
-        <target xml:lang="es-ES" state="needs-translation">Clicking this validates the positions things have been dragged to.</target>
+        <target xml:lang="es-ES" state="translated">Al hacer clic en esto se validan las posiciones a las que se han arrastrado las cosas.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
@@ -30,92 +30,92 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile">
         <source xml:lang="en">Choose Sound File</source>
-        <target xml:lang="es-ES" state="needs-translation">Choose Sound File</target>
+        <target xml:lang="es-ES" state="translated">Elegir archivo de sonido</target>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Correct">
         <source xml:lang="en">Correct</source>
-        <target xml:lang="es-ES" state="needs-translation">Correct</target>
+        <target xml:lang="es-ES" state="translated">Correcto</target>
         <note>ID: EditTab.Toolbox.DragActivity.Correct</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectInstructions">
         <source xml:lang="en">Add items that will show when the learner gets the correct answer. For example, you might add a text that says “Correct!” with a GIF of a dancing chicken.</source>
-        <target xml:lang="es-ES" state="needs-translation">Add items that will show when the learner gets the correct answer. For example, you might add a text that says “Correct!” with a GIF of a dancing chicken.</target>
+        <target xml:lang="es-ES" state="translated">Añadir elementos que se mostrarán cuando el estudiante reciba la respuesta correcta. Por ejemplo, puedes añadir un texto que dice “Correcto!” con un GIF de un pollo bailando.</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Draggable">
         <source xml:lang="en">Draggable</source>
-        <target xml:lang="es-ES" state="needs-translation">Draggable</target>
+        <target xml:lang="es-ES" state="translated">Arrastrable</target>
         <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
         <source xml:lang="en">Drag Images to Targets</source>
-        <target xml:lang="es-ES" state="needs-translation">Drag Images to Targets</target>
+        <target xml:lang="es-ES" state="translated">Arrastra imágenes a objetivos</target>
         <note>ID: EditTab.Toolbox.DragActivity.DragImageHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragLetterHeading">
         <source xml:lang="en">Drag Letters to Targets</source>
-        <target xml:lang="es-ES" state="needs-translation">Drag Letters to Targets</target>
+        <target xml:lang="es-ES" state="translated">Arrastra las letras a los objetivos</target>
         <note>ID: EditTab.Toolbox.DragActivity.DragLetterHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragLetterInstructions">
         <source xml:lang="en">Place the letters anywhere on the scene, in a mixed up order.</source>
-        <target xml:lang="es-ES" state="needs-translation">Place the letters anywhere on the scene, in a mixed up order.</target>
+        <target xml:lang="es-ES" state="translated">Coloca las letras en cualquier lugar de la escena, en un orden mezclado.</target>
         <note>ID: EditTab.Toolbox.DragActivity.DragLetterInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragImageInstructions">
         <source xml:lang="en">Place the images anywhere on the scene, and the targets where the student should put them.</source>
-        <target xml:lang="es-ES" state="needs-translation">Place the images anywhere on the scene, and the targets where the student should put them.</target>
+        <target xml:lang="es-ES" state="translated">Coloca las imágenes en cualquier lugar de la escena, y los objetivos donde el estudiante debe colocarlas.</target>
         <note>ID: EditTab.Toolbox.DragActivity.DragImagesnstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTarget">
         <source xml:lang="en">Draggable Target</source>
-        <target xml:lang="es-ES" state="needs-translation">Draggable Target</target>
+        <target xml:lang="es-ES" state="translated">Objetivo arrastrable</target>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTarget</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace">
         <source xml:lang="en">Fixed In Place</source>
-        <target xml:lang="es-ES" state="needs-translation">Fixed In Place</target>
+        <target xml:lang="es-ES" state="translated">Fijado en el lugar</target>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableShape">
         <source xml:lang="en">Draggable Shape</source>
-        <target xml:lang="es-ES" state="needs-translation">Draggable Shape</target>
+        <target xml:lang="es-ES" state="translated">Forma arrastrable</target>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableShape</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
-        <target xml:lang="es-ES" state="needs-translation">Place the targets in the places needed for the correct answer.</target>
+        <target xml:lang="es-ES" state="translated">Coloca los objetivos en los lugares necesarios para la respuesta correcta.</target>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell" translate="no">
         <source xml:lang="en">Edit word to spell</source>
-        <target xml:lang="es-ES" state="needs-translation">Edit word to spell</target>
+        <target xml:lang="es-ES" state="translated">Editar palabra para escribir</target>
         <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.FixedShape">
         <source xml:lang="en">Fixed Shape</source>
-        <target xml:lang="es-ES" state="needs-translation">Fixed Shape</target>
+        <target xml:lang="es-ES" state="translated">Forma fija</target>
         <note>ID: EditTab.Toolbox.DragActivity.FixedShape</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Instructions">
         <source xml:lang="en">Instructions</source>
-        <target xml:lang="es-ES" state="needs-translation">Instructions</target>
+        <target xml:lang="es-ES" state="translated">Instrucciones</target>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.InstructionsOrLabels">
         <source xml:lang="en">Instructions or other labels</source>
-        <target xml:lang="es-ES" state="needs-translation">Instructions or other labels</target>
+        <target xml:lang="es-ES" state="translated">Instrucciones u otras etiquetas</target>
         <note>ID: EditTab.Toolbox.DragActivity.InstructionsOrLabels</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Item">
         <source xml:lang="en">Item:</source>
-        <target xml:lang="es-ES" state="needs-translation">Item:</target>
+        <target xml:lang="es-ES" state="translated">Elemento:</target>
         <note>ID: EditTab.Toolbox.DragActivity.Item</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter">
         <source xml:lang="en">M</source>
-        <target xml:lang="es-ES" state="needs-translation">M</target>
+        <target xml:lang="es-ES" state="translated">M</target>
         <note>ID: EditTab.Toolbox.DragActivity.Letter</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None">
@@ -145,17 +145,17 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircleInstructions">
         <source xml:lang="en">Put the Order Circles in the correct order. Bloom will shuffle them when it is time to play.</source>
-        <target xml:lang="es-ES" state="needs-translation">Put the Order Circles in the correct order. Bloom will shuffle them when it is time to play.</target>
+        <target xml:lang="es-ES" state="translated">Pon los Círculos de Orden en el orden correcto. Bloom los barajará cuando sea hora de jugar.</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircleInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswer">
         <source xml:lang="en">Part of the right answer</source>
-        <target xml:lang="es-ES" state="needs-translation">Part of the right answer</target>
+        <target xml:lang="es-ES" state="translated">Parte de la respuesta correcta</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore">
         <source xml:lang="en">Untick this item if it is not part of the right answer</source>
-        <target xml:lang="es-ES" state="needs-translation">Untick this item if it is not part of the right answer</target>
+        <target xml:lang="es-ES" state="translated">Desmarcar este elemento si no es parte de la respuesta correcta</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
       </trans-unit>
       <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled">
@@ -179,7 +179,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SameSize">
         <source xml:lang="en">Keep all items and targets the same size</source>
-        <target xml:lang="es-ES" state="needs-translation">Keep all items and targets the same size</target>
+        <target xml:lang="es-ES" state="translated">Mantener todos los elementos y objetivos del mismo tamaño</target>
         <note>ID: EditTab.Toolbox.DragActivity.SameSize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions">
@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Start">
         <source xml:lang="en">Start</source>
-        <target xml:lang="es-ES" state="needs-translation">Start</target>
+        <target xml:lang="es-ES" state="translated">Comenzar</target>
         <note>ID: EditTab.Toolbox.DragActivity.Start</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TestInstructions">
@@ -249,7 +249,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell" translate="no">
         <source xml:lang="en">Enter the word to spell</source>
-        <target xml:lang="es-ES" state="needs-translation">Enter the word to spell</target>
+        <target xml:lang="es-ES" state="translated">Introduzca la palabra para escribir</target>
         <note>ID: EditTab.Toolbox.DragActivity.WordToSpell</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Wrong">
@@ -278,8 +278,8 @@
         <source xml:lang="en">
           Game Tool
         </source>
-        <target xml:lang="es-ES" state="needs-translation">
-          Game Tool
+        <target xml:lang="es-ES" state="translated">
+          Herramienta de juegos
         </target>
         <note>ID: EditTab.Toolbox.GameTool</note>
       </trans-unit>
@@ -781,7 +781,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.AdvancedLayoutLabel" sil:dynamic="true">
         <source xml:lang="en">Advanced Layout</source>
-        <target xml:lang="es-ES" state="needs-translation">Advanced Layout</target>
+        <target xml:lang="es-ES" state="translated">Diseño avanzado</target>
         <note>BookSettings.AdvancedLayoutLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPaddingLabel" sil:dynamic="true">
@@ -796,12 +796,12 @@
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPadding.DefaultLabel" sil:dynamic="true">
         <source xml:lang="en">Default (set by Theme)</source>
-        <target xml:lang="es-ES" state="needs-translation">Default (set by Theme)</target>
+        <target xml:lang="es-ES" state="translated">Por defecto (establecido por tema)</target>
         <note>BookSettings.TopLevelTextPadding.DefaultLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true">
         <source xml:lang="en">1em (font size)</source>
-        <target xml:lang="es-ES" state="needs-translation">1em (font size)</target>
+        <target xml:lang="es-ES" state="translated">1em (tamaño de fuente)</target>
         <note>BookSettings.TopLevelTextPadding.1emLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true">
@@ -821,7 +821,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.All" sil:dynamic="true">
         <source xml:lang="en">(all)</source>
-        <target xml:lang="es-ES" state="needs-translation">(all)</target>
+        <target xml:lang="es-ES" state="translated">(todos)</target>
         <note>ID: BookSettings.Fonts.All</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true">
@@ -831,7 +831,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.UnnumberedPage" sil:dynamic="true">
         <source xml:lang="en">Unnumbered Page</source>
-        <target xml:lang="es-ES" state="needs-translation">Unnumbered Page</target>
+        <target xml:lang="es-ES" state="translated">Página sin numerar</target>
         <note>ID: BookSettings.Fonts.UnnumberedPage</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.default" sil:dynamic="true" approved="yes">
