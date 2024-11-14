@@ -8,12 +8,12 @@
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.Check">
         <source xml:lang="en">Check</source>
-        <target xml:lang="es-ES" state="needs-translation">Check</target>
+        <target xml:lang="es-ES" state="translated">Verificar</target>
         <note>ID: EditTab.Toolbox.DragActivity.Check</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CheckAnswer">
         <source xml:lang="en">Check Answer</source>
-        <target xml:lang="es-ES" state="needs-translation">Check Answer</target>
+        <target xml:lang="es-ES" state="translated">Verificar la respuesta</target>
         <note>ID: EditTab.Toolbox.DragActivity.CheckAnswer</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CheckHint">
@@ -120,7 +120,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None">
         <source xml:lang="en">None</source>
-        <target xml:lang="es-ES" state="needs-translation">None</target>
+        <target xml:lang="es-ES" state="translated">Ninguno</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading">
@@ -174,7 +174,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None">
         <source xml:lang="en">None</source>
-        <target xml:lang="es-ES" state="needs-translation">None</target>
+        <target xml:lang="es-ES" state="translated">Ninguno</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SameSize">
@@ -219,27 +219,27 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TestInstructions">
         <source xml:lang="en">Try it out!</source>
-        <target xml:lang="es-ES" state="needs-translation">Try it out!</target>
+        <target xml:lang="es-ES" state="translated">Pruébalo!</target>
         <note>ID: EditTab.Toolbox.DragActivity.TestInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TextToPutOnThePage">
         <source xml:lang="en">Text to put on the page</source>
-        <target xml:lang="es-ES" state="needs-translation">Text to put on the page</target>
+        <target xml:lang="es-ES" state="translated">Texto a poner en la página</target>
         <note>ID: EditTab.Toolbox.DragActivity.TextToPutOnThePage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TryAgain">
         <source xml:lang="en">Try Again</source>
-        <target xml:lang="es-ES" state="needs-translation">Try Again</target>
+        <target xml:lang="es-ES" state="translated">Inténtalo de nuevo</target>
         <note>ID: EditTab.Toolbox.DragActivity.TryAgain</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WhenCorrect">
         <source xml:lang="en">When the answer is correct</source>
-        <target xml:lang="es-ES" state="needs-translation">When the answer is correct</target>
+        <target xml:lang="es-ES" state="translated">Cuando la respuesta es correcta</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenCorrect</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WhenWrong">
         <source xml:lang="en">When the answer is wrong</source>
-        <target xml:lang="es-ES" state="needs-translation">When the answer is wrong</target>
+        <target xml:lang="es-ES" state="translated">Cuando la respuesta es incorrecta</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word">
@@ -254,7 +254,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Wrong">
         <source xml:lang="en">Wrong</source>
-        <target xml:lang="es-ES" state="needs-translation">Wrong</target>
+        <target xml:lang="es-ES" state="translated">Incorrecto</target>
         <note>ID: EditTab.Toolbox.DragActivity.Wrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongInstructions">
@@ -816,7 +816,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true">
         <source xml:lang="en">First Page</source>
-        <target xml:lang="es-ES" state="needs-translation">First Page</target>
+        <target xml:lang="es-ES" state="translated">Primera Página</target>
         <note>ID: BookSettings.Fonts.FirstPage</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.All" sil:dynamic="true">
