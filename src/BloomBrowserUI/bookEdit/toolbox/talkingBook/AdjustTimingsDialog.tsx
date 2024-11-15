@@ -23,6 +23,15 @@ import { useL10n } from "../../../react_components/l10nHooks";
 import { postBoolean } from "../../../utils/bloomApi";
 import { kAudioCurrent } from "./audioRecording";
 import { AdjustTimingsControl, TimedTextSegment } from "./AdjustTimingsControl";
+import { getUrlPrefixFromWindowHref } from "../dragActivity/narration";
+import { IAudioRecorder } from "./IAudioRecorder";
+import { getToolboxBundleExports } from "../../editViewFrame";
+
+export function getAudioRecorder(): IAudioRecorder | undefined {
+    const exports = getToolboxBundleExports();
+    const result = exports ? exports.getTheOneAudioRecorder() : undefined;
+    return result;
+}
 
 export const AdjustTimingsDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
@@ -37,6 +46,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     >();
     const [endTimes, setEndTimes] = useState<number[]>([]);
     const [url, setUrl] = useState<string>();
+    const [fontFamily, setFont] = useState<string>("Andika");
 
     // Configure the local function (`show`) for showing the dialog to be the one derived from useSetupBloomDialog (`showDialog`)
     // which allows js launchers of the dialog to make it visible (by calling showCopyrightAndLicenseInfoOrDialog)
@@ -62,14 +72,31 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         console.log(
             `AudjustTimingsControl bloomEditable: ${bloomEditable.outerHTML}`
         );
-        const endTimes = bloomEditable
+        let ff = (
+            bloomEditable.ownerDocument.defaultView || window
+        ).getComputedStyle(bloomEditable).fontFamily;
+        ff = ff.replace(/^['"]/, "").replace(/['"]$/, "");
+        setFont(ff);
+        let endTimes = bloomEditable
             .getAttribute("data-audiorecordingendtimes")
             ?.split(" ")
             .map(parseFloat);
         console.log(`AudjustTimingsControl endTimes: ${endTimes}`);
-        const segmentElements = Array.from(
+        let segmentElements = Array.from(
             bloomEditable.getElementsByClassName("bloom-highlightSegment")
         ) as HTMLSpanElement[];
+        if (!segmentElements || segmentElements.length === 0) {
+            getAudioRecorder()?.autoSegmentBasedOnTextLength();
+            segmentElements = Array.from(
+                bloomEditable.getElementsByClassName("bloom-highlightSegment")
+            ) as HTMLSpanElement[];
+            endTimes = bloomEditable
+                .getAttribute("data-audiorecordingendtimes")
+                ?.split(" ")
+                .map(parseFloat);
+        }
+
+        // Review: do we need to better handle pathological cases like not having a duration, not having any segments,
         const segmentArray: TimedTextSegment[] = [];
 
         let start = 0;
@@ -93,7 +120,10 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         console.log(
             `AudjustTimingsControl url: ${bloomEditable.getAttribute("id")}`
         );
-        setUrl(`audio/${bloomEditable.getAttribute("id")}.mp3`);
+        const prefix = getUrlPrefixFromWindowHref(
+            (bloomEditable.ownerDocument.defaultView || window).location.href
+        );
+        setUrl(`${prefix}/audio/${bloomEditable.getAttribute("id")}.mp3`);
     }, [propsForBloomDialog.open]);
 
     return (
@@ -103,8 +133,12 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             //     padding-left: 18px;
             // `}
             fullWidth={true}
-            maxWidth="lg"
-            onCancel={closeDialog}
+            maxWidth={false}
+            onCancel={reason => {
+                if (reason !== "backdropClick") {
+                    closeDialog();
+                }
+            }}
         >
             <DialogTitle title={dialogTitle} />
             <DialogMiddle>
@@ -112,6 +146,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                     segments={segments!}
                     url={url!}
                     setEndTimes={endTimes => setEndTimes(endTimes)}
+                    fontFamily={fontFamily}
                 />
                 {/* <div id={"json"}>
                     {JSON.stringify(segments, null, 2)}

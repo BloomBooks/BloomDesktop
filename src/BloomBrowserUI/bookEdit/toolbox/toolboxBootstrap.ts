@@ -22,6 +22,8 @@ import {
     DragActivityTool,
     setActiveDragActivityTab
 } from "./dragActivity/dragActivityTool";
+import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
+import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 
 export interface IToolboxFrameExports {
     addWordListChangedListener(
@@ -40,6 +42,7 @@ export interface IToolboxFrameExports {
 
     removeToolboxMarkup(): void;
     setActiveDragActivityTab(tab: number): void;
+    getTheOneAudioRecorder(): IAudioRecorder;
 }
 
 // each of these exports shows up under this window's toolboxBundle object (see bloomFrames.ts)
@@ -78,6 +81,10 @@ export function undo() {
 
 export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
+}
+
+export function getTheOneAudioRecorder(): IAudioRecorder {
+    return theOneAudioRecorder;
 }
 
 export function copyLeveledReaderStatsToClipboard() {

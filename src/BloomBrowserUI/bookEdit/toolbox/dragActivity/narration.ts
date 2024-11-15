@@ -91,7 +91,7 @@ export function setPlayerUrlPrefixFromWindowLocationHref(bookSrc: string) {
     setPlayerUrlPrefix(getUrlPrefixFromWindowHref(bookSrc));
 }
 
-function getUrlPrefixFromWindowHref(bookSrc: string) {
+export function getUrlPrefixFromWindowHref(bookSrc: string) {
     const index = bookSrc.lastIndexOf("/");
     return bookSrc.substring(0, index);
 }

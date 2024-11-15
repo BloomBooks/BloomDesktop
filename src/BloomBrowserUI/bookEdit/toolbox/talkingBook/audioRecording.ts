@@ -58,6 +58,7 @@ import {
     hideImageDescriptions,
     showImageDescriptions
 } from "../imageDescription/imageDescriptionUtils";
+import { IAudioRecorder } from "./IAudioRecorder";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -153,7 +154,7 @@ interface ISetHighlightParams {
 // Selected: Means that the element is selected, e.g. it will be highlighted during the next stable state. However, it might not be currently highlighted YET.
 
 // TODO: Maybe a lot of this code should move to TalkingBook.ts (regarding the tool) instead of AudioRecording.ts (regarding recording/playing the audio files)
-export default class AudioRecording {
+export default class AudioRecording implements IAudioRecorder {
     private recording: boolean;
     private levelCanvas: HTMLCanvasElement;
     private currentAudioId: string;
@@ -4123,6 +4124,51 @@ export default class AudioRecording {
         }
     }
 
+    public autoSegmentBasedOnTextLength(): void {
+        const currentTextBox = this.getCurrentTextBox();
+        if (!currentTextBox) return;
+        const segments = this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+        // Generate crude estimate of audio lengths based on text lengths and total time,
+        // which should be known if we have an audio recording to adjust at all.
+        const durationText = currentTextBox.getAttribute("data-duration");
+        const duration = durationText ? parseFloat(durationText) : 0;
+        if (duration) {
+            let textLength = 0;
+            for (const segment of segments) {
+                // ??1 here and below prevents any segment being completely empty.
+                // (Though, I don't think extractFragmentsAndSetSpanIdsForAudioSegmentation
+                // should actually make empty segments...belt and braces here.)
+                textLength += (segment.fragmentText ?? "1").length;
+            }
+            const endTimes: Number[] = [];
+            let start = 0;
+            for (const segment of segments) {
+                const end =
+                    start +
+                    (duration * (segment.fragmentText ?? "1").length) /
+                        textLength;
+                endTimes.push(end);
+                start = end;
+            }
+
+            currentTextBox.setAttribute(
+                kEndTimeAttributeName,
+                endTimes.map(x => x.toString()).join(" ")
+            );
+
+            // Temporarily switch to sentence, to get sentence elements created, using IDs generated
+            // in extractFragmentsAndSetSpanIdsForAudioSegmentation
+            this.updateMarkupForTextBox(
+                currentTextBox,
+                this.recordingMode,
+                RecordingMode.Sentence
+            );
+            // And now back to text box mode, but we'll keep the sentences as auto-segmented fragments
+            this.updatePlaybackModeToTextBox();
+            this.markAudioSplit();
+        }
+    }
+
     public processAutoSegmentResponse(result: AxiosResponse<any>): void {
         const isSuccess = result && result.data;
 
@@ -4656,6 +4702,9 @@ export class AudioTextFragment {
 }
 
 export let theOneAudioRecorder: AudioRecording;
+export function getTheOneAudioRecorder(): IAudioRecorder {
+    return theOneAudioRecorder;
+}
 
 // Used by talkingBook when initially showing the tool.
 export async function initializeTalkingBookToolAsync(): Promise<void> {

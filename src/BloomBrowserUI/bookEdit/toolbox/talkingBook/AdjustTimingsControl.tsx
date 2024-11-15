@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/react";
+
 import "./adjustTimingsControl.css"; // can't use @emotion on shadow dom
 
 import * as React from "react";
@@ -6,6 +9,7 @@ import WaveSurfer from "wavesurfer.js";
 import * as WaveSurferNamespace from "wavesurfer.js";
 
 import RegionsPlugin from "../../../node_modules/wavesurfer.js/dist/plugins/regions";
+import { kBloomPurple } from "../../../utils/colorUtils";
 
 //import splat from "./splat.mp3"; // sound curtesy zapsplat.com
 
@@ -19,6 +23,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
     url: string;
     segments: Array<{ start: number; end: number; text: string }>;
     setEndTimes: (endTimes: number[]) => void;
+    fontFamily: string;
 }> = props => {
     type playSpan = { start: number; end: number; regionIndex: number };
     type playQueue = Array<playSpan>;
@@ -32,6 +37,23 @@ export const AdjustTimingsControl: React.FunctionComponent<{
     function stopAndClearQueue() {
         playQueueRef.current = [];
         waveSurferRef.current!.pause();
+    }
+
+    function getShadowRoot() {
+        const waveform = document.getElementById("waveform");
+        if (!waveform) return undefined;
+        return waveform.firstElementChild?.shadowRoot;
+    }
+    function getPlayButtons() {
+        const shadowRoot = getShadowRoot();
+        if (!shadowRoot) return [];
+        return Array.from(shadowRoot.querySelectorAll(".playButton"));
+    }
+    function playEnded() {
+        const playButtons = getPlayButtons();
+        playButtons.forEach(
+            (button: HTMLButtonElement) => (button.textContent = "►")
+        );
     }
 
     useEffect(() => {
@@ -53,16 +75,99 @@ export const AdjustTimingsControl: React.FunctionComponent<{
 
         //const regionColors = ["red", "green", "blue", "yellow", "orange"];
 
+        // This horrible hack is the only way I could find to set the font for the regions.
+        // Can't set it in adjustTimingsContro.css because it's variable.
+        // Can't find anything I can set in the emotion CSS for #wrapper that seems make the right
+        // ::part(region) selector work.
+        let styleElt = document.getElementById("adjustTimingsControlStyles");
+        if (!styleElt) {
+            styleElt = document.createElement("style");
+            styleElt.id = "adjustTimingsControlStyles";
+            document.head.appendChild(styleElt);
+        }
+        styleElt.innerHTML = `
+            ::part(region) {
+                font-family: ${props.fontFamily};
+            }
+        `;
+
         const ws = ((WaveSurferNamespace as unknown) as any).create({
             container: "#waveform",
             plugins: [rp],
             minPxPerSec: 100,
             waveColor: "#2292A2",
             progressColor: "#2292A2",
-            cursorColor: "#2292A244"
+            cursorColor: "#2292A244",
+            normalize: true
+            // does nothing obvious
+            //FontFace: props.fontFamily
         });
         ws.load(props.url);
         setWaveSurfer(ws);
+        ws.on("ready", () => {
+            // Create the play buttons.
+            // I don't understand why we sometimes don't find the regions at first. I think there
+            // is some randomness involved in constructing the DOM and loading the audio. In any case,
+            // if we don't yet have the expected number of regions, we wait a bit and try again.
+            function makePlayButtons() {
+                const shadowRoot = getShadowRoot();
+                if (!shadowRoot) return;
+                const regions = shadowRoot.querySelectorAll(
+                    "[part *= 'region ']"
+                );
+                if (regions.length === props.segments.length) {
+                    regions.forEach((region: HTMLElement, index: number) => {
+                        const playButton = document.createElement("button");
+                        playButton.textContent = "►";
+                        playButton.style.position = "absolute";
+                        // In the middle it tends to get lost inthe waveform and also obscure it.
+                        // Also if the first segment is long it might be off the screen.
+                        //playButton.style.top = "calc(50% - 15px)";
+                        //playButton.style.left = "calc(50% - 15px)";
+                        // At the top it would interfere with the text.
+                        playButton.style.bottom = "10px";
+                        playButton.style.left = "10px";
+                        playButton.style.height = "30px";
+                        playButton.style.width = "30px";
+                        playButton.style.borderRadius = "50%";
+                        playButton.style.backgroundColor = kBloomPurple;
+                        playButton.style.border = "none";
+                        playButton.style.color = "white";
+                        playButton.classList.add("playButton");
+                        playButton.addEventListener("click", e => {
+                            if (playQueueRef.current!.length > 0) {
+                                stopAndClearQueue();
+                                if (playButton.textContent === "❚❚") {
+                                    // clicked in the pause state: all we need to do is clear the queue
+                                    // and reset the button to play
+                                    playButton.textContent = "►";
+                                    e.stopPropagation();
+                                }
+                            }
+                            // If we're not playing anything, or clicked on a play button other than that
+                            // of the currently playing segment, start playing the clicked segment.
+                            // We don't need to do anything to achieve that except NOT stopPropagation,
+                            // so the Region (behind the button) sees the click and starts playing.
+                            // If we move the buttons outside the region, we'll need to do more here.
+                            // Do NOT initiate a play based on the start and end times of segment[index];
+                            // that will play the original times, ignoring any modifications that have been
+                            // made.
+                        });
+                        region.appendChild(playButton);
+                    });
+                } else {
+                    setTimeout(makePlayButtons, 100);
+                }
+            }
+            makePlayButtons();
+        });
+        ws.on("finish", () => {
+            // only sometimes happens, probably because of our audioprocessor handler.
+            // Even on the last segment it only sometimes happens, but there are cases.
+            getPlayButtons().forEach(
+                (button: HTMLButtonElement) => (button.textContent = "►")
+            );
+        });
         ws.on("decode", () => {
             rp.clearRegions();
             props.segments.forEach((segment, index: number) => {
@@ -77,14 +182,23 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 });
                 region.on("click", e => {
                     e.stopPropagation();
+                    const playButtons = getPlayButtons();
                     if (playQueueRef.current!.length > 0) {
                         stopAndClearQueue();
+                        playButtons.forEach(
+                            (button: HTMLButtonElement) =>
+                                (button.textContent = "►")
+                        );
                     } else {
+                        // there seems to be a case where a different segment is playing and needs its pause button reset
+                        // I think there isn't necessarily anything in the queue when we're playing.
+                        playEnded();
                         enqueue({
                             start: region.start,
                             end: region.end,
                             regionIndex: index
                         });
+                        playButtons[index].textContent = "❚❚";
                     }
                 });
                 // after dragging, adjust the start time of the next region and the end time of the previous region
@@ -140,6 +254,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
             const currentSpan = playQueueRef.current?.[0];
             if (currentSpan && time > currentSpan.end) {
                 ws.pause();
+                playEnded(); // any button that is pause should be reset to play
                 //dequeue
                 playQueueRef.current?.shift();
                 if (playQueueRef.current!.length > 0) {
@@ -163,7 +278,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
         return () => {
             ws.destroy();
         };
-    }, [props.segments]);
+    }, [props.segments, props.fontFamily, props.url]);
 
     return (
         <Fragment>
