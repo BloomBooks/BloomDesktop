@@ -203,11 +203,11 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="15.0.0-beta0081" />
 		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="15.0.0-beta0081" />
 		<PackageReference Include="SIL.WritingSystems" Version="15.0.0-beta0081" />
-		<PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
-		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.3" />
-		<PackageReference Include="SQLitePCLRaw.core" Version="2.0.3" />
-		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.0.3" />
-		<PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.0.3" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
+		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />
+		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.2" />
+		<PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.1.2" />
 		<PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 		<PackageReference Include="System.Runtime" Version="4.3.0" />
