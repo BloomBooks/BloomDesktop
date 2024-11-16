@@ -56,8 +56,10 @@ export const LanguageChooserDialog: React.FunctionComponent<{
             postData("settings/changeLanguage", {
                 LanguageTag: languageTag,
                 DefaultName:
+                    // TODO when published from language-chooser-react-mui, we should use
+                    // defaultDisplayName(languageSelection)
                     languageSelection?.language.autonym ||
-                    languageSelection?.language.exonym, // TODO which name?
+                    languageSelection?.language.exonym,
                 DesiredName: languageSelection?.customDetails?.displayName
             });
         }
@@ -73,7 +75,8 @@ export const LanguageChooserDialog: React.FunctionComponent<{
         >
             <LanguageChooser
                 searchResultModifier={defaultSearchResultModifier}
-                initialLanguageTag={props.initialLanguageTag}
+                initialSearchString={props.initialLanguageTag?.split("-")[0]}
+                initialSelectionLanguageTag={props.initialLanguageTag}
                 initialCustomDisplayName={props.initialCustomName}
                 onClose={handleClose}
             />

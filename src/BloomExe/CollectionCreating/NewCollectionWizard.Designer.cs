@@ -45,7 +45,7 @@ namespace Bloom.CollectionCreating
             this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
             this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
 			this._welcomeHtml = new SIL.Windows.Forms.Widgets.BetterLabel();
-			this._vernacularLanguageIdControl = new Bloom.CollectionCreating.LanguageIdControl();
+			this.languageChooserReactControl = new web.ReactControl();
 			this._fontDetails = new Bloom.MiscUI.LanguageFontDetails();
 			this._languageLocationControl = new Bloom.CollectionCreating.LanguageLocationControl();
 			this._collectionNameControl = new Bloom.CollectionCreating.CollectionNameControl();
@@ -69,7 +69,8 @@ namespace Bloom.CollectionCreating
 			this._wizardControl.Pages.Add(this._collectionNamePage);
 			this._wizardControl.Pages.Add(this._finishPage);
 			this._wizardControl.Pages.Add(this._collectionNameProblemPage);
-			this._wizardControl.Size = new System.Drawing.Size(759, 464);
+			this._wizardControl.Size = new System.Drawing.Size(1000, 1000);
+			// TODO what should this size be?
 			this._wizardControl.TabIndex = 0;
 			this._wizardControl.Title = "Create New Bloom Collection";
 			this._wizardControl.TitleIcon = ((System.Drawing.Icon)(resources.GetObject("_wizardControl.TitleIcon")));
@@ -87,12 +88,22 @@ namespace Bloom.CollectionCreating
 			//
 			// _vernacularLanguagePage
 			//
-			this._vernacularLanguagePage.Controls.Add(this._vernacularLanguageIdControl);
+			this._vernacularLanguagePage.Controls.Add(this.languageChooserReactControl);
 			this._vernacularLanguagePage.Name = "_vernacularLanguagePage";
 			this._vernacularLanguagePage.NextPage = this._languageFontPage;
-			this._vernacularLanguagePage.Size = new System.Drawing.Size(712, 309);
+			this._vernacularLanguagePage.Size = new System.Drawing.Size(1000, 1000);
+			// TODO what should this size be?
 			this._vernacularLanguagePage.TabIndex = 1;
 			this._vernacularLanguagePage.Text = "Choose the main language for this collection.";
+			// 
+			// languageChooserReactControl
+			//
+			this.languageChooserReactControl.Dock = DockStyle.Fill;
+			this.languageChooserReactControl.JavascriptBundleName = "languageChooserBundle";
+			this.languageChooserReactControl.Name = "languageChooserReactControl";
+			this.languageChooserReactControl.Size = new System.Drawing.Size(1000, 1000);
+			// TODO what should this size be?
+			this.languageChooserReactControl.TabIndex = 0;
 			//
 			// _languageFontPage
 			//
@@ -165,13 +176,13 @@ namespace Bloom.CollectionCreating
 			//
 			// _vernacularLanguageIdControl
 			//
-			this._vernacularLanguageIdControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._vernacularLanguageIdControl.Location = new System.Drawing.Point(0, 3);
-			this._vernacularLanguageIdControl.Name = "_vernacularLanguageIdControl";
-			this._vernacularLanguageIdControl.Size = new System.Drawing.Size(656, 267);
-			this._vernacularLanguageIdControl.TabIndex = 0;
+			// this._vernacularLanguageIdControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            // | System.Windows.Forms.AnchorStyles.Left)
+            // | System.Windows.Forms.AnchorStyles.Right)));
+			// this._vernacularLanguageIdControl.Location = new System.Drawing.Point(0, 3);
+			// this._vernacularLanguageIdControl.Name = "_vernacularLanguageIdControl";
+			// this._vernacularLanguageIdControl.Size = new System.Drawing.Size(656, 267);
+			// this._vernacularLanguageIdControl.TabIndex = 0;
 			//
 			// _languageLocationControl
 			//
@@ -197,7 +208,8 @@ namespace Bloom.CollectionCreating
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-			this.ClientSize = new System.Drawing.Size(759, 464);
+			this.ClientSize = new System.Drawing.Size(900, 600);
+			// TODO how big can we make this without being to big for smallest screens?
 			this.ControlBox = true;
 			this.Controls.Add(this._wizardControl);
 			this.MaximizeBox = false;
@@ -221,7 +233,7 @@ namespace Bloom.CollectionCreating
 
         private Bloom.Wizard.WizardAdapterControl _wizardControl;
         private Bloom.Wizard.WizardAdapterPage _vernacularLanguagePage;
-		private LanguageIdControl _vernacularLanguageIdControl;
+		private web.ReactControl languageChooserReactControl;
         private Bloom.Wizard.WizardAdapterPage _collectionNamePage;
 		private CollectionNameControl _collectionNameControl;
         private Bloom.Wizard.WizardAdapterPage _finishPage;

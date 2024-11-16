@@ -6,6 +6,8 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
@@ -72,9 +74,36 @@ namespace Bloom.CollectionCreating
                 DefaultParentDirectoryForCollections
             );
 
-            _vernacularLanguagePage.Tag = _vernacularLanguageIdControl;
-            _vernacularLanguageIdControl.Init(SetNextButtonState, _collectionInfo);
+            CollectionSettingsApi.UnsubscribeAllLanguageChangeListeners();
+            EventHandler<LanguageChangeEventArgs> onLanguageChangeListener = null;
+            onLanguageChangeListener = delegate(object sender, LanguageChangeEventArgs args)
+            {
+                if (_collectionInfo == null)
+                    return;
 
+                // TODO
+                _collectionInfo.Language1.Tag = args.LanguageTag;
+                _collectionInfo.Language1.SetName(
+                    args.DesiredName,
+                    args.DesiredName != args.DefaultName
+                );
+                _collectionInfo.Country = string.Empty;
+                // TODO country
+                // _collectionInfo.Country = args.PrimaryCountry ?? string.Empty;
+
+                // //If there are multiple countries, just leave it blank so they can type something in
+                // if (_collectionInfo.Country.Contains(","))
+                // {
+                //     _collectionInfo.Country = "";
+                // }
+
+                SetNextButtonState(true, args.LanguageTag != null);
+                CollectionSettingsApi.LanguageChange -= onLanguageChangeListener;
+            };
+            CollectionSettingsApi.LanguageChange += onLanguageChangeListener;
+
+            // _vernacularLanguagePage.Tag = _vernacularLanguageIdControl;
+            // _vernacularLanguageIdControl.Init(SetNextButtonState, _collectionInfo);
             _welcomePage.Suppress = !showWelcome;
 
             //The L10NSharpExtender and this wizard don't get along (they conspire to crash Visual Studio with a stack overflow)
@@ -167,11 +196,11 @@ namespace Bloom.CollectionCreating
             }
         }
 
-        public void SetNextButtonState(UserControl caller, bool enabled)
+        public void SetNextButtonState(bool onLanguageChooserControl, bool enabled)
         {
             _wizardControl.SelectedPage.AllowNext = enabled;
 
-            if (caller is LanguageIdControl)
+            if (onLanguageChooserControl)
             {
                 var sanitizedCollectionName = GetNewCollectionName(_collectionInfo.Language1.Name);
                 _collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(

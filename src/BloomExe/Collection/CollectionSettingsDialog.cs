@@ -386,7 +386,7 @@ namespace Bloom.Collection
                 // dlg.IsDesiredLanguageNameFieldVisible = potentiallyCustomName != null;
                 // dlg.IsShowRegionalDialectsCheckBoxVisible = true;
                 // dlg.IsScriptAndVariantLinkVisible = showScriptAndVariantLink;
-                //                 // Following should be consistent with LanguageIdControl constructor.
+                //                 // Following should be consistent with New Collection Wizard behavior.
                 // dlg.UseSimplifiedChinese();
 
                 dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());

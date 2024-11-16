@@ -1181,6 +1181,7 @@ namespace Bloom.Collection
         /// </summary>
         public string GetDisplayNameForLanguage(string langTag, string metadataLanguageTag = null)
         {
+            // TODO?
             if (metadataLanguageTag == null)
                 metadataLanguageTag = this.Language2Tag;
 
@@ -1226,6 +1227,7 @@ namespace Bloom.Collection
             string metadataLanguageTag
         )
         {
+            // TODO?
             Guard.AgainstNull(metadataLanguageTag, "metadataLanguageTag is null.");
             var hyphenIndex = completeLangTag.IndexOf('-');
             var srvCodes =
