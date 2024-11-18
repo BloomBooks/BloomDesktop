@@ -1809,7 +1809,7 @@
         <note>The {0} is replaced by the filename of the picture.</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
-        <source xml:lang="en">Change Image</source>
+        <source xml:lang="en">Change image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChooseImage">
@@ -1817,7 +1817,7 @@
         <note>ID: EditTab.Image.ChooseImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true">
-        <source xml:lang="en">Copy Image</source>
+        <source xml:lang="en">Copy image</source>
         <note>ID: EditTab.Image.CopyImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true">
@@ -1840,21 +1840,21 @@
         <note>label of a button to click to display a website with more information</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
-        <source xml:lang="en">Cut Image</source>
+        <source xml:lang="en">Cut image</source>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
-        <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
+        <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true">
-        <source xml:lang="en">Set Image Information...</source>
+        <source xml:lang="en">Set image information...</source>
         <note>ID: EditTab.Image.EditMetadataOverlay</note>
         <note xml:lang="en">Invokes the same command as EditMetadata; used in overlay toolbox submenu</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true">
-        <source xml:lang="en">Image Credits, Copyright, &amp; License</source>
+        <source xml:lang="en">Image credits, copyright, &amp; license</source>
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
         <note xml:lang="en">Appears in smaller, lighter text right under EditMetadataOverlay</note>
       </trans-unit>
@@ -1868,7 +1868,7 @@
         <note>ID: EditTab.Image.MissingInfo</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
-        <source xml:lang="en">Paste Image</source>
+        <source xml:lang="en">Paste image</source>
         <note>ID: EditTab.Image.PasteImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.SetBackground" sil:dynamic="true" translate="no">
@@ -2124,11 +2124,11 @@
         <note>Or you could translate "position picture". The control is used when a picture has been made bigger than its framing overlay by cropping and causes the picture to move without changing the shape of the overlay so that a different part of it can be seen.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
-        <source xml:lang="en">Add Child Bubble</source>
+        <source xml:lang="en">Add child bubble</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.AddChildBubble</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AutoHeight" sil:dynamic="true">
-        <source xml:lang="en">Auto Height</source>
+        <source xml:lang="en">Auto height</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.AutoHeight</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor" sil:dynamic="true">
@@ -2142,11 +2142,11 @@
         <note>A background color that looks like old lace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true">
-        <source xml:lang="en">Choose Video from your Computer...</source>
+        <source xml:lang="en">Choose video from your computer...</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ChooseVideo</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true">
-        <source xml:lang="en">Copy Text</source>
+        <source xml:lang="en">Copy text</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
@@ -2155,7 +2155,7 @@
         <note>Tooltip for the bubble Duplicate icon</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
-        <source xml:lang="en">Format Text...</source>
+        <source xml:lang="en">Format text...</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
@@ -2173,7 +2173,7 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true">
-        <source xml:lang="en">Paste Text</source>
+        <source xml:lang="en">Paste text</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayEarlier" sil:dynamic="true">
