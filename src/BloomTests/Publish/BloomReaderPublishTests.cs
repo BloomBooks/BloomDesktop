@@ -1572,14 +1572,11 @@ namespace BloomTests.Publish
                 FontsWeCantInstall = new HashSet<string>();
             }
 
-            public Dictionary<string, string[]> FilesForFont = new Dictionary<string, string[]>();
+            public Dictionary<string, string> FilesForFont = new Dictionary<string, string>();
 
-            public IEnumerable<string> GetFilesForFont(string fontName)
+            public string GetFileForFont(string fontName, string fontStyle, string fontWeight)
             {
-                string[] result;
-                FilesForFont.TryGetValue(fontName, out result);
-                if (result == null)
-                    result = new string[0];
+                FilesForFont.TryGetValue(fontName, out string result);
                 return result;
             }
 
@@ -1650,11 +1647,11 @@ namespace BloomTests.Publish
                 FontsApi.AvailableFontMetadataDictionary.Add("Calibre", calibreMeta);
 
                 fontFileFinder.FontGroups["Times New Roman"] = tnrGroup;
-                fontFileFinder.FilesForFont["Times New Roman"] = new[] { tnrPath };
+                fontFileFinder.FilesForFont["Times New Roman"] = tnrPath;
                 fontFileFinder.FontGroups["Wen Yei"] = wenYeiGroup;
-                fontFileFinder.FilesForFont["Wen Yei"] = new[] { wenYeiPath };
+                fontFileFinder.FilesForFont["Wen Yei"] = wenYeiPath;
                 fontFileFinder.FontGroups["Calibre"] = calibreGroup;
-                fontFileFinder.FilesForFont["Calibre"] = new[] { calibrePath };
+                fontFileFinder.FilesForFont["Calibre"] = calibrePath;
                 fontFileFinder.FontsWeCantInstall.Add("NotAllowed");
                 // And "NotFound" just doesn't get a mention anywhere.
                 PublishHelper.ClearFontMetadataMapForTests();
@@ -1670,12 +1667,47 @@ namespace BloomTests.Publish
                     ".someStyle {font-family:'Calibre';} .otherStyle {font-family: 'NotFound';} .yetAnother {font-family:'NotAllowed';}"
                 );
 
-                HashSet<string> fontsWanted = new HashSet<string>();
-                fontsWanted.Add("Times New Roman");
-                fontsWanted.Add("Wen Yei");
-                fontsWanted.Add("Calibre");
-                fontsWanted.Add("NotAllowed");
-                fontsWanted.Add("NotFound"); // probably wouldn't happen with new approach for fonts, but leave in the test
+                HashSet<PublishHelper.FontInfo> fontsWanted = new HashSet<PublishHelper.FontInfo>();
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "Times New Roman",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "Wen Yei",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "Calibre",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "NotAllowed",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "NotFound",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                ); // probably wouldn't happen with new approach for fonts, but leave in the test
 
                 BloomPubMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
 

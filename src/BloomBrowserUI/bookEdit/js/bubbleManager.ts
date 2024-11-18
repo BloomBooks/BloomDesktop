@@ -2455,13 +2455,13 @@ export class BubbleManager {
             capture: true
         });
 
+        // I would prefer to add this to document in onMouseDown, but not yet satisfied that all
+        // the things it does while hovering are no longer needed.
         container.addEventListener("mousemove", this.onMouseMove, {
             capture: true
         });
 
-        container.addEventListener("mouseup", this.onMouseUp, {
-            capture: true
-        });
+        // mouse up handler is added to document in onMouseDown
 
         container.onkeypress = (event: Event) => {
             // If the user is typing in a bubble, make sure automatic shrinking is off.
@@ -2704,6 +2704,7 @@ export class BubbleManager {
     private mouseIsDown = false;
     private clientXAtMouseDown: number;
     private clientYAtMouseDown: number;
+    private mouseDownContainer: HTMLElement;
 
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
@@ -2718,6 +2719,18 @@ export class BubbleManager {
         this.mouseIsDown = true;
         this.clientXAtMouseDown = event.clientX;
         this.clientYAtMouseDown = event.clientY;
+        this.mouseDownContainer = container;
+        // Adding this to document rather than the container makes it much less likely that we'll miss
+        // the mouse up. Also, we only add it at all if the mouse down happened on an appropriate target.
+        // Mouse up also wants to be limited to appropriate targets, but when dragging (especially
+        // a jquery resize of a motion rectangle) it's easy for the mouse up to be outside the
+        // thing originally clicked on. Addding it here means that the test for whether it's a click
+        // this set of functions should handle is not needed in onMouseUp; only if we decide here that it's
+        // ours to handle will the mouse up handler even be added.
+        // (I'd like to do the same with mouse move but we still have some hover effects.)
+        document.addEventListener("mouseup", this.onMouseUp, {
+            capture: true
+        });
 
         // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
         const coordinates = this.getPointRelativeToCanvas(event, container);
@@ -3106,8 +3119,10 @@ export class BubbleManager {
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseUp = (event: MouseEvent) => {
-        const container = event.currentTarget as HTMLElement;
-        if (BubbleManager.inPlayMode(container)) {
+        document.removeEventListener("mouseup", this.onMouseUp, {
+            capture: true
+        });
+        if (BubbleManager.inPlayMode(this.mouseDownContainer)) {
             return;
         }
         this.stopMoving();
@@ -3128,8 +3143,8 @@ export class BubbleManager {
         }
 
         this.bubbleToDrag = undefined;
-        container.classList.remove("grabbing");
-        this.turnOffResizing(container);
+        this.mouseDownContainer.classList.remove("grabbing");
+        this.turnOffResizing(this.mouseDownContainer);
         const editable = (event.target as HTMLElement)?.closest(
             ".bloom-editable"
         );
@@ -3164,7 +3179,7 @@ export class BubbleManager {
             // NOT suppress the mouseUp event. We need to actually move the IP to the
             // appropriate spot and give the bubble focus.
             this.moveInsertionPointAndFocusTo(event.clientX, event.clientY);
-        } else if (!this.isMouseEventAlreadyHandled(event)) {
+        } else {
             // prevent the click giving it focus (or any other default behavior). This mouse up
             // is part of dragging a bubble or resizing it or some similar special behavior that
             // we are handling.
@@ -3230,6 +3245,11 @@ export class BubbleManager {
             // The drag handle is outside the bubble, so dragging it with the mouse
             // events we handle doesn't work. Returning true lets its own event handler
             // deal with things, and is a good thing even when ctrl or alt is down.
+            return true;
+        }
+        if (targetElement.closest(".bloom-dragHandleAnimation")) {
+            // These are used by the motion tool drag handles. Don't want bubble code
+            // interfering.
             return true;
         }
         if (targetElement.classList.contains("ui-resizable-handle")) {

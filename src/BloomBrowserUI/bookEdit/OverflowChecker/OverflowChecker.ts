@@ -7,6 +7,7 @@ import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
 import { BubbleManager, theOneBubbleManager } from "../js/bubbleManager";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
+import { addScrollbarsToPage, cleanupNiceScroll } from "../js/niceScrollBars";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -163,11 +164,6 @@ export default class OverflowChecker {
             0
         );
 
-        // Add a class so that the scroll height can be calculated without the language label affecting the height/width.
-        // (Currently, only done so for text-over-picture elements because the language label is OUTSIDE the box,
-        // but in a normal text box it is inside the box.)
-        element.classList.add("hideTOPLanguageLabel");
-
         const overflowY =
             this.contentHeight(element) -
             fontFudgeFactor -
@@ -186,8 +182,6 @@ export default class OverflowChecker {
         // );
         const overflowX = element.scrollWidth - element.clientWidth;
 
-        element.classList.remove("hideTOPLanguageLabel");
-
         return [overflowX, overflowY];
     }
 
@@ -201,6 +195,13 @@ export default class OverflowChecker {
         const elementClone = element.cloneNode(true) as HTMLElement;
         elementClone.style.visibility = "hidden";
         elementClone.style.position = "absolute"; // prevent any inadvertent layout effects
+        // position:absolute is not enough for accurate layout, we also need to make sure the width
+        // of the cloned element is the same as the original.  This is because position:absolute
+        // makes the clone's containing box include the area used by the parent's padding: see
+        // https://stackoverflow.com/questions/17115344/absolute-positioning-ignoring-padding-of-parent.
+        // Height is not as critical because either the scrollHeight is accurate (which we detect),
+        // or we calculate the height ourselves below.  See BL-14053.
+        elementClone.style.width = element.clientWidth + "px";
         element.parentElement!.appendChild(elementClone);
 
         let result = 0;
@@ -221,8 +222,9 @@ export default class OverflowChecker {
             // The element itself must not shrink, lest its scrollHeight or clientHeight be inaccurate.
             elementClone.style.flexGrow = "0";
             elementClone.style.flexShrink = "0";
-            // This is a reliable way to get the information if it is greater than the clientHeight,
-            // and means we don't have to worry about scroll position.
+            // scrollHeight is a reliable way to get the information if it is greater than the clientHeight,
+            // and means we don't have to worry about scroll position.  (scrollHeight is never less than
+            // clientHeight.  See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight.)
             result = elementClone.scrollHeight;
             if (elementClone.scrollHeight <= elementClone.clientHeight) {
                 // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
@@ -367,6 +369,12 @@ export default class OverflowChecker {
         }
         if (overflowY > 0 || overflowX > 0) {
             $box.addClass("overflow");
+            const page = $box.closest(".bloom-page");
+            if (overflowY > 0 && page.length) {
+                cleanupNiceScroll();
+                addScrollbarsToPage(page[0]);
+            }
+
             if ($box.parents("[class*=Device]").length === 0) {
                 // don't show an overflow warning if we have scrolling available
                 theOneLocalizationManager
@@ -392,6 +400,10 @@ export default class OverflowChecker {
             }
         } else {
             $box.removeClass("overflow");
+            const page = $box.closest(".bloom-page");
+            if (page.length) {
+                cleanupNiceScroll();
+            }
         }
 
         const container = $box.closest(".marginBox");

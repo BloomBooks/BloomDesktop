@@ -137,14 +137,16 @@ namespace Bloom.Publish
             @"(() =>
 {
 	const elementsInfo = [];
-	const elementsWithId = document.querySelectorAll(""[id]"");
+	const elementsWithId = document.querySelectorAll(""[id], em, strong"");
 	elementsWithId.forEach(elt => {
 		const style = getComputedStyle(elt, null);
 		if (style) {
 			elementsInfo.push({
 				id: elt.id,
 				display: style.display,
-				fontFamily: style.getPropertyValue(""font-family"")
+				fontFamily: style.getPropertyValue(""font-family""),
+				fontStyle: style.getPropertyValue(""font-style""),
+				fontWeight: style.getPropertyValue(""font-weight"")
 			});
 		}
 	});
@@ -172,10 +174,63 @@ namespace Bloom.Publish
             public string id;
             public string display;
             public string fontFamily;
+            public string fontStyle;
+            public string fontWeight;
+        }
+
+        public class FontInfo
+        {
+            public string fontName;
+            public string fontStyle;
+            public string fontWeight;
+
+            public override string ToString()
+            {
+                if (string.IsNullOrEmpty(fontStyle) && string.IsNullOrEmpty(fontWeight))
+                    return string.IsNullOrEmpty(fontName) ? "<uninitialized FontInfo>" : fontName;
+                if (fontStyle == "normal" && fontWeight == "400")
+                    return string.IsNullOrEmpty(fontName) ? "<uninitialized FontInfo>" : fontName;
+                if (fontStyle == "normal" && fontWeight == "700")
+                    return $"{fontName} Bold";
+                if (fontStyle == "italic" && fontWeight == "400")
+                    return $"{fontName} Italic";
+                if (fontStyle == "italic" && fontWeight == "700")
+                    return $"{fontName} Bold Italic";
+                return $"{fontName} weight=\"{fontWeight}\" style=\"{fontStyle}\"";
+            }
+
+            public override bool Equals(object obj)
+            {
+                var that = obj as FontInfo;
+                if (that == null)
+                    return false;
+                return this.fontName == that.fontName
+                    && this.fontStyle == that.fontStyle
+                    && this.fontWeight == that.fontWeight;
+            }
+
+            public override int GetHashCode()
+            {
+                return fontName.GetHashCode() ^ fontStyle.GetHashCode() ^ fontWeight.GetHashCode();
+            }
+
+            public static bool operator ==(FontInfo info1, FontInfo info2)
+            {
+                if (ReferenceEquals(info1, info2))
+                    return true;
+                if (ReferenceEquals(info1, null) || ReferenceEquals(info2, null))
+                    return false;
+                return info1.Equals(info2);
+            }
+
+            public static bool operator !=(FontInfo info1, FontInfo info2)
+            {
+                return !(info1 == info2);
+            }
         }
 
         Dictionary<string, string> _mapIdToDisplay = new Dictionary<string, string>();
-        Dictionary<string, string> _mapIdToFontFamily = new Dictionary<string, string>();
+        Dictionary<string, FontInfo> _mapIdToFontInfo = new Dictionary<string, FontInfo>();
 
         private void RemoveUnwantedContentInternal(
             HtmlDom dom,
@@ -366,8 +421,31 @@ namespace Bloom.Publish
             {
                 foreach (var info in rawInfo.results)
                 {
+                    if (string.IsNullOrEmpty(info.id))
+                    {
+                        // Presumably in a <strong> or <em> tag.
+                        if (info.display != "none")
+                        {
+                            var font = ExtractFontNameFromFontFamily(info.fontFamily);
+                            FontsUsed.Add(
+                                new FontInfo
+                                {
+                                    fontName = font,
+                                    fontStyle = info.fontStyle,
+                                    fontWeight = info.fontWeight
+                                }
+                            );
+                        }
+                        continue;
+                    }
                     _mapIdToDisplay[info.id] = info.display;
-                    _mapIdToFontFamily[info.id] = info.fontFamily;
+                    var fontInfo = new FontInfo
+                    {
+                        fontName = info.fontFamily,
+                        fontStyle = info.fontStyle,
+                        fontWeight = info.fontWeight
+                    };
+                    _mapIdToFontInfo[info.id] = fontInfo;
                 }
             }
             var toBeDeleted = new List<SafeXmlElement>();
@@ -509,12 +587,23 @@ namespace Bloom.Publish
             return display != "none";
         }
 
-        // store a set of font names encountered in displaying the book
-        public HashSet<string> FontsUsed = new HashSet<string>();
+        // store a set of font names, styles, and weights encountered in displaying the book
+        public HashSet<FontInfo> FontsUsed = new HashSet<FontInfo>();
 
         // map font names onto a set of language tags
         public Dictionary<string, HashSet<string>> FontsAndLangsUsed =
             new Dictionary<string, HashSet<string>>();
+
+        private string ExtractFontNameFromFontFamily(string fontFamily)
+        {
+            // we actually can get a comma-separated list with fallback font options: split into an array so we can
+            // use just the first one.  We don't need to worry about the fallback fonts, just the primary one.  It
+            // would be very unusual for the user not to have the primary font installed, but to have a fallback font
+            // installed instead that is always used.
+            var fonts = fontFamily.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            // Fonts whose names contain spaces are quoted: remove the quotes.
+            return fonts[0].Replace("\"", "");
+        }
 
         /// <summary>
         /// Stores the font used.  Note that unwanted elements should have been removed already.
@@ -526,14 +615,20 @@ namespace Bloom.Publish
         private void StoreFontUsed(SafeXmlElement elt)
         {
             var id = elt.GetAttribute("id");
-            if (!_mapIdToFontFamily.TryGetValue(id, out var fontFamily))
+            if (!_mapIdToFontInfo.TryGetValue(id, out var fontInfo))
                 return; // Shouldn't happen, but ignore if it does.
-            // we actually can get a comma-separated list with fallback font options: split into an array so we can use just the first one
-            var fonts = fontFamily.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            // Fonts whose names contain spaces are quoted: remove the quotes.
-            var font = fonts[0].Replace("\"", "");
-            //Console.WriteLine("DEBUG PublishHelper.StoreFontUsed(): font=\"{0}\", fontFamily=\"{1}\"", font, fontFamily);
-            FontsUsed.Add(font);
+            var font = ExtractFontNameFromFontFamily(fontInfo.fontName);
+            //Debug.WriteLine(
+            //    $"DEBUG PublishHelper.StoreFontUsed(): font=\"{font}\", fontStyle={fontInfo.fontStyle}, fontWeight={fontInfo.fontWeight}"
+            //);
+            FontsUsed.Add(
+                new FontInfo
+                {
+                    fontName = font,
+                    fontStyle = fontInfo.fontStyle,
+                    fontWeight = fontInfo.fontWeight
+                }
+            );
             // We need more information for font analytics.  This still suffers from the limitation on multiple languages being
             // uploaded or embedded in a BloomPub that are not actively displayed.  Nothing will be recorded for such languages.
             // But this is the best we can do without a lot of additional work.  (See BL-11512.)
@@ -779,13 +874,13 @@ namespace Bloom.Publish
         /// </summary>
         /// <remarks>
         /// fontFileFinder must be either a new instance or a stub for testing.
-        /// Setting fontFileFinder.NoteFontsWeCantInstall ensures that fontFileFinder.GetFilesForFont(font)
+        /// Setting fontFileFinder.NoteFontsWeCantInstall ensures that fontFileFinder. GetFilesForFont(font)
         /// will not return any files for fonts that we know cannot be embedded without reference to the
         /// license details.
         /// </remarks>
         public static void CheckFontsForEmbedding(
             IWebSocketProgress progress,
-            HashSet<string> fontsWanted,
+            HashSet<FontInfo> fontsWanted,
             IFontFinder fontFileFinder,
             out List<string> filesToEmbed,
             out HashSet<string> badFonts
@@ -802,15 +897,20 @@ namespace Bloom.Publish
                 foreach (var meta in FontsApi.AvailableFontMetadata)
                     _fontMetadataMap.Add(meta.name, meta);
             }
-            foreach (var font in fontsWanted)
+            var filesAlreadyAdded = new HashSet<string>();
+            foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
-                var fontFiles = fontFileFinder.GetFilesForFont(font);
-                var filesFound = fontFiles.Any(); // unembeddable fonts determined don't have any files recorded
+                var fontFile = fontFileFinder.GetFileForFont(
+                    font.fontName,
+                    font.fontStyle,
+                    font.fontWeight
+                );
+                var filesFound = fontFile != null; // unembeddable fonts determined don't have any files recorded
                 var badLicense = false;
                 var missingLicense = false;
                 var badFileType = false;
                 var fileExtension = "";
-                if (_fontMetadataMap.TryGetValue(font, out var meta))
+                if (_fontMetadataMap.TryGetValue(font.fontName, out var meta))
                 {
                     fileExtension = meta.fileExtension;
                     switch (meta.determinedSuitability)
@@ -839,13 +939,22 @@ namespace Bloom.Publish
                     // This is usually covered by the case kInvalid above, but needed if no metadata at all.
                     if (filesFound)
                     {
-                        fileExtension = Path.GetExtension(fontFiles.First()).ToLowerInvariant();
+                        fileExtension = Path.GetExtension(fontFile).ToLowerInvariant();
                         badFileType = !FontMetadata.fontFileTypesBloomKnows.Contains(fileExtension);
                     }
                 }
                 if (filesFound && !badFileType && !badLicense)
                 {
-                    filesToEmbed.AddRange(fontFiles);
+                    var fileToEmbed = fontFile;
+                    if (!filesAlreadyAdded.Contains(fileToEmbed))
+                    {
+                        filesToEmbed.Add(fileToEmbed);
+                        filesAlreadyAdded.Add(fileToEmbed);
+                    }
+                    else
+                    {
+                        continue;
+                    }
                     if (missingLicense)
                         progress.MessageWithParams(
                             "PublishTab.Android.File.Progress.UnknownLicense",
@@ -863,7 +972,7 @@ namespace Bloom.Publish
                             font
                         );
                     // Assumes only one font file per font; if we embed multiple font files, will need to enhance this.
-                    var size = new FileInfo(fontFiles.First()).Length;
+                    var size = new FileInfo(fontFile).Length;
                     var sizeToReport = (size / 1000000.0).ToString("F2"); // purposely locale-specific; might be e.g. 1,2
                     progress.MessageWithParams(
                         "PublishTab.Android.File.Progress.Embedding",
@@ -877,7 +986,7 @@ namespace Bloom.Publish
                 }
                 // If the missing font is Andika New Basic, don't complain because Andika subsumes Andika New Basic,
                 // and will be automatically substituted for it.
-                var dontComplain = font == "Andika New Basic";
+                var dontComplain = font.fontName == "Andika New Basic";
                 if (badFileType)
                 {
                     progress.MessageWithParams(
@@ -889,11 +998,12 @@ namespace Bloom.Publish
                         fileExtension
                     );
                     progress.Message(
-                            "PublishTab.FontProblem.CheckInBookSettingsDialog",
-                            "Check the Fonts section of the Book Settings dialog to locate this font.",
-                            ProgressKind.Error);
+                        "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                        "Check the Fonts section of the Book Settings dialog to locate this font.",
+                        ProgressKind.Error
+                    );
                 }
-                else if (fontFileFinder.FontsWeCantInstall.Contains(font) || badLicense)
+                else if (fontFileFinder.FontsWeCantInstall.Contains(font.fontName) || badLicense)
                 {
                     progress.MessageWithParams(
                         "PublishTab.Android.File.Progress.LicenseForbids",
@@ -903,9 +1013,10 @@ namespace Bloom.Publish
                         font
                     );
                     progress.Message(
-                            "PublishTab.FontProblem.CheckInBookSettingsDialog",
-                            "Check the Fonts section of the Book Settings dialog to locate this font.",
-                            ProgressKind.Error);
+                        "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                        "Check the Fonts section of the Book Settings dialog to locate this font.",
+                        ProgressKind.Error
+                    );
                 }
                 else if (!dontComplain)
                 {
@@ -917,9 +1028,10 @@ namespace Bloom.Publish
                         font
                     );
                     progress.Message(
-                            "PublishTab.FontProblem.CheckInBookSettingsDialog",
-                            "Check the Fonts section of the Book Settings dialog to locate this font.",
-                            ProgressKind.Error);
+                        "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                        "Check the Fonts section of the Book Settings dialog to locate this font.",
+                        ProgressKind.Error
+                    );
                 }
                 if (!dontComplain)
                     progress.MessageWithParams(
@@ -930,7 +1042,7 @@ namespace Bloom.Publish
                         defaultFont,
                         font
                     );
-                badFonts.Add(font); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
+                badFonts.Add(font.fontName); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
             }
         }
 

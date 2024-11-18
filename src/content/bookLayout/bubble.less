@@ -144,17 +144,6 @@
                     }
                 }
             }
-            // Allows the language tip to be suppressed by adding a class
-            // (currently, during overflow testing). Don't normally like !important,
-            // but the rules this has to override are complex and trying to make this
-            // rule always more specific means breaking it up and putting it in multiple
-            // places (and is bug prone, if we change the other visibility rules).
-            // We absolutely want these hidden during overflow calculations!
-            .bloom-editable.hideTOPLanguageLabel {
-                &:after {
-                    display: none !important;
-                }
-            }
         }
     }
 }
