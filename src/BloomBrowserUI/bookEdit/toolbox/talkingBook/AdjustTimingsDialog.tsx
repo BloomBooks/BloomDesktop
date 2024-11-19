@@ -44,6 +44,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     const [segments, setSegments] = useState<
         { start: number; end: number; text: string }[]
     >();
+    const [segmentsCreated, setSegmentsCreated] = useState<boolean>(false);
     const [endTimes, setEndTimes] = useState<number[]>([]);
     const [url, setUrl] = useState<string>();
     const [fontFamily, setFont] = useState<string>("Andika");
@@ -85,8 +86,20 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         let segmentElements = Array.from(
             bloomEditable.getElementsByClassName("bloom-highlightSegment")
         ) as HTMLSpanElement[];
-        if (!segmentElements || segmentElements.length === 0) {
+        if (
+            // No segments typically occurs with new texts that have never been split into segments
+            !segmentElements ||
+            segmentElements.length === 0 ||
+            // No endTimes can occur if the segments were created by putting the documet into sentence mode,
+            // or by splitting a previous recording that has now been discarded.
+            !endTimes ||
+            endTimes.length === 0
+        ) {
+            // In any of these case, we want to make sure the splits are up to date and generate
+            // a first-attempt at endTimes based on the length of the text.
+            // The AdjustTimingsControl will improve on this after loading the audio.
             getAudioRecorder()?.autoSegmentBasedOnTextLength();
+            setSegmentsCreated(true);
             segmentElements = Array.from(
                 bloomEditable.getElementsByClassName("bloom-highlightSegment")
             ) as HTMLSpanElement[];
@@ -147,6 +160,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                     url={url!}
                     setEndTimes={endTimes => setEndTimes(endTimes)}
                     fontFamily={fontFamily}
+                    shouldAdjustSegments={segmentsCreated}
                 />
                 {/* <div id={"json"}>
                     {JSON.stringify(segments, null, 2)}

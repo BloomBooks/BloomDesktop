@@ -24,6 +24,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
     segments: Array<{ start: number; end: number; text: string }>;
     setEndTimes: (endTimes: number[]) => void;
     fontFamily: string;
+    shouldAdjustSegments: boolean;
 }> = props => {
     type playSpan = { start: number; end: number; regionIndex: number };
     type playQueue = Array<playSpan>;
@@ -39,6 +40,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
         waveSurferRef.current!.pause();
     }
 
+    const playChar = "▷";
     function getShadowRoot() {
         const waveform = document.getElementById("waveform");
         if (!waveform) return undefined;
@@ -52,7 +54,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
     function playEnded() {
         const playButtons = getPlayButtons();
         playButtons.forEach(
-            (button: HTMLButtonElement) => (button.textContent = "►")
+            (button: HTMLButtonElement) => (button.textContent = playChar)
         );
     }
 
@@ -118,21 +120,22 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 if (regions.length === props.segments.length) {
                     regions.forEach((region: HTMLElement, index: number) => {
                         const playButton = document.createElement("button");
-                        playButton.textContent = "►";
+                        playButton.textContent = playChar;
                         playButton.style.position = "absolute";
                         // In the middle it tends to get lost inthe waveform and also obscure it.
                         // Also if the first segment is long it might be off the screen.
                         //playButton.style.top = "calc(50% - 15px)";
                         //playButton.style.left = "calc(50% - 15px)";
                         // At the top it would interfere with the text.
-                        playButton.style.bottom = "10px";
-                        playButton.style.left = "10px";
+                        playButton.style.bottom = "0";
+                        playButton.style.left = "0";
                         playButton.style.height = "30px";
                         playButton.style.width = "30px";
                         playButton.style.borderRadius = "50%";
-                        playButton.style.backgroundColor = kBloomPurple;
+                        playButton.style.backgroundColor = "transparent";
                         playButton.style.border = "none";
-                        playButton.style.color = "white";
+                        playButton.style.color = "#d65649"; // same red as the dotted line
+                        playButton.style.fontSize = "20px";
                         playButton.classList.add("playButton");
                         playButton.addEventListener("click", e => {
                             if (playQueueRef.current!.length > 0) {
@@ -140,7 +143,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                                 if (playButton.textContent === "❚❚") {
                                     // clicked in the pause state: all we need to do is clear the queue
                                     // and reset the button to play
-                                    playButton.textContent = "►";
+                                    playButton.textContent = playChar;
                                     e.stopPropagation();
                                 }
                             }
@@ -165,18 +168,89 @@ export const AdjustTimingsControl: React.FunctionComponent<{
             // only sometimes happens, probably because of our audioprocessor handler.
             // Even on the last segment it only sometimes happens, but there are cases.
             getPlayButtons().forEach(
-                (button: HTMLButtonElement) => (button.textContent = "►")
+                (button: HTMLButtonElement) => (button.textContent = playChar)
             );
         });
         ws.on("decode", () => {
+            let segments: Array<{ start: number; end: number; text: string }> =
+                props.segments;
+            if (props.shouldAdjustSegments) {
+                // We're going to fine-tune the segment breaks that we made based on text length.
+                // The idea is to look 30% of the length of the adjacent segments eother side
+                // of the split, and break that into 15 pieces. We'll look for the quietest spot
+                // in that range and move the split to the middle of that quiet spot.
+                // The 30% and 15 pieces are my first guess. They seem to work pretty well but
+                // we might want to fine-tune them.
+                // We might also want to weight things so that similarly quiet spots are preferred
+                // if closer to the original guess. Or we might want to stretch the quiet spot
+                // as far as we can either way without it getting much louder, and take the middle
+                // of that. We might also bias it somehow towards large quiet spots.
+                // Then again, this might be good enough.
+                const data = ws.decodedData?.getChannelData(0);
+                segments = props.segments.map(s => ({
+                    start: s.start,
+                    end: s.end,
+                    text: s.text
+                }));
+                const slopPercent = 0.3;
+                for (let i = 0; i < segments.length - 1; i++) {
+                    const seg = segments[i];
+                    const mid = (data.length * seg.end) / ws.getDuration();
+                    const slop =
+                        ((seg.end - seg.start) / ws.getDuration()) *
+                        slopPercent *
+                        data.length;
+                    const start = mid - slop;
+                    const nextSeg = segments[i + 1];
+                    const nextSlop =
+                        ((nextSeg.end - nextSeg.start) / ws.getDuration()) *
+                        slopPercent *
+                        data.length;
+                    const end = mid + nextSlop;
+                    const breakSpotCount = 15;
+                    const numberOfBreaks = Math.min(
+                        breakSpotCount,
+                        end - start
+                    ); // paranoia, should always be breakSpotCount
+                    const breakSpots: number[] = [];
+                    const breakSpotLength = (end - start) / numberOfBreaks;
+                    for (let j = 0; j < numberOfBreaks; j++) {
+                        let max = 0;
+                        const startBreakSpot = Math.floor(
+                            start + j * breakSpotLength
+                        );
+                        const endBreakSpot = Math.floor(
+                            start + (j + 1) * breakSpotLength
+                        );
+                        for (let k = startBreakSpot; k < endBreakSpot; k++) {
+                            max = Math.max(max, Math.abs(data[k]));
+                        }
+                        breakSpots.push(max);
+                    }
+                    const minBreakSpot = Math.min(...breakSpots);
+                    const breakSpot = breakSpots.indexOf(minBreakSpot);
+                    const newEnd =
+                        (Math.floor(
+                            start + (breakSpot + 0.5) * breakSpotLength
+                        ) *
+                            ws.getDuration()) /
+                        data.length;
+                    segments[i].end = newEnd;
+                    segments[i + 1].start = newEnd;
+                }
+                // If the user clicks OK, this is what we want to save.
+                const endTimes = segments.map(seg => seg.end);
+                props.setEndTimes(endTimes);
+            }
+
             rp.clearRegions();
-            props.segments.forEach((segment, index: number) => {
+            segments.forEach((segment, index: number) => {
                 const region = rp.addRegion({
                     content: segment.text,
                     start: segment.start,
-                    end: props.segments[index + 1]?.start || 99999,
+                    end: segments[index + 1]?.start || 99999,
                     drag: false,
-                    resize: index < props.segments.length - 1, // don't let the end of the last region be resized
+                    resize: index < segments.length - 1, // don't let the end of the last region be resized
                     //color: regionColors[index % regionColors.length]
                     color: "000000" // transparent
                 });
@@ -187,7 +261,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                         stopAndClearQueue();
                         playButtons.forEach(
                             (button: HTMLButtonElement) =>
-                                (button.textContent = "►")
+                                (button.textContent = playChar)
                         );
                     } else {
                         // there seems to be a case where a different segment is playing and needs its pause button reset
