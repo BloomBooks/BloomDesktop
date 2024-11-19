@@ -4124,9 +4124,14 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
-    public autoSegmentBasedOnTextLength(): void {
+    // Break up the current text box into sentences marked with kSegmentClass.
+    // This is the markup used when  recording in text box mode, but a recording has been
+    // split somehow. However, we don't add the markup that causes it to be displayed
+    // that way, because we don't yet have confirmed splits. Instead, we return a list
+    // of proposed end times (which AdjustTimingsControl typically refines)
+    public autoSegmentBasedOnTextLength(): number[] {
         const currentTextBox = this.getCurrentTextBox();
-        if (!currentTextBox) return;
+        if (!currentTextBox) return [];
         const segments = this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
         // Generate crude estimate of audio lengths based on text lengths and total time,
         // which should be known if we have an audio recording to adjust at all.
@@ -4140,7 +4145,7 @@ export default class AudioRecording implements IAudioRecorder {
                 // should actually make empty segments...belt and braces here.)
                 textLength += (segment.fragmentText ?? "1").length;
             }
-            const endTimes: Number[] = [];
+            const endTimes: number[] = [];
             let start = 0;
             for (const segment of segments) {
                 const end =
@@ -4151,10 +4156,11 @@ export default class AudioRecording implements IAudioRecorder {
                 start = end;
             }
 
-            currentTextBox.setAttribute(
-                kEndTimeAttributeName,
-                endTimes.map(x => x.toString()).join(" ")
-            );
+            // Don't do this until the user confirms the splits.
+            // currentTextBox.setAttribute(
+            //     kEndTimeAttributeName,
+            //     endTimes.map(x => x.toString()).join(" ")
+            // );
 
             // Temporarily switch to sentence, to get sentence elements created, using IDs generated
             // in extractFragmentsAndSetSpanIdsForAudioSegmentation
@@ -4165,7 +4171,12 @@ export default class AudioRecording implements IAudioRecorder {
             );
             // And now back to text box mode, but we'll keep the sentences as auto-segmented fragments
             this.updatePlaybackModeToTextBox();
-            this.markAudioSplit();
+            // don't do this so it doesn't yet LOOK split.
+            //this.markAudioSplit();
+            return endTimes;
+        } else {
+            // should never happen
+            return [];
         }
     }
 
@@ -4251,7 +4262,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
-    private markAudioSplit() {
+    public markAudioSplit() {
         const currentTextBox = this.getCurrentTextBox();
         if (currentTextBox) {
             currentTextBox.classList.add("bloom-postAudioSplit");

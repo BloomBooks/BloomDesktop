@@ -4,4 +4,5 @@
 
 export interface IAudioRecorder {
     autoSegmentBasedOnTextLength: () => void;
+    markAudioSplit: () => void;
 }

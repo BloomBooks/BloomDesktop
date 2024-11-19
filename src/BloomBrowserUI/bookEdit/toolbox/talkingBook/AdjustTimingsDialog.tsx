@@ -56,7 +56,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     const dialogTitle = useL10n(
         "Adjust Timings",
         "EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title"
-    ); // TODO
+    );
 
     // Tell edit tab to disable everything when the dialog is up.
     // (Without this, the page list is not disabled since the modal
@@ -98,15 +98,13 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             // In any of these case, we want to make sure the splits are up to date and generate
             // a first-attempt at endTimes based on the length of the text.
             // The AdjustTimingsControl will improve on this after loading the audio.
-            getAudioRecorder()?.autoSegmentBasedOnTextLength();
+            endTimes = getAudioRecorder()?.autoSegmentBasedOnTextLength() ?? [];
             setSegmentsCreated(true);
             segmentElements = Array.from(
                 bloomEditable.getElementsByClassName("bloom-highlightSegment")
             ) as HTMLSpanElement[];
-            endTimes = bloomEditable
-                .getAttribute("data-audiorecordingendtimes")
-                ?.split(" ")
-                .map(parseFloat);
+            // if the user OKs without changing anything, these are the times to save.
+            setEndTimes(endTimes);
         }
 
         // Review: do we need to better handle pathological cases like not having a duration, not having any segments,
@@ -176,6 +174,8 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                             "data-audiorecordingendtimes",
                             endTimes.join(" ")
                         );
+                        // We have confirmed split times, display it as split.
+                        getAudioRecorder()?.markAudioSplit();
 
                         closeDialog();
                     }}
