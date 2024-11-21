@@ -99,7 +99,7 @@ namespace Bloom.CollectionCreating
 			// languageChooserReactControl
 			//
 			this.languageChooserReactControl.Dock = DockStyle.Fill;
-			this.languageChooserReactControl.JavascriptBundleName = "languageChooserBundle";
+			this.languageChooserReactControl.JavascriptBundleName = "newCollectionLanguageChooserBundle";
 			this.languageChooserReactControl.Name = "languageChooserReactControl";
 			this.languageChooserReactControl.Size = new System.Drawing.Size(1000, 1000);
 			// TODO what should this size be?
