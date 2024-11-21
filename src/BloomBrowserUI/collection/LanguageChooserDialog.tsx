@@ -78,7 +78,7 @@ export const LanguageChooserDialog: React.FunctionComponent<{
                 initialSearchString={props.initialLanguageTag?.split("-")[0]}
                 initialSelectionLanguageTag={props.initialLanguageTag}
                 initialCustomDisplayName={props.initialCustomName}
-                onClose={handleClose}
+                // onClose={handleClose}
             />
         </BloomDialog>
     );
