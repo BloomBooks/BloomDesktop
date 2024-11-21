@@ -15,7 +15,5 @@ const msghandler = (e: MessageEvent) => {
 // Set up a window-level handler which will intercept any message with
 // messageType "bloomnav" and send it to the bloomApi.
 export function hookupBloomNavHandler() {
-    // Removing it first ensures that we only have one, even if we call this more than once.
-    window.removeEventListener("message", msghandler, { capture: true });
     window.addEventListener("message", msghandler, { capture: true });
 }

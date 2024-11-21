@@ -148,11 +148,18 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     );
 
     let baseUrl = bookUrl;
-    let startPage = "";
-    const idxStart = baseUrl.indexOf("&start-page=");
-    if (idxStart >= 0) {
-        baseUrl = baseUrl.substring(0, idxStart);
-        startPage = bookUrl.substring(idxStart);
+    let moreParams = "";
+    try {
+        const url = new URL(bookUrl);
+        baseUrl = url.origin + url.pathname;
+        url.searchParams.forEach((value, key) => {
+            if (key !== "url") {
+                moreParams += `&${key}=${encodeURIComponent(value)}`;
+            }
+        });
+    } catch (e) {
+        // ignore the error and go with the original url
+        moreParams = "";
     }
     const previewUrl =
         "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
@@ -160,7 +167,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         "&independent=false" + // you can temporarily comment this out to send BloomPlayer analytics from Bloom Editor
         "&host=bloomdesktop" +
         "&roundPageWidthToNearestK=2" + // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
-        startPage +
+        moreParams +
         "&roundMarginToNearestK=2"; // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
 
     const showBlankPreviewScreen =

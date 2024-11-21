@@ -19,6 +19,7 @@ using SIL.Reporting;
 using Bloom.ToPalaso;
 using System.IO;
 using Bloom.CollectionTab;
+using System.Web;
 
 namespace Bloom.web.controllers
 {
@@ -417,59 +418,76 @@ namespace Bloom.web.controllers
         public void HandleBloomNav(ApiRequest request)
         {
             var href = request.GetPostStringOrNull(true);
+            // Let's not tie up the lock for too long.  We'll do the search and bloompub creation on a timer thread.
+            _timerForStartingBookSearch = new System.Threading.Timer(
+                SearchForBookOnTimerThread,
+                href,
+                0, // start immediately
+                System.Threading.Timeout.Infinite // don't repeat
+            );
             request.PostSucceeded();
-            if (!string.IsNullOrEmpty(href))
+        }
+
+        System.Threading.Timer _timerForStartingBookSearch;
+
+        private void SearchForBookOnTimerThread(object state)
+        {
+            _timerForStartingBookSearch.Dispose();
+            _timerForStartingBookSearch = null;
+            var href = state as string;
+            if (string.IsNullOrEmpty(href))
+                return;
+            // The URL here consists of bloomnav://book/ followed by the book's guid,
+            // and optionally followed by ?page= followed by the page's guid.
+            Uri uri = new Uri(href);
+            var queryParams = HttpUtility.ParseQueryString(uri.Query);
+            var bookId = uri.LocalPath.Substring(1); // omit leading "/"
+            var pageId = queryParams["page"];
+            // Searching the current collection doesn't need to scan any disk files: the information
+            // is already available in memory.
+            var info = _collectionModel.TheOneEditableCollection.GetBookInfoById(bookId);
+            var workingSent = false;
+            var newUrlSent = false;
+            if (info != null)
             {
-                var bookId = href.Replace("bloomnav://book/", "");
-                var idx = bookId.IndexOf("?page=", StringComparison.Ordinal);
-                string pageId = null;
-                if (idx > 0)
+                var path = info.FolderPath;
+                var htmlPath = BookStorage.FindBookHtmlInFolder(path);
+                _webSocketServer.SendString(
+                    kWebSocketContext,
+                    kWebsocketEventId_Preview,
+                    "working"
+                );
+                workingSent = true;
+                var bookInfo = new Book.BookInfo(path, false);
+                var book = _bookServer.GetBookFromBookInfo(bookInfo);
+                var url = MakeFastFakeBloomPubForPreviewLink(
+                    book,
+                    _bookServer,
+                    _progress,
+                    _thumbnailBackgroundColor,
+                    _lastSettings
+                );
+                if (!string.IsNullOrEmpty(pageId) && pageId != "cover")
                 {
-                    pageId = bookId.Substring(idx + 6);
-                    bookId = bookId.Substring(0, idx);
-                }
-                // Searching the current collection doesn't need to scan any disk files: the information
-                // is already available in memory.
-                var info = _collectionModel.TheOneEditableCollection.GetBookInfoById(bookId);
-                var workingSent = false;
-                var newUrlSent = false;
-                if (info != null)
-                {
-                    var path = info.FolderPath;
-                    var htmlPath = BookStorage.FindBookHtmlInFolder(path);
-                    _webSocketServer.SendString(
-                        kWebSocketContext,
-                        kWebsocketEventId_Preview,
-                        "working"
-                    );
-                    workingSent = true;
-                    var bookInfo = new Book.BookInfo(path, false);
-                    var book = _bookServer.GetBookFromBookInfo(bookInfo);
-                    var url = MakeFastFakeBloomPubForPreviewLink(
-                        book,
-                        _bookServer,
-                        _progress,
-                        _thumbnailBackgroundColor,
-                        _lastSettings
-                    );
+                    // We need to add the page number to the URL so that the preview will start on the correct page.
                     var pageDiv = book.RawDom.SelectSingleNode(
                         $"//div[@id='{pageId}' and @data-page-number]"
                     );
                     var pageNumber = pageDiv?.GetAttribute("data-page-number");
                     if (!string.IsNullOrEmpty(pageNumber))
-                        url += "&start-page=" + pageNumber; // & instead of ? simplifies javascript
-                    _webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, url);
-                    newUrlSent = true;
+                        url += "?start-page=" + pageNumber;
                 }
-                if (workingSent && !newUrlSent)
-                {
-                    // restore original book, even if page isn't maintained.
-                    _webSocketServer.SendString(
-                        kWebSocketContext,
-                        kWebsocketEventId_Preview,
-                        PreviewUrl
-                    );
-                }
+                _webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, url);
+                newUrlSent = true;
+            }
+            if (workingSent && !newUrlSent)
+            {
+                // restore original book, even if page isn't maintained.
+                _webSocketServer.SendString(
+                    kWebSocketContext,
+                    kWebsocketEventId_Preview,
+                    PreviewUrl
+                );
             }
         }
 
