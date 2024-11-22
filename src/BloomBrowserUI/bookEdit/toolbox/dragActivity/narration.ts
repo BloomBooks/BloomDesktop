@@ -91,7 +91,7 @@ export function setPlayerUrlPrefixFromWindowLocationHref(bookSrc: string) {
     setPlayerUrlPrefix(getUrlPrefixFromWindowHref(bookSrc));
 }
 
-function getUrlPrefixFromWindowHref(bookSrc: string) {
+export function getUrlPrefixFromWindowHref(bookSrc: string) {
     const index = bookSrc.lastIndexOf("/");
     return bookSrc.substring(0, index);
 }
@@ -146,7 +146,7 @@ function getTgTabIndex(input: HTMLElement): string | null {
 }
 ///---- end of the bit that ended up in narrationUtils.ts before the merge.
 
-const kSegmentClass = "bloom-highlightSegment";
+export const kHighlightSegmentClass = "bloom-highlightSegment";
 
 // Indicates that the element should be highlighted.
 const kEnableHighlightClass = "ui-enableHighlight";
@@ -518,7 +518,7 @@ function playCurrentInternal() {
             );
             if (timingsStr) {
                 const childSpanElements = element.querySelectorAll(
-                    `span.${kSegmentClass}`
+                    `span.${kHighlightSegmentClass}`
                 );
                 const fields = timingsStr.split(" ");
                 const subElementCount = Math.min(

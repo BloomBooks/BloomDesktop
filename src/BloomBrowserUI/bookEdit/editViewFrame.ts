@@ -20,6 +20,7 @@ export interface IEditViewFrameExports {
     showColorPickerDialog(props: IColorPickerDialogProps): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
+    showAdjustTimingsDialogFromEditViewFrame();
 }
 
 export function SayHello() {
@@ -45,6 +46,9 @@ import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import ReactDOM = require("react-dom");
 import { FunctionComponentElement } from "react";
 export { getImageUrlFromImageButton } from "./js/bloomImages";
+
+import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
+export { showAdjustTimingsDialog as showAdjustTimingsDialogFromEditViewFrame };
 
 //Called by c# using editTabBundle.handleUndo()
 export function handleUndo(): void {

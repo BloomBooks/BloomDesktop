@@ -30,6 +30,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     handleImportRecordingClick: () => void;
     split: (timingFilePath: string) => Promise<void>;
     editTimingsFile: () => void;
+    adjustTimings: () => void; // GUI for adjusting timings
     applyTimingsFile: () => void;
     setRecordingMode: (recordingMode: RecordingMode) => Promise<void>;
     inShowPlaybackOrderMode: boolean;
@@ -54,12 +55,22 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     const commonTooltipProps = {
         placement: "top-start" as TooltipProps["placement"]
     };
+    const enableAdjustTimings =
+        props.recordingMode === RecordingMode.TextBox && props.hasAudio;
 
     // Originally, this string was just the first part without the final sentence. When we added the final sentence,
-    // we decided among the various unpleasant options that we would just add a new l10n string. 
+    // we decided among the various unpleasant options that we would just add a new l10n string.
     //Some day we may have to revisit if a translator says this is unfeasible for a particular language.
-    const insertSegmentMarkerTooltipText = useL10n(`Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`, 
-        "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip") + " " + useL10n(`Bloom will hide these when you publish.`, "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition");
+    const insertSegmentMarkerTooltipText =
+        useL10n(
+            `Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`,
+            "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip"
+        ) +
+        " " +
+        useL10n(
+            `Bloom will hide these when you publish.`,
+            "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition"
+        );
 
     return (
         <ThemeProvider theme={toolboxTheme}>
@@ -250,6 +261,29 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             }
                             l10nKey="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile"
                             onClick={props.applyTimingsFile}
+                        />
+                    </BloomTooltip>
+                    <BloomTooltip
+                        showDisabled={!enableAdjustTimings}
+                        tip={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.AdjustTimings"
+                        }}
+                        tipWhenDisabled={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip"
+                        }}
+                        {...commonTooltipProps}
+                    >
+                        <BloomButton
+                            id="adjust-timings-button"
+                            //iconBeforeText={React.createElement(ImportIcon)}
+                            hasText={true}
+                            variant="outlined"
+                            size="small"
+                            enabled={enableAdjustTimings}
+                            l10nKey="EditTab.Toolbox.TalkingBookTool.AdjustTimings"
+                            onClick={() => props.adjustTimings()}
                         />
                     </BloomTooltip>
                 </div>

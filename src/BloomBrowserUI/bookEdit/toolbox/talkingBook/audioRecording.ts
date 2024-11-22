@@ -33,8 +33,10 @@ import axios, { AxiosResponse } from "axios";
 import {
     get,
     getWithPromise,
+    post,
     postData,
-    postJson
+    postJson,
+    postString
 } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
@@ -56,6 +58,7 @@ import {
     hideImageDescriptions,
     showImageDescriptions
 } from "../imageDescription/imageDescriptionUtils";
+import { IAudioRecorder } from "./IAudioRecorder";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -111,7 +114,7 @@ const kDisableHighlightClass = "ui-disableHighlight";
 const kSuppressHighlightClass = "ui-suppressHighlight";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
 const kAudioSentenceClassSelector = "." + kAudioSentence;
-const kAudioCurrent = "ui-audioCurrent";
+export const kAudioCurrent = "ui-audioCurrent";
 const kAudioCurrentClassSelector = "." + kAudioCurrent;
 const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
@@ -151,7 +154,7 @@ interface ISetHighlightParams {
 // Selected: Means that the element is selected, e.g. it will be highlighted during the next stable state. However, it might not be currently highlighted YET.
 
 // TODO: Maybe a lot of this code should move to TalkingBook.ts (regarding the tool) instead of AudioRecording.ts (regarding recording/playing the audio files)
-export default class AudioRecording {
+export default class AudioRecording implements IAudioRecorder {
     private recording: boolean;
     private levelCanvas: HTMLCanvasElement;
     private currentAudioId: string;
@@ -2522,7 +2525,10 @@ export default class AudioRecording {
         const editable = this.getRecordableDivs(true, false);
         if (editable.length === 0) {
             // no editable text on this page.
-            return this.changeStateAndSetExpectedAsync("");
+            this.haveAudio = false; // appropriately disables some advanced controls
+            const result = this.changeStateAndSetExpectedAsync("");
+            this.updateDisplay();
+            return result;
         } else {
             if (deshroudPhraseDelimiters)
                 deshroudPhraseDelimiters(this.getPageDocBody());
@@ -4121,6 +4127,59 @@ export default class AudioRecording {
         }
     }
 
+    // Break up the current text box into sentences marked with kSegmentClass.
+    // This is the markup used when  recording in text box mode, but a recording has been
+    // split somehow. However, we don't add the markup that causes it to be displayed
+    // that way, because we don't yet have confirmed splits. Instead, we return a list
+    // of proposed end times (which AdjustTimingsControl typically refines)
+    public autoSegmentBasedOnTextLength(): number[] {
+        const currentTextBox = this.getCurrentTextBox();
+        if (!currentTextBox) return [];
+        const segments = this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+        // Generate crude estimate of audio lengths based on text lengths and total time,
+        // which should be known if we have an audio recording to adjust at all.
+        const durationText = currentTextBox.getAttribute("data-duration");
+        const duration = durationText ? parseFloat(durationText) : 0;
+        if (!duration) {
+            // should never happen
+            return [];
+        }
+        let textLength = 0;
+        for (const segment of segments) {
+            // ??1 here and below prevents any segment being completely empty.
+            // (Though, I don't think extractFragmentsAndSetSpanIdsForAudioSegmentation
+            // should actually make empty segments...belt and braces here.)
+            textLength += segment.fragmentText?.length ?? 1;
+        }
+        const endTimes: number[] = [];
+        let start = 0;
+        for (const segment of segments) {
+            const fragmentLength = segment.fragmentText?.length ?? 1;
+            const end = start + (duration * fragmentLength) / textLength;
+            endTimes.push(end);
+            start = end;
+        }
+
+        // Don't do this until the user confirms the splits.
+        // currentTextBox.setAttribute(
+        //     kEndTimeAttributeName,
+        //     endTimes.map(x => x.toString()).join(" ")
+        // );
+
+        // Temporarily switch to sentence, to get sentence elements created, using IDs generated
+        // in extractFragmentsAndSetSpanIdsForAudioSegmentation
+        this.updateMarkupForTextBox(
+            currentTextBox,
+            this.recordingMode,
+            RecordingMode.Sentence
+        );
+        // And now back to text box mode, but we'll keep the sentences as auto-segmented fragments
+        this.updatePlaybackModeToTextBox();
+        // don't do this so it doesn't yet LOOK split.
+        //this.markAudioSplit();
+        return endTimes;
+    }
+
     public processAutoSegmentResponse(result: AxiosResponse<any>): void {
         const isSuccess = result && result.data;
 
@@ -4203,7 +4262,7 @@ export default class AudioRecording {
         }
     }
 
-    private markAudioSplit() {
+    public markAudioSplit() {
         const currentTextBox = this.getCurrentTextBox();
         if (currentTextBox) {
             currentTextBox.classList.add("bloom-postAudioSplit");
@@ -4315,7 +4374,9 @@ export default class AudioRecording {
                 //hasAudio: this.getStatus("clear") === Status.Enabled, // plausibly, we could instead require that we have *all* the audio
                 hasAudio: this.haveAudio,
                 hasRecordableDivs:
-                    this.getRecordableDivs(false, false).length > 0,
+                    // It's a bit expensive to do the test for text present, but without it,
+                    // Import Recording will be improperly enabled on an empty page.
+                    this.getRecordableDivs(true, false).length > 0,
                 handleImportRecordingClick: () =>
                     this.handleImportRecordingClick(),
                 split: this.split.bind(this),
@@ -4358,6 +4419,9 @@ export default class AudioRecording {
                     }
 
                     await this.split(result.data);
+                },
+                adjustTimings: async () => {
+                    getEditTabBundleExports().showAdjustTimingsDialogFromEditViewFrame();
                 }
             }),
             container
@@ -4648,6 +4712,9 @@ export class AudioTextFragment {
 }
 
 export let theOneAudioRecorder: AudioRecording;
+export function getTheOneAudioRecorder(): IAudioRecorder {
+    return theOneAudioRecorder;
+}
 
 // Used by talkingBook when initially showing the tool.
 export async function initializeTalkingBookToolAsync(): Promise<void> {

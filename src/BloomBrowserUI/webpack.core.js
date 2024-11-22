@@ -57,6 +57,10 @@ module.exports = {
                 }
             },
             {
+                test: /\.mp3$/,
+                type: "asset/resource"
+            },
+            {
                 test: /react-spring/,
                 // work-around for https://github.com/plouc/nivo/issues/1290 until it gets fixed.
                 sideEffects: true
