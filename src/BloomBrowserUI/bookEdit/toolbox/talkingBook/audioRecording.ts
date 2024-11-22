@@ -2525,7 +2525,10 @@ export default class AudioRecording implements IAudioRecorder {
         const editable = this.getRecordableDivs(true, false);
         if (editable.length === 0) {
             // no editable text on this page.
-            return this.changeStateAndSetExpectedAsync("");
+            this.haveAudio = false; // appropriately disables some advanced controls
+            const result = this.changeStateAndSetExpectedAsync("");
+            this.updateDisplay();
+            return result;
         } else {
             if (deshroudPhraseDelimiters)
                 deshroudPhraseDelimiters(this.getPageDocBody());
@@ -4137,47 +4140,44 @@ export default class AudioRecording implements IAudioRecorder {
         // which should be known if we have an audio recording to adjust at all.
         const durationText = currentTextBox.getAttribute("data-duration");
         const duration = durationText ? parseFloat(durationText) : 0;
-        if (duration) {
-            let textLength = 0;
-            for (const segment of segments) {
-                // ??1 here and below prevents any segment being completely empty.
-                // (Though, I don't think extractFragmentsAndSetSpanIdsForAudioSegmentation
-                // should actually make empty segments...belt and braces here.)
-                textLength += (segment.fragmentText ?? "1").length;
-            }
-            const endTimes: number[] = [];
-            let start = 0;
-            for (const segment of segments) {
-                const end =
-                    start +
-                    (duration * (segment.fragmentText ?? "1").length) /
-                        textLength;
-                endTimes.push(end);
-                start = end;
-            }
-
-            // Don't do this until the user confirms the splits.
-            // currentTextBox.setAttribute(
-            //     kEndTimeAttributeName,
-            //     endTimes.map(x => x.toString()).join(" ")
-            // );
-
-            // Temporarily switch to sentence, to get sentence elements created, using IDs generated
-            // in extractFragmentsAndSetSpanIdsForAudioSegmentation
-            this.updateMarkupForTextBox(
-                currentTextBox,
-                this.recordingMode,
-                RecordingMode.Sentence
-            );
-            // And now back to text box mode, but we'll keep the sentences as auto-segmented fragments
-            this.updatePlaybackModeToTextBox();
-            // don't do this so it doesn't yet LOOK split.
-            //this.markAudioSplit();
-            return endTimes;
-        } else {
+        if (!duration) {
             // should never happen
             return [];
         }
+        let textLength = 0;
+        for (const segment of segments) {
+            // ??1 here and below prevents any segment being completely empty.
+            // (Though, I don't think extractFragmentsAndSetSpanIdsForAudioSegmentation
+            // should actually make empty segments...belt and braces here.)
+            textLength += segment.fragmentText?.length ?? 1;
+        }
+        const endTimes: number[] = [];
+        let start = 0;
+        for (const segment of segments) {
+            const fragmentLength = segment.fragmentText?.length ?? 1;
+            const end = start + (duration * fragmentLength) / textLength;
+            endTimes.push(end);
+            start = end;
+        }
+
+        // Don't do this until the user confirms the splits.
+        // currentTextBox.setAttribute(
+        //     kEndTimeAttributeName,
+        //     endTimes.map(x => x.toString()).join(" ")
+        // );
+
+        // Temporarily switch to sentence, to get sentence elements created, using IDs generated
+        // in extractFragmentsAndSetSpanIdsForAudioSegmentation
+        this.updateMarkupForTextBox(
+            currentTextBox,
+            this.recordingMode,
+            RecordingMode.Sentence
+        );
+        // And now back to text box mode, but we'll keep the sentences as auto-segmented fragments
+        this.updatePlaybackModeToTextBox();
+        // don't do this so it doesn't yet LOOK split.
+        //this.markAudioSplit();
+        return endTimes;
     }
 
     public processAutoSegmentResponse(result: AxiosResponse<any>): void {
@@ -4374,7 +4374,9 @@ export default class AudioRecording implements IAudioRecorder {
                 //hasAudio: this.getStatus("clear") === Status.Enabled, // plausibly, we could instead require that we have *all* the audio
                 hasAudio: this.haveAudio,
                 hasRecordableDivs:
-                    this.getRecordableDivs(false, false).length > 0,
+                    // It's a bit expensive to do the test for text present, but without it,
+                    // Import Recording will be improperly enabled on an empty page.
+                    this.getRecordableDivs(true, false).length > 0,
                 handleImportRecordingClick: () =>
                     this.handleImportRecordingClick(),
                 split: this.split.bind(this),
@@ -4419,10 +4421,7 @@ export default class AudioRecording implements IAudioRecorder {
                     await this.split(result.data);
                 },
                 adjustTimings: async () => {
-                    postString(
-                        "editView/runJavascriptOnEditFrame",
-                        "showAdjustTimingsDialogFromEditViewFrame()"
-                    );
+                    getEditTabBundleExports().showAdjustTimingsDialogFromEditViewFrame();
                 }
             }),
             container
