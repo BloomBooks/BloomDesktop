@@ -104,9 +104,10 @@ const LinkGridSetup: React.FC<Props> = ({
     return (
         <Box
             sx={{
-                width: "100%",
+                width: "calc(100% - 50px)", //hack
                 height: "100%",
                 margin: 0,
+                padding: 0,
                 bgcolor: "white",
                 p: 3,
                 borderRadius: 1,
@@ -141,7 +142,10 @@ const LinkGridSetup: React.FC<Props> = ({
                             minHeight: 40
                         }}
                     >
-                        <Typography
+                        <Typography variant="h6" sx={{ mb: 2 }}>
+                            Books in this Collection
+                        </Typography>
+                        {/* <Typography
                             sx={{ display: "flex", alignItems: "center" }}
                         >
                             Collection:
@@ -163,7 +167,7 @@ const LinkGridSetup: React.FC<Props> = ({
                                     {name}
                                 </option>
                             ))}
-                        </select>
+                        </select> */}
                     </Box>
                     <Box sx={{ flex: 1, overflow: "auto" }}>
                         <BookSourcesList
@@ -191,18 +195,18 @@ const LinkGridSetup: React.FC<Props> = ({
                                 item => item.book.id === selectedSource.id
                             )
                         }
-                        sx={{
-                            mb: 2,
-                            "&.Mui-disabled": {
-                                bgcolor: "rgba(255, 255, 255, 0.12)" // visible on dark background
-                            },
-                            "&:not(:disabled)": {
-                                bgcolor: theme => theme.palette.primary.main,
-                                "&:hover": {
-                                    bgcolor: theme => theme.palette.primary.dark
-                                }
-                            }
-                        }}
+                        // sx={{
+                        //     mb: 2,
+                        //     "&.Mui-disabled": {
+                        //         bgcolor: "rgba(255, 255, 255, 0.12)" // visible on dark background
+                        //     },
+                        //     "&:not(:disabled)": {
+                        //         bgcolor: theme => theme.palette.primary.main,
+                        //         "&:hover": {
+                        //             bgcolor: theme => theme.palette.primary.dark
+                        //         }
+                        //     }
+                        // }}
                     >
                         Book →
                     </Button>
@@ -226,7 +230,7 @@ const LinkGridSetup: React.FC<Props> = ({
                     }}
                 >
                     <Typography variant="h6" sx={{ mb: 2 }}>
-                        Selected Books ({targets.length})
+                        Links in Grid ({targets.length})
                     </Typography>
                     <Box sx={{ flex: 1, overflow: "auto" }}>
                         <BookTargetList

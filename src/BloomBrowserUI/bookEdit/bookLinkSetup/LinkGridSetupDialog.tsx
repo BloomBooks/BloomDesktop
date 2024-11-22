@@ -17,7 +17,8 @@ import {
     postJson,
     postString,
     useApiObject,
-    useApiStringState
+    useApiStringState,
+    useWatchApiData
 } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -28,6 +29,7 @@ import {
     CollectionInfoForLinkChoosing,
     Link
 } from "./BookLinkTypes";
+import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 
 export const LinkGridSetupDialog: React.FunctionComponent<{}> = props => {
     const {
@@ -69,15 +71,29 @@ export const LinkGridSetupDialog: React.FunctionComponent<{}> = props => {
         closeDialog();
     }
     const [currentCollection, setCurrentCollection] = React.useState(0);
-    const initialLinks: Link[] = collections[0].books
+    const initialLinks: Link[] = []; /*collections[0].books
         .slice(0, 4)
-        .map(book => ({ book }));
+        .map(book => ({ book }));*/
     const [selectedLinks, setSelectedLinks] = React.useState<Link[]>(
         initialLinks
     );
 
     const generateThumbnail = (bookId: string, pageNumber: number) =>
         `https://picsum.photos/seed/${bookId}-page${pageNumber}/160/90?grayscale`;
+
+    const unfilteredBooks = useWatchApiData<Array<IBookInfo>>(
+        `collections/books`,
+        [],
+        "editableCollectionList",
+        "unused" // we don't care about updates, so maybe we don't care about this?
+    );
+
+    const bookLinks: BookInfoForLinks[] = unfilteredBooks.map(book => ({
+        id: book.id,
+        title: book.title,
+        thumbnail: `/bloom/api/collections/book/thumbnail?book-id=${book.id}`,
+        pageLength: 5 // todo
+    }));
 
     return (
         <BloomDialog
@@ -88,12 +104,17 @@ export const LinkGridSetupDialog: React.FunctionComponent<{}> = props => {
             }}
             draggable={false}
             maxWidth={false}
+            fullWidth={true}
         >
             <DialogTitle title={dialogTitle} />
-            <DialogMiddle>
-                {" "}
+            <DialogMiddle
+                css={css`
+                    padding: 0;
+                    height: 80vh;
+                `}
+            >
                 <LinkGridSetup
-                    sourceBooks={collections[currentCollection].books}
+                    sourceBooks={bookLinks}
                     collectionNames={collections.map(c => c.name)}
                     currentCollection={currentCollection}
                     onCollectionChange={setCurrentCollection}
@@ -101,7 +122,7 @@ export const LinkGridSetupDialog: React.FunctionComponent<{}> = props => {
                     links={selectedLinks}
                     thumbnailGenerator={generateThumbnail}
                 />
-                <LinkDisplay links={selectedLinks} />
+                {/* <LinkDisplay links={selectedLinks} /> */}
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogOkButton

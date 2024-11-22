@@ -50,6 +50,7 @@ const SortableBookItem: React.FC<{
                 transition: ${transition};
                 position: relative;
                 width: 140px;
+                padding: 10px;
             `}
             {...attributes}
             {...listeners}
@@ -131,6 +132,8 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
                         gap: 8px;
                         height: 100%;
                         align-content: flex-start;
+                        min-width: 500px; // todo: should jsut fill the space
+                        background-color: lightgray;
                     `}
                 >
                     {links.map(link => (
