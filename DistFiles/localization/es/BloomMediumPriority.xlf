@@ -334,6 +334,21 @@
         <target xml:lang="es-ES" state="final">Editar archivo de tiempo...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Adjust Timings...</source>
+        <target xml:lang="es-ES" state="needs-translation">Adjust Timings...</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Adjust Timings</source>
+        <target xml:lang="es-ES" state="needs-translation">Adjust Timings</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This is disabled because there is not a whole text box recording</source>
+        <target xml:lang="es-ES" state="needs-translation">This is disabled because there is not a whole text box recording</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
         <target xml:lang="es-ES" state="final">Haga clic aquí para insertar un carácter "|" en el texto en la posición actual del cursor. Este carácter indica a Bloom que introduzca un nuevo segmento para resaltar el texto durante la reproducción de audio. También puede escribir el carácter "|" con el teclado.</target>
