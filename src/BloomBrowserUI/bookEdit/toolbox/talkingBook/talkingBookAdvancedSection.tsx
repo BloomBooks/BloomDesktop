@@ -281,10 +281,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             hasText={true}
                             variant="outlined"
                             size="small"
-                            enabled={
-                                props.recordingMode === RecordingMode.TextBox &&
-                                props.hasAudio // review: should this be enableEditTimings
-                            }
+                            enabled={enableAdjustTimings}
                             l10nKey="EditTab.Toolbox.TalkingBookTool.AdjustTimings"
                             onClick={() => props.adjustTimings()}
                         />

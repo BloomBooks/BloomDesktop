@@ -20,6 +20,7 @@ export interface IEditViewFrameExports {
     showColorPickerDialog(props: IColorPickerDialogProps): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
+    showAdjustTimingsDialogFromEditViewFrame();
 }
 
 export function SayHello() {

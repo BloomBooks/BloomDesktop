@@ -23,7 +23,10 @@ import { useL10n } from "../../../react_components/l10nHooks";
 import { postBoolean } from "../../../utils/bloomApi";
 import { kAudioCurrent } from "./audioRecording";
 import { AdjustTimingsControl, TimedTextSegment } from "./AdjustTimingsControl";
-import { getUrlPrefixFromWindowHref } from "../dragActivity/narration";
+import {
+    getUrlPrefixFromWindowHref,
+    kHighlightSegmentClass
+} from "../dragActivity/narration";
 import { IAudioRecorder } from "./IAudioRecorder";
 import { getToolboxBundleExports } from "../../editViewFrame";
 
@@ -46,11 +49,11 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     >();
     const [segmentsCreated, setSegmentsCreated] = useState<boolean>(false);
     const [endTimes, setEndTimes] = useState<number[]>([]);
-    const [url, setUrl] = useState<string>();
-    const [fontFamily, setFont] = useState<string>("Andika");
+    const [audioFileUrl, setAudioFileUrl] = useState<string>();
+    const [fontFamily, setFontFamily] = useState<string>("Andika");
 
     // Configure the local function (`show`) for showing the dialog to be the one derived from useSetupBloomDialog (`showDialog`)
-    // which allows js launchers of the dialog to make it visible (by calling showCopyrightAndLicenseInfoOrDialog)
+    // which allows js launchers of the dialog to make it visible (by calling showAdjustTimingsDialog)
     show = showDialog;
 
     const dialogTitle = useL10n(
@@ -70,21 +73,17 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     React.useEffect(() => {
         if (!propsForBloomDialog.open) return;
         const bloomEditable = getCurrentTextBox();
-        console.log(
-            `AudjustTimingsControl bloomEditable: ${bloomEditable.outerHTML}`
-        );
         let ff = (
             bloomEditable.ownerDocument.defaultView || window
         ).getComputedStyle(bloomEditable).fontFamily;
         ff = ff.replace(/^['"]/, "").replace(/['"]$/, "");
-        setFont(ff);
+        setFontFamily(ff);
         let endTimes = bloomEditable
             .getAttribute("data-audiorecordingendtimes")
             ?.split(" ")
             .map(parseFloat);
-        console.log(`AudjustTimingsControl endTimes: ${endTimes}`);
         let segmentElements = Array.from(
-            bloomEditable.getElementsByClassName("bloom-highlightSegment")
+            bloomEditable.getElementsByClassName(kHighlightSegmentClass)
         ) as HTMLSpanElement[];
         if (
             // No segments typically occurs with new texts that have never been split into segments
@@ -93,7 +92,13 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             // No endTimes can occur if the segments were created by putting the documet into sentence mode,
             // or by splitting a previous recording that has now been discarded.
             !endTimes ||
-            endTimes.length === 0
+            endTimes.length === 0 ||
+            // Not quite sure this is the right thing to do here. Perhaps, for example, the user
+            // just added to the text but has not re-recorded. In that case, the previous endTimes might
+            // be useful for as many segments as it has. But somehow, the dialog needs to have matching
+            // numbers of segments and endTimes. If they don't match, we probably need to start over
+            // aligning things. So I think this is a reasonable thing to do.
+            endTimes.length !== segmentElements.length
         ) {
             // In any of these case, we want to make sure the splits are up to date and generate
             // a first-attempt at endTimes based on the length of the text.
@@ -101,13 +106,21 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             endTimes = getAudioRecorder()?.autoSegmentBasedOnTextLength() ?? [];
             setSegmentsCreated(true);
             segmentElements = Array.from(
-                bloomEditable.getElementsByClassName("bloom-highlightSegment")
+                bloomEditable.getElementsByClassName(kHighlightSegmentClass)
             ) as HTMLSpanElement[];
             // if the user OKs without changing anything, these are the times to save.
             setEndTimes(endTimes);
         }
 
-        // Review: do we need to better handle pathological cases like not having a duration, not having any segments,
+        // Review: pathological cases are still possible. I saw a book somehow get into a state where
+        // data-audiorecordingendtimes was present but had no value, and endtimes was [NaN]. Hopefully
+        // just a result of some temporary bad state of the code.
+        // There might be no text at all in the box, and therefore zero segments even after calling
+        // autoSegmentBasedOnTextLength. But such boxes can't normally become the active text box.
+        // There might be a pathological case whre the text was deleted after recording.
+        // The dialog is also not much use if there's only one segment, but what should we do instead?
+        // I'm thinking it might be best to let JohnH think about these kinds of issues along with any
+        // other problems that come up in testing.
         const segmentArray: TimedTextSegment[] = [];
 
         let start = 0;
@@ -120,29 +133,18 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             });
             start = end;
         }
-        console.log(
-            `AudjustTimingsControl segmentArray: ${JSON.stringify(
-                segmentArray,
-                null,
-                2
-            )}`
-        );
         setSegments(segmentArray);
-        console.log(
-            `AudjustTimingsControl url: ${bloomEditable.getAttribute("id")}`
-        );
         const prefix = getUrlPrefixFromWindowHref(
             (bloomEditable.ownerDocument.defaultView || window).location.href
         );
-        setUrl(`${prefix}/audio/${bloomEditable.getAttribute("id")}.mp3`);
+        setAudioFileUrl(
+            `${prefix}/audio/${bloomEditable.getAttribute("id")}.mp3`
+        );
     }, [propsForBloomDialog.open]);
 
     return (
         <BloomDialog
             {...propsForBloomDialog}
-            // css={css`
-            //     padding-left: 18px;
-            // `}
             fullWidth={true}
             maxWidth={false}
             onCancel={reason => {
@@ -155,20 +157,17 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             <DialogMiddle>
                 <AdjustTimingsControl
                     segments={segments!}
-                    url={url!}
+                    audioFileUrl={audioFileUrl!}
                     setEndTimes={endTimes => setEndTimes(endTimes)}
                     fontFamily={fontFamily}
                     shouldAdjustSegments={segmentsCreated}
                 />
-                {/* <div id={"json"}>
-                    {JSON.stringify(segments, null, 2)}
-                </div>
-                <div>{endTimes.join(" ")}</div> */}
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogOkButton
                     onClick={() => {
-                        // read json from #json and then update the data-audiorecordingendtimes attribute in the getCurrentTextBox() div
+                        // Update the data-audiorecordingendtimes attribute in the getCurrentTextBox() div to match
+                        // the current state of the adjustments.
                         const bloomEditable = getCurrentTextBox();
                         bloomEditable.setAttribute(
                             "data-audiorecordingendtimes",

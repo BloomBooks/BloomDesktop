@@ -1,17 +1,15 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 
-import "./adjustTimingsControl.css"; // can't use @emotion on shadow dom
+import "./adjustTimingsControl.less"; // can't use @emotion on shadow dom
 
 import * as React from "react";
 import { Fragment, useState, useEffect, useRef } from "react";
+// This strange way of importing seems to be necessary to make the WaveSurfer plugin architecture work.
 import WaveSurfer from "wavesurfer.js";
 import * as WaveSurferNamespace from "wavesurfer.js";
 
 import RegionsPlugin from "../../../node_modules/wavesurfer.js/dist/plugins/regions";
-import { kBloomPurple } from "../../../utils/colorUtils";
-
-//import splat from "./splat.mp3"; // sound curtesy zapsplat.com
 
 export type TimedTextSegment = {
     start: number;
@@ -20,7 +18,7 @@ export type TimedTextSegment = {
 };
 
 export const AdjustTimingsControl: React.FunctionComponent<{
-    url: string;
+    audioFileUrl: string;
     segments: Array<{ start: number; end: number; text: string }>;
     setEndTimes: (endTimes: number[]) => void;
     fontFamily: string;
@@ -63,7 +61,6 @@ export const AdjustTimingsControl: React.FunctionComponent<{
 
         function enqueue(playSpan: playSpan) {
             playQueueRef.current!.push(playSpan);
-            console.log("enqueue: " + playSpan.regionIndex.toString());
             // if this is the only item in the queue, start playing
             if (playQueueRef.current!.length === 1) {
                 /* somehow touching the style prevents wavesurfer seeing the the mouse up click, or something like that
@@ -104,7 +101,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
             // does nothing obvious
             //FontFace: props.fontFamily
         });
-        ws.load(props.url);
+        ws.load(props.audioFileUrl);
         setWaveSurfer(ws);
         ws.on("ready", () => {
             // Create the play buttons.
@@ -186,13 +183,14 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 // as far as we can either way without it getting much louder, and take the middle
                 // of that. We might also bias it somehow towards large quiet spots.
                 // Then again, this might be good enough.
+                const slopPercent = 0.3;
+                const breakSpotCount = 15;
                 const data = ws.decodedData?.getChannelData(0);
                 segments = props.segments.map(s => ({
                     start: s.start,
                     end: s.end,
                     text: s.text
                 }));
-                const slopPercent = 0.3;
                 for (let i = 0; i < segments.length - 1; i++) {
                     const seg = segments[i];
                     const mid = (data.length * seg.end) / ws.getDuration();
@@ -207,7 +205,6 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                         slopPercent *
                         data.length;
                     const end = mid + nextSlop;
-                    const breakSpotCount = 15;
                     const numberOfBreaks = Math.min(
                         breakSpotCount,
                         end - start
@@ -277,7 +274,6 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 });
                 // after dragging, adjust the start time of the next region and the end time of the previous region
                 region.on("update-end", () => {
-                    console.log("update-end: " + index.toString());
                     const nextRegion = rp.getRegions()[index + 1];
                     if (nextRegion) {
                         nextRegion.start = region.end;
@@ -299,7 +295,6 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                     const endTimes = rp.getRegions().map(region => region.end);
                     props.setEndTimes(endTimes);
                     stopAndClearQueue();
-                    console.log("enqueue before: " + index.toString());
 
                     // play the last bit before the divider
                     // enqueue({
@@ -313,7 +308,6 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                     // play the next bit after the divider
                     if (index < props.segments.length - 1) {
                         const nextRegion = rp.getRegions()[index + 1];
-                        console.log("enqueue after: " + (index + 1).toString());
                         enqueue({
                             start: nextRegion.start,
                             end: Math.min(nextRegion.start + 1, nextRegion.end),
@@ -332,17 +326,6 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 //dequeue
                 playQueueRef.current?.shift();
                 if (playQueueRef.current!.length > 0) {
-                    //const audio = new Audio(splat);
-                    //const waitForTick = true; // I can't decide which I like better
-
-                    // if (waitForTick) {
-                    //     audio.play().then(() => {
-                    //         ws.setTime(playQueueRef.current![0].start);
-                    //         ws.play();
-                    //     });
-                    // } else {
-                    //audio.play();
-                    // now play the next time
                     ws.setTime(playQueueRef.current![0].start);
                     ws.play();
                     //}
@@ -352,11 +335,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
         return () => {
             ws.destroy();
         };
-    }, [props.segments, props.fontFamily, props.url]);
+    }, [props.segments, props.fontFamily, props.audioFileUrl]);
 
-    return (
-        <Fragment>
-            <div id="waveform"></div>
-        </Fragment>
-    );
+    return <div id="waveform"></div>;
 };
