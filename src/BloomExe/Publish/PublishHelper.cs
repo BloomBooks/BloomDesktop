@@ -699,7 +699,8 @@ namespace Bloom.Publish
             bool includeVideoAndActivities = true,
             string[] narrationLanguages = null,
             bool wantMusic = false,
-            bool wantFontFaceDeclarations = true
+            bool wantFontFaceDeclarations = true,
+            bool processVideos = true
         )
         {
             var filter = new BookFileFilter(bookFolderPath)
@@ -736,13 +737,16 @@ namespace Bloom.Publish
             modifiedBook.WriteFontFaces = wantFontFaceDeclarations;
             modifiedBook.BringBookUpToDate(new NullProgress(), true);
             modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
-            var domForVideoProcessing = modifiedBook.OurHtmlDom;
-            var videoContainerElements = HtmlDom
-                .SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement)
-                .Cast<SafeXmlElement>();
-            if (videoContainerElements.Any())
+            if (processVideos)
             {
-                SignLanguageApi.ProcessVideos(videoContainerElements, modifiedBook.FolderPath);
+                var domForVideoProcessing = modifiedBook.OurHtmlDom;
+                var videoContainerElements = HtmlDom
+                    .SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement)
+                    .Cast<SafeXmlElement>();
+                if (videoContainerElements.Any())
+                {
+                    SignLanguageApi.ProcessVideos(videoContainerElements, modifiedBook.FolderPath);
+                }
             }
             modifiedBook.Save();
             modifiedBook.UpdateSupportFiles();
