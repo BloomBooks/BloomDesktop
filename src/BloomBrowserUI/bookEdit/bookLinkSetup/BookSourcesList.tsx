@@ -36,6 +36,9 @@ export const BookSourcesList: React.FC<BookSourcesListProps> = ({
                 height: 100%;
                 align-content: flex-start;
                 padding-left: 2px;
+                overflow-y: scroll; // always show this
+                background-color: lightgray;
+                padding: 10px;
             `}
         >
             {books.map(book => (
