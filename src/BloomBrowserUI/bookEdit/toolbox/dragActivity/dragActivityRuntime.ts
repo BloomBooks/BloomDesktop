@@ -299,7 +299,8 @@ export function undoPrepareActivity(page: HTMLElement) {
     ).forEach((elt: HTMLElement) => {
         elt.parentElement?.removeChild(elt);
     });
-    doShowAnswersInTargets(true, page);
+    const inPlayer = page.closest(".swiper-slide") !== null;
+    doShowAnswersInTargets(!inPlayer, page);
     //Slider: setSlideablesVisibility(page, true);
     // Array.from(page.getElementsByTagName("img")).forEach((img: HTMLElement) => {
     //     img.removeEventListener("click", clickSliderImage);
