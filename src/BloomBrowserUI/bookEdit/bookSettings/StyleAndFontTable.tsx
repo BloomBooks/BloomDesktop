@@ -14,6 +14,7 @@ import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@mui/material/styles";
 import { default as Warning } from "@mui/icons-material/Warning";
 import { IFontMetaData } from "../StyleEditor/fontSelectComponent";
+import { useL10n } from "../../react_components/l10nHooks";
 
 // This interface must be kept in sync with the StyleAndFont class in BookSettingsApi.cs.
 export interface IStyleAndFont {
@@ -84,6 +85,10 @@ const StyleAndFontRow: React.FunctionComponent<{
     row: IStyleAndFont;
     closeDialogAndJumpToPage: (pageId: string) => void;
 }> = ({ key, row, closeDialogAndJumpToPage }) => {
+    const fontNotInstalledMessage = useL10n(
+        "Font is not installed on this computer",
+        "BookSettings.Fonts.FontNotInstalled"
+    );
     const fontMetaData: IFontMetaData | undefined = useFontMetaData(
         row.fontName
     );
@@ -94,7 +99,14 @@ const StyleAndFontRow: React.FunctionComponent<{
             </TableCell>
             <TableCell sx={{ border: 1 }}>{row.languageName}</TableCell>
             <TableCell sx={{ border: 1 }}>
-                <FontLicenseInfo fontMetaData={fontMetaData} />
+                {fontMetaData ? (
+                    <FontInfoFromMetadata fontMetaData={fontMetaData} />
+                ) : (
+                    <FontInfo
+                        name={row.fontName}
+                        warningMessage={fontNotInstalledMessage}
+                    />
+                )}
             </TableCell>
             <TableCell sx={{ border: 1 }}>
                 <Link
@@ -117,12 +129,46 @@ export function useFontMetaData(fontName: string): IFontMetaData | undefined {
     return fontMetaData.find(font => font.name === fontName);
 }
 
-// a react functionalcomponent for displaying the license info for a font, based on the suitability
-// info in the font metadata.  shows a warning or error icon before a label of the suitability
-const FontLicenseInfo: React.FunctionComponent<{
+// Displays font info based on font metadata.
+// Includes warnings and additional copyright/license info if needed.
+const FontInfoFromMetadata: React.FunctionComponent<{
     fontMetaData: IFontMetaData | undefined;
 }> = ({ fontMetaData }) => {
     if (!fontMetaData) return null;
+
+    let warningMessage: string | undefined = undefined;
+    let additionalInfo: React.ReactElement | undefined = undefined;
+    if (fontMetaData.determinedSuitability !== "ok") {
+        warningMessage = `${fontMetaData.determinedSuitability} / ${fontMetaData.determinedSuitabilityNotes}`;
+        additionalInfo = (
+            <div
+                css={css`
+                    padding-top: 5px;
+                `}
+            >
+                <div>{fontMetaData.copyright}</div>
+                <div>{fontMetaData.license}</div>
+                <div>{fontMetaData.manufacturer}</div>
+            </div>
+        );
+    }
+
+    return (
+        <FontInfo
+            name={fontMetaData.name}
+            warningMessage={warningMessage}
+            additionalInfo={additionalInfo}
+        />
+    );
+};
+
+// Displays the font name with an optional warning message and additional info.
+// For example, can be used to display problems with suitability of a font for publishing.
+const FontInfo: React.FunctionComponent<{
+    name: string;
+    warningMessage?: string;
+    additionalInfo?: React.ReactElement;
+}> = props => {
     return (
         <div
             css={css`
@@ -130,12 +176,20 @@ const FontLicenseInfo: React.FunctionComponent<{
                 flex-direction: column;
             `}
         >
-            <div>{fontMetaData.name}</div>
-            {fontMetaData.determinedSuitability !== "ok" && (
+            <div
+            // Experiment with showing the font name in the font itself. I'm not sure I like it, though.
+            // css={css`
+            //     font-family: ${props.name}, ${kUiFontStack};
+            // `}
+            >
+                {props.name}
+            </div>
+            {props.warningMessage && (
                 <div
                     css={css`
                         display: flex;
                         flex-direction: column;
+                        padding-top: 3px;
                     `}
                 >
                     <div
@@ -147,14 +201,14 @@ const FontLicenseInfo: React.FunctionComponent<{
                     >
                         <Warning
                             sx={{
-                                color: theme => theme.palette.error.main
+                                color: theme => theme.palette.error.main,
+                                fontSize: "1.1rem", // Default was too big
+                                paddingRight: "3px"
                             }}
                         />
-                        {`${fontMetaData.determinedSuitability} / ${fontMetaData.determinedSuitabilityNotes}`}
+                        {props.warningMessage}
                     </div>
-                    <div>{fontMetaData.copyright}</div>
-                    <div>{fontMetaData.license}</div>
-                    <div>{fontMetaData.manufacturer}</div>
+                    {props.additionalInfo}
                 </div>
             )}
         </div>
