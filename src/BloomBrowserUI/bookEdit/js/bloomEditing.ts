@@ -67,6 +67,7 @@ import { IBloomWebSocketEvent } from "../../utils/WebSocketManager";
 import { setupDragActivityTabControl } from "../toolbox/dragActivity/dragActivityTool";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { addScrollbarsToPage, cleanupNiceScroll } from "./niceScrollBars";
+import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -797,6 +798,12 @@ export function SetupElements(
         .click(function() {
             if ($(this).css("cursor") === "not-allowed") return;
             showTopicChooserDialog();
+        });
+
+    $(container)
+        .find(".bloom-link-grid")
+        .click(function() {
+            showLinkGridSetupsDialog();
         });
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
