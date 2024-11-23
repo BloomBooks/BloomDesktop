@@ -2469,9 +2469,9 @@
         <target xml:lang="pt-PT" state="translated">Escolha um vídeo do seu computador...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ChooseVideo</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copy text</source>
-        <target xml:lang="pt-PT" state="translated">Copiar Texto</target>
+        <target xml:lang="pt-PT" state="final">Copiar Texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true" approved="yes">
@@ -2479,9 +2479,9 @@
         <target xml:lang="pt-PT" state="final">Duplicar</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Format text...</source>
-        <target xml:lang="pt-PT" state="translated">Formatar Texto...</target>
+        <target xml:lang="pt-PT" state="final">Formatar Texto...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true" approved="yes">
@@ -2499,9 +2499,9 @@
         <target xml:lang="pt-PT" state="final">Nenhum</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste text</source>
-        <target xml:lang="pt-PT" state="translated">Colar Texto</target>
+        <target xml:lang="pt-PT" state="final">Colar Texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayEarlier" sil:dynamic="true">
@@ -6375,7 +6375,7 @@
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Pages</source>
-        <target xml:lang="pt-PT" state="needs-translation">Arithmetic Pages</target>
+        <target xml:lang="pt-PT" state="translated">Páginas de matemática</target>
         <note>ID: TemplateBooks.BookName.Arithmetic Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true" approved="yes">
@@ -6390,7 +6390,7 @@
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Basic Pages" sil:dynamic="true">
         <source xml:lang="en">Basic Pages</source>
-        <target xml:lang="pt-PT" state="needs-translation">Basic Pages</target>
+        <target xml:lang="pt-PT" state="translated">Páginas Básicas</target>
         <note>ID: TemplateBooks.BookName.Basic Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true" approved="yes">
@@ -6410,12 +6410,12 @@
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Digital Comic Book Pages" sil:dynamic="true">
         <source xml:lang="en">Digital Comic Book Pages</source>
-        <target xml:lang="pt-PT" state="needs-translation">Digital Comic Book Pages</target>
+        <target xml:lang="pt-PT" state="translated">Páginas de Quadrinhos Digitais</target>
         <note>ID: TemplateBooks.BookName.Digital Comic Book Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Games Pages" sil:dynamic="true">
         <source xml:lang="en">Games Pages</source>
-        <target xml:lang="pt-PT" state="needs-translation">Games Pages</target>
+        <target xml:lang="pt-PT" state="translated">Páginas de Joguinhos</target>
         <note>ID: TemplateBooks.BookName.Games Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true" approved="yes">
@@ -6430,7 +6430,7 @@
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Paper Comic Book Pages" sil:dynamic="true">
         <source xml:lang="en">Paper Comic Book Pages</source>
-        <target xml:lang="pt-PT" state="needs-translation">Paper Comic Book Pages</target>
+        <target xml:lang="pt-PT" state="translated">Páginas de Quadrinhos Impressos</target>
         <note>ID: TemplateBooks.BookName.Paper Comic Book Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
@@ -6445,7 +6445,7 @@
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true">
         <source xml:lang="en">Sign Language Pages</source>
-        <target xml:lang="pt-PT" state="needs-translation">Sign Language Pages</target>
+        <target xml:lang="pt-PT" state="translated">Páginas de Língua de Sinais</target>
         <note>ID: TemplateBooks.BookName.Sign Language Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special" sil:dynamic="true" approved="yes">
@@ -6455,7 +6455,7 @@
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special Pages" sil:dynamic="true">
         <source xml:lang="en">Special Pages</source>
-        <target xml:lang="pt-PT" state="needs-translation">Special Pages</target>
+        <target xml:lang="pt-PT" state="translated">Páginas especiais</target>
         <note>ID: TemplateBooks.BookName.Special Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true" approved="yes">
