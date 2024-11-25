@@ -11,30 +11,23 @@ import { BookSourcesList } from "./BookSourcesList";
 import { BookTargetList } from "./BookTargetList";
 import { PageLinkChooserDialog } from "./PageLinkChooserDialog";
 
-interface Props {
+const LinkGridSetup: React.FC<{
     sourceBooks: BookInfoForLinks[];
+    /* not using right now
+
     collectionNames: string[];
     currentCollection: number;
-    onCollectionChange: (index: number) => void; // when the user changes the collection, this callback will change the set of source books
-    onLinksChanged: (links: Link[]) => void; // add this line
-    links: Link[]; // add this line
+    onCollectionSelectionChange: (index: number) => void; // when the user changes the collection, this callback will change the set of source books
+    */
+    links: Link[]; // the set of links that are currently in the grid
+    onLinksChanged: (links: Link[]) => void;
     thumbnailGenerator: ThumbnailGenerator;
-}
-
-const LinkGridSetup: React.FC<Props> = ({
-    sourceBooks: books,
-    collectionNames,
-    currentCollection,
-    onCollectionChange,
-    onLinksChanged: onBooksChanged, // add this line
-    links, // add this line
-    thumbnailGenerator
-}) => {
+}> = props => {
     const [
         selectedSource,
         setSelectedSource
     ] = useState<BookInfoForLinks | null>(null);
-    const [targets, setTargets] = useState<Link[]>(links); // initialize with links prop
+    const [targets, setTargets] = useState<Link[]>(props.links); // initialize with links prop
     const [isPageDialogOpen, setIsPageDialogOpen] = useState(false);
 
     const handleItemSelect = (item: BookInfoForLinks) => {
@@ -48,13 +41,13 @@ const LinkGridSetup: React.FC<Props> = ({
         ) {
             const newTargets = [...targets, { book: selectedSource }];
             setTargets(newTargets);
-            onBooksChanged(newTargets); // add this line
+            props.onLinksChanged(newTargets);
 
             // Find next available book
-            const currentIndex = books.findIndex(
+            const currentIndex = props.sourceBooks.findIndex(
                 book => book.id === selectedSource.id
             );
-            const availableBooks = books.filter(
+            const availableBooks = props.sourceBooks.filter(
                 book =>
                     !targets.some(added => added.book.id === book.id) &&
                     book.id !== selectedSource.id
@@ -63,7 +56,7 @@ const LinkGridSetup: React.FC<Props> = ({
             // Try to select the next book in sequence, or the first available book
             const nextBook =
                 availableBooks.find(
-                    book => books.indexOf(book) > currentIndex
+                    book => props.sourceBooks.indexOf(book) > currentIndex
                 ) ||
                 availableBooks[0] ||
                 null;
@@ -72,10 +65,11 @@ const LinkGridSetup: React.FC<Props> = ({
         }
     };
 
+    /* not used right now
     const handleAddPageLink = () => {
         setIsPageDialogOpen(true);
     };
-
+*/
     const handlePageDialogClose = () => {
         setIsPageDialogOpen(false);
     };
@@ -88,7 +82,7 @@ const LinkGridSetup: React.FC<Props> = ({
             };
             const newTargets = [...targets, linkWithPage];
             setTargets(newTargets);
-            onBooksChanged(newTargets);
+            props.onLinksChanged(newTargets);
             setIsPageDialogOpen(false);
         }
     };
@@ -98,7 +92,7 @@ const LinkGridSetup: React.FC<Props> = ({
             item => item.book.id !== itemToRemove.book.id
         );
         setTargets(newTargets);
-        onBooksChanged(newTargets); // add this line
+        props.onLinksChanged(newTargets);
     };
 
     return (
@@ -171,7 +165,7 @@ const LinkGridSetup: React.FC<Props> = ({
                     </Box>
                     <Box sx={{ flex: 1, overflow: "auto" }}>
                         <BookSourcesList
-                            books={books}
+                            books={props.sourceBooks}
                             selectedBook={selectedSource}
                             onSelectBook={handleItemSelect}
                         />
@@ -208,16 +202,16 @@ const LinkGridSetup: React.FC<Props> = ({
                         //     }
                         // }}
                     >
-                        Book →
+                        Add Book →
                     </Button>
-                    <Button
+                    {/* <Button
                         variant="text"
                         onClick={handleAddPageLink}
                         disabled={!selectedSource}
                         sx={{ mb: 2 }}
                     >
-                        Page →
-                    </Button>
+                        Add Page →
+                    </Button> */}
                 </Box>
 
                 <Box
@@ -238,7 +232,7 @@ const LinkGridSetup: React.FC<Props> = ({
                             onRemoveBook={handleRemoveItem}
                             onReorderBooks={newOrder => {
                                 setTargets(newOrder);
-                                onBooksChanged(newOrder);
+                                props.onLinksChanged(newOrder);
                             }}
                         />
                     </Box>
@@ -250,7 +244,7 @@ const LinkGridSetup: React.FC<Props> = ({
                 selectedBook={selectedSource}
                 onClose={handlePageDialogClose}
                 onPageSelected={handlePageSelected}
-                thumbnailGenerator={thumbnailGenerator}
+                thumbnailGenerator={props.thumbnailGenerator}
             />
         </Box>
     );
