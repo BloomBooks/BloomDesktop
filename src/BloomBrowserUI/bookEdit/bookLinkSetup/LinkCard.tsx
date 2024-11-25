@@ -34,14 +34,14 @@ export const LinkCard: React.FC<BookCardProps> = ({
                 color: white;
                 position: relative;
                 padding: 0 0 8px 0;
-                &:hover .deleteButton {
+                &:hover .removeLinkButton {
                     display: block;
                 }
             `}
         >
             {onRemove && (
                 <IconButton
-                    className="deleteButton"
+                    className="removeLinkButton"
                     size="small"
                     onClick={e => {
                         e.preventDefault();
@@ -59,11 +59,16 @@ export const LinkCard: React.FC<BookCardProps> = ({
                         z-index: 1;
                         color: white;
                         pointer-events: auto;
+                        background-color: rgba(0, 0, 0, 0.6);
+                        padding: 4px;
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 50%;
                         svg {
                             pointer-events: none;
                         }
                         &:hover {
-                            background-color: rgba(255, 255, 255, 0.08);
+                            background-color: rgba(0, 0, 0, 0.8);
                         }
                     `}
                 >

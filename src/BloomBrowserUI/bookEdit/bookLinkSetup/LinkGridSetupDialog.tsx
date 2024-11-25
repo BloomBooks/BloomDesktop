@@ -115,11 +115,13 @@ export const LinkGridSetupDialog: React.FunctionComponent<{}> = props => {
             >
                 <LinkGridSetup
                     sourceBooks={bookLinks}
+                    /*  not using these the trimmed down version
                     collectionNames={collections.map(c => c.name)}
                     currentCollection={currentCollection}
-                    onCollectionChange={setCurrentCollection}
-                    onLinksChanged={setSelectedLinks}
+                    onCollectionSelectionChange={setCurrentCollection}
+                    */
                     links={selectedLinks}
+                    onLinksChanged={setSelectedLinks}
                     thumbnailGenerator={generateThumbnail}
                 />
                 {/* <LinkDisplay links={selectedLinks} /> */}
