@@ -68,6 +68,7 @@ import { setupDragActivityTabControl } from "../toolbox/dragActivity/dragActivit
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { addScrollbarsToPage, cleanupNiceScroll } from "./niceScrollBars";
 import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
+import { Link } from "../bookLinkSetup/BookLinkTypes";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -518,7 +519,7 @@ export function SetupElements(
 
     //CSS normally can't get at the text in order to, for example, show something different if it is empty.
     //This allows you to add .bloom-needs-data-text to a bloom-translationGroup in order to get
-    //its child bloom-editable's to have data-texts's on them
+    //its child bloom-editable's to have data-placeholders on them
     $(container)
         .find(".bloom-translationGroup.bloom-text-for-css .bloom-editable")
         .each(function() {
@@ -651,126 +652,6 @@ export function SetupElements(
             }
         });
 
-    AddLanguageTags(container);
-
-    //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
-    // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
-    // so they set the cursor to "not-allowed", and we detect that and set the contentEditable appropriately
-    $(container)
-        .find("div.bloom-readOnlyInTranslationMode")
-        .focus(function() {
-            if ($(this).css("cursor") === "not-allowed") {
-                $(this).removeAttr("contentEditable");
-            } else {
-                $(this).attr("contentEditable", "true");
-            }
-        });
-
-    //first used in the Uganda SHRP Primer 1 template, on the image on day 1
-    $(container)
-        .find(".bloom-draggableLabel")
-        .each(function() {
-            // previous to June 2014, containment was not working, so some items may be
-            // out of bounds. Or the stylesheet could change the size of things. This gets any such back in bounds.
-            if ($(this).position().left < 0) {
-                $(this).css("left", 0);
-            }
-            if ($(this).position().top < 0) {
-                $(this).css("top", 0);
-            }
-            if (
-                $(this).position().left + $(this).width() >
-                $(this)
-                    .parent()
-                    .width()
-            ) {
-                $(this).css(
-                    "left",
-                    $(this)
-                        .parent()
-                        .width() - $(this).width()
-                );
-            }
-            if (
-                $(this).position().top >
-                $(this)
-                    .parent()
-                    .height()
-            ) {
-                $(this).css(
-                    "top",
-                    $(this)
-                        .parent()
-                        .height() - $(this).height()
-                );
-            }
-
-            $(this).draggable({
-                //NB: this containment is of the translation group, not the editable inside it. So avoid margins on the translation group.
-                containment: "parent",
-                handle: ".dragHandle"
-            });
-        });
-
-    $(container)
-        .find(".bloom-draggableLabel")
-        .mouseenter(function() {
-            $(this).prepend(" <div class='dragHandle'></div>");
-        });
-
-    $(container)
-        .find(".bloom-draggableLabel")
-        .mouseleave(function() {
-            $(this)
-                .find(".dragHandle")
-                .each(function() {
-                    $(this).remove();
-                });
-        });
-
-    bloomQtipUtils.repositionPictureDictionaryTooltips(container);
-
-    /* Support in page combo boxes that set a class on the parent, thus making some change in the layout of the pge.
-    Example:
-             <select name="Story Style" class="bloom-classSwitchingCombobox">
-                     <option value="Fictional">Fiction</option>
-                     <option value="Informative">Informative</option>
-     </select>
-     */
-    //First we select the initial value based on what class is currently set, or leave to the default if none of them
-    $(container)
-        .find(".bloom-classSwitchingCombobox")
-        .each(function() {
-            //look through the classes of the parent for any that match one of our combobox values
-            for (let i = 0; i < this.options.length; i++) {
-                const c = this.options[i].value;
-                if (
-                    $(this)
-                        .parent()
-                        .hasClass(c)
-                ) {
-                    $(this).val(c);
-                    break;
-                }
-            }
-        });
-    //And now we react to the user choosing a different value
-    $(container)
-        .find(".bloom-classSwitchingCombobox")
-        .change(function() {
-            //remove any of the values that might already be set
-            for (let i = 0; i < this.options.length; i++) {
-                const c = this.options[i].value;
-                $(this)
-                    .parent()
-                    .removeClass(c);
-            }
-            //add back in the one they just chose
-            $(this)
-                .parent()
-                .addClass(this.value);
-        });
-
     //only make things deletable if they have the deletable class *and* page customization is enabled
     $(container)
         .find(
@@ -800,11 +681,7 @@ export function SetupElements(
             showTopicChooserDialog();
         });
 
-    $(container)
-        .find(".bloom-link-grid")
-        .click(function() {
-            showLinkGridSetupsDialog();
-        });
+    SetupBookLinkGrids(container);
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
@@ -1649,4 +1526,54 @@ export function attachToCkEditor(element) {
     }
 
     BloomField.WireToCKEditor(element, ckedit);
+}
+function SetupBookLinkGrids(container: HTMLElement) {
+    $(container)
+        .find(".bloom-link-grid")
+        .click(function() {
+            const currentLinks: Link[] = Array.from(this.children)
+                .filter((child: Element) =>
+                    child.classList.contains("bloom-bookButton")
+                )
+                .map((button: Element) => {
+                    const href = button.getAttribute("href");
+                    const id = href ? href.replace("bloomnav://book/", "") : "";
+                    const img = button.getElementsByTagName("img")[0]; // TODO should this be something computed from the Book by asking the server?
+                    const titleElement = button.getElementsByTagName("p")[0]; // TODO should this be something computed from the Book by asking the server?
+                    return {
+                        book: {
+                            id,
+                            title: titleElement?.textContent || "",
+                            thumbnail: img?.src || ""
+                        }
+                    };
+                });
+
+            showLinkGridSetupsDialog(
+                currentLinks,
+                // callback if they press OK
+                (links: Link[]) => {
+                    $(this).empty();
+
+                    links.forEach(link => {
+                        const button = document.createElement("div");
+                        button.className = "bloom-bookButton";
+                        button.setAttribute(
+                            "href",
+                            `bloomnav://book/${link.book.id}`
+                        );
+
+                        const img = document.createElement("img");
+                        img.src = link.book.thumbnail!;
+                        button.appendChild(img);
+
+                        const p = document.createElement("p");
+                        p.textContent = link.book.title;
+                        button.appendChild(p);
+
+                        this.appendChild(button);
+                    });
+                }
+            );
+        });
 }

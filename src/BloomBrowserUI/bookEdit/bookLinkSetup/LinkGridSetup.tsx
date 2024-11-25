@@ -163,7 +163,12 @@ const LinkGridSetup: React.FC<{
                             ))}
                         </select> */}
                     </Box>
-                    <Box sx={{ flex: 1, overflow: "auto" }}>
+                    <Box
+                        sx={{
+                            flex: 1,
+                            overflow: "hidden" // we want the list itself to scroll, not the parent box
+                        }}
+                    >
                         <BookSourcesList
                             books={props.sourceBooks}
                             selectedBook={selectedSource}
