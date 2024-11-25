@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.MiscUI;
@@ -72,6 +73,8 @@ namespace Bloom.Workspace
         private AudioRecording _audioRecording;
         private CollectionSettingsApi _collectionSettingsApi;
 
+        private NewCollectionWizardApi _newCollectionWizardApi;
+
         //autofac uses this
 
         public WorkspaceView(
@@ -97,6 +100,7 @@ namespace Bloom.Workspace
             WorkspaceTabSelection tabSelection,
             AudioRecording audioRecording,
             CollectionSettingsApi collectionSettingsApi,
+            NewCollectionWizardApi newCollectionWizardApi,
             TeamCollectionApi teamCollectionApi
         )
         {
@@ -117,6 +121,7 @@ namespace Bloom.Workspace
             workspaceApi.WorkspaceView = this; // and yet one more
             teamCollectionApi.WorkspaceView = this;
             _collectionSettingsApi = collectionSettingsApi;
+            _newCollectionWizardApi = newCollectionWizardApi;
 
             _collectionSettings = collectionSettings;
             // This provides the common API with a hook it can use to reload

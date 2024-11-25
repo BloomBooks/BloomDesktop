@@ -354,7 +354,7 @@ namespace Bloom.web.controllers
                 return settings.SignLanguage.Name;
             var ws = new Collection.WritingSystem(() => settings.Language2Tag);
             ws.Tag = langTag;
-            return ws.Name;
+            return ws.GetNameInLanguage(settings.Language2Tag);
         }
     }
 }

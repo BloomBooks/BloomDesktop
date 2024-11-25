@@ -9,6 +9,7 @@ using Autofac;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.FontProcessing;
@@ -161,6 +162,7 @@ namespace Bloom
                                     typeof(PublishEpubApi),
                                     typeof(AccessibilityCheckApi),
                                     typeof(CollectionSettingsApi),
+                                    typeof(NewCollectionWizardApi),
                                     typeof(CollectionApi),
                                     typeof(PageControlsApi),
                                     typeof(ReadersApi),
@@ -431,6 +433,7 @@ namespace Bloom
             _scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookCommandsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<SpreadsheetApi>().RegisterWithApiHandler(server.ApiHandler);
