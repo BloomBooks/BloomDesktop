@@ -132,7 +132,8 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
                         gap: 8px;
                         height: 100%;
                         align-content: flex-start;
-                        min-width: 500px; // todo: should jsut fill the space
+                        width: 100%; // Changed from min-width: 500px
+                        overflow-x: hidden; // Add this to prevent horizontal scroll
                         background-color: lightgray;
                     `}
                 >

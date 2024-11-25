@@ -2,7 +2,7 @@ export interface BookInfoForLinks {
     id: string;
     title: string;
     thumbnail?: string;
-    pageLength: number;
+    pageLength?: number;
 }
 
 export interface PageInfoForLinks {
