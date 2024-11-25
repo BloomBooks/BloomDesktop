@@ -260,8 +260,8 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongInstructions">
         <source xml:lang="en">
           Add items that will show when the learner gets the wrong answer. For example, you might add a text that says “Try Again!”.\nIt is OK to have no correct or wrong answers. Just give the same positive reinforcement, like “Looks Nice!”.</source>
-        <target xml:lang="es-ES" state="needs-translation">
-          Add items that will show when the learner gets the wrong answer. For example, you might add a text that says “Try Again!”.\nIt is OK to have no correct or wrong answers. Just give the same positive reinforcement, like “Looks Nice!”.</target>
+        <target xml:lang="es-ES" state="translated">
+          Añade elementos que se mostrarán cuando el estudiante reciba una respuesta incorrecta. Por ejemplo, puedes añadir un texto que diga "¡Inténtalo de nuevo!".\nEstá bien no tener respuestas correctas o incorrectas. Tan solo da el mismo refuerzo positivo, como "¡Parece bien!".</target>
         <note>ID: EditTab.Toolbox.DragActivity.WrongInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true" approved="yes">
@@ -806,7 +806,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPadding.Description" sil:dynamic="true">
         <source xml:lang="en">Smart spacing around text boxes. Works well for simple pages, but may not suit custom layouts.</source>
-        <target xml:lang="es-ES" state="needs-translation">Smart spacing around text boxes. Works well for simple pages, but may not suit custom layouts.</target>
+        <target xml:lang="es-ES" state="translated">Espacio inteligente alrededor de cuadros de texto. Funciona bien para páginas simples, pero puede que no se adapte a diseños personalizados.</target>
         <note>BookSettings.TopLevelTextPadding.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPadding.DefaultLabel" sil:dynamic="true">
@@ -821,12 +821,12 @@
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true">
         <source xml:lang="en">When you publish a book to the web or as an ebook, Bloom will flag any problematic fonts. For example, we cannot legally host most Microsoft fonts on BloomLibrary.org.</source>
-        <target xml:lang="es-ES" state="needs-translation">When you publish a book to the web or as an ebook, Bloom will flag any problematic fonts. For example, we cannot legally host most Microsoft fonts on BloomLibrary.org.</target>
+        <target xml:lang="es-ES" state="translated">Cuando publicas un libro en la web o como un ebook, Bloom marcará cualquier fuente problemática. Por ejemplo, no podemos alojar legalmente la mayoría de fuentes de Microsoft en BloomLibrary.org.</target>
         <note>ID: BookSettings.Fonts.Problematic</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.TableDescription" sil:dynamic="true">
         <source xml:lang="en">The following table shows where fonts have been used.</source>
-        <target xml:lang="es-ES" state="needs-translation">The following table shows where fonts have been used.</target>
+        <target xml:lang="es-ES" state="translated">La siguiente tabla muestra donde se han utilizado las fuentes.</target>
         <note>ID: BookSettings.Fonts.TableDescription</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true">
