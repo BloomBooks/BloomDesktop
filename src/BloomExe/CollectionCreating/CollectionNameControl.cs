@@ -10,7 +10,7 @@ namespace Bloom.CollectionCreating
 {
     public partial class CollectionNameControl : UserControl, IPageControl
     {
-        private Action<UserControl, bool> _setNextButtonState;
+        private Action<bool, bool> _setNextButtonState;
         private string _destinationDirectory;
         private NewCollectionSettings _collectionInfo;
 
@@ -20,7 +20,7 @@ namespace Bloom.CollectionCreating
         }
 
         public void Init(
-            Action<UserControl, bool> SetButtonState,
+            Action<bool, bool> SetButtonState,
             NewCollectionSettings collectionInfo,
             string destinationDirectory
         )
@@ -33,7 +33,7 @@ namespace Bloom.CollectionCreating
         protected void _textCollectionName_TextChanged(object sender, EventArgs e)
         {
             bool nameIsOK = GetNameIsOk();
-            _setNextButtonState(this, nameIsOK);
+            _setNextButtonState(false, nameIsOK);
             if (nameIsOK)
             {
                 _collectionInfoLabel.ForeColor = Color.Gray;
@@ -113,7 +113,7 @@ namespace Bloom.CollectionCreating
                     _collectionInfo.PathToSettingsFile
                 );
             }
-            _setNextButtonState(this, GetNameIsOk());
+            _setNextButtonState(false, GetNameIsOk());
         }
     }
 }

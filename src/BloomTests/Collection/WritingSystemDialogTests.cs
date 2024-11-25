@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Bloom.Collection;
 using NUnit.Framework;
 
+// TODO currently, the Tag setter also automatically sets the name using LibPalasso logic.
+// If we make changes to that logic now that we are changing default names with the new
+// language chooser, we need to check through the tests in this file
 namespace BloomTests.Collection
 {
     [TestFixture]

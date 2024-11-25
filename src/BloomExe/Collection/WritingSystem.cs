@@ -63,6 +63,9 @@ namespace Bloom.Collection
             set
             {
                 _langTag = value;
+                // TODO this uses LibPalasso logic and so will come up with names inconsistent with
+                // the language chooser. I think it would be less confusing to set the name whenever
+                // we set the tag instead of having the tag setter do it.
                 Name = GetLanguageName_NoCache(_tagOfDefaultLanguageForNaming());
             }
         }
@@ -112,7 +115,8 @@ namespace Bloom.Collection
 
         public void ChangeTag(string value)
         {
-            Tag = value; // also sets the name
+            // TODO we should check calls of this if we are changing language tag default naming because the Tag setter sets the name
+            Tag = value;
         }
 
         /// <summary>

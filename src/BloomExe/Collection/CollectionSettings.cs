@@ -1179,6 +1179,7 @@ namespace Bloom.Collection
         /// if it can't find a name.
         /// BL-8174 But in case the tag includes Script/Region/Variant codes, we should show them somewhere too.
         /// </summary>
+        // TODO make this consistent with the new Language Chooser default display name instead of using LibPalasso?
         public string GetDisplayNameForLanguage(string langTag, string metadataLanguageTag = null)
         {
             if (metadataLanguageTag == null)
