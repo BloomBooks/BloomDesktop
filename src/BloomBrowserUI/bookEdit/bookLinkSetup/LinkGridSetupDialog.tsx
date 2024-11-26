@@ -44,26 +44,16 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
         dialogFrameProvidedExternally: false
     });
 
-    const [settingsString] = useApiStringState(
-        "book/settings",
-        "{}",
-        () => propsForBloomDialog.open
-    );
-
     const dialogTitle = useL10n("Link Grid Setup", "LinkGridSetup.Title");
 
     function saveLinksAndCloseDialog() {
         props.setLinksCallback(selectedLinks);
         closeDialog();
     }
-    const [currentCollection, setCurrentCollection] = React.useState(0);
 
     const [selectedLinks, setSelectedLinks] = React.useState<Link[]>(
         props.initialLinks
     );
-
-    const generateThumbnail = (bookId: string, pageNumber: number) =>
-        `https://picsum.photos/seed/${bookId}-page${pageNumber}/160/90?grayscale`;
 
     const unfilteredBooks = useWatchApiData<Array<IBookInfo>>(
         `collections/books`,
@@ -75,8 +65,7 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
     const bookLinks: BookInfoForLinks[] = unfilteredBooks.map(book => ({
         id: book.id,
         title: book.title,
-        thumbnail: `/bloom/api/collections/book/thumbnail?book-id=${book.id}`,
-        pageLength: 5 // todo
+        thumbnail: `/bloom/api/collections/book/thumbnail?book-id=${book.id}`
     }));
 
     return (
@@ -106,9 +95,7 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
                     */
                     links={selectedLinks}
                     onLinksChanged={setSelectedLinks}
-                    thumbnailGenerator={generateThumbnail}
                 />
-                {/* <LinkDisplay links={selectedLinks} /> */}
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogOkButton

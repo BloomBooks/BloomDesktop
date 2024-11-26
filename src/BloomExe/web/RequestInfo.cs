@@ -545,6 +545,31 @@ namespace Bloom.Api
             return _postData;
         }
 
+        // only handles simple key/value pairs, not nested objects or arrays
+        public NameValueCollection GetPostDataWhenSimpleJsonEncoded()
+        {
+            Debug.Assert(RequestContentType.StartsWith("application/json"));
+            if (_postData == null)
+            {
+                var request = _actualContext.Request;
+
+                if (!request.HasEntityBody)
+                    return null;
+
+                _postData = new NameValueCollection();
+                // get the content of the request and parse the json
+                var json = GetPostJson();
+                //parse the json using the newtonsoft json library
+                var jsonParsed = Newtonsoft.Json.Linq.JObject.Parse(json);
+                //iterate over the json object and add the key value pairs to the NameValueCollection
+                foreach (var pair in jsonParsed)
+                {
+                    _postData.Add(pair.Key, pair.Value.ToString());
+                }
+            }
+            return _postData;
+        }
+
         private static string UnescapeString(string value)
         {
             return Uri.UnescapeDataString(value.Replace("+", " "));

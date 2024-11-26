@@ -21,7 +21,6 @@ const LinkGridSetup: React.FC<{
     */
     links: Link[]; // the set of links that are currently in the grid
     onLinksChanged: (links: Link[]) => void;
-    thumbnailGenerator: ThumbnailGenerator;
 }> = props => {
     const [
         selectedSource,
@@ -244,13 +243,13 @@ const LinkGridSetup: React.FC<{
                 </Box>
             </Box>
 
-            <PageLinkChooserDialog
+            {/* <PageLinkChooserDialog
                 open={isPageDialogOpen}
                 selectedBook={selectedSource}
                 onClose={handlePageDialogClose}
                 onPageSelected={handlePageSelected}
                 thumbnailGenerator={props.thumbnailGenerator}
-            />
+            /> */}
         </Box>
     );
 };
