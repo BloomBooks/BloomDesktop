@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -89,6 +90,11 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler("editView/jumpToPage", HandleJumpToPage, true);
+            apiHandler.RegisterEndpointHandler(
+                "editView/addImageFromUrl",
+                HandleAddImageFromUrl,
+                true
+            );
         }
 
         private void HandleJumpToPage(ApiRequest request)
@@ -454,6 +460,25 @@ namespace Bloom.web.controllers
             }
 
             request.ReplyWithJson(answer);
+        }
+
+        private void HandleAddImageFromUrl(ApiRequest request)
+        {
+            var desiredFileNameWithoutExtension = request.RequiredPostString(
+                "desiredFileNameWithoutExtension"
+            );
+            var url = request.RequiredPostString("url");
+
+            try
+            {
+                // When this is done, it will send a websocket message of the form "makeThumbnailFile-" + imageId
+                Task.Run(() => View.AddImageFromUrlAsync(desiredFileNameWithoutExtension, url));
+                request.PostSucceeded();
+            }
+            catch (Exception ex)
+            {
+                request.Failed("Error adding image: " + ex.Message);
+            }
         }
     }
 }

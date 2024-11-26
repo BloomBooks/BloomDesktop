@@ -50,6 +50,7 @@ import {
     post,
     postBoolean,
     postData,
+    postJson,
     postString,
     postThatMightNavigate
 } from "../../utils/bloomApi";
@@ -63,7 +64,9 @@ import {
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
 import { removeToolboxMarkup } from "../toolbox/toolbox";
-import { IBloomWebSocketEvent } from "../../utils/WebSocketManager";
+import WebSocketManager, {
+    IBloomWebSocketEvent
+} from "../../utils/WebSocketManager";
 import { setupDragActivityTabControl } from "../toolbox/dragActivity/dragActivityTool";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { addScrollbarsToPage, cleanupNiceScroll } from "./niceScrollBars";
@@ -1531,20 +1534,25 @@ function SetupBookLinkGrids(container: HTMLElement) {
     $(container)
         .find(".bloom-link-grid")
         .click(function() {
+            //If our listeners hear back, they should close, but if something goes wrong, we don't want them to pile up.
+            WebSocketManager.closeSocketsWithPrefix("makeThumbnailFile-");
+
             const currentLinks: Link[] = Array.from(this.children)
-                .filter((child: Element) =>
-                    child.classList.contains("bloom-bookButton")
+                .filter(
+                    (child: Element) =>
+                        child.classList.contains("bloom-bookButton") &&
+                        child.hasAttribute("data-bloom-book-id") // drop buttons that might have been edited by hand and don't have this
                 )
                 .map((button: Element) => {
-                    const href = button.getAttribute("href");
-                    const id = href ? href.replace("bloomnav://book/", "") : "";
-                    const img = button.getElementsByTagName("img")[0]; // TODO should this be something computed from the Book by asking the server?
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    const id = button.getAttribute("data-bloom-book-id")!; // we already filtered out any that don't have this
                     const titleElement = button.getElementsByTagName("p")[0]; // TODO should this be something computed from the Book by asking the server?
                     return {
                         book: {
                             id,
                             title: titleElement?.textContent || "",
-                            thumbnail: img?.src || ""
+                            // we don't know what the server path to this book would be at the moment
+                            thumbnail: `${window.location.origin}/bloom/api/collections/book/thumbnail?book-id=${id}`
                         }
                     };
                 });
@@ -1562,9 +1570,41 @@ function SetupBookLinkGrids(container: HTMLElement) {
                             "href",
                             `bloomnav://book/${link.book.id}`
                         );
+                        button.setAttribute("data-bloom-book-id", link.book.id);
+                        if (link.page) {
+                            button.setAttribute(
+                                "data-bloom-page-id",
+                                link.page.pageId.toString()
+                            );
+                        }
 
                         const img = document.createElement("img");
-                        img.src = link.book.thumbnail!;
+
+                        const desiredFileNameWithoutExtension = `bookButton-${link.book.id}`;
+
+                        // listen for a websocket message that the image has been saved
+                        // and then update the src attribute
+                        const setImgSrc = () => {
+                            console.log(
+                                "got message",
+                                desiredFileNameWithoutExtension
+                            );
+                            img.setAttribute(
+                                "src",
+                                desiredFileNameWithoutExtension + ".png"
+                            ); // note, img.src = "foo" does something different!
+                        };
+                        console.log(
+                            "listening for",
+                            desiredFileNameWithoutExtension
+                        );
+
+                        WebSocketManager.once(
+                            "makeThumbnailFile-" +
+                                desiredFileNameWithoutExtension,
+                            setImgSrc
+                        );
+
                         button.appendChild(img);
 
                         const p = document.createElement("p");
@@ -1572,6 +1612,10 @@ function SetupBookLinkGrids(container: HTMLElement) {
                         button.appendChild(p);
 
                         this.appendChild(button);
+                        postJson("editView/addImageFromUrl", {
+                            desiredFileNameWithoutExtension: desiredFileNameWithoutExtension,
+                            url: link.book.thumbnail
+                        });
                     });
                 }
             );
