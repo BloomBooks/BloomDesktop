@@ -95,7 +95,9 @@ export const LinkCard: React.FC<BookCardProps> = ({
                     css={css`
                         width: 100%;
                         aspect-ratio: 16/9;
+                        height: 100px;
                         object-fit: cover;
+                        object-position: center top;
                         margin-bottom: 8px;
                     `}
                 />
