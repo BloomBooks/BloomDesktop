@@ -1567,7 +1567,7 @@ function SetupBookLinkGrids(container: HTMLElement) {
                         const button = document.createElement("div");
                         button.className = "bloom-bookButton";
                         button.setAttribute(
-                            "href",
+                            "data-href",
                             `bloomnav://book/${link.book.id}`
                         );
                         button.setAttribute("data-bloom-book-id", link.book.id);
@@ -1577,8 +1577,12 @@ function SetupBookLinkGrids(container: HTMLElement) {
                                 link.page.pageId.toString()
                             );
                         }
-
+                        // create elements for the thumbnail
+                        const imageContainer = document.createElement("div");
+                        button.appendChild(imageContainer);
+                        imageContainer.className = "bloom-imageContainer";
                         const img = document.createElement("img");
+                        imageContainer.appendChild(img);
 
                         const desiredFileNameWithoutExtension = `bookButton-${link.book.id}`;
 
@@ -1608,7 +1612,6 @@ function SetupBookLinkGrids(container: HTMLElement) {
 
                         WebSocketManager.once(messageContext, setImgSrc);
                         console.log("listening for ", messageContext);
-                        button.appendChild(img);
 
                         const p = document.createElement("p");
                         p.textContent = link.book.title;
