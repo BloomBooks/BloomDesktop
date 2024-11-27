@@ -631,23 +631,6 @@ function addImageMenuOptions(
             getImageUrlFromImageContainer(imgContainer)
         );
     };
-    const setAsBackground = () => {
-        theOneBubbleManager?.setAsBackground();
-    };
-
-    const currentIsBackground = overlay.classList.contains(
-        kbackgroundImageClass
-    );
-    const isThereABackground =
-        currentIsBackground ||
-        overlay.parentElement?.getElementsByClassName(kbackgroundImageClass)[0];
-
-    let backgroundMenuItemL10nId = "EditTab.Image.SetBackground"; // default when no background is set
-    if (currentIsBackground) {
-        backgroundMenuItemL10nId = "EditTab.Image.SetBackgroundRemove";
-    } else if (isThereABackground) {
-        backgroundMenuItemL10nId = "EditTab.Image.SetBackgroundReplace";
-    }
 
     menuOptions.unshift(
         {
@@ -674,12 +657,6 @@ function addImageMenuOptions(
             subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
             onClick: runMetadataDialog,
             icon: <CopyrightIcon css={getMenuIconCss()} />
-        },
-        {
-            l10nId: backgroundMenuItemL10nId,
-            english: "Set Image as background",
-            onClick: setAsBackground,
-            icon: <BackgroundIcon css={getMenuIconCss()} />
         },
         divider
     );
