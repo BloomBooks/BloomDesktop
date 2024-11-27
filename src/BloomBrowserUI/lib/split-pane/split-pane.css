@@ -42,6 +42,8 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     left: 0;
     cursor: ns-resize;
     z-index: 2;
+
+    /* JohnT mod: this extra padding makes it impossible to grab the crop control right above the split.
     padding-bottom: 5px; /* this actually enlarges the target area for the user trying to find the splitter, without changing the layout of the page (because the position is absolute)*/
 }
 
