@@ -10,6 +10,7 @@ import "./impairmentVisualizer.less";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
+import { kOverlayClass } from "../../js/bubbleManager";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -234,7 +235,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
         // in the same stacking context. Therefore, all things being equal, this one would be covered
         // by that later one.
         const parentContainer = img.parentElement;
-        if (!parentContainer.classList.contains("hasOverlay")) {
+        if (!parentContainer.classList.contains(kOverlayClass)) {
             canvas.style.zIndex = "1";
         }
         // And position it within the container the same as the img.

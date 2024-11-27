@@ -25,7 +25,12 @@ import {
     DisableImageEditing,
     EnableImageEditing,
     EnableAllImageEditing,
-    tryRemoveImageEditingButtons
+    getImageFromOverlay,
+    kImageContainerSelector,
+    getImageFromContainer,
+    kImageContainerClass,
+    getBackgroundImageFromContainer,
+    SetupMetadataButton
 } from "./bloomImages";
 import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
@@ -51,12 +56,10 @@ const kComicalGeneratedClass: string = "comical-generated";
 // In the process of moving these two definitions to overlayUtils.ts, but duplicating here for now.
 export const kTextOverPictureClass = "bloom-textOverPicture";
 export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
-const kImageContainerClass = "bloom-imageContainer";
-const kImageContainerSelector = `.${kImageContainerClass}`;
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export const kbackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
 
-const kOverlayClass = "hasOverlay";
+export const kOverlayClass = "hasOverlay";
 
 type ResizeDirection = "ne" | "nw" | "sw" | "se";
 
@@ -1020,14 +1023,15 @@ export class BubbleManager {
     public static ignoreFocusChanges: boolean;
 
     public setActiveElement(element: HTMLElement | undefined) {
-        if (this.activeElement !== element && this.activeElement) {
-            tryRemoveImageEditingButtons(
-                this.activeElement.getElementsByClassName(
-                    "bloom-imageContainer"
-                )[0] as Element | undefined
-            );
-            this.activeElement.removeAttribute("data-bloom-active");
-        }
+        // Seems it should be sufficient to remove this from the old active element if any.
+        // But there's at least one case where code that adds a new bubble sets it as
+        // this.activeElement before calling this method. It's safest to make sure this
+        // attribute is not set on any other element.
+        document.querySelectorAll("[data-bloom-active]").forEach(e => {
+            if (e !== element) {
+                e.removeAttribute("data-bloom-active");
+            }
+        });
         if (this.activeElement !== element) {
             this.theBubbleWeAreTextEditing = undefined; // even if focus doesn't move.
             // For some reason this doesnt' trigger as a result of changing the selection.
@@ -2919,18 +2923,6 @@ export class BubbleManager {
                 hoveredBubble = null;
             }
         }
-
-        if (!hoveredBubble) {
-            // Cleanup the previous iteration's state
-            if (this.activeElement) {
-                tryRemoveImageEditingButtons(
-                    this.activeElement.getElementsByClassName(
-                        "bloom-imageContainer"
-                    )[0]
-                );
-            }
-            return;
-        }
     }
 
     /**
@@ -4613,7 +4605,7 @@ export class BubbleManager {
                     "data-oldStyle",
                     backgroundOverlay.getAttribute("style") ?? ""
                 );
-                const img = this.getImageFromOverlay(backgroundOverlay);
+                const img = getImageFromOverlay(backgroundOverlay);
                 img?.setAttribute(
                     "data-oldStyle",
                     img.getAttribute("style") ?? ""
@@ -4644,7 +4636,7 @@ export class BubbleManager {
                     backgroundOverlay.getAttribute("data-oldStyle") ?? ""
                 );
                 backgroundOverlay.removeAttribute("data-oldStyle");
-                const img = this.getImageFromOverlay(backgroundOverlay);
+                const img = getImageFromOverlay(backgroundOverlay);
                 img?.setAttribute(
                     "style",
                     img.getAttribute("data-oldStyle") ?? ""
@@ -5130,27 +5122,7 @@ export class BubbleManager {
         });
     }
 
-    // The canonical way to find the main image in an image container.
-    // Better than getImageByTagName, which could find images in overlays.
-    private getImageFromContainer(
-        imageContainer: HTMLElement
-    ): HTMLImageElement | null {
-        return Array.from(imageContainer.children).find(
-            x => x instanceof HTMLImageElement
-        ) as HTMLImageElement;
-    }
-
-    private getImageFromOverlay(overlay: HTMLElement): HTMLImageElement | null {
-        const imageContainer = overlay.getElementsByClassName(
-            kImageContainerClass
-        )[0];
-        if (!imageContainer) {
-            return null;
-        }
-        return this.getImageFromContainer(imageContainer as HTMLElement);
-    }
-
-    // If an image container has overlays and a background image, we switch the
+    // If an image container has a non-placeholder background image, we switch the
     // background image to an image overlay. This allows it to be manipuluated more easily.
     // More importantly, it prevents the difficult-to-account-for movement of the
     // background image when the container is resized. Once it is an overlay,
@@ -5159,81 +5131,90 @@ export class BubbleManager {
     // older code will not mess with overlay positioning like it would tend to
     // if we put position and size attributes on the background image directly.
     private switchBackgroundToOverlayIfNeeded(imageContainer: HTMLElement) {
-        const image = this.getImageFromContainer(imageContainer);
-        if (
-            !image ||
-            !image.src ||
-            image.getAttribute("src")?.startsWith("placeHolder.png")
-        ) {
-            // don't switch the placeholder to an overlay; it would happen again the next time
-            // we called this and we'd get an endless succession of them.
-            // And if somehow we don't have an image or src, we can't do anything useful.
-            return;
+        const bgOverlay = imageContainer.getElementsByClassName(
+            kbackgroundImageClass
+        )[0] as HTMLElement;
+        if (bgOverlay) {
+            // I think this is redundant, but it got added by mistake at one point,
+            // and will hide the placeholder if it's there, so make sure it's not.
+            bgOverlay.classList.remove(kOverlayClass);
+            return; // already have one.
         }
-        if (
-            imageContainer.getElementsByClassName(kTextOverPictureClass)
-                .length > 0
-        ) {
-            this.switchBackgroundToOverlay(imageContainer);
-        }
+        this.switchBackgroundToOverlay(imageContainer);
     }
 
     private switchBackgroundToOverlay(imageContainer: HTMLElement) {
-        const img = this.getImageFromContainer(imageContainer);
-        if (!img) return; // or throw? Should not happen.
+        const img = getImageFromContainer(imageContainer);
+        if (!img) return; // should not happen
         // Title typically contained info about the resolution of the image we are moving
         // to the overlay. It doesn't apply to the placeholder we will leave behind,
         // and we don't do this for overlays, so we don't want it on the copy, either.
         imageContainer.setAttribute("data-title", "");
-        const overlay = document.createElement("div");
-        overlay.classList.add(kTextOverPictureClass);
-        imageContainer
-            .getElementsByClassName(kbackgroundImageClass)[0]
-            ?.classList?.remove(kbackgroundImageClass);
-        overlay.classList.add(kbackgroundImageClass);
+        let bgOverlay = imageContainer.getElementsByClassName(
+            kbackgroundImageClass
+        )[0] as HTMLElement;
+        if (!bgOverlay) {
+            // various legacy behavior, such as hiding the old-style background placeholder.
+            imageContainer.classList.add(kOverlayClass);
+            bgOverlay = document.createElement("div");
+            bgOverlay.classList.add(kTextOverPictureClass);
+            bgOverlay.classList.add(kbackgroundImageClass);
 
-        // Make a new image container to hold just the background image, inside the new overlay.
-        // We don't want a deep clone...that will copy all the overlays, too.
-        const newImgContainer = imageContainer.cloneNode(false) as HTMLElement;
-        overlay.appendChild(newImgContainer);
-        const newImg = img.cloneNode(false) as HTMLImageElement;
-        newImgContainer.appendChild(newImg);
+            // Make a new image container to hold just the background image, inside the new overlay.
+            // We don't want a deep clone...that will copy all the overlays, too.
+            const newImgContainer = imageContainer.cloneNode(
+                false
+            ) as HTMLElement;
+            newImgContainer.classList.remove(kOverlayClass);
+            bgOverlay.appendChild(newImgContainer);
+            const newImg = img.cloneNode(false) as HTMLImageElement;
+            newImgContainer.appendChild(newImg);
 
-        // Set level so Comical will consider the new overlay to be under the existing ones.
-        const overlayElements = Array.from(
-            imageContainer.getElementsByClassName("bloom-textOverPicture")
-        );
-        let minLevel = Math.min(
-            ...overlayElements.map(
-                b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
-            )
-        );
-        if (minLevel <= 1) {
-            // bump all the others up so we can insert one at level 1 below them all
-            // We don't want to use zero as a level...some Comical code complains that
-            // the bubble doesn't have a level at all. And I'm nervous about using
-            // negative numbers...something that wants a level one higher might get zero.
-            overlayElements.forEach(b => {
-                const bubble = new Bubble(b as HTMLElement);
-                const spec = bubble.getBubbleSpec();
-                // the one previously at minLevel will now be at 2, others higher in same sequence.
-                spec.level += 2 - minLevel;
-                bubble.persistBubbleSpec();
-            });
-            minLevel = 2;
+            // Set level so Comical will consider the new overlay to be under the existing ones.
+            const overlayElements = Array.from(
+                imageContainer.getElementsByClassName("bloom-textOverPicture")
+            );
+            let minLevel = Math.min(
+                ...overlayElements.map(
+                    b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
+                )
+            );
+            if (minLevel <= 1) {
+                // bump all the others up so we can insert one at level 1 below them all
+                // We don't want to use zero as a level...some Comical code complains that
+                // the bubble doesn't have a level at all. And I'm nervous about using
+                // negative numbers...something that wants a level one higher might get zero.
+                overlayElements.forEach(b => {
+                    const bubble = new Bubble(b as HTMLElement);
+                    const spec = bubble.getBubbleSpec();
+                    // the one previously at minLevel will now be at 2, others higher in same sequence.
+                    spec.level += 2 - minLevel;
+                    bubble.persistBubbleSpec();
+                });
+                minLevel = 2;
+            }
+            const bubble = new Bubble(bgOverlay as HTMLElement);
+            bubble.getBubbleSpec().level = minLevel - 1;
+            bubble.persistBubbleSpec();
+            bgOverlay.style.visibility = "none"; // hide it until we adjust its shape and position
+            // consistent with level, we want it in front of the (new, placeholder) background image
+            // and behind the other overlays.
+            imageContainer.insertBefore(bgOverlay, img.nextSibling);
         }
-        const bubble = new Bubble(overlay as HTMLElement);
-        bubble.getBubbleSpec().level = minLevel - 1;
-        bubble.persistBubbleSpec();
-        overlay.style.visibility = "none"; // hide it until we adjust its shape and position
-        // consistent with level, we want it in front of the (new, placeholder) background image
-        // and behind the other overlays.
-        imageContainer.insertBefore(overlay, img.nextSibling);
-        this.adjustBackgroundImageSize(imageContainer, overlay, true);
-        overlay.style.visibility = "";
+        const bgImage = getBackgroundImageFromContainer(
+            imageContainer
+        ) as HTMLElement; // must exist by now
+        // Whether it's a new bgImage or not, copy its src from the old-style img
+        bgImage.setAttribute("src", img.getAttribute("src") ?? "");
+        this.adjustBackgroundImageSize(imageContainer, bgOverlay, true);
+        bgOverlay.style.visibility = ""; // now we can show it, if it was new and hidden
+        SetupMetadataButton(imageContainer);
 
         // remove all attributes from img and set src to make it a plain vanilla placeholder.
         // set "src" first since this will make it disappear, hopefully reducing flicker.
+        // This image will never be seen again, but a lot of code expects an image container
+        // to have a direct child that is an img, and it makes things easier for older versions
+        // of Bloom that may open this book, so for now we'll keep it.
         img.setAttribute("src", "placeHolder.png");
         for (let i = img.attributes.length - 1; i >= 0; i--) {
             const name = img.attributes[i].name;
@@ -5256,7 +5237,7 @@ export class BubbleManager {
         gotSizeOfNewImage = false
     ) {
         let imgAspectRatio = overlay.clientWidth / overlay.clientHeight;
-        const img = this.getImageFromOverlay(overlay);
+        const img = getImageFromOverlay(overlay);
         if (useSizeOfNewImage) {
             // We don't ever expect there not to be an img. If it happens, we'll just go
             // ahead and adjust based on the current shape of the overlay.
@@ -5339,8 +5320,8 @@ export class BubbleManager {
         }
         if (backgroundOverlay) {
             // swap the images
-            const imgBackground = this.getImageFromOverlay(backgroundOverlay);
-            const imgActive = this.getImageFromOverlay(this.activeElement);
+            const imgBackground = getImageFromOverlay(backgroundOverlay);
+            const imgActive = getImageFromOverlay(this.activeElement);
             if (imgBackground && imgActive) {
                 const srcOldBackground =
                     imgBackground?.getAttribute("src") ?? "";

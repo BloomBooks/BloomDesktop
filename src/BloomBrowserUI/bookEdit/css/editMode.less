@@ -45,9 +45,7 @@ body {
 @ImageAndVideoHoverOverlay: transparent;
 @ImageButtonBorder: #716666;
 @ChangeImageButtonColor: @ControlColor;
-@PasteImageButtonColor: @bloom-blue;
 /*#0C8597; */
-@MetadataButtonColor: #3a7f62; // the only place in .less files that any green is used
 @OverflowColor: @WarningColor;
 @MainPageBackgroundColor: #f8f8f8;
 @PageDragBackgroundColor: #ffffa3;
@@ -368,6 +366,8 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center center;
+    border: none; // agent stylesheet otherwise gives it one. Grrr.
+    background-color: transparent;
 
     &.smallButtonWidth {
         width: 50%;
@@ -383,9 +383,8 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
 
     &.changeImageButton {
         right: 0;
-        top: 0;
-        background-color: @ChangeImageButtonColor;
-        background-image: url("/bloom/bookEdit/img/changeButton.svg");
+        top: 5px;
+        background-image: url("/bloom/bookEdit/img/ChangeImageButton.svg");
     }
 
     // BL-9976 JH - "We've gotten complaints that users click it and then are too confused and
@@ -406,34 +405,25 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
         background-image: url("/bloom/bookEdit/img/browse.svg");
     }
 
-    &.pasteImageButton {
-        right: 0;
-        bottom: 0;
-        background-color: @PasteImageButtonColor;
-        background-image: url("/bloom/bookEdit/img/pasteButton.svg");
-        background-position: right center;
-
-        &.smallButtonWidth {
-            width: 87px;
-
-            &.verySmallButtons {
-                width: 98%;
-                background-size: 60%;
-            }
-        }
-    }
-
     &.editMetadataButton {
         left: 0;
-        top: 0;
+        top: 5px;
         background-image: url("/bloom/bookEdit/img/imageMetaDataButton.svg") !important;
-        background-color: @MetadataButtonColor;
 
         &.imgMetadataProblem {
             background-color: transparent;
-            background-image: url("/bloom/bookEdit/img/imageMissingMetaData.svg") !important;
+            // This relatively subtle missing indicator is replaced by a more prominent one
+            // in an active background overlay.
+            background-image: url("/bloom/bookEdit/img/MissingInfoIndicator.svg") !important;
             border: none;
         }
+    }
+}
+
+// In an active background overlay, show yet another form of the edit metadata icon
+.bloom-backgroundImage[data-bloom-active="true"] {
+    .editMetadataButton.imgMetadataProblem {
+        background-image: url("/bloom/bookEdit/img/imageMissingMetaData.svg") !important;
     }
 }
 
@@ -444,14 +434,6 @@ body.bloom-fullBleed {
     // little cut and copy buttons
     .miniButton {
         right: calc(60px + @inset) !important;
-
-        &.cutImageButton {
-            bottom: calc(27px + @inset) !important;
-        }
-
-        &.copyImageButton {
-            bottom: calc(6px + @inset);
-        }
     }
 
     .imageButton {
@@ -463,11 +445,6 @@ body.bloom-fullBleed {
         &.chooseWidgetButton {
             right: @inset;
             top: @inset;
-        }
-
-        &.pasteImageButton {
-            right: @inset;
-            bottom: @inset;
         }
 
         &.editMetadataButton {
@@ -485,8 +462,7 @@ body.bloom-fullBleed {
     }
 
     .imageButton {
-        &.changeImageButton,
-        &.pasteImageButton {
+        &.changeImageButton {
             right: 50%;
         }
 
@@ -586,27 +562,38 @@ body.bloom-fullBleed {
     }
 }
 
-// New controls are replacing these in image containers that have overlays.
-.bloom-imageContainer:has(.bloom-textOverPicture) {
-    .imageButton,
-    .imageOverlayButton {
-        display: none;
+// currently these buttons display only for active background images.
+.editMetadataButton,
+.changeImageButton {
+    display: none;
+}
+// in a hovered image container, show the buttons if the background image is active,
+// or if there are no other overlays. Also, show the metadata button if there's a
+// problem.
+.bloom-imageContainer:hover {
+    &:not(:has(.bloom-textOverPicture:not(.bloom-backgroundImage))),
+    .bloom-backgroundImage[data-bloom-active="true"] {
+        .editMetadataButton,
+        .changeImageButton {
+            display: block;
+        }
+    }
+    .editMetadataButton.imgMetadataProblem {
+        display: block;
     }
 }
 
-.hoverUp .imageButton {
-    border: 2px outset @ImageButtonBorder !important;
-    border-radius: 3px !important;
-
-    &:hover {
-        border: inset @ImageButtonBorder !important;
-    }
-
-    &.editMetadataButton {
-        background-image: none;
-        background-color: @MetadataButtonColor !important;
+// In an image container that has overlays other than the background image, we want to
+// hide the placeholder except when the background image is active.
+.bloom-imageContainer:has(.bloom-textOverPicture:not(.bloom-backgroundImage)) {
+    .bloom-backgroundImage:not([data-bloom-active="true"]) {
+        img[src^="placeHolder.png"] {
+            display: none;
+        }
     }
 }
+
+// Review: do we still want some hover effect for the big image buttons?
 
 button.miniButton {
     width: 20px;
@@ -634,34 +621,6 @@ button.miniButton {
 
     &.verySmallButtons {
         width: 30%;
-    }
-
-    &.cutImageButton {
-        background-image: url("/bloom/bookEdit/img/cut.svg");
-        bottom: 27px;
-
-        &.disabled {
-            background-image: url("/bloom/bookEdit/img/cutGrey.svg");
-            pointer-events: none;
-        }
-
-        &.smallButtonHeight {
-            bottom: 26%;
-        }
-    }
-
-    &.copyImageButton {
-        background-image: url("/bloom/bookEdit/img/copy.svg");
-        bottom: 6px;
-
-        &.disabled {
-            background-image: url("/bloom/bookEdit/img/copyGrey.svg");
-            pointer-events: none;
-        }
-
-        &.smallButtonHeight {
-            bottom: 4%;
-        }
     }
 }
 
