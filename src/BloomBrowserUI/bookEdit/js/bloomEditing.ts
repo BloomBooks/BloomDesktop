@@ -1582,29 +1582,32 @@ function SetupBookLinkGrids(container: HTMLElement) {
 
                         const desiredFileNameWithoutExtension = `bookButton-${link.book.id}`;
 
+                        const messageContext =
+                            "makeThumbnailFile-" +
+                            desiredFileNameWithoutExtension;
+
                         // listen for a websocket message that the image has been saved
                         // and then update the src attribute
                         const setImgSrc = () => {
-                            console.log(
-                                "got message",
-                                desiredFileNameWithoutExtension
-                            );
+                            console.log("got message " + messageContext);
                             img.setAttribute(
                                 "src",
                                 desiredFileNameWithoutExtension + ".png"
                             ); // note, img.src = "foo" does something different!
                         };
-                        console.log(
-                            "listening for",
-                            desiredFileNameWithoutExtension
-                        );
+                        WebSocketManager.notifyReady(messageContext, () => {
+                            console.log(
+                                "sending post for " +
+                                    desiredFileNameWithoutExtension
+                            );
+                            postJson("editView/addImageFromUrl", {
+                                desiredFileNameWithoutExtension: desiredFileNameWithoutExtension,
+                                url: link.book.thumbnail
+                            });
+                        });
 
-                        WebSocketManager.once(
-                            "makeThumbnailFile-" +
-                                desiredFileNameWithoutExtension,
-                            setImgSrc
-                        );
-
+                        WebSocketManager.once(messageContext, setImgSrc);
+                        console.log("listening for ", messageContext);
                         button.appendChild(img);
 
                         const p = document.createElement("p");
@@ -1612,10 +1615,6 @@ function SetupBookLinkGrids(container: HTMLElement) {
                         button.appendChild(p);
 
                         this.appendChild(button);
-                        postJson("editView/addImageFromUrl", {
-                            desiredFileNameWithoutExtension: desiredFileNameWithoutExtension,
-                            url: link.book.thumbnail
-                        });
                     });
                 }
             );
