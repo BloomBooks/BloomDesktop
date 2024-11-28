@@ -71,6 +71,21 @@ namespace Bloom.Publish.BloomPub.wifi
                 idSuffix: "beginAdvertising",
                 message: "Advertising book to Bloom Readers on local network..."
             );
+
+            // WM, begin: show all IP addresses for this machine
+            String strHostName = string.Empty;
+            IPHostEntry ipEntry = Dns.GetHostEntry(Dns.GetHostName());
+            IPAddress[] addr = ipEntry.AddressList;
+            for (int i = 0; i < addr.Length; i++) {
+                Debug.WriteLine("WM, WiFiAdvertiser::Work, IPaddr{0} = {1} ", i, addr[i].ToString());
+            }
+            // WM, end
+
+            // WM, begin: show all network interfaces for this machine
+            showNetworkInterfaces();
+            // WM, end
+
+            Debug.WriteLine("WM, WiFiAdvertiser::Work, begin UDP broadcast advert loop, src IP = ________"); // WM
             try
             {
                 while (true)
@@ -86,6 +101,7 @@ namespace Bloom.Publish.BloomPub.wifi
                             _client
                         );
                     }
+                    Debug.WriteLine("WM, WiFiAdvertiser::Work, sent UDP broadcast advert"); // WM
                     Thread.Sleep(1000);
                 }
             }
@@ -102,6 +118,14 @@ namespace Bloom.Publish.BloomPub.wifi
                     ProgressKind.Error
                 );
             }
+        }
+
+        // WM, debug only
+        // Show the network interfaces present, along with their relevant attributes.
+        private void showNetworkInterfaces()
+        {
+            Debug.WriteLine("WM, WiFiAdvertiser::showNetworkInterfaces, begin"); // WM
+
         }
 
         public static void SendCallback(IAsyncResult args) { }
