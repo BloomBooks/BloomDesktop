@@ -54,6 +54,7 @@ export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kImageContainerClass = "bloom-imageContainer";
 const kImageContainerSelector = `.${kImageContainerClass}`;
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
+export const kbackgroundImageClass = "bloom-backgroundImage";
 
 const kOverlayClass = "hasOverlay";
 
@@ -359,6 +360,8 @@ export class BubbleManager {
             return; // Already on. No work needs to be done
         }
         this.isComicEditingOn = true;
+        // DO NOT merge this into 6.2!
+        this.revertBackgroundOverlays();
 
         Comical.setActiveBubbleListener(activeElement => {
             // No longer want to focus a bubble when activated.
@@ -5090,6 +5093,49 @@ export class BubbleManager {
         }
 
         return [offsetX, offsetY];
+    }
+
+    // DO NOT merge this into 6.2! It is deliberately positioned here to ensure it will be a conflict
+    // with the new 6.2 code that this is reversing.
+    // 6.2 is the release that should properly handle background overlays.
+    // Reverting them is a temporary hack to prevent problems in 6.1 and 6.0
+    private revertBackgroundOverlays() {
+        for (const bgo of Array.from(
+            document.getElementsByClassName(kbackgroundImageClass)
+        )) {
+            const bgImage = this.getImageFromOverlay(bgo as HTMLElement);
+            const mainImage = this.getImageFromContainer(
+                bgo.parentElement as HTMLElement
+            );
+            if (bgImage && mainImage) {
+                // Note that we must use get/setAttribute here rather than e.g. mainImage.src (a property
+                // of HTMLImageElement) because the src property is a full URL, and we want to preserve
+                // what is actually stored in the src attribute, the path relative to the book file.
+                mainImage.setAttribute(
+                    "src",
+                    bgImage.getAttribute("src") || ""
+                );
+                bgo.remove();
+            }
+        }
+    }
+
+    private getImageFromContainer(
+        imageContainer: HTMLElement
+    ): HTMLImageElement | null {
+        return Array.from(imageContainer.children).find(
+            x => x instanceof HTMLImageElement
+        ) as HTMLImageElement;
+    }
+
+    private getImageFromOverlay(overlay: HTMLElement): HTMLImageElement | null {
+        const imageContainer = overlay.getElementsByClassName(
+            kImageContainerClass
+        )[0];
+        if (!imageContainer) {
+            return null;
+        }
+        return this.getImageFromContainer(imageContainer as HTMLElement);
     }
 }
 
