@@ -4241,6 +4241,15 @@ export class BubbleManager {
         if (!textOverPicDiv || !textOverPicDiv.parentElement) {
             return;
         }
+        if (textOverPicDiv.classList.contains(kbackgroundImageClass)) {
+            // just revert it to a placeholder
+            const img = getImageFromOverlay(textOverPicDiv);
+            if (img) {
+                img.src = "placeHolder.png";
+                this.updateBubbleForChangedImage(img);
+            }
+            return;
+        }
         const containerElement = textOverPicDiv.parentElement;
         // Make sure comical is up-to-date.
         if (
