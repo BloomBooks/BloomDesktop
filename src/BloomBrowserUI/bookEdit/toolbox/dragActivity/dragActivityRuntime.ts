@@ -364,7 +364,7 @@ function changePageButtonClicked(e: MouseEvent) {
     currentChangePageAction?.(next);
 }
 
-export function playInitialElements(page: HTMLElement) {
+export function playInitialElements(page: HTMLElement, playVideos: boolean) {
     const initialFilter = e => {
         const top = e.closest(".bloom-textOverPicture") as HTMLElement;
         if (!top) {
@@ -393,9 +393,6 @@ export function playInitialElements(page: HTMLElement) {
         }
         return true;
     };
-    const videoElements = Array.from(page.getElementsByTagName("video")).filter(
-        initialFilter
-    );
     const audioElements = getVisibleEditables(page).filter(initialFilter);
 
     //Slider: // This is used in drag-word-chooser-slider to mark the text item the user is currently
@@ -408,7 +405,14 @@ export function playInitialElements(page: HTMLElement) {
     //     audioElements.push(activeTextBox);
     // }
     const playables = getAudioSentences(audioElements);
-    playAllVideo(videoElements, () => playAllAudio(playables, page));
+    if (playVideos) {
+        const videoElements = Array.from(
+            page.getElementsByTagName("video")
+        ).filter(initialFilter);
+        playAllVideo(videoElements, () => playAllAudio(playables, page));
+    } else {
+        playAllAudio(playables, page);
+    }
 }
 
 function getAudioSentences(editables: HTMLElement[]) {

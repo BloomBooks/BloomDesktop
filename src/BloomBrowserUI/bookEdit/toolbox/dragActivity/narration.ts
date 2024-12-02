@@ -1228,20 +1228,69 @@ export function playAllVideo(elements: HTMLVideoElement[], then: () => void) {
         return;
     }
     const video = elements[0];
-    // Note: in Bloom Desktop, sometimes this event does not fire normally, even when the video is played to the end.
-    // I have not figured out why. It may be something to do with how we are trimming them.
-    // In Bloom Desktop, this is worked around by raising the ended event when we detect that it has paused past the end point
-    // in resetToStartAfterPlayingToEndPoint.
-    // In BloomPlayer,I don't think this is a problem. Videos are trimmed when published, so we always play to the
-    // real end (unless the user pauses). So one way or another, we should get the ended event.
-    video.addEventListener(
-        "ended",
-        () => {
-            playAllVideo(elements.slice(1), then);
-        },
-        { once: true }
-    );
-    // Review: do we need to do something to let the rest of the world know about this?
-    setCurrentPlaybackMode(PlaybackMode.VideoPlaying);
-    video.play();
+    // If there is an error, try to continue with the next video.
+    if (
+        video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE &&
+        video.readyState === HTMLMediaElement.HAVE_NOTHING
+    ) {
+        showVideoError(video);
+        playAllVideo(elements.slice(1), then);
+    } else {
+        hideVideoError(video);
+        // Review: do we need to do something to let the rest of the world know about this?
+        setCurrentPlaybackMode(PlaybackMode.VideoPlaying);
+        const promise = video.play();
+        promise
+            .then(() => {
+                // Note: in Bloom Desktop, sometimes this event does not fire normally, even when the video is played to the end.
+                // I have not figured out why. It may be something to do with how we are trimming them.
+                // In Bloom Desktop, this is worked around by raising the ended event when we detect that it has paused past the end point
+                // in resetToStartAfterPlayingToEndPoint.
+                // In BloomPlayer,I don't think this is a problem. Videos are trimmed when published, so we always play to the
+                // real end (unless the user pauses). So one way or another, we should get the ended event.
+                video.addEventListener(
+                    "ended",
+                    () => {
+                        playAllVideo(elements.slice(1), then);
+                    },
+                    { once: true }
+                );
+            })
+            .catch(reason => {
+                console.error("Video play failed", reason);
+                showVideoError(video);
+                playAllVideo(elements.slice(1), then);
+            });
+    }
+}
+
+// We're living with this message not being localized.
+const badVideoMessage = "Sorry, this video cannot be played in this browser.";
+
+export function showVideoError(video: HTMLVideoElement): void {
+    const parent = video.parentElement;
+    if (parent) {
+        const divs = parent.getElementsByClassName("video-error-message");
+        if (divs.length === 0) {
+            const msgDiv = parent.ownerDocument.createElement("div");
+            msgDiv.className = "video-error-message normal-style";
+            msgDiv.textContent = badVideoMessage;
+            msgDiv.style.display = "block";
+            msgDiv.style.color = "black";
+            msgDiv.style.backgroundColor = "rgba(255, 255, 255, 0.5)"; // semi-transparent white
+            msgDiv.style.position = "absolute";
+            msgDiv.style.left = "10%";
+            msgDiv.style.top = "10%";
+            msgDiv.style.width = "80%";
+            msgDiv.style.fontSize = "x-large";
+            parent.appendChild(msgDiv);
+        }
+    }
+}
+export function hideVideoError(video: HTMLVideoElement): void {
+    const parent = video.parentElement;
+    if (parent) {
+        const divs = parent.getElementsByClassName("video-error-message");
+        while (divs.length > 1) parent.removeChild(divs[0]);
+    }
 }

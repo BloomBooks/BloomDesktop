@@ -4652,6 +4652,7 @@ namespace Bloom.Book
             }
 
             RemoveObsoleteSoundAttributes(OurHtmlDom);
+            RemoveVideoWarnings();
             // Note that at this point _bookData has already been updated with the edited page's data, if any.
             // This will take priority over other data it finds in the book, even earlier in the book
             // than the edited page.
@@ -4678,6 +4679,18 @@ namespace Bloom.Book
             }
 
             DoPostSaveTasks();
+        }
+
+        private void RemoveVideoWarnings()
+        {
+            var warningDivs = OurHtmlDom
+                .SafeSelectNodes("//div[contains(@class,'video-error-message')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            foreach (var div in warningDivs)
+            {
+                div.ParentElement.RemoveChild(div);
+            }
         }
 
         public void SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
