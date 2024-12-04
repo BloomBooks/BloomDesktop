@@ -73,19 +73,17 @@ namespace Bloom.Publish.BloomPub.wifi
                 message: "Advertising book to Bloom Readers on local network..."
             );
 
-            // WM, begin: show all IP addresses and network interfaces for this machine
-            String hostName = Dns.GetHostName();
-            Debug.WriteLine("WM, WiFiAdvertiser::Work, IP addresses for host " + hostName);
-            IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
-            IPAddress[] addr = ipEntry.AddressList;
-            for (int i = 0; i < addr.Length; i++) {
-                Debug.WriteLine("  IPaddr[{0}] = {1} ", i, addr[i].ToString());
-            }
+            // WM, DEBUG ONLY: show this machine's IP addresses and network interfaces.
+            showIpAddresses();
             showNetworkInterfaces();
-            chooseNetworkInterface();
-            // WM, end
 
-            Debug.WriteLine("WM, WiFiAdvertiser::Work, begin UDP broadcast advert loop, src IP = ________"); // WM
+            // Choose the IP address most likely to work.
+            chooseIpAddressForAdvertising();
+
+            Debug.WriteLine("WM, WiFiAdvertiser::Work, GetLocalIpAddress() returns " + GetLocalIpAddress());
+            Debug.WriteLine("WM, WiFiAdvertiser::Work, GetIpAddressOfNetworkIface() returns " + GetIpAddressOfNetworkIface());
+
+            //Debug.WriteLine("WM, WiFiAdvertiser::Work, begin UDP broadcast advert loop, src IP = ________"); // WM
             try
             {
                 while (true)
@@ -93,6 +91,9 @@ namespace Bloom.Publish.BloomPub.wifi
                     if (!Paused)
                     {
                         UpdateAdvertisementBasedOnCurrentIpAddress();
+
+                        // *** TODO: Don't let C# pick the network interface to use as it sometimes chooses
+                        //           the wrong one.
                         _client.BeginSend(
                             _sendBytes,
                             _sendBytes.Length,
@@ -120,8 +121,21 @@ namespace Bloom.Publish.BloomPub.wifi
             }
         }
 
-        // WM, *** DEBUG ONLY ***
-        // Show the network interfaces present plus some relevant attributes.
+        // WM  *** DEBUG ONLY ***
+        // Show all IP addresses present in the system.
+        private void showIpAddresses()
+        {
+            String hostName = Dns.GetHostName();
+            Debug.WriteLine("WM, WiFiAdvertiser::showIpAddresses for host = " + hostName);
+            IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
+            IPAddress[] addr = ipEntry.AddressList;
+            for (int i = 0; i<addr.Length; i++) {
+                Debug.WriteLine("  IPaddr[{0}] = {1} ", i, addr[i].ToString());
+            }
+        }
+
+        // WM  *** DEBUG ONLY ***
+        // Show all network interfaces present plus some relevant attributes.
         private void showNetworkInterfaces()
         {
             Debug.WriteLine("WM, WiFiAdvertiser::showNetworkInterfaces");
@@ -136,6 +150,7 @@ namespace Bloom.Publish.BloomPub.wifi
                 Debug.WriteLine("  nic[" + i + "].NetworkInterfaceType = " + nic.NetworkInterfaceType);
                 Debug.WriteLine("  nic[" + i + "].OperationalStatus = " + nic.OperationalStatus);
                 Debug.WriteLine("  nic[" + i + "].Speed = " + nic.Speed);
+                Debug.WriteLine("  nic[" + i + "], MAC = " + nic.GetPhysicalAddress());
 
                 if (!nic.Supports(NetworkInterfaceComponent.IPv4))
                 {
@@ -163,9 +178,13 @@ namespace Bloom.Publish.BloomPub.wifi
             Debug.WriteLine("  ----------");
         }
 
-        private void chooseNetworkInterface()
+        private void chooseIpAddressForAdvertising()
         {
-            //Debug.WriteLine("WM, WiFiAdvertiser::chooseNetworkInterface, do nothing yet");
+            Debug.WriteLine("WM, WiFiAdvertiser::chooseIpAddressForAdvertising, do nothing yet");
+            // TODO: Is it possible that none of this interface stuff is needed? Can I just take what
+            // my improved IP-address-in-use function returns to force the socket connection?
+            // If the socket DOES require an interface ID or something then it should be simple to just
+            // search the interface for the IP address returned by my IP-address-in-use function.
         }
 
         public static void SendCallback(IAsyncResult args) { }
@@ -219,6 +238,22 @@ namespace Bloom.Publish.BloomPub.wifi
                 localIp = ipAddress.ToString();
             }
             return localIp ?? "Could not determine IP Address!";
+        }
+
+        // We need the IP address of *this* (the local) machine. Since a machine running BloomDesktop can have
+        // multiple IP addresses (mine has 11, a mix of both IPv4 and IPv6), we must be judicious in selecting the
+        // one that will actually be used by network interface. Unfortunately, GetLocalIpAddress() does not always
+        // return the correct address.
+        // Here is a function that does. It is based on the post at
+        // https://stackoverflow.com/questions/6803073/get-local-ip-address/27376368#27376368
+        private string GetIpAddressOfNetworkIface()
+        {
+            IPEndPoint endpoint;
+            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+            socket.Connect("8.8.8.8", 65530); // Google's public DNS service
+            endpoint = socket.LocalEndPoint as IPEndPoint;
+
+            return endpoint.Address.ToString();
         }
 
         public void Stop()
