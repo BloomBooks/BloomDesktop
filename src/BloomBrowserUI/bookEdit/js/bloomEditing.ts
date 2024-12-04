@@ -844,6 +844,28 @@ export function SetupElements(
             );
         }
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
+
+        // refocus on either the desired element or the first visible editable field
+        // HACK for BL-14109: source bubbles have stopped appearing automatically because focus
+        // is set before the SourceBubble qtips have been created.  Refocusing here fixes this.
+        if (!toolboxVisible && bubbleDivs.length) {
+            // The focus set here may not actually be what is focused in the end.  Other setup
+            // code (such as for Comical) may have other--or identical--ideas and set focus.
+            const focusableElement = elementToFocus?.querySelector(
+                ":focusable"
+            );
+            if (focusableElement) {
+                $(focusableElement).focus();
+            } else {
+                const editableElement = $(container)
+                    .find("div.bloom-editable:visible")
+                    .first();
+                if (editableElement.length) {
+                    editableElement.focus();
+                }
+            }
+        }
+
         if (theOneBubbleManager.isComicEditingOn) {
             // If we saved the page with an indication that a particular element should be
             // active, and calling code is not specifying one, restore the one we saved.
