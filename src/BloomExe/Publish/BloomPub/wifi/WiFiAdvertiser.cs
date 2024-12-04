@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -72,17 +73,16 @@ namespace Bloom.Publish.BloomPub.wifi
                 message: "Advertising book to Bloom Readers on local network..."
             );
 
-            // WM, begin: show all IP addresses for this machine
-            String strHostName = string.Empty;
-            IPHostEntry ipEntry = Dns.GetHostEntry(Dns.GetHostName());
+            // WM, begin: show all IP addresses and network interfaces for this machine
+            String hostName = Dns.GetHostName();
+            Debug.WriteLine("WM, WiFiAdvertiser::Work, IP addresses for host " + hostName);
+            IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
             IPAddress[] addr = ipEntry.AddressList;
             for (int i = 0; i < addr.Length; i++) {
-                Debug.WriteLine("WM, WiFiAdvertiser::Work, IPaddr{0} = {1} ", i, addr[i].ToString());
+                Debug.WriteLine("  IPaddr[{0}] = {1} ", i, addr[i].ToString());
             }
-            // WM, end
-
-            // WM, begin: show all network interfaces for this machine
             showNetworkInterfaces();
+            chooseNetworkInterface();
             // WM, end
 
             Debug.WriteLine("WM, WiFiAdvertiser::Work, begin UDP broadcast advert loop, src IP = ________"); // WM
@@ -120,12 +120,52 @@ namespace Bloom.Publish.BloomPub.wifi
             }
         }
 
-        // WM, debug only
-        // Show the network interfaces present, along with their relevant attributes.
+        // WM, *** DEBUG ONLY ***
+        // Show the network interfaces present plus some relevant attributes.
         private void showNetworkInterfaces()
         {
-            Debug.WriteLine("WM, WiFiAdvertiser::showNetworkInterfaces, begin"); // WM
+            Debug.WriteLine("WM, WiFiAdvertiser::showNetworkInterfaces");
+            int i = -1;
+            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                Debug.WriteLine("  ----------");
+                i++;  // doing it here lets an increment still follow a 'continue'
+                Debug.WriteLine("  nic[" + i + "].Name = " + nic.Name);
+                Debug.WriteLine("  nic[" + i + "].Id   = " + nic.Id);
+                Debug.WriteLine("  nic[" + i + "].Description = " + nic.Description);
+                Debug.WriteLine("  nic[" + i + "].NetworkInterfaceType = " + nic.NetworkInterfaceType);
+                Debug.WriteLine("  nic[" + i + "].OperationalStatus = " + nic.OperationalStatus);
+                Debug.WriteLine("  nic[" + i + "].Speed = " + nic.Speed);
 
+                if (!nic.Supports(NetworkInterfaceComponent.IPv4))
+                {
+                    Debug.WriteLine("    does not support IPv4");
+                    continue;
+                }
+
+                IPInterfaceProperties ipProps = nic.GetIPProperties();
+                IPv4InterfaceProperties ipPropsV4 = ipProps.GetIPv4Properties();
+                if (ipPropsV4 == null)
+                {
+                    Debug.WriteLine("    IPv4 information not available");
+                    continue;
+                }
+
+                Debug.WriteLine("  nic[" + i + "], ipPropsV4.Index = " + ipPropsV4.Index);
+                Debug.WriteLine("  nic[" + i + "], ipPropsV4       = " + ipPropsV4.ToString());
+                Debug.WriteLine("  nic[" + i + "], ipProps.UnicastAddresses.FirstOrDefault = " + ipProps.UnicastAddresses.FirstOrDefault()?.Address);
+                //Debug.WriteLine("  nic[" + i + "], ipProps.UnicastAddresses = " + ipProps.UnicastAddresses.ToString());
+                foreach (UnicastIPAddressInformation addr in ipProps.UnicastAddresses)
+                {
+                    Debug.WriteLine("  nic[" + i + "], ipProps.addr.Address = " + addr.Address.ToString());
+                }
+            }
+            Debug.WriteLine("  ----------");
+        }
+
+        private void chooseNetworkInterface()
+        {
+            //Debug.WriteLine("WM, WiFiAdvertiser::chooseNetworkInterface, do nothing yet");
         }
 
         public static void SendCallback(IAsyncResult args) { }
