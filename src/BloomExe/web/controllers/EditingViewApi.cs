@@ -262,7 +262,7 @@ namespace Bloom.web.controllers
         }
 
         static Regex _bloomHyperlinkRegex = new Regex(
-            @"^bloomnav://book/([-A-Fa-f0-9]+)\?page=([-A-Fa-f0-9]+|cover)$",
+            @"^(/book/([-A-Fa-f0-9]+))?(#(cover|[-A-Fa-f0-9]+))?",
             RegexOptions.Compiled
         );
 
@@ -280,8 +280,8 @@ namespace Bloom.web.controllers
             var match = _bloomHyperlinkRegex.Match(text);
             if (match.Success)
             {
-                var bookId = match.Groups[1].Value;
-                var pageId = match.Groups[2].Value;
+                var bookId = match.Groups[2].Value;
+                var pageId = match.Groups[4].Value;
                 // It is no good linking to xmatter pages by id because their IDs change.
                 // We maintain a link to the outside front cover using the id "cover" to get
                 // around this problem.

@@ -1568,7 +1568,7 @@ function SetupBookLinkGrids(container: HTMLElement) {
                         button.className = "bloom-bookButton";
                         button.setAttribute(
                             "data-href",
-                            `bloomnav://book/${link.book.id}`
+                            `/book/${link.book.id}`
                         );
                         button.setAttribute("data-bloom-book-id", link.book.id);
                         if (link.page) {
