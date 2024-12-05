@@ -1062,6 +1062,7 @@ namespace Bloom.Edit
                     if (result == DialogResult.OK)
                         SetGifImage(imageId, imageSrc, dlg.FileName);
                 }
+                return; // we don't want to do the rest of this method, calling the toolbox, etc.
             }
 
             var imageInfo = new PalasoImage();
