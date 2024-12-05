@@ -601,6 +601,11 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <target xml:lang="quc" state="final">K'exenik...</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChooseLanguage">
+        <source xml:lang="en">Choose Language</source>
+        <target xml:lang="quc" state="needs-translation">Choose Language</target>
+        <note>ID: CollectionSettingsDialog.LanguageTab.ChooseLanguage</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
         <source xml:lang="en">Languages</source>
         <target xml:lang="quc" state="final">Tzijob'al</target>
