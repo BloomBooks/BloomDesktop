@@ -600,9 +600,9 @@
         <target xml:lang="fr" state="final">Modifier...</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChooseLanguage">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChooseLanguage" approved="yes">
         <source xml:lang="en">Choose Language</source>
-        <target xml:lang="fr" state="needs-translation">Choose Language</target>
+        <target xml:lang="fr" state="final">Choisir Langue</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChooseLanguage</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
