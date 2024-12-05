@@ -4,7 +4,7 @@ import * as $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
-    SetOverlayForImagesWithoutMetadata,
+    SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
     doImageCommand
@@ -414,7 +414,7 @@ export function changeImage(imageInfo: {
     imgOrImageContainer.setAttribute("data-license", imageInfo.license);
     const ancestor = imgOrImageContainer.parentElement?.parentElement;
     if (ancestor) {
-        SetOverlayForImagesWithoutMetadata(ancestor);
+        SetupMetadataButton(ancestor);
     }
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
@@ -787,7 +787,7 @@ export function SetupElements(
             SetupResizableElement(this);
         });
 
-    SetOverlayForImagesWithoutMetadata(container);
+    SetupMetadataButton(container);
 
     //note, the normal way is for the user to click the link on the bubble.
     //But clicking on the existing topic may be natural too, and this prevents
