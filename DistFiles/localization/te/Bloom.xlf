@@ -600,6 +600,11 @@
         <target xml:lang="te" state="final">మార్పు</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChooseLanguage">
+        <source xml:lang="en">Choose Language</source>
+        <target xml:lang="te" state="needs-translation">Choose Language</target>
+        <note>ID: CollectionSettingsDialog.LanguageTab.ChooseLanguage</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
         <source xml:lang="en">Languages</source>
         <target xml:lang="te" state="final">భాషలు</target>
