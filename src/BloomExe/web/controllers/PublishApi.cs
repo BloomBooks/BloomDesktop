@@ -538,29 +538,27 @@ namespace Bloom.web.controllers
         {
             Application.Idle -= LaunchChooseSignLanguage;
             var collectionSettings = Model.Book.CollectionSettings;
-            var l = CollectionSettingsDialog.ChangeLanguage(
-                collectionSettings.SignLanguageTag,
-                CurrentSignLanguageName,
-                false
-            );
-            if (l == null)
+            void onLanguageChange(LanguageChangeEventArgs args)
             {
-                // no change; dialog cancelled
-                return;
+                // How to know if the new sign language name is custom or not!?
+                // 1- set the Tag (which also sets the Name to the non-custom default
+                // 2- read the Name
+                // 3- if it's not the same as DesiredName, the new name is custom
+                collectionSettings.SignLanguageTag = args.LanguageTag;
+                var slIsCustom = collectionSettings.SignLanguage.Name != args.DesiredName;
+                collectionSettings.SignLanguage.SetName(args.DesiredName, slIsCustom);
+                collectionSettings.Save();
+                Model.UpdateLangDataCache();
+
+                Model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
+                _webSocketServer.SendString("publish", "signLang", args.DesiredName);
             }
 
-            // How to know if the new sign language name is custom or not!?
-            // 1- set the Tag (which also sets the Name to the non-custom default
-            // 2- read the Name
-            // 3- if it's not the same as DesiredName, the new name is custom
-            collectionSettings.SignLanguageTag = l.LanguageTag;
-            var slIsCustom = collectionSettings.SignLanguage.Name != l.DesiredName;
-            collectionSettings.SignLanguage.SetName(l.DesiredName, slIsCustom);
-            collectionSettings.Save();
-            Model.UpdateLangDataCache();
-
-            Model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
-            _webSocketServer.SendString("publish", "signLang", l.DesiredName);
+            CollectionSettingsDialog.ChangeLanguage(
+                onLanguageChange,
+                collectionSettings.SignLanguageTag,
+                CurrentSignLanguageName
+            );
         }
 
         private string CurrentSignLanguageName

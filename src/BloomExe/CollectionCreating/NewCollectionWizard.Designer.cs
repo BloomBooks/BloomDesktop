@@ -45,7 +45,7 @@ namespace Bloom.CollectionCreating
             this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
             this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
 			this._welcomeHtml = new SIL.Windows.Forms.Widgets.BetterLabel();
-			this._vernacularLanguageIdControl = new Bloom.CollectionCreating.LanguageIdControl();
+			this._languageChooserReactControl = new web.ReactControl();
 			this._fontDetails = new Bloom.MiscUI.LanguageFontDetails();
 			this._languageLocationControl = new Bloom.CollectionCreating.LanguageLocationControl();
 			this._collectionNameControl = new Bloom.CollectionCreating.CollectionNameControl();
@@ -87,12 +87,18 @@ namespace Bloom.CollectionCreating
 			//
 			// _vernacularLanguagePage
 			//
-			this._vernacularLanguagePage.Controls.Add(this._vernacularLanguageIdControl);
+			this._vernacularLanguagePage.Controls.Add(this._languageChooserReactControl);
 			this._vernacularLanguagePage.Name = "_vernacularLanguagePage";
 			this._vernacularLanguagePage.NextPage = this._languageFontPage;
 			this._vernacularLanguagePage.Size = new System.Drawing.Size(712, 309);
 			this._vernacularLanguagePage.TabIndex = 1;
 			this._vernacularLanguagePage.Text = "Choose the main language for this collection.";
+			// 
+			// _languageChooserReactControl
+			//
+			this._languageChooserReactControl.JavascriptBundleName = "newCollectionLanguageChooserBundle";
+			this._languageChooserReactControl.Name = "_languageChooserReactControl";
+			this._languageChooserReactControl.TabIndex = 0;
 			//
 			// _languageFontPage
 			//
@@ -163,16 +169,6 @@ namespace Bloom.CollectionCreating
 			this._welcomeHtml.Size = new System.Drawing.Size(637, 310);
 			this._welcomeHtml.TabIndex = 1;
 			//
-			// _vernacularLanguageIdControl
-			//
-			this._vernacularLanguageIdControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._vernacularLanguageIdControl.Location = new System.Drawing.Point(0, 3);
-			this._vernacularLanguageIdControl.Name = "_vernacularLanguageIdControl";
-			this._vernacularLanguageIdControl.Size = new System.Drawing.Size(656, 267);
-			this._vernacularLanguageIdControl.TabIndex = 0;
-			//
 			// _languageLocationControl
 			//
 			this._languageLocationControl.BackColor = System.Drawing.Color.White;
@@ -197,7 +193,7 @@ namespace Bloom.CollectionCreating
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-			this.ClientSize = new System.Drawing.Size(759, 464);
+			this.ClientSize = new System.Drawing.Size(1084, 586);
 			this.ControlBox = true;
 			this.Controls.Add(this._wizardControl);
 			this.MaximizeBox = false;
@@ -221,7 +217,7 @@ namespace Bloom.CollectionCreating
 
         private Bloom.Wizard.WizardAdapterControl _wizardControl;
         private Bloom.Wizard.WizardAdapterPage _vernacularLanguagePage;
-		private LanguageIdControl _vernacularLanguageIdControl;
+		private web.ReactControl _languageChooserReactControl;
         private Bloom.Wizard.WizardAdapterPage _collectionNamePage;
 		private CollectionNameControl _collectionNameControl;
         private Bloom.Wizard.WizardAdapterPage _finishPage;

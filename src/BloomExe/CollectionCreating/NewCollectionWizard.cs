@@ -6,6 +6,8 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
@@ -72,16 +74,32 @@ namespace Bloom.CollectionCreating
                 DefaultParentDirectoryForCollections
             );
 
-            _vernacularLanguagePage.Tag = _vernacularLanguageIdControl;
-            _vernacularLanguageIdControl.Init(SetNextButtonState, _collectionInfo);
-
+            _vernacularLanguagePage.Tag = _languageChooserReactControl;
             _welcomePage.Suppress = !showWelcome;
 
             //The L10NSharpExtender and this wizard don't get along (they conspire to crash Visual Studio with a stack overflow)
             //so we do all of this by hand
             SetLocalizedStrings();
 
+            NewCollectionWizardApi.CurrentWizard = this;
+
             _wizardControl.AfterInitialization();
+        }
+
+        public void SelectLanguage(
+            string languageTag,
+            string desiredName,
+            string defaultName,
+            string country
+        )
+        {
+            if (_collectionInfo == null)
+                return;
+
+            _collectionInfo.Language1.Tag = languageTag;
+            _collectionInfo.Language1.SetName(desiredName, desiredName != defaultName);
+            _collectionInfo.Country = country;
+            SetNextButtonState(true, languageTag != null);
         }
 
         public void ChangeLocalization()
@@ -167,11 +185,11 @@ namespace Bloom.CollectionCreating
             }
         }
 
-        public void SetNextButtonState(UserControl caller, bool enabled)
+        public void SetNextButtonState(bool onLanguageChooserControl, bool enabled)
         {
             _wizardControl.SelectedPage.AllowNext = enabled;
 
-            if (caller is LanguageIdControl)
+            if (onLanguageChooserControl)
             {
                 var sanitizedCollectionName = GetNewCollectionName(_collectionInfo.Language1.Name);
                 _collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(
@@ -252,7 +270,9 @@ namespace Bloom.CollectionCreating
             if (_collectionInfo.Country == "Papua New Guinea")
             {
                 _collectionInfo.Language2.Tag = "en";
+                _collectionInfo.Language2.SetName("English", false);
                 _collectionInfo.Language3.Tag = "tpi";
+                _collectionInfo.Language3.SetName("Tok Pisin", false);
             }
             _collectionInfo.SetAnalyticsProperties();
 
