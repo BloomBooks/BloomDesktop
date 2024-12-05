@@ -603,7 +603,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChooseLanguage">
         <source xml:lang="en">Choose Language</source>
-        <target xml:lang="sw" state="needs-translation">Choose Language</target>
+        <target xml:lang="sw" state="translated">Chagua lugha</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChooseLanguage</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
