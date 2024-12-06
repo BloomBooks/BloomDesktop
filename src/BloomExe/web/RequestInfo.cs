@@ -589,5 +589,12 @@ namespace Bloom.Api
                 return v;
             }
         }
+
+        public void WriteRedirect(string url, bool permanent)
+        {
+            _actualContext.Response.StatusCode = permanent ? 301 : 302;
+            _actualContext.Response.Headers.Add("Location", url);
+            _actualContext.Response.Close();
+        }
     }
 }

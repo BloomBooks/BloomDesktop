@@ -37,5 +37,6 @@ namespace Bloom.Api
         string DoNotCacheFolder { set; }
         byte[] GetRawPostData();
         Stream GetRawPostStream();
+        void WriteRedirect(string url, bool permanent);
     }
 }
