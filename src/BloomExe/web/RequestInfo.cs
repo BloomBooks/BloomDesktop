@@ -1,4 +1,4 @@
-// Copyright (c) 2014 SIL International
+﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
@@ -593,7 +593,8 @@ namespace Bloom.Api
         public void WriteRedirect(string url, bool permanent)
         {
             _actualContext.Response.StatusCode = permanent ? 301 : 302;
-            _actualContext.Response.Headers.Add("Location", url);
+            var encodedUrl = Uri.EscapeUriString(url); // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
+            _actualContext.Response.Headers.Add("Location", encodedUrl);
             _actualContext.Response.Close();
         }
     }
