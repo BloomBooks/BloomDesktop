@@ -2161,9 +2161,7 @@ export class BubbleManager {
                 this.activeElement.clientWidth + 2 * extraPadding + "px";
             controlFrame.style.height = this.activeElement.style.height;
             controlFrame.style.left =
-                BubbleManager.pxToNumber(this.activeElement.style.left) -
-                extraPadding +
-                "px";
+                this.activeElement.offsetLeft - extraPadding + "px";
             controlFrame.style.top = this.activeElement.style.top;
             const tails = Bubble.getBubbleSpec(this.activeElement).tails;
             if (tails.length > 0) {
