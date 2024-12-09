@@ -843,6 +843,17 @@ namespace Bloom.Api
             {
                 return FontsApi.ProcessHostFontsRequest(info, localPath);
             }
+            if (localPath.Contains("fonts/Andika"))
+            {
+                // Rightly or wrongly, Andika is in a different place in our
+                // repo structure than the other UI fonts because it with the book fonts.
+                // To keep from having to duplicate the Andika font files in both places,
+                // this workaround maps the request for Andika as a UI font as if it were a book font.
+                return FontsApi.ProcessHostFontsRequest(
+                    info,
+                    localPath.Replace("fonts/", "/host/fonts/")
+                );
+            }
 
             switch (localPath)
             {
