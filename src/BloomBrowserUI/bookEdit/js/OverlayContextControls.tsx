@@ -129,15 +129,12 @@ const OverlayContextControls: React.FunctionComponent<{
     useEffect(() => {
         setImageSound(props.overlay.getAttribute("data-sound") ?? "none");
     }, [props.overlay]);
+    const isBackgroundImage = props.overlay.classList.contains(
+        kbackgroundImageClass
+    );
 
     // These commands apply to all overlays.
     const menuOptions: IMenuItemWithSubmenu[] = [
-        {
-            l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
-            english: "Duplicate",
-            onClick: theOneBubbleManager?.duplicateBubble,
-            icon: <DuplicateIcon css={getMenuIconCss()} />
-        },
         {
             l10nId: "Common.Delete",
             english: "Delete",
@@ -145,6 +142,15 @@ const OverlayContextControls: React.FunctionComponent<{
             icon: <DeleteIcon css={getMenuIconCss()} />
         }
     ];
+    // This one to everything except background images
+    if (!isBackgroundImage) {
+        menuOptions.unshift({
+            l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
+            english: "Duplicate",
+            onClick: theOneBubbleManager?.duplicateBubble,
+            icon: <DuplicateIcon css={getMenuIconCss()} />
+        });
+    }
     if (!hasImage && !hasVideo) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
@@ -315,7 +321,7 @@ const OverlayContextControls: React.FunctionComponent<{
                             `}
                         />
                     )}
-                    {!hasVideo && (
+                    {!hasVideo && !isBackgroundImage && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Duplicate"
                             icon={DuplicateIcon}
@@ -631,23 +637,6 @@ function addImageMenuOptions(
             getImageUrlFromImageContainer(imgContainer)
         );
     };
-    const setAsBackground = () => {
-        theOneBubbleManager?.setAsBackground();
-    };
-
-    const currentIsBackground = overlay.classList.contains(
-        kbackgroundImageClass
-    );
-    const isThereABackground =
-        currentIsBackground ||
-        overlay.parentElement?.getElementsByClassName(kbackgroundImageClass)[0];
-
-    let backgroundMenuItemL10nId = "EditTab.Image.SetBackground"; // default when no background is set
-    if (currentIsBackground) {
-        backgroundMenuItemL10nId = "EditTab.Image.SetBackgroundRemove";
-    } else if (isThereABackground) {
-        backgroundMenuItemL10nId = "EditTab.Image.SetBackgroundReplace";
-    }
 
     menuOptions.unshift(
         {
@@ -674,12 +663,6 @@ function addImageMenuOptions(
             subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
             onClick: runMetadataDialog,
             icon: <CopyrightIcon css={getMenuIconCss()} />
-        },
-        {
-            l10nId: backgroundMenuItemL10nId,
-            english: "Set Image as background",
-            onClick: setAsBackground,
-            icon: <BackgroundIcon css={getMenuIconCss()} />
         },
         divider
     );

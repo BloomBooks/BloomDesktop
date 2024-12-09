@@ -123,7 +123,7 @@ const kBloomVisibleClass = "bloom-visibility-code-on";
 
 const kAudioSplitId = "audio-split";
 
-const kPlaybackOrderContainerClass: string =
+export const kPlaybackOrderContainerClass: string =
     "bloom-playbackOrderControlsContainer";
 
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
