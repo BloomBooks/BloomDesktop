@@ -83,7 +83,15 @@ namespace Bloom
 
             _scope
                 .Resolve<CollectionSettings>()
-                .CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
+                .CheckAndFixDependencies(
+                    new BloomFileLocator(
+                        _scope.Resolve<CollectionSettings>(),
+                        _scope.Resolve<XMatterPackFinder>(),
+                        GetFactoryFileLocations(),
+                        GetFoundFileLocations(),
+                        GetAfterXMatterFileLocations()
+                    )
+                );
 
             if (!justEnoughForHtmlDialog)
                 ProjectWindow = _scope.Resolve<Shell>();
