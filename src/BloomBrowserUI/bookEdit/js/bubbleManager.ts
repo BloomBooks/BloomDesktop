@@ -1230,8 +1230,8 @@ export class BubbleManager {
         )[0];
         const img = imgC?.getElementsByTagName("img")[0];
         if (!img) return;
-        this.oldImageTop = BubbleManager.pxToNumber(img.style.top);
-        this.oldImageLeft = BubbleManager.pxToNumber(img.style.left);
+        this.oldImageTop = img.offsetTop;
+        this.oldImageLeft = img.offsetLeft;
         this.lastCropControl = undefined;
         this.startMoveCropControlX = this.currentDragControl.offsetLeft;
         this.startMoveCropControlY = this.currentDragControl.offsetTop;
@@ -1304,17 +1304,15 @@ export class BubbleManager {
         this.startResizeDragY = event.clientY;
         this.resizeDragCorner = corner;
         const style = this.activeElement.style;
-        this.oldWidth = BubbleManager.pxToNumber(style.width);
-        this.oldHeight = BubbleManager.pxToNumber(style.height);
-        this.oldTop = BubbleManager.pxToNumber(style.top);
-        this.oldLeft = BubbleManager.pxToNumber(style.left);
+        this.oldWidth = this.activeElement.clientWidth;
+        this.oldHeight = this.activeElement.clientHeight;
+        this.oldTop = this.activeElement.offsetTop;
+        this.oldLeft = this.activeElement.offsetLeft;
         const imgOrVideo = this.getImageOrVideo();
         if (imgOrVideo && imgOrVideo.style.width) {
-            this.oldImageWidth = BubbleManager.pxToNumber(
-                imgOrVideo.style.width
-            );
-            this.oldImageTop = BubbleManager.pxToNumber(imgOrVideo.style.top);
-            this.oldImageLeft = BubbleManager.pxToNumber(imgOrVideo.style.left);
+            this.oldImageWidth = imgOrVideo.clientWidth;
+            this.oldImageTop = imgOrVideo.offsetTop;
+            this.oldImageLeft = imgOrVideo.offsetLeft;
         }
         document.addEventListener("mousemove", this.continueResizeDrag, {
             capture: true
@@ -1567,31 +1565,23 @@ export class BubbleManager {
         this.currentDragControl.classList.add("active-control");
         this.currentDragSide = side;
         const style = this.activeElement.style;
-        this.oldWidth = BubbleManager.pxToNumber(style.width);
-        this.oldHeight = BubbleManager.pxToNumber(style.height);
-        this.oldTop = BubbleManager.pxToNumber(style.top);
-        this.oldLeft = BubbleManager.pxToNumber(style.left);
+        this.oldWidth = this.activeElement.clientWidth;
+        this.oldHeight = this.activeElement.clientHeight;
+        this.oldTop = this.activeElement.offsetTop;
+        this.oldLeft = this.activeElement.offsetLeft;
         if (img) {
-            this.oldImageLeft = BubbleManager.pxToNumber(img.style.left);
-            this.oldImageTop = BubbleManager.pxToNumber(img.style.top);
+            this.oldImageLeft = img.offsetLeft;
+            this.oldImageTop = img.offsetTop;
 
             if (this.lastCropControl !== event.currentTarget) {
                 this.initialCropImageWidth = img.offsetWidth;
                 this.initialCropImageHeight = img.offsetHeight;
-                this.initialCropImageLeft = BubbleManager.pxToNumber(
-                    img.style.left
-                );
-                this.initialCropImageTop = BubbleManager.pxToNumber(
-                    img.style.top
-                );
+                this.initialCropImageLeft = img.offsetLeft;
+                this.initialCropImageTop = img.offsetTop;
                 this.initialCropBubbleWidth = this.activeElement.offsetWidth;
                 this.initialCropBubbleHeight = this.activeElement.offsetHeight;
-                this.initialCropBubbleTop = BubbleManager.pxToNumber(
-                    this.activeElement.style.top
-                );
-                this.initialCropBubbleLeft = BubbleManager.pxToNumber(
-                    this.activeElement.style.left
-                );
+                this.initialCropBubbleTop = this.activeElement.offsetTop;
+                this.initialCropBubbleLeft = this.activeElement.offsetLeft;
                 this.lastCropControl = event.currentTarget as HTMLElement;
             }
             // Determine whether the drag is starting in the "no cropping" position
@@ -2056,18 +2046,18 @@ export class BubbleManager {
                 newHeight = newWidth / imgRatio;
             }
         }
-        const oldHeight = BubbleManager.pxToNumber(overlay.style.height);
+        const oldHeight = overlay.clientHeight;
         if (Math.abs(oldHeight - newHeight) > 0.1) {
             // don't let small rounding errors accumulate
             overlay.style.height = `${newHeight}px`;
         }
         // and move container down so image does not move
-        const oldTop = BubbleManager.pxToNumber(overlay.style.top);
+        const oldTop = overlay.offsetTop;
         overlay.style.top = `${oldTop + (oldHeight - newHeight) / 2}px`;
-        const oldWidth = BubbleManager.pxToNumber(overlay.style.width);
+        const oldWidth = overlay.clientWidth;
         overlay.style.width = `${newWidth}px`;
         // and move container right so image does not move
-        const oldLeft = BubbleManager.pxToNumber(overlay.style.left);
+        const oldLeft = overlay.offsetLeft;
         if (Math.abs(oldWidth - newWidth) > 0.1) {
             overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
         }
