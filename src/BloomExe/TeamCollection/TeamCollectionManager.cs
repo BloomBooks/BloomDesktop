@@ -492,21 +492,19 @@ namespace Bloom.TeamCollection
         // This is the value the book must be locked to for a local checkout.
         // For all the Team Collection code, this should be the one place we know how to find that user.
         public static string CurrentUser =>
-            _overrideCurrentUser ?? SIL.Windows.Forms.Registration.Registration.Default.Email;
+            _overrideCurrentUser ?? Bloom.Registration.Registration.Default.Email;
 
         // CurrentUser is the email address and is used as the key, but this is
         // used to display a more friendly name and avatar initials.
         // For all the Team Collection code, this should be the one place we know how to find the current user's first name.
         public static string CurrentUserFirstName =>
-            _overrideCurrentUserFirstName
-            ?? SIL.Windows.Forms.Registration.Registration.Default.FirstName;
+            _overrideCurrentUserFirstName ?? Bloom.Registration.Registration.Default.FirstName;
 
         // CurrentUser is the email address and is used as the key, but this is
         // used to display a more friendly name and avatar initials.
         // For all the Team Collection code, this should be the one place we know how to find the current user's surname.
         public static string CurrentUserSurname =>
-            _overrideCurrentUserSurname
-            ?? SIL.Windows.Forms.Registration.Registration.Default.Surname;
+            _overrideCurrentUserSurname ?? Bloom.Registration.Registration.Default.Surname;
 
         /// <summary>
         /// This is what the BookStatus.lockedWhere must be for a book to be considered
@@ -602,7 +600,7 @@ namespace Bloom.TeamCollection
         /// </summary>
         public static bool IsRegistrationSufficient()
         {
-            // We're normally checking SIL.Windows.Forms.Registration.Registration.Default.Email,
+            // We're normally checking Bloom.Registration.Registration.Default.Email,
             // but getting it via TCM.CurrentUser allows overriding for testing.
             return !String.IsNullOrWhiteSpace(CurrentUser);
         }
