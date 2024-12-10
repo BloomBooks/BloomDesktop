@@ -296,3 +296,10 @@
         }
     }
 }
+
+// We have some special rules that give image containers margin in various places
+// (e.g., traditional xmatter cover). But we don't want it inherited by overlay
+// image containers, because we expect them to exactly match the overlays.
+.bloom-imageContainer .bloom-textOverPicture .bloom-imageContainer {
+    margin: 0;
+}

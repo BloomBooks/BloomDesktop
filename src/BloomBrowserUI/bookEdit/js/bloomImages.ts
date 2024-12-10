@@ -10,6 +10,7 @@ import {
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 import {
+    kbackgroundImageClass,
     kTextOverPictureSelector,
     theOneBubbleManager,
     updateOverlayClass
@@ -18,13 +19,14 @@ import {
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
-
-const kPlaybackOrderContainerSelector: string =
-    ".bloom-playbackOrderControlsContainer";
+import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
+import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 
 // This appears to be constant even on higher dpi screens.
 // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
 const kBrowserDpi = 96;
+export const kImageContainerClass = "bloom-imageContainer";
+export const kImageContainerSelector = `.${kImageContainerClass}`;
 
 export function cleanupImages() {
     $(".bloom-imageContainer").css("opacity", ""); //comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
@@ -165,8 +167,7 @@ export function doImageCommand(
 export function addImageEditingButtons(containerDiv: HTMLElement): void {
     if (
         !containerDiv || // huh? so why did we call this?
-        containerDiv.classList.contains("hoverUp") || // should already have them if wanted
-        containerDiv.closest(kTextOverPictureSelector) // in overlay
+        containerDiv.classList.contains("hoverUp") // should already have them if wanted
     ) {
         return;
     }
@@ -175,36 +176,29 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
         // and hover effects when in test mode.
         return;
     }
-    const topDiv = containerDiv.closest(".bloom-textOverPicture");
-    // Currently Gifs can only be added using the Games tool.
-    // A gif is always an img in an overlay (textOverPicture, even though it is
-    // not actually text) div, and we put a special class on the TOP element
-    // and use it in various ways where GIFs need to behave differently from
-    // other imgs. (For example, currently, they can only be cut/copied as file
-    // paths, we don't support metadata, they can't be cropped,...)
-    const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
-    let img = getImgFromContainer(containerDiv);
+    const img = getBackgroundImageFromContainer(containerDiv);
+    containerDiv.classList.add("hoverUp"); // maybe one day refactor to use :hover?
 
-    // Enhance: remove this unused flexibility to put images as background-images on div.bloom-imageContainers.
-    // We still do it when making bloomPUBs, but that's a write-only operation (and we will retain the ability to migrate back).
-    // I (JH) think it is cognitively expensive to leave legacy cruft around.
-    if (img === undefined)
-        // This case is probably a left over from some previous Bloom where
-        // we were using background images instead of <img>? But it does
-        // no harm so I'm leaving it in.
-        img = containerDiv; //using a backgroundImage
+    if (!img) {
+        return;
+    }
+    SetImageTooltip(containerDiv);
+    const bgImageContainer = img.parentElement as HTMLElement;
 
-    const $containerDiv = $(containerDiv);
-    if ($containerDiv.find(kPlaybackOrderContainerSelector).length > 0) {
+    const $bgImageContainer = $(bgImageContainer);
+    if (
+        containerDiv.getElementsByClassName(kPlaybackOrderContainerClass)
+            .length > 0
+    ) {
         return; // Playback order controls are active, deactivate image container stuff.
     }
-    if ($containerDiv.find("button.imageOverlayButton").length > 0) {
+    if (containerDiv.getElementsByClassName("imageOverlayButton").length > 0) {
         return; // already have buttons
     }
-    const buttonModifier = GetButtonModifier($containerDiv);
+    const buttonModifier = GetButtonModifier($bgImageContainer);
 
-    const addButtonHandler = (command: "cut" | "copy" | "paste" | "change") => {
-        const button = $containerDiv.get(0)?.firstElementChild;
+    const addButtonHandler = (command: "change") => {
+        const button = $bgImageContainer.get(0)?.firstElementChild;
         button?.addEventListener("click", (e: MouseEvent) => {
             // "detail >1" in chromium means this is a double click.
             // Note, if we have problems with timing, this wouldn't necessarily fix them.
@@ -218,35 +212,8 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
         });
     };
 
-    $containerDiv.prepend(
-        '<button class="miniButton cutImageButton imageOverlayButton disabled ' +
-            buttonModifier +
-            '" title="' +
-            theOneLocalizationManager.getText("EditTab.Image.CutImage") +
-            '"></button>'
-    );
-    addButtonHandler("cut");
-
-    $containerDiv.prepend(
-        '<button class="miniButton copyImageButton imageOverlayButton disabled ' +
-            buttonModifier +
-            '" title="' +
-            theOneLocalizationManager.getText("EditTab.Image.CopyImage") +
-            '"></button>'
-    );
-    addButtonHandler("copy");
-
-    $containerDiv.prepend(
-        '<button class="pasteImageButton imageButton imageOverlayButton ' +
-            buttonModifier +
-            '" title="' +
-            theOneLocalizationManager.getText("EditTab.Image.PasteImage") +
-            '"></button>'
-    );
-    addButtonHandler("paste");
-
-    $containerDiv.prepend(
-        '<button class="changeImageButton imageButton imageOverlayButton ' +
+    $bgImageContainer.prepend(
+        '<button class="changeImageButton imageButton imageOverlayButton bloom-ui' +
             buttonModifier +
             '" title="' +
             theOneLocalizationManager.getText("EditTab.Image.ChangeImage") +
@@ -254,53 +221,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     );
     addButtonHandler("change");
 
-    // As part of BL-9976 JH decided to remove this button as users were getting confused.
-    // if (
-    //     // Only show this button if the toolbox is also offering it. It might not offer it
-    //     // if it's experimental and that settings isn't on, or for Bloom Enterprise reasons, or whatever.
-    //     getToolboxFrameExports()
-    //         ?.getTheOneToolbox()
-    //         .getToolIfOffered(ImageDescriptionAdapter.kToolID)
-    // ) {
-    //     $this.prepend(
-    //         '<button class="imageDescriptionButton imageButton imageOverlayButton ' +
-    //             buttonModifier +
-    //             '" title="' +
-    //             theOneLocalizationManager.getText(
-    //                 "EditTab.Toolbox.ImageDescriptionTool" // not quite the "Show Image Description Tool", but... feeling parsimonious
-    //             ) +
-    //             '"></button>'
-    //     );
-    //     $this.find(".imageDescriptionButton").click(() => {
-    //         getToolboxFrameExports()
-    //             ?.getTheOneToolbox()
-    //             .activateToolFromId(ImageDescriptionAdapter.kToolID);
-    //     });
-    // }
-
-    SetImageTooltip(containerDiv);
-
-    if (IsImageReal(img)) {
-        const title = theOneLocalizationManager.getText(
-            "EditTab.Image.EditMetadata"
-        );
-        const button = `<button class="editMetadataButton imageButton imageOverlayButton ${buttonModifier}" title="${title}"></button>`;
-        $containerDiv.prepend(button);
-        $containerDiv.find("button.editMetadataButton").attr(
-            "onClick",
-            // Originally, we tried to determine the imageUrl at setup time and put that string in the onClick handler string below.
-            // However, it turns out that we must rely on the click handler knowing what element we clicked on ("this") at click time.
-            // Otherwise, we can get an incorrect imageUrl. For example, a picture on picture might give the parent picture imageUrl.
-            // We have to do this strange editTabBundle stuff because at the time of the click, we are in a context where that is all we can access.
-            `(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog(
-                (window.parent || window).editTabBundle.getImageUrlFromImageButton(this));`
-        );
-        $containerDiv.find(".miniButton").each(function() {
-            $(this).removeClass("disabled");
-        });
-    }
-
-    $containerDiv.addClass("hoverUp");
+    SetupMetadataButton(bgImageContainer);
 }
 
 /**
@@ -329,17 +250,14 @@ export function removeImageEditingButtons(containerDiv: Element): void {
     getImageEditingButtons(containerDiv, {
         skipProblemIndicator: true // leave the problem indicator visible
     }).forEach(button => {
-        button.remove();
+        // The ones that have bloom-ui don't need to be removed; we are using CSS :hover
+        // to show and hide them, and counting on the bloom-ui class to prevent them from
+        // being persisted.
+        if (!button.classList.contains("bloom-ui")) {
+            button.remove();
+        }
     });
     DisableImageTooltip(containerDiv as HTMLElement);
-}
-
-export function tryRemoveImageEditingButtons(
-    containerDiv: Element | undefined
-): void {
-    if (containerDiv) {
-        removeImageEditingButtons(containerDiv);
-    }
 }
 
 export function DisableImageEditing(imageContainer: HTMLElement) {
@@ -413,26 +331,53 @@ function SetupImageContainer(containerDiv: HTMLElement) {
 export function getImageUrlFromImageButton(button: HTMLButtonElement): string {
     const imageContainer = button?.parentElement;
     if (!imageContainer) return "";
-    return GetRawImageUrl(getImgFromContainer(imageContainer));
+    return GetRawImageUrl(getImageFromContainer(imageContainer));
 }
 
 export function getImageUrlFromImageContainer(
     HTMLElement: HTMLElement
 ): string {
-    return GetRawImageUrl(getImgFromContainer(HTMLElement));
+    return GetRawImageUrl(getImageFromContainer(HTMLElement));
 }
 
-function getImgFromContainer(
+export function getImageFromContainer(
     imageContainer: HTMLElement
-): HTMLElement | undefined {
+): HTMLImageElement | null {
     // If there is ever a case where the img we want is not a direct child of the container,
     // be careful not to fix this in a way that might accidentally return an overlay image
     // when we want the parent image (or accidentally return all of them, especially if
     // you use jquery).
     // The bloom-ui filter prevents returning controls we add to overlays.
+    // Note: x instanceof HTMLImageElement did not work reliably.
     return Array.from(imageContainer.children).find(
-        c => c.tagName === "IMG" && !c.classList.contains("bloom-ui")
-    ) as HTMLElement;
+        x => x.nodeName === "IMG"
+    ) as HTMLImageElement;
+}
+
+// Given an overlay which may or may not be an image overlay, if it IS an image overlay,
+// find its image. Otherwise, return null.
+export function getImageFromOverlay(
+    overlay: HTMLElement
+): HTMLImageElement | null {
+    const imageContainer = overlay.getElementsByClassName(
+        kImageContainerClass
+    )[0];
+    if (!imageContainer) {
+        return null;
+    }
+    return getImageFromContainer(imageContainer as HTMLElement);
+}
+
+export function getBackgroundImageFromContainer(
+    imageContainer: HTMLElement
+): HTMLElement | null {
+    const bgOverlay = imageContainer.getElementsByClassName(
+        kbackgroundImageClass
+    )[0];
+    if (!bgOverlay) {
+        return null;
+    }
+    return getImageFromOverlay(bgOverlay as HTMLElement);
 }
 
 /**
@@ -722,77 +667,70 @@ export function SetImageElementUrl(imgOrDivWithBackgroundImage, url) {
 }
 */
 
-//While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
-// so that we can easily & quickly get to the here.
-export function SetOverlayForImagesWithoutMetadata(container) {
-    $(container)
-        .find("*[style*='background-image']")
-        .each(function() {
-            SetOverlayForImagesWithoutMetadataInner(this, this);
-        });
-
-    //Do the same for any img elements inside
-    $(container)
-        .find(".bloom-imageContainer")
-        .each(function() {
-            // BL-9976: now that we can have images on images, only look one level down from the container.
-            const img = $(this).find("> img");
-            SetOverlayForImagesWithoutMetadataInner($(img).parent(), img);
-        });
-}
-
-function SetOverlayForImagesWithoutMetadataInner(container, img) {
-    if (!IsImageReal(img)) {
-        return;
+// While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
+// so that we can easily & quickly get to it here.
+// Currently this button is only shown on top of background images, which are usually large enough for it.
+// This function takes a container which may or may not have background images, removes any old editMetadataButton,
+// and adds a new one if appropriate, to each backgroundImage. Container might also BE an overlay that is specified to hold the background image.
+export function SetupMetadataButton(parent: HTMLElement) {
+    // I _think_ this is only called when parent is either an overlay or the parent of an image container,
+    // and thus can only have one background image. But for safety I've coded it to work even if passed the
+    // whole page.
+    let bgImageOverlays: HTMLElement[] = [];
+    if (parent.classList.contains(kbackgroundImageClass)) {
+        bgImageOverlays.push(parent);
+    } else {
+        bgImageOverlays = Array.from(
+            parent.getElementsByClassName(kbackgroundImageClass)
+        ) as HTMLElement[];
     }
+    for (const bgImageOverlay of bgImageOverlays) {
+        for (const oldButton of Array.from(
+            bgImageOverlay.getElementsByClassName("editMetadataButton")
+        )) {
+            oldButton.remove();
+        }
+        const container = bgImageOverlay.getElementsByClassName(
+            kImageContainerClass
+        )[0] as HTMLElement;
+        if (!container) {
+            continue; // pathological
+        }
+        const img = getImageFromContainer(container);
+        if (!img || !IsImageReal(img)) continue; // placeholder, doesn't get one of these buttons.
 
-    UpdateOverlay(container, img);
+        //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
+        const copyright = img.getAttribute("data-copyright");
 
-    //and if the bloom program changes these values (i.e. the user changes them using bloom), I
-    //haven't figured out a way (apart from polling) to know that. So for now I'm using a hack
-    //where Bloom calls click() on the image when it wants an update, and we detect that here.
-    $(img).click(() => {
-        UpdateOverlay(container, img);
-    });
-}
-
-function UpdateOverlay(container, img) {
-    $(container)
-        .find("button.imgMetadataProblem")
-        .each(function() {
-            $(this).remove();
-        });
-
-    if (container.closest(kTextOverPictureSelector)) {
-        // for overlays we indicate this using a button below the overlay.
-        // Overlays can be small, so buttons on top of them don't work well.
-        return;
-    }
-
-    //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
-    const copyright = $(img).attr("data-copyright");
-    if (!copyright || copyright.length === 0) {
-        const buttonClasses = `editMetadataButton imageButton imgMetadataProblem ${GetButtonModifier(
+        // With the bloom-ui class present, we don't have to worry about removing this except when
+        // this function is called again.
+        let buttonClasses = `editMetadataButton imageButton bloom-ui ${GetButtonModifier(
             container
         )}`;
-        const englishText =
-            "Image is missing information on Credits, Copyright, or License";
+        let title = "Edit image credits, copyright, & license";
+        let titleId = "EditTab.Image.EditMetadata";
+        if (!copyright || copyright.length === 0) {
+            buttonClasses += " imgMetadataProblem";
+            title = "Image is missing information on Credits, Copyright";
+            titleId = "EditTab.Image.MissingInfo";
+        }
+        const button = container.ownerDocument.createElement("button");
+        button.className = buttonClasses;
+        button.addEventListener("click", () => {
+            // Don't do this before it gets clicked; might not be correct at the time we set up the handler.
+            const url = img.getAttribute("src");
+            showCopyrightAndLicenseDialog(url ?? "");
+        });
         theOneLocalizationManager
-            .asyncGetText(
-                "EditTab.Image.MissingInfo",
-                englishText,
-                "tooltip text"
-            )
+            .asyncGetText(titleId, title, "tooltip text")
             .done(translation => {
                 const title = translation.replace(/'/g, "&apos;");
-                $(container).prepend(
-                    `<button class='${buttonClasses}' title='${title}'></button>`
-                );
+                button.title = title;
+                container.prepend(button);
             })
             .fail(() => {
-                $(container).prepend(
-                    `<button class='${buttonClasses}' title='${englishText}'></button>`
-                );
+                button.title = title;
+                container.prepend(button);
             });
     }
 }
