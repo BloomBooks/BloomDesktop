@@ -829,6 +829,11 @@
         <target xml:lang="es-ES" state="translated">La siguiente tabla muestra donde se han utilizado las fuentes.</target>
         <note>ID: BookSettings.Fonts.TableDescription</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.FontNotInstalled" sil:dynamic="true">
+        <source xml:lang="en">Font is not installed on this computer</source>
+        <target xml:lang="es-ES" state="needs-translation">Font is not installed on this computer</target>
+        <note>ID: BookSettings.Fonts.FontNotInstalled</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true">
         <source xml:lang="en">First Page</source>
         <target xml:lang="es-ES" state="translated">Primera Página</target>
