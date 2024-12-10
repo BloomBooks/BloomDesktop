@@ -8,7 +8,6 @@ import {
     kOptionPanelBackgroundColor
 } from "../../bloomMaterialUITheme";
 import { hookupLinkHandler } from "../../utils/linkHandler";
-import { hookupBloomNavHandler } from "../../utils/bloomNavHandler";
 import { SelectedBookProvider } from "../../app/SelectedBookContext";
 
 export const PublishScreenTemplate: React.FunctionComponent<{
@@ -24,8 +23,6 @@ export const PublishScreenTemplate: React.FunctionComponent<{
     React.useEffect(() => {
         // Tells CSharp land to handle our external links correctly (by opening in the system browser)
         hookupLinkHandler();
-        // Tells CSharp land to handle our cross-book links
-        hookupBloomNavHandler();
     }, []);
 
     return (

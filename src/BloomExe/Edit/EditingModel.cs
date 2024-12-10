@@ -1944,7 +1944,7 @@ namespace Bloom.Edit
                 ? "cover"
                 : page.GetDivNodeForThisPage().GetAttribute("id");
             var bookId = _bookSelection.CurrentSelection.ID;
-            var hyperlink = $"bloomnav://book/{bookId}?page={pageId}";
+            var hyperlink = $"/book/{bookId}#{pageId}";
             PortableClipboard.SetText(hyperlink);
         }
 

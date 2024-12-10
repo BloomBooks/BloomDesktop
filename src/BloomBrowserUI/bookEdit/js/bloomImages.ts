@@ -43,7 +43,10 @@ export function SetupImagesInContainer(container) {
     $(container)
         .find(".bloom-imageContainer")
         .each((index, element) => {
-            SetupImageContainer(element as HTMLHtmlElement);
+            // For now, bookButtons aren't editable
+            if (!element.closest(".bloom-bookButton")) {
+                SetupImageContainer(element as HTMLHtmlElement);
+            }
         });
 
     //todo: this had problems. Check out the later approach, seen in draggableLabel (e.g. move handle on the inside, using a background image on a div)

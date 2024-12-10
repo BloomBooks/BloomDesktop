@@ -490,7 +490,17 @@ namespace Bloom.Api
         public string RequiredPostString(string key)
         {
             Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
-            var values = _requestInfo.GetPostDataWhenFormEncoded().GetValues(key);
+            NameValueCollection postData = null;
+            if (RequestContentType.ToLowerInvariant().Contains("application/x-www-form-urlencoded"))
+            {
+                postData = _requestInfo.GetPostDataWhenFormEncoded();
+            }
+            else if (RequestContentType.ToLowerInvariant().Contains("application/json"))
+            {
+                postData = _requestInfo.GetPostDataWhenSimpleJsonEncoded();
+            }
+
+            var values = postData?.GetValues(key);
 
             if (values != null && values.Length == 1)
             {
