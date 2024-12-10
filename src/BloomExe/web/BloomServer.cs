@@ -444,20 +444,6 @@ namespace Bloom.Api
                 );
                 return true;
             }
-            // if (localPath.StartsWith("book/"))
-            // {
-            //     var parts = localPath.Split('/');
-            //     // remove the first 2 parts, which are "book" and the book name
-            //     var relativeToBookFolder = Path.Combine(parts.Skip(2).ToArray());
-            //     if (relativeToBookFolder == "")
-            //     {
-            //         relativeToBookFolder = "Crow.htm";
-            //     }
-
-            //     localPath =
-            //         "C:\\Users\\hatto\\OneDrive\\Documents\\Bloom\\FAL Experiments\\Crow/"
-            //         + relativeToBookFolder;
-            // }
             //enhance: something feeds back these branding logos with a weird URL, that shouldn't be.
             if (ApiHandler.IsInvalidApiCall(localPath))
                 return false;

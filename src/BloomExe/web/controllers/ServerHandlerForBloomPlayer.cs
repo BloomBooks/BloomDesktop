@@ -65,7 +65,6 @@ static class ServerHandlerForBloomPlayer
                     }
                     var redirectUrl =
                         $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}{bookPath.Replace('\\', '/')}{remainingPath}";
-                    //$"{bookPath.Replace('\\', '/')}{remainingPath}";
                     // keeping the redirect temporary in case that books moves during the life of the webview2 browser, which could become the whole bloom editor session
                     request.WriteRedirect(redirectUrl, false);
                     //Debug.WriteLine($"Redirecting {localPath} to {redirectUrl}");
