@@ -1410,7 +1410,9 @@ namespace Bloom
         /// <param name="formToClose">If provided, this form will be closed after choosing a
         /// collection and before opening it. Currently, this is used to close the Shell at the proper
         /// time when switching collectons.</param>
-        public static void ChooseACollection(Shell formToClose = null)
+        /// <returns>true if we switched collections. (However, in this case we may call Application.Exit(), so the
+        /// caller shouldn't do anything unnecessary.)</returns>
+        public static bool ChooseACollection(Shell formToClose = null)
         {
             while (true)
             {
@@ -1439,7 +1441,7 @@ namespace Bloom
                         // closing the chooser should exit the application.
                         if (formToClose == null)
                             Application.Exit();
-                        return;
+                        return false;
                     }
 
                     if (formToClose != null)
@@ -1449,7 +1451,7 @@ namespace Bloom
                     }
 
                     if (OpenCollection(dlg.SelectedPath))
-                        return;
+                        return true;
                 }
             }
         }
