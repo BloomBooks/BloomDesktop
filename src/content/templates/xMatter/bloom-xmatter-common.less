@@ -16,7 +16,6 @@
     }
 }
 
-
 .insideFrontCover {
     .bloom-translationGroup {
         height: 100%;
@@ -47,7 +46,7 @@
         //independently of their appearance order in the html
         display: flex;
         flex-direction: column;
-        row-gap: 10px;   // extra space between title items (less than default --page-gutter value which would otherwise apply)
+        row-gap: 10px; // extra space between title items (less than default --page-gutter value which would otherwise apply)
 
         .bloom-editable {
             order: 0;
@@ -106,6 +105,13 @@
         flex: 1 1 auto;
         margin-top: @MarginBetweenMajorItems;
         margin-bottom: @MarginBetweenMajorItems;
+    }
+
+    &.cover-is-image {
+        .bloom-imageContainer {
+            margin: 0mm;
+            height: 100%;
+        }
     }
 
     // Give the image description the same order as the image we are describing, so that document order is used and we end up with it below, as it is in interior pages. (Ref BL-9946)
