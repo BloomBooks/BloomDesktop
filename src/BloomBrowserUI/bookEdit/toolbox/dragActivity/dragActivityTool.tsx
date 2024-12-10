@@ -2002,7 +2002,7 @@ export function setActiveDragActivityTab(tab: number) {
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
         prepareActivity(page, _next => {});
-        playInitialElements(page);
+        playInitialElements(page, true);
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
         undoPrepareActivity(page);
