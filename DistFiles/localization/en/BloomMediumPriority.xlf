@@ -737,6 +737,10 @@
         <source xml:lang="en">The following table shows where fonts have been used.</source>
         <note>ID: BookSettings.Fonts.TableDescription</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.FontNotInstalled" sil:dynamic="true">
+        <source xml:lang="en">Font is not installed on this computer</source>
+        <note>ID: BookSettings.Fonts.FontNotInstalled</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true">
         <source xml:lang="en">First Page</source>
         <note>ID: BookSettings.Fonts.FirstPage</note>

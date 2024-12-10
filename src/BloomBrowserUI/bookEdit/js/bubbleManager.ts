@@ -5122,6 +5122,32 @@ export class BubbleManager {
         return [offsetX, offsetY];
     }
 
+    // 6.2 is the release that should properly handle background overlays.
+    // Reverting them is a temporary hack to prevent problems in 6.1 and 6.0.
+    // So this is not currently called in 6.2 like it is in 6.1 and 6.0.
+    // But I'm leaving the code for now, because last I heard, we want to use this (or some variation of it)
+    // at publish time to set the image containers back to the original, more simple state.
+    private revertBackgroundOverlays() {
+        for (const bgo of Array.from(
+            document.getElementsByClassName(kbackgroundImageClass)
+        )) {
+            const bgImage = this.getImageFromOverlay(bgo as HTMLElement);
+            const mainImage = this.getImageFromContainer(
+                bgo.parentElement as HTMLElement
+            );
+            if (bgImage && mainImage) {
+                // Note that we must use get/setAttribute here rather than e.g. mainImage.src (a property
+                // of HTMLImageElement) because the src property is a full URL, and we want to preserve
+                // what is actually stored in the src attribute, the path relative to the book file.
+                mainImage.setAttribute(
+                    "src",
+                    bgImage.getAttribute("src") || ""
+                );
+                bgo.remove();
+            }
+        }
+    }
+
     private handleResizeAdjustments() {
         const primaryImageContainers = this.getAllPrimaryImageContainersOnPage();
         primaryImageContainers.forEach(imageContainer => {
