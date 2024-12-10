@@ -5132,8 +5132,8 @@ export class BubbleManager {
         for (const bgo of Array.from(
             document.getElementsByClassName(kbackgroundImageClass)
         )) {
-            const bgImage = this.getImageFromOverlay(bgo as HTMLElement);
-            const mainImage = this.getImageFromContainer(
+            const bgImage = getImageFromOverlay(bgo as HTMLElement);
+            const mainImage = getImageFromContainer(
                 bgo.parentElement as HTMLElement
             );
             if (bgImage && mainImage) {
