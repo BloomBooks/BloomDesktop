@@ -829,9 +829,9 @@
         <target xml:lang="fr" state="needs-translation">The following table shows where fonts have been used.</target>
         <note>ID: BookSettings.Fonts.TableDescription</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.FontNotInstalled" sil:dynamic="true">
+      <trans-unit id="BookSettings.Fonts.FontNotInstalled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Font is not installed on this computer</source>
-        <target xml:lang="fr" state="needs-translation">Font is not installed on this computer</target>
+        <target xml:lang="fr" state="final">La police n'est pas installée sur cet ordinateur</target>
         <note>ID: BookSettings.Fonts.FontNotInstalled</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true">
