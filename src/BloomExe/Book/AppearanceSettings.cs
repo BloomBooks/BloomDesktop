@@ -25,9 +25,9 @@ public class AppearanceSettings
     public AppearanceSettings()
     {
         _properties = new ExpandoObject();
-        if (_substitutinator == null)
+        if (_appearanceMigrator == null)
         {
-            _substitutinator = new AppearanceMigrator();
+            _appearanceMigrator = new AppearanceMigrator();
         }
 
         // copy in the default values from each definition
@@ -43,7 +43,7 @@ public class AppearanceSettings
     public static string kDoShowValueForDisplay = "doShow-css-will-ignore-this-and-use-default"; // by using an illegal value, we just get a no-op rule, which is what we want
     public static string kHideValueForDisplay = "none";
     public static string kOverrideGroupsArrayKey = "groupsToOverrideFromParent"; // e.g. "coverFields, xmatter"
-    private static AppearanceMigrator _substitutinator;
+    private static AppearanceMigrator _appearanceMigrator;
 
     // A representation of the content of Appearance.json
     internal dynamic _properties;
@@ -108,7 +108,20 @@ public class AppearanceSettings
         // The default here is rarely if ever relevant. Usually a newly created instance will be initialized from a folder, and the default will be overwritten,
         // either to whatever we find in appearance.json, or to "legacy-5-6" if there is no appearance.json.
         new StringPropertyDef("cssThemeName", "cssThemeName", "default"),
+        // BooleanPropertyDef, not CssXDef because this is not a css variable.
+        new BooleanPropertyDef(
+            "coverIsImage",
+            "coverIsImage",
+            defaultValue: false,
+            requiresXmatterUpdate: true,
+            valueRequiredIfLegacyTheme: false
+        ), // If true, cover page is just a full bleed image.
+        // Not implemented yet. When it is, it needs to be tied together with the coverIsImage setting
+        // such that coverIsImage cannot be true unless fullBleed is also true.
+        //new BooleanPropertyDef("fullBleed", "fullBleed", false), // If true, book is full bleed.
+
         new CssStringVariableDef("cover-background-color", "colors"),
+        // User can turn the visibility of these fields on and off in the dialog.
         new CssDisplayVariableDef("cover-title-L1-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L2-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L3-show", "coverFields", false),
@@ -156,8 +169,68 @@ public class AppearanceSettings
     public string CssThemeName
     {
         get { return _properties.cssThemeName; }
-        set { _properties.cssThemeName = value; }
+        set
+        {
+            _properties.cssThemeName = value;
+            SetRequiredValuesIfLegacyTheme();
+        }
     }
+
+    // Some setting's values are not allowed in legacy mode.
+    // REVIEW:
+    // This concept of forcing a value based on the legacy theme was introduced at the time coverIsImage was added.
+    // And currently (Dec 2024), it is the only property that has a valueRequiredIfLegacyTheme.
+    // But I think the properties which existed before that and which get disabled by setting the theme
+    // to legacy should also be set. e.g. cover-topic-show
+    // Without this, the user can set the theme to non-legacy, change the property to whatever he wants,
+    // then change the theme back to legacy.
+    private void SetRequiredValuesIfLegacyTheme()
+    {
+        if (CssThemeName != "legacy-5-6") // Can't use UsingLegacy here because it includes logic about the syncing of files which we don't want.
+            return;
+
+        foreach (var propertyDefinition in propertyDefinitions)
+        {
+            if (propertyDefinition.ValueRequiredIfLegacyTheme != null)
+            {
+                SetProperty(
+                    new KeyValuePair<string, object>(
+                        propertyDefinition.Name,
+                        propertyDefinition.ValueRequiredIfLegacyTheme
+                    )
+                );
+            }
+        }
+    }
+
+    private void SetProperty(KeyValuePair<string, object> property)
+    {
+        if (
+            !Properties.ContainsKey(property.Key)
+            || !Properties[property.Key].Equals(property.Value)
+        )
+        {
+            var propDef = propertyDefinitions.FirstOrDefault(pd => pd.Name == property.Key);
+            if (propDef?.RequiresXmatterUpdate == true)
+                PendingChangeRequiresXmatterUpdate = true;
+        }
+
+        Properties[property.Key] = property.Value;
+    }
+
+    public bool CoverIsImage
+    {
+        get { return _properties.coverIsImage; }
+    }
+
+    //public bool FullBleed
+    //{
+    //    get { return _properties.fullBleed; }
+    //    set { _properties.fullBleed = value; }
+    //}
+
+    // When this is set to true, we ensure that the xmatter is updated before saving the book.
+    public bool PendingChangeRequiresXmatterUpdate;
 
     /// <summary>
     /// Usually, this is simply the theme name, but if the book doesn't have one (that is, it was made by
@@ -682,9 +755,9 @@ public class AppearanceSettings
                 }
             }
 
-            if (definition is CssPropertyDef)
+            if (definition is CssPropertyDef cssPropertydefinition)
             {
-                var setting = ((PropertyDef)definition).GetCssVariableDeclaration(keyValuePair);
+                var setting = cssPropertydefinition.GetCssVariableDeclaration(keyValuePair);
                 if (!string.IsNullOrEmpty(setting))
                     cssBuilder.AppendLine("\t" + setting);
             }
@@ -801,13 +874,12 @@ public class AppearanceSettings
     {
         // parse the json into an object
         var x = JsonConvert.DeserializeObject<ExpandoObject>(json);
-        //and then for each property, copy into the _properties object
-        // For backwards capabilty, if the json we are reading has a null for a value,
-        // do not override the default value that we already have loaded.
+
+        // and then for each property, copy into the Properties object.
         foreach (var property in (IDictionary<string, object>)x)
-        {
-            Properties[property.Key] = property.Value;
-        }
+            SetProperty(property);
+
+        SetRequiredValuesIfLegacyTheme();
     }
 
     /// <summary>
@@ -971,6 +1043,8 @@ public abstract class PropertyDef
 {
     public string Name;
     public dynamic DefaultValue;
+    public bool RequiresXmatterUpdate;
+    public object ValueRequiredIfLegacyTheme;
 
     public void SetDefault(dynamic prop)
     {
@@ -981,25 +1055,49 @@ public abstract class PropertyDef
     /// The name of the group of properties that can a book can override from a collection, or a page can override from a book.
     /// </summary>
     public string OverrideGroup;
-
-    public abstract string GetCssVariableDeclaration(dynamic property);
 }
 
-public abstract class CssPropertyDef : PropertyDef { }
-
+// StringPropertyDefs and BooleanPropertyDefs get written to appearance.json but not appearance.css
 public class StringPropertyDef : PropertyDef
 {
-    public StringPropertyDef(string name, string overrideGroup, string defaultValue)
+    public StringPropertyDef(
+        string name,
+        string overrideGroup,
+        string defaultValue,
+        bool requiresXmatterUpdate = false,
+        object valueRequiredIfLegacyTheme = null
+    )
     {
         Name = name;
         DefaultValue = defaultValue;
         OverrideGroup = overrideGroup;
+        RequiresXmatterUpdate = requiresXmatterUpdate;
+        ValueRequiredIfLegacyTheme = valueRequiredIfLegacyTheme;
     }
+}
 
-    public override string GetCssVariableDeclaration(dynamic property)
+public class BooleanPropertyDef : PropertyDef
+{
+    public BooleanPropertyDef(
+        string name,
+        string overrideGroup,
+        bool defaultValue,
+        bool requiresXmatterUpdate = false,
+        object valueRequiredIfLegacyTheme = null
+    )
     {
-        return $"--{Name}: {property.Value};";
+        Name = name;
+        OverrideGroup = overrideGroup;
+        DefaultValue = defaultValue;
+        RequiresXmatterUpdate = requiresXmatterUpdate;
+        ValueRequiredIfLegacyTheme = valueRequiredIfLegacyTheme;
     }
+}
+
+// CssPropertyDefs get written to appearance.json and appearance.css
+public abstract class CssPropertyDef : PropertyDef
+{
+    public abstract string GetCssVariableDeclaration(dynamic property);
 }
 
 public class CssStringVariableDef : CssPropertyDef
