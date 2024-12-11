@@ -4,6 +4,7 @@
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { get, post } from "../../utils/bloomApi";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
+import { tryProcessHyperlink } from "./hyperlinks";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -321,7 +322,7 @@ export default class BloomField {
                             return;
                         }
                         const anchor = document.createElement("a");
-                        anchor.href = processPastedHyperlink(
+                        anchor.href = tryProcessHyperlink(
                             result.data,
                             bookInfo.data.id
                         );
