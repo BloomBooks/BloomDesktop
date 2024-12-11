@@ -957,16 +957,21 @@ interface FFSelection extends Selection {
 interface JQuery {
     reverse(): JQuery;
 }
-function processPastedHyperlink(dataPaste, dataBookId): string {
-    const url = dataPaste as string;
-    const bookId = dataBookId as string;
-    if (!url || !bookId) {
+
+function processPastedHyperlink(url: string, currentBookId: string): string {
+    // bloom links look like  #PAGEID or /book/BOOKID or /book/BOOKID#PAGEID
+    url = url.trim();
+    if (!url || !currentBookId) {
         return "";
     }
-    const currentBookPrefix = `bloomnav://book/${bookId}?page=`;
-    if (url.startsWith(currentBookPrefix)) {
-        return "#" + url.substring(currentBookPrefix.length);
-    } else {
-        return url;
+    // if the url starts with a request for this same book, we can simplify it to just the #PAGEID part
+    const result = url.replace(`/book/${currentBookId}`, "");
+
+    // it's not obvious why this would happen, but if we end up with a link that doesn't call for a different book,
+    // and doesn't include a page request, we'll just link to the cover because that is what we do
+    // if we specify a different book button but don't mention the page.
+    if (result.trim().length === 0) {
+        return "#cover";
     }
+    return result;
 }

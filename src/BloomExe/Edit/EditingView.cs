@@ -2174,5 +2174,50 @@ namespace Bloom.Edit
             if (Model.Visible && ModifierKeys == (Keys.Shift | Keys.Control))
                 _model.RethinkPageAndReloadItAndReportIfItFails();
         }
+
+        public async Task AddImageFromUrlAsync(string desiredFileNameWithoutExtension, string url)
+        {
+            using (var client = new System.Net.Http.HttpClient())
+            {
+                try
+                {
+                    var expandedUrl = url.StartsWith("/") ? BloomServer.ServerUrl + url : url;
+                    var bytes = await client.GetByteArrayAsync(expandedUrl);
+
+                    using (var memoryStream = new MemoryStream(bytes))
+                    using (var image = System.Drawing.Image.FromStream(memoryStream))
+                    {
+                        // Determine file extension based on image format
+                        string extension = ".png"; // default
+                        if (ImageUtils.AppearsToBeJpeg(new PalasoImage(image)))
+                            extension = ".jpg";
+
+                        var fileName = desiredFileNameWithoutExtension + extension;
+                        var filePath = Path.Combine(_model.CurrentBook.FolderPath, fileName);
+
+                        // Save the image to the book's folder
+                        using (var fs = RobustFile.Create(filePath))
+                        {
+                            memoryStream.Position = 0;
+                            await memoryStream.CopyToAsync(fs);
+                            // tell the caller that we have added the image
+                            BloomWebSocketServer.Instance.SendEvent(
+                                "makeThumbnailFile-" + desiredFileNameWithoutExtension,
+                                "success"
+                            );
+                            Debug.WriteLine("Added image for: " + desiredFileNameWithoutExtension);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    BloomWebSocketServer.Instance.SendEvent(
+                        "makeThumbnailFile-" + desiredFileNameWithoutExtension,
+                        "error: " + ex.Message
+                    );
+                    Debug.WriteLine("Failed to download image: " + ex.Message);
+                }
+            }
+        }
     }
 }

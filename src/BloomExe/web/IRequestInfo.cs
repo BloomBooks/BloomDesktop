@@ -29,6 +29,7 @@ namespace Bloom.Api
         void WriteError(int errorCode, string errorDescription);
         System.Collections.Specialized.NameValueCollection GetQueryParameters();
         System.Collections.Specialized.NameValueCollection GetPostDataWhenFormEncoded();
+        System.Collections.Specialized.NameValueCollection GetPostDataWhenSimpleJsonEncoded();
         string GetPostJson();
         string GetPostString(bool unescape = true);
         HttpMethods HttpMethod { get; }
@@ -36,5 +37,6 @@ namespace Bloom.Api
         string DoNotCacheFolder { set; }
         byte[] GetRawPostData();
         Stream GetRawPostStream();
+        void WriteRedirect(string url, bool permanent);
     }
 }

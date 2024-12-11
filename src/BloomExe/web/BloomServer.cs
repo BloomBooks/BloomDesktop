@@ -65,8 +65,7 @@ namespace Bloom.Api
         /// <summary>
         /// Prefix we add to after the RootUrl in all our urls. This is just a legacy thing we could remove.
         /// </summary>
-        internal const string BloomUrlPrefix = "/bloom/";
-
+        const string kBloomPrefix = "/bloom/";
         internal const string WorkerThreadNamePrefix = "Server Worker Thread ";
 
         public static string ServerUrlEndingInSlash
@@ -77,7 +76,7 @@ namespace Bloom.Api
         //We may stop using this one... the /bloom is superfluous since we own the port
         public static string ServerUrlWithBloomPrefixEndingInSlash
         {
-            get { return ServerUrl + BloomUrlPrefix; }
+            get { return ServerUrl + kBloomPrefix; }
         }
 
         /// <summary>
@@ -416,24 +415,24 @@ namespace Bloom.Api
         // Otherwise we can get a timeout error as the browser waits for a response.
         //
         // NOTE: this method gets called on different threads!
-        protected async Task<bool> ProcessRequestAsync(IRequestInfo info)
+        protected async Task<bool> ProcessRequestAsync(IRequestInfo request)
         {
             if (
                 CurrentCollectionSettings != null
                 && CurrentCollectionSettings.SettingsFilePath != null
             )
-                info.DoNotCacheFolder = Path.GetDirectoryName(
+                request.DoNotCacheFolder = Path.GetDirectoryName(
                         CurrentCollectionSettings.SettingsFilePath
                     )
                     .Replace('\\', '/');
 
-            var localPath = GetLocalPathWithoutQuery(info);
+            var localPath = GetLocalPathWithoutQuery(request);
 
             // root of our UI from a web browser pointed at localhost:8089
             if (localPath == "")
             {
-                info.ResponseContentType = "text/html";
-                info.WriteCompleteOutput(GetHtmlForRootOfBloomUI());
+                request.ResponseContentType = "text/html";
+                request.WriteCompleteOutput(GetHtmlForRootOfBloomUI());
                 return true;
             }
             if (localPath == "test-dialog")
@@ -460,7 +459,7 @@ namespace Bloom.Api
 
                 if (CurrentBook == null)
                 {
-                    info.WriteCompleteOutput("");
+                    request.WriteCompleteOutput("");
                     return true;
                 }
                 if (localPath.EndsWith("video-placeholder.svg"))
@@ -470,11 +469,11 @@ namespace Bloom.Api
 
                 if (localPath == "book-preview/index.htm")
                 {
-                    info.ResponseContentType = "text/html";
+                    request.ResponseContentType = "text/html";
                     var html = CurrentBook
                         .GetPreviewHtmlFileForWholeBook()
                         .getHtmlStringDisplayOnly();
-                    info.WriteCompleteOutput(html);
+                    request.WriteCompleteOutput(html);
                     return true;
                 }
                 else if (localPath == "book-preview/defaultLangStyles.css")
@@ -488,11 +487,11 @@ namespace Bloom.Api
                     var fontFaceDeclarations = serve.GetAllFontFaceDeclarations();
                     if (!cssLangStyles.Contains(fontFaceDeclarations))
                     {
-                        info.ResponseContentType = "text/css";
+                        request.ResponseContentType = "text/css";
                         var cssBuilder = new StringBuilder();
                         cssBuilder.Append(fontFaceDeclarations);
                         cssBuilder.Append(cssLangStyles);
-                        info.WriteCompleteOutput(cssBuilder.ToString());
+                        request.WriteCompleteOutput(cssBuilder.ToString());
                         return true;
                     }
                     localPath = localPath.Replace("book-preview", CurrentBook.FolderPath);
@@ -516,22 +515,33 @@ namespace Bloom.Api
             }
 
             // process request for directory index
-            if (info.RawUrl.EndsWith("/") && (Directory.Exists(localPath)))
+            if (request.RawUrl.EndsWith("/") && (Directory.Exists(localPath)))
             {
-                info.WriteError(403, "Directory listing denied");
+                request.WriteError(403, "Directory listing denied");
                 return true;
             }
             if (localPath.EndsWith("testconnection"))
             {
-                info.WriteCompleteOutput("OK");
+                request.WriteCompleteOutput("OK");
                 return true;
             }
 
-            if (await ApiHandler.ProcessRequestAsync(info, localPath))
+            if (await ApiHandler.ProcessRequestAsync(request, localPath))
                 return true;
 
+            // note: this is placed as low as I could before some things started to handle the request that should not
+            if (
+                ServerHandlerForBloomPlayer.TryToHandle(
+                    request,
+                    CurrentCollectionSettings.FolderPath
+                )
+            )
+            {
+                return true;
+            }
+
             // Handle image file requests.
-            if (ProcessImageFileRequest(info))
+            if (ProcessImageFileRequest(request))
                 return true;
 
             if (localPath.Contains("CURRENTPAGE")) //useful when debugging. E.g. http://localhost:8089/bloom/CURRENTPAGE.htm will always show the page we're on.
@@ -540,17 +550,17 @@ namespace Bloom.Api
             }
             if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8089/bloom/current-bloompub-url will always show the page we're on.
             {
-                info.ResponseContentType = "application/json";
+                request.ResponseContentType = "application/json";
                 // send url:{PublishApi.PreviewUrl}
-                info.WriteCompleteOutput("{\"url\":\"" + PublishApi.PreviewUrl + "\"}");
+                request.WriteCompleteOutput("{\"url\":\"" + PublishApi.PreviewUrl + "\"}");
 
                 return true;
             }
 
             if (localPath.Contains("writingSystemDisplayForUI.css"))
             {
-                info.ResponseContentType = "text/css";
-                info.WriteCompleteOutput(
+                request.ResponseContentType = "text/css";
+                request.WriteCompleteOutput(
                     CurrentCollectionSettings.GetWritingSystemDisplayForUICss()
                 );
                 return true;
@@ -564,8 +574,8 @@ namespace Bloom.Api
             }
             if (gotSimulatedPage)
             {
-                info.ResponseContentType = "text/html";
-                info.WriteCompleteOutput(content ?? "");
+                request.ResponseContentType = "text/html";
+                request.WriteCompleteOutput(content ?? "");
                 return true;
             }
 
@@ -579,8 +589,8 @@ namespace Bloom.Api
                     startIndex,
                     localPath.Length - startIndex - ".htm".Length
                 );
-                info.ResponseContentType = "text/html";
-                info.WriteCompleteOutput(
+                request.ResponseContentType = "text/html";
+                request.WriteCompleteOutput(
                     EditingModel.GetEditPageIframeContents(CurrentBook, pageId)
                 );
                 return true;
@@ -596,7 +606,7 @@ namespace Bloom.Api
                 localPath = localPath.Substring(OriginalImageMarker.Length + 1);
                 if (IsImageTypeThatCanBeDegraded(localPath))
                 {
-                    return ProcessAnyFileContent(info, localPath);
+                    return ProcessAnyFileContent(request, localPath);
                 }
             }
 
@@ -612,7 +622,7 @@ namespace Bloom.Api
                 localPath = BloomFileLocator.GetBrowserFile(false, "jquery.min.js");
                 // Avoid having "output/browser/" removed on Linux developer machines.
                 // GetBrowserFile adds output to the path on developer machines, but not user installs.
-                return ProcessContent(info, localPath);
+                return ProcessContent(request, localPath);
             }
 
             // As of July 2022, map files are typically found with the corresponding JS bundle files
@@ -630,11 +640,12 @@ namespace Bloom.Api
 
             if (localPath == "")
             {
-                info.ResponseContentType = "text/html";
-                info.WriteCompleteOutput(RobustFile.ReadAllText(@"D:\temp\test.htm"));
+                request.ResponseContentType = "text/html";
+                request.WriteCompleteOutput(RobustFile.ReadAllText(@"D:\temp\test.htm"));
                 return true;
             }
-            return ProcessContent(info, localPath);
+
+            return ProcessContent(request, localPath);
         }
 
         bool IsInBookFolder(string path)
@@ -1065,7 +1076,7 @@ namespace Bloom.Api
                     modPath = Path.ChangeExtension(modPath, AudioRecording.kPublishableExtension);
                 }
             }
-            const string kBloomPrefix = "/bloom/";
+
             if (
                 !RobustFileExistsWithCaseCheck(path)
                 && path.Length > kBloomPrefix.Length
@@ -1873,9 +1884,9 @@ namespace Bloom.Api
 
         private static string GetLocalPathWithoutQuery(string localPath)
         {
-            if (localPath.StartsWith(BloomUrlPrefix))
+            if (localPath.StartsWith(kBloomPrefix))
             {
-                localPath = localPath.Substring(BloomUrlPrefix.Length);
+                localPath = localPath.Substring(kBloomPrefix.Length);
 #if __MonoCS__
                 if (localPath.StartsWith("tmp/ePUB"))
                     localPath = "/" + localPath; // restore leading slash for full path
