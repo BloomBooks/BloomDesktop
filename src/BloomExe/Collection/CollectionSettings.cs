@@ -324,13 +324,23 @@ namespace Bloom.Collection
                 xml.Add(new XElement("DefaultBookTags", "bookshelf:" + DefaultBookshelf));
             }
             xml.Add(BulkPublishBloomPubSettings.ToXElement());
+            RobustIO.SaveXElement(xml, SettingsFilePath);
+
+            // Color palette settings are stored in a separate Json file
+            SaveColorPalettesToJsonFile();
+        }
+
+        internal void SaveColorPalettesToJsonFile()
+        {
+            // If we're in a Team Collection, the file checker will try to sync up with any changes
+            // that have occurred remotely.
+            var jsonString = new StringBuilder();
+            jsonString.AppendLine("{");
             foreach (var key in ColorPalettes.Keys)
-            {
-                var palette = new XElement("Palette", ColorPalettes[key]);
-                palette.Add(new XAttribute("id", key));
-                xml.Add(palette);
-            }
-            SIL.IO.RobustIO.SaveXElement(xml, SettingsFilePath);
+                jsonString.AppendLine($"\"{key}\":\"{ColorPalettes[key]}\",");
+            jsonString.AppendLine("}");
+            var jsonFilePath = Path.Combine(FolderPath, "colorPalettes.json");
+            RobustFile.WriteAllText(jsonFilePath, jsonString.ToString());
         }
 
         public string GetCollectionStylesCss(bool omitDirection)
@@ -739,18 +749,48 @@ namespace Bloom.Collection
             }
         }
 
-        internal static void LoadDictionary(
-            XElement document,
-            string tag,
-            Dictionary<string, string> dict
-        )
+        internal void LoadDictionary(XElement document, string tag, Dictionary<string, string> dict)
         {
             dict.Clear();
             var elements = document.Descendants(tag);
-            if (elements != null)
+            if (elements != null && elements.Count() > 0)
             {
                 foreach (XElement element in elements)
                     dict[element.Attribute("id").Value] = element.Value;
+            }
+            else
+            {
+                // The color palettes are now stored in a separate JSON file, so if they aren't found in the XML,
+                // we need to try to load them from the JSON file.
+                if (tag == "Palette")
+                {
+                    var path = Path.Combine(FolderPath, "colorPalettes.json");
+                    LoadColorPalettesFromJsonFile(dict, path);
+                }
+            }
+        }
+
+        internal static void LoadColorPalettesFromJsonFile(
+            Dictionary<string, string> dict,
+            string path
+        )
+        {
+            if (RobustFile.Exists(path))
+            {
+                var jsonString = RobustFile.ReadAllText(path);
+                try
+                {
+                    var json = JObject.Parse(jsonString);
+                    if (json != null)
+                    {
+                        foreach (var property in json.Properties())
+                            dict[property.Name] = property.Value.ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteEvent($"Error loading color palettes from {path}: " + ex.Message);
+                }
             }
         }
 
@@ -1026,7 +1066,7 @@ namespace Bloom.Collection
         public bool HaveEnterpriseSubscription =>
             HaveEnterpriseFeatures && BrandingProjectKey != "Local-Community";
 
-        private readonly Dictionary<string, string> ColorPalettes =
+        internal readonly Dictionary<string, string> ColorPalettes =
             new Dictionary<string, string>();
 
         private string _brandingProjectKey;
@@ -1046,6 +1086,8 @@ namespace Bloom.Collection
                     var pieces = savedColor.Split('/');
                     if (pieces.Length > 1)
                         opacity = double.Parse(pieces[1], NumberFormatInfo.InvariantInfo);
+                    if (opacity > 1)
+                        opacity = opacity / 100; // some old values stored range of 0-100 instead of 0-1
                     var colors = pieces[0].Split('-');
                     // Opacity needs to be formatted in an invariant manner to keep the file format stable.
                     var colorElement =
@@ -1092,7 +1134,7 @@ namespace Bloom.Collection
                         return;
                     savedPalette = savedPalette + " " + colorToSave;
                     ColorPalettes[paletteTag] = savedPalette.Trim();
-                    Save();
+                    SaveColorPalettesToJsonFile();
                 }
                 catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
                 {
