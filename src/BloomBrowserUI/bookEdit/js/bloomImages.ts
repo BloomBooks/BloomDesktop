@@ -533,7 +533,16 @@ async function DetermineImageTooltipAsync(
         dpiLine +
         `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
 
-    return linesAboutThisFile + linesAboutThisContext;
+    // if there is a data-href, start with that url
+    let hyperlinkInfo = "";
+    const hyperlink = container.getAttribute("data-href");
+    if (hyperlink) {
+        // Enhance: we should eventually give book names and page numbers, but perhaps that will
+        // require clicking something to see all that instead of doing that lookup just in case
+        // someone looks at the tooltip.
+        hyperlinkInfo = `Hyperlink: ${hyperlink}\n`; // don't worry about localization yet
+    }
+    return hyperlinkInfo + linesAboutThisFile + linesAboutThisContext;
 }
 function getDpi(
     container: HTMLElement,
