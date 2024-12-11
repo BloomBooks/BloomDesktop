@@ -480,6 +480,106 @@ namespace Bloom.TeamCollection
             _collectionLock.UnlockFor(() => CopyRepoCollectionFilesTo(destFolder, _repoFolderPath));
             ExtractFolder(destFolder, _repoFolderPath, "Allowed Words");
             ExtractFolder(destFolder, _repoFolderPath, "Sample Texts");
+            SyncColorPaletteFileWithRepo(destFolder);
+        }
+
+        protected override void SyncColorPaletteFileWithRepo(string destFolder)
+        {
+            var repoColorPalettePath = Path.Combine(_repoFolderPath, "Other", "colorPalettes.json");
+            var destColorPalettePath = Path.Combine(destFolder, "colorPalettes.json");
+            if (RobustFile.Exists(repoColorPalettePath))
+            {
+                if (RobustFile.Exists(destColorPalettePath))
+                {
+                    // Merge the two files additively.
+                    var repoColorPalettes = new Dictionary<string, string>();
+                    CollectionSettings.LoadColorPalettesFromJsonFile(
+                        repoColorPalettes,
+                        repoColorPalettePath
+                    );
+                    var destColorPalettes = _tcManager.Settings?.ColorPalettes;
+                    if (destColorPalettes == null)
+                    {
+                        destColorPalettes = new Dictionary<string, string>();
+                        CollectionSettings.LoadColorPalettesFromJsonFile(
+                            destColorPalettes,
+                            destColorPalettePath
+                        );
+                    }
+                    var dirty = false;
+                    foreach (var key in repoColorPalettes.Keys)
+                    {
+                        var mergedValues = MergeColorPaletteValues(
+                            repoColorPalettes[key],
+                            destColorPalettes[key]
+                        );
+                        if (mergedValues != destColorPalettes[key])
+                        {
+                            destColorPalettes[key] = mergedValues;
+                            dirty = true;
+                        }
+                    }
+                    if (dirty)
+                    {
+                        if (_tcManager.Settings == null)
+                        {
+                            if (destFolder == LocalCollectionFolder)
+                            {
+                                CollectionSettings.SaveColorPalettesToJsonFile(
+                                    destColorPalettes,
+                                    destColorPalettePath
+                                );
+                                RobustFile.Copy(destColorPalettePath, repoColorPalettePath, true);
+                            }
+                        }
+                        else if (_tcManager.Settings.FolderPath == destFolder)
+                        {
+                            _tcManager.Settings.SaveColorPalettesToJsonFile();
+                            RobustFile.Copy(destColorPalettePath, repoColorPalettePath, true);
+                        }
+                    }
+                }
+                else
+                {
+                    // Add the palette file to the collection if it doesn't exist there.
+                    RobustFile.Copy(repoColorPalettePath, destColorPalettePath);
+                    CollectionSettings.LoadColorPalettesFromJsonFile(
+                        _tcManager.Settings.ColorPalettes,
+                        destColorPalettePath
+                    );
+                }
+            }
+            else if (RobustFile.Exists(destColorPalettePath))
+            {
+                // Add the palette file to the repo if it doesn't exist there.
+                RobustFile.Copy(destColorPalettePath, repoColorPalettePath);
+            }
+        }
+
+        protected override DateTime GetRepoColorPaletteTime()
+        {
+            var repoColorPalettePath = Path.Combine(_repoFolderPath, "Other", "colorPalettes.json");
+            return RobustFile.Exists(repoColorPalettePath)
+                ? new FileInfo(repoColorPalettePath).LastWriteTime
+                : DateTime.MinValue;
+        }
+
+        private static string MergeColorPaletteValues(string repoValues, string localValues)
+        {
+            if (repoValues == localValues)
+                return localValues;
+            if (String.IsNullOrEmpty(repoValues))
+                return localValues;
+            if (String.IsNullOrEmpty(localValues))
+                return repoValues;
+            var repoArray = repoValues.Split(new char[] { ' ' });
+            var localList = new List<string>(localValues.Split(new char[] { ' ' }));
+            foreach (var value in repoArray)
+            {
+                if (!string.IsNullOrEmpty(value) && !localList.Contains(value))
+                    localList.Add(value);
+            }
+            return string.Join(" ", localList);
         }
 
         private static void CopyRepoCollectionFilesTo(string destFolder, string repoFolder)
@@ -494,6 +594,7 @@ namespace Bloom.TeamCollection
                     collectionZipPath,
                     () => new HashSet<string>(RootLevelCollectionFilesIn(destFolder))
                 );
+                SyncColorPaletteFileWithRepo(destFolder, repoFolder);
             }
             catch (Exception e)
                 when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
@@ -504,6 +605,60 @@ namespace Bloom.TeamCollection
                     "Bloom could not unpack the collection files in your Team Collection",
                     exception: e
                 );
+            }
+        }
+
+        private static void SyncColorPaletteFileWithRepo(string destFolder, string repoFolder)
+        {
+            var repoColorPalettePath = Path.Combine(repoFolder, "Other", "colorPalettes.json");
+            var destColorPalettePath = Path.Combine(destFolder, "colorPalettes.json");
+            if (RobustFile.Exists(repoColorPalettePath))
+            {
+                if (RobustFile.Exists(destColorPalettePath))
+                {
+                    // Merge the two files additively.
+                    var repoColorPalettes = new Dictionary<string, string>();
+                    CollectionSettings.LoadColorPalettesFromJsonFile(
+                        repoColorPalettes,
+                        repoColorPalettePath
+                    );
+                    var destColorPalettes = new Dictionary<string, string>();
+                    CollectionSettings.LoadColorPalettesFromJsonFile(
+                        destColorPalettes,
+                        destColorPalettePath
+                    );
+                    var dirty = false;
+                    foreach (var key in repoColorPalettes.Keys)
+                    {
+                        var mergedValues = MergeColorPaletteValues(
+                            repoColorPalettes[key],
+                            destColorPalettes[key]
+                        );
+                        if (mergedValues != destColorPalettes[key])
+                        {
+                            destColorPalettes[key] = mergedValues;
+                            dirty = true;
+                        }
+                    }
+                    if (dirty)
+                    {
+                        CollectionSettings.SaveColorPalettesToJsonFile(
+                            destColorPalettes,
+                            destColorPalettePath
+                        );
+                        RobustFile.Copy(destColorPalettePath, repoColorPalettePath, true);
+                    }
+                }
+                else
+                {
+                    // Add the palette file to the collection if it doesn't exist there.
+                    RobustFile.Copy(repoColorPalettePath, destColorPalettePath);
+                }
+            }
+            else if (RobustFile.Exists(destColorPalettePath))
+            {
+                // Add the palette file to the repo if it doesn't exist there.
+                RobustFile.Copy(destColorPalettePath, repoColorPalettePath);
             }
         }
 
