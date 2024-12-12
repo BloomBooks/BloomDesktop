@@ -272,11 +272,11 @@ namespace BloomTests.TeamCollection
         [Test]
         public void HandleCurrentBookStatus_InsufficientRegistration_RequestFails()
         {
-            var originalValue = SIL.Windows.Forms.Registration.Registration.Default.Email;
+            var originalValue = Bloom.Registration.Registration.Default.Email;
 
             try
             {
-                SIL.Windows.Forms.Registration.Registration.Default.Email = "";
+                Bloom.Registration.Registration.Default.Email = "";
 
                 var api = new TeamCollectionApiBuilder().WithDefaultMocks().Build();
                 api.RegisterWithApiHandler(_server.ApiHandler);
@@ -293,18 +293,18 @@ namespace BloomTests.TeamCollection
             }
             finally
             {
-                SIL.Windows.Forms.Registration.Registration.Default.Email = originalValue;
+                Bloom.Registration.Registration.Default.Email = originalValue;
             }
         }
 
         [Test]
         public void HandleCurrentBookStatus_LockedByRealUser_StatusIndicatesThatuser()
         {
-            var originalValue = SIL.Windows.Forms.Registration.Registration.Default.Email;
+            var originalValue = Bloom.Registration.Registration.Default.Email;
 
             try
             {
-                SIL.Windows.Forms.Registration.Registration.Default.Email = "me@example.com";
+                Bloom.Registration.Registration.Default.Email = "me@example.com";
 
                 var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks(true);
                 var api = apiBuilder.Build();
@@ -331,7 +331,7 @@ namespace BloomTests.TeamCollection
             finally
             {
                 // Cleanup
-                SIL.Windows.Forms.Registration.Registration.Default.Email = originalValue;
+                Bloom.Registration.Registration.Default.Email = originalValue;
             }
         }
 
@@ -364,11 +364,11 @@ namespace BloomTests.TeamCollection
         [Test]
         public void HandleCurrentBookStatus_LockedByFakeUser_FakeUserConvertedToCurrentUser()
         {
-            var originalValue = SIL.Windows.Forms.Registration.Registration.Default.Email;
+            var originalValue = Bloom.Registration.Registration.Default.Email;
 
             try
             {
-                SIL.Windows.Forms.Registration.Registration.Default.Email = "me@example.com";
+                Bloom.Registration.Registration.Default.Email = "me@example.com";
 
                 var mockBook = new Mock<Bloom.Book.Book>();
                 mockBook.Setup(m => m.IsSaveable).Returns(true);
@@ -403,7 +403,7 @@ namespace BloomTests.TeamCollection
             finally
             {
                 // Cleanup
-                SIL.Windows.Forms.Registration.Registration.Default.Email = originalValue;
+                Bloom.Registration.Registration.Default.Email = originalValue;
             }
         }
 
