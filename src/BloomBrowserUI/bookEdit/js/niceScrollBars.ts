@@ -63,19 +63,14 @@ export function addScrollbarsToPage(bloomPage: Element): void {
                         );
                     }
                 }
-                let topAdjust = 0;
-                let leftAdjust = 0;
-                if (scale !== 1) {
-                    const compStyles = window.getComputedStyle(
-                        elt.parentElement!
-                    );
-                    const topPadding =
-                        compStyles.getPropertyValue("padding-top") ?? "0";
-                    const leftPadding =
-                        compStyles.getPropertyValue("padding-left") ?? "0";
-                    topAdjust = parseFloat(topPadding) * (scale - 1);
-                    leftAdjust = parseFloat(leftPadding) * (scale - 1);
-                }
+                // We also need to adjust the height of the rail and the cursor, but nicescroll
+                // doesn't allow us to adjust the height of the rail.  Adjusting the height of
+                // the cursor is almost counterproductive if the rail height doesn't change.
+                const {
+                    topAdjust,
+                    leftAdjust,
+                    thumbWidth
+                } = ComputeNiceScrollOffsets(scale, elt as HTMLElement);
 
                 // We don't really want continuous observation, but this is an elegant
                 // way to find out whether each child is entirely contained within its
@@ -204,10 +199,10 @@ export function addScrollbarsToPage(bloomPage: Element): void {
                                         top: -topAdjust,
                                         left: -leftAdjust
                                     },
-                                    cursorwidth: "12px",
+                                    cursorwidth: thumbWidth,
                                     cursorcolor: "#000000",
                                     cursoropacitymax: 0.1,
-                                    cursorborderradius: "12px" // Make the corner more rounded than the 5px default.
+                                    cursorborderradius: thumbWidth // Make the corner more rounded than the 5px default.
                                 });
                                 setupSpecialMouseTrackingForNiceScroll(
                                     bloomPage
@@ -227,6 +222,98 @@ export function addScrollbarsToPage(bloomPage: Element): void {
             });
     }
 }
+
+// This method is copied from the nicescroll source code, albeit with some renamings and
+// getting rid of jquery as much as possible.  This is how nicescroll determines the parent
+// element that should have the inserted scrollbar elements.  If nothing is found by this
+// method, nicescroll uses the body element.  Since the nicescroll release hasn't been updated
+// since 2017, I feel safe in copying this method here in January 2025.
+// This method is identical to one in bloom-player.  It should be in a common library.
+function getNiceScrollParent(elt: HTMLElement): HTMLElement | null {
+    var parentElt =
+        elt && elt.parentNode ? (elt.parentNode as HTMLElement) : null;
+    while (
+        parentElt &&
+        parentElt.nodeType === Node.ELEMENT_NODE &&
+        !/^BODY|HTML/.test(parentElt.nodeName)
+    ) {
+        const computed = window.getComputedStyle(parentElt);
+        const position = computed.getPropertyValue("position");
+        if (/fixed|absolute/.test(position)) return parentElt;
+        const ov =
+            computed.getPropertyValue("overflow-y") ||
+            computed.getPropertyValue("overflow-x") ||
+            computed.getPropertyValue("overflow") ||
+            "";
+        if (
+            /scroll|auto/.test(ov) &&
+            parentElt.clientHeight != parentElt.scrollHeight
+        )
+            return parentElt;
+        if (($(parentElt).getNiceScroll() as any).length > 0) return parentElt;
+        parentElt = parentElt.parentNode
+            ? (parentElt.parentNode as HTMLElement)
+            : null;
+    }
+    return null;
+}
+
+// nicescroll doesn't properly scale the padding at the top and left of the
+// scrollable area of the languageGroup divs when the page is scaled.  This
+// method computes offset values to correct for this.  See BL-13796 and BL-14112.
+// This method is identical to one in bloom-player.  It should be in a common library.
+function ComputeNiceScrollOffsets(
+    scale: number,
+    elt: HTMLElement
+): { topAdjust: number; leftAdjust: number; thumbWidth: string } {
+    let topAdjust = 0;
+    let leftAdjust = 0;
+    let thumbWidth = "12px";
+    // should we allow for a small amount of rounding error?
+    if (scale !== 1) {
+        const translationGroupDiv = elt.parentElement;
+        if (
+            !translationGroupDiv ||
+            !translationGroupDiv.classList.contains("bloom-translationGroup")
+        ) {
+            // We don't know how to deal with this case, so we'll just return the default values.
+            return { topAdjust, leftAdjust, thumbWidth };
+        }
+        const whereToPutTheScrollbars = getNiceScrollParent(elt);
+        if (whereToPutTheScrollbars) {
+            // The nicescroll elements are added somewhere in the DOM that is presumably inside
+            // the element that sets the scaling.
+            const compStyles = window.getComputedStyle(elt.parentElement!);
+            const topPadding =
+                compStyles.getPropertyValue("padding-top") ?? "0";
+            const leftPadding =
+                compStyles.getPropertyValue("padding-left") ?? "0";
+            topAdjust = parseFloat(topPadding) * (scale - 1);
+            leftAdjust = parseFloat(leftPadding) * (scale - 1);
+        } else {
+            // The nicescroll elements are added directly under the body element, which is presumably
+            // outside the element that sets the scaling.  We need to adjust for the scaling of the
+            // scrollbar position and size ourselves. See BL-14112.
+            const splitPageComponentInner = translationGroupDiv.parentElement;
+            if (!splitPageComponentInner) {
+                // This should never happen, but if it does, we'll just return the default values.
+                return { topAdjust, leftAdjust, thumbWidth };
+            }
+            // This seems to apply only to text-only pages which don't have any additional padding
+            // to worry about: only the basic page dimensions given by the splitPageComponentInner
+            // element.
+            thumbWidth = `${12 * scale}px`;
+            const top = splitPageComponentInner?.offsetTop;
+            const right =
+                splitPageComponentInner.offsetLeft +
+                splitPageComponentInner.offsetWidth;
+            topAdjust = -(top * (scale - 1));
+            leftAdjust = -(right * (scale - 1));
+        }
+    }
+    return { topAdjust, leftAdjust, thumbWidth };
+}
+
 // This function was copied from bloom-player with minimal changes and should be in a common library.
 function setupSpecialMouseTrackingForNiceScroll(bloomPage: Element) {
     bloomPage.removeEventListener("pointerdown", listenForPointerDown); // only want one!
