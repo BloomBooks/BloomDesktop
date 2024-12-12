@@ -445,13 +445,12 @@ namespace Bloom.TeamCollection
             // are in a consistent state, as we may get multiple write notifications during the process of
             // writing a file. It may also help to ensure that repo writing doesn't interfere somehow with
             // whatever is changing things.
-            // (Form.ActiveForm should not be null when Bloom is running normally. However, it can be when we're displaying
-            // a page in a browser, or when we're reloading Bloom after saving collection settings.)
-            if (Form.ActiveForm != null)
+            var form = Shell.GetShellOrOtherOpenForm(); // Form.ActiveForm is null when a browser is active
+            if (form != null)
             {
                 SafeInvoke.InvokeIfPossible(
                     "Add SyncCollectionFilesToRepoOnIdle",
-                    Form.ActiveForm,
+                    form,
                     false,
                     (Action)(
                         () =>
@@ -793,9 +792,10 @@ namespace Bloom.TeamCollection
             }
             else
             {
-                if (LocalCollectionFilesUpdated())
+                var updateType = LocalCollectionFilesUpdated();
+                if (updateType != CollectionSettingsChange.None)
                 {
-                    if (repoModTime > savedSyncTime)
+                    if (repoModTime > savedSyncTime && updateType == CollectionSettingsChange.Other)
                     {
                         // We have a conflict we should warn the user about...if we haven't already.
                         if (!_haveShownRemoteSettingsChangeWarning)
@@ -886,7 +886,9 @@ namespace Bloom.TeamCollection
         private void RecordCollectionFilesSyncData()
         {
             var files = FilesToMonitorForCollection();
-            var checksum = MakeChecksumOnFiles(files);
+            var checksum = MakeChecksumOnFiles(
+                files.FindAll(f => Path.GetFileName(f) != "colorPalettes.json")
+            );
             RecordCollectionFilesSyncDataInternal(checksum);
         }
 
@@ -907,6 +909,13 @@ namespace Bloom.TeamCollection
             RobustFile.WriteAllText(path, nowString + @";" + checksum);
         }
 
+        internal enum CollectionSettingsChange
+        {
+            None,
+            ColorPalette,
+            Other
+        }
+
         /// <summary>
         /// Return true if local collection-level files have changed and need to be copied
         /// to the repo. Usually we can determine this by a quick check of modify times.
@@ -915,14 +924,33 @@ namespace Bloom.TeamCollection
         /// we update the time record to make the next check faster.)
         /// </summary>
         /// <returns></returns>
-        internal bool LocalCollectionFilesUpdated()
+        internal CollectionSettingsChange LocalCollectionFilesUpdated()
         {
             var files = FilesToMonitorForCollection();
-            var localModTime = files.Select(f => new FileInfo(f).LastWriteTime).Max();
+
+            var localModTime = files
+                .FindAll(f => Path.GetFileName(f) != "colorPalettes.json")
+                .Select(f => new FileInfo(f).LastWriteTime)
+                .Max();
             var savedModTime = LocalCollectionFilesRecordedSyncTime();
+            var colorPaletteChanged = false;
+            var colorPaletteFile = files.Find(f => Path.GetFileName(f) == "colorPalettes.json");
+            if (colorPaletteFile != null && RobustFile.Exists(colorPaletteFile))
+            {
+                var colorPaletteTime = new FileInfo(colorPaletteFile).LastWriteTime;
+                if (colorPaletteTime > savedModTime)
+                    colorPaletteChanged = SyncColorPaletteFileFromRepo();
+            }
             if (localModTime <= savedModTime)
-                return false;
-            var currentChecksum = MakeChecksumOnFiles(files);
+            {
+                return colorPaletteChanged
+                    ? CollectionSettingsChange.ColorPalette
+                    : CollectionSettingsChange.None;
+            }
+
+            var currentChecksum = MakeChecksumOnFiles(
+                files.FindAll(f => Path.GetFileName(f) != "colorPalettes.json")
+            );
             var localFilesReallyUpdated = currentChecksum != LocalCollectionFilesSavedChecksum();
             if (!localFilesReallyUpdated && savedModTime >= LastRepoCollectionFileModifyTime)
             {
@@ -935,7 +963,85 @@ namespace Bloom.TeamCollection
                 // collection level anyway.
                 RecordCollectionFilesSyncDataInternal(currentChecksum);
             }
-            return localFilesReallyUpdated;
+            if (localFilesReallyUpdated)
+                return CollectionSettingsChange.Other;
+            else if (colorPaletteChanged)
+                return CollectionSettingsChange.ColorPalette;
+            else
+                return CollectionSettingsChange.None;
+        }
+
+        object _syncRepo = new object();
+
+        private bool SyncColorPaletteFileFromRepo()
+        {
+            lock (_syncRepo)
+            {
+                // We need to copy the colorPalettes.json file from the repo so we can load it and
+                // merge into our local colorPalettes.json file.
+                var tempFolder = Path.Combine(Path.GetTempPath(), "BloomColorPalette");
+                if (!Directory.Exists(tempFolder))
+                    Directory.CreateDirectory(tempFolder);
+                try
+                {
+                    var repoColorPaletteFile = Path.Combine(tempFolder, "colorPalettes.json");
+                    CopyRepoCollectionFilesToLocalImpl(tempFolder);
+                    var repoColorPalettes = new Dictionary<string, string>();
+                    if (RobustFile.Exists(repoColorPaletteFile))
+
+                        CollectionSettings.LoadColorPalettesFromJsonFile(
+                            repoColorPalettes,
+                            repoColorPaletteFile
+                        );
+                    var dirty = false;
+                    foreach (var key in repoColorPalettes.Keys)
+                    {
+                        var mergedValues = MergeColorPaletteValues(
+                            repoColorPalettes[key],
+                            _tcManager.Settings.ColorPalettes[key]
+                        );
+                        if (mergedValues != _tcManager.Settings.ColorPalettes[key])
+                        {
+                            _tcManager.Settings.ColorPalettes[key] = mergedValues;
+                            dirty = true;
+                        }
+                    }
+                    if (dirty)
+                        _tcManager.Settings.SaveColorPalettesToJsonFile();
+                    return dirty;
+                }
+                finally
+                {
+                    try
+                    {
+                        RobustIO.DeleteDirectory(tempFolder, true);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.WriteEvent(
+                            $"Error deleting temporary folder {tempFolder}: " + e.Message
+                        );
+                    }
+                }
+            }
+        }
+
+        private string MergeColorPaletteValues(string repoValues, string localValues)
+        {
+            if (repoValues == localValues)
+                return localValues;
+            if (String.IsNullOrEmpty(repoValues))
+                return localValues;
+            if (String.IsNullOrEmpty(localValues))
+                return repoValues;
+            var repoArray = repoValues.Split(new char[] { ' ' });
+            var localList = new List<string>(localValues.Split(new char[] { ' ' }));
+            foreach (var value in repoArray)
+            {
+                if (!string.IsNullOrEmpty(value) && !localList.Contains(value))
+                    localList.Add(value);
+            }
+            return string.Join(" ", localList);
         }
 
         internal DateTime LocalCollectionFilesRecordedSyncTime()
@@ -1013,7 +1119,14 @@ namespace Bloom.TeamCollection
         {
             var files = new List<string>();
             files.Add(Path.GetFileName(CollectionPath(folder)));
-            foreach (var file in new[] { "customCollectionStyles.css", "configuration.txt" })
+            foreach (
+                var file in new[]
+                {
+                    "customCollectionStyles.css",
+                    "configuration.txt",
+                    "colorPalettes.json"
+                }
+            )
             {
                 if (RobustFile.Exists(Path.Combine(folder, file)))
                     files.Add(file);
