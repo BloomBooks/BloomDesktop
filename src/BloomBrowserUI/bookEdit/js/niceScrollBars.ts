@@ -63,18 +63,46 @@ export function addScrollbarsToPage(bloomPage: Element): void {
                         );
                     }
                 }
+                // We also need to adjust the height of the rail and the cursor, but nicescroll
+                // doesn't allow us to adjust the height of the rail.  Adjusting the height of
+                // the cursor is almost counterproductive if the rail height doesn't change.
                 let topAdjust = 0;
                 let leftAdjust = 0;
+                let cursorWidth = "12px";
+                // should we allow for a small amount of rounding error?
                 if (scale !== 1) {
-                    const compStyles = window.getComputedStyle(
-                        elt.parentElement!
-                    );
-                    const topPadding =
-                        compStyles.getPropertyValue("padding-top") ?? "0";
-                    const leftPadding =
-                        compStyles.getPropertyValue("padding-left") ?? "0";
-                    topAdjust = parseFloat(topPadding) * (scale - 1);
-                    leftAdjust = parseFloat(leftPadding) * (scale - 1);
+                    // code here doesn't account for .scrollable branding xmatter, but I can't
+                    // find any such cases in the codebase.  It may be that the selector doesn't
+                    // ever actually match anything for .scrollable.
+                    if (
+                        elt.parentElement!.parentElement?.classList.contains(
+                            "split-pane-component-inner"
+                        ) &&
+                        elt.parentElement!.parentElement?.parentElement?.classList.contains(
+                            "marginBox"
+                        )
+                    ) {
+                        // The nicescroll elements are added outside the marginBox, and also
+                        // outside the #page-scaling-container. So we need to adjust for the
+                        // scaling of the scrollbar position and size ourselves. See BL-14112.
+                        cursorWidth = `${12 * scale}px`;
+                        const top = elt.parentElement!.parentElement!.offsetTop;
+                        const right =
+                            elt.parentElement!.parentElement!.offsetLeft +
+                            elt.parentElement!.parentElement!.offsetWidth;
+                        topAdjust = -(top * (scale - 1));
+                        leftAdjust = -(right * (scale - 1));
+                    } else {
+                        const compStyles = window.getComputedStyle(
+                            elt.parentElement!
+                        );
+                        const topPadding =
+                            compStyles.getPropertyValue("padding-top") ?? "0";
+                        const leftPadding =
+                            compStyles.getPropertyValue("padding-left") ?? "0";
+                        topAdjust = parseFloat(topPadding) * (scale - 1);
+                        leftAdjust = parseFloat(leftPadding) * (scale - 1);
+                    }
                 }
 
                 // We don't really want continuous observation, but this is an elegant
@@ -204,10 +232,10 @@ export function addScrollbarsToPage(bloomPage: Element): void {
                                         top: -topAdjust,
                                         left: -leftAdjust
                                     },
-                                    cursorwidth: "12px",
+                                    cursorwidth: cursorWidth,
                                     cursorcolor: "#000000",
                                     cursoropacitymax: 0.1,
-                                    cursorborderradius: "12px" // Make the corner more rounded than the 5px default.
+                                    cursorborderradius: cursorWidth // Make the corner more rounded than the 5px default.
                                 });
                                 setupSpecialMouseTrackingForNiceScroll(
                                     bloomPage
