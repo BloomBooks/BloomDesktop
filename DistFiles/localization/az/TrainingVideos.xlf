@@ -4,31 +4,31 @@
     <body>
       <trans-unit id="training.videos">
         <source xml:lang="en">Bloom Training Videos</source>
-        <target xml:lang="az" state="needs-translation">Bloom Training Videos</target>
+        <target xml:lang="az" state="translated">Bloom Təlim Videoları</target>
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
-        <target xml:lang="az" state="needs-translation">If you are connected to the internet now, you can watch videos in your web browser:</target>
+        <target xml:lang="az" state="translated">Əgər siz İnternetə hal-hazırda qoşulursunuz, siz videoları öz braüzerda baxa bilərsiniz:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="az" state="needs-translation"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g></target>
+        <target xml:lang="az" state="translated"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Bütün videolar</g></target>
         <note>ID: training.videos.all</note>
       </trans-unit>
       <trans-unit id="training.videos.intro">
         <source xml:lang="en">Introductory Videos</source>
-        <target xml:lang="az" state="needs-translation">Introductory Videos</target>
+        <target xml:lang="az" state="translated">Girişlik videoları</target>
         <note>ID: training.videos.intro</note>
       </trans-unit>
       <trans-unit id="training.videos.whofor">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="az" state="needs-translation"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g></target>
+        <target xml:lang="az" state="translated"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Kimlərə üçündür</g></target>
         <note>ID: training.videos.whofor</note>
       </trans-unit>
       <trans-unit id="training.videos.templates">
