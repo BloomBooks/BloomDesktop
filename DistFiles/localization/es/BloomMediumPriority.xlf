@@ -130,7 +130,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceInstructions">
         <source xml:lang="en">Type a sentence. Bloom will shuffle the words for the student to fix.</source>
-        <target xml:lang="es-ES" state="needs-translation">Type a sentence. Bloom will shuffle the words for the student to fix.</target>
+        <target xml:lang="es-ES" state="translated">Escribe una oración. Bloom barajará las palabras para que el alumno lo arregle.</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderSentenceInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Options">
@@ -184,17 +184,17 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions">
         <source xml:lang="en">Properties of the Scene</source>
-        <target xml:lang="es-ES" state="needs-translation">Properties of the Scene</target>
+        <target xml:lang="es-ES" state="translated">Propiedades de la escena</target>
         <note>ID: EditTab.Toolbox.DragActivity.SceneInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SentenceHint">
         <source xml:lang="en">Type a sentence. The reader will be asked to sort the words.</source>
-        <target xml:lang="es-ES" state="needs-translation">Type a sentence. The reader will be asked to sort the words.</target>
+        <target xml:lang="es-ES" state="translated">Escriba una oración. Se le pedirá al lector que ordene las palabras.</target>
         <note>ID: EditTab.Toolbox.DragActivity.SentenceHint</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SetupMode">
         <source xml:lang="en">Game Setup mode:</source>
-        <target xml:lang="es-ES" state="needs-translation">Game Setup mode:</target>
+        <target xml:lang="es-ES" state="translated">Modo de configuración del juego:</target>
         <note>ID: EditTab.Toolbox.DragActivity.SetupMode</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ShowTargetsPlay">
@@ -831,7 +831,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.FontNotInstalled" sil:dynamic="true">
         <source xml:lang="en">Font is not installed on this computer</source>
-        <target xml:lang="es-ES" state="needs-translation">Font is not installed on this computer</target>
+        <target xml:lang="es-ES" state="translated">La fuente no está instalada en este equipo</target>
         <note>ID: BookSettings.Fonts.FontNotInstalled</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.FirstPage" sil:dynamic="true">
