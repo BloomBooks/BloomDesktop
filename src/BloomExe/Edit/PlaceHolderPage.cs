@@ -88,7 +88,7 @@ namespace Bloom.Edit
             get { return false; }
         }
 
-        public bool IsFrontCoverPage
+        public bool IsOutsideFrontCoverPage
         {
             get { return false; }
         }
