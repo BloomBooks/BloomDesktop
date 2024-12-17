@@ -2,7 +2,7 @@ import { TeamCollectionDialogLauncher } from "./TeamCollectionDialog";
 import { StorybookDialogWrapper } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 export default {
-    title: "Team Collection components/TeamCollectionDialog"
+    title: "Collection/Team Collection/TeamCollectionDialog"
 };
 
 export const WithReloadButton = () => (

@@ -3494,6 +3494,10 @@
         <source xml:lang="en">Create New Collection</source>
         <note>ID: OpenCreateNewCollectionsDialog.CreateNewCollection</note>
       </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.ExistingCollections">
+        <source xml:lang="en">Existing Collections</source>
+        <note>ID: OpenCreateNewCollectionsDialog.ExistingCollections</note>
+      </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
         <source xml:lang="en">Open/Create Collections</source>
         <note>ID: OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle</note>

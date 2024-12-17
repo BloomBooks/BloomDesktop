@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionChoosing;
 using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
@@ -327,8 +328,8 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "removeSourceFolder",
-                HandleRemoveSourceFolder,
+                kApiUrlPart + "openCollectionFolderInExplorer",
+                HandleOpenCollectionFolderInExplorer,
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -350,6 +351,13 @@ namespace Bloom.web.controllers
                 {
                     request.ReplyWithText(_collectionModel.CurrentEditableCollection.Name);
                 },
+                false
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "getMostRecentlyUsedCollections",
+                HandleGetMostRecentlyUsedCollections,
+                false,
                 false
             );
         }
@@ -374,20 +382,28 @@ namespace Bloom.web.controllers
 
         bool _updateAfterExplorerOpened;
 
-        private void HandleRemoveSourceFolder(ApiRequest request)
+        private void HandleOpenCollectionFolderInExplorer(ApiRequest request)
         {
-            var collectionFolderPath = request.RequiredPostString();
-            if (Directory.Exists(collectionFolderPath))
+            // path might be a .bloomCollection file or a directory
+            var path = request.RequiredPostString();
+            string collectionFolderPath;
+            if (RobustFile.Exists(path))
             {
-                request.PostSucceeded();
-                _updateAfterExplorerOpened = true;
-                ProcessExtra.SafeStartInFront(collectionFolderPath);
+                collectionFolderPath = Path.GetDirectoryName(path);
+            }
+            else if (Directory.Exists(path))
+            {
+                collectionFolderPath = path;
             }
             else
             {
                 request.Failed();
                 return;
             }
+            request.PostSucceeded();
+            if (request.Parameters["updateAfter"] == "true")
+                _updateAfterExplorerOpened = true;
+            ProcessExtra.SafeStartInFront(collectionFolderPath);
         }
 
         // Currently only used by Books on Blorg Progress Bar; if a Sign Language is defined, we use that.
@@ -800,6 +816,79 @@ namespace Bloom.web.controllers
         private Book.Book GetUpdatedBookObjectFromBookInfo(BookInfo info)
         {
             return _collectionModel.GetBookFromBookInfo(info);
+        }
+
+        private void HandleGetMostRecentlyUsedCollections(ApiRequest request)
+        {
+            // Typescript we need to match up with is:
+            // interface ICollectionInfo {
+            //    path: string;
+            //    title: string;
+            //    bookCount: number;
+            //    checkedOutCount ?: number;
+            //    unpublishedCount ?: number;
+            //    isTeamCollection ?: boolean;
+            // }
+            var collections = new List<dynamic>();
+
+            const int maxMruItems = 9;
+            var collectionsToShow = Settings.Default.MruProjects.Paths.Take(maxMruItems).ToList();
+            if (
+                collectionsToShow.Count() < maxMruItems
+                && Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections)
+            )
+            {
+                collections.AddRange(
+                    Directory
+                        .GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
+                        .Select(
+                            d =>
+                                Path.Combine(
+                                    d,
+                                    Path.ChangeExtension(Path.GetFileName(d), "bloomCollection")
+                                )
+                        )
+                        .Where(path => RobustFile.Exists(path) && !collectionsToShow.Contains(path))
+                        .OrderBy(path => Directory.GetLastWriteTime(Path.GetDirectoryName(path)))
+                        .Select(path =>
+                        {
+                            return new { path, title = Path.GetFileNameWithoutExtension(path) };
+                        })
+                //.Reverse()
+                //.Take(maxMruItems - collectionsToShow.Count())
+                );
+            }
+            else
+            {
+                collections.AddRange(
+                    collectionsToShow.Select(path =>
+                    {
+                        return new { path, title = Path.GetFileNameWithoutExtension(path) };
+                    })
+                );
+            }
+            request.ReplyWithJson(collections);
+
+            //var bookCollections = _collectionModel.GetBookCollections();
+            //var mrus = Settings.Default.MruProjects;
+            //collections.AddRange(
+            //    mrus.Paths.Select(path =>
+            //    {
+            //        var collection = bookCollections.FirstOrDefault(c => c.PathToDirectory == path);
+            //        if (collection == null)
+            //        {
+            //            return null;
+            //        }
+            //        return new
+            //        {
+            //            path = collection.PathToDirectory,
+            //            title = collection.Name,
+            //            bookCount = collection.GetBookInfos().Count(),
+            //            isTeamCollection = collection.IsFactoryInstalled
+            //        };
+            //    })
+            //);
+            //request.ReplyWithJson(new { collections = collections.ToArray() });
         }
     }
 }

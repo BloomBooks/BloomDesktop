@@ -1,7 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
-
-// Storybook stories for Team Collection components
+import { css } from "@emotion/react";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import * as React from "react";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
@@ -62,7 +59,7 @@ const avatar = (lockedByMe: boolean) => (
 let emptyAvatarForProblemState: JSX.Element = (undefined as any) as JSX.Element;
 
 export default {
-    title: "Team Collection components/StatusPanelCommon"
+    title: "Collection/Team Collection/StatusPanelCommon"
 };
 
 export const Available = () =>

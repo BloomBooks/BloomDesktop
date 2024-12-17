@@ -6,7 +6,7 @@ import { IBookInfo } from "../collectionsTab/BooksOfCollection";
 import { useState } from "react";
 
 const meta: Meta = {
-    title: "CollectionBookList"
+    title: "Collection/CollectionBookList"
 };
 
 export default meta;

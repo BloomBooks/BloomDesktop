@@ -140,12 +140,15 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         CollectionInfo | undefined
     >();
 
-    const removeSourceFolder = (id: string) => {
-        // This opens a file explorer on the given folder, giving the user
+    const openCollectionFolderInExplorer = (collectionFolderPath: string) => {
+        // This opens a file explorer in the given folder, giving the user
         // the option of deleting it.  We can't depend on waiting long enough
         // so we just ignore the return from the post and listen on a socket
         // for any update information.
-        postString("collections/removeSourceFolder", id);
+        postString(
+            "collections/openCollectionFolderInExplorer?updateAfter=true",
+            collectionFolderPath
+        );
     };
 
     useSubscribeToWebSocketForObject<{
@@ -349,7 +352,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                 isRemovableFolder={c.isRemovableFolder}
                 manager={manager}
                 onRemoveSourceCollection={removeSourceCollection}
-                onRemoveSourceFolder={removeSourceFolder}
+                onRemoveSourceFolder={openCollectionFolderInExplorer}
                 filter={c.filter}
             />
         );

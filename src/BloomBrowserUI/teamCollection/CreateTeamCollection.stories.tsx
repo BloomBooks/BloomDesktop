@@ -2,7 +2,7 @@ import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 export default {
-    title: "Team Collection components/CreateTeamCollection"
+    title: "Collection/Team Collection/CreateTeamCollection"
 };
 
 export const _CreateTeamCollectionDialog = () => (
