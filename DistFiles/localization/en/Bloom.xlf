@@ -513,6 +513,10 @@
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChooseLanguage">
+        <source xml:lang="en">Choose Language</source>
+        <note>ID: CollectionSettingsDialog.LanguageTab.ChooseLanguage</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
         <source xml:lang="en">Languages</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.LanguageTabLabel</note>
@@ -1870,18 +1874,6 @@
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
         <source xml:lang="en">Paste image</source>
         <note>ID: EditTab.Image.PasteImage</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Image.SetBackground" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Set Image as background</source>
-        <note>ID: EditTab.Image.SetBackground</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Image.SetBackgroundRemove" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Stop being background</source>
-        <note>ID: EditTab.Image.SetBackgroundRemove</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Image.SetBackgroundReplace" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Replace background</source>
-        <note>ID: EditTab.Image.SetBackgroundRemove</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>

@@ -2056,6 +2056,37 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.6.tgz#d5e0706cf8c6acd8c6032f8d54070af261bbbb2f"
   integrity sha512-ws57AidsDvREKrZKYffXddNkyaF14iHNHm8VQnZH6t99E8gczjNN0GpvcGny0imC80yQ0tHz1xVUKk/KFQSUyA==
 
+"@dnd-kit/accessibility@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.npmjs.org/@dnd-kit/accessibility/-/accessibility-3.1.0.tgz#1054e19be276b5f1154ced7947fc0cb5d99192e0"
+  integrity sha512-ea7IkhKvlJUv9iSHJOnxinBcoOI3ppGnnL+VDJ75O45Nss6HtZd8IdN8touXPDtASfeI2T2LImb8VOZcL47wjQ==
+  dependencies:
+    tslib "^2.0.0"
+
+"@dnd-kit/core@^6.1.0":
+  version "6.1.0"
+  resolved "https://registry.npmjs.org/@dnd-kit/core/-/core-6.1.0.tgz#e81a3d10d9eca5d3b01cbf054171273a3fe01def"
+  integrity sha512-J3cQBClB4TVxwGo3KEjssGEXNJqGVWx17aRTZ1ob0FliR5IjYgTxl5YJbKTzA6IzrtelotH19v6y7uoIRUZPSg==
+  dependencies:
+    "@dnd-kit/accessibility" "^3.1.0"
+    "@dnd-kit/utilities" "^3.2.2"
+    tslib "^2.0.0"
+
+"@dnd-kit/sortable@^8.0.0":
+  version "8.0.0"
+  resolved "https://registry.npmjs.org/@dnd-kit/sortable/-/sortable-8.0.0.tgz#086b7ac6723d4618a4ccb6f0227406d8a8862a96"
+  integrity sha512-U3jk5ebVXe1Lr7c2wU7SBZjcWdQP+j7peHJfCspnA81enlu88Mgd7CC8Q+pub9ubP7eKVETzJW+IBAhsqbSu/g==
+  dependencies:
+    "@dnd-kit/utilities" "^3.2.2"
+    tslib "^2.0.0"
+
+"@dnd-kit/utilities@^3.2.2":
+  version "3.2.2"
+  resolved "https://registry.npmjs.org/@dnd-kit/utilities/-/utilities-3.2.2.tgz#5a32b6af356dc5f74d61b37d6f7129a4040ced7b"
+  integrity sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg==
+  dependencies:
+    tslib "^2.0.0"
+
 "@emotion/babel-plugin@^11.10.5":
   version "11.10.5"
   resolved "https://registry.yarnpkg.com/@emotion/babel-plugin/-/babel-plugin-11.10.5.tgz#65fa6e1790ddc9e23cc22658a4c5dea423c55c3c"
@@ -2112,6 +2143,11 @@
     "@emotion/utils" "^1.2.1"
     "@emotion/weak-memoize" "^0.3.1"
     stylis "4.2.0"
+
+"@emotion/core@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.npmjs.org/@emotion/core/-/core-11.0.0.tgz#d075867e07864119de7cfd5268c15012bd2d6290"
+  integrity sha512-w4sE3AmHmyG6RDKf6mIbtHpgJUSJ2uGvPQb8VXFL7hFjMPibE8IiehG8cMX3Ztm4svfCQV6KqusQbeIOkurBcA==
 
 "@emotion/hash@^0.9.0":
   version "0.9.0"
@@ -2295,6 +2331,35 @@
     js-yaml "^4.1.0"
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
+
+"@ethnolib/find-language@0.0.15":
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/@ethnolib/find-language/-/find-language-0.0.15.tgz#4109592a96523005f8afbb97567b04ea4296c03a"
+  integrity sha512-jNqD+XnjZ2nfat2cDgx2rXtFY/1b8jDSjxbnHGfN+dY76ujnxqf5QDHmY7Xnwaq23S4ZOvLvKOtaBUJy63JLxQ==
+  dependencies:
+    fuse.js "^7.0.0"
+    iso-15924 "^3.2.0"
+    iso-3166 "^4.3.0"
+
+"@ethnolib/language-chooser-react-hook@0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-hook/-/language-chooser-react-hook-0.0.10.tgz#5756ce4c4123bd97cd1b2053aadac7f6e370f72a"
+  integrity sha512-YXmmvKtkT6GRw/cjw8VqjNyCYxI3Zp40kJxOg4CsZJ9xVc9tRuEQtJzuIiWj+K9594s+Sr5gTJTjAfQoi6WouA==
+  dependencies:
+    "@ethnolib/find-language" "0.0.15"
+    fuse.js "^7.0.0"
+    iso-15924 "^3.2.0"
+    iso-3166 "^4.3.0"
+
+"@ethnolib/language-chooser-react-mui@^0.0.22":
+  version "0.0.22"
+  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-mui/-/language-chooser-react-mui-0.0.22.tgz#7627b5c278c51ff5478c2a3152eead525853e603"
+  integrity sha512-DkMYWJCu4/SNpG3VDeheo1B2TfixcWN861IuEmlLPIA7+2VIh2i6OVsWPrA84BixssEpcYaDamPvkG11aj0Eng==
+  dependencies:
+    "@ethnolib/find-language" "0.0.15"
+    "@ethnolib/language-chooser-react-hook" "0.0.10"
+    lodash "^4.17.21"
+    react-lazyload "^3.2.1"
 
 "@floating-ui/core@^1.0.5":
   version "1.1.0"
@@ -5542,10 +5607,10 @@ bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
-bloom-player@^2.7.4:
-  version "2.7.4"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.7.4.tgz#1912ed1dc64df6f1650544ffd3a106a388cb4c2c"
-  integrity sha512-kZy0467viR2C616KE6XryZcjoy6QYCkZjDCvguj4C95SHFO1+8/co3O2mFOQgsbVggLOOlQeWwPOtcKZSBJwDQ==
+bloom-player@^2.8.0:
+  version "2.8.0"
+  resolved "https://registry.npmjs.org/bloom-player/-/bloom-player-2.8.0.tgz#53f4f260aca70d613f74f2d027ecbbf09217d678"
+  integrity sha512-88tfz0AaZArhf8oLWAEJ0DWE0JsUWaBWwCTw73TsiRvx0bu1Bsh+20wavxstiLl6ChCfWnZE6lBcnmExDN9ccw==
 
 bluebird@^3.3.5, bluebird@^3.5.5:
   version "3.7.2"
@@ -8910,6 +8975,11 @@ functions-have-names@^1.2.2:
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.2.tgz#98d93991c39da9361f8e50b337c4f6e41f120e21"
   integrity sha512-bLgc3asbWdwPbx2mNk2S49kmJCuQeu0nfmaOgbs8WIyzzkw3r4htszdIi9Q9EMezDPTYuJx2wvjZ/EwgAthpnA==
 
+fuse.js@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/fuse.js/-/fuse.js-7.0.0.tgz#6573c9fcd4c8268e403b4fc7d7131ffcf99a9eb2"
+  integrity sha512-14F4hBIxqKvD4Zz/XjDc3y94mNZN6pRv3U13Udo0lNLCWRBUsrMv2xwcF/y/Z5sV6+FQW+/ow68cHpm4sunt8Q==
+
 gauge@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/gauge/-/gauge-3.0.2.tgz#03bf4441c044383908bcfa0656ad91803259b395"
@@ -10548,6 +10618,16 @@ isexe@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha1-6PvzdNxVb/iUehDcsFctYz8s+hA=
+
+iso-15924@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/iso-15924/-/iso-15924-3.2.0.tgz#f520e89c2ec2b3b26b5390f0267e2b8e71be1eb5"
+  integrity sha512-MHjWc+yIdAqx5w5d0+KdHzOaA+jJUGhP7BSKvIkSarRQzDURbmHSjO6B2Ea2TWdFZwb845d5OG2kotApIHkJtQ==
+
+iso-3166@^4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/iso-3166/-/iso-3166-4.3.0.tgz#3eb4cbf26f6baaddc1e1bd34a0bc27079d61b94a"
+  integrity sha512-H4kM/sVbxTjSl9xnQCYOrNWdpN0R8Uz26j1BuXI9E6U+kw5wmd3HyPgr/v4+NCuvV/NcvwTfZxd5XZ4lPKvBNA==
 
 isobject@^2.0.0:
   version "2.1.0"
@@ -14031,10 +14111,20 @@ react-lazyload@^3.2.0:
   resolved "https://registry.yarnpkg.com/react-lazyload/-/react-lazyload-3.2.0.tgz#497bd06a6dbd7015e3376e1137a67dc47d2dd021"
   integrity sha512-zJlrG8QyVZz4+xkYZH5v1w3YaP5wEFaYSUWC4CT9UXfK75IfRAIEdnyIUF+dXr3kX2MOtL1lUaZmaQZqrETwgw==
 
+react-lazyload@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/react-lazyload/-/react-lazyload-3.2.1.tgz#320087741ee6aaf693369b67690799423ed4d7a3"
+  integrity sha512-oDLlLOI/rRLY0fUh/HYFCy4CqCe7zdJXv6oTl2pC30tN3ezWxvwcdHYfD/ZkrGOMOOT5pO7hNLSvg7WsmAij1w==
+
 react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
+
+react-movable@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.npmjs.org/react-movable/-/react-movable-3.3.1.tgz#1937e7a19f8d5b6db209b92fb6bc1479bf14ead3"
+  integrity sha512-dfX15ZlyoefoFs1kqVeLrJoso4eaTEBwP2pyUanDUyNg1Uy+lzxOv0GyNcmHJTZUtLSaNbim8DdekpKALSLKkA==
 
 react-refresh@^0.11.0:
   version "0.11.0"

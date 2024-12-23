@@ -4,7 +4,7 @@ import * as $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
-    SetOverlayForImagesWithoutMetadata,
+    SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
     doImageCommand
@@ -50,6 +50,7 @@ import {
     post,
     postBoolean,
     postData,
+    postJson,
     postString,
     postThatMightNavigate
 } from "../../utils/bloomApi";
@@ -63,10 +64,14 @@ import {
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
 import { removeToolboxMarkup } from "../toolbox/toolbox";
-import { IBloomWebSocketEvent } from "../../utils/WebSocketManager";
+import WebSocketManager, {
+    IBloomWebSocketEvent
+} from "../../utils/WebSocketManager";
 import { setupDragActivityTabControl } from "../toolbox/dragActivity/dragActivityTool";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { addScrollbarsToPage, cleanupNiceScroll } from "./niceScrollBars";
+import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
+import { Link } from "../bookLinkSetup/BookLinkTypes";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -414,7 +419,7 @@ export function changeImage(imageInfo: {
     imgOrImageContainer.setAttribute("data-license", imageInfo.license);
     const ancestor = imgOrImageContainer.parentElement?.parentElement;
     if (ancestor) {
-        SetOverlayForImagesWithoutMetadata(ancestor);
+        SetupMetadataButton(ancestor);
     }
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
@@ -517,7 +522,7 @@ export function SetupElements(
 
     //CSS normally can't get at the text in order to, for example, show something different if it is empty.
     //This allows you to add .bloom-needs-data-text to a bloom-translationGroup in order to get
-    //its child bloom-editable's to have data-texts's on them
+    //its child bloom-editable's to have data-placeholders on them
     $(container)
         .find(".bloom-translationGroup.bloom-text-for-css .bloom-editable")
         .each(function() {
@@ -650,126 +655,6 @@ export function SetupElements(
             }
         });
 
-    AddLanguageTags(container);
-
-    //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
-    // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
-    // so they set the cursor to "not-allowed", and we detect that and set the contentEditable appropriately
-    $(container)
-        .find("div.bloom-readOnlyInTranslationMode")
-        .focus(function() {
-            if ($(this).css("cursor") === "not-allowed") {
-                $(this).removeAttr("contentEditable");
-            } else {
-                $(this).attr("contentEditable", "true");
-            }
-        });
-
-    //first used in the Uganda SHRP Primer 1 template, on the image on day 1
-    $(container)
-        .find(".bloom-draggableLabel")
-        .each(function() {
-            // previous to June 2014, containment was not working, so some items may be
-            // out of bounds. Or the stylesheet could change the size of things. This gets any such back in bounds.
-            if ($(this).position().left < 0) {
-                $(this).css("left", 0);
-            }
-            if ($(this).position().top < 0) {
-                $(this).css("top", 0);
-            }
-            if (
-                $(this).position().left + $(this).width() >
-                $(this)
-                    .parent()
-                    .width()
-            ) {
-                $(this).css(
-                    "left",
-                    $(this)
-                        .parent()
-                        .width() - $(this).width()
-                );
-            }
-            if (
-                $(this).position().top >
-                $(this)
-                    .parent()
-                    .height()
-            ) {
-                $(this).css(
-                    "top",
-                    $(this)
-                        .parent()
-                        .height() - $(this).height()
-                );
-            }
-
-            $(this).draggable({
-                //NB: this containment is of the translation group, not the editable inside it. So avoid margins on the translation group.
-                containment: "parent",
-                handle: ".dragHandle"
-            });
-        });
-
-    $(container)
-        .find(".bloom-draggableLabel")
-        .mouseenter(function() {
-            $(this).prepend(" <div class='dragHandle'></div>");
-        });
-
-    $(container)
-        .find(".bloom-draggableLabel")
-        .mouseleave(function() {
-            $(this)
-                .find(".dragHandle")
-                .each(function() {
-                    $(this).remove();
-                });
-        });
-
-    bloomQtipUtils.repositionPictureDictionaryTooltips(container);
-
-    /* Support in page combo boxes that set a class on the parent, thus making some change in the layout of the pge.
-    Example:
-             <select name="Story Style" class="bloom-classSwitchingCombobox">
-                     <option value="Fictional">Fiction</option>
-                     <option value="Informative">Informative</option>
-     </select>
-     */
-    //First we select the initial value based on what class is currently set, or leave to the default if none of them
-    $(container)
-        .find(".bloom-classSwitchingCombobox")
-        .each(function() {
-            //look through the classes of the parent for any that match one of our combobox values
-            for (let i = 0; i < this.options.length; i++) {
-                const c = this.options[i].value;
-                if (
-                    $(this)
-                        .parent()
-                        .hasClass(c)
-                ) {
-                    $(this).val(c);
-                    break;
-                }
-            }
-        });
-    //And now we react to the user choosing a different value
-    $(container)
-        .find(".bloom-classSwitchingCombobox")
-        .change(function() {
-            //remove any of the values that might already be set
-            for (let i = 0; i < this.options.length; i++) {
-                const c = this.options[i].value;
-                $(this)
-                    .parent()
-                    .removeClass(c);
-            }
-            //add back in the one they just chose
-            $(this)
-                .parent()
-                .addClass(this.value);
-        });
-
     //only make things deletable if they have the deletable class *and* page customization is enabled
     $(container)
         .find(
@@ -787,7 +672,7 @@ export function SetupElements(
             SetupResizableElement(this);
         });
 
-    SetOverlayForImagesWithoutMetadata(container);
+    SetupMetadataButton(container);
 
     //note, the normal way is for the user to click the link on the bubble.
     //But clicking on the existing topic may be natural too, and this prevents
@@ -798,6 +683,8 @@ export function SetupElements(
             if ($(this).css("cursor") === "not-allowed") return;
             showTopicChooserDialog();
         });
+
+    SetupBookLinkGrids(container);
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
@@ -1642,4 +1529,97 @@ export function attachToCkEditor(element) {
     }
 
     BloomField.WireToCKEditor(element, ckedit);
+}
+function SetupBookLinkGrids(container: HTMLElement) {
+    $(container)
+        .find(".bloom-link-grid")
+        .click(function() {
+            //If our listeners hear back, they should close, but if something goes wrong, we don't want them to pile up.
+            WebSocketManager.closeSocketsWithPrefix("makeThumbnailFile-");
+
+            const currentLinks: Link[] = Array.from(this.children)
+                .filter(
+                    (child: Element) =>
+                        child.classList.contains("bloom-bookButton") &&
+                        child.hasAttribute("data-bloom-book-id") // drop buttons that might have been edited by hand and don't have this
+                )
+                .map((button: Element) => {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    const id = button.getAttribute("data-bloom-book-id")!; // we already filtered out any that don't have this
+                    const titleElement = button.getElementsByTagName("p")[0]; // TODO should this be something computed from the Book by asking the server?
+                    return {
+                        book: {
+                            id,
+                            title: titleElement?.textContent || "",
+                            // we don't know what the server path to this book would be at the moment
+                            thumbnail: `${window.location.origin}/bloom/api/collections/book/thumbnail?book-id=${id}`
+                        }
+                    };
+                });
+
+            showLinkGridSetupsDialog(
+                currentLinks,
+                // callback if they press OK
+                (links: Link[]) => {
+                    $(this).empty();
+
+                    links.forEach(link => {
+                        const button = document.createElement("div");
+                        button.className = "bloom-bookButton";
+                        button.setAttribute(
+                            "data-href",
+                            `/book/${link.book.id}`
+                        );
+                        button.setAttribute("data-bloom-book-id", link.book.id);
+                        if (link.page) {
+                            button.setAttribute(
+                                "data-bloom-page-id",
+                                link.page.pageId.toString()
+                            );
+                        }
+                        // create elements for the thumbnail
+                        const imageContainer = document.createElement("div");
+                        button.appendChild(imageContainer);
+                        imageContainer.className = "bloom-imageContainer";
+                        const img = document.createElement("img");
+                        imageContainer.appendChild(img);
+
+                        const desiredFileNameWithoutExtension = `bookButton-${link.book.id}`;
+
+                        const messageContext =
+                            "makeThumbnailFile-" +
+                            desiredFileNameWithoutExtension;
+
+                        // listen for a websocket message that the image has been saved
+                        // and then update the src attribute
+                        const setImgSrc = () => {
+                            console.log("got message " + messageContext);
+                            img.setAttribute(
+                                "src",
+                                desiredFileNameWithoutExtension + ".png"
+                            ); // note, img.src = "foo" does something different!
+                        };
+                        WebSocketManager.notifyReady(messageContext, () => {
+                            console.log(
+                                "sending post for " +
+                                    desiredFileNameWithoutExtension
+                            );
+                            postJson("editView/addImageFromUrl", {
+                                desiredFileNameWithoutExtension: desiredFileNameWithoutExtension,
+                                url: link.book.thumbnail
+                            });
+                        });
+
+                        WebSocketManager.once(messageContext, setImgSrc);
+                        console.log("listening for ", messageContext);
+
+                        const p = document.createElement("p");
+                        p.textContent = link.book.title;
+                        button.appendChild(p);
+
+                        this.appendChild(button);
+                    });
+                }
+            );
+        });
 }

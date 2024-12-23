@@ -51,6 +51,11 @@ import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CogIcon } from "./CogIcon";
+import {
+    getHyperlinkFromClipboard,
+    tryProcessHyperlink
+} from "../bloomField/hyperlinks";
+import { useApiString } from "../../utils/bloomApi";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -92,6 +97,7 @@ const OverlayContextControls: React.FunctionComponent<{
         // or some other code somewhere is doing it when we choose a menu item. So we tell the bubble manager
         // to ignore focus changes while the menu is open.
         BubbleManager.ignoreFocusChanges = open;
+
         props.setMenuOpen(open);
     };
 
@@ -129,22 +135,21 @@ const OverlayContextControls: React.FunctionComponent<{
     useEffect(() => {
         setImageSound(props.overlay.getAttribute("data-sound") ?? "none");
     }, [props.overlay]);
+    const isBackgroundImage = props.overlay.classList.contains(
+        kbackgroundImageClass
+    );
 
     // These commands apply to all overlays.
-    const menuOptions: IMenuItemWithSubmenu[] = [
-        {
+    const menuOptions: IMenuItemWithSubmenu[] = [];
+    // This one to everything except background images
+    if (!isBackgroundImage) {
+        menuOptions.unshift({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
             onClick: theOneBubbleManager?.duplicateBubble,
             icon: <DuplicateIcon css={getMenuIconCss()} />
-        },
-        {
-            l10nId: "Common.Delete",
-            english: "Delete",
-            onClick: theOneBubbleManager?.deleteBubble,
-            icon: <DeleteIcon css={getMenuIconCss()} />
-        }
-    ];
+        });
+    }
     if (!hasImage && !hasVideo) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
@@ -177,6 +182,14 @@ const OverlayContextControls: React.FunctionComponent<{
     if (hasVideo) {
         addVideoMenuItems(menuOptions, videoContainer);
     }
+
+    // last one
+    menuOptions.push(divider, {
+        l10nId: "Common.Delete",
+        english: "Delete",
+        onClick: theOneBubbleManager?.deleteBubble,
+        icon: <DeleteIcon css={getMenuIconCss()} />
+    });
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
         e.preventDefault();
@@ -315,7 +328,7 @@ const OverlayContextControls: React.FunctionComponent<{
                             `}
                         />
                     )}
-                    {!hasVideo && (
+                    {!hasVideo && !isBackgroundImage && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Duplicate"
                             icon={DuplicateIcon}
@@ -387,24 +400,14 @@ const OverlayContextControls: React.FunctionComponent<{
                             if (option.subMenu) {
                                 return (
                                     <LocalizableNestedMenuItem
-                                        english={option.english}
-                                        l10nId={option.l10nId}
-                                        icon={option.icon}
+                                        {...option}
                                         truncateMainLabel={true}
-                                        subLabelL10nId={option.subLabelL10nId}
-                                        disabled={option.disabled}
                                     >
                                         {option.subMenu.map(
                                             (subOption, subIndex) => (
                                                 <LocalizableMenuItem
                                                     key={subIndex}
-                                                    l10nId={subOption.l10nId}
-                                                    english={subOption.english}
-                                                    onClick={subOption.onClick}
-                                                    icon={subOption.icon}
-                                                    disabled={
-                                                        subOption.disabled
-                                                    }
+                                                    {...subOption}
                                                 />
                                             )
                                         )}
@@ -414,16 +417,12 @@ const OverlayContextControls: React.FunctionComponent<{
                             return (
                                 <LocalizableMenuItem
                                     key={index}
-                                    l10nId={option.l10nId}
-                                    english={option.english}
+                                    {...option}
                                     onClick={e => {
                                         setMenuOpen(false);
                                         option.onClick(e);
                                     }}
-                                    disabled={option.disabled}
-                                    icon={option.icon}
                                     variant="body1"
-                                    subLabelL10nId={option.subLabelL10nId}
                                 />
                             );
                         })}
@@ -571,8 +570,7 @@ function addTextMenuItems(
             // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
             onClick: () => toggleAutoHeight(),
             icon: autoHeight && <CheckIcon css={getMenuIconCss()} />
-        },
-        divider
+        }
     );
 }
 
@@ -621,33 +619,17 @@ function addImageMenuOptions(
     overlay: HTMLElement,
     img: HTMLElement
 ) {
+    const imgContainer = overlay.getElementsByClassName(
+        "bloom-imageContainer"
+    )[0] as HTMLElement;
+
     const runMetadataDialog = () => {
         if (!overlay) return;
-        const imgContainer = overlay.getElementsByClassName(
-            "bloom-imageContainer"
-        )[0] as HTMLElement;
         if (!imgContainer) return;
         showCopyrightAndLicenseDialog(
             getImageUrlFromImageContainer(imgContainer)
         );
     };
-    const setAsBackground = () => {
-        theOneBubbleManager?.setAsBackground();
-    };
-
-    const currentIsBackground = overlay.classList.contains(
-        kbackgroundImageClass
-    );
-    const isThereABackground =
-        currentIsBackground ||
-        overlay.parentElement?.getElementsByClassName(kbackgroundImageClass)[0];
-
-    let backgroundMenuItemL10nId = "EditTab.Image.SetBackground"; // default when no background is set
-    if (currentIsBackground) {
-        backgroundMenuItemL10nId = "EditTab.Image.SetBackgroundRemove";
-    } else if (isThereABackground) {
-        backgroundMenuItemL10nId = "EditTab.Image.SetBackgroundReplace";
-    }
 
     menuOptions.unshift(
         {
@@ -675,14 +657,49 @@ function addImageMenuOptions(
             onClick: runMetadataDialog,
             icon: <CopyrightIcon css={getMenuIconCss()} />
         },
+        divider,
         {
-            l10nId: backgroundMenuItemL10nId,
-            english: "Set Image as background",
-            onClick: setAsBackground,
-            icon: <BackgroundIcon css={getMenuIconCss()} />
-        },
-        divider
+            l10nId: "EditTab.PasteHyperLink",
+            english: "Paste Hyperlink",
+            generatedSubLabel:
+                "Currently: " + imgContainer.getAttribute("data-href") ||
+                undefined,
+            requiresEnterpriseSubscription: true,
+            onClick: () => pasteLink(overlay)
+
+            /*
+            Since the clipboard is not readable by us directly, but
+            only through an async call to the server, I haven't found
+            a way to know if there is a hyperlink on the clipboard. I could
+            know if there was one when we last rendered.
+            disabled: !haveHyperlinkOnClipboard
+            */
+        }
+        // Enhance: some way to remove a link you don't want anymore. For now, you can paste an empty string.
     );
+}
+function pasteLink(overlay: HTMLElement) {
+    const imgContainer = overlay.getElementsByClassName(
+        "bloom-imageContainer"
+    )[0];
+
+    getHyperlinkFromClipboard(url => {
+        if (url) imgContainer.setAttribute("data-href", url);
+        else {
+            if (imgContainer.hasAttribute("data-href")) {
+                imgContainer.removeAttribute("data-href");
+                // Note, not localizing this stuff yet. A better
+                // UX would be nice, just doing this budge English alert for now.
+                alert(
+                    "Did not find a hyperlink on the clipboard, so the existing hyperlink was removed."
+                );
+            } else {
+                // Note, not localizing this stuff yet. A better
+                // UX would be nice, just doing this budge English alert for now.
+                alert("Did not find a hyperlink on the clipboard.");
+            }
+        }
+    });
 }
 
 function addMenuItemsForDraggable(
@@ -771,6 +788,7 @@ function addAudioMenuItems(
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         onClick: () => {},
         icon: <VolumeUpIcon css={getMenuIconCss()} />,
+        requiresEnterpriseSubscription: true,
         subMenu
     });
     if (imageSound !== "none") {

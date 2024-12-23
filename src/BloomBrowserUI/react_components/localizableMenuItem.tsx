@@ -35,6 +35,7 @@ interface IBaseLocalizableMenuItemProps {
         TypographyPropsVariantOverrides
     >;
     subLabelL10nId?: string;
+    generatedSubLabel?: string;
 }
 
 export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
@@ -148,7 +149,9 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
             />
         );
 
-    const sublabel = useL10n("", props.subLabelL10nId ?? null);
+    const localizedSublabel = useL10n("", props.subLabelL10nId ?? null);
+    const sublabel = props.generatedSubLabel ?? localizedSublabel;
+
     const openCollectionSettings = () =>
         post("common/showSettingsDialog?tab=enterprise");
 

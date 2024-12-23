@@ -1656,3 +1656,14 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
     // only thing that helped was to make it a bit larger
     width: 94px;
 }
+
+// Not in 5.6, but needed for new image cropping to work.
+.bloom-textOverPicture .bloom-imageContainer img {
+    object-fit: unset;
+    height: unset;
+}
+
+// Added from newer basePage.less to keep cover images working
+.bloom-imageContainer .bloom-textOverPicture .bloom-imageContainer {
+    margin: 0;
+}
