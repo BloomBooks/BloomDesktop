@@ -92,11 +92,16 @@ namespace Bloom.Publish.BloomPub.wifi
             // Don't let C# pick the network interface -- it sometimes chooses the wrong one.
             // Force it to use the interface corresponding to the known good local IP address.
             // First choice is Wi-Fi, followed by Ethernet.
-            // Choose the IP address most likely to work.
+            // Choose the IP address most likely to work. Also get its subnet mask.
             //chooseIpAddressForAdvertising();
             string LocalIp = "192.168.1.17";
             string subnetMask = "255.255.255.0";
 
+            // RemoteIp = "255.255.255.255";
+            // The typical "broadcast address" above doesn't work:
+            //      "System.Net.Sockets.SocketException (0x80004005): An attempt was made
+            //      to access a socket in a way forbidden by its access permissions"
+            // Rather, the broadcast address must be calculated per the current subnet mask:
             RemoteIp = buildBroadcastAddress(LocalIp, subnetMask);
 
             if (LocalIp.Length > 0)
