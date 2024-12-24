@@ -37,11 +37,12 @@ namespace Bloom.Publish.BloomPub.wifi
 
         private UdpClient _client;
         private Thread _thread;
-        private IPEndPoint LocalEP;
-        private IPEndPoint RemoteEP;
-        private Socket sock;
-        private string LocalIp = "";
-        private string RemoteIp = ""; // UDP broadcast address
+        private IPEndPoint _localEP;
+        private IPEndPoint _remoteEP;
+        private Socket _sock;
+        private string _localIp = "";
+        private string _remoteIp = "";  // UDP broadcast address
+        private string _subnetMask = "";
         private string _currentIpAddress = "";
         private string _cachedIpAddress = "";
 
@@ -85,45 +86,51 @@ namespace Bloom.Publish.BloomPub.wifi
 
             // WM, DEBUG ONLY: show this machine's IP address that is currently usable for traffic.
             //                 Compare what is returned by the existing query function, GetLocalIpAddress(),
-            //                 with the proposed new one, GetIpAddressOfNetworkIface().
+            //                 with the new one, GetIpAddressOfNetworkIface().
             Debug.WriteLine("WM, WiFiAdvertiser::Work, GetLocalIpAddress() returns " + GetLocalIpAddress());
             Debug.WriteLine("WM, WiFiAdvertiser::Work, GetIpAddressOfNetworkIface() returns " + GetIpAddressOfNetworkIface());
 
             // Don't let C# pick the network interface -- it sometimes chooses the wrong one.
-            // Force it to use the interface corresponding to the known good local IP address.
+            // Force it to use the interface corresponding to the known good local IP address,
+            // using a raw socket.
             // First choice is Wi-Fi, followed by Ethernet.
-            // Choose the IP address most likely to work. Also get its subnet mask.
-            //chooseIpAddressForAdvertising();
-            string LocalIp = "192.168.1.17";
-            string subnetMask = "255.255.255.0";
+            //
+            // The following call determines the local IP address to use and copies it into
+            // _localIp. It also gets the subnet mask of the network interface that owns that
+            // local IP address and copies it into _subnetMask.
+            chooseIpAddressForAdvertising();
 
-            // RemoteIp = "255.255.255.255";
-            // The typical "broadcast address" above doesn't work:
+            // Until chooseIpAddressForAdvertising() is done, hardcode both.
+            _localIp = "192.168.1.17";
+            _subnetMask = "255.255.255.0";
+
+            // _remoteIp = "255.255.255.255";
+            // The typical "broadcast address" above doesn't work with a raw socket:
             //      "System.Net.Sockets.SocketException (0x80004005): An attempt was made
             //      to access a socket in a way forbidden by its access permissions"
             // Rather, the broadcast address must be calculated per the current subnet mask:
-            RemoteIp = buildBroadcastAddress(LocalIp, subnetMask);
+            _remoteIp = buildBroadcastAddress(_localIp, _subnetMask);
 
-            if (LocalIp.Length > 0)
+            if (_localIp.Length > 0)
             {
                 try
                 {
-                    Debug.WriteLine("LocalIp = " + LocalIp);
-                    Debug.WriteLine("RemoteIp = " + RemoteIp);
+                    Debug.WriteLine("_localIp = " + _localIp);
+                    Debug.WriteLine("_remoteIp = " + _remoteIp);
 
-                    Debug.WriteLine("creating local IPEndPoint with port " + Port);
-                    LocalEP = new IPEndPoint(IPAddress.Parse(LocalIp), Port);
+                    Debug.WriteLine("creating _localEP with port " + Port);
+                    _localEP = new IPEndPoint(IPAddress.Parse(_localIp), Port);
 
-                    Debug.WriteLine("creating remote IPEndPoint with port " + Port);
-                    RemoteEP = new IPEndPoint(IPAddress.Parse(RemoteIp), Port);
+                    Debug.WriteLine("creating _remoteEP with port " + Port);
+                    _remoteEP = new IPEndPoint(IPAddress.Parse(_remoteIp), Port);
 
                     Debug.WriteLine("creating UDP socket");
-                    sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                    _sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
                     Debug.WriteLine("calling Bind()");
-                    sock.Bind(LocalEP);
+                    _sock.Bind(_localEP);
 
-                    Debug.WriteLine("begin UDP broadcast advert loop from LocalIp = " + LocalIp);
+                    Debug.WriteLine("begin UDP broadcast advert loop from _localIp = " + _localIp);
 
                     while (true)
                     {
@@ -139,7 +146,7 @@ namespace Bloom.Publish.BloomPub.wifi
                             //    SendCallback,
                             //    _client
                             //);
-                            sock.SendTo(_sendBytes, 0, _sendBytes.Length, SocketFlags.None, RemoteEP);
+                            _sock.SendTo(_sendBytes, 0, _sendBytes.Length, SocketFlags.None, _remoteEP);
                         }
                         Debug.WriteLine("WM, WiFiAdvertiser::Work, sent UDP broadcast advert"); // WM
                         Thread.Sleep(1000);
@@ -174,7 +181,7 @@ namespace Bloom.Publish.BloomPub.wifi
 
         private string buildBroadcastAddress(string localIp, string mask)
         {
-            Debug.WriteLine("buildBroadcastAddress per localIp = {0}, mask = {1}", localIp, mask);
+            Debug.WriteLine("WM, WiFiAdvertiser::Work, buildBroadcastAddress per localIp = {0}, mask = {1}", localIp, mask);
 
             // Isolate the octets for both local IP and subnet mask.
             string[] octetsIp = localIp.Split('.');
@@ -207,7 +214,7 @@ namespace Bloom.Publish.BloomPub.wifi
 
             // Step 1: find the 1-0 bit boundary in the mask.
             int indexFirstZero = mask.IndexOf('0');
-            Debug.WriteLine("  indexFirstZero = {0}", indexFirstZero);
+            Debug.WriteLine("  indexFirstZero = " + indexFirstZero);
 
             // Steps 2-4: examine the 4 octets in turn, starting with the most
             // significant one. Based on their value and their position relative to the
@@ -218,12 +225,12 @@ namespace Bloom.Publish.BloomPub.wifi
                 if (octetsMask[i] == "255")
                 {
                     bcastAddress += octetsIp[i]; // Step 2
-                    Debug.WriteLine("  255: bcastAddress = {0}", bcastAddress);
+                    Debug.WriteLine("  255: bcastAddress = "+ bcastAddress);
                 }
                 else if (octetsMask[i] == "0")   // Step 3
                 {
                     bcastAddress += "255";
-                    Debug.WriteLine("    0: bcastAddress = {0}", bcastAddress);
+                    Debug.WriteLine("    0: bcastAddress = " + bcastAddress);
                 }
                 else                             // Step 4
                 {
@@ -231,7 +238,7 @@ namespace Bloom.Publish.BloomPub.wifi
 
                     // Convert the mask octet to a numeric so each bit can be assessed.
                     byte maskVal = System.Convert.ToByte(octetsMask[i]);
-                    Debug.WriteLine("  maskVal = {0}", maskVal);
+                    Debug.WriteLine("  maskVal = " + maskVal);
 
                     for (int j = 0; j < 8; j++)
                     {
@@ -240,23 +247,22 @@ namespace Bloom.Publish.BloomPub.wifi
                         if (comp == (1 << (7 - j)))
                         {
                             octetVal -= (1 << (7 - j));
-                            Debug.WriteLine("  octetVal = {0}", octetVal);
+                            Debug.WriteLine("  octetVal = " + octetVal);
                         }
                         else
                         {
-                            Debug.WriteLine("  no change, octetVal = {0}", octetVal);
+                            Debug.WriteLine("  no change, octetVal = " + octetVal);
                         }
                     }
-                    Debug.WriteLine("  final octetVal = {0}", octetVal);
+                    Debug.WriteLine("  final octetVal = " + octetVal);
                     bcastAddress += octetVal.ToString();
-                    Debug.WriteLine("  mix: bcastAddress = {0}", bcastAddress);
+                    Debug.WriteLine("  mix: bcastAddress = " + bcastAddress);
                 }
                 if (i < 3)   // no dot after the final byte
                 {
                     bcastAddress += ".";
                 }
             }
-
             return bcastAddress;
         }
 
@@ -321,14 +327,14 @@ namespace Bloom.Publish.BloomPub.wifi
             }
         }
 
-        //private void chooseIpAddressForAdvertising()
-        //{
-        //    Debug.WriteLine("WM, WiFiAdvertiser::chooseIpAddressForAdvertising, do nothing yet");
-        //    // TODO: Is it possible that none of this interface stuff is needed? Can I just take what
-        //    // my improved IP-address-in-use function returns to force the socket connection?
-        //    // If the socket DOES require an interface ID or something then it should be simple to just
-        //    // search the interface for the IP address returned by my IP-address-in-use function.
-        //}
+        private void chooseIpAddressForAdvertising()
+        {
+            Debug.WriteLine("WM, WiFiAdvertiser::chooseIpAddressForAdvertising, do nothing yet");
+            // TODO: Is it possible that none of this interface stuff is needed? Can I just take what
+            // my improved IP-address-in-use function returns to force the socket connection?
+            // If the socket DOES require an interface ID or something then it should be simple to just
+            // search the interface for the IP address returned by my IP-address-in-use function.
+        }
 
         public static void SendCallback(IAsyncResult args) { }
 
@@ -401,9 +407,9 @@ namespace Bloom.Publish.BloomPub.wifi
         private string GetIpAddressOfNetworkIface()
         {
             IPEndPoint endpoint;
-            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
-            socket.Connect("8.8.8.8", 65530); // Google's public DNS service
-            endpoint = socket.LocalEndPoint as IPEndPoint;
+            Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+            sock.Connect("8.8.8.8", 65530); // Google's public DNS service
+            endpoint = sock.LocalEndPoint as IPEndPoint;
 
             return endpoint.Address.ToString();
         }
