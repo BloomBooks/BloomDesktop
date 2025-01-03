@@ -3170,8 +3170,11 @@ export class BubbleManager {
             // deal with things, and is a good thing even when ctrl or alt is down.
             return true;
         }
-        if (targetElement.closest(".bloom-dragHandleAnimation")) {
-            // These are used by the motion tool drag handles. Don't want bubble code
+        if (
+            targetElement.closest("#animationEnd") ||
+            targetElement.closest("#animationStart")
+        ) {
+            // These are used by the motion tool rectangles. Don't want bubble code
             // interfering.
             return true;
         }
@@ -5250,6 +5253,20 @@ export class BubbleManager {
     private adjustBackgroundImageSize(
         imageContainer: HTMLElement,
         overlay: HTMLElement,
+        useSizeOfNewImage: boolean
+    ) {
+        return this.adjustBackgroundImageSizeToFit(
+            imageContainer.clientWidth,
+            imageContainer.clientHeight,
+            overlay,
+            useSizeOfNewImage
+        );
+    }
+
+    private adjustBackgroundImageSizeToFit(
+        containerWidth: number,
+        containerHeight: number,
+        overlay: HTMLElement,
         // if this is set true, we've updated the src of the background image and want to
         // ignore any cropping (assumes the img doesn't have any
         // cropping-related style settings) and just adjust the overlay to fit the image.
@@ -5276,8 +5293,9 @@ export class BubbleManager {
                     img.addEventListener(
                         "load",
                         () =>
-                            this.adjustBackgroundImageSize(
-                                imageContainer,
+                            this.adjustBackgroundImageSizeToFit(
+                                containerWidth,
+                                containerHeight,
                                 overlay,
                                 useSizeOfNewImage,
                                 true // when we get here, we know we have the updated size.
@@ -5291,23 +5309,20 @@ export class BubbleManager {
         }
 
         const oldWidth = overlay.clientWidth;
-        const containerAspectRatio =
-            imageContainer.clientWidth / imageContainer.clientHeight;
+        const containerAspectRatio = containerWidth / containerHeight;
         if (imgAspectRatio > containerAspectRatio) {
             // size of image is width-limited
-            overlay.style.width = imageContainer.clientWidth + "px";
+            overlay.style.width = containerWidth + "px";
             overlay.style.left = "0px";
-            const imgHeight = imageContainer.clientWidth / imgAspectRatio;
-            overlay.style.top =
-                (imageContainer.clientHeight - imgHeight) / 2 + "px";
+            const imgHeight = containerWidth / imgAspectRatio;
+            overlay.style.top = (containerHeight - imgHeight) / 2 + "px";
             overlay.style.height = imgHeight + "px";
         } else {
-            const imgWidth = imageContainer.clientHeight * imgAspectRatio;
+            const imgWidth = containerHeight * imgAspectRatio;
             overlay.style.width = imgWidth + "px";
             overlay.style.top = "0px";
-            overlay.style.left =
-                (imageContainer.clientWidth - imgWidth) / 2 + "px";
-            overlay.style.height = imageContainer.clientHeight + "px";
+            overlay.style.left = (containerWidth - imgWidth) / 2 + "px";
+            overlay.style.height = containerHeight + "px";
         }
         if (!useSizeOfNewImage && img?.style.width) {
             // need to adjust image settings to preserve cropping
@@ -5346,8 +5361,8 @@ export class BubbleManager {
         }
         // Get the width it was the last time the user was working on it
         const oldSizeDataArray = oldSizeData.split(",");
-        const oldWidth = parseInt(oldSizeDataArray[0]);
-        const oldHeight = parseInt(oldSizeDataArray[1]);
+        let oldWidth = parseInt(oldSizeDataArray[0]);
+        let oldHeight = parseInt(oldSizeDataArray[1]);
 
         const newWidth = container.clientWidth;
         const newHeight = container.clientHeight;
@@ -5394,6 +5409,31 @@ export class BubbleManager {
             // If found, it should be the first one; we'll make it the whole rectangle we try
             // to fit to the new container size.
             if (child.classList.contains(kbackgroundImageClass)) {
+                if (
+                    (child.clientLeft !== 0 && child.clientTop !== 0) ||
+                    (Math.abs(child.clientWidth - oldWidth) > 1 &&
+                        Math.abs(child.clientHeight - oldHeight) > 1)
+                ) {
+                    // The background image was not properly adjusted to fit the old container size.
+                    // We'll pretend the old container size properly matched the old BG image so everything else adjusts properly.
+                    // Move all the overlays so the BG image is in the top left.
+                    const deltaX = child.clientLeft;
+                    const deltaY = child.clientTop;
+                    for (let j = 0; j < children.length; j++) {
+                        const c = children[j];
+                        c.style.left =
+                            BubbleManager.pxToNumber(c.style.left) -
+                            deltaX +
+                            "px";
+                        c.style.top =
+                            BubbleManager.pxToNumber(c.style.top) -
+                            deltaY +
+                            "px";
+                    }
+                    // and pretend the old container size matched the old BG image size.
+                    oldWidth = child.clientWidth;
+                    oldHeight = child.clientHeight;
+                }
                 break;
             }
         }
