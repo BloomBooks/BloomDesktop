@@ -303,3 +303,13 @@
 .bloom-imageContainer .bloom-textOverPicture .bloom-imageContainer {
     margin: 0;
 }
+
+// This is usually covered by a rule in basePage that makes image containers
+// fill their origami split (.customPage) but an IC in an overlay in a motion book
+// animation is not inside the page. At this point overlay ICs should always fill
+// the overlay (this is how we clip cropped images).
+.bloom-textOverPicture .bloom-imageContainer {
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+}
