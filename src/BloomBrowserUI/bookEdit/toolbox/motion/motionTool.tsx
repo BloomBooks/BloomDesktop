@@ -15,6 +15,7 @@ import {
     EnableImageEditing,
     getBackgroundImageFromContainer
 } from "../../js/bloomImages";
+import { css } from "@emotion/react";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -1173,6 +1174,15 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                         </div>
                     </div>
                 </div>
+                <Div
+                    l10nKey="EditTab.Toolbox.Motion.Limits"
+                    css={css`
+                        margin-top: 20px;
+                    `}
+                >
+                    Note: the motion tool does not work properly with overlays
+                    or images that are cropped.
+                </Div>
                 <div className="helpLinkWrapper">
                     <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm" />
                 </div>
