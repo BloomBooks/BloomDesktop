@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing.Imaging;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -748,9 +750,216 @@ namespace Bloom.Publish
                     SignLanguageApi.ProcessVideos(videoContainerElements, modifiedBook.FolderPath);
                 }
             }
+            ReallyCropImages(modifiedBook.RawDom, modifiedBook.FolderPath, modifiedBook.FolderPath);
+            // Must come after ReallyCropImages, because any cropping for background images is
+            // destroyed by RevertBackgroundImages.
+            RevertBackgroundImages(modifiedBook);
             modifiedBook.Save();
             modifiedBook.UpdateSupportFiles();
             return modifiedBook;
+        }
+
+        public static void RevertBackgroundImages(Book.Book book)
+        {
+            var backgroundImageOverlays = book.RawDom
+                .SafeSelectNodes("//div[contains(@class, 'bloom-backgroundImage')]")
+                .Cast<SafeXmlElement>()
+                .ToArray();
+            foreach (var overlay in backgroundImageOverlays)
+            {
+                var imgContainer =
+                    overlay.ChildNodes.FirstOrDefault(
+                        c => c is SafeXmlElement ce && ce.LocalName == "div"
+                    ) as SafeXmlElement;
+                if (imgContainer == null || !imgContainer.HasClass("bloom-imageContainer"))
+                    return;
+                var img =
+                    imgContainer.ChildNodes.FirstOrDefault(
+                        c => c is SafeXmlElement ce && ce.LocalName == "img"
+                    ) as SafeXmlElement;
+                if (img == null)
+                    return;
+                var src = img.GetAttribute("src");
+                if (string.IsNullOrEmpty(src))
+                    return;
+                var parentContainer = overlay.ParentNode as SafeXmlElement;
+                if (parentContainer == null || !parentContainer.HasClass("bloom-imageContainer"))
+                    return;
+                var oldImg =
+                    parentContainer.ChildNodes.FirstOrDefault(
+                        c => c is SafeXmlElement ce && ce.LocalName == "img"
+                    ) as SafeXmlElement;
+                if (oldImg == null || oldImg.GetAttribute("src") != "placeHolder.png")
+                    return;
+                oldImg.SetAttribute("src", src);
+                overlay.ParentNode.RemoveChild(overlay);
+            }
+        }
+
+        public static void ReallyCropImages(
+            SafeXmlDocument bookDom,
+            string imageSourceFolder,
+            string imageDestFolder
+        )
+        {
+            var croppedImages = bookDom
+                .SafeSelectNodes("//div[contains(@class, 'bloom-textOverPicture')]")
+                .Where(ov =>
+                {
+                    var imgContainer =
+                        ov.ChildNodes.FirstOrDefault(
+                            c => c is SafeXmlElement ce && ce.LocalName == "div"
+                        ) as SafeXmlElement;
+                    if (imgContainer == null || !imgContainer.HasClass("bloom-imageContainer"))
+                        return false;
+                    var img =
+                        imgContainer.ChildNodes.FirstOrDefault(
+                            c => c is SafeXmlElement ce && ce.LocalName == "img"
+                        ) as SafeXmlElement;
+                    return img != null;
+                })
+                .Cast<SafeXmlElement>()
+                .ToArray();
+            foreach (var overlay in croppedImages)
+            {
+                ReallyCropImage(overlay, imageSourceFolder, imageDestFolder);
+            }
+        }
+
+        private static void ReallyCropImage(
+            SafeXmlElement overlay,
+            string imageSourceFolder,
+            string imageDestFolder
+        )
+        {
+            var imgContainer =
+                overlay.ChildNodes.FirstOrDefault(
+                    c => c is SafeXmlElement ce && ce.LocalName == "div"
+                ) as SafeXmlElement;
+            if (imgContainer == null || !imgContainer.HasClass("bloom-imageContainer"))
+                return;
+            var img =
+                imgContainer.ChildNodes.FirstOrDefault(
+                    c => c is SafeXmlElement ce && ce.LocalName == "img"
+                ) as SafeXmlElement;
+            if (img == null)
+                return;
+            var src = img.GetAttribute("src");
+            if (string.IsNullOrEmpty(src))
+                return;
+            var srcPath = Path.Combine(imageSourceFolder, src);
+            if (!RobustFile.Exists(srcPath))
+                return;
+            var imgStyle = img.GetAttribute("style");
+            if (string.IsNullOrEmpty(imgStyle))
+                return;
+            var imgWidth = GetNumberFromPx("width", imgStyle);
+            var imgLeft = GetNumberFromPx("left", imgStyle);
+            var imgTop = GetNumberFromPx("top", imgStyle);
+            var overlayStyle = overlay.GetAttribute("style");
+            var overlayWidth = GetNumberFromPx("width", overlayStyle);
+            var overlayHeight = GetNumberFromPx("height", overlayStyle);
+            if (imgWidth == 0 || overlayWidth == 0)
+                return;
+            try
+            {
+                string tempPath = "";
+                using (var originalImage = new Bitmap(srcPath))
+                {
+                    var scale = imgWidth / originalImage.Width;
+                    //var aspectRatio = originalImage.Width / originalImage.Height;
+                    var selWidth = overlayWidth / scale;
+                    //var imgHeight = imgWidth / aspectRatio;
+                    var selHeight = overlayHeight / scale;
+                    var selLeft = -imgLeft / scale;
+                    var selTop = -imgTop / scale;
+                    var selection = new Rectangle(
+                        Convert.ToInt32(selLeft),
+                        Convert.ToInt32(selTop),
+                        Convert.ToInt32(selWidth),
+                        Convert.ToInt32(selHeight)
+                    );
+                    var cropped = originalImage.Clone(selection, originalImage.PixelFormat); //do the actual cropping
+                    var ext = Path.GetExtension(srcPath).ToLowerInvariant();
+                    tempPath = Path.ChangeExtension(
+                        Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
+                        ext
+                    );
+
+                    if (ext == ".jpg" || ext == ".jpeg")
+                    {
+                        using (var stream = RobustIO.GetFileStream(tempPath, FileMode.Create))
+                        {
+                            cropped.Save(stream, ImageFormat.Jpeg);
+                        }
+                    }
+                    else
+                    {
+                        cropped.Save(tempPath, ImageFormat.Png);
+                    }
+                }
+
+                var destPath = Path.Combine(imageDestFolder, src);
+                RobustFile.Move(tempPath, destPath, true);
+            }
+            catch (Exception e)
+            {
+                Debug.Fail(e.Message);
+                ErrorReport.NotifyUserOfProblem(e, "Sorry, there was a problem getting the image");
+            }
+            // review: or should we go to the trouble of just removing width, left, and top?
+            // Currently I don't think anything else will ever be there.
+            img.RemoveAttribute("style");
+        }
+
+        internal static double GetNumberFromPx(string label, string input)
+        {
+            var parts = input.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            var part = parts.FirstOrDefault(p => p.Trim().StartsWith(label + ":"));
+            if (part == null)
+                return 0;
+            var number = part.Trim().Substring(label.Length + 1);
+            number = number.Substring(0, number.Length - 2); // remove "px"
+            if (double.TryParse(number, out double result))
+                return result;
+            return 0;
+        }
+
+        private static void ReallyCropImage(string path, Rectangle selection)
+        {
+            try
+            {
+                //jpeg = b96b3c  *AE* -0728-11d3-9d7b-0000f81ef32e
+                //bitmap = b96b3c  *AA* -0728-11d3-9d7b-0000f81ef32e
+
+                //NB: this worked for tiff and png, but would crash with Out Of Memory for jpegs.
+                //This may be because I closed the stream? THe doc says you have to keep that stream open.
+                //Also, note that this method, too, lost our jpeg encoding:
+                //          return bmp.Clone(selection, _image.PixelFormat);
+                //So now, I first copy it, then clone with the bounds of our crop:
+
+                using (var originalImage = new Bitmap(path))
+                {
+                    var cropped = originalImage.Clone(selection, originalImage.PixelFormat); //do the actual cropping
+                    var ext = Path.GetExtension(path).ToLowerInvariant();
+                    if (ext == "jpg" || ext == "jpeg")
+                    {
+                        using (var stream = RobustIO.GetFileStream(path, FileMode.Create))
+                        {
+                            cropped.Save(stream, ImageFormat.Jpeg);
+                        }
+                    }
+                    else
+                    {
+                        cropped.Save(path, ImageFormat.Png);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Fail(e.Message);
+                ErrorReport.NotifyUserOfProblem(e, "Sorry, there was a problem getting the image");
+            }
         }
 
         #region IDisposable Support

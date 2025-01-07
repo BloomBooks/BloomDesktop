@@ -161,6 +161,9 @@ namespace Bloom.Edit
                 return;
             if (!_dontForwardSelectionEvent)
             {
+                // The only necessary action after saving is to navigate to the desired page.
+                // This is achieved by returning the right ID in the trivial doAfterSaving function
+                // passed as the first argument to SaveThen.
                 _model.SaveThen(() => (page as Page).Id, () => { });
             }
         }
