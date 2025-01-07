@@ -1948,19 +1948,17 @@ namespace Bloom.TeamCollection
         {
             if (
                 !Program.RunningUnitTests
-                && !string.IsNullOrWhiteSpace(
-                    SIL.Windows.Forms.Registration.Registration.Default.Email
-                )
+                && !string.IsNullOrWhiteSpace(Bloom.Registration.Registration.Default.Email)
             )
             {
                 var issue = new YouTrackIssueSubmitter(ProblemReportApi.YouTrackProjectKey);
                 try
                 {
-                    var email = SIL.Windows.Forms.Registration.Registration.Default.Email;
+                    var email = Bloom.Registration.Registration.Default.Email;
                     var standardUserInfo = ProblemReportApi.GetStandardUserInfo(
                         email,
-                        SIL.Windows.Forms.Registration.Registration.Default.FirstName,
-                        SIL.Windows.Forms.Registration.Registration.Default.Surname
+                        Bloom.Registration.Registration.Default.FirstName,
+                        Bloom.Registration.Registration.Default.Surname
                     );
                     var lostAndFoundUrl =
                         "https://docs.bloomlibrary.org/team-collections-advanced-topics/#2488e17a8a6140bebcef068046cc57b7";

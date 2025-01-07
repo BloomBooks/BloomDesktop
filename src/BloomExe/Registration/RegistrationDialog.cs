@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Windows.Forms;
 using Bloom.Properties;
-using Bloom.TeamCollection;
 using Bloom.Utils;
 using DesktopAnalytics;
 
@@ -29,9 +28,7 @@ namespace Bloom.Registration
             if (ReallyDesignMode)
                 return;
 
-            _hadEmailAlready = !string.IsNullOrWhiteSpace(
-                SIL.Windows.Forms.Registration.Registration.Default.Email
-            );
+            _hadEmailAlready = !string.IsNullOrWhiteSpace(Registration.Default.Email);
 
             _cancelButton.Visible = registrationIsOptional;
 
@@ -105,9 +102,6 @@ namespace Bloom.Registration
             // the user has set the FEEDBACK environment variable.  If the user does register, or
             // use an email address in a feedback form, we want to preserve that information!
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-7956.
-            // (This is probably redundant as we now call this function very early in startup.
-            // But it takes very little time to make sure.)
-            UpgradeRegistrationIfNeeded();
             //there is no point registering if we are are developer/tester
             string feedbackSetting = Environment.GetEnvironmentVariable("FEEDBACK");
             if (
@@ -120,61 +114,37 @@ namespace Bloom.Registration
             if (!_haveRegisteredLaunch) //in case the client app calls this more then once during a single run (like Bloom does when opening a different collection)
             {
                 _haveRegisteredLaunch = true;
-                SIL.Windows.Forms.Registration.Registration.Default.LaunchCount++;
-                SIL.Windows.Forms.Registration.Registration.Default.Save();
+                Registration.Default.LaunchCount++;
+                Registration.Default.Save();
             }
 
-            return SIL.Windows.Forms.Registration.Registration.Default.LaunchCount > 2
+            return Registration.Default.LaunchCount > 2
                 && (
-                    string.IsNullOrWhiteSpace(
-                        SIL.Windows.Forms.Registration.Registration.Default.FirstName
-                    )
-                    || string.IsNullOrWhiteSpace(
-                        SIL.Windows.Forms.Registration.Registration.Default.Surname
-                    )
-                    || string.IsNullOrWhiteSpace(
-                        SIL.Windows.Forms.Registration.Registration.Default.Organization
-                    )
-                    || string.IsNullOrWhiteSpace(
-                        SIL.Windows.Forms.Registration.Registration.Default.Email
-                    )
+                    string.IsNullOrWhiteSpace(Registration.Default.FirstName)
+                    || string.IsNullOrWhiteSpace(Registration.Default.Surname)
+                    || string.IsNullOrWhiteSpace(Registration.Default.Organization)
+                    || string.IsNullOrWhiteSpace(Registration.Default.Email)
                 );
-        }
-
-        public static void UpgradeRegistrationIfNeeded()
-        {
-            if (SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade)
-            {
-                //see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
-                SIL.Windows.Forms.Registration.Registration.Default.Upgrade();
-                SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade = false;
-                SIL.Windows.Forms.Registration.Registration.Default.Save();
-            }
         }
 
         private void SaveAndSendIfPossible()
         {
-            SIL.Windows.Forms.Registration.Registration.Default.FirstName = _firstName.Text;
-            SIL.Windows.Forms.Registration.Registration.Default.Surname = _surname.Text;
-            SIL.Windows.Forms.Registration.Registration.Default.Organization = _organization.Text;
-            SIL.Windows.Forms.Registration.Registration.Default.Email =
+            Registration.Default.FirstName = _firstName.Text;
+            Registration.Default.Surname = _surname.Text;
+            Registration.Default.Organization = _organization.Text;
+            Registration.Default.Email =
                 _email.Text == null
                     ? null
                     : MiscUtils.IsValidEmail(_email.Text)
                         ? _email.Text.Trim()
                         : null;
-            SIL.Windows.Forms.Registration.Registration.Default.HowUsing = _howAreYouUsing.Text;
-            SIL.Windows.Forms.Registration.Registration.Default.Save();
+            Registration.Default.HowUsing = _howAreYouUsing.Text;
+            Registration.Default.Save();
             try
             {
                 DesktopAnalytics.Analytics.IdentifyUpdate(GetAnalyticsUserInfo());
 
-                if (
-                    !_hadEmailAlready
-                    && !string.IsNullOrWhiteSpace(
-                        SIL.Windows.Forms.Registration.Registration.Default.Email
-                    )
-                )
+                if (!_hadEmailAlready && !string.IsNullOrWhiteSpace(Registration.Default.Email))
                 {
                     DesktopAnalytics.Analytics.Track("Register");
                 }
@@ -191,29 +161,23 @@ namespace Bloom.Registration
         {
             UserInfo userInfo = new UserInfo
             {
-                FirstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName,
-                LastName = SIL.Windows.Forms.Registration.Registration.Default.Surname,
-                Email = SIL.Windows.Forms.Registration.Registration.Default.Email,
+                FirstName = Registration.Default.FirstName,
+                LastName = Registration.Default.Surname,
+                Email = Registration.Default.Email,
                 UILanguageCode = Settings.Default.UserInterfaceLanguage
             };
-            userInfo.OtherProperties.Add(
-                "Organization",
-                SIL.Windows.Forms.Registration.Registration.Default.Organization
-            );
-            userInfo.OtherProperties.Add(
-                "HowUsing",
-                SIL.Windows.Forms.Registration.Registration.Default.HowUsing
-            );
+            userInfo.OtherProperties.Add("Organization", Registration.Default.Organization);
+            userInfo.OtherProperties.Add("HowUsing", Registration.Default.HowUsing);
             return userInfo;
         }
 
         private void RegistrationDialog_Load(object sender, EventArgs e)
         {
-            _firstName.Text = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
-            _surname.Text = SIL.Windows.Forms.Registration.Registration.Default.Surname;
-            _organization.Text = SIL.Windows.Forms.Registration.Registration.Default.Organization;
-            _email.Text = SIL.Windows.Forms.Registration.Registration.Default.Email;
-            _howAreYouUsing.Text = SIL.Windows.Forms.Registration.Registration.Default.HowUsing;
+            _firstName.Text = Registration.Default.FirstName;
+            _surname.Text = Registration.Default.Surname;
+            _organization.Text = Registration.Default.Organization;
+            _email.Text = Registration.Default.Email;
+            _howAreYouUsing.Text = Registration.Default.HowUsing;
             UpdateDisplay();
             //only need to do this now
             _email.TextChanged += OnTextChanged;
@@ -241,11 +205,7 @@ namespace Bloom.Registration
             if (Program.RunningUnitTests)
                 return true;
 
-            if (
-                !string.IsNullOrWhiteSpace(
-                    SIL.Windows.Forms.Registration.Registration.Default.Email
-                )
-            )
+            if (!string.IsNullOrWhiteSpace(Registration.Default.Email))
                 return true;
 
             // We're only doing this because current registration does NOT have email, so changing it must be OK.
@@ -258,9 +218,7 @@ namespace Bloom.Registration
             )
                 registrationDialog.ShowDialog();
 
-            return !string.IsNullOrWhiteSpace(
-                SIL.Windows.Forms.Registration.Registration.Default.Email
-            );
+            return !string.IsNullOrWhiteSpace(Registration.Default.Email);
         }
     }
 }

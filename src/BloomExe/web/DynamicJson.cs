@@ -37,13 +37,13 @@ namespace Bloom.Api
 
         // public static methods
 
-        /// <summary>from JsonSring to DynamicJson</summary>
+        /// <summary>from JsonString to DynamicJson</summary>
         public static dynamic Parse(string json)
         {
             return Parse(json, Encoding.Unicode);
         }
 
-        /// <summary>from JsonSring to DynamicJson</summary>
+        /// <summary>from JsonString to DynamicJson</summary>
         public static dynamic Parse(string json, Encoding encoding)
         {
             using (
@@ -57,7 +57,7 @@ namespace Bloom.Api
             }
         }
 
-        /// <summary>from JsonSringStream to DynamicJson</summary>
+        /// <summary>from JsonStringStream to DynamicJson</summary>
         public static dynamic Parse(Stream stream)
         {
             using (
@@ -71,7 +71,7 @@ namespace Bloom.Api
             }
         }
 
-        /// <summary>from JsonSringStream to DynamicJson</summary>
+        /// <summary>from JsonStringStream to DynamicJson</summary>
         public static dynamic Parse(Stream stream, Encoding encoding)
         {
             using (
@@ -87,7 +87,7 @@ namespace Bloom.Api
             }
         }
 
-        /// <summary>create JsonSring from primitive or IEnumerable or Object({public property name:property value})</summary>
+        /// <summary>create JsonString from primitive or IEnumerable or Object({public property name:property value})</summary>
         public static string Serialize(object obj)
         {
             return CreateJsonString(
@@ -540,7 +540,7 @@ namespace Bloom.Api
         public override string ToString()
         {
             // <foo type="null"></foo> is can't serialize. replace to <foo type="null" />
-            foreach (var elem in xml.Descendants().Where(x => x.Attribute("type").Value == "null"))
+            foreach (var elem in xml.Descendants().Where(x => x.Attribute("type")?.Value == "null"))
             {
                 elem.RemoveNodes();
             }
