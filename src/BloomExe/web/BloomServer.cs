@@ -531,9 +531,9 @@ namespace Bloom.Api
 
             // note: this is placed as low as I could before some things started to handle the request that should not
             if (
-                CurrentCollectionSettings != null
-                && // during some unit tests, this is null
-                ServerHandlerForBloomPlayer.TryToHandle(
+                CurrentCollectionSettings != null // during some unit tests, this is null
+                && CurrentBook != null // this can be null as well
+                && ServerHandlerForBloomPlayer.TryToHandle(
                     request,
                     CurrentCollectionSettings.FolderPath,
                     CurrentBook.FolderPath
