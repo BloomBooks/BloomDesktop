@@ -255,10 +255,14 @@ body:has(#overlay-context-controls:hover) .bloom-page,
 }
 
 // The editing buttons are hidden when this class is added (currently by motion and comic tools)
+// (An earlier version required them to be a direct child of the image container, so as not to
+// disable them for overlay images. But now these buttons only occur on background images, which
+// ARE child overlays. So we want the disabling there. We use important because the rule that makes
+// them visible ever is very complex and has high specificity.
 .bloom-imageContainer.bloom-hideImageButtons {
-    > .imageButton,
-    > .miniButton {
-        display: none;
+    .imageButton,
+    .miniButton {
+        display: none !important;
     }
 }
 
