@@ -535,7 +535,8 @@ namespace Bloom.Api
                 && // during some unit tests, this is null
                 ServerHandlerForBloomPlayer.TryToHandle(
                     request,
-                    CurrentCollectionSettings.FolderPath
+                    CurrentCollectionSettings.FolderPath,
+                    CurrentBook.FolderPath
                 )
             )
             {
