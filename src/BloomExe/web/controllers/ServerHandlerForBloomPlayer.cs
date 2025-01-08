@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Bloom.Api;
+using Bloom.web.controllers;
 using Newtonsoft.Json.Linq;
 using SIL.IO;
 
@@ -11,7 +12,8 @@ static class ServerHandlerForBloomPlayer
 {
     public static bool TryToHandle(
         Bloom.Api.IRequestInfo request,
-        string currentCollectionFolderPath
+        string currentCollectionFolderPath,
+        string currentBookFolderPath
     )
     {
         // When we're previewing bloom-player, jumps between books get sent
@@ -52,7 +54,19 @@ static class ServerHandlerForBloomPlayer
                     // we do need that, we have a PR that did a bunch of that work, which we could resurrect:
                     // https://github.com/BloomBooks/BloomDesktop/pull/6744
 
-
+                    // If we're returning to the current book, we need to redirect to the staging folder,
+                    // not the original folder, so that users don't get confused by a change in the
+                    // xmatter.  See comments in BL-13881.
+                    if (bookPath == currentBookFolderPath)
+                    {
+                        var bloomPubPath = Path.Combine(
+                            Path.GetTempPath(),
+                            PublishApi.kStagingFolder,
+                            Path.GetFileName(bookPath)
+                        );
+                        if (Directory.Exists(bloomPubPath))
+                            bookPath = bloomPubPath;
+                    }
                     if (string.IsNullOrEmpty(remainingPath))
                     {
                         remainingPath = "/" + htmlFileName;
