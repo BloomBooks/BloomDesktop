@@ -21,16 +21,14 @@ import { reportError } from "../../lib/errorHandler";
 import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
 import {
-    addImageEditingButtons,
-    DisableImageEditing,
-    EnableImageEditing,
     EnableAllImageEditing,
     getImageFromOverlay,
     kImageContainerSelector,
     getImageFromContainer,
     kImageContainerClass,
     getBackgroundImageFromContainer,
-    SetupMetadataButton
+    SetupMetadataButton,
+    UpdateImageTooltipVisibility
 } from "./bloomImages";
 import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
@@ -257,34 +255,6 @@ export class BubbleManager {
         return parseFloat(px.replace("px", ""));
     }
 
-    // We usually don't show the image editing buttons on an overlay page.
-    // (If the user clicks on the background, we show them.)
-    // An earlier version did not hide them if there isn't a background image (just a placeholder).
-    // But it's increasingly common to deliberately leave the background blank.
-    public static hideImageButtonsIfHasOverlays(container: HTMLElement) {
-        if (
-            document.getElementsByClassName(kTextOverPictureClass).length === 0
-        ) {
-            // If the page has no overlays at all, we really don't want to do this.
-            // Even though the comical toolbox is open, comic editing doesn't get properly
-            // initialized until we add at least one overlay, and without that init,
-            // clicking on the picture doesn't force the controls to show; it can be
-            // really confusing if the tool was left open from another page but isn't
-            // relevant to this one.
-            return;
-        }
-        DisableImageEditing(container);
-    }
-
-    public turnOnHidingImageButtons() {
-        const imageContainers: HTMLElement[] = Array.from(
-            this.getAllPrimaryImageContainersOnPage() as any
-        );
-        imageContainers.forEach(container => {
-            BubbleManager.hideImageButtonsIfHasOverlays(container);
-        });
-    }
-
     // A visible, editable div is generally focusable, but sometimes (e.g. in Bloom games),
     // we may disable it by turning off pointer events. So we filter those ones out.
     private getAllVisibleFocusableDivs(
@@ -499,12 +469,6 @@ export class BubbleManager {
                         const x = event.offsetX;
                         const y = event.offsetY;
                         if (!Comical.somethingHit(container, x, y)) {
-                            // Usually we hide the image editing controls in overlay mode so
-                            // they don't get in the way of manipulating the bubbles, but a click
-                            // on the underlying image is understood to mean the user wants to work
-                            // on it, so allow them to be seen again.
-                            // (Note: we're not making it focused in the same way an image overlay could be)
-                            EnableImageEditing(container);
                             // So far so good. We have now determined that we want to remove
                             // focus from anything in this image.
                             // (Enhance: should we check that something within this image
@@ -1063,11 +1027,6 @@ export class BubbleManager {
         this.showCorrespondingTextBox(this.activeElement);
         this.setupControlFrame();
         if (this.activeElement) {
-            // Restore hiding these when we activate a bubble, so they don't get in the way of working on
-            // that bubble.
-            theOneBubbleManager.turnOnHidingImageButtons();
-        }
-        if (this.activeElement) {
             // We should call this if there is an active element, even if it is not a video,
             // because it will turn off the 'active video' class that might be on some
             // non-overlay video.
@@ -1081,6 +1040,9 @@ export class BubbleManager {
                 false
             );
         }
+        UpdateImageTooltipVisibility(
+            this.activeElement?.closest(".bloom-imageContainer")
+        );
     }
 
     // clientX/Y of the mouseDown event in one of the resize handles.
@@ -5184,10 +5146,6 @@ export class BubbleManager {
     private switchBackgroundToOverlay(imageContainer: HTMLElement) {
         const img = getImageFromContainer(imageContainer);
         if (!img) return; // should not happen
-        // Title typically contained info about the resolution of the image we are moving
-        // to the overlay. It doesn't apply to the placeholder we will leave behind,
-        // and we don't do this for overlays, so we don't want it on the copy, either.
-        imageContainer.setAttribute("data-title", "");
         let bgOverlay = imageContainer.getElementsByClassName(
             kbackgroundImageClass
         )[0] as HTMLElement;
