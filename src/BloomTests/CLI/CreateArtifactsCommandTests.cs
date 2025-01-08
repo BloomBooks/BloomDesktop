@@ -103,7 +103,6 @@ namespace BloomTests.CLI
 
         // Validate that if an xmatter is not allowed to use legacy theme, we can still successfully convert
         // to default theme if that is allowed.
-        [Ignore("By Hand until we can figure out why it is timing out on TC.")]
         [Test]
         public void CreateArtifacts_LegacyBookWithInvalidXmatter_HarvesterAllowedToConvert_ConvertsToDefaultTheme()
         {
