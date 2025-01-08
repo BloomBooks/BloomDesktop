@@ -845,9 +845,7 @@ namespace Bloom.Publish
             if (img == null)
                 return;
             var src = img.GetAttribute("src");
-            if (string.IsNullOrEmpty(src))
-                return;
-            var srcPath = Path.Combine(imageSourceFolder, src);
+            var srcPath = UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
             if (!RobustFile.Exists(srcPath))
                 return;
             var imgStyle = img.GetAttribute("style");
