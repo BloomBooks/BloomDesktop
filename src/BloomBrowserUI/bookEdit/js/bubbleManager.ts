@@ -1979,6 +1979,14 @@ export class BubbleManager {
     // After making the adjustment if necessary (which might be delayed if the image dimensions
     // are not available), align the control frame with the active element.
     private adjustContainerAspectRatio(overlay: HTMLElement): void {
+        if (overlay.classList.contains(kbackgroundImageClass)) {
+            this.adjustBackgroundImageSize(
+                overlay.closest(kImageContainerSelector)!,
+                overlay,
+                true
+            );
+            return;
+        }
         const imgOrVideo = this.getImageOrVideo();
         if (!imgOrVideo || imgOrVideo.style.width) {
             // We don't have an image, or we've already done cropping on it, so we should not force the
@@ -5217,7 +5225,8 @@ export class BubbleManager {
             imageContainer.clientWidth,
             imageContainer.clientHeight,
             overlay,
-            useSizeOfNewImage
+            useSizeOfNewImage,
+            0
         );
     }
 
@@ -5231,39 +5240,62 @@ export class BubbleManager {
         // We'll always have to wait for it to load in this case, otherwise, we may get
         // the dimensions of a previous image.
         useSizeOfNewImage: boolean,
-        // This is set true when we arrange an onload callback and receive it
-        gotSizeOfNewImage = false
+        // Sometimes we think we need to wait for onload, but the data arrives before we set up
+        // the watcher. We make a timeout so we will go ahead and adjust if we have dimensions
+        // and don't get an onload in a reasonable time. If we DO get the onload before we
+        // timeout, we use this handle to clear it.
+        // This is set when we arrange an onload callback and receive it
+        timeoutHandler: number
     ) {
+        if (timeoutHandler) {
+            clearTimeout(timeoutHandler);
+        }
         let imgAspectRatio = overlay.clientWidth / overlay.clientHeight;
         const img = getImageFromOverlay(overlay);
-        if (useSizeOfNewImage) {
+        if (img) {
             // We don't ever expect there not to be an img. If it happens, we'll just go
             // ahead and adjust based on the current shape of the overlay.
-            if (img) {
-                // if we don't have a height and width, or we know the image src changed
-                // and have not yet waited for new dimensions, go ahead and wait.
-                if (
-                    img.naturalHeight === 0 ||
-                    img.naturalWidth === 0 ||
-                    !gotSizeOfNewImage
-                ) {
-                    // image not ready yet, try again later.
-                    img.addEventListener(
-                        "load",
-                        () =>
-                            this.adjustBackgroundImageSizeToFit(
-                                containerWidth,
-                                containerHeight,
-                                overlay,
-                                useSizeOfNewImage,
-                                true // when we get here, we know we have the updated size.
-                            ),
-                        { once: true }
-                    );
-                    return;
-                }
-                imgAspectRatio = img.naturalWidth / img.naturalHeight;
+            // if we don't have a height and width, or we know the image src changed
+            // and have not yet waited for new dimensions, go ahead and wait.
+            if (
+                img.naturalHeight === 0 ||
+                img.naturalWidth === 0 ||
+                useSizeOfNewImage
+            ) {
+                // We set up this timeout
+                const handle = (setTimeout(
+                    () =>
+                        this.adjustBackgroundImageSizeToFit(
+                            containerWidth,
+                            containerHeight,
+                            overlay,
+                            // after the timeout we don't consider that we MUST wait if we have dimensions
+                            false,
+                            0 // when we get this call, we're responding to the timeout, so don't need to cancel.
+                        ),
+                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+                    // If by any chance this happens when the image really isn't loaded enough to
+                    // have naturalHeight/Width, the zero checks above will force another iteration.
+                    100
+                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+                ) as unknown) as number;
+                // preferably we update when we are loaded.
+                img.addEventListener(
+                    "load",
+                    () =>
+                        this.adjustBackgroundImageSizeToFit(
+                            containerWidth,
+                            containerHeight,
+                            overlay,
+                            false, // when this call happens we have the new dimensions.
+                            handle // if this callback happens we can cancel the timeout.
+                        ),
+                    { once: true }
+                );
+                return; // try again once we have valid image data
             }
+            imgAspectRatio = img.naturalWidth / img.naturalHeight;
         }
 
         const oldWidth = overlay.clientWidth;
