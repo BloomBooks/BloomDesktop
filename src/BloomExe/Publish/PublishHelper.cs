@@ -10,6 +10,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.web;
@@ -859,54 +860,34 @@ namespace Bloom.Publish
             var overlayHeight = GetNumberFromPx("height", overlayStyle);
             if (imgWidth == 0 || overlayWidth == 0)
                 return;
-            try
+            if (!ImageUtils.TryGetImageSize(srcPath, out Size size))
             {
-                string tempPath = "";
-                using (var originalImage = new Bitmap(srcPath))
-                {
-                    var scale = imgWidth / originalImage.Width;
-                    //var aspectRatio = originalImage.Width / originalImage.Height;
-                    var selWidth = overlayWidth / scale;
-                    //var imgHeight = imgWidth / aspectRatio;
-                    var selHeight = overlayHeight / scale;
-                    var selLeft = -imgLeft / scale;
-                    var selTop = -imgTop / scale;
-                    var selection = new Rectangle(
-                        Convert.ToInt32(selLeft),
-                        Convert.ToInt32(selTop),
-                        Convert.ToInt32(selWidth),
-                        Convert.ToInt32(selHeight)
-                    );
-                    var cropped = originalImage.Clone(selection, originalImage.PixelFormat); //do the actual cropping
-                    var ext = Path.GetExtension(srcPath).ToLowerInvariant();
-                    tempPath = Path.ChangeExtension(
-                        Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
-                        ext
-                    );
-
-                    if (ext == ".jpg" || ext == ".jpeg")
-                    {
-                        using (var stream = RobustIO.GetFileStream(tempPath, FileMode.Create))
-                        {
-                            cropped.Save(stream, ImageFormat.Jpeg);
-                        }
-                    }
-                    else
-                    {
-                        cropped.Save(tempPath, ImageFormat.Png);
-                    }
-                }
-
+                return; // can't crop the image if we can't get its size.
+            }
+            var scale = imgWidth / size.Width;
+            var selWidth = overlayWidth / scale;
+            var selHeight = overlayHeight / scale;
+            var selLeft = -imgLeft / scale;
+            var selTop = -imgTop / scale;
+            var ext = Path.GetExtension(srcPath).ToLowerInvariant();
+            var tempPath = Path.ChangeExtension(
+                Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
+                ext
+            );
+            var cropRectangle = new Rectangle(
+                Convert.ToInt32(selLeft),
+                Convert.ToInt32(selTop),
+                Convert.ToInt32(selWidth),
+                Convert.ToInt32(selHeight)
+            );
+            var result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
+            if (result.ExitCode == 0)
+            {
                 var destPath = Path.Combine(imageDestFolder, src);
                 RobustFile.Move(tempPath, destPath, true);
+                // If it failed, it should have already logged the reason. I think all we can do
+                // is leave the image alone.
             }
-            catch (Exception e)
-            {
-                Debug.Fail(e.Message);
-                ErrorReport.NotifyUserOfProblem(e, "Sorry, there was a problem getting the image");
-            }
-            // review: or should we go to the trouble of just removing width, left, and top?
-            // Currently I don't think anything else will ever be there.
             img.RemoveAttribute("style");
         }
 
@@ -921,43 +902,6 @@ namespace Bloom.Publish
             if (double.TryParse(number, out double result))
                 return result;
             return 0;
-        }
-
-        private static void ReallyCropImage(string path, Rectangle selection)
-        {
-            try
-            {
-                //jpeg = b96b3c  *AE* -0728-11d3-9d7b-0000f81ef32e
-                //bitmap = b96b3c  *AA* -0728-11d3-9d7b-0000f81ef32e
-
-                //NB: this worked for tiff and png, but would crash with Out Of Memory for jpegs.
-                //This may be because I closed the stream? THe doc says you have to keep that stream open.
-                //Also, note that this method, too, lost our jpeg encoding:
-                //          return bmp.Clone(selection, _image.PixelFormat);
-                //So now, I first copy it, then clone with the bounds of our crop:
-
-                using (var originalImage = new Bitmap(path))
-                {
-                    var cropped = originalImage.Clone(selection, originalImage.PixelFormat); //do the actual cropping
-                    var ext = Path.GetExtension(path).ToLowerInvariant();
-                    if (ext == "jpg" || ext == "jpeg")
-                    {
-                        using (var stream = RobustIO.GetFileStream(path, FileMode.Create))
-                        {
-                            cropped.Save(stream, ImageFormat.Jpeg);
-                        }
-                    }
-                    else
-                    {
-                        cropped.Save(path, ImageFormat.Png);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.Fail(e.Message);
-                ErrorReport.NotifyUserOfProblem(e, "Sorry, there was a problem getting the image");
-            }
         }
 
         #region IDisposable Support
