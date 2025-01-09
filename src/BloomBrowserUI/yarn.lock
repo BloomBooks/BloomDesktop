@@ -5607,10 +5607,10 @@ bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
-bloom-player@^2.8.0:
-  version "2.8.0"
-  resolved "https://registry.npmjs.org/bloom-player/-/bloom-player-2.8.0.tgz#53f4f260aca70d613f74f2d027ecbbf09217d678"
-  integrity sha512-88tfz0AaZArhf8oLWAEJ0DWE0JsUWaBWwCTw73TsiRvx0bu1Bsh+20wavxstiLl6ChCfWnZE6lBcnmExDN9ccw==
+bloom-player@^2.8.2:
+  version "2.8.2"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.8.2.tgz#3ea733fcb4a052877f447f8c34517cee3aaeea4c"
+  integrity sha512-HLWV9m4eCmcUFGQ6LSkNE9cOj+LzfleECVqy5L5sfcStaO2yyqiFXfoFWCe83jHfApMQYp9AYtEs8ZTH5aOyPw==
 
 bluebird@^3.3.5, bluebird@^3.5.5:
   version "3.7.2"
@@ -6473,9 +6473,9 @@ combined-stream@^1.0.5, combined-stream@^1.0.8, combined-stream@~1.0.5:
     delayed-stream "~1.0.0"
 
 comicaljs@^0.3.0:
-  version "0.3.97"
-  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.3.97.tgz#d2a8afc99686f8e8f4b813f7672224bb4c5b9a87"
-  integrity sha512-WLU2vEwTL5T5/EfjRhDTIfl53kCO/ELX1Na6Exukj0GvfylXDYwZzVXnXi4ndgUZY/WRk4w1xPIOuDOd7QlT+g==
+  version "0.3.98"
+  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.3.98.tgz#a379b5051723c0633d1ca07d7ad0013fc8750abb"
+  integrity sha512-8a1EfnwxkZ7N65fPO4mQhFy9RmgZGRO+FNVOaGFwHA9k84oU+n+wtJLEh4JxWgJYP8uGpIZMe8XL0GWVgLVTGg==
   dependencies:
     paper "0.12.8"
 
