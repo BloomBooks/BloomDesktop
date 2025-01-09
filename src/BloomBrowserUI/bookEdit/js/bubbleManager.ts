@@ -4696,11 +4696,21 @@ export class BubbleManager {
         this.turnOnBubbleEditing();
     }
 
+    private draggingSplitter = false;
+
     // mouse down in an origami slider: if comic editing is on, remember that, and turn it off.
     private dividerMouseDown = (ev: Event) => {
-        // We could plausibly ignore it if already suspended for a tool.
-        // But the call won't do anything anyway when we're already suspended.
-        this.suspendComicEditing("forDrag");
+        if (this.comicEditingSuspendedState === "forTool") {
+            // We're in change layout mode. We want to get the usual behavior of any
+            // existing images while dragging the splitter, but we don't need to turn
+            // off comic editing since it already is.
+            this.draggingSplitter = true;
+            this.startDraggingSplitter();
+        } else {
+            // Unless we're suspended for some other reason, this will call startDraggingSplitter
+            // after turning stuff off.
+            this.suspendComicEditing("forDrag");
+        }
     };
 
     public removeDetachedTargets() {
@@ -4746,6 +4756,14 @@ export class BubbleManager {
                 // resize behavior when turning back on.
                 this.resumeComicEditing();
             }, 0);
+        } else if (this.draggingSplitter) {
+            // dragging the splitter while in origami mode. We need to clean up
+            // in the way resume normally does
+            this.draggingSplitter = false;
+            this.endDraggingSplitter();
+            for (const container of this.getAllPrimaryImageContainersOnPage()) {
+                this.AdjustChildrenIfSizeChanged(container);
+            }
         }
     };
 
@@ -4791,7 +4809,7 @@ export class BubbleManager {
     // all the relevant behaviors and keep the bubbles in sync with the text.)
     // Because we're adding a fixed method, not a local function, adding multiple
     // times will not cause duplication.
-    private setupSplitterEventHandling() {
+    public setupSplitterEventHandling() {
         Array.from(
             document.getElementsByClassName("split-pane-divider")
         ).forEach(d => d.addEventListener("mousedown", this.dividerMouseDown));
@@ -5336,7 +5354,7 @@ export class BubbleManager {
         );
     }
 
-    private AdjustChildrenIfSizeChanged(container: HTMLElement): void {
+    public AdjustChildrenIfSizeChanged(container: HTMLElement): void {
         const oldSizeData = container.getAttribute("data-imgSizeBasedOn");
         if (!oldSizeData) {
             // Can't make a useful adjustment now, with no previous size to work from.

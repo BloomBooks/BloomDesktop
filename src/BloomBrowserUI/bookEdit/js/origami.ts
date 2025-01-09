@@ -195,6 +195,15 @@ function performSplit(
         );
     }
     newSplitPane.splitPane();
+    adjustModifiedChild(innerElement.get(0) as HTMLElement);
+    theOneBubbleManager.setupSplitterEventHandling();
+}
+
+function adjustModifiedChild(resizedElt: HTMLElement | undefined) {
+    const mainChild = resizedElt?.firstElementChild as HTMLElement;
+    if (mainChild?.classList.contains("bloom-imageContainer")) {
+        theOneBubbleManager.AdjustChildrenIfSizeChanged(mainChild);
+    }
 }
 
 var origamiUndoStack: any[] = [];
@@ -281,6 +290,9 @@ function closeClickHandler() {
     });
     sibling.addClass(positionClass);
     sibling.attr("style", positionStyle);
+    adjustModifiedChild(
+        (sibling.get(0) as HTMLElement).firstElementChild as HTMLElement
+    );
 }
 
 function getSplitPaneHtml(verticalOrHorizontal) {
