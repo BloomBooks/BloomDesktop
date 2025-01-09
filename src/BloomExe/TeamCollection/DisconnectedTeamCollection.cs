@@ -166,6 +166,16 @@ namespace Bloom.TeamCollection
             throw new NotImplementedException();
         }
 
+        protected override void SyncColorPaletteFileWithRepo(string destFolder)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override DateTime GetRepoColorPaletteTime()
+        {
+            throw new NotImplementedException();
+        }
+
         protected override DateTime LastRepoCollectionFileModifyTime { get; }
 
         protected override void CopyLocalFolderToRepo(string folderName)
