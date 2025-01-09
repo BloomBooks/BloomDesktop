@@ -258,11 +258,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             this.removeElt(page.getElementById("animationEnd"));
         }
         // enhance: if more than one image...do what??
-        const firstImage = this.getFirstImageContainer();
-        if (!firstImage) {
+        const firstImageContainer = this.getFirstImageContainer();
+        if (!firstImageContainer) {
             return;
         }
-        EnableImageEditing(firstImage);
+        EnableImageEditing(firstImageContainer);
         this.removeCurrentAudioMarkup();
         if (this.observer) {
             this.observer.disconnect();
@@ -430,31 +430,35 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private motionChanged(checked: boolean) {
-        const firstImage = this.getFirstImageContainer();
-        if (!firstImage) {
+        const firstImageContainer = this.getFirstImageContainer();
+        if (!firstImageContainer) {
             return;
         }
         if (checked) {
-            if (!firstImage.getAttribute("data-initialrect")) {
+            if (!firstImageContainer.getAttribute("data-initialrect")) {
                 // see if we can restore a backup state
-                firstImage.setAttribute(
+                firstImageContainer.setAttribute(
                     "data-initialrect",
-                    firstImage.getAttribute(
+                    firstImageContainer.getAttribute(
                         "data-disabled-initialrect"
                     ) as string
                 );
-                firstImage.removeAttribute("data-disabled-initialrect");
+                firstImageContainer.removeAttribute(
+                    "data-disabled-initialrect"
+                );
                 this.makeRectsVisible(); // ensures start/stop rectangles visible
             }
         } else {
-            if (firstImage.getAttribute("data-initialrect")) {
+            if (firstImageContainer.getAttribute("data-initialrect")) {
                 // always?
                 // save old state, thus recording that we're in the off state, not just uninitialized.
-                firstImage.setAttribute(
+                firstImageContainer.setAttribute(
                     "data-disabled-initialrect",
-                    firstImage.getAttribute("data-initialrect") as string
+                    firstImageContainer.getAttribute(
+                        "data-initialrect"
+                    ) as string
                 );
-                firstImage.removeAttribute("data-initialrect");
+                firstImageContainer.removeAttribute("data-initialrect");
             }
             this.detachFromPage();
         }
@@ -502,12 +506,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private getImages(): Array<HTMLImageElement> {
-        const firstImage = this.getFirstImageContainer();
-        if (!firstImage) return []; // paranoid
+        const firstImageContainer = this.getFirstImageContainer();
+        if (!firstImageContainer) return []; // paranoid
         // not interested in images inside the resize rectangles.
         return Array.prototype.slice
-            .call(firstImage.getElementsByTagName("img"))
-            .filter(v => v.parentElement === firstImage);
+            .call(firstImageContainer.getElementsByTagName("img"))
+            .filter(v => v.parentElement === firstImageContainer);
     }
 
     private setupResizeObserver(): void {
@@ -547,9 +551,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // in the first image container. We want to update our UI if this changes from
         // placeholder to a 'real' image. This will need to be enhanced if we support
         // images done with background-image.
-        const firstImage = this.getFirstImageContainer();
-        if (firstImage) {
-            const images = firstImage.getElementsByTagName("img");
+        const firstImageContainer = this.getFirstImageContainer();
+        if (firstImageContainer) {
+            const images = firstImageContainer.getElementsByTagName("img");
             // I'm not sure how images can be an empty list...possibly while the page is shutting down??
             // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
             if (images.length > 0) {
