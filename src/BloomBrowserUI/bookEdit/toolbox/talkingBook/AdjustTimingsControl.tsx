@@ -17,6 +17,8 @@ export type TimedTextSegment = {
     text: string;
 };
 
+let currentRegion: Element | undefined;
+
 export const AdjustTimingsControl: React.FunctionComponent<{
     audioFileUrl: string;
     segments: Array<{ start: number; end: number; text: string }>;
@@ -103,64 +105,6 @@ export const AdjustTimingsControl: React.FunctionComponent<{
         });
         ws.load(props.audioFileUrl);
         setWaveSurfer(ws);
-        ws.on("ready", () => {
-            // Create the play buttons.
-            // I don't understand why we sometimes don't find the regions at first. I think there
-            // is some randomness involved in constructing the DOM and loading the audio. In any case,
-            // if we don't yet have the expected number of regions, we wait a bit and try again.
-            function makePlayButtons() {
-                const shadowRoot = getShadowRoot();
-                if (!shadowRoot) return;
-                const regions = shadowRoot.querySelectorAll(
-                    "[part *= 'region ']"
-                );
-                if (regions.length === props.segments.length) {
-                    regions.forEach((region: HTMLElement, index: number) => {
-                        const playButton = document.createElement("button");
-                        playButton.textContent = playChar;
-                        playButton.style.position = "absolute";
-                        // In the middle it tends to get lost inthe waveform and also obscure it.
-                        // Also if the first segment is long it might be off the screen.
-                        //playButton.style.top = "calc(50% - 15px)";
-                        //playButton.style.left = "calc(50% - 15px)";
-                        // At the top it would interfere with the text.
-                        playButton.style.bottom = "0";
-                        playButton.style.left = "0";
-                        playButton.style.height = "30px";
-                        playButton.style.width = "30px";
-                        playButton.style.borderRadius = "50%";
-                        playButton.style.backgroundColor = "transparent";
-                        playButton.style.border = "none";
-                        playButton.style.color = "#d65649"; // same red as the dotted line
-                        playButton.style.fontSize = "20px";
-                        playButton.classList.add("playButton");
-                        playButton.addEventListener("click", e => {
-                            if (playQueueRef.current!.length > 0) {
-                                stopAndClearQueue();
-                                if (playButton.textContent === "❚❚") {
-                                    // clicked in the pause state: all we need to do is clear the queue
-                                    // and reset the button to play
-                                    playButton.textContent = playChar;
-                                    e.stopPropagation();
-                                }
-                            }
-                            // If we're not playing anything, or clicked on a play button other than that
-                            // of the currently playing segment, start playing the clicked segment.
-                            // We don't need to do anything to achieve that except NOT stopPropagation,
-                            // so the Region (behind the button) sees the click and starts playing.
-                            // If we move the buttons outside the region, we'll need to do more here.
-                            // Do NOT initiate a play based on the start and end times of segment[index];
-                            // that will play the original times, ignoring any modifications that have been
-                            // made.
-                        });
-                        region.appendChild(playButton);
-                    });
-                } else {
-                    setTimeout(makePlayButtons, 100);
-                }
-            }
-            makePlayButtons();
-        });
         ws.on("finish", () => {
             // only sometimes happens, probably because of our audioprocessor handler.
             // Even on the last segment it only sometimes happens, but there are cases.
@@ -251,6 +195,39 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                     //color: regionColors[index % regionColors.length]
                     color: "000000" // transparent
                 });
+                // This function is immediately invoked, but in case the region isn't ready yet, we'll try again until it is.
+                const makePlayButton = (region: any) => {
+                    if (!region.element) {
+                        setTimeout(() => {
+                            makePlayButton(region);
+                        }, 100);
+                        return;
+                    }
+                    const playButton = document.createElement("button");
+                    playButton.textContent = playChar;
+                    playButton.style.position = "absolute";
+                    // In the middle it tends to get lost inthe waveform and also obscure it.
+                    // Also if the first segment is long it might be off the screen.
+                    //playButton.style.top = "calc(50% - 15px)";
+                    //playButton.style.left = "calc(50% - 15px)";
+                    // At the top it would interfere with the text.
+                    playButton.style.bottom = "0";
+                    playButton.style.left = "0";
+                    playButton.style.height = "30px";
+                    playButton.style.width = "30px";
+                    playButton.style.borderRadius = "50%";
+                    playButton.style.backgroundColor = "transparent";
+                    playButton.style.border = "none";
+                    playButton.style.color = "#d65649"; // same red as the dotted line
+                    playButton.style.fontSize = "20px";
+                    playButton.style.zIndex = "1000";
+                    playButton.classList.add("playButton");
+                    // The play buttons don't actually do anything. They are just a visual hint
+                    // that you can play and pause, which actually happen on a click
+                    // anywhere in the waveform area.
+                    region.element.appendChild(playButton);
+                };
+                makePlayButton(region);
                 region.on("click", e => {
                     e.stopPropagation();
                     const playButtons = getPlayButtons();
@@ -260,16 +237,26 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                             (button: HTMLButtonElement) =>
                                 (button.textContent = playChar)
                         );
-                    } else {
-                        // there seems to be a case where a different segment is playing and needs its pause button reset
-                        // I think there isn't necessarily anything in the queue when we're playing.
-                        playEnded();
-                        enqueue({
-                            start: region.start,
-                            end: region.end,
-                            regionIndex: index
-                        });
-                        playButtons[index].textContent = "❚❚";
+                        if (region.element === currentRegion) {
+                            currentRegion = undefined;
+                            return;
+                        }
+                        // if we clicked in a different region we'll go ahead and start playing that.
+                    }
+                    // there seems to be a case where a different segment is playing and needs its pause button reset
+                    // I think there isn't necessarily anything in the queue when we're playing.
+                    playEnded();
+                    enqueue({
+                        start: region.start,
+                        end: region.end,
+                        regionIndex: index
+                    });
+                    currentRegion = region.element;
+                    const playButton = region.element.getElementsByClassName(
+                        "playButton"
+                    )[0];
+                    if (playButton) {
+                        playButton.textContent = "❚❚";
                     }
                 });
                 // after dragging, adjust the start time of the next region and the end time of the previous region
@@ -332,6 +319,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 }
             }
         });
+
         return () => {
             ws.destroy();
         };
