@@ -2287,10 +2287,6 @@
         <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Motion.Limits" sil:dynamic="true">
-        <source xml:lang="en">Note: the motion tool does not work properly with overlays or images that are cropped.</source>
-        <note>ID: EditTab.Toolbox.Motion.Limits</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview" sil:dynamic="true">
         <source xml:lang="en">Preview</source>
         <note>ID: EditTab.Toolbox.Motion.Preview</note>

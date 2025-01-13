@@ -13,7 +13,8 @@ import "./motion.less";
 import {
     DisableImageEditing,
     EnableImageEditing,
-    getBackgroundImageFromContainer
+    getBackgroundImageFromContainer,
+    getBackgroundOverlayFromContainer
 } from "../../js/bloomImages";
 import { css } from "@emotion/react";
 
@@ -644,6 +645,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     // - this code is also simpler because we don't have to worry about the image not yet being loaded by the time we
     // want to set up the animation
     // - this code is complicated by having to deal with problems caused by parent divs using scale for zoom.
+    // - currently, this code animates the new way of representing images as "background overlays", while
+    //   BloomPlayer still uses the old way of representing them as the direct img child of the container.
+    //   (Export converts to this representation.)
     // somewhat more care is needed here to avoid adding the animation stuff permanently to the document
     // Review: Man this is a long method! It used to be almost 300 lines. I've refactored to bring it down
     // some to just over 200 lines.
@@ -780,9 +784,14 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             movingDiv.appendChild(picToAnimate);
             this.animationRootDiv.appendChild(this.animationWrapDiv);
             page.documentElement.appendChild(this.animationRootDiv);
-            const backgroundOverlay = getBackgroundImageFromContainer(
+            // Eventually we may animate all the overlays in the image container that
+            // holds the animation rectangles. For now, we just handle the one
+            // (normally the only one) that holds the main (background) image.
+            // Enhance: handle a cropped image. (Would not have to change Bloom Player,
+            // since the image will be really cropped during export.)
+            const backgroundOverlay = getBackgroundOverlayFromContainer(
                 picToAnimate
-            )?.parentElement?.parentElement as HTMLElement;
+            ) as HTMLElement;
 
             // unfortunately the cloned overlay brings over attributes that position it in the current container.
             // The new parent is not the same size and we need different values to center it and make
@@ -1178,15 +1187,6 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                         </div>
                     </div>
                 </div>
-                <Div
-                    l10nKey="EditTab.Toolbox.Motion.Limits"
-                    css={css`
-                        margin-top: 20px;
-                    `}
-                >
-                    Note: the motion tool does not work properly with overlays
-                    or images that are cropped.
-                </Div>
                 <div className="helpLinkWrapper">
                     <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm" />
                 </div>
