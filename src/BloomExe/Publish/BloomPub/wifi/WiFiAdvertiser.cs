@@ -35,20 +35,17 @@ namespace Bloom.Publish.BloomPub.wifi
         }
         public string TitleLanguage;
 
-        private UdpClient _client;
         private Thread _thread;
         private IPEndPoint _localEP;
         private IPEndPoint _remoteEP;
         private Socket _sock;
         private string _localIp = "";
-        private string _remoteIp = "";  // UDP broadcast address, will NOT be 255.255.255.255
+        private string _remoteIp = "";  // UDP broadcast address, will *not* be 255.255.255.255
         private string _subnetMask = "";
         private string _currentIpAddress = "";
         private string _cachedIpAddress = "";
 
         // Lists to hold useful information pulled from all network interfaces.
-        private List<string> IfTypes = new List<string>();
-        private List<string> IfStatuses = new List<string>();
         private List<string> IfIpAddresses = new List<string>();
         private List<string> IfNetmasks = new List<string>();
 
@@ -67,15 +64,8 @@ namespace Bloom.Publish.BloomPub.wifi
 
         public void Start()
         {
-            // The doc seems to indicate that EnableBroadcast is required for doing broadcasts.
-            // In practice it seems to be required on Mono but not on Windows.
-            // This may be fixed in a later version of one platform or the other, but please
-            // test both if tempted to remove it.
-            // TODO: WM - have I accidentally removed 'EnableBroadcast'?
-
             _thread = new Thread(Work);
             _thread.Start();
-            Debug.WriteLine("WM, WiFiAdvertiser::Start, work thread started, exiting");
         }
 
         public bool Paused { get; set; }
@@ -87,42 +77,33 @@ namespace Bloom.Publish.BloomPub.wifi
                 message: "Advertising book to Bloom Readers on local network..."
             );
 
-            // WM, DEBUG ONLY: Show this machine's IP addresses and network interfaces.
-            ShowIpAddresses();
-            ShowNetworkInterfaces();
-
-            // WM, DEBUG ONLY: The existing query function, GetLocalIpAddress(), sometimes returns an
-            //                 IP address that is NOT the one being used for network traffic. A new
-            //                 function, GetIpAddressOfNetworkIface(), fixes this. Running Bloom on my
-            //                 Lenovo laptop shows a discrepancy between the two results here.
-            Debug.WriteLine("WiFiAdvertiser::GetLocalIpAddress() returns          " + GetLocalIpAddress());
-            Debug.WriteLine("WiFiAdvertiser::GetIpAddressOfNetworkIface() returns " + GetIpAddressOfNetworkIface());
-
             // Don't let C# pick the network interface -- it sometimes chooses the wrong one.
-            // Force it to use the interface corresponding to the known good local IP address,
-            // using a raw socket.
+            // Force it to use the interface corresponding to the known good local IP address.
+            // Do this by using a Socket instead of a UdpClient.
             //
-            // NOTE: only a multi-homed machine will have more than one network interface
-            //       supporting internet connectivity. This will not be common; the typical
-            //       BloomDesktop user has just one network-active interface, likely Wi-Fi
-            //       but could also be Ethernet.
-            //       For now we assume that the machine is single-homed. If this assumption
-            //       turns out to be problematic we can revisit and augment the interface
-            //       selection process.
+            //   NOTE: only a multi-homed machine will have more than one network interface
+            //         supporting internet connectivity. This will not be common -- the typical
+            //         BloomDesktop user is on Windows and has just one active network interface,
+            //         likely Wi-Fi but could also be Ethernet.
+            // ASSUME: the machine is single-homed. If this assumption proves to be wrong we can
+            //         revisit and augment the interface selection process.
 
-            // Since we will use a raw socket we need to know what "local IP" address to give it.
-            // We also need to find out, from the network interface, what subnet mask is in effect
-            // for that address.
+            // For a raw socket we need to know what "local IP" address to give it. Find out
+            // what IP address *currently* supports internet traffic, and use that address.
             _localIp = GetIpAddressOfNetworkIface();
             if (_localIp.Length == 0)
             {
-                Debug.WriteLine("WM, WiFiAdvertiser::Work, ERROR: can't get local IP address, exiting");
+                Debug.WriteLine("WiFiAdvertiser, ERROR: can't get local IP address, exiting");
                 return;
             }
+
+            // The local IP address is associated with one of the network interfaces. From that
+            // same interface get the associated subnet mask (this will be needed to generate the
+            // appropriate broadcast address for UDP advertising).
             _subnetMask = GetNetmaskOfNetworkIface();
             if (_subnetMask.Length == 0)
             {
-                Debug.WriteLine("WM, WiFiAdvertiser::Work, ERROR: can't get subnet mask, exiting");
+                Debug.WriteLine("WiFiAdvertiser, ERROR: can't get subnet mask, exiting");
                 return;
             }
 
@@ -134,56 +115,41 @@ namespace Bloom.Publish.BloomPub.wifi
             _remoteIp = BuildBroadcastAddress(_localIp, _subnetMask);
             if (_remoteIp.Length == 0)
             {
-                Debug.WriteLine("WM, WiFiAdvertiser::Work, ERROR: can't make broadcast address, exiting");
+                Debug.WriteLine("WiFiAdvertiser, ERROR: can't make broadcast address, exiting");
                 return;
             }
 
-            Debug.WriteLine("WiFiAdvertiser::UDP advertising will use: _localIp    = " + _localIp);
+            Debug.WriteLine("WiFiAdvertiser, UDP advertising will use: _localIp    = " + _localIp);
             Debug.WriteLine("                                          _subnetMask = " + _subnetMask);
             Debug.WriteLine("                                          _remoteIp   = " + _remoteIp);
 
             try
             {
-                Debug.WriteLine("creating _localEP with port " + Port);
                 _localEP = new IPEndPoint(IPAddress.Parse(_localIp), Port);
 
-                Debug.WriteLine("creating _remoteEP with port " + Port);
                 _remoteEP = new IPEndPoint(IPAddress.Parse(_remoteIp), Port);
 
-                Debug.WriteLine("creating UDP socket");
                 _sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-                Debug.WriteLine("calling Bind()");
                 _sock.Bind(_localEP);
 
-                Debug.WriteLine("begin UDP broadcast advert loop from _localIp = " + _localIp);
-
+                // Socket is ready. Begin advertising once per second, indefinitely.
                 while (true)
                 {
                     if (!Paused)
                     {
                         UpdateAdvertisementBasedOnCurrentIpAddress();
 
-                        Debug.WriteLine("WM, WiFiAdvertiser::Work, beginning send");
-                        // No need to do this on a separate thread since the only thing *this* thread does
-                        // next is sleep. We are using a simple socket, not a UdpClient (more complex), so
-                        // the transmission of bytes will be efficient.
-                        //_client.BeginSend(
-                        //    _sendBytes,
-                        //    _sendBytes.Length,
-                        //    LocalEP,
-                        //    SendCallback,
-                        //    _client
-                        //);
+                        // No need to transmit on a separate thread; this thread spends most of its time
+                        // sleeping. This is a simple socket and we are sending only a few hundred bytes.
                         _sock.SendTo(_sendBytes, 0, _sendBytes.Length, SocketFlags.None, _remoteEP);
                     }
-                    Debug.WriteLine("WM, WiFiAdvertiser::Work, sent UDP broadcast advert");
                     Thread.Sleep(1000);
                 }
             }
             catch (SocketException e)
             {
-                Debug.WriteLine("WM, WiFiAdvertiser::Work, SocketException: " + e);
+                Debug.WriteLine("WiFiAdvertiser::Work, SocketException: " + e);
             }
         }
 
@@ -205,8 +171,6 @@ namespace Bloom.Publish.BloomPub.wifi
         //
         private string BuildBroadcastAddress(string ipIn, string maskIn)
         {
-            Debug.WriteLine("WM, WiFiAdvertiser::BuildBroadcastAddress, begin");
-
             // Isolate the octets for both local IP and subnet mask.
             string[] octetsIp = ipIn.Split('.');
             string[] octetsMask = maskIn.Split('.');
@@ -223,24 +187,8 @@ namespace Bloom.Publish.BloomPub.wifi
                 }
             }
 
-            // WM, DEBUG ONLY, BEGIN - dump the arrays
-            for (int j = 0; j < 4; j++)
-            {
-                Debug.WriteLine("  octetsIp[{0}] = {1}", j, octetsIp[j]);
-            }
-            for (int j = 0; j < 4; j++)
-            {
-                Debug.WriteLine("  octetsMask[{0}] = {1}", j, octetsMask[j]);
-            }
-            for (int j = 0; j < 3; j++)
-            {
-                Debug.WriteLine("  mask: indexes[{0}] = {1}", j, indexes[j]);
-            }
-            // WM, DEBUG ONLY, END
-
             // Step 1: find the 1-0 bit boundary in the mask.
             int indexFirstZero = maskIn.IndexOf('0');
-            Debug.WriteLine("  indexFirstZero = " + indexFirstZero);
 
             // Steps 2-4: examine the 4 octets in turn, starting with the most
             // significant one. Based on their value and their position relative to the
@@ -251,12 +199,10 @@ namespace Bloom.Publish.BloomPub.wifi
                 if (octetsMask[i] == "255")
                 {
                     bcastAddress += octetsIp[i]; // Step 2
-                    Debug.WriteLine("  255: bcastAddress = " + bcastAddress);
                 }
                 else if (octetsMask[i] == "0")   // Step 3
                 {
                     bcastAddress += "255";
-                    Debug.WriteLine("    0: bcastAddress = " + bcastAddress);
                 }
                 else                             // Step 4
                 {
@@ -264,149 +210,59 @@ namespace Bloom.Publish.BloomPub.wifi
 
                     // Convert the mask octet to a numeric so each bit can be assessed.
                     byte maskVal = System.Convert.ToByte(octetsMask[i]);
-                    Debug.WriteLine("  maskVal = " + maskVal);
 
                     for (int j = 0; j < 8; j++)
                     {
-                        Debug.WriteLine("  j = {0}, maskVal & (1 << (7-j)) = {1}", j, maskVal & (1 << (7 - j)));
                         int comp = maskVal & (1 << (7 - j));
                         if (comp == (1 << (7 - j)))
                         {
                             octetVal -= (1 << (7 - j));
-                            Debug.WriteLine("  octetVal = " + octetVal);
-                        }
-                        else
-                        {
-                            Debug.WriteLine("  no change, octetVal = " + octetVal);
                         }
                     }
-                    Debug.WriteLine("  final octetVal = " + octetVal);
                     bcastAddress += octetVal.ToString();
-                    Debug.WriteLine("  mix: bcastAddress = " + bcastAddress);
                 }
                 if (i < 3)   // no dot after the final byte
                 {
                     bcastAddress += ".";
                 }
             }
-            Debug.WriteLine("WM, WiFiAdvertiser::BuildBroadcastAddress, done");
             return bcastAddress;
         }
 
-        // WM  *** DEBUG ONLY ***
-        // Show all IP addresses of a host computer.
+        // Helper function to gather info on all network interfaces of this machine.
         //
-        private void ShowIpAddresses()
-        {
-            String hostName = Dns.GetHostName();
-            Debug.WriteLine("WM, WiFiAdvertiser::ShowIpAddresses, host = " + hostName + ":");
-            IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
-            IPAddress[] addr = ipEntry.AddressList;
-
-            for (int i = 0; i < addr.Length; i++)
-            {
-                Debug.WriteLine("  IPaddr[{0}] = {1} ", i, addr[i].ToString());
-            }
-        }
-
-        // WM  *** DEBUG ONLY ***
-        // Show all network interfaces present with many of their attributes.
+        // nic.NetworkInterfaceType and nic.OperationalStatus are also interesting (and
+        // the debug version of this file retrieves and prints them), but they are not
+        // needed -- GetIpAddressOfNetworkIface() tells us which interface to use.
         //
-        private void ShowNetworkInterfaces()
+        private void GetNetworkInterfaceInfo(List<string> ifIpAddresses, List<string> ifNetmasks)
         {
-            Debug.WriteLine("WM, WiFiAdvertiser::ShowNetworkInterfaces:");
-            int i = -1;
-
-            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                Debug.WriteLine("  ----------");
-                i++;  // doing it here lets an increment still follow a 'continue'
-                Debug.WriteLine("  nic[" + i + "].Name = " + nic.Name);
-                Debug.WriteLine("  nic[" + i + "].Id   = " + nic.Id);
-                Debug.WriteLine("  nic[" + i + "].Description = " + nic.Description);
-                Debug.WriteLine("  nic[" + i + "].NetworkInterfaceType = " + nic.NetworkInterfaceType);
-                Debug.WriteLine("  nic[" + i + "].OperationalStatus = " + nic.OperationalStatus);
-                Debug.WriteLine("  nic[" + i + "].Speed = " + nic.Speed);
-
-                if (!nic.Supports(NetworkInterfaceComponent.IPv6))
-                {
-                    Debug.WriteLine("    does not support IPv6");
-                }
-                if (!nic.Supports(NetworkInterfaceComponent.IPv4))
-                {
-                    Debug.WriteLine("    does not support IPv4");
-                    continue;
-                }
-
-                IPInterfaceProperties ipProps = nic.GetIPProperties();
-                if (ipProps == null)
-                {
-                    Debug.WriteLine("    IP information not available");
-                    continue;
-                }
-                IPv4InterfaceProperties ipPropsV4 = ipProps.GetIPv4Properties();
-                if (ipPropsV4 == null)
-                {
-                    Debug.WriteLine("    IPv4 information not available");
-                    continue;
-                }
-
-                // Show the index of which IP address, if any, for this interface is IPv4.
-                Debug.WriteLine("  nic[" + i + "], ipPropsV4.Index = " + ipPropsV4.Index);
-
-                // Show all IP addresses held by this network interface. Also show all
-                // IPv4 netmasks. Note that IPv4 netmasks contain all zeroes for IPv6
-                // addresses (which we don't use).
-                foreach (UnicastIPAddressInformation addr in ipProps.UnicastAddresses)
-                {
-                    Debug.WriteLine("  nic[" + i + "], ipProps.addr.Address  = " + addr.Address.ToString());
-                    Debug.WriteLine("  nic[" + i + "], ipProps.addr.IPv4Mask = " + addr.IPv4Mask);
-                }
-            }
-        }
-
-        // Gather info on all network interfaces of this machine.
-        // We need this data to determine which interface is the one currently supporting
-        // connectivity with the outside world -- we will use the same one for advertising.
-        // For each interface we need its:
-        //   - IP address: will be part of the book advert
-        //   - netmask: will drive calculation of the UDP broadcast address to send to
-        //   - type: might prove useful, not sure yet
-        //   - current status: might prove useful, not sure yet
-        //
-        private void GetNetworkInterfaceInfo(List<string> ifTypes, List<string> ifStatuses,
-                                             List<string> ifIpAddresses, List<string> ifNetmasks)
-        {
-            Debug.WriteLine("WM, WiFiAdvertiser::GetNetworkInterfaceInfo, begin");
-
             int i = 0;
             foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
             {
                 if (!nic.Supports(NetworkInterfaceComponent.IPv4))
                 {
-                    Debug.WriteLine("    i = " + i + ", does not support IPv4");
+                    Debug.WriteLine("NOTE: nic[" + i + "], IPv4 not supported");
                     continue;
                 }
-
-                ifTypes.Add(nic.NetworkInterfaceType.ToString());  // TODO, REMOVE here and in comment
-                ifStatuses.Add(nic.OperationalStatus.ToString());  // TODO, REMOVE here and in comment
 
                 IPInterfaceProperties ipProps = nic.GetIPProperties();
                 if (ipProps == null)
                 {
-                    Debug.WriteLine("    i = " + i + ", IP information not available");
+                    Debug.WriteLine("NOTE: nic[" + i + "], IP information not available");
                     continue;
                 }
                 IPv4InterfaceProperties ipPropsV4 = ipProps.GetIPv4Properties();
                 if (ipPropsV4 == null)
                 {
-                    Debug.WriteLine("    i = " + i + ", IPv4 information not available");
+                    Debug.WriteLine("NOTE: nic[" + i + "], IPv4 information not available");
                     continue;
                 }
 
                 // This network interface might hold IPv4 addresses, IPv6 addresses, or both.
                 // My laptop's Ethernet interface (machine has 11 interfaces altogether) has
                 // four IPv6 addresses and one IPv4 address.
+                // Grab and store each IP address and the associated netmask.
                 int j = 0;
                 foreach (UnicastIPAddressInformation addr in ipProps.UnicastAddresses)
                 {
@@ -416,39 +272,24 @@ namespace Bloom.Publish.BloomPub.wifi
                 }
                 i++;
             }
-
-            // WM, DEBUG ONLY, BEGIN - dump the lists
-            for (int k = 0; k < ifTypes.Count; k++)
-            {
-                Debug.WriteLine("  ifTypes[" + k + "] = " + ifTypes[k]);
-            }
-            for (int k = 0; k < ifStatuses.Count; k++)
-            {
-                Debug.WriteLine("  ifStatuses[" + k + "] = " + ifStatuses[k]);
-            }
-            for (int k = 0; k < ifIpAddresses.Count; k++)
-            {
-                Debug.WriteLine("  ifIpAddresses[" + k + "] = " + ifIpAddresses[k]);
-            }
-            for (int k = 0; k < ifNetmasks.Count; k++)
-            {
-                Debug.WriteLine("  ifNetmasks[" + k + "] = " + ifNetmasks[k]);
-            }
-            // WM, DEBUG ONLY, END
         }
 
-        // Gather info on all network interfaces. Then, find which interface the
-        // local IP address came from and grab the netmask from that same interface.
+        // Find and return the subnet mask in effect for the network interface that
+        // will be used for UDP advertising.
+        //
+        // Gather info on all network interfaces. We already have the working IP address
+        // from GetIpAddressOfNetworkIface(). Find which interface that working address
+        // comes from and grab the netmask from that same interface.
         //   1. Get the network interface info, write it into the class-scoped lists.
         //   2. Find the local IP's index in the IP address list. If we can't find
-        //      it, return an empty string.
+        //      it, return an empty string. Something went really wrong.
         //   3. In the netmask list, get the netmask at the same index depth as the
         //      local IP, and return it.
         //
         private string GetNetmaskOfNetworkIface()
         {
             // Step 1
-            GetNetworkInterfaceInfo(IfTypes, IfStatuses, IfIpAddresses, IfNetmasks);
+            GetNetworkInterfaceInfo(IfIpAddresses, IfNetmasks);
 
             // Step 2
             int ipInUseIdx = -1;
@@ -456,14 +297,13 @@ namespace Bloom.Publish.BloomPub.wifi
             {
                 if (_localIp.Equals(IfIpAddresses[i].ToString()))
                 {
-                    Debug.WriteLine("WM, WiFiAdvertiser::GetNetmaskOfNetworkIface, ip found: IfIpAddresses[" + i + "]");
                     ipInUseIdx = i;
                     break;
                 }
             }
             if (ipInUseIdx == -1)
             {
-                Debug.WriteLine("WM, WiFiAdvertiser::GetNetmaskOfNetworkIface, oh no! ip not found, bail and regroup");
+                Debug.WriteLine("WiFiAdvertiser, oh no! ip not found, bail and regroup");
                 return "";
             }
 
@@ -500,37 +340,7 @@ namespace Bloom.Publish.BloomPub.wifi
             }
         }
 
-        /// <summary>
-        /// The intent here is to get an IP address by which this computer can be found on the local subnet.
-        /// This is ambiguous if the computer has more than one IP address (typically for an Ethernet and WiFi adapter).
-        /// Early experiments indicate that things work whichever one is used, assuming the networks are connected.
-        /// Eventually we may want to prefer WiFi if available (see code in HearThis), or even broadcast on all of them.
-        /// </summary>
-        /// <returns></returns>
-        private string GetLocalIpAddress()
-        {
-            string localIp = null;
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-
-            foreach (
-                var ipAddress in host.AddressList.Where(
-                    ipAddress => ipAddress.AddressFamily == AddressFamily.InterNetwork
-                )
-            )
-            {
-                if (localIp != null)
-                {
-                    if (host.AddressList.Length > 1)
-                    {
-                        //EventLog.WriteEntry("Application", "Warning: this machine has more than one IP address", EventLogEntryType.Warning);
-                    }
-                }
-                localIp = ipAddress.ToString();
-            }
-            return localIp ?? "Could not determine IP Address!";
-        }
-
-        // We need the IP address of *this* (the local) machine. Since a machine running BloomDesktop
+        // We need *the* IP address of *this* (the local) machine. Since a machine running BloomDesktop
         // can have multiple IP addresses (mine has 11, a mix of both IPv4 and IPv6), we must carefully
         // select the one that will actually be used by a network interface. Unfortunately, returning
         // the first non-blank address found of type 'AddressFamily.InterNetwork' is sometimes NOT correct.
