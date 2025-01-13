@@ -371,12 +371,30 @@ export function getImageFromOverlay(
     return getImageFromContainer(imageContainer as HTMLElement);
 }
 
+// This is an odd concept, since "background overlay" is an oxymoron: it doesn't overlay
+// anything, but is the background on which we overlay other things. In its HTML structure,
+// however, it is an image overlay: an element with the (obsolete) bloom-textOverPicture
+// class (with a determined size and position in its style top, left, width, and height),
+// an image container (with 100% size) and an img (which may have top, left, and width
+// attributes to crop it, as well as the src that determines the actual image).
+// There are enough common behaviors to make it useful to use the same structure, and I
+// (JohnT) at least find it useful to think of it as a background overlay. Background
+// Canvas Element will work better.
+export function getBackgroundOverlayFromContainer(
+    imageContainer: HTMLElement
+): HTMLElement | null {
+    return imageContainer.getElementsByClassName(
+        kbackgroundImageClass
+    )[0] as HTMLElement;
+}
+
+// Shortcut to get the img element from the background overlay (if any) of an image container.
+// This, rather than the obsolete img that is a direct child and is always placeHolder.png,
+// is the background image that is actually displayed.
 export function getBackgroundImageFromContainer(
     imageContainer: HTMLElement
 ): HTMLElement | null {
-    const bgOverlay = imageContainer.getElementsByClassName(
-        kbackgroundImageClass
-    )[0];
+    const bgOverlay = getBackgroundOverlayFromContainer(imageContainer);
     if (!bgOverlay) {
         return null;
     }

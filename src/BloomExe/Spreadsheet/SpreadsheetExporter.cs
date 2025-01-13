@@ -6,7 +6,6 @@ using Bloom.SafeXml;
 using Bloom.web;
 using L10NSharp;
 using SIL.IO;
-using SIL.Xml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,11 +15,8 @@ using System.Linq;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.UI.WebControls;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Publish;
-using FFMpegCore;
 
 namespace Bloom.Spreadsheet
 {
@@ -565,25 +561,15 @@ namespace Bloom.Spreadsheet
 
         private List<SafeXmlElement> GetImageContainers(SafeXmlElement elementOrDom)
         {
-            return elementOrDom
-                .SafeSelectNodes(".//*[contains(@class,'bloom-imageContainer')]")
-                .Cast<SafeXmlElement>()
+            return SafeXmlElement
+                .GetAllDivsWithClass(elementOrDom, "bloom-imageContainer")
                 // an image container that has a background image can just be omitted. The background image
                 // will end up in the same place in the list of image containers, and its own image is
                 // just a placeholder. (On import, we'll currently convert back to an old-style background
                 // that is the direct child of the container. It will look right since we cropped it if
                 // necessary while doing the export. Next edit of the page will convert to BG image overlay again.
-                .Where(imgContainer => !HasBackgroundImage(imgContainer))
+                .Where(imgContainer => !HtmlDom.HasBackgroundImage(imgContainer))
                 .ToList();
-        }
-
-        private bool HasBackgroundImage(SafeXmlElement imageContainer)
-        {
-            var overlay =
-                imageContainer.ChildNodes.FirstOrDefault(
-                    child => child is SafeXmlElement e && e.HasClass("bloom-textOverPicture")
-                ) as SafeXmlElement;
-            return overlay != null && (overlay.HasClass("bloom-backgroundImage"));
         }
 
         private string ImagePath(string imagesFolderPath, string imageSrc)

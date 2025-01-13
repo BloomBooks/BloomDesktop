@@ -5236,13 +5236,13 @@ export class BubbleManager {
 
     private adjustBackgroundImageSize(
         imageContainer: HTMLElement,
-        overlay: HTMLElement,
+        bgOverlay: HTMLElement,
         useSizeOfNewImage: boolean
     ) {
         return this.adjustBackgroundImageSizeToFit(
             imageContainer.clientWidth,
             imageContainer.clientHeight,
-            overlay,
+            bgOverlay,
             useSizeOfNewImage,
             0
         );
@@ -5251,7 +5251,11 @@ export class BubbleManager {
     private adjustBackgroundImageSizeToFit(
         containerWidth: number,
         containerHeight: number,
-        overlay: HTMLElement,
+        // The "overlay" div that contains the background image.
+        // (Since this is the background that we overlay things on, it is itself an
+        // overlay only in the sense that it has the same HTML structure in order to
+        // allow many commands and functions to work on it as if it were an ordinary overlay.)
+        bgOverlay: HTMLElement,
         // if this is set true, we've updated the src of the background image and want to
         // ignore any cropping (assumes the img doesn't have any
         // cropping-related style settings) and just adjust the overlay to fit the image.
@@ -5268,8 +5272,8 @@ export class BubbleManager {
         if (timeoutHandler) {
             clearTimeout(timeoutHandler);
         }
-        let imgAspectRatio = overlay.clientWidth / overlay.clientHeight;
-        const img = getImageFromOverlay(overlay);
+        let imgAspectRatio = bgOverlay.clientWidth / bgOverlay.clientHeight;
+        const img = getImageFromOverlay(bgOverlay);
         if (img) {
             // We don't ever expect there not to be an img. If it happens, we'll just go
             // ahead and adjust based on the current shape of the overlay.
@@ -5286,7 +5290,7 @@ export class BubbleManager {
                         this.adjustBackgroundImageSizeToFit(
                             containerWidth,
                             containerHeight,
-                            overlay,
+                            bgOverlay,
                             // after the timeout we don't consider that we MUST wait if we have dimensions
                             false,
                             0 // when we get this call, we're responding to the timeout, so don't need to cancel.
@@ -5305,7 +5309,7 @@ export class BubbleManager {
                         this.adjustBackgroundImageSizeToFit(
                             containerWidth,
                             containerHeight,
-                            overlay,
+                            bgOverlay,
                             false, // when this call happens we have the new dimensions.
                             handle // if this callback happens we can cancel the timeout.
                         ),
@@ -5316,25 +5320,25 @@ export class BubbleManager {
             imgAspectRatio = img.naturalWidth / img.naturalHeight;
         }
 
-        const oldWidth = overlay.clientWidth;
+        const oldWidth = bgOverlay.clientWidth;
         const containerAspectRatio = containerWidth / containerHeight;
         if (imgAspectRatio > containerAspectRatio) {
             // size of image is width-limited
-            overlay.style.width = containerWidth + "px";
-            overlay.style.left = "0px";
+            bgOverlay.style.width = containerWidth + "px";
+            bgOverlay.style.left = "0px";
             const imgHeight = containerWidth / imgAspectRatio;
-            overlay.style.top = (containerHeight - imgHeight) / 2 + "px";
-            overlay.style.height = imgHeight + "px";
+            bgOverlay.style.top = (containerHeight - imgHeight) / 2 + "px";
+            bgOverlay.style.height = imgHeight + "px";
         } else {
             const imgWidth = containerHeight * imgAspectRatio;
-            overlay.style.width = imgWidth + "px";
-            overlay.style.top = "0px";
-            overlay.style.left = (containerWidth - imgWidth) / 2 + "px";
-            overlay.style.height = containerHeight + "px";
+            bgOverlay.style.width = imgWidth + "px";
+            bgOverlay.style.top = "0px";
+            bgOverlay.style.left = (containerWidth - imgWidth) / 2 + "px";
+            bgOverlay.style.height = containerHeight + "px";
         }
         if (!useSizeOfNewImage && img?.style.width) {
             // need to adjust image settings to preserve cropping
-            const scale = overlay.clientWidth / oldWidth;
+            const scale = bgOverlay.clientWidth / oldWidth;
             img.style.width =
                 BubbleManager.pxToNumber(img.style.width) * scale + "px";
             img.style.left =

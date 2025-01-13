@@ -753,14 +753,39 @@ namespace Bloom.Publish
             }
             ReallyCropImages(modifiedBook.RawDom, modifiedBook.FolderPath, modifiedBook.FolderPath);
             // Must come after ReallyCropImages, because any cropping for background images is
-            // destroyed by RevertBackgroundImages.
-            RevertBackgroundImages(modifiedBook);
+            // destroyed by SimplifyBackgroundImages.
+            SimplifyBackgroundImages(modifiedBook);
             modifiedBook.Save();
             modifiedBook.UpdateSupportFiles();
             return modifiedBook;
         }
 
-        public static void RevertBackgroundImages(Book.Book book)
+        /// <summary>
+        /// Once we have really cropped any images that need it, we no longer need the "overlay-like"
+        /// HTML structure that supports cropping background images. So we get rid of the extra structure
+        /// and leave the export with just an img that properly fills the image container (using CSS
+        /// content-fit). The great advantage of this is that we need code to adjust the size of the
+        /// overlay, but the img size is automatic with content-fit. While editing, we adjust the
+        /// size and position of things in an image container, including the background overlay, any time
+        /// we open a page and notice that the image container's size has changed (or when it changes while
+        /// the page is open). But various things can change the image container size for all images
+        /// in a document, and the user shouldn't have to cycle through all the pages to get the
+        /// images adjusted. (We decided to accept that they must do so for ordinary overlays). If we didn't do
+        /// this trick, we'd have to somehow adjust any background image overlay (basically any image
+        /// that has migrated to the new system) to the correct size for the current size of its
+        /// container, and enhance Bloom Player to do the same when it changes the page size, and not
+        /// to give books with only background overlays the special treatment that it gives books with
+        /// ordinary overlays, and to handle motion differently. And it would be difficult to make the
+        /// correct adjustment in C#; the resize code is all in JS and makes use of the browser's
+        /// rendering of the page. One day, we'd like to do all the publishing transformations in JS
+        /// (https://www.notion.so/hattonjohn/Infrastructure-publishing-transformations-1514bb19df128007a15ffd4cafff28de?pvs=4)
+        /// but for now this saves a lot of work. It essentially converts the background image
+        /// represented as an overlay to our pre-6.2 approach where it was a direct child of the image
+        /// container. The overlay div is removed, and the hidden placeHolder.png image in the parent
+        /// is changed to point to the actual background image.
+        /// </summary>
+        /// <param name="book"></param>
+        public static void SimplifyBackgroundImages(Book.Book book)
         {
             var backgroundImageOverlays = book.RawDom
                 .SafeSelectNodes("//div[contains(@class, 'bloom-backgroundImage')]")
@@ -768,6 +793,12 @@ namespace Bloom.Publish
                 .ToArray();
             foreach (var overlay in backgroundImageOverlays)
             {
+                // All these early returns are paranoia. If we find a div with class bloom-backgroundImage,
+                // it WILL contain an image container that contains an img, and WILL be a child of
+                // another image container that contains an img. So the xpath above targets exactly
+                // the elements that need this transformation. The backgroundImage elements ("background
+                // overlays") are removed, and the hidden placeHolder.png image in the parent image container
+                // is changed to point to the image that was in the overlay.
                 var imgContainer =
                     overlay.ChildNodes.FirstOrDefault(
                         c => c is SafeXmlElement ce && ce.LocalName == "div"
@@ -797,53 +828,46 @@ namespace Bloom.Publish
             }
         }
 
+        /// <summary>
+        /// Permanently remove the cropped areas from all image files, saving any cropped images to the given folder.
+        /// Source and destination folders CAN be the same (in which case the original images are overwritten, if
+        /// there is any cropping to do).
+        /// </summary>
+        /// <param name="bookDom"></param>
+        /// <param name="imageSourceFolder"></param>
+        /// <param name="imageDestFolder"></param>
         public static void ReallyCropImages(
             SafeXmlDocument bookDom,
             string imageSourceFolder,
             string imageDestFolder
         )
         {
-            var croppedImages = bookDom
-                .SafeSelectNodes("//div[contains(@class, 'bloom-textOverPicture')]")
-                .Where(ov =>
-                {
-                    var imgContainer =
-                        ov.ChildNodes.FirstOrDefault(
-                            c => c is SafeXmlElement ce && ce.LocalName == "div"
-                        ) as SafeXmlElement;
-                    if (imgContainer == null || !imgContainer.HasClass("bloom-imageContainer"))
-                        return false;
-                    var img =
-                        imgContainer.ChildNodes.FirstOrDefault(
-                            c => c is SafeXmlElement ce && ce.LocalName == "img"
-                        ) as SafeXmlElement;
-                    return img != null;
-                })
-                .Cast<SafeXmlElement>()
-                .ToArray();
-            foreach (var overlay in croppedImages)
+            var images = bookDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray();
+            foreach (var img in images)
             {
-                ReallyCropImage(overlay, imageSourceFolder, imageDestFolder);
+                ReallyCropImage(img, imageSourceFolder, imageDestFolder);
             }
         }
 
         private static void ReallyCropImage(
-            SafeXmlElement overlay,
+            SafeXmlElement img,
             string imageSourceFolder,
             string imageDestFolder
         )
         {
-            var imgContainer =
-                overlay.ChildNodes.FirstOrDefault(
-                    c => c is SafeXmlElement ce && ce.LocalName == "div"
-                ) as SafeXmlElement;
-            if (imgContainer == null || !imgContainer.HasClass("bloom-imageContainer"))
-                return;
-            var img =
-                imgContainer.ChildNodes.FirstOrDefault(
-                    c => c is SafeXmlElement ce && ce.LocalName == "img"
-                ) as SafeXmlElement;
-            if (img == null)
+            var imgContainer = img.ParentNode as SafeXmlElement;
+            var overlay = imgContainer?.ParentNode as SafeXmlElement;
+            // Cropping is implemented using the interaction between an overlay (obsolete: bloom-textOverPicture)
+            // which specifies the visible area of the image by its height and width, and the img two levels
+            // down which may have adjusted width, left, and top to position part of itself in the overlay.
+            // An image can only be cropped, and we can only know what part of it to remove, if it occurs in
+            // this structure. Other images (e.g., branding) are left alone. (At the stage where this code is run,
+            // background images, including all normal page content images, are still represented as overlays.)
+            if (
+                overlay == null
+                || !overlay.HasClass("bloom-textOverPicture")
+                || !imgContainer.HasClass("bloom-imageContainer")
+            )
                 return;
             var src = img.GetAttribute("src");
             var srcPath = UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
