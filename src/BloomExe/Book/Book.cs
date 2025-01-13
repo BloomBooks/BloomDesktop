@@ -1031,10 +1031,7 @@ namespace Bloom.Book
                 return;
             }
             _pagesCache = null;
-            string oldMetaData = string.Empty;
 
-            // This does its own check for whether it needs to be done, and updates the state
-            // after doing anything it needs to.
             EnsureUpToDateMemory(progress);
 
             Storage.MigrateToMediaLevel1ShrinkLargeImages();
@@ -2447,7 +2444,9 @@ namespace Bloom.Book
                 layout,
                 BookInfo.UseDeviceXMatter,
                 _bookData.MetadataLanguage1Tag,
-                oldIds
+                oldIds,
+                BookInfo.AppearanceSettings.CoverIsImage
+                    && CollectionSettings.HaveEnterpriseFeatures
             );
 
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
@@ -3979,8 +3978,13 @@ namespace Bloom.Book
         }
 
         public bool FullBleed =>
-            BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-            && CollectionSettings.HaveEnterpriseFeatures;
+            (
+                // Wants to be
+                // BookInfo.AppearanceSettings.FullBleed
+                // but we haven't put that in the book settings yet.
+                BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
+                || BookInfo.AppearanceSettings.CoverIsImage
+            ) && CollectionSettings.HaveEnterpriseFeatures;
 
         /// <summary>
         /// Save the page content to the DOM.
@@ -4667,6 +4671,29 @@ namespace Bloom.Book
                 // current book location.
                 PageTemplateSource = Path.GetFileName(FolderPath);
             }
+
+            // This doesn't seem like the best place for this code.
+            // For example, it would probably be better to do immediately when saving book settings dialog.
+            // But this is the only place I could find to plumb things to actually get it to work.
+            // Other attempts to break into the complicated book save cycle were unsuccessful.
+            if (BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate)
+            {
+                // Yes, calling EnsureUpToDateMemory() is unfortunately overkill.
+                // And an unfortunate expansion of the use of this version of the method.
+                // It would be great if there was a way to just update the XMatter;
+                // in theory, that would be BringXmatterHtmlUpToDate().
+                // But just calling that leaves several things undone, including
+                // - calling either UpdateVariablesAndDataDivThroughDOM() or SynchronizeDataItemsThroughoutDOM()
+                //    (such that data-book values are lost)
+                // - calling UpdatePageNumberAndSideClassOfPages()
+                //    (such that side-right/left classes are lost)
+                // If we knew it was just those, we could call them here instead
+                // (we can even move this above the call to UpdateVariablesAndDataDivThroughDOM above).
+                // But there is a whole slew of things EnsureUpToDateMemory() does after calling BringXmatterHtmlUpToDate()
+                // and I wouldn't have any confidence that some of the rest of it is not needed here as well.
+                EnsureUpToDateMemory(new NullProgress());
+            }
+            BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate = false;
 
             try
             {
