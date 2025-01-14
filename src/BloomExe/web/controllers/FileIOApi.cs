@@ -102,22 +102,21 @@ namespace Bloom.web.controllers
 
         private string SelectFileUsingDialog(OpenFileRequest requestParameters)
         {
-            var initialDirectory = string.IsNullOrEmpty(requestParameters.defaultPath)
-                ? System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments)
-                : Path.GetDirectoryName(requestParameters.defaultPath); // enhance would be better to actually select the file, not just the Dir?
-            using (var dlg = new MiscUI.BloomOpenFileDialog
-            {
-                Title = requestParameters.title,
-                InitialDirectory = initialDirectory,
-                FileName = Path.GetFileName(requestParameters.defaultPath),
-                Filter = string.Join(
-                    "|",
-                    requestParameters.fileTypes.Select(
-                        fileType =>
-                            $"{fileType.name}|{string.Join(";", fileType.extensions.Select(e => "*." + e))}"
-                    )
-                ),
-            })
+            using (
+                var dlg = new MiscUI.BloomOpenFileDialog
+                {
+                    Title = requestParameters.title,
+                    InitialDirectory = Path.GetDirectoryName(requestParameters.defaultPath), // enhance would be better to actually select the file, not just the Dir?
+                    FileName = Path.GetFileName(requestParameters.defaultPath),
+                    Filter = string.Join(
+                        "|",
+                        requestParameters.fileTypes.Select(
+                            fileType =>
+                                $"{fileType.name}|{string.Join(";", fileType.extensions.Select(e => "*." + e))}"
+                        )
+                    ),
+                }
+            )
             {
                 var result = dlg.ShowDialog();
                 if (result == DialogResult.OK)
