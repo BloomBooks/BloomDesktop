@@ -111,12 +111,9 @@ namespace Bloom
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
             CheckForCorruptUserConfig();
-            // We want to do this as early as possible, definitely before we create
-            // the TeamCollectionManager, which needs the registered user information.
-            // But since it's difficult to predict what else might want it, it's best
-            // to do it before we create the Autofac context objects that create all
-            // our singletons.
-            RegistrationDialog.UpgradeRegistrationIfNeeded();
+            // Ensure that the registration information is loaded early before Team Collection
+            // needs it.
+            Registration.Registration.Default.EnsureLoaded();
 
             // Initializing localization can pop up a dialog if the system language
             // is not one of our supported languages. The following calls must be done
@@ -1370,7 +1367,7 @@ namespace Bloom
             // User clicked the report button.
             if (result == reportPressedResult)
             {
-                var userEmail = SIL.Windows.Forms.Registration.Registration.Default.Email;
+                var userEmail = Bloom.Registration.Registration.Default.Email;
                 if (!String.IsNullOrWhiteSpace(userEmail))
                 {
                     // Just send the report in for them.
@@ -1756,18 +1753,15 @@ namespace Bloom
                         scope.SetExtra("version", ErrorReport.VersionNumberString);
                         scope.User = new User
                         {
-                            Email = SIL.Windows.Forms.Registration.Registration.Default.Email,
-                            Username = SIL.Windows
-                                .Forms
-                                .Registration
-                                .Registration
-                                .Default
-                                .FirstName,
-                            //Other = {Organization:SIL.Windows.Forms.Registration.Registration.Default.Organization}
+                            Email = Bloom.Registration.Registration.Default.Email,
+                            Username =
+                                Bloom.Registration.Registration.Default.FirstName
+                                + " "
+                                + Bloom.Registration.Registration.Default.Surname,
                         };
                         scope.User.Other.Add(
                             "Organization",
-                            SIL.Windows.Forms.Registration.Registration.Default.Organization
+                            Bloom.Registration.Registration.Default.Organization
                         );
                     });
                 }

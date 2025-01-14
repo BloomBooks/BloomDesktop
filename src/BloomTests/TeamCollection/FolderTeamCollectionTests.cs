@@ -177,6 +177,13 @@ namespace BloomTests.TeamCollection
                 bookPath,
                 "<html><body>This is our newly put book</body></html>"
             );
+            // Wait one second to ensure that any notifications of other books put during other tests
+            // have been processed. Otherwise, this test fails randomly.
+            // We probably don't need a wait as long as this but I don't know how to tell how long
+            // it needs to be.
+            ManualResetEvent initialWaitCompleted = new ManualResetEvent(false);
+            initialWaitCompleted.WaitOne(1000);
+
             _collection.StartMonitoring();
             // This is used to wait up to a second for the OS to notify us that the book changed.
             // Only after that can we be sure the event is not going to be raised.

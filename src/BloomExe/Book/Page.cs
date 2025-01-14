@@ -21,7 +21,7 @@ namespace Bloom.Book
         bool IsBackMatter { get; }
         bool IsXMatter { get; }
         bool IsCoverPage { get; }
-        bool IsFrontCoverPage { get; }
+        bool IsOutsideFrontCoverPage { get; }
         string GetCaptionOrPageNumber(ref int pageNumber, out string captionI18nId);
         int GetIndex();
         string IdOfFirstAncestor { get; }
@@ -140,9 +140,12 @@ namespace Bloom.Book
             get { return XMatterHelper.IsCoverPage(_getDivNodeForThisPageMethod(this)); }
         }
 
-        public bool IsFrontCoverPage
+        public bool IsOutsideFrontCoverPage
         {
-            get { return XMatterHelper.IsFrontCoverPage(_getDivNodeForThisPageMethod(this)); }
+            get
+            {
+                return XMatterHelper.IsOutsideFrontCoverPage(_getDivNodeForThisPageMethod(this));
+            }
         }
 
         public string GetCaptionOrPageNumber(ref int pageNumber, out string captionI18nId)

@@ -54,7 +54,6 @@
         "@dnd-kit/core": "^6.1.0",
         "@dnd-kit/sortable": "^8.0.0",
         "@emotion/core": "^11.0.0",
-        "react-movable": "^3.3.1",
         "@emotion/react": "^11.10.5",
         "@emotion/styled": "^11.10.5",
         "@ethnolib/language-chooser-react-mui": "^0.0.22",
@@ -71,7 +70,7 @@
         "@types/react-transition-group": "^4.4.1",
         "@use-it/event-listener": "^0.1.6",
         "axios": "^0.21.1",
-        "bloom-player": "^2.8.0",
+        "bloom-player": "^2.8.2",
         "calculate-aspect-ratio": "^0.1.3",
         "color-blind": "^0.1.1",
         "comicaljs": "^0.3.0",
@@ -100,6 +99,7 @@
         "react-dropdown-tree-select": "^1.19.0",
         "react-grid-layout": "https://github.com/JohnThomson/react-grid-layout.git#includeTypes",
         "react-lazyload": "^3.2.0",
+        "react-movable": "^3.3.1",
         "react-select": "^5.7.0",
         "react-slick": "^0.24.0",
         "react-table": "^6.10.0",
@@ -117,7 +117,7 @@
         "toastr": "^2.1.4",
         "underscore": "^1.9.1",
         "use-debounce": "^5.2.0",
-        "wavesurfer.js": "^7.5.3",
+        "wavesurfer.js": "^7.8.15",
         "xregexp": "^4.2.4"
     },
     "devDependencies": {
