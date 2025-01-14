@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish;
+using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
 
@@ -94,15 +95,37 @@ namespace Bloom.web.controllers
                 "Sound files"
             );
             string srcFile = null;
-            using (var dlg = new MiscUI.BloomOpenFileDialog
-            {
-                Filter = $"{soundFiles} {BuildFileFilter()}"
-            })
+
+            // For saving and recalling the last chosen file location
+            var extension = ".mp3";
+            var directoryTag = "ShowSelectMusicFile";
+            using (
+                var dlg = new MiscUI.BloomOpenFileDialog
+                {
+                    Filter = $"{soundFiles} {BuildFileFilter()}",
+                    InitialDirectory = Path.GetDirectoryName(
+                        OutputFilenames.GetOutputFilePath(
+                            CurrentBook,
+                            extension,
+                            extraTag: directoryTag,
+                            proposedFolder: System.Environment.GetFolderPath(
+                                System.Environment.SpecialFolder.MyDocuments
+                            )
+                        )
+                    )
+                }
+            )
             {
                 var result = dlg.ShowDialog();
                 if (result == DialogResult.OK)
                 {
                     srcFile = dlg.FileName;
+                    OutputFilenames.RememberOutputFilePath(
+                        CurrentBook,
+                        extension,
+                        srcFile,
+                        extraTag: directoryTag
+                    );
                 }
             }
             var destFile = Path.GetFileName(srcFile);
