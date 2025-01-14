@@ -151,6 +151,14 @@ namespace Bloom.Publish.BloomPub.wifi
             {
                 Debug.WriteLine("WiFiAdvertiser::Work, SocketException: " + e);
             }
+            catch (Exception error)
+            {
+                // not worth localizing
+                _progress.MessageWithoutLocalizing(
+                    $"Error in Advertiser: {error.Message}",
+                    ProgressKind.Error
+                );
+            }
         }
 
         // Function: for a given local IP address and subnet mask, construct the
