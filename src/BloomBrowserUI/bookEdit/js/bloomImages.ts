@@ -77,7 +77,9 @@ export function SetupImagesInContainer(container) {
         });
 }
 
-export function SetupImage(image: JQuery) {
+export function SetupImage(image) {
+    // Caution! image may or may not be a jQuery object.
+
     // Remove any obsolete explicit image size and position left over from earlier versions of Bloom, before we had object-fit:contain.
     // Note: any changes to this should probably also be made to (C#) Book.RemoveObsoleteImageAttributes(), if it still exists.
     if (image.style) {
@@ -109,6 +111,7 @@ export function GetButtonModifier(container) {
     let buttonModifier = "";
     const imageButtonWidth = 87;
     const imageButtonHeight = 52;
+    // container may or may not be a jQuery object already.
     const $container = $(container);
     if ($container.height() < imageButtonHeight * 2) {
         buttonModifier = "smallButtonHeight";
@@ -757,13 +760,16 @@ function SetOverlayForImagesWithoutMetadataInner(container, img) {
 }
 
 function UpdateOverlay(container, img) {
-    $(container)
-        .find("button.imgMetadataProblem")
-        .each(function() {
-            $(this).remove();
-        });
+    // container may or may not be a jQuery object already.
+    // I'm trying to fix a 6.1 bug just before it goes to beta, so I'm not currently tackling
+    // trying to clean things up all over.
+    // But we should use $container throughout this function to reduce confusion and bugs.
+    const $container = $(container);
+    $container.find("button.imgMetadataProblem").each(function() {
+        $(this).remove();
+    });
 
-    if (container.closest(kTextOverPictureSelector)) {
+    if ($container[0]?.closest(kTextOverPictureSelector)) {
         // for overlays we indicate this using a button below the overlay.
         // Overlays can be small, so buttons on top of them don't work well.
         return;
@@ -773,7 +779,7 @@ function UpdateOverlay(container, img) {
     const copyright = $(img).attr("data-copyright");
     if (!copyright || copyright.length === 0) {
         const buttonClasses = `editMetadataButton imageButton imgMetadataProblem ${GetButtonModifier(
-            container
+            $container
         )}`;
         const englishText =
             "Image is missing information on Credits, Copyright, or License";
@@ -785,12 +791,12 @@ function UpdateOverlay(container, img) {
             )
             .done(translation => {
                 const title = translation.replace(/'/g, "&apos;");
-                $(container).prepend(
+                $container.prepend(
                     `<button class='${buttonClasses}' title='${title}'></button>`
                 );
             })
             .fail(() => {
-                $(container).prepend(
+                $container.prepend(
                     `<button class='${buttonClasses}' title='${englishText}'></button>`
                 );
             });
