@@ -102,22 +102,38 @@ namespace Bloom.web.controllers
 
         private string SelectFileUsingDialog(OpenFileRequest requestParameters)
         {
+            // For saving and recalling the last chosen file location
+            var extraTag = requestParameters.title;
+            var extension = "." + requestParameters.fileTypes[0].extensions[0];
+
             var initialDirectory = string.IsNullOrEmpty(requestParameters.defaultPath)
-                ? System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments)
-                : Path.GetDirectoryName(requestParameters.defaultPath); // enhance would be better to actually select the file, not just the Dir?
-            using (var dlg = new MiscUI.BloomOpenFileDialog
-            {
-                Title = requestParameters.title,
-                InitialDirectory = initialDirectory,
-                FileName = Path.GetFileName(requestParameters.defaultPath),
-                Filter = string.Join(
-                    "|",
-                    requestParameters.fileTypes.Select(
-                        fileType =>
-                            $"{fileType.name}|{string.Join(";", fileType.extensions.Select(e => "*." + e))}"
+                ? Path.GetDirectoryName(
+                    OutputFilenames.GetOutputFilePath(
+                        CurrentBook,
+                        extension,
+                        extraTag: extraTag,
+                        proposedFolder: System.Environment.GetFolderPath(
+                            System.Environment.SpecialFolder.MyDocuments
+                        )
                     )
-                ),
-            })
+                )
+                : Path.GetDirectoryName(requestParameters.defaultPath); // enhance would be better to actually select the file, not just the Dir?
+
+            using (
+                var dlg = new MiscUI.BloomOpenFileDialog
+                {
+                    Title = requestParameters.title,
+                    InitialDirectory = initialDirectory,
+                    FileName = Path.GetFileName(requestParameters.defaultPath),
+                    Filter = string.Join(
+                        "|",
+                        requestParameters.fileTypes.Select(
+                            fileType =>
+                                $"{fileType.name}|{string.Join(";", fileType.extensions.Select(e => "*." + e))}"
+                        )
+                    ),
+                }
+            )
             {
                 var result = dlg.ShowDialog();
                 if (result == DialogResult.OK)
@@ -125,8 +141,17 @@ namespace Bloom.web.controllers
                     // We are not trying get a memory or time diff, just a point measure.
                     PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
 
+                    OutputFilenames.RememberOutputFilePath(
+                        CurrentBook,
+                        extension,
+                        dlg.FileName,
+                        extraTag
+                    );
+
                     if (!string.IsNullOrEmpty(requestParameters.destFolder))
                     {
+                        // remember selected filename for next time
+
                         var fileName = Path.GetFileNameWithoutExtension(dlg.FileName);
                         var ext = Path.GetExtension(dlg.FileName);
                         var destFolder = Path.Combine(
