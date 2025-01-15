@@ -82,7 +82,9 @@ export function SetupImagesInContainer(container) {
         });
 }
 
-export function SetupImage(image: JQuery) {
+export function SetupImage(image) {
+    // Caution! image may or may not be a jQuery object.
+
     // Remove any obsolete explicit image size and position left over from earlier versions of Bloom, before we had object-fit:contain.
     // Note: any changes to this should probably also be made to (C#) Book.RemoveObsoleteImageAttributes(), if it still exists.
     if (image.style) {
@@ -114,6 +116,7 @@ export function GetButtonModifier(container) {
     let buttonModifier = "";
     const imageButtonWidth = 87;
     const imageButtonHeight = 52;
+    // container may or may not be a jQuery object already.
     const $container = $(container);
     if ($container.height() < imageButtonHeight * 2) {
         buttonModifier = "smallButtonHeight";

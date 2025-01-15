@@ -11,7 +11,7 @@
 body {
     --page-structure-color: #1d94a41a;
     --language-tag-color: #1d94a488;
-    --selectedEdit-color: #1d94a4c2; //transparent;
+    --selectedEdit-color: #1d94a4c2; //page structure color, but 76% opacity instead of 10%
     --unselectedEdit-color: #1d94a434; // page structure color, but 20% opacity instead of 10%
 }
 
@@ -175,6 +175,21 @@ body:has(#overlay-context-controls:hover) .bloom-page,
     .bloom-textOverPicture div.bloom-editable:focus {
         // editable in an overlay has the control frame, so any outline just produces a double border
         outline: none !important;
+    }
+    // Any single outline/border color is not enough to always show up on all backgrounds.
+    // So when the page is hovered, we add a thin white border around the editable divs when
+    // they are not focused to ensure that the user can see their presence even without
+    // any text being entered.  See BL-14193.
+    .bloom-textOverPicture div.bloom-editable:not(:focus):before {
+        content: " ";
+        position: absolute;
+        z-index: -1;
+        top: 1px; // avoid being below the outline
+        left: 1px;
+        height: calc(100% - 1px);
+        width: calc(100% - 1px);
+        pointer-events: none;
+        border: 1px solid white;
     }
     div.bloom-imageContainer {
         // Allow book templates to define a custom borderColor, otherwise fallback to the default color
