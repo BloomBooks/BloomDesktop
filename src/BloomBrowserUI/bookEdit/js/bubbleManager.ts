@@ -21,16 +21,14 @@ import { reportError } from "../../lib/errorHandler";
 import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
 import {
-    addImageEditingButtons,
-    DisableImageEditing,
-    EnableImageEditing,
     EnableAllImageEditing,
     getImageFromOverlay,
     kImageContainerSelector,
     getImageFromContainer,
     kImageContainerClass,
     getBackgroundImageFromContainer,
-    SetupMetadataButton
+    SetupMetadataButton,
+    UpdateImageTooltipVisibility
 } from "./bloomImages";
 import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
@@ -257,34 +255,6 @@ export class BubbleManager {
         return parseFloat(px.replace("px", ""));
     }
 
-    // We usually don't show the image editing buttons on an overlay page.
-    // (If the user clicks on the background, we show them.)
-    // An earlier version did not hide them if there isn't a background image (just a placeholder).
-    // But it's increasingly common to deliberately leave the background blank.
-    public static hideImageButtonsIfHasOverlays(container: HTMLElement) {
-        if (
-            document.getElementsByClassName(kTextOverPictureClass).length === 0
-        ) {
-            // If the page has no overlays at all, we really don't want to do this.
-            // Even though the comical toolbox is open, comic editing doesn't get properly
-            // initialized until we add at least one overlay, and without that init,
-            // clicking on the picture doesn't force the controls to show; it can be
-            // really confusing if the tool was left open from another page but isn't
-            // relevant to this one.
-            return;
-        }
-        DisableImageEditing(container);
-    }
-
-    public turnOnHidingImageButtons() {
-        const imageContainers: HTMLElement[] = Array.from(
-            this.getAllPrimaryImageContainersOnPage() as any
-        );
-        imageContainers.forEach(container => {
-            BubbleManager.hideImageButtonsIfHasOverlays(container);
-        });
-    }
-
     // A visible, editable div is generally focusable, but sometimes (e.g. in Bloom games),
     // we may disable it by turning off pointer events. So we filter those ones out.
     private getAllVisibleFocusableDivs(
@@ -499,12 +469,6 @@ export class BubbleManager {
                         const x = event.offsetX;
                         const y = event.offsetY;
                         if (!Comical.somethingHit(container, x, y)) {
-                            // Usually we hide the image editing controls in overlay mode so
-                            // they don't get in the way of manipulating the bubbles, but a click
-                            // on the underlying image is understood to mean the user wants to work
-                            // on it, so allow them to be seen again.
-                            // (Note: we're not making it focused in the same way an image overlay could be)
-                            EnableImageEditing(container);
                             // So far so good. We have now determined that we want to remove
                             // focus from anything in this image.
                             // (Enhance: should we check that something within this image
@@ -1063,11 +1027,6 @@ export class BubbleManager {
         this.showCorrespondingTextBox(this.activeElement);
         this.setupControlFrame();
         if (this.activeElement) {
-            // Restore hiding these when we activate a bubble, so they don't get in the way of working on
-            // that bubble.
-            theOneBubbleManager.turnOnHidingImageButtons();
-        }
-        if (this.activeElement) {
             // We should call this if there is an active element, even if it is not a video,
             // because it will turn off the 'active video' class that might be on some
             // non-overlay video.
@@ -1081,6 +1040,9 @@ export class BubbleManager {
                 false
             );
         }
+        UpdateImageTooltipVisibility(
+            this.activeElement?.closest(".bloom-imageContainer")
+        );
     }
 
     // clientX/Y of the mouseDown event in one of the resize handles.
@@ -2017,6 +1979,14 @@ export class BubbleManager {
     // After making the adjustment if necessary (which might be delayed if the image dimensions
     // are not available), align the control frame with the active element.
     private adjustContainerAspectRatio(overlay: HTMLElement): void {
+        if (overlay.classList.contains(kbackgroundImageClass)) {
+            this.adjustBackgroundImageSize(
+                overlay.closest(kImageContainerSelector)!,
+                overlay,
+                true
+            );
+            return;
+        }
         const imgOrVideo = this.getImageOrVideo();
         if (!imgOrVideo || imgOrVideo.style.width) {
             // We don't have an image, or we've already done cropping on it, so we should not force the
@@ -3170,8 +3140,11 @@ export class BubbleManager {
             // deal with things, and is a good thing even when ctrl or alt is down.
             return true;
         }
-        if (targetElement.closest(".bloom-dragHandleAnimation")) {
-            // These are used by the motion tool drag handles. Don't want bubble code
+        if (
+            targetElement.closest("#animationEnd") ||
+            targetElement.closest("#animationStart")
+        ) {
+            // These are used by the motion tool rectangles. Don't want bubble code
             // interfering.
             return true;
         }
@@ -4723,11 +4696,21 @@ export class BubbleManager {
         this.turnOnBubbleEditing();
     }
 
+    private draggingSplitter = false;
+
     // mouse down in an origami slider: if comic editing is on, remember that, and turn it off.
     private dividerMouseDown = (ev: Event) => {
-        // We could plausibly ignore it if already suspended for a tool.
-        // But the call won't do anything anyway when we're already suspended.
-        this.suspendComicEditing("forDrag");
+        if (this.comicEditingSuspendedState === "forTool") {
+            // We're in change layout mode. We want to get the usual behavior of any
+            // existing images while dragging the splitter, but we don't need to turn
+            // off comic editing since it already is.
+            this.draggingSplitter = true;
+            this.startDraggingSplitter();
+        } else {
+            // Unless we're suspended for some other reason, this will call startDraggingSplitter
+            // after turning stuff off.
+            this.suspendComicEditing("forDrag");
+        }
     };
 
     public removeDetachedTargets() {
@@ -4773,6 +4756,14 @@ export class BubbleManager {
                 // resize behavior when turning back on.
                 this.resumeComicEditing();
             }, 0);
+        } else if (this.draggingSplitter) {
+            // dragging the splitter while in origami mode. We need to clean up
+            // in the way resume normally does
+            this.draggingSplitter = false;
+            this.endDraggingSplitter();
+            for (const container of this.getAllPrimaryImageContainersOnPage()) {
+                this.AdjustChildrenIfSizeChanged(container);
+            }
         }
     };
 
@@ -4818,7 +4809,7 @@ export class BubbleManager {
     // all the relevant behaviors and keep the bubbles in sync with the text.)
     // Because we're adding a fixed method, not a local function, adding multiple
     // times will not cause duplication.
-    private setupSplitterEventHandling() {
+    public setupSplitterEventHandling() {
         Array.from(
             document.getElementsByClassName("split-pane-divider")
         ).forEach(d => d.addEventListener("mousedown", this.dividerMouseDown));
@@ -5169,10 +5160,6 @@ export class BubbleManager {
     private switchBackgroundToOverlay(imageContainer: HTMLElement) {
         const img = getImageFromContainer(imageContainer);
         if (!img) return; // should not happen
-        // Title typically contained info about the resolution of the image we are moving
-        // to the overlay. It doesn't apply to the placeholder we will leave behind,
-        // and we don't do this for overlays, so we don't want it on the copy, either.
-        imageContainer.setAttribute("data-title", "");
         let bgOverlay = imageContainer.getElementsByClassName(
             kbackgroundImageClass
         )[0] as HTMLElement;
@@ -5249,69 +5236,109 @@ export class BubbleManager {
 
     private adjustBackgroundImageSize(
         imageContainer: HTMLElement,
-        overlay: HTMLElement,
+        bgOverlay: HTMLElement,
+        useSizeOfNewImage: boolean
+    ) {
+        return this.adjustBackgroundImageSizeToFit(
+            imageContainer.clientWidth,
+            imageContainer.clientHeight,
+            bgOverlay,
+            useSizeOfNewImage,
+            0
+        );
+    }
+
+    private adjustBackgroundImageSizeToFit(
+        containerWidth: number,
+        containerHeight: number,
+        // The "overlay" div that contains the background image.
+        // (Since this is the background that we overlay things on, it is itself an
+        // overlay only in the sense that it has the same HTML structure in order to
+        // allow many commands and functions to work on it as if it were an ordinary overlay.)
+        bgOverlay: HTMLElement,
         // if this is set true, we've updated the src of the background image and want to
         // ignore any cropping (assumes the img doesn't have any
         // cropping-related style settings) and just adjust the overlay to fit the image.
         // We'll always have to wait for it to load in this case, otherwise, we may get
         // the dimensions of a previous image.
         useSizeOfNewImage: boolean,
-        // This is set true when we arrange an onload callback and receive it
-        gotSizeOfNewImage = false
+        // Sometimes we think we need to wait for onload, but the data arrives before we set up
+        // the watcher. We make a timeout so we will go ahead and adjust if we have dimensions
+        // and don't get an onload in a reasonable time. If we DO get the onload before we
+        // timeout, we use this handle to clear it.
+        // This is set when we arrange an onload callback and receive it
+        timeoutHandler: number
     ) {
-        let imgAspectRatio = overlay.clientWidth / overlay.clientHeight;
-        const img = getImageFromOverlay(overlay);
-        if (useSizeOfNewImage) {
+        if (timeoutHandler) {
+            clearTimeout(timeoutHandler);
+        }
+        let imgAspectRatio = bgOverlay.clientWidth / bgOverlay.clientHeight;
+        const img = getImageFromOverlay(bgOverlay);
+        if (img) {
             // We don't ever expect there not to be an img. If it happens, we'll just go
             // ahead and adjust based on the current shape of the overlay.
-            if (img) {
-                // if we don't have a height and width, or we know the image src changed
-                // and have not yet waited for new dimensions, go ahead and wait.
-                if (
-                    img.naturalHeight === 0 ||
-                    img.naturalWidth === 0 ||
-                    !gotSizeOfNewImage
-                ) {
-                    // image not ready yet, try again later.
-                    img.addEventListener(
-                        "load",
-                        () =>
-                            this.adjustBackgroundImageSize(
-                                imageContainer,
-                                overlay,
-                                useSizeOfNewImage,
-                                true // when we get here, we know we have the updated size.
-                            ),
-                        { once: true }
-                    );
-                    return;
-                }
-                imgAspectRatio = img.naturalWidth / img.naturalHeight;
+            // if we don't have a height and width, or we know the image src changed
+            // and have not yet waited for new dimensions, go ahead and wait.
+            if (
+                img.naturalHeight === 0 ||
+                img.naturalWidth === 0 ||
+                useSizeOfNewImage
+            ) {
+                // We set up this timeout
+                const handle = (setTimeout(
+                    () =>
+                        this.adjustBackgroundImageSizeToFit(
+                            containerWidth,
+                            containerHeight,
+                            bgOverlay,
+                            // after the timeout we don't consider that we MUST wait if we have dimensions
+                            false,
+                            0 // when we get this call, we're responding to the timeout, so don't need to cancel.
+                        ),
+                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+                    // If by any chance this happens when the image really isn't loaded enough to
+                    // have naturalHeight/Width, the zero checks above will force another iteration.
+                    100
+                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+                ) as unknown) as number;
+                // preferably we update when we are loaded.
+                img.addEventListener(
+                    "load",
+                    () =>
+                        this.adjustBackgroundImageSizeToFit(
+                            containerWidth,
+                            containerHeight,
+                            bgOverlay,
+                            false, // when this call happens we have the new dimensions.
+                            handle // if this callback happens we can cancel the timeout.
+                        ),
+                    { once: true }
+                );
+                return; // try again once we have valid image data
             }
+            imgAspectRatio = img.naturalWidth / img.naturalHeight;
         }
 
-        const oldWidth = overlay.clientWidth;
-        const containerAspectRatio =
-            imageContainer.clientWidth / imageContainer.clientHeight;
+        const oldWidth = bgOverlay.clientWidth;
+        const containerAspectRatio = containerWidth / containerHeight;
         if (imgAspectRatio > containerAspectRatio) {
             // size of image is width-limited
-            overlay.style.width = imageContainer.clientWidth + "px";
-            overlay.style.left = "0px";
-            const imgHeight = imageContainer.clientWidth / imgAspectRatio;
-            overlay.style.top =
-                (imageContainer.clientHeight - imgHeight) / 2 + "px";
-            overlay.style.height = imgHeight + "px";
+            bgOverlay.style.width = containerWidth + "px";
+            bgOverlay.style.left = "0px";
+            const imgHeight = containerWidth / imgAspectRatio;
+            bgOverlay.style.top = (containerHeight - imgHeight) / 2 + "px";
+            bgOverlay.style.height = imgHeight + "px";
         } else {
-            const imgWidth = imageContainer.clientHeight * imgAspectRatio;
-            overlay.style.width = imgWidth + "px";
-            overlay.style.top = "0px";
-            overlay.style.left =
-                (imageContainer.clientWidth - imgWidth) / 2 + "px";
-            overlay.style.height = imageContainer.clientHeight + "px";
+            const imgWidth = containerHeight * imgAspectRatio;
+            bgOverlay.style.width = imgWidth + "px";
+            bgOverlay.style.top = "0px";
+            bgOverlay.style.left = (containerWidth - imgWidth) / 2 + "px";
+            bgOverlay.style.height = containerHeight + "px";
         }
         if (!useSizeOfNewImage && img?.style.width) {
             // need to adjust image settings to preserve cropping
-            const scale = overlay.clientWidth / oldWidth;
+            const scale = bgOverlay.clientWidth / oldWidth;
             img.style.width =
                 BubbleManager.pxToNumber(img.style.width) * scale + "px";
             img.style.left =
@@ -5331,7 +5358,7 @@ export class BubbleManager {
         );
     }
 
-    private AdjustChildrenIfSizeChanged(container: HTMLElement): void {
+    public AdjustChildrenIfSizeChanged(container: HTMLElement): void {
         const oldSizeData = container.getAttribute("data-imgSizeBasedOn");
         if (!oldSizeData) {
             // Can't make a useful adjustment now, with no previous size to work from.
@@ -5346,8 +5373,8 @@ export class BubbleManager {
         }
         // Get the width it was the last time the user was working on it
         const oldSizeDataArray = oldSizeData.split(",");
-        const oldWidth = parseInt(oldSizeDataArray[0]);
-        const oldHeight = parseInt(oldSizeDataArray[1]);
+        let oldWidth = parseInt(oldSizeDataArray[0]);
+        let oldHeight = parseInt(oldSizeDataArray[1]);
 
         const newWidth = container.clientWidth;
         const newHeight = container.clientHeight;
@@ -5394,6 +5421,31 @@ export class BubbleManager {
             // If found, it should be the first one; we'll make it the whole rectangle we try
             // to fit to the new container size.
             if (child.classList.contains(kbackgroundImageClass)) {
+                if (
+                    (child.clientLeft !== 0 && child.clientTop !== 0) ||
+                    (Math.abs(child.clientWidth - oldWidth) > 1 &&
+                        Math.abs(child.clientHeight - oldHeight) > 1)
+                ) {
+                    // The background image was not properly adjusted to fit the old container size.
+                    // We'll pretend the old container size properly matched the old BG image so everything else adjusts properly.
+                    // Move all the overlays so the BG image is in the top left.
+                    const deltaX = child.clientLeft;
+                    const deltaY = child.clientTop;
+                    for (let j = 0; j < children.length; j++) {
+                        const c = children[j];
+                        c.style.left =
+                            BubbleManager.pxToNumber(c.style.left) -
+                            deltaX +
+                            "px";
+                        c.style.top =
+                            BubbleManager.pxToNumber(c.style.top) -
+                            deltaY +
+                            "px";
+                    }
+                    // and pretend the old container size matched the old BG image size.
+                    oldWidth = child.clientWidth;
+                    oldHeight = child.clientHeight;
+                }
                 break;
             }
         }
