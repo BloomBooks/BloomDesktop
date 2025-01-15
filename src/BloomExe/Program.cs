@@ -1372,15 +1372,12 @@ namespace Bloom
                 {
                     // Just send the report in for them.
                     // Include the .bloomCollection file (projectPath)
-                    // as well as any other files at the same level, in case they're helpful for debugging
-                    var dirName = Path.GetDirectoryName(projectPath);
-                    var additionalPathsToInclude = Directory.GetFiles(dirName);
                     _applicationContainer.ProblemReportApi.SendReportWithoutUI(
                         ProblemLevel.kNonFatal,
                         originalError,
                         errorMessage,
                         "",
-                        additionalPathsToInclude
+                        new[] { projectPath }
                     );
                 }
                 else
