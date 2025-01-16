@@ -111,6 +111,10 @@ export class BubbleManager {
         ) {
             return false; // we can't fix it
         }
+        if (wrapperBox.classList.contains("bloom-paddingChanged")) {
+            wrapperBox.classList.remove("bloom-paddingChanged");
+            return false; // We don't need to fix it.  See BL-14182.
+        }
 
         const container = BubbleManager.getTopLevelImageContainerElement(
             wrapperBox
@@ -244,6 +248,8 @@ export class BubbleManager {
                     wrapperBox,
                     this.getTopLevelImageContainerElement(wrapperBox)!
                 );
+                if (!wrapperBox.classList.contains("bloom-paddingChanged"))
+                    wrapperBox.classList.add("bloom-paddingChanged");
             }
         });
     }
