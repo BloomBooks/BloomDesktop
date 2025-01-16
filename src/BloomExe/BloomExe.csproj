@@ -173,6 +173,12 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<RemoveDir Directories="@(RemoveForSILMedia)" />
 		<Message Text="ReallyAfterBuild target completed." Importance="high" />
 	</Target>
+	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild">
+		<MakeDir Directories="$(OutDir)runtimes\win-arm64\native" />
+		<Copy SourceFiles="$(OutDir)runtimes\win-x86\native\e_sqlite3.dll"
+			  DestinationFiles="$(OutDir)e_sqlite3.dll" />
+		<Message Text="BL-13934 sqlite looks in the ARM64 directory, but then fails because actually we're running as an x86 process still, as of Bloom 6.2. So for now we're cheating and just putting the x86 version in." Importance="high" />
+	</Target>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />
 		<PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
