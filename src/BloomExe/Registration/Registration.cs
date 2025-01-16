@@ -23,32 +23,98 @@ namespace Bloom.Registration
 
         public string Organization
         {
-            get { return _settings.Organization; }
+            get
+            {
+                try
+                {
+                    return (string)_settings.Organization;
+                }
+                catch (Exception)
+                {
+                    _settings.Organization = "";
+                    return "";
+                }
+            }
             set { _settings.Organization = value; }
         }
         public string HowUsing
         {
-            get { return _settings.HowUsing; }
+            get
+            {
+                try
+                {
+                    return (string)_settings.HowUsing;
+                }
+                catch (Exception)
+                {
+                    _settings.HowUsing = "";
+                    return "";
+                }
+            }
             set { _settings.HowUsing = value; }
         }
         public string FirstName
         {
-            get { return _settings.FirstName; }
+            get
+            {
+                try
+                {
+                    return (string)_settings.FirstName;
+                }
+                catch (Exception)
+                {
+                    _settings.FirstName = "";
+                    return "";
+                }
+            }
             set { _settings.FirstName = value; }
         }
         public string Surname
         {
-            get { return _settings.Surname; }
+            get
+            {
+                try
+                {
+                    return (string)_settings.Surname;
+                }
+                catch (Exception)
+                {
+                    _settings.Surname = "";
+                    return "";
+                }
+            }
             set { _settings.Surname = value; }
         }
         public string Email
         {
-            get { return _settings.Email; }
+            get
+            {
+                try
+                {
+                    return (string)_settings.Email;
+                }
+                catch (Exception)
+                {
+                    _settings.Email = "";
+                    return "";
+                }
+            }
             set { _settings.Email = value; }
         }
         public int LaunchCount
         {
-            get { return (int)_settings.LaunchCount; }
+            get
+            {
+                try
+                {
+                    return (int)_settings.LaunchCount;
+                }
+                catch (Exception)
+                {
+                    _settings.LaunchCount = -1;
+                    return -1;
+                }
+            }
             set { _settings.LaunchCount = value; }
         }
 
@@ -88,39 +154,7 @@ namespace Bloom.Registration
             else
             {
                 _settings = DynamicJson.Parse(rawData);
-                if (!doesPropertyExist("LaunchCount"))
-                {
-                    _settings.LaunchCount = -1;
-                }
-                if (!doesPropertyExist("HowUsing"))
-                {
-                    _settings.HowUsing = "";
-                }
-                if (!doesPropertyExist("Organization"))
-                {
-                    _settings.Organization = "";
-                }
-                if (!doesPropertyExist("Surname"))
-                {
-                    _settings.Surname = "";
-                }
-                if (!doesPropertyExist("FirstName"))
-                {
-                    _settings.FirstName = "";
-                }
-                if (!doesPropertyExist("Email"))
-                {
-                    _settings.Email = "";
-                }
             }
-        }
-
-        private bool doesPropertyExist(string property)
-        {
-            return ((Type)_settings.GetType())
-                .GetProperties()
-                .Where(p => p.Name.Equals(property))
-                .Any();
         }
 
         public void Save()
