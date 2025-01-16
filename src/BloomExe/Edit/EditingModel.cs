@@ -595,7 +595,11 @@ namespace Bloom.Edit
         private IPage GetPageToShowAfterDeletion(IPage page)
         {
             var pages = CurrentBook.GetPages().ToList();
-            var index = pages.IndexOf(page);
+            // pages.IndexOf(page) can fail here when a new page is removed after being relocated.
+            // Apparently the page object is modified when it is relocated, but the page chooser's
+            // copy of the page object is not updated.  IndexOf requires matching actual objects,
+            // not just objects with the same Id.  So we find the page index by Id.  See BL-14133.
+            var index = pages.FindIndex(p => p.Id == page.Id);
             Guard.Against(index < 0, "Couldn't find page in cache");
 
             if (index == pages.Count - 1) //if it's the last page
@@ -618,6 +622,7 @@ namespace Bloom.Edit
                 // Moving a page actually changes its html to have the new left/right side and page number,
                 // The Book takes care of that, but now we need to actually reload it from the dom.
                 RefreshDisplayOfCurrentPage();
+                _view.UpdatePageList(false);
 
                 Analytics.Track("Relocate Page");
                 Logger.WriteEvent("Relocate Page");
