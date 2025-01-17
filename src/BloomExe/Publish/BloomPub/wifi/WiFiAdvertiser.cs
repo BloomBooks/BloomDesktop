@@ -165,12 +165,11 @@ namespace Bloom.Publish.BloomPub.wifi
         //           broadcast address *that stays within the subnet*.
         //           All octet values in the subnet mask are handled.
         // Algorithm:
-        //    1. In the subnet mask find the 1-0 bit boundary
-        //    2. For all '255' octets (they will be to the left of the boundary),
+        //    1. For all '255' octets (they will be to the left of the boundary),
         //       copy the corresponding local IP octets into the broadcast address
-        //    3. For all '0' octets (they will be to the right of the boundary),
+        //    2. For all '0' octets (they will be to the right of the boundary),
         //       put '255' into the corresponding broadcast address octets
-        //    4. For 0 < octet < 255, value of octet starts at 255 and is decremented
+        //    3. For 0 < octet < 255, value of octet starts at 255 and is decremented
         //       for each 1-bit seen according to the following:
         //          scan the octet left to right (most-to-least significant)
         //          if MSb is '1' subtract 2^7; if next is '1' subtract 2^6; etc
@@ -195,24 +194,21 @@ namespace Bloom.Publish.BloomPub.wifi
                 }
             }
 
-            // Step 1: find the 1-0 bit boundary in the mask.
-            int indexFirstZero = maskIn.IndexOf('0');
-
-            // Steps 2-4: examine the 4 octets in turn, starting with the most
-            // significant one. Based on their value and their position relative to the
-            // 1-0 bit boundary, build up the broadcast address string.
+            // Steps 1-3: examine the 4 octets in turn, starting with the most
+            // significant one. Based on their value (and their position relative
+            // to the 1-0 bit boundary?), build up the broadcast address string.
             string bcastAddress = "";
             for (int i = 0; i < 4; i++)
             {
                 if (octetsMask[i] == "255")
                 {
-                    bcastAddress += octetsIp[i]; // Step 2
+                    bcastAddress += octetsIp[i]; // Step 1
                 }
-                else if (octetsMask[i] == "0")   // Step 3
+                else if (octetsMask[i] == "0")   // Step 2
                 {
                     bcastAddress += "255";
                 }
-                else                             // Step 4
+                else                             // Step 3
                 {
                     int octetVal = 255;  // starting value
 
