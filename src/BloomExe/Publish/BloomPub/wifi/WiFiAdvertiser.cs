@@ -165,9 +165,9 @@ namespace Bloom.Publish.BloomPub.wifi
         //           broadcast address *that stays within the subnet*.
         //           All octet values in the subnet mask are handled.
         // Algorithm:
-        //    1. For all '255' octets (they will be to the left of the boundary),
+        //    1. For all '255' octets (they will be to the left of the 1-0 boundary),
         //       copy the corresponding local IP octets into the broadcast address
-        //    2. For all '0' octets (they will be to the right of the boundary),
+        //    2. For all '0' octets (they will be to the right of the 1-0 boundary),
         //       put '255' into the corresponding broadcast address octets
         //    3. For 0 < octet < 255, value of octet starts at 255 and is decremented
         //       for each 1-bit seen according to the following:
@@ -195,8 +195,8 @@ namespace Bloom.Publish.BloomPub.wifi
             }
 
             // Steps 1-3: examine the 4 octets in turn, starting with the most
-            // significant one. Based on their value (and their position relative
-            // to the 1-0 bit boundary?), build up the broadcast address string.
+            // significant one. Based on their value, build up the broadcast
+            // address string.
             string bcastAddress = "";
             for (int i = 0; i < 4; i++)
             {
@@ -204,13 +204,13 @@ namespace Bloom.Publish.BloomPub.wifi
                 {
                     bcastAddress += octetsIp[i]; // Step 1
                 }
-                else if (octetsMask[i] == "0")   // Step 2
+                else if (octetsMask[i] == "0")
                 {
-                    bcastAddress += "255";
+                    bcastAddress += "255";       // Step 2
                 }
-                else                             // Step 3
+                else
                 {
-                    int octetVal = 255;  // starting value
+                    int octetVal = 255;          // Step 3, begin
 
                     // Convert the mask octet to a numeric so each bit can be assessed.
                     byte maskVal = System.Convert.ToByte(octetsMask[i]);
