@@ -473,42 +473,18 @@ body.bloom-fullBleed {
     }
 }
 
-// override button positions when the image is shrunk to make room for an image description
 .bloom-showImageDescriptions {
-    canvas,
-    .comical-generated {
-        display: none;
-    }
-
-    .imageButton {
-        &.changeImageButton {
-            right: 50%;
-        }
-
-        &.changeImageButton,
-        &.editMetadataButton {
-            top: @imageDescriptionTopBorderWidth; // below the ::before border
-        }
-    }
-
-    button.miniButton {
-        right: calc(50% + 60px);
-
-        &.verySmallButtons {
-            // normally right:60%, width: 30%.
-            // We need the effect of 60% of the picture half, plus the 50%
-            // occupied by the text, that is, 30%+50%
-            right: 80%;
-            width: 15%;
-        }
+    // Don't want to deal with resizing the image container while this tool is active,
+    // nor with the size changes associated with picking a different image.
+    // The extra layer of scaling does weird things I haven't fully understood
+    // to the code that tries to keep the background image and overlays aligned.
+    .imageButton,
+    .split-pane-divider,
+    .origami-toggle {
+        display: none !important;
     }
 
     .bloom-imageContainer {
-        // Requiring a direct child helps prevent this from applying to things like the format cog
-        > img {
-            height: calc(100% - @imageDescriptionTopBorderWidth);
-        }
-
         .bloom-imageDescription {
             // Note: this rule has basically the same specificity as one in basePage.less
             // that sets top to zero. I think this one only wins because it comes later.
@@ -522,9 +498,12 @@ body.bloom-fullBleed {
 
 @imageDescriptionBorderWidth: 3px;
 
-.bloom-showImageDescriptions .bloom-page .bloom-imageContainer {
+.bloom-showImageDescriptions
+    .bloom-page
+    .bloom-imageContainer:not(.bloom-imageContainer .bloom-imageContainer) {
     // This produces the thin border on the left, bottom, and right of each image when the
-    // image description tool is active.
+    // image description tool is active. The :not above prevents also getting this on
+    // nested image containers (inside overlays).
     border-style: solid;
     border-color: @accordion-active-element;
     border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth
@@ -543,6 +522,26 @@ body.bloom-fullBleed {
         background-position: center;
         background-image: url("/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg");
     }
+}
+// a wrapper div we add around the contents of an image container except the image description,
+// when we are showing image descriptions. Shrinks the image to the center of the left half
+// of the container.
+// We need this because if we scale the image container itself, the description gets scaled as well.
+// Even if we tried to apply a reverse transformation to the description, the place we want it is
+// outside the scaled image container, and we're hiding overflow on image containers (and need to,
+// both for cropping images and in case bubbles extend beyond the container).
+// Conversely, I don't believe CSS provides a way to transform children relative to an anchor
+// on each parent. We could conceivably compute a different transform for each child, but this is more
+// straightforward and less error-prone.
+.bloom-describedImage {
+    // for a reason I haven't tracked down, the rule that usually does this doesn't work here.
+    img[src="placeHolder.png"] {
+        display: none;
+    }
+    height: 100%;
+    width: 100%;
+    transform-origin: center left;
+    transform: scale(0.5, 0.5);
 }
 
 .bloom-videoContainer,
