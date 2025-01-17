@@ -103,13 +103,20 @@ export class BubbleManager {
     // Returns true if successful; it will currently fail if box is not
     // inside a valid OverPicture element or if the OverPicture element can't grow this much while
     // remaining inside the image container. If it returns false, it makes no changes at all.
-    public growOverflowingBox(box: HTMLElement, overflowY: number): boolean {
+    public growOverflowingBox(
+        box: HTMLElement,
+        overflowY: number,
+        doNotShrink?: boolean
+    ): boolean {
         const wrapperBox = box.closest(kTextOverPictureSelector) as HTMLElement;
         if (
             !wrapperBox ||
             wrapperBox.classList.contains("bloom-noAutoHeight")
         ) {
             return false; // we can't fix it
+        }
+        if (doNotShrink && overflowY < 0) {
+            return false; // we don't want to change the box's size
         }
 
         const container = BubbleManager.getTopLevelImageContainerElement(
