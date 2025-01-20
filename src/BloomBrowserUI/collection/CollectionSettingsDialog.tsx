@@ -85,8 +85,12 @@ export const CollectionSettingsDialog: React.FunctionComponent<{}> = () => {
                             setSettingsToReturnLater(s);
                         }}
                     >
-                        <ConfigrPage label={"Languages"}></ConfigrPage>
-                        <ConfigrPage label={"Appearance"}></ConfigrPage>
+                        <ConfigrPage label={"Languages"}>
+                            <div>Language settings go here</div>
+                        </ConfigrPage>
+                        <ConfigrPage label={"Appearance"}>
+                            <div>Appearance settings go here</div>
+                        </ConfigrPage>
                     </ConfigrPane>
                 </div>
             </DialogMiddle>

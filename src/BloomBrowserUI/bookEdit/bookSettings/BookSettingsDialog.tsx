@@ -400,15 +400,17 @@ export const BookSettingsDialog: React.FunctionComponent<{
                             props.initiallySelectedGroupIndex
                         }
                     >
-                        <ConfigrPage label={coverLabel}>
-                            {appearanceDisabled && (
-                                <NoteBox>
-                                    <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
-                                        The selected page theme does not support
-                                        the following settings.
-                                    </Div>
-                                </NoteBox>
-                            )}
+                        <ConfigrPage label={coverLabel} pageKey="cover">
+                            <ConfigrGroup>
+                                {appearanceDisabled && (
+                                    <NoteBox>
+                                        <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
+                                            The selected page theme does not
+                                            support the following settings.
+                                        </Div>
+                                    </NoteBox>
+                                )}
+                            </ConfigrGroup>
                             <ConfigrGroup
                                 label={whatToShowOnCoverLabel}
                                 // path={`appearance`}
@@ -499,7 +501,10 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 />
                             </ConfigrGroup> */}
                         </ConfigrPage>
-                        <ConfigrPage label={contentPagesLabel}>
+                        <ConfigrPage
+                            label={contentPagesLabel}
+                            pageKey="content-pages"
+                        >
                             <ConfigrGroup label="">
                                 {
                                     // This group of four possible messages...sometimes none of them shows, so there are five options...
@@ -662,33 +667,37 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 />
                             </ConfigrGroup>
                         </ConfigrPage>
-                        <ConfigrGroup label={bloomPubLabel}>
-                            {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}
-                            <BloomResolutionSlider
-                                label={resolutionLabel}
-                                path={`publish.bloomPUB.imageSettings`}
-                            />
-                        </ConfigrGroup>
-                        <ConfigrGroup label="Fonts">
-                            <NoteBox>
-                                <div>
-                                    <P l10nKey="BookSettings.Fonts.Problematic">
-                                        When you publish a book to the web or as
-                                        an ebook, Bloom will flag any
-                                        problematic fonts. For example, we
-                                        cannot legally host most Microsoft fonts
-                                        on BloomLibrary.org.
-                                    </P>
-                                    <P l10nKey="BookSettings.Fonts.TableDescription">
-                                        The following table shows where fonts
-                                        have been used.
-                                    </P>
-                                </div>
-                            </NoteBox>
-                            <StyleAndFontTable
-                                closeDialog={saveSettingsAndCloseDialog}
-                            />
-                        </ConfigrGroup>
+                        <ConfigrPage label={bloomPubLabel} pageKey="images">
+                            <ConfigrGroup>
+                                {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}
+                                <BloomResolutionSlider
+                                    label={resolutionLabel}
+                                    path={`publish.bloomPUB.imageSettings`}
+                                />
+                            </ConfigrGroup>
+                        </ConfigrPage>
+                        <ConfigrPage label="Fonts" pageKey="fonts">
+                            <ConfigrGroup>
+                                <NoteBox>
+                                    <div>
+                                        <P l10nKey="BookSettings.Fonts.Problematic">
+                                            When you publish a book to the web
+                                            or as an ebook, Bloom will flag any
+                                            problematic fonts. For example, we
+                                            cannot legally host most Microsoft
+                                            fonts on BloomLibrary.org.
+                                        </P>
+                                        <P l10nKey="BookSettings.Fonts.TableDescription">
+                                            The following table shows where
+                                            fonts have been used.
+                                        </P>
+                                    </div>
+                                </NoteBox>
+                                <StyleAndFontTable
+                                    closeDialog={saveSettingsAndCloseDialog}
+                                />
+                            </ConfigrGroup>
+                        </ConfigrPage>
                     </ConfigrPane>
                 )}
             </DialogMiddle>
