@@ -85,8 +85,7 @@ namespace Bloom.Publish.BloomPub.wifi
             //         supporting internet connectivity. This will not be common -- the typical
             //         BloomDesktop user is on Windows and has just one active network interface,
             //         likely Wi-Fi but could also be Ethernet.
-            // ASSUME: the machine is single-homed. If this assumption proves to be wrong we can
-            //         revisit and augment the interface selection process.
+            // ASSUME: the machine is single-homed.
 
             // For a raw socket we need to know what "local IP" address to give it. Find out
             // what IP address *currently* supports internet traffic, and use that address.
@@ -119,9 +118,9 @@ namespace Bloom.Publish.BloomPub.wifi
                 return;
             }
 
-            Debug.WriteLine("WiFiAdvertiser, UDP advertising will use: _localIp    = " + _localIp);
-            Debug.WriteLine("                                          _subnetMask = " + _subnetMask);
-            Debug.WriteLine("                                          _remoteIp   = " + _remoteIp);
+            Debug.WriteLine("UDP advertising will have: source addr    = " + _localIp);
+            Debug.WriteLine("                           broadcast addr = " + _remoteIp);
+            Debug.WriteLine("                           subnet mask    = " + _subnetMask);
 
             try
             {
@@ -169,8 +168,8 @@ namespace Bloom.Publish.BloomPub.wifi
         //       copy the corresponding local IP octets into the broadcast address
         //    2. For all '0' octets (they will be to the right of the 1-0 boundary),
         //       put '255' into the corresponding broadcast address octets
-        //    3. For 0 < octet < 255, value of octet starts at 255 and is decremented
-        //       for each 1-bit seen according to the following:
+        //    3. For 0 < octet < 255, octet value starts at 255 and is decremented for
+        //       each 1-bit seen, according to the following:
         //          scan the octet left to right (most-to-least significant)
         //          if MSb is '1' subtract 2^7; if next is '1' subtract 2^6; etc
         // Assumptions:
@@ -181,18 +180,6 @@ namespace Bloom.Publish.BloomPub.wifi
             // Isolate the octets for both local IP and subnet mask.
             string[] octetsIp = ipIn.Split('.');
             string[] octetsMask = maskIn.Split('.');
-
-            // Find indexes (left-to-right) where mask octets begin.
-            //   - most significant octet begins at index 0 (duh)
-            //   - the other 3 begin after a '.' (dot) which we find here
-            List<int> indexes = new List<int>();
-            for (int i = 0; i < maskIn.Length; i++)
-            {
-                if (maskIn[i] == '.')
-                {
-                    indexes.Add(i);
-                }
-            }
 
             // Steps 1-3: examine the 4 octets in turn, starting with the most
             // significant one. Based on their value, build up the broadcast
@@ -212,7 +199,7 @@ namespace Bloom.Publish.BloomPub.wifi
                 {
                     int octetVal = 255;          // Step 3, begin
 
-                    // Convert the mask octet to a numeric so each bit can be assessed.
+                    // Convert the mask octet to a numeric so each bit can be handled.
                     byte maskVal = System.Convert.ToByte(octetsMask[i]);
 
                     for (int j = 0; j < 8; j++)
