@@ -540,10 +540,10 @@ namespace Bloom.Api
             }
             if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8089/bloom/current-bloompub-url will always show the page we're on.
             {
-                info.ResponseContentType = "text/html";
-                info.WriteCompleteOutput(
-                    $"<meta http-equiv=\"Refresh\" content=\"0; url='{PublishApi.PreviewUrl}'\" />"
-                );
+                info.ResponseContentType = "application/json";
+                // send url:{PublishApi.PreviewUrl}
+                info.WriteCompleteOutput("{\"url\":\"" + PublishApi.PreviewUrl + "\"}");
+
                 return true;
             }
 
@@ -842,6 +842,17 @@ namespace Bloom.Api
             if (localPath.Contains("/host/fonts/"))
             {
                 return FontsApi.ProcessHostFontsRequest(info, localPath);
+            }
+            if (localPath.Contains("fonts/Andika"))
+            {
+                // Rightly or wrongly, Andika is in a different place in our
+                // repo structure than the other UI fonts because it with the book fonts.
+                // To keep from having to duplicate the Andika font files in both places,
+                // this workaround maps the request for Andika as a UI font as if it were a book font.
+                return FontsApi.ProcessHostFontsRequest(
+                    info,
+                    localPath.Replace("fonts/", "/host/fonts/")
+                );
             }
 
             switch (localPath)

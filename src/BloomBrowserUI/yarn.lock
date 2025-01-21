@@ -5542,10 +5542,10 @@ bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
-bloom-player@^2.3.0:
-  version "2.6.4"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.6.4.tgz#767da393d891268de4fdb4ef2e1640081e1f34c1"
-  integrity sha512-jtIoRcdqgeSRgHMZ5TfvDEadg/ZfTq/J6BbZTv1HudjGflIGe4DOYGSTsFcQtELrWWmqhx0PYxlKnYXirZdDaw==
+bloom-player@^2.8.3:
+  version "2.8.7"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.8.7.tgz#be4b3bdcc0f2d36c16c41d121f30b68671475045"
+  integrity sha512-24HUuqRwM76iCMIcovHTVChcLiFN9EL9c//DLXIeJYCs0pdKqkPRrko8RkvC5D/VeSqZ4wykawrBTBISJ4HDtA==
 
 bluebird@^3.3.5, bluebird@^3.5.5:
   version "3.7.2"

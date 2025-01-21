@@ -910,6 +910,25 @@ export function SetupElements(
                 BloomSourceBubbles.ShowSourceBubbleForElement(elementToFocus);
             } else {
                 // It's OK not to focus anything.
+                if (bubbleDivs.length) {
+                    // HACK for BL-14109: source bubbles have stopped appearing automatically
+                    // because focus is set before the SourceBubble qtips have been created.
+                    // Refocusing here fixes this.
+                    // We want focus set in only a standard text box, not in an overlay
+                    const editables = container.querySelectorAll(
+                        "textarea, div.bloom-editable.bloom-visibility-code-on"
+                    ); // :visible and :not don't work in this context
+                    if (editables.length) {
+                        const editable = Array.from(editables).find(
+                            e =>
+                                e.closest(".bloom-textOverPicture") === null && // we don't want overlays
+                                e.closest(".box-header-off") === null // these are invisible
+                        );
+                        if (editable) {
+                            $(editable).focus(); // jquery focus() is more reliable than the native focus()
+                        }
+                    }
+                }
             }
         }
     }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
