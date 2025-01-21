@@ -1365,6 +1365,64 @@ namespace Bloom.ImageProcessing
             internal bool MakeTransparent;
             internal int JpegQuality; // 0 means use input jpeg's quality
             internal string ProfilesToStrip; // null means don't strip any profiles
+            internal Rectangle cropRectangle;
+        }
+
+        public static bool TryGetImageSize(string path, out Size size)
+        {
+            size = new Size(0, 0);
+            try
+            {
+                var arguments = "identify -format %P \"" + path + "\"";
+                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                    GetGraphicsMagickPath(),
+                    arguments,
+                    "",
+                    600,
+                    new NullProgress()
+                );
+                if (result.ExitCode == 0)
+                {
+                    var parts = result.StandardOutput.Split('x');
+                    if (parts.Length == 2)
+                    {
+                        size.Width = int.Parse(parts[0]);
+                        size.Height = int.Parse(parts[1]);
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return false;
+            }
+        }
+
+        public static ExecutionResult CropImage(
+            string sourcePath,
+            string destPath,
+            Rectangle cropRectangle
+        )
+        {
+            var options = new GraphicsMagickOptions
+            {
+                Size = new Size(0, 0), // preserve current size (no scaling)
+                MakeOpaque = false,
+                MakeTransparent = false,
+                JpegQuality = 0, // same as input
+                ProfilesToStrip = null,
+                cropRectangle = cropRectangle
+            };
+            var result = RunGraphicsMagick(sourcePath, destPath, options);
+            if (result.ExitCode != 0)
+            {
+                LogGraphicsMagickFailure(result);
+            }
+
+            return result;
         }
 
         private static ExecutionResult RunGraphicsMagick(
@@ -1404,6 +1462,16 @@ namespace Bloom.ImageProcessing
                     argsBldr.Append(
                         " -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
                     );
+                if (options.cropRectangle != Rectangle.Empty)
+                {
+                    argsBldr.AppendFormat(
+                        " -crop {0}x{1}+{2}+{3}",
+                        options.cropRectangle.Width,
+                        options.cropRectangle.Height,
+                        options.cropRectangle.X,
+                        options.cropRectangle.Y
+                    );
+                }
 
                 // http://www.graphicsmagick.org/GraphicsMagick.html#details-profile states:
                 // Use +profile profile_name to remove the respective profile.

@@ -807,7 +807,9 @@ export function SetupElements(
                     ); // :visible and :not don't work in this context
                     if (editables.length) {
                         const editable = Array.from(editables).find(
-                            e => e.closest(".bloom-textOverPicture") === null
+                            e =>
+                                e.closest(".bloom-textOverPicture") === null && // we don't want overlays
+                                e.closest(".box-header-off") === null // these are invisible
                         );
                         if (editable) {
                             $(editable).focus(); // jquery focus() is more reliable than the native focus()

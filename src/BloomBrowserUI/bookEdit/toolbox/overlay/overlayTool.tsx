@@ -121,7 +121,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
         }
 
         bubbleManager.turnOnBubbleEditing();
-        bubbleManager.turnOnHidingImageButtons();
         deselectVideoContainers();
 
         const bubbleSpec = bubbleManager.getSelectedFamilySpec();

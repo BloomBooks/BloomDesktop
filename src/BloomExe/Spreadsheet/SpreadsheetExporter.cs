@@ -6,7 +6,6 @@ using Bloom.SafeXml;
 using Bloom.web;
 using L10NSharp;
 using SIL.IO;
-using SIL.Xml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,9 +15,8 @@ using System.Linq;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.UI.WebControls;
 using System.Windows.Forms;
-using System.Xml;
+using Bloom.Publish;
 
 namespace Bloom.Spreadsheet
 {
@@ -119,6 +117,11 @@ namespace Bloom.Spreadsheet
             IWebSocketProgress progress = null
         )
         {
+            if (_outputImageFolder != null)
+            {
+                PublishHelper.ReallyCropImages(dom.RawDom, bookFolderPath, _outputImageFolder);
+            }
+
             _progress = progress ?? new NullWebSocketProgress();
             _spreadsheet.Params = Params;
             var pages = dom.GetPageElements();
@@ -558,9 +561,14 @@ namespace Bloom.Spreadsheet
 
         private List<SafeXmlElement> GetImageContainers(SafeXmlElement elementOrDom)
         {
-            return elementOrDom
-                .SafeSelectNodes(".//*[contains(@class,'bloom-imageContainer')]")
-                .Cast<SafeXmlElement>()
+            return SafeXmlElement
+                .GetAllDivsWithClass(elementOrDom, "bloom-imageContainer")
+                // an image container that has a background image can just be omitted. The background image
+                // will end up in the same place in the list of image containers, and its own image is
+                // just a placeholder. (On import, we'll currently convert back to an old-style background
+                // that is the direct child of the container. It will look right since we cropped it if
+                // necessary while doing the export. Next edit of the page will convert to BG image overlay again.
+                .Where(imgContainer => !HtmlDom.HasBackgroundImage(imgContainer))
                 .ToList();
         }
 
@@ -790,7 +798,11 @@ namespace Bloom.Spreadsheet
                 }
 
                 var destPath = Path.Combine(_outputImageFolder, Path.GetFileName(imageSourcePath));
-                RobustFile.Copy(imageSourcePath, destPath, true);
+                // We erase any existing content in the output folder before we start, so the only way a file
+                // should be there already is if ReallyCropImages wrote a cropped version there.
+                // In that case we don't want to overwrite it.
+                if (!RobustFile.Exists(destPath))
+                    RobustFile.Copy(imageSourcePath, destPath);
             }
         }
 

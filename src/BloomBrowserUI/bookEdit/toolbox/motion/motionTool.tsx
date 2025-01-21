@@ -10,7 +10,13 @@ import { Checkbox } from "../../../react_components/checkbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { MusicToolControls } from "../music/musicToolControls";
 import "./motion.less";
-import { DisableImageEditing, EnableImageEditing } from "../../js/bloomImages";
+import {
+    DisableImageEditing,
+    EnableImageEditing,
+    getBackgroundImageFromContainer,
+    getBackgroundOverlayFromContainer
+} from "../../js/bloomImages";
+import { css } from "@emotion/react";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -77,9 +83,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const page = this.getPage();
         if (!page) return; // paranoid
         // enhance: if more than one image...do what??
-        const firstImage = this.getFirstImage();
-        if (!firstImage) return; // paranoid
-        DisableImageEditing(firstImage);
+        const firstImageContainer = this.getFirstImageContainer();
+        if (!firstImageContainer) return; // paranoid
+        DisableImageEditing(firstImageContainer);
         this.removeElt(page.getElementById("animationStart"));
         this.removeElt(page.getElementById("animationEnd"));
         const scale = EditableDivUtils.getPageScale();
@@ -101,7 +107,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 height,
                 needToSaveThisRectangle
             ] = this.getActualRectFromAttrValue(
-                firstImage,
+                firstImageContainer,
                 defLeft,
                 defTop,
                 defWidth,
@@ -176,11 +182,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 drag: (event, ui) => {
                     const xpos = Math.min(
                         Math.max(0, ui.position.left / scale),
-                        firstImage.clientWidth - ui.helper.width()
+                        firstImageContainer.clientWidth - ui.helper.width()
                     );
                     const ypos = Math.min(
                         Math.max(0, ui.position.top / scale),
-                        firstImage.clientHeight - ui.helper.height()
+                        firstImageContainer.clientHeight - ui.helper.height()
                     );
                     ui.position.top = ypos;
                     ui.position.left = xpos;
@@ -202,7 +208,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             // the dragging and resizing just don't work.
             return getEditablePageBundleExports()!.makeElement(
                 htmlForDraggable,
-                $(firstImage),
+                $(firstImageContainer),
                 argsForResizable,
                 argsForDraggable
             );
@@ -253,11 +259,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             this.removeElt(page.getElementById("animationEnd"));
         }
         // enhance: if more than one image...do what??
-        const firstImage = this.getFirstImage();
-        if (!firstImage) {
+        const firstImageContainer = this.getFirstImageContainer();
+        if (!firstImageContainer) {
             return;
         }
-        EnableImageEditing(firstImage);
+        EnableImageEditing(firstImageContainer);
         this.removeCurrentAudioMarkup();
         if (this.observer) {
             this.observer.disconnect();
@@ -280,37 +286,30 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         return "motion";
     }
 
-    private getFirstImage(): HTMLElement | null {
+    private getFirstImageContainer(): HTMLElement | null {
         const page = this.getPage();
-        if (!page) return null;
-        const imgElements = page.getElementsByClassName("bloom-imageContainer");
-        if (!imgElements.length) {
-            return null;
-        }
-        return imgElements[0] as HTMLElement;
+        return page?.getElementsByClassName(
+            "bloom-imageContainer"
+        )[0] as HTMLElement;
     }
 
     // Given one of the start/end rectangle objects, produce the string we want to save in
     // data-initialRect or data-finalRect.
     // This string is a representation of a rectangle as left top width height, where each is
-    // a fraction of the actual image size. (Note: the image, NOT the image container, even
-    // if the image is just a background image...though the current code does not support that.)
+    // a fraction of the actual image container size.
     private getTransformRectAttrValue(htmlRect: HTMLElement): string {
         const rectTop = htmlRect.offsetTop;
         const rectLeft = htmlRect.offsetLeft;
         const rectWidth = this.getWidth(htmlRect);
         const rectHeight = this.getHeight(htmlRect);
-        const image = this.getFirstImage();
-        if (!image) return ""; // paranoid
+        const firstImageContainer = this.getFirstImageContainer();
+        if (!firstImageContainer) return ""; // paranoid
 
-        const actualImage = image.getElementsByTagName("img")[0];
-        const imageTop = actualImage.offsetTop;
-        const imageLeft = actualImage.offsetLeft;
-        const imageHeight = this.getHeight(actualImage);
-        const imageWidth = this.getWidth(actualImage);
+        const imageHeight = this.getHeight(firstImageContainer);
+        const imageWidth = this.getWidth(firstImageContainer);
 
-        const top = (rectTop - imageTop) / imageHeight;
-        const left = (rectLeft - imageLeft) / imageWidth;
+        const top = rectTop / imageHeight;
+        const left = rectLeft / imageWidth;
         const width = rectWidth / imageWidth;
         const height = rectHeight / imageHeight;
         const result = "" + left + " " + top + " " + width + " " + height;
@@ -321,7 +320,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     // Performs the reverse of the above transformation.
     // Todo zoom: this needs to get the right actual widths.
     private getActualRectFromAttrValue(
-        firstImage: HTMLElement,
+        firstImageContainer: HTMLElement,
         defLeft: number,
         defTop: number,
         defWidth: number,
@@ -333,7 +332,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             width = defWidth,
             height = defHeight;
         let needToSaveRectangle = true;
-        const savedState = firstImage.getAttribute(initAttr);
+        const savedState = firstImageContainer.getAttribute(initAttr);
         if (savedState) {
             try {
                 const parts = savedState.split(" ");
@@ -356,11 +355,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 height = defHeight;
             }
         }
-        const actualImage = firstImage.getElementsByTagName("img")[0];
-        const imageHeight = this.getHeight(actualImage);
-        const imageWidth = this.getWidth(actualImage);
-        let actualTop = top * imageHeight + actualImage.offsetTop;
-        let actualLeft = left * imageWidth + actualImage.offsetLeft;
+        const imageHeight = this.getHeight(firstImageContainer);
+        const imageWidth = this.getWidth(firstImageContainer);
+        let actualTop = top * imageHeight;
+        let actualLeft = left * imageWidth;
         let actualWidth = width * imageWidth;
         let actualHeight = height * imageHeight;
         // We want things to fit in the image container. This can be broken in various ways:
@@ -368,8 +366,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // - we may have changed the shape of the image container by origami
         // - we may have changed the shape of the image container by choosing a different page layout
         // (We may decide to go stronger than this and make sure it's within the actual image.)
-        const containerWidth = this.getWidth(firstImage);
-        const containerHeight = this.getHeight(firstImage);
+        const containerWidth = this.getWidth(firstImageContainer);
+        const containerHeight = this.getHeight(firstImageContainer);
         if (actualWidth > containerWidth) {
             actualWidth = containerWidth;
         }
@@ -433,31 +431,35 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private motionChanged(checked: boolean) {
-        const firstImage = this.getFirstImage();
-        if (!firstImage) {
+        const firstImageContainer = this.getFirstImageContainer();
+        if (!firstImageContainer) {
             return;
         }
         if (checked) {
-            if (!firstImage.getAttribute("data-initialrect")) {
+            if (!firstImageContainer.getAttribute("data-initialrect")) {
                 // see if we can restore a backup state
-                firstImage.setAttribute(
+                firstImageContainer.setAttribute(
                     "data-initialrect",
-                    firstImage.getAttribute(
+                    firstImageContainer.getAttribute(
                         "data-disabled-initialrect"
                     ) as string
                 );
-                firstImage.removeAttribute("data-disabled-initialrect");
+                firstImageContainer.removeAttribute(
+                    "data-disabled-initialrect"
+                );
                 this.makeRectsVisible(); // ensures start/stop rectangles visible
             }
         } else {
-            if (firstImage.getAttribute("data-initialrect")) {
+            if (firstImageContainer.getAttribute("data-initialrect")) {
                 // always?
                 // save old state, thus recording that we're in the off state, not just uninitialized.
-                firstImage.setAttribute(
+                firstImageContainer.setAttribute(
                     "data-disabled-initialrect",
-                    firstImage.getAttribute("data-initialrect") as string
+                    firstImageContainer.getAttribute(
+                        "data-initialrect"
+                    ) as string
                 );
-                firstImage.removeAttribute("data-initialrect");
+                firstImageContainer.removeAttribute("data-initialrect");
             }
             this.detachFromPage();
         }
@@ -505,12 +507,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private getImages(): Array<HTMLImageElement> {
-        const firstImage = this.getFirstImage();
-        if (!firstImage) return []; // paranoid
+        const firstImageContainer = this.getFirstImageContainer();
+        if (!firstImageContainer) return []; // paranoid
         // not interested in images inside the resize rectangles.
         return Array.prototype.slice
-            .call(firstImage.getElementsByTagName("img"))
-            .filter(v => v.parentElement === firstImage);
+            .call(firstImageContainer.getElementsByTagName("img"))
+            .filter(v => v.parentElement === firstImageContainer);
     }
 
     private setupResizeObserver(): void {
@@ -550,9 +552,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // in the first image container. We want to update our UI if this changes from
         // placeholder to a 'real' image. This will need to be enhanced if we support
         // images done with background-image.
-        const firstImage = this.getFirstImage();
-        if (firstImage) {
-            const images = firstImage.getElementsByTagName("img");
+        const firstImageContainer = this.getFirstImageContainer();
+        if (firstImageContainer) {
+            const images = firstImageContainer.getElementsByTagName("img");
             // I'm not sure how images can be an empty list...possibly while the page is shutting down??
             // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
             if (images.length > 0) {
@@ -643,13 +645,16 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     // - this code is also simpler because we don't have to worry about the image not yet being loaded by the time we
     // want to set up the animation
     // - this code is complicated by having to deal with problems caused by parent divs using scale for zoom.
+    // - currently, this code animates the new way of representing images as "background overlays", while
+    //   BloomPlayer still uses the old way of representing them as the direct img child of the container.
+    //   (Export converts to this representation.)
     // somewhat more care is needed here to avoid adding the animation stuff permanently to the document
     // Review: Man this is a long method! It used to be almost 300 lines. I've refactored to bring it down
     // some to just over 200 lines.
     private toggleMotionPreviewPlaying() {
-        const firstImage = this.getFirstImage();
+        const firstImageContainer = this.getFirstImageContainer();
         if (
-            !firstImage ||
+            !firstImageContainer ||
             !(document.getElementById("motion") as HTMLInputElement).checked ||
             this.rootControl.state.haveImageContainerButNoImage
         ) {
@@ -708,8 +713,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         )[0] as HTMLElement;
 
         // Make a div that determines the shape and position of the animation.
-        // It wraps a div that will move (by being scaled larger) and be clipped (to animationWrapDiv)
-        // which in turn wraps a modified clone of firstImage, the content that gets panned and zoomed.
+        // It wraps a div that will move (by being scaled larger and translated) and be clipped (to animationWrapDiv)
+        // which in turn wraps a modified clone of firstImageContainer, the content that gets panned and zoomed.
         // Enhance: when we change the signature of makeElement, we can get rid of the vestiges of JQuery here and above.
         this.animationWrapDiv = getEditablePageBundleExports()!.makeElement(
             "<div class='" +
@@ -723,11 +728,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // Figure out the size and position we need for animationRootDiv and animationWrapDiv.
         // We use the original image to get the aspect ratio here because the clone
         // may not have finished loading yet.
-        const originalImage = firstImage.getElementsByTagName("img")[0];
         // Enhance: if we allow the zoom rectangles to be a different shape from the image,
         // this should change to get the aspect ratio from the initialrect.
         const panZoomAspectRatio =
-            this.getWidth(originalImage) / this.getHeight(originalImage);
+            this.getWidth(firstImageContainer) /
+            this.getHeight(firstImageContainer);
         if (panZoomAspectRatio < this.animationPreviewAspectRatio) {
             // black bars on side
             const imageWidth = animationPageHeight * panZoomAspectRatio;
@@ -753,17 +758,13 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                     "px; left: 0"
             );
         }
-        const picToAnimate = firstImage.cloneNode(true) as HTMLElement;
+        const picToAnimate = firstImageContainer.cloneNode(true) as HTMLElement;
         // don't use getElementById here; the elements we want to remove are NOT yet
         // in the document, but the ones they are clones of (which we want to keep) are.
-        const start = picToAnimate.querySelector("#animationStart");
-        if (start) {
-            start.remove();
-        }
-        const end = picToAnimate.querySelector("#animationEnd");
-        if (end) {
-            end.remove();
-        }
+        picToAnimate.querySelector("#animationStart")?.remove();
+        picToAnimate.querySelector("#animationEnd")?.remove();
+        picToAnimate.querySelector("canvas")?.remove();
+
         picToAnimate.setAttribute(
             "style",
             "height:" +
@@ -774,40 +775,53 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         );
         const duration = this.calculateDuration(page);
         const movingDiv = this.animationWrapDiv.firstElementChild;
-        const initialRectStr = firstImage.getAttribute("data-initialrect");
-        const finalRectStr = firstImage.getAttribute("data-finalrect");
+        const initialRectStr = firstImageContainer.getAttribute(
+            "data-initialrect"
+        );
+        const finalRectStr = firstImageContainer.getAttribute("data-finalrect");
         if (initialRectStr && finalRectStr && movingDiv) {
             // paranoia
             movingDiv.appendChild(picToAnimate);
             this.animationRootDiv.appendChild(this.animationWrapDiv);
             page.documentElement.appendChild(this.animationRootDiv);
-            const actualImage = picToAnimate.getElementsByTagName("img")[0];
+            // Eventually we may animate all the overlays in the image container that
+            // holds the animation rectangles. For now, we just handle the one
+            // (normally the only one) that holds the main (background) image.
+            // Enhance: handle a cropped image. (Would not have to change Bloom Player,
+            // since the image will be really cropped during export.)
+            const backgroundOverlay = getBackgroundOverlayFromContainer(
+                picToAnimate
+            ) as HTMLElement;
 
-            // unfortunately the cloned image brings over attributes that position it in the current container.
+            // unfortunately the cloned overlay brings over attributes that position it in the current container.
             // The new parent is not the same size and we need different values to center it and make
             // it fill the container as much as possible.
             // We'd like to position it using SetupImage(actualImage); (from bloomImages) but for some reason,
             // probably because several parents are newly created, that's proving flaky.
             // The code here is a simplification of that method.
-            const imgAspectRatio = panZoomAspectRatio; // should stay actual image AR, even if the other changes.
+            const imgAspectRatio =
+                backgroundOverlay.clientWidth / backgroundOverlay.clientHeight;
             const containerWidth = this.getWidth(picToAnimate);
             const containerHeight = this.getHeight(picToAnimate);
             let newWidth: number, newHeight: number;
+            let newTop = 0;
+            let newLeft = 0;
             if (imgAspectRatio > containerWidth / containerHeight) {
                 // full width, center vertically.
                 newWidth = containerWidth;
                 newHeight = containerWidth / imgAspectRatio;
+                newTop = (containerHeight - newHeight) / 2;
             } else {
                 newHeight = containerHeight;
                 newWidth = containerHeight * imgAspectRatio;
+                newLeft = (this.getWidth(this.animationWrapDiv) - newWidth) / 2;
             }
-            // not sure why we set width and height both ways...using the same approach as SetupImage.
-            actualImage.setAttribute("width", "" + newWidth);
-            actualImage.setAttribute("height", "" + newHeight);
-            actualImage.style.width = "" + newWidth + "px";
-            actualImage.style.height = "" + newHeight + "px";
-            actualImage.style.marginLeft = "0px";
-            actualImage.style.marginTop = "0px";
+            backgroundOverlay.style.width = "" + newWidth + "px";
+            backgroundOverlay.style.height = "" + newHeight + "px";
+            backgroundOverlay.style.left = "" + newLeft + "px";
+            backgroundOverlay.style.top = "" + 0 + "px";
+            backgroundOverlay.style.marginLeft = "0px";
+            backgroundOverlay.style.marginTop = "0px";
             this.animationStyleElement = pageDoc.createElement("style");
             this.animationStyleElement.setAttribute("type", "text/css");
             this.animationStyleElement.setAttribute("id", "animationSheet");
@@ -1018,30 +1032,20 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
     private getStateFromHtml(): IMotionHtmlState {
         // enhance: if more than one image...do what??
-        const firstImage = this.getFirstImage();
-
-        // Enhance this if we need to support background-image approach.
-        const images = firstImage
-            ? firstImage.getElementsByTagName("img")
-            : null;
-        // I'm not quite sure how we can have no images in an image container
-        // in a non-xmatter page, but I've seen JS errors caused by it, so
-        // programming defensively.
-        let srcAttr: string | null = "";
-        if (images !== null && images.length > 0) {
-            srcAttr = images[0].getAttribute("src");
+        const firstImageContainer = this.getFirstImageContainer();
+        let src = "";
+        if (firstImageContainer) {
+            const bgImage = getBackgroundImageFromContainer(
+                firstImageContainer
+            );
+            src = bgImage?.getAttribute("src") || "";
         }
 
-        const doNotHaveAPicture =
-            images === null ||
-            images === undefined ||
-            images.length === 0 ||
-            !srcAttr ||
-            srcAttr.indexOf("placeHolder") > -1;
+        const doNotHaveAPicture = !src || src.startsWith("placeHolder.png");
 
         let motionChecked = true;
         let motionPossible = !doNotHaveAPicture;
-        if (!firstImage || ToolboxToolReactAdaptor.isXmatter()) {
+        if (!firstImageContainer || ToolboxToolReactAdaptor.isXmatter()) {
             // if there's no place to put an image, we can't be enabled.
             // And we don't support Motion in xmatter (BL-5427),
             // in part because we use background-image there and haven't fully supported
@@ -1051,7 +1055,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             motionChecked = false;
             motionPossible = false;
         } else {
-            if (firstImage.getAttribute("data-disabled-initialrect")) {
+            if (firstImageContainer.getAttribute("data-disabled-initialrect")) {
                 // At some point on this page the check box has been explicitly turned off
                 motionChecked = false;
             }

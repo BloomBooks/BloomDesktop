@@ -12,7 +12,6 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import {
     kbackgroundImageClass,
     kTextOverPictureSelector,
-    theOneBubbleManager,
     updateOverlayClass
 } from "./bubbleManager";
 
@@ -21,6 +20,7 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
+import { getBubbleManager } from "../toolbox/overlay/overlayUtils";
 
 // This appears to be constant even on higher dpi screens.
 // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
@@ -82,7 +82,9 @@ export function SetupImagesInContainer(container) {
         });
 }
 
-export function SetupImage(image: JQuery) {
+export function SetupImage(image) {
+    // Caution! image may or may not be a jQuery object.
+
     // Remove any obsolete explicit image size and position left over from earlier versions of Bloom, before we had object-fit:contain.
     // Note: any changes to this should probably also be made to (C#) Book.RemoveObsoleteImageAttributes(), if it still exists.
     if (image.style) {
@@ -114,6 +116,7 @@ export function GetButtonModifier(container) {
     let buttonModifier = "";
     const imageButtonWidth = 87;
     const imageButtonHeight = 52;
+    // container may or may not be a jQuery object already.
     const $container = $(container);
     if ($container.height() < imageButtonHeight * 2) {
         buttonModifier = "smallButtonHeight";
@@ -371,12 +374,30 @@ export function getImageFromOverlay(
     return getImageFromContainer(imageContainer as HTMLElement);
 }
 
+// This is an odd concept, since "background overlay" is an oxymoron: it doesn't overlay
+// anything, but is the background on which we overlay other things. In its HTML structure,
+// however, it is an image overlay: an element with the (obsolete) bloom-textOverPicture
+// class (with a determined size and position in its style top, left, width, and height),
+// an image container (with 100% size) and an img (which may have top, left, and width
+// attributes to crop it, as well as the src that determines the actual image).
+// There are enough common behaviors to make it useful to use the same structure, and I
+// (JohnT) at least find it useful to think of it as a background overlay. Background
+// Canvas Element will work better.
+export function getBackgroundOverlayFromContainer(
+    imageContainer: HTMLElement
+): HTMLElement | null {
+    return imageContainer.getElementsByClassName(
+        kbackgroundImageClass
+    )[0] as HTMLElement;
+}
+
+// Shortcut to get the img element from the background overlay (if any) of an image container.
+// This, rather than the obsolete img that is a direct child and is always placeHolder.png,
+// is the background image that is actually displayed.
 export function getBackgroundImageFromContainer(
     imageContainer: HTMLElement
 ): HTMLElement | null {
-    const bgOverlay = imageContainer.getElementsByClassName(
-        kbackgroundImageClass
-    )[0];
+    const bgOverlay = getBackgroundOverlayFromContainer(imageContainer);
     if (!bgOverlay) {
         return null;
     }
@@ -386,20 +407,28 @@ export function getBackgroundImageFromContainer(
 /**
  * Disables the current image tooltip
  */
-function DisableImageTooltip(container: HTMLElement) {
-    // The outermostImageContainer represents the main .bloom-imageContainer, which would be the highest in the DOM hierarchy.
-    // We use the outermostImageContainer's title to represent the title for itself or whichever of its child overlayImages is active
-    // (to avoid complicated conflicting z-index issues). (Actually doing titles for overlay images is currently disabled; they got
-    // in the way.)
+function DisableImageTooltip(container: HTMLElement | undefined | null) {
+    const bubbleManager = getBubbleManager();
+    if (bubbleManager) {
+        // If this is set up, since we only want this tooltip for one container that has an active
+        // background image, the most complete thing is to remove them all.
+        bubbleManager
+            .getAllPrimaryImageContainersOnPage()
+            .forEach(container => {
+                container.title = "";
+            });
+        return;
+    }
+    if (!container) {
+        return;
+    }
+
+    // If the bubble manager hasn't been set up at all we can at least clear the current one.
     const outermostImageContainer = farthest<HTMLElement>(
         container,
         ".bloom-imageContainer"
     );
 
-    // Earlier, we cleared it only if the outermostImageContainer's title was set to the same value as the container's data-title.
-    // A comment said this was to prevent turning off one bubble interfering with turning on another.
-    // But then we may fail to turn it off when we should. I think it's better to just make sure that
-    // turning on a new one comes after turning off an old one.
     if (outermostImageContainer) {
         outermostImageContainer.title = "";
     }
@@ -408,21 +437,26 @@ function DisableImageTooltip(container: HTMLElement) {
 // Note: since this function (obviously) updates state / has side effects,
 // callers should consider the order operations are done if multiple operations happen at or near the same time
 // to ensure that the final state is the one they desire.
-export function UpdateImageTooltipVisibility(container: HTMLElement) {
+export function UpdateImageTooltipVisibility(
+    container: HTMLElement | undefined | null
+) {
+    const theOneBubbleManager = getBubbleManager();
     if (
+        !container ||
         container.classList.contains("bloom-hideImageButtons") ||
         playingBloomGame(container) ||
-        EditableDivUtils.isInHiddenLanguageBlock(container)
+        EditableDivUtils.isInHiddenLanguageBlock(container) ||
+        !theOneBubbleManager ||
+        container.getElementsByClassName("bloom-backgroundImage")[0] !==
+            theOneBubbleManager.getActiveElement()
     ) {
-        // Since the image buttons aren't visible, hide the image tooltip too
+        // We don't want the tooltip unless this container's background image is active.
         DisableImageTooltip(container);
     } else {
-        // Image editing buttons are allowed to be shown, so allow the image tooltip to be shown too
         const dataTitle = container.getAttribute("data-title");
 
         // If dataTitle is null for some unexpected reason, let's just leave the title unchanged.
         if (dataTitle !== null) {
-            //
             // Set title on the main image container
             // The intuitive thing to do would be to set each container's title individually.
             // However, that relies on each container being able to receive mouse events.

@@ -187,12 +187,19 @@ namespace Bloom.Book
             )
             {
                 node.SetAttribute("data-page", "extra");
-                foreach (SafeXmlElement label in GetAllDivsWithClass(node, "pageLabel"))
+                foreach (
+                    SafeXmlElement label in SafeXmlElement.GetAllDivsWithClass(node, "pageLabel")
+                )
                 {
                     label.RemoveAttribute("data-i18n");
                     break;
                 }
-                foreach (SafeXmlElement description in GetAllDivsWithClass(node, "pageDescription"))
+                foreach (
+                    SafeXmlElement description in SafeXmlElement.GetAllDivsWithClass(
+                        node,
+                        "pageDescription"
+                    )
+                )
                 {
                     description.InnerText = String.Empty;
                     break;
@@ -598,6 +605,15 @@ namespace Bloom.Book
         public bool HasMetaElement(string name)
         {
             return _dom.HasMetaElement(name);
+        }
+
+        public static bool HasBackgroundImage(SafeXmlElement imageContainer)
+        {
+            var overlay =
+                imageContainer.ChildNodes.FirstOrDefault(
+                    child => child is SafeXmlElement e && e.HasClass("bloom-textOverPicture")
+                ) as SafeXmlElement;
+            return overlay != null && (overlay.HasClass("bloom-backgroundImage"));
         }
 
         /// <summary>
@@ -1088,22 +1104,12 @@ namespace Bloom.Book
             }
         }
 
-        private static SafeXmlNode[] GetAllDivsWithClass(
-            SafeXmlElement containerElement,
-            string className
-        )
-        {
-            const string xpath =
-                ".//div[contains(concat(' ', normalize-space(@class), ' '), ' {0} ')]";
-            var classPath = xpath.Replace("{0}", className);
-            return containerElement.SafeSelectNodes(classPath);
-        }
-
         private static IEnumerable<SafeXmlElement> GetTextOverPictureElements(
             SafeXmlElement bookBodyElement
         )
         {
-            return GetAllDivsWithClass(bookBodyElement, "bloom-textOverPicture")
+            return SafeXmlElement
+                .GetAllDivsWithClass(bookBodyElement, "bloom-textOverPicture")
                 .Cast<SafeXmlElement>();
         }
 
@@ -1509,7 +1515,7 @@ namespace Bloom.Book
             foreach (var keyPair in keyDict)
             {
                 var style = GetStyleNameFromRuleSelector(keyPair.Key);
-                var searchResult = GetAllDivsWithClass(contentToSearch, style);
+                var searchResult = SafeXmlElement.GetAllDivsWithClass(contentToSearch, style);
                 if (searchResult.Length > 0)
                     keysUsedOnPage.Add(keyPair.Key, keyPair.Value);
             }
