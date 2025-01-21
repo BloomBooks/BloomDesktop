@@ -743,9 +743,10 @@ div.bloom-templateMode {
 
 // We only make a big deal out of "overflow" if the layout is a *paper* size, rather than a *device* size.
 .bloom-page:not([class*="Device"]) {
-    .overflow {
+    // We need this three times to beat a rule that gives the focusd editable box a blue outline
+    .overflow.overflow.overflow {
         color: @OverflowColor !important;
-        outline: solid thin @OverflowColor !important; //outline rather than border so as not to affect layout.
+        outline: solid thin @OverflowColor !important; //rather than border so it doesn't affect layout
 
         p:empty:after {
             //br:after would be great but it doesn't work

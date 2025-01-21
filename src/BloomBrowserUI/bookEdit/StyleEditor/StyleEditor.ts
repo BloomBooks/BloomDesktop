@@ -1194,7 +1194,7 @@ export default class StyleEditor {
         const rule = this.getStyleRule(true, false);
         if (rule !== null) {
             rule.style.setProperty("padding", padding, "important");
-            this.cleanupAfterStyleChange();
+            this.cleanupAfterStyleChange(true); // do not shrink box that we may have grown
             RenderOverlayRoot(padding, (newPadding: string) => {
                 this.changePadding(newPadding);
             });
@@ -2131,13 +2131,13 @@ export default class StyleEditor {
         );
     }
 
-    public cleanupAfterStyleChange() {
+    public cleanupAfterStyleChange(doNotShrink?: boolean) {
         const target = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName) {
             return; // bizarre, since we put up the dialog
         }
-        OverflowChecker.MarkOverflowInternal(target);
+        OverflowChecker.MarkOverflowInternal(target, doNotShrink);
         this.updateLabelsWithStyleName();
         this.getParagraphTabDescription();
 

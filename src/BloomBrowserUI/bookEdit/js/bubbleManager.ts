@@ -104,13 +104,20 @@ export class BubbleManager {
     // Returns true if successful; it will currently fail if box is not
     // inside a valid OverPicture element or if the OverPicture element can't grow this much while
     // remaining inside the image container. If it returns false, it makes no changes at all.
-    public growOverflowingBox(box: HTMLElement, overflowY: number): boolean {
+    public growOverflowingBox(
+        box: HTMLElement,
+        overflowY: number,
+        doNotShrink?: boolean
+    ): boolean {
         const wrapperBox = box.closest(kTextOverPictureSelector) as HTMLElement;
         if (
             !wrapperBox ||
             wrapperBox.classList.contains("bloom-noAutoHeight")
         ) {
             return false; // we can't fix it
+        }
+        if (doNotShrink && overflowY < 0) {
+            return false; // we don't want to change the box's size
         }
 
         const container = BubbleManager.getTopLevelImageContainerElement(
@@ -5279,7 +5286,13 @@ export class BubbleManager {
             // ahead and adjust based on the current shape of the overlay.
             // if we don't have a height and width, or we know the image src changed
             // and have not yet waited for new dimensions, go ahead and wait.
-            if (
+            if (img.style.width) {
+                // there is established cropping. Use the cropped size to determine the
+                // aspect ratio.
+                imgAspectRatio =
+                    BubbleManager.pxToNumber(bgOverlay.style.width) /
+                    BubbleManager.pxToNumber(bgOverlay.style.height);
+            } else if (
                 img.naturalHeight === 0 ||
                 img.naturalWidth === 0 ||
                 useSizeOfNewImage
@@ -5316,8 +5329,10 @@ export class BubbleManager {
                     { once: true }
                 );
                 return; // try again once we have valid image data
+            } else {
+                // not cropped, so we can use the natural dimensions
+                imgAspectRatio = img.naturalWidth / img.naturalHeight;
             }
-            imgAspectRatio = img.naturalWidth / img.naturalHeight;
         }
 
         const oldWidth = bgOverlay.clientWidth;

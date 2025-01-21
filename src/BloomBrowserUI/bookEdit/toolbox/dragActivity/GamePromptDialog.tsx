@@ -276,6 +276,11 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 false // don't make it active.
             );
         });
+        // This seems to at least somewhat reduce the likelihood of losing focus
+        // after a keystroke, especially with Keyman multi-character inserts (BL-14098).
+        // I think it is harmless, since I can't think of any case where the text in the
+        // input changes and we wouldn't want it focused afterwards.
+        editable.focus();
     });
     promptObserver.observe(editable, {
         childList: true,
