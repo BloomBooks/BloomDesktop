@@ -420,7 +420,18 @@ namespace Bloom.Publish.Video
         // convert urls received in sound log to actual local file paths.
         string UrlToFile(string input)
         {
-            var result = input.FromLocalhost();
+            string result;
+            if (input.StartsWith("/bloom/"))
+            {
+                // As of bloom-player 2.8.0, this is the expected form: /bloom/C:/rest-of-path
+                result = input.Replace("/bloom/", "").UnescapeFileNameForHttp();
+            }
+            else
+            {
+                // Previously, we expected it to start with http://localhost/bloom/. Now we handle both just in case.
+                result = input.FromLocalhost();
+            }
+
             // If we added a param to force reloading, remove it.
             var index = result.IndexOf("?");
             if (index >= 0)
