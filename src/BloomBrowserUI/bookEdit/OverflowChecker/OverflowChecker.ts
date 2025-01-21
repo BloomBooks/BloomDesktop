@@ -307,7 +307,7 @@ export default class OverflowChecker {
     // Checks for overflow on a bloom-page and adds/removes the proper class
     // N.B. This function is specifically designed to be called from within AddOverflowHandler()
     // but is also called from within StyleEditor (and therefore public)
-    public static MarkOverflowInternal(box) {
+    public static MarkOverflowInternal(box, doNotShrink?: boolean) {
         // There are two types of overflow that we need to check.
         // 1-When we're called by a handler on an element, we need to check that that element
         // doesn't overflow internally (i.e. has too much stuff to fit in itself).
@@ -353,7 +353,9 @@ export default class OverflowChecker {
         const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(box);
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
-        if (theOneBubbleManager.growOverflowingBox(box, overflowY)) {
+        if (
+            theOneBubbleManager.growOverflowingBox(box, overflowY, doNotShrink)
+        ) {
             overflowY = 0;
         }
         if (preventOverflowY) {
