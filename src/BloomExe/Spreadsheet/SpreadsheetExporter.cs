@@ -6,7 +6,6 @@ using Bloom.SafeXml;
 using Bloom.web;
 using L10NSharp;
 using SIL.IO;
-using SIL.Xml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,9 +15,8 @@ using System.Linq;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.UI.WebControls;
 using System.Windows.Forms;
-using System.Xml;
+using Bloom.Publish;
 
 namespace Bloom.Spreadsheet
 {
@@ -119,6 +117,11 @@ namespace Bloom.Spreadsheet
             IWebSocketProgress progress = null
         )
         {
+            if (_outputImageFolder != null)
+            {
+                PublishHelper.ReallyCropImages(dom.RawDom, bookFolderPath, _outputImageFolder);
+            }
+
             _progress = progress ?? new NullWebSocketProgress();
             _spreadsheet.Params = Params;
             var pages = dom.GetPageElements();
@@ -790,7 +793,11 @@ namespace Bloom.Spreadsheet
                 }
 
                 var destPath = Path.Combine(_outputImageFolder, Path.GetFileName(imageSourcePath));
-                RobustFile.Copy(imageSourcePath, destPath, true);
+                // We erase any existing content in the output folder before we start, so the only way a file
+                // should be there already is if ReallyCropImages wrote a cropped version there.
+                // In that case we don't want to overwrite it.
+                if (!RobustFile.Exists(destPath))
+                    RobustFile.Copy(imageSourcePath, destPath);
             }
         }
 
