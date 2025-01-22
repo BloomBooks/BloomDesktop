@@ -361,9 +361,6 @@ span.bloom-linebreak {
     border: 1px solid #1d94a4;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px #1d94a4;
 }
-.bloom-showImageDescriptions .bloom-textOverPicture {
-    display: none !important;
-}
 .bloom-fullBleed
     .bloom-imageContainer
     .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
@@ -1145,21 +1142,15 @@ h2 {
 .bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
     display: flex;
 }
-.bloom-showImageDescriptions .bloom-imageContainer {
-    background-size: 50% auto;
-    background-position-x: 0;
-}
 .bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
-    width: 50%;
+    width: calc(50% - 3px);
     height: 100%;
     top: 0;
+
     position: absolute;
-    left: 50%;
+    right: 0;
     box-sizing: border-box;
     border-left: solid lightgray 1px;
-}
-.bloom-showImageDescriptions .bloom-imageContainer > img {
-    width: 50%;
 }
 div[data-book*="branding"] a:link,
 div[data-book*="branding"] a:visited {
