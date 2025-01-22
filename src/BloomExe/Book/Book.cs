@@ -1676,6 +1676,8 @@ namespace Bloom.Book
         /// </summary>
         private void EnsureUpToDateMemory(IProgress progress)
         {
+            Logger.WriteMinorEvent("DEBUG BL-14174 - Starting EnsureUpToDateMemory()");
+
             Guard.Against(
                 !IsSaveable,
                 "EnsureUpToDateMemory should only now be called for Saveable books as part of the main book updating"
@@ -5793,6 +5795,8 @@ namespace Bloom.Book
 
         internal void SettingsUpdated()
         {
+            Logger.WriteMinorEvent("DEBUG BL-14174 - Starting SettingsUpdated()");
+
             // Something has changed in relation to settings. For example, we may have changed theme,
             // or deleted customBookStyles.css. We need to update things to reflect the new state of things.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();

@@ -2607,6 +2607,9 @@ namespace Bloom.Book
         /// </summary>
         public void UpdateSupportFiles()
         {
+            Logger.WriteMinorEvent("DEBUG BL-14174 - Starting UpdateSupportFiles()");
+            Logger.WriteMinorEvent($"DEBUG BL-14174 - FolderPath = {FolderPath}");
+
             if (IsStaticContent(FolderPath))
                 return; // don't try to update our own templates, it's a waste and they might be locked.
             if (IsPathReadonly(FolderPath))
@@ -2671,15 +2674,29 @@ namespace Bloom.Book
                     supportFilesToUpdate.Add(file);
             }
 
+            Logger.WriteMinorEvent(
+                $"DEBUG BL-14174 - supportFilesToUpdate = {supportFilesToUpdate}"
+            );
+
             // This will pull them into the book folder.
             foreach (var file in supportFilesToUpdate)
             {
                 var sourcePath = GetSupportingFile(file);
                 var destPath = Path.Combine(FolderPath, file);
                 if (sourcePath == destPath)
+                {
+                    Logger.WriteMinorEvent(
+                        $"DEBUG BL-14174 - skipping copy from {sourcePath} to {destPath}"
+                    );
                     continue; // don't copy from ourselves
+                }
                 if (!string.IsNullOrEmpty(sourcePath) && RobustFile.Exists(sourcePath))
+                {
+                    Logger.WriteMinorEvent(
+                        $"DEBUG BL-14174 - copying from {sourcePath} to {destPath}"
+                    );
                     RobustFile.Copy(sourcePath, destPath, true);
+                }
             }
 
             LoadCurrentBrandingFilesIntoBookFolder();
