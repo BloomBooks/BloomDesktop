@@ -4,7 +4,7 @@
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
-import { MeasureText } from "../../utils/measureText";
+import { MeasureText, reportDescentMeasureTime } from "../../utils/measureText";
 import { BubbleManager, theOneBubbleManager } from "../js/bubbleManager";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "../js/niceScrollBars";
@@ -60,7 +60,7 @@ export default class OverflowChecker {
             .bind("_splitpaneparentresize", function() {
                 const $this = $(this);
                 $this.find(queryElementsThatCanOverflow).each(function() {
-                    OverflowChecker.MarkOverflowInternal(this);
+                    OverflowChecker.CheckForOverflowSoon(this);
                 });
             });
 
@@ -304,6 +304,26 @@ export default class OverflowChecker {
         return null;
     }
 
+    // We want to check for overflow, but we can't afford the delay right now.
+    // (checking all elements on a complex page can take several seconds, and this
+    // is called on every mouse move when adjusting origami). We will wait a second.
+    // If we're asked to check the same element again before that second is up, we'll
+    // cancel that timer and start a new one. When we don't get a new request for a
+    // whole second, we'll do the check.
+    // A further benefit of this delay is that a single mouse movement could resize
+    // several origami elements, and the loop over all of them used to be in the
+    // handling of one mouse move. Now, each timeout will be its own event, and
+    // hopefully other events can be processed in between if they occur.
+    public static CheckForOverflowSoon(element: HTMLElement) {
+        const timeOut = (element as any).overflowCheckTimeout;
+        if (timeOut) {
+            clearTimeout(timeOut);
+        }
+        (element as any).overflowCheckTimeout = setTimeout(() => {
+            OverflowChecker.MarkOverflowInternal(element);
+        }, 1000);
+    }
+
     // Checks for overflow on a bloom-page and adds/removes the proper class
     // N.B. This function is specifically designed to be called from within AddOverflowHandler()
     // but is also called from within StyleEditor (and therefore public)
@@ -313,6 +333,8 @@ export default class OverflowChecker {
         // doesn't overflow internally (i.e. has too much stuff to fit in itself).
         // 2-We also need to check that this element and any OTHER elements on the page
         // haven't been pushed outside the margins
+
+        //const t0 = performance.now();
 
         // Type 1 Overflow
         const $box = $(box);
@@ -501,6 +523,9 @@ export default class OverflowChecker {
             }
         });
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
+        //const t1 = performance.now();
+        // console.log("Overflow check took " + (t1 - t0) + " milliseconds.");
+        // reportDescentMeasureTime();
     } // end MarkOverflowInternal
 
     // Destroy any qtip on this element that marks overflow, but leave other qtips alone.
