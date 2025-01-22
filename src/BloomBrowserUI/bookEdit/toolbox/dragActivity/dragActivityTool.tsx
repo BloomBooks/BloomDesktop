@@ -807,8 +807,9 @@ const DragActivityControls: React.FunctionComponent<{
         ""
     );
 
-    const bubbleManager = OverlayTool.bubbleManager();
-    const currentBubbleElement = bubbleManager?.getActiveElement();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const bubbleManager = OverlayTool.bubbleManager()!;
+    const currentBubbleElement = bubbleManager.getActiveElement();
     const currentBubbleTargetId = currentBubbleElement?.getAttribute(
         "data-bubble-id"
     );
