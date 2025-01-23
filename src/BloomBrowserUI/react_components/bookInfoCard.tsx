@@ -108,8 +108,8 @@ export const BookInfoCard: React.FunctionComponent<IBookInfoCardProps> = props =
                             >
                                 <img
                                     css={css`
-                                        width: 70px;
-                                        min-height: 50px;
+                                        max-width: 70px;
+                                        max-height: 70px;
                                     `}
                                     src={props.thumbnailUrl}
                                 />
