@@ -184,12 +184,17 @@ div.ui-tooltip-content {
 }
 
 p {
-    //without this, an empty paragraph will be invisible, making blank lines impossible
-    //but we also want to make sure that an empty paragraph is the same height as other lines...
-    //especially since in the Edit Page (but not in Publish to Reader preview, bloom-player, etc),
-    //CKEditor will insert a <br> element (making it take up the line-height) whereas without the <br>,
-    //it would take up the min-height
-    min-height: @defaultLineHeight * 1em;
+    // This used to be @defaultLineHeight em, with a comment that without such a rule an empty paragraph
+    // would be invisible, or at least smaller than one with a single line of text. But experimentally
+    // as of Jan 2025 that's not so. The size of an empty paragraph is the same as one with a single
+    // line of text, and is determined by the line-height.
+    // UNLESS, that is, this rule forces a one-line paragraph to be bigger. The line-height is
+    // configurable with our style dialog; the min-height is not. This can produce spurious
+    // overflow reports in one-line paragraphs.
+    // Probably we don't need this rule at all, but in case there is some case I haven't found where
+    // a paragraph might really disappear without it, I'm keeping it, but reducing the minimum
+    // to where it won't increase paragraph size for any of the line-heights we support.
+    min-height: 1em;
 }
 
 textarea,
@@ -457,28 +462,24 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 // "position: absolute;" is required for the text to display in the proper location.  If we ever want to
 // display like this in ePUBs (picture and description side by side), some other approach will be needed.
 .bloom-showImageDescriptions .bloom-imageContainer {
-    background-size: 50% auto;
-    background-position-x: 0;
-
     .bloom-imageDescription {
-        width: 50%;
+        // the 3px is @imageDescriptionBorderWidth in editMode.less. It's easy to subtract this
+        // here, but difficult to transform the image to 50% - 3px, since scale doesn't support calc.
+        // So rather than do something complicated, we just let the image be a full 50% and subtract
+        // the border from the translation group.
+        width: calc(50% - 3px);
         // not needed in content pages, but for some reason on cover.
         // Overridden in edit mode to make room for special border on top.
         height: 100%;
         top: 0;
 
         position: absolute;
-        left: 50%;
+        right: 0;
         box-sizing: border-box;
         border-left: solid lightgray 1px;
         // We also want to turn off the display:none that usually applies to translation groups
         // inside image containers (above), but we want display:flex in Bloom, and display:block
         // in epubs. So that rule is elsewhere.
-    }
-
-    // Requiring a direct child helps prevent this from applying to things like the format cog
-    > img {
-        width: 50%;
     }
 }
 

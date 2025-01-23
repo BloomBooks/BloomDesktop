@@ -448,18 +448,9 @@
     // If we ever want targets to have a background color (except when hidden), here's the place.
     //background-color: var(--target-color);
 
-    &:focus,
-    &:active,
-    *:focus,
-    *:active {
-        // This was here once but I have no idea why a target-of would ever have focus.
-        // box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
-        //     0 0 8px var(--draggable-background-color);
-        // however, the browser sometimes seems to sometimes put indications of focus on it,
-        // so let's suppress them. (This is not an accessability issue because we do NOT want
-        // these boxes to get focus!)
-        outline: none !important;
-        box-shadow: none !important;
+    &:focus {
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+            0 0 8px var(--draggable-background-color);
     }
     &.bloom-unused-in-lang {
         display: none;
