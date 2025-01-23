@@ -234,7 +234,7 @@ namespace Bloom.Publish.Epub
 
         private string getSaveAsPath(ApiRequest request)
         {
-            var initialPath = OutputFilenames.GetOutputFilePath(
+            var initialPath = FilePathMemory.GetOutputFilePath(
                 _bookSelection.CurrentSelection,
                 ".epub"
             );
@@ -244,7 +244,7 @@ namespace Bloom.Publish.Epub
             );
             if (!string.IsNullOrEmpty(destFileName))
             {
-                OutputFilenames.RememberOutputFilePath(
+                FilePathMemory.RememberOutputFilePath(
                     _bookSelection.CurrentSelection,
                     ".epub",
                     destFileName

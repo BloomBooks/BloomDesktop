@@ -105,19 +105,11 @@ namespace Bloom.web.controllers
             // For saving and recalling the last chosen file location
             // requestParameters.title is something like "Choose Audio File", use as an identifier for recalling this filepath
             var extraTag = requestParameters.title;
-            var extension = "." + requestParameters.fileTypes[0].extensions[0];
 
+            // if there is no rememberedPath, initialDirectory will be null, and the FileDialog will use whatever location it remembers (default windows behavior)
+            FilePathMemory.TryGetRememberedFolderPath(extraTag, out string rememberedPath);
             var initialDirectory = string.IsNullOrEmpty(requestParameters.defaultPath)
-                ? Path.GetDirectoryName(
-                    OutputFilenames.GetOutputFilePath(
-                        CurrentBook,
-                        extension,
-                        extraTag: extraTag,
-                        proposedFolder: System.Environment.GetFolderPath(
-                            System.Environment.SpecialFolder.MyDocuments
-                        )
-                    )
-                )
+                ? rememberedPath
                 : Path.GetDirectoryName(requestParameters.defaultPath); // enhance would be better to actually select the file, not just the Dir?
 
             using (
@@ -142,12 +134,10 @@ namespace Bloom.web.controllers
                     // We are not trying get a memory or time diff, just a point measure.
                     PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
 
-                    // remember selected filepath for next time
-                    OutputFilenames.RememberOutputFilePath(
-                        CurrentBook,
-                        extension,
-                        dlg.FileName,
-                        extraTag
+                    // remember selected folder path for next time
+                    FilePathMemory.RememberFolderPath(
+                        extraTag,
+                        Path.GetDirectoryName(dlg.FileName)
                     );
 
                     if (!string.IsNullOrEmpty(requestParameters.destFolder))
