@@ -267,7 +267,8 @@ namespace Bloom.ImageProcessing
             string pathToProcessedImage,
             int thumbnailWidth,
             int thumbnailHeight,
-            Color backColor
+            Color backColor,
+            bool preserveAspectRatio = false
         )
         {
             using (var coverImage = PalasoImage.FromFileRobustly(coverImagePath))
@@ -298,6 +299,11 @@ namespace Bloom.ImageProcessing
                 // pad to center the cover image
                 var horizontalPadding = (availableThumbnailWidth - targetImageWidth) / 2;
                 var verticalPadding = (availableThumbnailHeight - targetImageHeight) / 2;
+                if (preserveAspectRatio)
+                {
+                    horizontalPadding = 0;
+                    verticalPadding = 0;
+                }
                 var destRect = new Rectangle(
                     kborder + horizontalPadding,
                     kborder + verticalPadding,
@@ -310,7 +316,7 @@ namespace Bloom.ImageProcessing
 
                 Rectangle backgroundAndBorderRect;
                 var appearsToBeJpeg = ImageUtils.AppearsToBeJpeg(coverImage);
-                if (appearsToBeJpeg)
+                if (appearsToBeJpeg || preserveAspectRatio)
                 {
                     backgroundAndBorderRect = destRect;
                     backgroundAndBorderRect.Inflate(kborder * 2, kborder * 2);

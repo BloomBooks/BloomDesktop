@@ -314,7 +314,8 @@ namespace Bloom.web.controllers
                                 thumbnail.Path,
                                 256,
                                 256,
-                                _thumbnailBackgroundColor
+                                _thumbnailBackgroundColor,
+                                true
                             );
                             request.ReplyWithImage(thumbnail.Path);
                         }
