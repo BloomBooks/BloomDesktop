@@ -587,7 +587,7 @@ namespace Bloom.Edit
             }
             var endPageLoad = DateTime.Now;
             Logger.WriteEvent(
-                $"update page elapsed time = {endPageLoad - _beginPageLoad} (garbage collect took {endPageLoad - beginGarbageCollect}"
+                $"update page elapsed time = {endPageLoad - _beginPageLoad} (garbage collect took {endPageLoad - beginGarbageCollect})"
             );
             //#if MEMORYCHECK
             // Check memory for the benefit of developers.
