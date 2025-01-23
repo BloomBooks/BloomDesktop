@@ -32,7 +32,7 @@ namespace Bloom.Publish.BloomPub.file
             // Settings.Default.BloomDeviceFileExportFolder was used to save between sessions, but is no longer.
             // Similar functionality may be extended to all save options such as PDF, BloomPub, and ePUB, but a
             // better name will probably be chosen at that point.  See BL-11996.
-            var initialPath = OutputFilenames.GetOutputFilePath(
+            var initialPath = FilePathMemory.GetOutputFilePath(
                 book,
                 BloomPubMaker.BloomPubExtensionWithDot
             );
@@ -51,7 +51,7 @@ namespace Bloom.Publish.BloomPub.file
             if (String.IsNullOrEmpty(destFileName))
                 return;
 
-            OutputFilenames.RememberOutputFilePath(
+            FilePathMemory.RememberOutputFilePath(
                 book,
                 BloomPubMaker.BloomPubExtensionWithDot,
                 destFileName

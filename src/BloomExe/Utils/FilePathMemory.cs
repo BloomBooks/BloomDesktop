@@ -4,14 +4,34 @@ using System.IO;
 
 namespace Bloom.Utils
 {
-    public static class OutputFilenames
+    public static class FilePathMemory
     {
-        // map from the book ID and file type (extension + possible extra tag) to the most recent full file pathname
+        // map from the book ID (if relevant) and file type (extension + possible extra tag) to the most recent full file pathname
         static Dictionary<Tuple<string, string>, string> _savedOutputFilePaths =
             new Dictionary<Tuple<string, string>, string>();
 
-        // map from the file type (extension only) to the most recently used folder for that file type
+        // map from the file type or other tag to the most recently used folder for that file type
         static Dictionary<string, string> _savedOutputFolders = new Dictionary<string, string>();
+
+        public static void RememberFilePath(Tuple<string, string> key, string filePath)
+        {
+            _savedOutputFilePaths[key] = filePath;
+        }
+
+        public static void RememberFolderPath(string key, string folderPath)
+        {
+            _savedOutputFolders[key] = folderPath;
+        }
+
+        public static bool TryGetRememberedFilePath(Tuple<string, string> key, out string path)
+        {
+            return _savedOutputFilePaths.TryGetValue(key, out path);
+        }
+
+        public static bool TryGetRememberedFolderPath(string key, out string path)
+        {
+            return _savedOutputFolders.TryGetValue(key, out path);
+        }
 
         /// <summary>
         /// Get the output file path for the given book and output type provided by the extension (plus extraTag)
@@ -42,14 +62,14 @@ namespace Bloom.Utils
         )
         {
             if (
-                _savedOutputFilePaths.TryGetValue(
+                TryGetRememberedFilePath(
                     GetCompoundTag(book.ID, extension, extraTag),
                     out string path
                 )
             )
                 return path;
             string startingFolder;
-            if (!_savedOutputFolders.TryGetValue(extension, out startingFolder))
+            if (!TryGetRememberedFolderPath(extension, out startingFolder))
             {
                 if (!String.IsNullOrEmpty(proposedFolder) && Directory.Exists(proposedFolder))
                     startingFolder = proposedFolder;
@@ -83,14 +103,14 @@ namespace Bloom.Utils
             string extraTag = ""
         )
         {
-            _savedOutputFilePaths[GetCompoundTag(book.ID, extension, extraTag)] = outputFilePath;
-            _savedOutputFolders[extension] = Path.GetDirectoryName(outputFilePath);
+            RememberFilePath(GetCompoundTag(book.ID, extension, extraTag), outputFilePath);
+            RememberFolderPath(extension, Path.GetDirectoryName(outputFilePath));
         }
 
         private static Tuple<string, string> GetCompoundTag(
-            string id,
-            string extension,
-            string extraTag
+            string id = "",
+            string extension = "",
+            string extraTag = ""
         )
         {
             return Tuple.Create(id, $"{extraTag}{extension}");

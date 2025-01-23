@@ -19,7 +19,7 @@ namespace BloomTests.Utils
         [SetUp]
         public void SetUp()
         {
-            OutputFilenames.ResetOutputFilenamesMemory();
+            FilePathMemory.ResetOutputFilenamesMemory();
             _userDocumentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             _mockBook1 = CreateMockBook(
                 "536ff975-1bd7-49ca-bcc8-937f8e4b8c9f",
@@ -41,38 +41,38 @@ namespace BloomTests.Utils
             // Test the code with none of the optional parameters in use.
 
             // The standard default folder is used for output.
-            var pdfFile = OutputFilenames.GetOutputFilePath(_mockBook1.Object, ".epub");
+            var pdfFile = FilePathMemory.GetOutputFilePath(_mockBook1.Object, ".epub");
             Assert.That(pdfFile, Is.EqualTo(Path.Combine(_userDocumentFolder, "Plants.epub")));
-            pdfFile = OutputFilenames.GetOutputFilePath(_mockBook2.Object, ".epub");
+            pdfFile = FilePathMemory.GetOutputFilePath(_mockBook2.Object, ".epub");
             Assert.That(pdfFile, Is.EqualTo(Path.Combine(_userDocumentFolder, "Animals.epub")));
-            pdfFile = OutputFilenames.GetOutputFilePath(_mockBook3.Object, ".epub");
+            pdfFile = FilePathMemory.GetOutputFilePath(_mockBook3.Object, ".epub");
             Assert.That(pdfFile, Is.EqualTo(Path.Combine(_userDocumentFolder, "Minerals.epub")));
 
             // Explicitly remember a different path for two of these books.  (These folders/files don't need to exist.)
-            OutputFilenames.RememberOutputFilePath(
+            FilePathMemory.RememberOutputFilePath(
                 _mockBook1.Object,
                 ".epub",
                 @"D:\output\epub\Eat Your Vegetables.epub"
             );
-            OutputFilenames.RememberOutputFilePath(
+            FilePathMemory.RememberOutputFilePath(
                 _mockBook2.Object,
                 ".epub",
                 @"D:\output\epub-2\Cute Furry Animals.epub"
             );
 
             // The explicit paths are remembered for these books.
-            pdfFile = OutputFilenames.GetOutputFilePath(_mockBook1.Object, ".epub");
+            pdfFile = FilePathMemory.GetOutputFilePath(_mockBook1.Object, ".epub");
             Assert.That(pdfFile, Is.EqualTo(@"D:\output\epub\Eat Your Vegetables.epub"));
-            pdfFile = OutputFilenames.GetOutputFilePath(_mockBook2.Object, ".epub");
+            pdfFile = FilePathMemory.GetOutputFilePath(_mockBook2.Object, ".epub");
             Assert.That(pdfFile, Is.EqualTo(@"D:\output\epub-2\Cute Furry Animals.epub"));
 
             // The most recent folder used for a remembered book is used for the next book
             // that has not been remembered.
-            pdfFile = OutputFilenames.GetOutputFilePath(_mockBook3.Object, ".epub");
+            pdfFile = FilePathMemory.GetOutputFilePath(_mockBook3.Object, ".epub");
             Assert.That(pdfFile, Is.EqualTo(@"D:\output\epub-2\Minerals.epub"));
 
             // But it is not remembered for a different type of book.
-            pdfFile = OutputFilenames.GetOutputFilePath(_mockBook3.Object, ".bloompub");
+            pdfFile = FilePathMemory.GetOutputFilePath(_mockBook3.Object, ".bloompub");
             Assert.That(
                 pdfFile,
                 Is.EqualTo(Path.Combine(_userDocumentFolder, "Minerals.bloompub"))
@@ -91,33 +91,33 @@ namespace BloomTests.Utils
             )
             {
                 // The provided default folder is used (if it exists).
-                var pdfFile = OutputFilenames.GetOutputFilePath(
+                var pdfFile = FilePathMemory.GetOutputFilePath(
                     _mockBook1.Object,
                     ".pdf",
                     proposedFolder: tempFolder.FolderPath
                 );
                 Assert.That(pdfFile, Is.EqualTo(Path.Combine(tempFolder.FolderPath, "Plants.pdf")));
                 // The provided default folder is not remembered unless RememberOutputFilePath is called.
-                var pdfFile2 = OutputFilenames.GetOutputFilePath(_mockBook2.Object, ".pdf");
+                var pdfFile2 = FilePathMemory.GetOutputFilePath(_mockBook2.Object, ".pdf");
                 Assert.That(pdfFile2, Is.EqualTo(Path.Combine(_userDocumentFolder, "Animals.pdf")));
 
                 // Remembering the first output path saves its folder for the next book.
-                OutputFilenames.RememberOutputFilePath(_mockBook1.Object, ".pdf", pdfFile);
-                pdfFile2 = OutputFilenames.GetOutputFilePath(_mockBook2.Object, ".pdf");
+                FilePathMemory.RememberOutputFilePath(_mockBook1.Object, ".pdf", pdfFile);
+                pdfFile2 = FilePathMemory.GetOutputFilePath(_mockBook2.Object, ".pdf");
                 Assert.That(
                     pdfFile2,
                     Is.EqualTo(Path.Combine(tempFolder.FolderPath, "Animals.pdf"))
                 );
 
                 // Remember a different path for a book.  (This path isn't actually checked for existence.)
-                OutputFilenames.RememberOutputFilePath(
+                FilePathMemory.RememberOutputFilePath(
                     _mockBook1.Object,
                     ".pdf",
                     @"D:\tmp\pdf\Plants-All.pdf"
                 );
 
                 // The explicit path for the book is remembered despite a different default folder value being provided.
-                pdfFile = OutputFilenames.GetOutputFilePath(
+                pdfFile = FilePathMemory.GetOutputFilePath(
                     _mockBook1.Object,
                     ".pdf",
                     proposedFolder: tempFolder.FolderPath
@@ -126,7 +126,7 @@ namespace BloomTests.Utils
 
                 // The folder from the explicit path is remembered and used for the other book as well.  Note that the
                 // RememberOutputFilePath() has to be explicitly called to remember the previous setting.
-                pdfFile = OutputFilenames.GetOutputFilePath(_mockBook2.Object, ".pdf");
+                pdfFile = FilePathMemory.GetOutputFilePath(_mockBook2.Object, ".pdf");
                 Assert.That(pdfFile, Is.EqualTo(@"D:\tmp\pdf\Animals.pdf"));
             }
         }
@@ -143,7 +143,7 @@ namespace BloomTests.Utils
             )
             {
                 // The provided default folder is used (if it exists).
-                var pdfFile = OutputFilenames.GetOutputFilePath(
+                var pdfFile = FilePathMemory.GetOutputFilePath(
                     _mockBook1.Object,
                     ".pdf",
                     "Plants-English-Pages-printshop",
@@ -157,7 +157,7 @@ namespace BloomTests.Utils
                     )
                 );
                 // The provided default folder is not remembered unless RememberOutputFilePath is called.
-                var pdfFile2 = OutputFilenames.GetOutputFilePath(
+                var pdfFile2 = FilePathMemory.GetOutputFilePath(
                     _mockBook2.Object,
                     ".pdf",
                     "Animals-French-Cover",
@@ -169,13 +169,13 @@ namespace BloomTests.Utils
                 );
 
                 // Remembering the first output path saves its folder for the next book.
-                OutputFilenames.RememberOutputFilePath(
+                FilePathMemory.RememberOutputFilePath(
                     _mockBook1.Object,
                     ".pdf",
                     pdfFile,
                     "English-Pages-printshop"
                 );
-                pdfFile2 = OutputFilenames.GetOutputFilePath(
+                pdfFile2 = FilePathMemory.GetOutputFilePath(
                     _mockBook2.Object,
                     ".pdf",
                     "Animals-Spanish-Inside",
@@ -187,7 +187,7 @@ namespace BloomTests.Utils
                 );
 
                 // Remember a different path for a book.  (This path isn't actually checked for existence.)
-                OutputFilenames.RememberOutputFilePath(
+                FilePathMemory.RememberOutputFilePath(
                     _mockBook1.Object,
                     ".pdf",
                     @"D:\tmp\pdf\Plants-All.pdf",
@@ -195,7 +195,7 @@ namespace BloomTests.Utils
                 );
 
                 // The explicit path for the book is remembered despite different default name and folder values being provided.
-                pdfFile = OutputFilenames.GetOutputFilePath(
+                pdfFile = FilePathMemory.GetOutputFilePath(
                     _mockBook1.Object,
                     ".pdf",
                     "Plants-AllPages",
@@ -205,7 +205,7 @@ namespace BloomTests.Utils
                 Assert.That(pdfFile, Is.EqualTo(@"D:\tmp\pdf\Plants-All.pdf"));
 
                 // Changing the extraTag value uses the new provided name, but not the folder since the stored value overrides.
-                pdfFile = OutputFilenames.GetOutputFilePath(
+                pdfFile = FilePathMemory.GetOutputFilePath(
                     _mockBook1.Object,
                     ".pdf",
                     "Plants-English-Pages",

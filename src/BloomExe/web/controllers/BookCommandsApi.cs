@@ -357,7 +357,7 @@ namespace Bloom.web.controllers
             Book.Book book
         )
         {
-            var initialPath = OutputFilenames.GetOutputFilePath(book, defaultExtension);
+            var initialPath = FilePathMemory.GetOutputFilePath(book, defaultExtension);
 
             var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(
                 initialPath,
@@ -365,7 +365,7 @@ namespace Bloom.web.controllers
             );
 
             if (!String.IsNullOrEmpty(destFileName))
-                OutputFilenames.RememberOutputFilePath(book, defaultExtension, destFileName);
+                FilePathMemory.RememberOutputFilePath(book, defaultExtension, destFileName);
             return destFileName;
         }
 
