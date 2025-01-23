@@ -377,8 +377,11 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     background-color: transparent;
 }
 
+@imageButtonHInset: 10px;
+@imageButtonVInset: 5px;
+
 .imageButton {
-    width: 87px;
+    width: 63px;
     height: 52px;
     z-index: @dragHandleEventZIndex;
     position: absolute;
@@ -387,22 +390,48 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     background-position: center center;
     border: none; // agent stylesheet otherwise gives it one. Grrr.
     background-color: transparent;
-
-    &.smallButtonWidth {
-        width: 50%;
-        max-width: 87px;
-        border-style: none;
+    border-radius: 3px;
+    // Sometimes when the page is reloaded the browser puts a really ugly border around a button,
+    // apparently to indicate it is focused. This rule suppresses that.
+    // We might want some other indication if we allow tabbing to focus these buttons,
+    // but we haven't even set that up yet.
+    outline: none;
+    // These box-shadows are copied from MUI to make our look-and-feel more consistent.
+    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+        0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+    &:hover {
+        box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+            0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+            0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+        // MUI makes the background of a hovered "contained" button a little darker.
+        // There's no way to just slightly darken the background only of an svg img,
+        // so we'll just darken the whole thing. The effect on the white areas is not
+        // very noticeable.
+        &:after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            border-radius: 3px;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
     }
-
-    &.smallButtonHeight {
-        height: 50%;
-        max-height: 52px;
-        border-style: none;
+    &:active {
+        box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2),
+            0px 8px 10px 1px rgba(0, 0, 0, 0.14),
+            0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+        &:after {
+            // mui does something much more complicated involving an animation,
+            // but this is a rough approximation of the end result.
+            background-color: rgba(255, 255, 155, 0.15);
+        }
     }
 
     &.changeImageButton {
-        right: 0;
-        top: 5px;
+        right: @imageButtonHInset;
+        top: imageButtonVInset;
         background-image: url("/bloom/bookEdit/img/ChangeImageButton.svg");
     }
 
@@ -418,15 +447,15 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     //     background-size: 63%;
     // }
     &.chooseWidgetButton {
-        right: 0;
-        top: 0;
+        right: @imageButtonHInset;
+        top: @imageButtonVInset;
         background-color: @ChangeImageButtonColor;
         background-image: url("/bloom/bookEdit/img/browse.svg");
     }
 
     &.editMetadataButton {
-        left: 0;
-        top: 5px;
+        left: @imageButtonHInset;
+        top: @imageButtonVInset;
         background-image: url("/bloom/bookEdit/img/imageMetaDataButton.svg") !important;
 
         &.imgMetadataProblem {
@@ -434,7 +463,6 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
             // This relatively subtle missing indicator is replaced by a more prominent one
             // in an active background overlay.
             background-image: url("/bloom/bookEdit/img/MissingInfoIndicator.svg") !important;
-            border: none;
         }
     }
 }
@@ -450,25 +478,20 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
 body.bloom-fullBleed {
     @inset: calc(@bleed * 2);
 
-    // little cut and copy buttons
-    .miniButton {
-        right: calc(60px + @inset) !important;
-    }
-
     .imageButton {
         &.changeImageButton {
-            right: @inset;
-            top: @inset;
+            right: calc(@inset + @imageButtonHInset);
+            top: calc(@inset + @imageButtonVInset);
         }
 
         &.chooseWidgetButton {
-            right: @inset;
-            top: @inset;
+            right: calc(@inset + @imageButtonHInset);
+            top: calc(@inset + @imageButtonVInset);
         }
 
         &.editMetadataButton {
-            left: @inset;
-            top: @inset;
+            left: calc(@inset + imageButtonInset);
+            top: calc(@inset + @imageButtonVInset);
         }
     }
 }
@@ -580,15 +603,22 @@ body.bloom-fullBleed {
     }
 }
 
-// currently these buttons display only for active background images.
 .editMetadataButton,
 .changeImageButton {
+    // currently these buttons display only for active background images,
+    // unless the metadata has a problem (i.e., basically is missing).
     display: none;
 }
-// in a hovered image container, show the buttons if the background image is active,
+
+// And this one should ALWAYS show if there's a problem.
+.editMetadataButton.imgMetadataProblem {
+    display: block;
+}
+
+// in a hovered outer image container, show the buttons if the background image is active,
 // or if there are no other overlays. Also, show the metadata button if there's a
 // problem.
-.bloom-imageContainer:hover {
+.bloom-imageContainer:not(.bloom-imageContainer .bloom-imageContainer):hover {
     &:not(:has(.bloom-textOverPicture:not(.bloom-backgroundImage))),
     .bloom-backgroundImage[data-bloom-active="true"] {
         .editMetadataButton,
