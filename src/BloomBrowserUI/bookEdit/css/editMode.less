@@ -126,13 +126,6 @@ body {
     -height: 1px;
 }
 
-body:has(.bloom-page:hover),
-body:has(#overlay-context-controls:hover) {
-    .qtip {
-        opacity: 1 !important;
-        transition: opacity 200ms ease-out;
-    }
-}
 // A special case for qtips that belong to Mui dialogs (current example is the Game Prompt dialog).
 // These are not inside the scaling container where we usually put them, so we put the qtip in the body.
 // That allows us to make a rule targeting just those tooltips when the dialog is hovered.
@@ -140,7 +133,6 @@ body:has(.MuiPaper-root:hover) > .qtip {
     opacity: 1 !important;
     transition: opacity 200ms ease-out;
 }
-
 // Now that most of our outline effects are conditional on the page being hovered, we get some sort of
 // default on a focused content-editable div. It's an ugly solid black. When we're not hovering,
 // we don't want any edit-only outlines at all, so the user can see the page as it will be.
@@ -1281,6 +1273,13 @@ body.hideAllCKEditors .cke_chrome {
 .qtip:focus {
     opacity: 1 !important;
     transition: opacity 200ms ease-out;
+}
+body:has(.bloom-page:focus-within, .bloom-page:hover),
+body:has(#overlay-context-controls:hover) {
+    .qtip {
+        opacity: 1 !important;
+        transition: opacity 200ms ease-out;
+    }
 }
 
 // ----- Bloom Games ----

@@ -618,6 +618,8 @@ namespace Bloom.TeamCollection
                             localColorPalettes[key] = mergedValues;
                             dirty = true;
                         }
+                        if (mergedValues != repoColorPalettes[key])
+                            dirty = true;
                     }
                     if (dirty)
                     {
