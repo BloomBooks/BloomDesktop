@@ -7,25 +7,10 @@
         <target xml:lang="th" state="needs-translation">Built on {0}</target>
         <note>ID: AboutDialog.BuiltOnDate</note>
       </trans-unit>
-      <trans-unit id="AboutDialog.NoUpdates">
-        <source xml:lang="en">No Updates</source>
-        <target xml:lang="th" state="translated">ไม่มีการอัปเดต</target>
-        <note>ID: AboutDialog.NoUpdates</note>
-      </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
         <target xml:lang="th" state="translated">เกี่ยวกับ{0}</target>
         <note>ID: AboutDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="AboutDialog._checkForUpdates">
-        <source xml:lang="en">Check For Updates</source>
-        <target xml:lang="th" state="translated">ตรวจเช็คการอัพเดต</target>
-        <note>ID: AboutDialog._checkForUpdates</note>
-      </trans-unit>
-      <trans-unit id="AboutDialog._releaseNotesLabel">
-        <source xml:lang="en">Release Notes</source>
-        <target xml:lang="th" state="needs-translation">Release Notes</target>
-        <note>ID: AboutDialog._releaseNotesLabel</note>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
@@ -72,14 +57,14 @@
         <target xml:lang="th" state="needs-translation">&amp;Ignore</target>
         <note>ID: Common.IgnoreButton</note>
       </trans-unit>
-      <trans-unit id="Common.No">
+      <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
-        <target xml:lang="th" state="translated">ไม่ใช่</target>
+        <target xml:lang="th" state="final">ไม่ใช่</target>
         <note>ID: Common.No</note>
       </trans-unit>
-      <trans-unit id="Common.NoButton">
+      <trans-unit id="Common.NoButton" approved="yes">
         <source xml:lang="en">&amp;No</source>
-        <target xml:lang="th" state="needs-translation">&amp;No</target>
+        <target xml:lang="th" state="final">&amp;ไม่ใช่</target>
         <note>ID: Common.NoButton</note>
       </trans-unit>
       <trans-unit id="Common.OKButton">
@@ -92,14 +77,14 @@
         <target xml:lang="th" state="translated">&amp;ลองใหม่</target>
         <note>ID: Common.RetryButton</note>
       </trans-unit>
-      <trans-unit id="Common.Yes">
+      <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
-        <target xml:lang="th" state="translated">ใช่</target>
+        <target xml:lang="th" state="final">ใช่</target>
         <note>ID: Common.Yes</note>
       </trans-unit>
-      <trans-unit id="Common.YesButton">
+      <trans-unit id="Common.YesButton" approved="yes">
         <source xml:lang="en">&amp;Yes</source>
-        <target xml:lang="th" state="translated">&amp;ใช่</target>
+        <target xml:lang="th" state="final">&amp;ใช่</target>
         <note>ID: Common.YesButton</note>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.betterLabel1">
@@ -129,12 +114,12 @@
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
         <source xml:lang="en">&amp;Cancel</source>
-        <target xml:lang="th" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="th" state="translated">&amp;ยกเลิก</target>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
-        <target xml:lang="th" state="needs-translation">&amp;Delete</target>
+        <target xml:lang="th" state="translated">&amp;ลบ</target>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
@@ -332,9 +317,9 @@
         <target xml:lang="th" state="needs-translation">{0} Countries</target>
         <note>ID: LanguageLookup.CountryCount</note>
       </trans-unit>
-      <trans-unit id="LanguageLookup.CountryHeader">
+      <trans-unit id="LanguageLookup.CountryHeader" approved="yes">
         <source xml:lang="en">Country</source>
-        <target xml:lang="th" state="needs-translation">Country</target>
+        <target xml:lang="th" state="final">ประเทศ</target>
         <note>ID: LanguageLookup.CountryHeader</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel">
@@ -544,7 +529,7 @@
       </trans-unit>
       <trans-unit id="WSFontControl.Size">
         <source xml:lang="en">&amp;Size:</source>
-        <target xml:lang="th" state="needs-translation">&amp;Size:</target>
+        <target xml:lang="th" state="translated">&amp;ขนาด:</target>
         <note>ID: WSFontControl.Size</note>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea">

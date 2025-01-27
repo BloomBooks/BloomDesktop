@@ -2,44 +2,54 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="th">
     <body>
+      <trans-unit id="AboutDialog.AboutBloom">
+        <source xml:lang="en">About {0}</source>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">เกี่ยวกับ{0}</target>
+        <note>ID: AboutDialog.WindowTitle</note>
+      </trans-unit>
+      <trans-unit id="AboutDialog.BuiltOnDate">
+        <source xml:lang="en">Built on {0}</source>
+        <target xml:lang="th" state="needs-translation">Built on {0}</target>
+        <note>ID: AboutDialog.BuiltOnDate</note>
+      </trans-unit>
       <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checker</source>
         <target xml:lang="th" state="translated">ตัวตรวจสอบการเข้าถึง</target>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Ace by DAISY Automated Checks</source>
-        <target xml:lang="th" state="needs-translation">Ace by DAISY Automated Checks</target>
+        <target xml:lang="th" state="final">Ace by DAISY Automated Checks</target>
         <note>ID: AccessibilityCheck.ACEByDaisy</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Audio for all text</source>
-        <target xml:lang="th" state="translated">เสียงสำหรับเนื้อหาทั้งหมด</target>
+        <target xml:lang="th" state="final">เสียงสำหรับข้อความทั้งหมด</target>
         <note>ID: AccessibilityCheck.audioForAllText</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Audio for all image descriptions</source>
-        <target xml:lang="th" state="needs-translation">Audio for all image descriptions</target>
+        <target xml:lang="th" state="final">เสียงสำหรับคำอธิบายทุกรูป</target>
         <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage">
+      <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage" approved="yes">
         <source xml:lang="en">Some text is missing a recording for an image description on page {0}</source>
-        <target xml:lang="th" state="needs-translation">Some text is missing a recording for an image description on page {0}</target>
+        <target xml:lang="th" state="final">บางข้อความนั้นขาดการบันทึกข้อความอธิบายสำหรับรูปภาพในหน้าหนังสือ {0}</target>
         <note>ID: AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage">
+      <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage" approved="yes">
         <source xml:lang="en">Some text is missing a recording on page {0}</source>
-        <target xml:lang="th" state="needs-translation">Some text is missing a recording on page {0}</target>
+        <target xml:lang="th" state="final">บางข้อความนั้นขาดการบันทึกลงหน้าหนังสือ {0}</target>
         <note>ID: AccessibilityCheck.AudioForAllText.MissingOnPage</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
-        <target xml:lang="th" state="needs-translation">Bloom can automatically check these for you:</target>
+        <target xml:lang="th" state="final">Bloom สามารถตรวจสิ่งเหล่านี้ให้คุณโดยอัตโนมัติ</target>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Accessibility Checklist</source>
-        <target xml:lang="th" state="needs-translation">Accessibility Checklist</target>
+        <target xml:lang="th" state="final">รายการการตรวจการเข้าถึง</target>
         <note>ID: AccessibilityCheck.Checklist</note>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
@@ -47,89 +57,89 @@
         <target xml:lang="th" state="translated">คำอธิบายสำหรับรูปภาพทั้งหมด</target>
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.DescriptionsForAllImages.MissingOnPage">
+      <trans-unit id="AccessibilityCheck.DescriptionsForAllImages.MissingOnPage" approved="yes">
         <source xml:lang="en">Missing image description on page {0}</source>
-        <target xml:lang="th" state="needs-translation">Missing image description on page {0}</target>
+        <target xml:lang="th" state="final">ไม่พบคำอธิบายรูปภาพในหน้าหนังสือ {0}</target>
         <note>ID: AccessibilityCheck.DescriptionsForAllImages.MissingOnPage</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
-        <target xml:lang="th" state="needs-translation">Finding Ace by DAISY on this computer...</target>
+        <target xml:lang="th" state="final">หา Ace by DAISY ในคอมพิวเตอร์เครื่องนี้</target>
         <note>ID: AccessibilityCheck.FindingAce</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Found.</source>
-        <target xml:lang="th" state="translated">พบแล้ว</target>
+        <target xml:lang="th" state="final">พบแล้ว</target>
         <note>ID: AccessibilityCheck.FoundAce</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn About Accessibility</source>
-        <target xml:lang="th" state="needs-translation">Learn About Accessibility</target>
+        <target xml:lang="th" state="final">เรียนรู้เกี่ยวกับการเข้าถึง</target>
         <note>ID: AccessibilityCheck.LearnAbout</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</source>
-        <target xml:lang="th" state="needs-translation">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</target>
+        <target xml:lang="th" state="final">หนังสือที่เข้าถึงได้ คือหนังสือที่ใช้สำหรับผู้บกพร่องทางสายตาได้อย่างดี ด้วยการใช้รูปแบบ ePUB ซึ่งมีความเป็นไปได้ที่จะสร้างหนังสือที่เข้าถึงทุกคน ที่สามารถใช้ได้กับทุกคนได้ดีโดยไม่เกี่ยวกับความบกพร่องทางสายตา Bloom มีอุปกรณ์ต่างๆ ที่จะช่วยคุณสร้างหนังสือเหล่านี้ได้ดังนี้</target>
         <note>ID: AccessibilityCheck.LearnAbout.AccessibleBookDefinition</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This tool, the Accessibility Checker, has:</source>
-        <target xml:lang="th" state="needs-translation">This tool, the Accessibility Checker, has:</target>
+        <target xml:lang="th" state="final">เครื่องมือสำหรับตรวจสอบการเข้าถึงได้มี:</target>
         <note>ID: AccessibilityCheck.LearnAbout.CheckerHas</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</source>
-        <target xml:lang="th" state="needs-translation">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</target>
+        <target xml:lang="th" state="final">รายการการตรวจสอบการเข้าถึงได้ที่ Bloom ใช้ตรวจหนังสือของคุณ และชี้ให้คุณเห็นจุดที่ต้องใส่ใจโดยเฉพาะสำหรับผู้ฟังกลุ่มชาติพันธ์</target>
         <note>ID: AccessibilityCheck.LearnAbout.AccessibilityCheckList</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AceByDaisyChecker" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.AceByDaisyChecker" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The "Ace by DAISY Checker" searches the actual ePUB generated by Bloom looking for any problems.</source>
-        <target xml:lang="th" state="needs-translation">The "Ace by DAISY Checker" searches the actual ePUB generated by Bloom looking for any problems.</target>
+        <target xml:lang="th" state="final">Ace by DAISY Checker หาไฟล์ ePUB ที่ถูกสร้างโดย Bloom เพื่อตรวจดูปัญหาต่างๆ</target>
         <note>ID: AccessibilityCheck.LearnAbout.AceByDaisyChecker</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">definition of the ePUB format</source>
-        <target xml:lang="th" state="needs-translation">definition of the ePUB format</target>
+        <target xml:lang="th" state="final">คำนิยามของไฟล์รูปแบบ ePUB</target>
         <note>ID: AccessibilityCheck.LearnAbout.EpubDefinition</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true" approved="yes">
         <source xml:lang="en">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</source>
-        <target xml:lang="th" state="needs-translation">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</target>
+        <target xml:lang="th" state="final">ในตามอุดมคติแล้ว หนังสือหนึ่งเล่มควรจะสามารถเข้าถึงได้กับทุกคน แต่ว่ามาตรฐาน ePUB และโปรแกรมอ่าน ePUB ไม่ได้สนับสนุนขนาดนั้น ตอนนี้ ePUB ยังสนับสนุนการช่วยเหลือสำหรับผู้บกพร่องทางสายตาที่พูดภาษาที่อยู่ในระบบ "Text to Speech" (TTS) ซึ่งตอนนี้ TTS ยังสนับสนุนแค่ภาษาที่ถูกใช้ในเชิงพาณิชย์เท่านั้น จนกว่ามาตรฐานและการเข้าถึงได้ของโปรแกรมอ่านจะดีขึ้น มันจึงจำเป็นที่ต้องสร้างเวอณชันพิเศษของหนังสือที่เข้าถึงได้สำหรับผู้ที่พูดในภาษาชนกลุ่มน้อย เพื่อผู้อ่านที่ตาบอดจะได้ยินเสียงอธิบายรูปภาพ เราต้องเพิ่มบางอย่างที่พิเศษลงไปในรูปภาพ ใน Bloom เวอร์ชันนี้ คุณสามารถทำมันได้ด้วยการติ๊กลงไปที่ "เพิ่มคำอธิบายรูปภาพลงบนหน้า" ในหน้า Publish:ePUB screen ส่วนเวอร์ชันในอนาคตอาจมีการเพิ่มตัวเลือกอื่นในการทำ</target>
         <note>ID: AccessibilityCheck.LearnAbout.Footnote</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You need to check these yourself:</source>
-        <target xml:lang="th" state="needs-translation">You need to check these yourself:</target>
+        <target xml:lang="th" state="final">คุณจะต้องตรวจสิ่งเหล่านี้ด้วยตัวเอง</target>
         <note>ID: AccessibilityCheck.ManualChecksHeading</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No essential information by color</source>
-        <target xml:lang="th" state="needs-translation">No essential information by color</target>
+        <target xml:lang="th" state="final">ไม่มีข้อมูลสำคัญตามสี</target>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.WindowTitle">
+      <trans-unit id="AccessibilityCheck.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Accessibility Checker</source>
-        <target xml:lang="th" state="needs-translation">Bloom Accessibility Checker</target>
+        <target xml:lang="th" state="final">ตัวตรวจสอบการเข้าถึงได้ของ Bloom</target>
         <note>ID: AccessibilityCheck.WindowTitle</note>
       </trans-unit>
-      <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true">
+      <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Software Updates</source>
-        <target xml:lang="th" state="needs-translation">Software Updates</target>
+        <target xml:lang="th" state="final">การอัพเดทซอฟต์แวร์</target>
         <note>ID: AutoUpdateSoftwareDialog.SoftwareUpdates</note>
       </trans-unit>
-      <trans-unit id="AutoUpdateSoftwareDialog.WhatShouldBloomDo" sil:dynamic="true">
+      <trans-unit id="AutoUpdateSoftwareDialog.WhatShouldBloomDo" sil:dynamic="true" approved="yes">
         <source xml:lang="en">What should Bloom do when a new version is available?</source>
-        <target xml:lang="th" state="needs-translation">What should Bloom do when a new version is available?</target>
+        <target xml:lang="th" state="final">คุณจะให้ Bloom ทำอย่างไรเมื่อมีเวอร์ชันใหม่?</target>
         <note>ID: AutoUpdateSoftwareDialog.WhatShouldBloomDo</note>
       </trans-unit>
-      <trans-unit id="AutoUpdateSoftwareDialog.AutomaticUpdate" sil:dynamic="true">
+      <trans-unit id="AutoUpdateSoftwareDialog.AutomaticUpdate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Automatically download and install it</source>
-        <target xml:lang="th" state="needs-translation">Automatically download and install it</target>
+        <target xml:lang="th" state="final">ดาวโหลดและติดตั้งโดยอัตโนมัติ</target>
         <note>ID: AutoUpdateSoftwareDialog.AutomaticUpdate</note>
       </trans-unit>
-      <trans-unit id="AutoUpdateSoftwareDialog.LetMeKnow" sil:dynamic="true">
+      <trans-unit id="AutoUpdateSoftwareDialog.LetMeKnow" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just let me know about the new version</source>
-        <target xml:lang="th" state="needs-translation">Just let me know about the new version</target>
+        <target xml:lang="th" state="final">แจ้งฉันเมื่อมีเวอร์ชันใหม่</target>
         <note>ID: AutoUpdateSoftwareDialog.LetMeKnow</note>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BadCharsInFileName" approved="yes">
@@ -147,14 +157,14 @@
         <target xml:lang="th" state="final">ตอนนี้ {0} Collection พร้อมที่จะใช้ในคอมพิวเตอร์เครื่องนี้</target>
         <note>ID: BloomPackInstallDialog.BloomPackInstalled</note>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BloomPackInstaller">
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstaller" approved="yes">
         <source xml:lang="en">Bloom Pack Installer</source>
-        <target xml:lang="th" state="needs-translation">Bloom Pack Installer</target>
+        <target xml:lang="th" state="final">การติดตั้ง Bloom Pack</target>
         <note>ID: BloomPackInstallDialog.BloomPackInstaller</note>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.CorruptBloomPack">
+      <trans-unit id="BloomPackInstallDialog.CorruptBloomPack" approved="yes">
         <source xml:lang="en">This BloomPack appears to be incomplete or corrupt.</source>
-        <target xml:lang="th" state="needs-translation">This BloomPack appears to be incomplete or corrupt.</target>
+        <target xml:lang="th" state="final">BloomPack นี้เสียหายหรือไม่สมบูรณ์</target>
         <note>ID: BloomPackInstallDialog.CorruptBloomPack</note>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.DoesNotExist" approved="yes">
@@ -202,14 +212,14 @@
         <target xml:lang="th" state="final">Bloom ก็ไม่สามารถที่จะเอาสำเนาที่มีอยู่ของ '{0}'. ออกจากBloomถ้ามีการทำงานและลองอีกครั้ง. มิฉะนั้นลองอีกครั้งหลังจากรีสตาร์ทเครื่องคอมพิวเตอร์ของคุณ</target>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
       </trans-unit>
-      <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true">
+      <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
-        <target xml:lang="th" state="needs-translation">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</target>
+        <target xml:lang="th" state="final">เพื่อเลือก ใช้ลูกเลื่อนเมาส์หรือชี้ไปตรงตำแหน่งที่คุณต้องการหรือกดปุ่มที่แสดงเป็นสีม่วง จากนั้นปล่อยปุ่มที่คุณกดเพื่อแสดงรายการ</target>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
       </trans-unit>
-      <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true">
+      <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
-        <target xml:lang="th" state="needs-translation">This formatting is the default for all text boxes with '{0}' style.</target>
+        <target xml:lang="th" state="final">การจัดรูปแบบนี้เป็นค่าเริ่มต้นสำหรับทุกกล่องข้อความของรูปแบบ '{0}'</target>
         <note>ID: BookEditor.DefaultForText</note>
       </trans-unit>
       <trans-unit id="BookEditor.ForText" sil:dynamic="true" approved="yes">
@@ -222,64 +232,64 @@
         <target xml:lang="th" state="final">การจัดรูปแบบนี้มีไว้สำหรับทุก {0} ข้อความในกล่องที่มี '{1}' สไตล์</target>
         <note>ID: BookEditor.ForTextInLang</note>
       </trans-unit>
-      <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
+      <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
-        <target xml:lang="th" state="needs-translation">Sorry, Reader Templates do not allow changes to formatting.</target>
+        <target xml:lang="th" state="final">ขออภัย โครงแบบหนังสือนี้ไม่อนุญาตให้เปลี่ยนแปลงการจัดรูปแบบ</target>
         <note>ID: BookEditor.FormattingDisabled</note>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yCertifier">
+      <trans-unit id="BookMetadata.a11yCertifier" approved="yes">
         <source xml:lang="en">Level certified by</source>
-        <target xml:lang="th" state="needs-translation">Level certified by</target>
+        <target xml:lang="th" state="final">ระดับทักษะการอ่าน ได้รับการรับรองจาก</target>
         <note>ID: BookMetadata.a11yCertifier</note>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yFeatures">
         <source xml:lang="en">Accessibility features</source>
-        <target xml:lang="th" state="needs-translation">Accessibility features</target>
+        <target xml:lang="th" state="translated">คุณสมบัติการเข้าถึงได้</target>
         <note>ID: BookMetadata.a11yFeatures</note>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevel">
         <source xml:lang="en">Accessibility level</source>
-        <target xml:lang="th" state="needs-translation">Accessibility level</target>
+        <target xml:lang="th" state="translated">ระดับของการเข้าถึงได้</target>
         <note>ID: BookMetadata.a11yLevel</note>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelNone" sil:dynamic="true">
         <source xml:lang="en">None</source>
-        <target xml:lang="th" state="needs-translation">None</target>
+        <target xml:lang="th" state="translated">ไม่มี</target>
         <note>ID: BookMetadata.a11yLevelNone</note>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true">
         <source xml:lang="en">Level A conformance</source>
-        <target xml:lang="th" state="needs-translation">Level A conformance</target>
+        <target xml:lang="th" state="translated">ระดับความสอดคล้อง A</target>
         <note>ID: BookMetadata.a11yLevelA</note>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelAA" sil:dynamic="true">
         <source xml:lang="en">Level AA conformance</source>
-        <target xml:lang="th" state="needs-translation">Level AA conformance</target>
+        <target xml:lang="th" state="translated">ระดับความสอดคล้อ AA</target>
         <note>ID: BookMetadata.a11yLevelAA</note>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelAAA" sil:dynamic="true">
         <source xml:lang="en">Level AAA conformance</source>
-        <target xml:lang="th" state="needs-translation">Level AAA conformance</target>
+        <target xml:lang="th" state="translated">ระดับความสอดคล้อง AAA</target>
         <note>ID: BookMetadata.a11yLevelAAA</note>
       </trans-unit>
       <trans-unit id="BookMetadata.alternativeText">
         <source xml:lang="en">Has Image Descriptions</source>
-        <target xml:lang="th" state="needs-translation">Has Image Descriptions</target>
+        <target xml:lang="th" state="translated">มีคำอธิบายภาพ</target>
         <note>ID: BookMetadata.alternativeText</note>
       </trans-unit>
       <trans-unit id="BookMetadata.author">
         <source xml:lang="en">Author</source>
-        <target xml:lang="th" state="needs-translation">Author</target>
+        <target xml:lang="th" state="translated">ผู้แต่ง</target>
         <note>ID: BookMetadata.author</note>
       </trans-unit>
       <trans-unit id="BookMetadata.flashingHazard">
         <source xml:lang="en">Flashing Hazard</source>
-        <target xml:lang="th" state="needs-translation">Flashing Hazard</target>
+        <target xml:lang="th" state="translated">มีการกระพริบที่อันตราย</target>
         <note>ID: BookMetadata.flashingHazard</note>
       </trans-unit>
       <trans-unit id="BookMetadata.hazards">
         <source xml:lang="en">Hazards</source>
-        <target xml:lang="th" state="needs-translation">Hazards</target>
+        <target xml:lang="th" state="translated">ความอันตราย</target>
         <note>ID: BookMetadata.hazards</note>
       </trans-unit>
       <trans-unit id="BookMetadata.inLanguage" approved="yes">
@@ -289,7 +299,7 @@
       </trans-unit>
       <trans-unit id="BookMetadata.level">
         <source xml:lang="en">Reading level</source>
-        <target xml:lang="th" state="needs-translation">Reading level</target>
+        <target xml:lang="th" state="translated">ระดับทักษะการอ่าน</target>
         <note>ID: BookMetadata.level</note>
       </trans-unit>
       <trans-unit id="BookMetadata.metapicture" approved="yes">
@@ -299,7 +309,7 @@
       </trans-unit>
       <trans-unit id="BookMetadata.motionSimulationHazard">
         <source xml:lang="en">Motion Simulation Hazard</source>
-        <target xml:lang="th" state="needs-translation">Motion Simulation Hazard</target>
+        <target xml:lang="th" state="translated">มีภาพเคลื่อนไหวที่อันตราย</target>
         <note>ID: BookMetadata.motionSimulationHazard</note>
       </trans-unit>
       <trans-unit id="BookMetadata.name" approved="yes">
@@ -309,58 +319,58 @@
       </trans-unit>
       <trans-unit id="BookMetadata.numberOfPages">
         <source xml:lang="en">Number of pages</source>
-        <target xml:lang="th" state="needs-translation">Number of pages</target>
+        <target xml:lang="th" state="translated">จำนวนหน้า</target>
         <note>ID: BookMetadata.numberOfPages</note>
       </trans-unit>
       <trans-unit id="BookMetadata.signLanguage">
         <source xml:lang="en">Sign Language</source>
-        <target xml:lang="th" state="needs-translation">Sign Language</target>
+        <target xml:lang="th" state="translated">ภาษามือ</target>
         <note>ID: BookMetadata.signLanguage</note>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects">
         <source xml:lang="en">Subjects</source>
-        <target xml:lang="th" state="needs-translation">Subjects</target>
+        <target xml:lang="th" state="translated">วิชา</target>
         <note>ID: BookMetadata.subjects</note>
       </trans-unit>
       <trans-unit id="BookMetadata.typicalAgeRange">
         <source xml:lang="en">Typical age range</source>
-        <target xml:lang="th" state="needs-translation">Typical age range</target>
+        <target xml:lang="th" state="translated">สำหรับอายุระหว่าง</target>
         <note>ID: BookMetadata.typicalAgeRange</note>
       </trans-unit>
       <trans-unit id="BookMetadata.WhatsThis" sil:dynamic="true">
         <source xml:lang="en">What's this?</source>
-        <target xml:lang="th" state="needs-translation">What's this?</target>
+        <target xml:lang="th" state="translated">นี้คืออะไร?</target>
         <note>ID: BookMetadata.WhatsThis</note>
       </trans-unit>
       <trans-unit id="BooksOnBlorg.Progress.Goal" sil:dynamic="true">
         <source xml:lang="en">Goal:</source>
-        <target xml:lang="th" state="needs-translation">Goal:</target>
+        <target xml:lang="th" state="translated">จุดมุ่งหมาย:</target>
         <note>ID: BooksOnBlorg.Progress.Goal</note>
       </trans-unit>
       <trans-unit id="BooksOnBlorg.Progress.CountOfBooksLabel" sil:dynamic="true">
         <source xml:lang="en">{0} {1} books on BloomLibrary.org</source>
-        <target xml:lang="th" state="needs-translation">{0} {1} books on BloomLibrary.org</target>
+        <target xml:lang="th" state="translated">{0} {1} หนังสือบน BloomLibrary.org</target>
         <note>ID: BooksOnBlorg.Progress.CountOfBooksLabel</note>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please report the problem to us.</source>
-        <target xml:lang="th" state="needs-translation">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please report the problem to us.</target>
+        <target xml:lang="th" state="translated">Bloom เจอปัญหาในการอ่านหนังสือเล่มนี้และทำการกู้คืนจากไฟล์สำรองล่าสุด โปรดตรวจการเปลี่ยนแปลงล่าสุดของหน้งสือเล่มนี้ ถ้าสิ่งนี้เกิดขึ้นโดยไม่มีเหตุผล โปรดรายงานปัญหาให้เราทราบ</target>
         <note>ID: BookStorage.CorruptBook</note>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please report the problem to us.</source>
-        <target xml:lang="th" state="needs-translation">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please report the problem to us.</target>
+        <target xml:lang="th" state="translated">ดูเหมือนว่าบางส่วนของโฟลเดอร์นั้นถูกเคลื่อนย้ายหรือเปลี่ยนชื่อ ดังนั้น Bloom ไม่สามารถบันทึกการเปลี่ยนแปลงของคุณในหน้านี้ได้ และจำเป็นจะต้องออกในตอนนี้ ถ้าคุณไม่ได้เปลี่ยนชื่อหรือย้ายไฟล์ของคุณ โปรดรายงานปัญหาให้เราทราบ</target>
         <note>ID: BookStorage.FolderMoved</note>
       </trans-unit>
       <trans-unit id="Browser.ProblemSaving">
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
-        <target xml:lang="th" state="needs-translation">There was a problem while saving. Please return to the previous page and make sure it looks correct.</target>
+        <target xml:lang="th" state="translated">มีปัญหาเกิดขึ้นในขณะทำการบันทึก โปรดกลับไปที่หน้าก่อนหน้าและตรวจให้แน่ใจว่าถูกต้อง</target>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AboutBloomEnterprise">
-        <source xml:lang="en">About the Bloom Enterprise Service</source>
-        <target xml:lang="th" state="needs-translation">About the Bloom Enterprise Service</target>
-        <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
+      <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
+        <source xml:lang="en">About Bloom Subscriptions</source>
+        <target xml:lang="th" state="needs-translation">About Bloom Subscriptions</target>
+        <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -369,32 +379,32 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
         <source xml:lang="en">Automatically Update Bloom</source>
-        <target xml:lang="th" state="needs-translation">Automatically Update Bloom</target>
+        <target xml:lang="th" state="translated">อัพเดท Bloom โดยอัตโนมัติ</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures">
         <source xml:lang="en">Experimental Features</source>
-        <target xml:lang="th" state="needs-translation">Experimental Features</target>
+        <target xml:lang="th" state="translated">คุณสมบัติเชิงทดลอง</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources">
         <source xml:lang="en">Show Experimental Book Sources</source>
-        <target xml:lang="th" state="needs-translation">Show Experimental Book Sources</target>
+        <target xml:lang="th" state="translated">แสดงแหล่งหนังสือทดลอง</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport">
         <source xml:lang="en">Spreadsheet Import/Export</source>
-        <target xml:lang="th" state="needs-translation">Spreadsheet Import/Export</target>
+        <target xml:lang="th" state="translated">นำเข้า/นำออก สเปรดชีต</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
-        <target xml:lang="th" state="needs-translation">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</target>
+        <target xml:lang="th" state="translated">Bloom ได้ทำการสลับแบบอักษรเริ่มต้นสำหรับ "{0}" ไปเป็น "Andika New Basic"</target>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
-        <target xml:lang="th" state="needs-translation">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</target>
+        <target xml:lang="th" state="translated">สิ่งนี้จะเสริมผลลัพธ์ของการพิมพ์ในหลายภาษา ถ้าภาษาของคุณเป็นหนึ่งในภาษาที่ต้องการ "Andika" คุณสามารถสลับกลับใน การตั้งค่า:การสร้างหนังสือ</target>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
       </trans-unit>
       <!-- <trans-unit id="CollectionSettingsDialog.BloomLibraryBookshelf"> -->
@@ -412,7 +422,7 @@
       <!-- </trans-unit> -->
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
-        <target xml:lang="th" state="needs-translation">None</target>
+        <target xml:lang="th" state="translated">ไม่มี</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
@@ -427,167 +437,167 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true">
         <source xml:lang="en">Device</source>
-        <target xml:lang="th" state="needs-translation">Device</target>
+        <target xml:lang="th" state="translated">อุปกรณ์</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
-        <target xml:lang="th" state="needs-translation">Paper Saver</target>
+        <target xml:lang="th" state="translated">ประหยัดกระดาษ</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true">
         <source xml:lang="en">SIL-PNG</source>
-        <target xml:lang="th" state="needs-translation">SIL-PNG</target>
+        <target xml:lang="th" state="translated">SIL-PNG</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Super Paper Saver</source>
-        <target xml:lang="th" state="needs-translation">Super Paper Saver</target>
+        <target xml:lang="th" state="translated">ประหยัดกระดาษขั้นสุด</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
-        <target xml:lang="th" state="needs-translation">Traditional</target>
+        <target xml:lang="th" state="translated">แบบดั้งเดิม</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true">
         <source xml:lang="en">Video</source>
-        <target xml:lang="th" state="needs-translation">Video</target>
+        <target xml:lang="th" state="translated">วิดีโอ</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true">
         <source xml:lang="en">Arabic-Indic</source>
-        <target xml:lang="th" state="needs-translation">Arabic-Indic</target>
+        <target xml:lang="th" state="translated">อารบิก-อินดิก</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" sil:dynamic="true">
         <source xml:lang="en">Armenian</source>
-        <target xml:lang="th" state="needs-translation">Armenian</target>
+        <target xml:lang="th" state="translated">อาร์มีเนียน</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" sil:dynamic="true">
         <source xml:lang="en">Bengali</source>
-        <target xml:lang="th" state="needs-translation">Bengali</target>
+        <target xml:lang="th" state="translated">เบนกาลี</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" sil:dynamic="true">
         <source xml:lang="en">Cambodian</source>
-        <target xml:lang="th" state="needs-translation">Cambodian</target>
+        <target xml:lang="th" state="translated">กัมพูชา</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal" sil:dynamic="true">
         <source xml:lang="en">Cjk-Decimal</source>
-        <target xml:lang="th" state="needs-translation">Cjk-Decimal</target>
+        <target xml:lang="th" state="translated">Cjk-Decimal</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal" sil:dynamic="true">
         <source xml:lang="en">Decimal</source>
-        <target xml:lang="th" state="needs-translation">Decimal</target>
+        <target xml:lang="th" state="translated">ทศนิยม</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari" sil:dynamic="true">
         <source xml:lang="en">Devanagari</source>
-        <target xml:lang="th" state="needs-translation">Devanagari</target>
+        <target xml:lang="th" state="translated">เทวนาครี</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" sil:dynamic="true">
         <source xml:lang="en">Georgian</source>
-        <target xml:lang="th" state="needs-translation">Georgian</target>
+        <target xml:lang="th" state="translated">จอร์เจีย</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati" sil:dynamic="true">
         <source xml:lang="en">Gujarati</source>
-        <target xml:lang="th" state="needs-translation">Gujarati</target>
+        <target xml:lang="th" state="translated">คุชราต</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi" sil:dynamic="true">
         <source xml:lang="en">Gurmukhi</source>
-        <target xml:lang="th" state="needs-translation">Gurmukhi</target>
+        <target xml:lang="th" state="translated">กูร์มูคี</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" sil:dynamic="true">
         <source xml:lang="en">Hebrew</source>
-        <target xml:lang="th" state="needs-translation">Hebrew</target>
+        <target xml:lang="th" state="translated">ฮิบรู</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada" sil:dynamic="true">
         <source xml:lang="en">Kannada</source>
-        <target xml:lang="th" state="needs-translation">Kannada</target>
+        <target xml:lang="th" state="translated">กันนาดา</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer" sil:dynamic="true">
         <source xml:lang="en">Khmer</source>
-        <target xml:lang="th" state="needs-translation">Khmer</target>
+        <target xml:lang="th" state="translated">เขมร</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao" sil:dynamic="true">
         <source xml:lang="en">Lao</source>
-        <target xml:lang="th" state="needs-translation">Lao</target>
+        <target xml:lang="th" state="translated">ลาว</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian" sil:dynamic="true">
         <source xml:lang="en">Lower-Armenian</source>
-        <target xml:lang="th" state="needs-translation">Lower-Armenian</target>
+        <target xml:lang="th" state="translated">อาร์มีเนียนตอนล่าง</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam" sil:dynamic="true">
         <source xml:lang="en">Malayalam</source>
-        <target xml:lang="th" state="needs-translation">Malayalam</target>
+        <target xml:lang="th" state="translated">มาลายาลัม</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian" sil:dynamic="true">
         <source xml:lang="en">Mongolian</source>
-        <target xml:lang="th" state="needs-translation">Mongolian</target>
+        <target xml:lang="th" state="translated">มองโกเลียน</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar" sil:dynamic="true">
         <source xml:lang="en">Myanmar</source>
-        <target xml:lang="th" state="needs-translation">Myanmar</target>
+        <target xml:lang="th" state="translated">พม่า</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya" sil:dynamic="true">
         <source xml:lang="en">Oriya</source>
-        <target xml:lang="th" state="needs-translation">Oriya</target>
+        <target xml:lang="th" state="translated">โอริยา</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
         <source xml:lang="en">Page Numbering Style</source>
-        <target xml:lang="th" state="needs-translation">Page Numbering Style</target>
+        <target xml:lang="th" state="translated">รูปแบบการใส่เลขหน้า</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" sil:dynamic="true">
         <source xml:lang="en">Persian</source>
-        <target xml:lang="th" state="needs-translation">Persian</target>
+        <target xml:lang="th" state="translated">เปอร์เซียน</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil" sil:dynamic="true">
         <source xml:lang="en">Tamil</source>
-        <target xml:lang="th" state="needs-translation">Tamil</target>
+        <target xml:lang="th" state="translated">ทมิฬ</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu" sil:dynamic="true">
         <source xml:lang="en">Telugu</source>
-        <target xml:lang="th" state="needs-translation">Telugu</target>
+        <target xml:lang="th" state="translated">เตลูกู</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai" sil:dynamic="true">
         <source xml:lang="en">Thai</source>
-        <target xml:lang="th" state="needs-translation">Thai</target>
+        <target xml:lang="th" state="translated">ไทย</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan" sil:dynamic="true">
         <source xml:lang="en">Tibetan</source>
-        <target xml:lang="th" state="needs-translation">Tibetan</target>
+        <target xml:lang="th" state="translated">ทิเบต</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian" sil:dynamic="true">
         <source xml:lang="en">Upper-Armenian</source>
-        <target xml:lang="th" state="needs-translation">Upper-Armenian</target>
+        <target xml:lang="th" state="translated">อาร์มีเนียนตอนบน</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
         <source xml:lang="en">Special Script Settings</source>
-        <target xml:lang="th" state="needs-translation">Special Script Settings</target>
+        <target xml:lang="th" state="translated">การตั้งค่าตัวอักษรพิเศษ</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle" approved="yes">
@@ -602,7 +612,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChooseLanguage">
         <source xml:lang="en">Choose Language</source>
-        <target xml:lang="th" state="needs-translation">Choose Language</target>
+        <target xml:lang="th" state="translated">เลือกภาษา</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChooseLanguage</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
@@ -637,18 +647,13 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
         <source xml:lang="en">Sign Language   (Optional)</source>
-        <target xml:lang="th" state="needs-translation">Sign Language   (Optional)</target>
+        <target xml:lang="th" state="translated">ภาษามือ (ไม่จำเป็น)</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
         <target xml:lang="th" state="final">ชื่อของ Bloom Collection</target>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
-      </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject">
-        <source xml:lang="en">Bloom Enterprise Project</source>
-        <target xml:lang="th" state="needs-translation">Bloom Enterprise Project</target>
-        <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
@@ -670,10 +675,10 @@
         <target xml:lang="th" state="final">จังหวัด</target>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.RequiresEnterprise_ToolTip_" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
-        <target xml:lang="th" state="needs-translation">To use this feature, you'll need to enable Bloom Enterprise.</target>
-        <note>ID: CollectionSettingsDialog.RequiresEnterprise_ToolTip_</note>
+      <trans-unit id="CollectionSettingsDialog.RequiresSubscription_ToolTip_" sil:dynamic="true">
+        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
+        <target xml:lang="th" state="needs-translation">To use this feature, you'll need a Bloom Subscription.</target>
+        <note>ID: CollectionSettingsDialog.RequiresSubscription_ToolTip_</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
         <source xml:lang="en">Restart</source>
@@ -692,17 +697,17 @@
       </trans-unit>
       <trans-unit id="CollectionTab.AddSourceCollection">
         <source xml:lang="en">Show another collection...</source>
-        <target xml:lang="th" state="needs-translation">Show another collection...</target>
+        <target xml:lang="th" state="translated">แสดงคอลเลกชันอื่น...</target>
         <note>Shown at the very bottom of the list of books and collections.  The user can click on this text and then choose an existing collection to use as an additional source of books to translate or otherwise adapt.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.AdminManagesUpdates">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
-        <target xml:lang="th" state="needs-translation">Your system administrator manages Bloom updates for this computer.</target>
+        <target xml:lang="th" state="translated">ผู้ดูแลระบบของคุณจัดการเรื่องอัพเดท Bloom ในเครื่องนี้</target>
         <note>ID: CollectionTab.AdminManagesUpdates</note>
       </trans-unit>
       <trans-unit id="CollectionTab.Applying">
         <source xml:lang="en">Applying updates</source>
-        <target xml:lang="th" state="needs-translation">Applying updates</target>
+        <target xml:lang="th" state="translated">การอัพเดต</target>
         <note>ID: CollectionTab.Applying</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkLabel" approved="yes">
@@ -717,7 +722,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.DuplicateBook">
         <source xml:lang="en">Duplicate Book</source>
-        <target xml:lang="th" state="needs-translation">Duplicate Book</target>
+        <target xml:lang="th" state="translated">ทำสำเนาหนังสือ</target>
         <note>ID: CollectionTab.BookMenu.DuplicateBook</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportDocMessage" approved="yes">
@@ -727,7 +732,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToSpreadsheet">
         <source xml:lang="en">Export to Spreadsheet...</source>
-        <target xml:lang="th" state="needs-translation">Export to Spreadsheet...</target>
+        <target xml:lang="th" state="translated">ส่งออกไปที่สเปรดชีต...</target>
         <note>ID: CollectionTab.BookMenu.ExportToSpreadsheet</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice" approved="yes">
@@ -742,32 +747,32 @@
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ImportContentFromSpreadsheet">
         <source xml:lang="en">Import Content from Spreadsheet...</source>
-        <target xml:lang="th" state="needs-translation">Import Content from Spreadsheet...</target>
+        <target xml:lang="th" state="translated">นำเข้าเนื้อหาจาก...</target>
         <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MustCheckOutTooltip">
         <source xml:lang="en">This feature requires the book to be checked out to you.</source>
-        <target xml:lang="th" state="needs-translation">This feature requires the book to be checked out to you.</target>
+        <target xml:lang="th" state="translated">คุณลักษณะนี้กำหนดให้หนังสือต้องถูกตรวจโดยคุณ</target>
         <note>ID: CollectionTab.BookMenu.MustCheckOutTooltip</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.RenameBook">
         <source xml:lang="en">Rename Book</source>
-        <target xml:lang="th" state="needs-translation">Rename Book</target>
+        <target xml:lang="th" state="translated">เปลี่ยนชื่อหนังสือ</target>
         <note>ID: CollectionTab.BookMenu.RenameBook</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem">
         <source xml:lang="en">Save as Bloom Pack (*.BloomPack)</source>
-        <target xml:lang="th" state="needs-translation">Save as Bloom Pack (*.BloomPack)</target>
+        <target xml:lang="th" state="translated">บันทึกเป็น Bloom Pack (*.BloomPack)</target>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
         <source xml:lang="en">Save as Single File (*.bloomSource)...</source>
-        <target xml:lang="th" state="needs-translation">Save as Single File (*.bloomSource)...</target>
+        <target xml:lang="th" state="translated">บันทึกเป็นไฟล์เดี่ยว (*.bloomSource)...</target>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ShowInFileExplorer">
         <source xml:lang="en">Show in File Explorer</source>
-        <target xml:lang="th" state="needs-translation">Show in File Explorer</target>
+        <target xml:lang="th" state="translated">แสดงในตัวค้นหาไฟล์</target>
         <note>ID: CollectionTab.BookMenu.ShowInFileExplorer</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip" approved="yes">
@@ -797,7 +802,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.ChooseCollection">
         <source xml:lang="en">Choose Collection</source>
-        <target xml:lang="th" state="needs-translation">Choose Collection</target>
+        <target xml:lang="th" state="translated">เลือกคอลเลกชัน</target>
         <note>This is the title of the file-open dialog that you use to choose a Bloom collection</note>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks" approved="yes">
@@ -827,12 +832,12 @@
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionTabLabel">
         <source xml:lang="en">Collections</source>
-        <target xml:lang="th" state="needs-translation">Collections</target>
+        <target xml:lang="th" state="translated">คอลเลกชัน</target>
         <note>ID: CollectionTab.CollectionTabLabel</note>
       </trans-unit>
       <trans-unit id="CollectionTab.Collections">
         <source xml:lang="en">Collections</source>
-        <target xml:lang="th" state="needs-translation">Collections</target>
+        <target xml:lang="th" state="translated">คอลเลกชัน</target>
         <note>ID: CollectionTab.Collections</note>
       </trans-unit>
       <trans-unit id="CollectionTab.ConfiguringBookMessage" approved="yes">
@@ -847,17 +852,17 @@
       </trans-unit>
       <trans-unit id="CollectionTab.ContextMenu.More">
         <source xml:lang="en">More</source>
-        <target xml:lang="th" state="needs-translation">More</target>
+        <target xml:lang="th" state="translated">เพิ่มเติม</target>
         <note>ID: CollectionTab.ContextMenu.More</note>
       </trans-unit>
       <trans-unit id="CollectionTab.ContextMenu.Troubleshooting">
         <source xml:lang="en">Troubleshooting</source>
-        <target xml:lang="th" state="needs-translation">Troubleshooting</target>
+        <target xml:lang="th" state="translated">การแก้ไขปัญหา</target>
         <note>ID: CollectionTab.ContextMenu.Troubleshooting</note>
       </trans-unit>
       <trans-unit id="CollectionTab.DoNotShowCollection">
         <source xml:lang="en">Do not show this collection here.</source>
-        <target xml:lang="th" state="needs-translation">Do not show this collection here.</target>
+        <target xml:lang="th" state="translated">ไม่ต้องแสดงคอลเลกชันที่นี้</target>
         <note>This is a tooltip for the X icon that allows the user to remove a collection from displaying as a source of books.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.EditBookButton" approved="yes">
@@ -867,17 +872,17 @@
       </trans-unit>
       <trans-unit id="CollectionTab.GetABetterBloom">
         <source xml:lang="en">Click to get a better Bloom!</source>
-        <target xml:lang="th" state="needs-translation">Click to get a better Bloom!</target>
+        <target xml:lang="th" state="translated">กดเพิ่มทำให้ Bloom ดีขึ้น!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
-        <target xml:lang="th" state="needs-translation">Show translations which have not been approved yet</target>
+        <target xml:lang="th" state="translated">แสดงการแปลที่ยังไม่ได้ถูกตรวจ</target>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackOfShellBooks">
         <source xml:lang="en">Make Bloom Pack of Shell Books</source>
-        <target xml:lang="th" state="needs-translation">Make Bloom Pack of Shell Books</target>
+        <target xml:lang="th" state="translated">สร้าง Bloom Pack สำหรับโครงแบบหนังสือ</target>
         <note>Shell Books are books that are meant to be translated.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
@@ -887,7 +892,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
         <source xml:lang="en">Create a book in my language using this source book</source>
-        <target xml:lang="th" state="needs-translation">Create a book in my language using this source book</target>
+        <target xml:lang="th" state="translated">สร้างหนังสือในภาษาของฉันโดยใช้แหล่งหนังสือนี้</target>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
       </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton" approved="yes">
@@ -897,7 +902,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_">
         <source xml:lang="en">Open/Create/Get Collection</source>
-        <target xml:lang="th" state="needs-translation">Open/Create/Get Collection</target>
+        <target xml:lang="th" state="translated">เปิด/สร้าง/นำคอลเลกชัน</target>
         <note>ID: CollectionTab.Open/CreateCollectionButton_ToolTip_</note>
       </trans-unit>
       <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem" approved="yes">
@@ -907,17 +912,17 @@
       </trans-unit>
       <trans-unit id="CollectionTab.Progress">
         <source xml:lang="en">({0}% complete)</source>
-        <target xml:lang="th" state="needs-translation">({0}% complete)</target>
+        <target xml:lang="th" state="translated">(เสร็จ {0}%)</target>
         <note>ID: CollectionTab.Progress</note>
       </trans-unit>
       <trans-unit id="CollectionTab.RemoveThisGroup">
         <source xml:lang="en">To remove this group, you will need to delete the folder. Click here to view the folder on your drive.</source>
-        <target xml:lang="th" state="needs-translation">To remove this group, you will need to delete the folder. Click here to view the folder on your drive.</target>
+        <target xml:lang="th" state="translated">เพื่อที่จะลบกลุ่มนี้ คุณจะต้องลบโฟลเดอร์ก่อน กดที่นี้เพื่อดูโฟลเดอร์ในเครื่องคุณ</target>
         <note>This is a tooltip for the folder icon that allows the user to remove a folder that is serving as a source of books.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate">
         <source xml:lang="en">Restart Bloom to Update</source>
-        <target xml:lang="th" state="needs-translation">Restart Bloom to Update</target>
+        <target xml:lang="th" state="translated">เปิด Bloom ใหม่เพื่ออัพเดท</target>
         <note>ID: CollectionTab.RestartToUpdate</note>
       </trans-unit>
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
@@ -947,77 +952,77 @@
       </trans-unit>
       <trans-unit id="CollectionTab.Specialized Templates" sil:dynamic="true">
         <source xml:lang="en">Specialized Templates</source>
-        <target xml:lang="th" state="needs-translation">Specialized Templates</target>
+        <target xml:lang="th" state="translated">โครงแบบเฉพาะทาง</target>
         <note>ID: CollectionTab.Specialized Templates</note>
       </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing">
         <source xml:lang="en">Title Missing</source>
-        <target xml:lang="th" state="needs-translation">Title Missing</target>
+        <target xml:lang="th" state="translated">ไม่มีหัวเรื่อง</target>
         <note>ID: CollectionTab.TitleMissing</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate">
         <source xml:lang="en">Help us translate Bloom (web)</source>
-        <target xml:lang="th" state="needs-translation">Help us translate Bloom (web)</target>
+        <target xml:lang="th" state="translated">ช่วยเราแปล Bloom (เว็บไซต์)</target>
         <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
         <source xml:lang="en">{0}% translated</source>
-        <target xml:lang="th" state="needs-translation">{0}% translated</target>
+        <target xml:lang="th" state="translated">แปลไปแล้ว {0}%</target>
         <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
-        <target xml:lang="th" state="needs-translation">Could not connect to the server to check for an update. Are you connected to the internet?</target>
+        <target xml:lang="th" state="translated">ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่อตรวจการอัพเดท คุณได้เชื่อมต่ออินเทอร์เน็ตหรือไม่?</target>
         <note>ID: CollectionTab.UnableToCheckForUpdate</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UpToDate">
         <source xml:lang="en">Your Bloom is up to date.</source>
-        <target xml:lang="th" state="needs-translation">Your Bloom is up to date.</target>
+        <target xml:lang="th" state="translated">Bloom ของคุณอัพเดทแล้ว</target>
         <note>ID: CollectionTab.UpToDate</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateCheckInProgress">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
-        <target xml:lang="th" state="needs-translation">Bloom is already working on checking for updates.</target>
+        <target xml:lang="th" state="translated">Bloom กำลังตรวจสอบอัพเดท</target>
         <note>ID: CollectionTab.UpdateCheckInProgress</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateFailed">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
-        <target xml:lang="th" state="needs-translation">A new version appears to be available, but Bloom could not install it.</target>
+        <target xml:lang="th" state="translated">มีเวอชันใหม่ แต่ Bloom ไม่สามรถติดตั้งได้</target>
         <note>ID: CollectionTab.UpdateFailed</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateInstalled">
         <source xml:lang="en">Update for {0} is ready</source>
-        <target xml:lang="th" state="needs-translation">Update for {0} is ready</target>
+        <target xml:lang="th" state="translated">อัพเดทสำหรับ {0} พร้อมแล้ว</target>
         <note>ID: CollectionTab.UpdateInstalled</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateNow">
         <source xml:lang="en">Update Now</source>
-        <target xml:lang="th" state="needs-translation">Update Now</target>
+        <target xml:lang="th" state="translated">อัพเดทตอนนี้</target>
         <note>ID: CollectionTab.UpdateNow</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdatesAvailable">
         <source xml:lang="en">A new version of Bloom is available.</source>
-        <target xml:lang="th" state="needs-translation">A new version of Bloom is available.</target>
+        <target xml:lang="th" state="translated">เวอชันใหม่ของ Bloom มาแล้ว</target>
         <note>ID: CollectionTab.UpdatesAvailable</note>
       </trans-unit>
       <trans-unit id="CollectionTab.Updating">
         <source xml:lang="en">Downloading update to {0} ({1}K)</source>
-        <target xml:lang="th" state="needs-translation">Downloading update to {0} ({1}K)</target>
+        <target xml:lang="th" state="translated">การดาวโหลดอัพเดท {0} ({1}K)</target>
         <note>ID: CollectionTab.Updating</note>
       </trans-unit>
       <trans-unit id="ColorPicker.PercentTransparent" sil:dynamic="true">
         <source xml:lang="en">{0}% Transparent</source>
-        <target xml:lang="th" state="needs-translation">{0}% Transparent</target>
+        <target xml:lang="th" state="translated">{0}% โปร่งใส</target>
         <note>ID: ColorPicker.PercentTransparent</note>
       </trans-unit>
       <trans-unit id="ColorPicker.New" sil:dynamic="true">
         <source xml:lang="en">New...</source>
-        <target xml:lang="th" state="needs-translation">New...</target>
+        <target xml:lang="th" state="translated">ใหม่...</target>
         <note>ID: ColorPicker.New</note>
       </trans-unit>
       <trans-unit id="Common.BookSettings">
         <source xml:lang="en">Book Settings</source>
-        <target xml:lang="th" state="needs-translation">Book Settings</target>
+        <target xml:lang="th" state="translated">การตั้งค่าหนังสือ</target>
         <note>ID: Common.BookSettings</note>
       </trans-unit>
       <trans-unit id="Common.Advanced" approved="yes">
@@ -1027,7 +1032,7 @@
       </trans-unit>
       <trans-unit id="Common.AskForHelp">
         <source xml:lang="en">Ask for help</source>
-        <target xml:lang="th" state="needs-translation">Ask for help</target>
+        <target xml:lang="th" state="translated">ความช่วยเหลือ</target>
         <note>ID: Common.AskForHelp</note>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
@@ -1035,10 +1040,10 @@
         <target xml:lang="th" state="final">กลับ</target>
         <note>ID: Common.BackButton</note>
       </trans-unit>
-      <trans-unit id="Common.BloomEnterpriseFeature">
-        <source xml:lang="en">Bloom Enterprise Feature</source>
-        <target xml:lang="th" state="needs-translation">Bloom Enterprise Feature</target>
-        <note>ID: Common.BloomEnterpriseFeature</note>
+      <trans-unit id="Common.BloomSubscriptionFeature">
+        <source xml:lang="en">Bloom Subscription Feature</source>
+        <target xml:lang="th" state="needs-translation">Bloom Subscription Feature</target>
+        <note>ID: Common.BloomSubscriptionFeature</note>
       </trans-unit>
       <trans-unit id="Common.Cancel" approved="yes">
         <source xml:lang="en">Cancel</source>
@@ -1061,32 +1066,32 @@
       </trans-unit>
       <trans-unit id="Common.Color">
         <source xml:lang="en">Color</source>
-        <target xml:lang="th" state="needs-translation">Color</target>
+        <target xml:lang="th" state="translated">สี</target>
         <note>ID: Common.Color</note>
       </trans-unit>
       <trans-unit id="Common.Colors.Black">
         <source xml:lang="en">Black</source>
-        <target xml:lang="th" state="needs-translation">Black</target>
+        <target xml:lang="th" state="translated">สีดำ</target>
         <note>ID: Common.Colors.Black</note>
       </trans-unit>
       <trans-unit id="Common.Colors.Crimson">
         <source xml:lang="en">Crimson</source>
-        <target xml:lang="th" state="needs-translation">Crimson</target>
+        <target xml:lang="th" state="translated">สีแดงเข้ม</target>
         <note>ID: Common.Colors.Crimson</note>
       </trans-unit>
       <trans-unit id="Common.Colors.White">
         <source xml:lang="en">White</source>
-        <target xml:lang="th" state="needs-translation">White</target>
+        <target xml:lang="th" state="translated">สีขาว</target>
         <note>ID: Common.Colors.White</note>
       </trans-unit>
       <trans-unit id="Common.Colors.Yellow">
         <source xml:lang="en">Yellow</source>
-        <target xml:lang="th" state="needs-translation">Yellow</target>
+        <target xml:lang="th" state="translated">สีเหลือง</target>
         <note>ID: Common.Colors.Yellow</note>
       </trans-unit>
       <trans-unit id="Common.Continue">
         <source xml:lang="en">Continue</source>
-        <target xml:lang="th" state="needs-translation">Continue</target>
+        <target xml:lang="th" state="translated">ดำเนินการต่อ</target>
         <note>This is shown at the bottom of a dialog box and means to go ahead with some action. It is often paired with "Cancel"</note>
       </trans-unit>
       <trans-unit id="Common.Copy" approved="yes">
@@ -1101,22 +1106,27 @@
       </trans-unit>
       <trans-unit id="Common.Delete">
         <source xml:lang="en">Delete</source>
-        <target xml:lang="th" state="needs-translation">Delete</target>
+        <target xml:lang="th" state="translated">ลบ</target>
         <note>ID: Common.Delete</note>
       </trans-unit>
       <trans-unit id="Common.Done">
         <source xml:lang="en">Done</source>
-        <target xml:lang="th" state="needs-translation">Done</target>
+        <target xml:lang="th" state="translated">เสร็จสิ้น</target>
         <note>ID: Common.Done</note>
       </trans-unit>
-      <trans-unit id="Common.EnterpriseRequired">
-        <source xml:lang="en">Enterprise Required</source>
-        <target xml:lang="th" state="needs-translation">Enterprise Required</target>
-        <note>ID: Common.EnterpriseRequired</note>
+      <trans-unit id="Common.SubscriptionRequired">
+        <source xml:lang="en">Subscription Required</source>
+        <target xml:lang="th" state="needs-translation">Subscription Required</target>
+        <note>ID: Common.SubscriptionRequired</note>
+      </trans-unit>
+      <trans-unit id="Common.HigherSubscriptionTierRequired">
+        <source xml:lang="en">Feature Requires Higher Subscription Tier</source>
+        <target xml:lang="th" state="needs-translation">Feature Requires Higher Subscription Tier</target>
+        <note>ID: Common.HigherSubscriptionTierRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error">
         <source xml:lang="en">Error</source>
-        <target xml:lang="th" state="needs-translation">Error</target>
+        <target xml:lang="th" state="translated">ข้อผิดพลาด</target>
         <note>ID: Common.Error</note>
       </trans-unit>
       <trans-unit id="Common.Finish" approved="yes">
@@ -1126,7 +1136,7 @@
       </trans-unit>
       <trans-unit id="Common.FinishedAt">
         <source xml:lang="en">Finished at {0:hh:mm tt}</source>
-        <target xml:lang="th" state="needs-translation">Finished at {0:hh:mm tt}</target>
+        <target xml:lang="th" state="translated">เสร็จตอน {0:hh:mm tt}</target>
         <note>ID: Common.FinishedAt</note>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
@@ -1141,27 +1151,27 @@
       </trans-unit>
       <trans-unit id="Common.Info">
         <source xml:lang="en">Info</source>
-        <target xml:lang="th" state="needs-translation">Info</target>
+        <target xml:lang="th" state="translated">ข้อมูล</target>
         <note>ID: Common.Info</note>
       </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
-        <target xml:lang="th" state="needs-translation">Learn More</target>
+        <target xml:lang="th" state="translated">เรียนรู้เพิ่มเติม</target>
         <note>ID: Common.LearnMore</note>
       </trans-unit>
       <trans-unit id="Common.License" sil:dynamic="true">
         <source xml:lang="en">License</source>
-        <target xml:lang="th" state="needs-translation">License</target>
+        <target xml:lang="th" state="translated">ใบอนุญาต</target>
         <note>ID: Common.License</note>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true">
         <source xml:lang="en">Loading...</source>
-        <target xml:lang="th" state="needs-translation">Loading...</target>
+        <target xml:lang="th" state="translated">กำลังโหลด...</target>
         <note>ID: Common.Loading</note>
       </trans-unit>
       <trans-unit id="Common.LongRunningOperation" sil:dynamic="true">
         <source xml:lang="en">This may take a while...</source>
-        <target xml:lang="th" state="needs-translation">This may take a while...</target>
+        <target xml:lang="th" state="translated">อาจใช้เวลาสักครู่...</target>
         <note>ID: Common.LongRunningOperation</note>
       </trans-unit>
       <trans-unit id="Common.Next" approved="yes">
@@ -1181,7 +1191,7 @@
       </trans-unit>
       <trans-unit id="Common.Note">
         <source xml:lang="en">Note</source>
-        <target xml:lang="th" state="needs-translation">Note</target>
+        <target xml:lang="th" state="translated">บันทึก</target>
         <note>ID: Common.Note</note>
       </trans-unit>
       <trans-unit id="Common.OK" approved="yes">
@@ -1196,47 +1206,47 @@
       </trans-unit>
       <trans-unit id="Common.Other" sil:dynamic="true">
         <source xml:lang="en">Other</source>
-        <target xml:lang="th" state="needs-translation">Other</target>
+        <target xml:lang="th" state="translated">อื่นๆ</target>
         <note>ID: Common.Other</note>
       </trans-unit>
       <trans-unit id="Common.Pause" sil:dynamic="true">
         <source xml:lang="en">Pause</source>
-        <target xml:lang="th" state="needs-translation">Pause</target>
+        <target xml:lang="th" state="translated">หยุด</target>
         <note>ID: Common.Pause</note>
       </trans-unit>
       <trans-unit id="Common.Preview">
         <source xml:lang="en">Preview</source>
-        <target xml:lang="th" state="needs-translation">Preview</target>
+        <target xml:lang="th" state="translated">ดูตัวอย่าง</target>
         <note>ID: Common.Preview</note>
       </trans-unit>
       <trans-unit id="Common.ProblemTitle">
         <source xml:lang="en">Bloom Problem</source>
-        <target xml:lang="th" state="needs-translation">Bloom Problem</target>
+        <target xml:lang="th" state="translated">ปัญหา Bloom</target>
         <note>ID: Common.ProblemTitle</note>
       </trans-unit>
       <trans-unit id="Common.Progress">
         <source xml:lang="en">Progress</source>
-        <target xml:lang="th" state="needs-translation">Progress</target>
+        <target xml:lang="th" state="translated">ความคืบหน้า</target>
         <note>ID: Common.Progress</note>
       </trans-unit>
       <trans-unit id="Common.Replace">
         <source xml:lang="en">Replace</source>
-        <target xml:lang="th" state="needs-translation">Replace</target>
+        <target xml:lang="th" state="translated">แทนที่</target>
         <note>ID: Common.Replace</note>
       </trans-unit>
       <trans-unit id="Common.Report">
         <source xml:lang="en">REPORT</source>
-        <target xml:lang="th" state="needs-translation">REPORT</target>
+        <target xml:lang="th" state="translated">รายงาน</target>
         <note>ID: Common.Report</note>
       </trans-unit>
       <trans-unit id="Common.Options" sil:dynamic="true">
         <source xml:lang="en">Options</source>
-        <target xml:lang="th" state="needs-translation">Options</target>
+        <target xml:lang="th" state="translated">ตัวเลือก</target>
         <note>ID: Common.Options</note>
       </trans-unit>
       <trans-unit id="Common.Save">
         <source xml:lang="en">Save</source>
-        <target xml:lang="th" state="needs-translation">Save</target>
+        <target xml:lang="th" state="translated">บันทึก</target>
         <note>ID: Common.Save</note>
       </trans-unit>
       <trans-unit id="Common.Seconds">
@@ -1246,12 +1256,12 @@
       </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
-        <target xml:lang="th" state="needs-translation">See {0}.</target>
+        <target xml:lang="th" state="translated">ดู {0}</target>
         <note>ID: Common.SeeWebPage</note>
       </trans-unit>
       <trans-unit id="Common.SelectAll">
         <source xml:lang="en">Select all</source>
-        <target xml:lang="th" state="needs-translation">Select all</target>
+        <target xml:lang="th" state="translated">เลือกทั้งหมด</target>
         <note>ID: Common.SelectAll</note>
       </trans-unit>
       <trans-unit id="Common.Settings" approved="yes">
@@ -1261,37 +1271,37 @@
       </trans-unit>
       <trans-unit id="Common.Starting">
         <source xml:lang="en">Starting...</source>
-        <target xml:lang="th" state="needs-translation">Starting...</target>
+        <target xml:lang="th" state="translated">เริ่มต้น...</target>
         <note>ID: Common.Starting</note>
       </trans-unit>
       <trans-unit id="Common.Stop">
         <source xml:lang="en">Stop</source>
-        <target xml:lang="th" state="needs-translation">Stop</target>
+        <target xml:lang="th" state="translated">หยุด</target>
         <note>ID: Common.Stop</note>
       </trans-unit>
       <trans-unit id="Common.Upload">
         <source xml:lang="en">Upload</source>
-        <target xml:lang="th" state="needs-translation">Upload</target>
+        <target xml:lang="th" state="translated">อัพโหลด</target>
         <note>ID: Common.Upload</note>
       </trans-unit>
       <trans-unit id="Common.Uploading">
         <source xml:lang="en">Uploading</source>
-        <target xml:lang="th" state="needs-translation">Uploading</target>
+        <target xml:lang="th" state="translated">กำลังอัพโหลด</target>
         <note>ID: Common.Uploading</note>
       </trans-unit>
       <trans-unit id="Common.Warning">
         <source xml:lang="en">Info</source>
-        <target xml:lang="th" state="needs-translation">Info</target>
+        <target xml:lang="th" state="translated">ข้อมูล</target>
         <note>ID: Common.Warning</note>
       </trans-unit>
       <trans-unit id="Common.WhatsThis" sil:dynamic="true">
         <source xml:lang="en">What's this?</source>
-        <target xml:lang="th" state="needs-translation">What's this?</target>
+        <target xml:lang="th" state="translated">นี้คืออะไร?</target>
         <note>ID: Common.WhatsThis</note>
       </trans-unit>
       <trans-unit id="Common.WhatCausedThisProblem">
         <source xml:lang="en">What caused this problem?</source>
-        <target xml:lang="th" state="needs-translation">What caused this problem?</target>
+        <target xml:lang="th" state="translated">อะไรทำให้เกิดปัญหานี้?</target>
         <note>ID: Common.WhatCausedThisProblem</note>
       </trans-unit>
       <trans-unit id="Common.Yes" approved="yes">
@@ -1301,7 +1311,7 @@
       </trans-unit>
       <trans-unit id="Copyright.CopyrightHolder" sil:dynamic="true">
         <source xml:lang="en">Copyright Holder</source>
-        <target xml:lang="th" state="needs-translation">Copyright Holder</target>
+        <target xml:lang="th" state="translated">ผู้ถือลิขสิทธิ์</target>
         <note>ID: Copyright.CopyrightHolder</note>
       </trans-unit>
       <trans-unit id="Copyright.CopyrightYear" sil:dynamic="true">
@@ -1311,17 +1321,17 @@
       </trans-unit>
       <trans-unit id="Copyright.FollowSILGuidelines" sil:dynamic="true">
         <source xml:lang="en">SIL has corporate guidelines around what kinds of materials may be copyrighted by SIL. Please check [this page] in order to ensure that this book qualifies.</source>
-        <target xml:lang="th" state="needs-translation">SIL has corporate guidelines around what kinds of materials may be copyrighted by SIL. Please check [this page] in order to ensure that this book qualifies.</target>
+        <target xml:lang="th" state="translated">SIL มีแนวทางปฏิบัติขององค์กรเกี่ยวกับสื่อประเภทอะไรบ้างที่อาจมีลิขสิทธิ์ โปรดตรวจสอบ [หน้านี้] เพื่อให้แน่ใจว่าหนังสือเล่มนี้ถูกลิขสิทธิ์</target>
         <note>ID: Copyright.FollowSILGuidelines</note>
       </trans-unit>
       <trans-unit id="Copyright.IllustratorOrPhotographer" sil:dynamic="true">
         <source xml:lang="en">Illustrator/Photographer</source>
-        <target xml:lang="th" state="needs-translation">Illustrator/Photographer</target>
+        <target xml:lang="th" state="translated">ผู้วาด/ช่างภาพ</target>
         <note>ID: Copyright.IllustratorOrPhotographer</note>
       </trans-unit>
       <trans-unit id="Copyright.MissingCopyright">
         <source xml:lang="en">Needs Copyright</source>
-        <target xml:lang="th" state="needs-translation">Needs Copyright</target>
+        <target xml:lang="th" state="translated">ต้องการลิขสิทธิ์</target>
         <note>People will see this button on the Credits Page when they make a new book. So when translating, don't make them feel bad. Don't make them feel that they made a mistake. We just want to point out that they need to give us a copyright eventually.</note>
       </trans-unit>
       <trans-unit id="Copyright.NotATranslation" sil:dynamic="true">
@@ -1331,12 +1341,12 @@
       </trans-unit>
       <trans-unit id="Copyright.PublishingAsSIL" sil:dynamic="true">
         <source xml:lang="en">Using "SIL" in a Copyright</source>
-        <target xml:lang="th" state="needs-translation">Using "SIL" in a Copyright</target>
+        <target xml:lang="th" state="translated">ใช้ SIL ในลิขสิทธิ์</target>
         <note>ID: Copyright.PublishingAsSIL</note>
       </trans-unit>
       <trans-unit id="Copyright.UseOriginalCopyright" sil:dynamic="true">
         <source xml:lang="en">Continue to use the same copyright and license as the original book:</source>
-        <target xml:lang="th" state="needs-translation">Continue to use the same copyright and license as the original book:</target>
+        <target xml:lang="th" state="translated">ใช้ลิขสิทธิ์และใบอนุญาตเดิมต่อเหมือนหนังสือต้นฉบับ</target>
         <note>ID: Copyright.UseOriginalCopyright</note>
       </trans-unit>
       <trans-unit id="CopyrightAndLicense" sil:dynamic="true">
@@ -1659,15 +1669,15 @@
         <target xml:lang="th" state="needs-translation">This sentence is too long for this level.</target>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
       </trans-unit>
-      <trans-unit id="EditTab.EnterpriseEnabled" sil:dynamic="true">
-        <source xml:lang="en">This Bloom Enterprise feature is enabled for you.</source>
-        <target xml:lang="th" state="needs-translation">This Bloom Enterprise feature is enabled for you.</target>
-        <note>ID: EditTab.EnterpriseEnabled</note>
+      <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
+        <source xml:lang="en">Your subscription includes this feature.</source>
+        <target xml:lang="th" state="needs-translation">Your subscription includes this feature.</target>
+        <note>ID: EditTab.SubscriptionEnabled</note>
       </trans-unit>
-      <trans-unit id="EditTab.EnterpriseSettingsButton" sil:dynamic="true">
-        <source xml:lang="en">Bloom Enterprise Settings</source>
-        <target xml:lang="th" state="needs-translation">Bloom Enterprise Settings</target>
-        <note>ID: EditTab.EnterpriseSettingsButton</note>
+      <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true">
+        <source xml:lang="en">Bloom Subscription Settings</source>
+        <target xml:lang="th" state="needs-translation">Bloom Subscription Settings</target>
+        <note>ID: EditTab.SubscriptionSettingsButton</note>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
@@ -2084,6 +2094,11 @@
         <target xml:lang="th" state="needs-translation">This picture, {0}, is missing or was loading too slowly.</target>
         <note>ID: EditTab.Image.AltMsg</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true">
+        <source xml:lang="en">Background Image</source>
+        <target xml:lang="th" state="needs-translation">Background Image</target>
+        <note>ID: EditTab.Image.BackgroundImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change image</source>
         <target xml:lang="th" state="final">เปลี่ยนรูป</target>
@@ -2139,7 +2154,7 @@
         <target xml:lang="th" state="needs-translation">Image credits, copyright, &amp; license</target>
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true">
         <source xml:lang="en">This sound will play when the item is touched.</source>
         <target xml:lang="th" state="needs-translation">This sound will play when the item is touched.</target>
         <note>ID: EditTab.Image.PlayWhenTouched</note>
@@ -2153,6 +2168,11 @@
         <source xml:lang="en">Paste image</source>
         <target xml:lang="th" state="final">แปะรูป</target>
         <note>ID: EditTab.Image.PasteImage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Reset" sil:dynamic="true">
+        <source xml:lang="en">Reset image</source>
+        <target xml:lang="th" state="needs-translation">Reset image</target>
+        <note>ID: EditTab.Image.Reset</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
@@ -2263,11 +2283,6 @@
         <source xml:lang="en">Paste Page</source>
         <target xml:lang="th" state="needs-translation">Paste Page</target>
         <note>ID: EditTab.PastePage</note>
-      </trans-unit>
-      <trans-unit id="EditTab.RequiresEnterprise" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
-        <target xml:lang="th" state="needs-translation">To use this feature, you'll need to enable Bloom Enterprise.</target>
-        <note>ID: EditTab.RequiresEnterprise</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
@@ -2424,14 +2439,19 @@
         <target xml:lang="th" state="needs-translation">Crop</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
+        <source xml:lang="en">Fill the space</source>
+        <target xml:lang="th" state="needs-translation">Fill the space</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Fit</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
         <source xml:lang="en">Resize</source>
         <target xml:lang="th" state="needs-translation">Resize</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
-        <source xml:lang="en">Shift Picture</source>
-        <target xml:lang="th" state="needs-translation">Shift Picture</target>
+        <source xml:lang="en">Move image</source>
+        <target xml:lang="th" state="needs-translation">Move image</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Shift</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
@@ -2468,6 +2488,16 @@
         <source xml:lang="en">Duplicate</source>
         <target xml:lang="th" state="needs-translation">Duplicate</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fill Background</source>
+        <target xml:lang="th" state="needs-translation">Fill Background</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillBackground</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Expand image to fill space</source>
+        <target xml:lang="th" state="needs-translation">Expand image to fill space</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
         <source xml:lang="en">Format text...</source>
@@ -2513,11 +2543,6 @@
         <source xml:lang="en">Rounded Corners</source>
         <target xml:lang="th" state="needs-translation">Rounded Corners</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.RoundedCorners</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool" sil:dynamic="true">
-        <source xml:lang="en">Show Sign Language Tool</source>
-        <target xml:lang="th" state="needs-translation">Show Sign Language Tool</target>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true">
         <source xml:lang="en">Show Tail</source>
@@ -4019,6 +4044,11 @@
         <target xml:lang="th" state="needs-translation">Activity</target>
         <note>ID: PublishTab.Activity</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Game">
+        <source xml:lang="en">Game</source>
+        <target xml:lang="th" state="needs-translation">Game</target>
+        <note>ID: PublishTab.Game</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Comic">
         <source xml:lang="en">Comic</source>
         <target xml:lang="th" state="needs-translation">Comic</target>
@@ -4353,11 +4383,6 @@
         <target xml:lang="th" state="needs-translation">Bloom Book for Devices</target>
         <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Audio.ElementsMissingId">
-        <source xml:lang="en">Some audio elements are missing ids</source>
-        <target xml:lang="th" state="needs-translation">Some audio elements are missing ids</target>
-        <note>ID: PublishTab.Audio.ElementsMissingId</note>
-      </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio" approved="yes">
         <source xml:lang="en">Booklet Insides</source>
         <target xml:lang="th" state="final">เนื้อหาภายในหนังสือเล่มเล็ก</target>
@@ -4417,6 +4442,11 @@
         <source xml:lang="en">Produce a .bloomshelf file</source>
         <target xml:lang="th" state="needs-translation">Produce a .bloomshelf file</target>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
+      </trans-unit>
+      <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true">
+        <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
+        <target xml:lang="th" state="needs-translation">Removing one or more pages which require a higher subscription tier</target>
+        <note>ID: Publish.RemovingDisallowedPages</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Web</source>
@@ -4587,6 +4617,11 @@
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <target xml:lang="th" state="needs-translation">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</target>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FeatureRequiresHigherTier">
+        <source xml:lang="en">The feature "{0}" was removed from this book because it requires a higher subscription tier</source>
+        <target xml:lang="th" state="needs-translation">The feature "{0}" was removed from this book because it requires a higher subscription tier</target>
+        <note>ID: PublishTab.FeatureRequiresHigherTier</note>
       </trans-unit>
       <trans-unit id="PublishTab.NoBookletsMessage">
         <source xml:lang="en">This is disabled because Bloom cannot make booklets using the current size and orientation.</source>
@@ -4843,20 +4878,20 @@
         <target xml:lang="th" state="final">ประกาศ</target>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
-        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
-        <target xml:lang="th" state="needs-translation">Page {0} is the first page that uses Overlay elements.</target>
-        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage">
+        <source xml:lang="en">Page {0} is the first page that uses this feature.</source>
+        <target xml:lang="th" state="needs-translation">Page {0} is the first page that uses this feature.</target>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
-        <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
-        <target xml:lang="th" state="needs-translation">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</target>
-        <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options">
+        <source xml:lang="en">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</source>
+        <target xml:lang="th" state="needs-translation">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</target>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.Options</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
-        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
-        <target xml:lang="th" state="needs-translation">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</target>
-        <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation">
+        <source xml:lang="en">The book titled "{0}" uses the "{1}" feature.</source>
+        <target xml:lang="th" state="needs-translation">The book titled "{0}" uses the "{1}" feature.</target>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
         <source xml:lang="en">less than one minute</source>
@@ -4872,6 +4907,11 @@
         <source xml:lang="en">Activities will be skipped</source>
         <target xml:lang="th" state="needs-translation">Activities will be skipped</target>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.GamesSkipped">
+        <source xml:lang="en">Games will be skipped</source>
+        <target xml:lang="th" state="needs-translation">Games will be skipped</target>
+        <note>ID: PublishTab.RecordVideo.GamesSkipped</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AudioFile">
         <source xml:lang="en">Audio File</source>
@@ -5116,11 +5156,6 @@
         <target xml:lang="th" state="needs-translation">Upload was cancelled</target>
         <note>ID: PublishTab.Upload.Cancelled</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckingVersionEligibility">
-        <source xml:lang="en">Checking Bloom version eligibility...</source>
-        <target xml:lang="th" state="needs-translation">Checking Bloom version eligibility...</target>
-        <note>ID: PublishTab.Upload.CheckingVersionEligibility</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckingExistingCopy">
         <source xml:lang="en">Checking for existing copy on server...</source>
         <target xml:lang="th" state="needs-translation">Checking for existing copy on server...</target>
@@ -5182,8 +5217,8 @@
         <note>ID: PublishTab.FontProblem.Microsoft</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Result">
-        <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</source>
-        <target xml:lang="th" state="needs-translation">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</target>
+        <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the "READ" button or downloads for BloomPUB or ePUB.</source>
+        <target xml:lang="th" state="needs-translation">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the "READ" button or downloads for BloomPUB or ePUB.</target>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog">
@@ -5396,11 +5431,6 @@
         <target xml:lang="th" state="final">อัพโหลดความคืบหน้า</target>
         <note>ID: PublishTab.Upload.UploadProgress</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadingBookMetadata" approved="yes">
-        <source xml:lang="en">Uploading book metadata</source>
-        <target xml:lang="th" state="final">การอัปโหลด เมตาดาต้า หนังสือ</target>
-        <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingStatus" approved="yes">
         <source xml:lang="en">Uploading {0}</source>
         <target xml:lang="th" state="final">การอัปโหลด {0}</target>
@@ -5411,10 +5441,10 @@
         <target xml:lang="th" state="needs-translation">Already in Bloom Library</target>
         <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeBranding">
-        <source xml:lang="en">The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
-        <target xml:lang="th" state="needs-translation">The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</target>
-        <note>ID: PublishTab.UploadCollisionDialog.ChangeBranding</note>
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeSubscription">
+        <source xml:lang="en">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
+        <target xml:lang="th" state="needs-translation">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</target>
+        <note>ID: PublishTab.UploadCollisionDialog.ChangeSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader">
         <source xml:lang="en">Change the official uploader to {0}. (Bloom Library will hide part of your email address)</source>
@@ -5430,11 +5460,6 @@
         <source xml:lang="en">BloomLibrary.org already has {0} books that have the same ID as this one.</source>
         <target xml:lang="th" state="needs-translation">BloomLibrary.org already has {0} books that have the same ID as this one.</target>
         <note>ID: PublishTab.UploadCollisionDialog.HaveMany</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne">
-        <source xml:lang="en">BloomLibrary.org already has a book with this ID from you ({0}).</source>
-        <target xml:lang="th" state="needs-translation">BloomLibrary.org already has a book with this ID from you ({0}).</target>
-        <note>ID: PublishTab.UploadCollisionDialog.HaveOne</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne2">
         <source xml:lang="en">BloomLibrary.org already has a book with this ID.</source>
@@ -5461,30 +5486,15 @@
         <target xml:lang="th" state="needs-translation">No, these are different books</target>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary">
-        <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
-        <target xml:lang="th" state="needs-translation">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</target>
-        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
-      </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2">
         <source xml:lang="en">Bloom will fix the ID of your book and upload it as a new book. The old book on Bloom Library will stay the same.</source>
         <target xml:lang="th" state="needs-translation">Bloom will fix the ID of your book and upload it as a new book. The old book on Bloom Library will stay the same.</target>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
-        <source xml:lang="en">Yes, this is an update of my book</source>
-        <target xml:lang="th" state="needs-translation">Yes, this is an update of my book</target>
-        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
-      </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2">
         <source xml:lang="en">Yes, I want to update this book</source>
         <target xml:lang="th" state="needs-translation">Yes, I want to update this book</target>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook2</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary">
-        <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
-        <target xml:lang="th" state="needs-translation">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</target>
-        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary">
         <source xml:lang="en">Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
@@ -6093,21 +6103,6 @@
         <target xml:lang="th" state="needs-translation">Search online</target>
         <note>ID: ReportProblemDialog.SearchOnline</note>
       </trans-unit>
-      <trans-unit id="SamplePrintNotification.IGetIt">
-        <source xml:lang="en">I get it. Do not show this again.</source>
-        <target xml:lang="th" state="needs-translation">I get it. Do not show this again.</target>
-        <note>ID: SamplePrintNotification.IGetIt</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.PleaseNotice">
-        <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
-        <target xml:lang="th" state="needs-translation">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</target>
-        <note>ID: SamplePrintNotification.PleaseNotice</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.WindowTitle">
-        <source xml:lang="en">Sample Print Settings</source>
-        <target xml:lang="th" state="needs-translation">Sample Print Settings</target>
-        <note>ID: SamplePrintNotification.WindowTitle</note>
-      </trans-unit>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" sil:dynamic="true">
         <source xml:lang="en">Default line spacing</source>
         <target xml:lang="th" state="needs-translation">Default line spacing</target>
@@ -6133,50 +6128,85 @@
         <target xml:lang="th" state="needs-translation">Use special line spacing</target>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Community" sil:dynamic="true">
-        <source xml:lang="en">Funded by the local community only</source>
-        <target xml:lang="th" state="needs-translation">Funded by the local community only</target>
-        <note>ID: Settings.Enterprise.Community</note>
+      <trans-unit id="Common.BloomSubscription">
+        <source xml:lang="en">Bloom Subscription</source>
+        <target xml:lang="th" state="needs-translation">Bloom Subscription</target>
+        <note>ID: Common.BloomSubscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.DownloadForEdit" sil:dynamic="true">
-        <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same Bloom Enterprise branding as when it was last uploaded.</source>
-        <target xml:lang="th" state="needs-translation">This collection is in "Download for Edit" mode. The book has the same Bloom Enterprise branding as when it was last uploaded.</target>
-        <note>ID: Settings.Enterprise.DownloadForEdit</note>
+      <!-- Most subscription labels are in the BloomLowPriority. What we want here
+is mostly status, which shows on the Collection Tab -->
+      <trans-unit id="SubscriptionStatus.RenewalMessage">
+        <source xml:lang="en">Please email [subscriptions@bloomlibrary.org](%0) to renew.</source>
+        <target xml:lang="th" state="needs-translation">Please email [subscriptions@bloomlibrary.org](%0) to renew.</target>
+        <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.LearnMore" sil:dynamic="true">
-        <source xml:lang="en">Learn More</source>
-        <target xml:lang="th" state="needs-translation">Learn More</target>
-        <note>ID: Settings.Enterprise.LearnMore</note>
+      <trans-unit id="Subscription.RequiredTierForFeatureSentence">
+        <source xml:lang="en">This feature requires a Bloom subscription tier of at least "{0}".</source>
+        <target xml:lang="th" state="needs-translation">This feature requires a Bloom subscription tier of at least "{0}".</target>
+        <note>ID: Subscription.RequiredTierForFeatureSentence</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true">
-        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
-        <target xml:lang="th" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </target>
-        <note>ID: Settings.Subscription.NeedsCode</note>
+      <trans-unit id="Subscription.FeatureIsIncludedSentence">
+        <source xml:lang="en">This feature is included in your {0} subscription.</source>
+        <target xml:lang="th" state="needs-translation">This feature is included in your {0} subscription.</target>
+        <note>ID: Subscription.FeatureIsIncludedSentence</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.None" sil:dynamic="true">
-        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
-        <target xml:lang="th" state="needs-translation">None. Bloom will not show Enterprise features.</target>
-        <note>ID: Settings.Enterprise.None</note>
+      <trans-unit id="Subscription.Pro.EmailMismatch">
+        <source xml:lang="en">Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.</source>
+        <target xml:lang="th" state="needs-translation">Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.</target>
+        <note>ID: Subscription.Pro.EmailMismatch</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Overview" sil:dynamic="true">
-        <source xml:lang="en">Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.</source>
-        <target xml:lang="th" state="needs-translation">Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.</target>
-        <note>ID: Settings.Enterprise.Overview</note>
+      <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
+        <source xml:lang="en">Your {0} subscription expires on {1}.</source>
+        <target xml:lang="th" state="needs-translation">Your {0} subscription expires on {1}.</target>
+        <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Status" sil:dynamic="true">
-        <source xml:lang="en">Bloom Enterprise Status</source>
-        <target xml:lang="th" state="needs-translation">Bloom Enterprise Status</target>
-        <note>ID: Settings.Enterprise.Status</note>
+      <trans-unit id="SubscriptionStatus.ExpiredMessage">
+        <source xml:lang="en">Your {0} subscription expired on {1}.</source>
+        <target xml:lang="th" state="needs-translation">Your {0} subscription expired on {1}.</target>
+        <note>ID: SubscriptionStatus.ExpiredMessage</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Subscription" sil:dynamic="true">
-        <source xml:lang="en">Enterprise Subscription</source>
-        <target xml:lang="th" state="needs-translation">Enterprise Subscription</target>
-        <note>ID: Settings.Enterprise.Subscription</note>
+      <trans-unit id="SubscriptionStatus.DefaultMessage">
+        <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
+        <target xml:lang="th" state="needs-translation">Using subscription: {0}. Expires {1}</target>
+        <note>ID: SubscriptionStatus.DefaultMessage</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" sil:dynamic="true">
-        <source xml:lang="en">Subscription Code:</source>
-        <target xml:lang="th" state="needs-translation">Subscription Code:</target>
-        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
+      <trans-unit id="SubscriptionStatus.ProTeamCollectionNotSupported">
+        <source xml:lang="en">Pro subscriptions are not supported for Team Collections. Please use a Local Community or Enterprise subscription.</source>
+        <target xml:lang="th" state="needs-translation">Pro subscriptions are not supported for Team Collections. Please use a Local Community or Enterprise subscription.</target>
+        <note>ID: SubscriptionStatus.ProTeamCollectionNotSupported</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingProSubscription">
+        <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
+        <target xml:lang="th" state="needs-translation">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</target>
+        <note>ID: SubscriptionStatus.UsingProSubscription</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
+        <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
+        <target xml:lang="th" state="needs-translation">Using **Local Community** subscription for **{0}**. Expires {1}</target>
+        <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription">
+        <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
+        <target xml:lang="th" state="needs-translation">Using **Enterprise** subscription for **{0}**. Expires **{1}**</target>
+        <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.DuplicateIds">
+        <source xml:lang="en">
+          Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0}).
+        </source>
+        <target xml:lang="th" state="needs-translation">
+          Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0}).
+        </target>
+        <note>ID: TeamCollection.DuplicateIds</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.GetHelp">
+        <source xml:lang="en">
+          For help with Team Collection problems, click {here}.
+        </source>
+        <target xml:lang="th" state="needs-translation">
+          For help with Team Collection problems, click {here}.
+        </target>
+        <note>ID: TeamCollection.GetHelp</note>
       </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>
@@ -6475,10 +6505,31 @@
         <target xml:lang="th" state="needs-translation">Use for comprehension testing on devices.</target>
         <note>ID: TemplateBooks.PageDescription.Bloom Reader Quiz</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle" sil:dynamic="true">
+        <source xml:lang="en">A page with one language above the image and another below it.</source>
+        <target xml:lang="th" state="needs-translation">A page with one language above the image and another below it.</target>
+        <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true">
+        <source xml:lang="en">A simple quiz game that checks if readers understand key parts of the story they just read.</source>
+        <target xml:lang="th" state="needs-translation">A simple quiz game that checks if readers understand key parts of the story they just read.</target>
+        <note>ID: TemplateBooks.PageDescription.Comprehension Quiz</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true">
         <source xml:lang="en">A blank page that allows you to add items.</source>
         <target xml:lang="th" state="needs-translation">A blank page that allows you to add items.</target>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Custom Game" sil:dynamic="true">
+        <source xml:lang="en">
+          Start with a blank page and create your own game from scratch using the Game Tool.
+          Best for advanced users.
+        </source>
+        <target xml:lang="th" state="needs-translation">
+          Start with a blank page and create your own game from scratch using the Game Tool.
+          Best for advanced users.
+        </target>
+        <note>ID: TemplateBooks.PageDescription.Custom Game</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Flyleaf" sil:dynamic="true">
         <source xml:lang="en">This page was automatically inserted because the following page is marked as part of a two page spread.</source>
@@ -6500,15 +6551,100 @@
         <target xml:lang="th" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
-        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
-        <target xml:lang="th" state="needs-translation">An interactive page with an image and some text buttons.</target>
-        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true">
+        <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
+        <target xml:lang="th" state="needs-translation">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</target>
+        <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true">
+        <source xml:lang="en">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</source>
+        <target xml:lang="th" state="needs-translation">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</target>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a text and some picture buttons.</source>
         <target xml:lang="th" state="needs-translation">An interactive page with a text and some picture buttons.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
+        <target xml:lang="th" state="needs-translation">An interactive page with an image and some text buttons.</target>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Shadows" sil:dynamic="true">
+        <source xml:lang="en">
+          ℹ️ This game requires images with transparent backgrounds.
+          Readers drag images to match their shadow shapes.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <target xml:lang="th" state="needs-translation">
+          ℹ️ This game requires images with transparent backgrounds.
+          Readers drag images to match their shadow shapes.
+          This game can be customized in many ways using the Game Tool.
+        </target>
+        <note>ID: TemplateBooks.PageDescription.Drag Images to Shadows</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Targets" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers drag images to the correct target areas on the screen.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <target xml:lang="th" state="needs-translation">
+          Readers drag images to the correct target areas on the screen.
+          This game can be customized in many ways using the Game Tool.
+        </target>
+        <note>ID: TemplateBooks.PageDescription.Drag Images to Targets</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Words" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers match each image to the correct word.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <target xml:lang="th" state="needs-translation">
+          Readers match each image to the correct word.
+          This game can be customized in many ways using the Game Tool.
+        </target>
+        <note>ID: TemplateBooks.PageDescription.Drag Images to Words</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Sound to Word" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers listen to several sound recordings and choose the one that matches a word.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <target xml:lang="th" state="needs-translation">
+          Readers listen to several sound recordings and choose the one that matches a word.
+          This game can be customized in many ways using the Game Tool.
+        </target>
+        <note>ID: TemplateBooks.PageDescription.Drag Sound to Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Sounds to Words" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers match several sound recordings to the correct words.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <target xml:lang="th" state="needs-translation">
+          Readers match several sound recordings to the correct words.
+          This game can be customized in many ways using the Game Tool.
+        </target>
+        <note>ID: TemplateBooks.PageDescription.Drag Sounds to Words</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Match Word with Image" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers see an image and drag one of several words to match. This game can be customized in many ways using the Game Tool.
+        </source>
+        <target xml:lang="th" state="needs-translation">
+          Readers see an image and drag one of several words to match. This game can be customized in many ways using the Game Tool.
+        </target>
+        <note>ID: TemplateBooks.PageDescription.Match Word with Image</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Order Words" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers see a clue (an image, GIF, or Sign Language video) and must arrange scrambled words into a complete sentence.
+        </source>
+        <target xml:lang="th" state="needs-translation">
+          Readers see a clue (an image, GIF, or Sign Language video) and must arrange scrambled words into a complete sentence.
+        </target>
+        <note>ID: TemplateBooks.PageDescription.Order Words</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
@@ -6715,6 +6851,16 @@
         <target xml:lang="th" state="needs-translation">Captive Widget Page</target>
         <note>ID: TemplateBooks.PageLabel.Captive Widget Page</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Choose Image from Word" sil:dynamic="true">
+        <source xml:lang="en">Choose Image from Word</source>
+        <target xml:lang="th" state="needs-translation">Choose Image from Word</target>
+        <note>ID: TemplateBooks.PageLabel.Choose Image from Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Choose Word from Image" sil:dynamic="true">
+        <source xml:lang="en">Choose Word from Image</source>
+        <target xml:lang="th" state="needs-translation">Choose Word from Image</target>
+        <note>ID: TemplateBooks.PageLabel.Choose Word from Image</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Choose Picture from Word" sil:dynamic="true">
         <source xml:lang="en">Choose Picture from Word</source>
         <target xml:lang="th" state="needs-translation">Choose Picture from Word</target>
@@ -6734,6 +6880,11 @@
         <source xml:lang="en">Comic Full Page</source>
         <target xml:lang="th" state="needs-translation">Comic Full Page</target>
         <note>ID: TemplateBooks.PageLabel.Comic Full Page</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Comprehension Quiz" sil:dynamic="true">
+        <source xml:lang="en">Comprehension Quiz</source>
+        <target xml:lang="th" state="needs-translation">Comprehension Quiz</target>
+        <note>ID: TemplateBooks.PageLabel.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic Full Page with Footer" sil:dynamic="true">
         <source xml:lang="en">Comic Full Page with Footer</source>
@@ -6875,6 +7026,11 @@
         <target xml:lang="th" state="final">ภาพในกลาง</target>
         <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle" sil:dynamic="true">
+        <source xml:lang="en">Bilingual &amp; Picture in Middle</source>
+        <target xml:lang="th" state="needs-translation">Bilingual &amp; Picture in Middle</target>
+        <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture on Bottom</source>
         <target xml:lang="th" state="final">รูปภาพที่ด้านล่าง</target>
@@ -6944,6 +7100,46 @@
         <source xml:lang="en">Widget Page</source>
         <target xml:lang="th" state="needs-translation">Widget Page</target>
         <note>ID: TemplateBooks.PageLabel.Widget Page</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Shadows" sil:dynamic="true">
+        <source xml:lang="en">Drag Images to Shadows</source>
+        <target xml:lang="th" state="needs-translation">Drag Images to Shadows</target>
+        <note>ID: TemplateBooks.PageLabel.Drag Images to Shadows</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Targets" sil:dynamic="true">
+        <source xml:lang="en">Drag Images to Targets</source>
+        <target xml:lang="th" state="needs-translation">Drag Images to Targets</target>
+        <note>ID: TemplateBooks.PageLabel.Drag Images to Targets</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Words" sil:dynamic="true">
+        <source xml:lang="en">Drag Images to Words</source>
+        <target xml:lang="th" state="needs-translation">Drag Images to Words</target>
+        <note>ID: TemplateBooks.PageLabel.Drag Images to Words</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true">
+        <source xml:lang="en">Drag Sound to Word Target</source>
+        <target xml:lang="th" state="needs-translation">Drag Sound to Word Target</target>
+        <note>ID: TemplateBooks.PageLabel.Drag Sound to Word Target</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Sounds to Word Targets" sil:dynamic="true">
+        <source xml:lang="en">Drag Sounds to Word Targets</source>
+        <target xml:lang="th" state="needs-translation">Drag Sounds to Word Targets</target>
+        <note>ID: TemplateBooks.PageLabel.Drag Sounds to Word Targets</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Match Word with Image" sil:dynamic="true">
+        <source xml:lang="en">Match Word with Image</source>
+        <target xml:lang="th" state="needs-translation">Match Word with Image</target>
+        <note>ID: TemplateBooks.PageLabel.Match Word with Image</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Order Words" sil:dynamic="true">
+        <source xml:lang="en">Order Words</source>
+        <target xml:lang="th" state="needs-translation">Order Words</target>
+        <note>ID: TemplateBooks.PageLabel.Order Words</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Custom Game" sil:dynamic="true">
+        <source xml:lang="en">Custom Game</source>
+        <target xml:lang="th" state="needs-translation">Custom Game</target>
+        <note>ID: TemplateBooks.PageLabel.Custom Game</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
         <source xml:lang="en">Setup</source>
@@ -7054,11 +7250,6 @@
         <source xml:lang="en">Science</source>
         <target xml:lang="th" state="final">วิทยาศาสตร์</target>
         <note>ID: Topics.Science</note>
-      </trans-unit>
-      <trans-unit id="Topics.Spiritual" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Spiritual</source>
-        <target xml:lang="th" state="final">มโนมัย</target>
-        <note>ID: Topics.Spiritual</note>
       </trans-unit>
       <trans-unit id="Topics.Story Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Story Book</source>

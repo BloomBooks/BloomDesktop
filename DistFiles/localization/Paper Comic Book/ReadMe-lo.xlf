@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="lo">
+    <body>
+      <trans-unit id="comic.template.paper.title">
+        <source xml:lang="en">Paper Comic Book</source>
+        <target xml:lang="lo" state="needs-translation">Paper Comic Book</target>
+        <note>ID: comic.template.paper.title</note>
+      </trans-unit>
+      <trans-unit id="comic.template.subscription">
+        <source xml:lang="en">Note: The Overlay Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains overlay elements into your own language without a Bloom subscription.</source>
+        <target xml:lang="lo" state="needs-translation">Note: The Overlay Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains overlay elements into your own language without a Bloom subscription.</target>
+        <note>ID: comic.template.subscription</note>
+      </trans-unit>
+      <trans-unit id="comic.template.paper.use">
+        <source xml:lang="en">Use this template as a starting point for comics designed for print. The size will be set to "US Comic Portrait," which is 6.625 in x 10.25 in (16.826 cm X 26.04 cm).</source>
+        <target xml:lang="lo" state="needs-translation">Use this template as a starting point for comics designed for print. The size will be set to "US Comic Portrait," which is 6.625 in x 10.25 in (16.826 cm X 26.04 cm).</target>
+        <note>ID: comic.template.paper.use</note>
+      </trans-unit>
+      <trans-unit id="comic.template.paper.full.bleed.header">
+        <source xml:lang="en">About Full Bleed</source>
+        <target xml:lang="lo" state="needs-translation">About Full Bleed</target>
+        <note>ID: comic.template.paper.full.bleed.header</note>
+      </trans-unit>
+      <trans-unit id="comic.template.paper.full.bleed">
+        <source xml:lang="en">This template tells Bloom that this book is a candidate for "<g id="genid-2" ctype="x-html-a" html:href="https://dw-wp.com/resources/cartooning-quickguides/layout-quickguides/quickguides-bleeds/">full bleed</g>" printing by a printshop. This feature is available with a Bloom subscription. If this feature is enabled, then in the Edit tab, you will see semi-opaque borders. The outer one is the "bleed"; this is the area that will probably be cut off by a printshop. The inner border is an area that <g id="genid-3" ctype="x-html-em">might</g> be cut off, so you should avoid putting things in there that would look really bad if they were cut off. To actually get a PDF that is ready for this commercial printing, please see the "PDF Options" under the Publish Tab.</source>
+        <target xml:lang="lo" state="needs-translation">This template tells Bloom that this book is a candidate for "<g id="genid-2" ctype="x-html-a" html:href="https://dw-wp.com/resources/cartooning-quickguides/layout-quickguides/quickguides-bleeds/">full bleed</g>" printing by a printshop. This feature is available with a Bloom subscription. If this feature is enabled, then in the Edit tab, you will see semi-opaque borders. The outer one is the "bleed"; this is the area that will probably be cut off by a printshop. The inner border is an area that <g id="genid-3" ctype="x-html-em">might</g> be cut off, so you should avoid putting things in there that would look really bad if they were cut off. To actually get a PDF that is ready for this commercial printing, please see the "PDF Options" under the Publish Tab.</target>
+        <note>ID: comic.template.paper.full.bleed</note>
+      </trans-unit>
+      <trans-unit id="comic.template.tips.lettering.header">
+        <source xml:lang="en">Tips on "lettering"</source>
+        <target xml:lang="lo" state="needs-translation">Tips on "lettering"</target>
+        <note>ID: comic.template.tips.lettering.header</note>
+      </trans-unit>
+      <trans-unit id="comic.template.tips.lettering">
+        <source xml:lang="en"><g id="genid-4" ctype="x-html-em">"Lettering"</g> is the term used for adding bubbles and text to comics. Take some time to learn what professional <g id="genid-5" ctype="x-html-em">letterers</g> say about making good-looking comics. Bloom takes care of some of these things for you, but there are many things that require training your eye. See <g id="genid-6" ctype="x-html-a" html:href="https://blambot.com/pages/lettering-tips">https://blambot.com/pages/lettering-tips</g>. Note, you do <g id="genid-7" ctype="x-html-em">not</g> need to only use upper case letters. It does look cool because we are used to seeing comics done this way, but you should do whatever is best for your audience. If you do choose upper case <g id="genid-8" ctype="x-html-em">and</g> have a script that is widely supported, consider using a special comic book font. See <g id="genid-9" ctype="x-html-a" html:href="https://blambot.com/collections/all-fonts/dialogue">here</g> and <g id="genid-10" ctype="x-html-a" html:href="https://jasonthibault.com/comic-book-fonts/">here</g>.</source>
+        <target xml:lang="lo" state="needs-translation"><g id="genid-4" ctype="x-html-em">"Lettering"</g> is the term used for adding bubbles and text to comics. Take some time to learn what professional <g id="genid-5" ctype="x-html-em">letterers</g> say about making good-looking comics. Bloom takes care of some of these things for you, but there are many things that require training your eye. See <g id="genid-6" ctype="x-html-a" html:href="https://blambot.com/pages/lettering-tips">https://blambot.com/pages/lettering-tips</g>. Note, you do <g id="genid-7" ctype="x-html-em">not</g> need to only use upper case letters. It does look cool because we are used to seeing comics done this way, but you should do whatever is best for your audience. If you do choose upper case <g id="genid-8" ctype="x-html-em">and</g> have a script that is widely supported, consider using a special comic book font. See <g id="genid-9" ctype="x-html-a" html:href="https://blambot.com/collections/all-fonts/dialogue">here</g> and <g id="genid-10" ctype="x-html-a" html:href="https://jasonthibault.com/comic-book-fonts/">here</g>.</target>
+        <note>ID: comic.template.tips.lettering</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
