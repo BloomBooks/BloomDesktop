@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="te">
+    <body>
+      <trans-unit id="sign.language.template.title">
+        <source xml:lang="en">About the Sign Language Template</source>
+        <target xml:lang="te" state="needs-translation">About the Sign Language Template</target>
+        <note>ID: sign.language.template.title</note>
+      </trans-unit>
+      <trans-unit id="sign.language.template.provides">
+        <source xml:lang="en">This template provides a collection of pages that can hold a video in addition to text and pictures.</source>
+        <target xml:lang="te" state="needs-translation">This template provides a collection of pages that can hold a video in addition to text and pictures.</target>
+        <note>ID: sign.language.template.provides</note>
+      </trans-unit>
+      <trans-unit id="sign.language.template.tool">
+        <source xml:lang="en">Using the Sign Language Tool, you can record a video of a person signing the message to be communicated for each page using the sign language of your choice, or you can import a pre-recorded sign language video.</source>
+        <target xml:lang="te" state="needs-translation">Using the Sign Language Tool, you can record a video of a person signing the message to be communicated for each page using the sign language of your choice, or you can import a pre-recorded sign language video.</target>
+        <note>ID: sign.language.template.tool</note>
+      </trans-unit>
+      <trans-unit id="sign.language.template.bloom.library">
+        <source xml:lang="en">A growing number of sign language communities from across the globe are choosing to publish their sign language books on Bloom Library. To view these books, check out <g id="genid-1" ctype="x-html-a" html:href="https://bloomlibrary.org/sign-language">this page</g>.</source>
+        <target xml:lang="te" state="needs-translation">A growing number of sign language communities from across the globe are choosing to publish their sign language books on Bloom Library. To view these books, check out <g id="genid-1" ctype="x-html-a" html:href="https://bloomlibrary.org/sign-language">this page</g>.</target>
+        <note>ID: sign.language.template.bloom.library</note>
+      </trans-unit>
+      <trans-unit id="sign.language.template.docs">
+        <source xml:lang="en">To learn more about making sign language books, please consult <g id="genid-2" ctype="x-html-a" html:href="https://docs.bloomlibrary.org/sign-language-books">Bloom Docs</g>.</source>
+        <target xml:lang="te" state="needs-translation">To learn more about making sign language books, please consult <g id="genid-2" ctype="x-html-a" html:href="https://docs.bloomlibrary.org/sign-language-books">Bloom Docs</g>.</target>
+        <note>ID: sign.language.template.docs</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
