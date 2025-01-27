@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Bloom.ToPalaso;
@@ -15,6 +16,7 @@ using SIL.Reporting;
 using System.Diagnostics;
 #else
 using Squirrel;
+using Squirrel.SimpleSplat;
 #endif
 
 namespace Bloom
@@ -86,6 +88,7 @@ namespace Bloom
             Debug.Fail("HandleSquirrelInstallEvent should not run on Linux!"); // and the code below doesn't compile on Linux
             return;
 #else
+            bool isUninstalling = args.Any(x => x.Contains("uninstall"));
             var updateUrlResult = LookupUrlOfSquirrelUpdate();
             // Should only be null if we're not online. Not sure how squirrel will handle that,
             // but at least one of these operations is responsible for setting up shortcuts to the program,
@@ -141,6 +144,7 @@ namespace Bloom
                 case "--squirrel-updated": // updated to specified version
                 case "--squirrel-obsolete": // this version is no longer newest
                 case "--squirrel-uninstall": // being uninstalled
+                case "--squirrel-firstrun": // first run after install (last chance to create shortcuts)
                     using (var mgr = new UpdateManager(updateUrlResult.URL, Application.ProductName))
                     {
                         // WARNING, in most of these scenarios, the app exits at the end of HandleEvents;
@@ -158,14 +162,46 @@ namespace Bloom
                                     SharedByAllUsers()
                                 );
                             },
-                            onAppUpdate: v => HandleAppUpdate(mgr),
+                            onAppUpdate: v =>
+                            {
+                                HandleAppUpdate(mgr);
+                            },
                             onAppUninstall: v =>
+                            {
                                 mgr.RemoveShortcutsForExecutable(
                                     Path.GetFileName(Assembly.GetEntryAssembly().Location),
                                     StartMenuLocations,
                                     SharedByAllUsers()
-                                ),
-                            onFirstRun: () => { },
+                                );
+                            },
+                            onFirstRun: () =>
+                            {
+                                // If the shortcuts were not created during the initial install, create them now.
+                                // See BL-14084.
+                                var desktopDir = Environment.GetFolderPath(
+                                    Environment.SpecialFolder.DesktopDirectory
+                                );
+                                if (SharedByAllUsers())
+                                    desktopDir = Environment.GetFolderPath(
+                                        Environment.SpecialFolder.CommonDesktopDirectory
+                                    );
+                                var linkFile = Path.ChangeExtension(
+                                    Path.GetFileName(Application.ExecutablePath),
+                                    "lnk"
+                                );
+                                var shortcutPath = Path.Combine(desktopDir, linkFile);
+                                if (!RobustFile.Exists(shortcutPath))
+                                {
+                                    mgr.CreateShortcutsForExecutable(
+                                        Path.GetFileName(Assembly.GetEntryAssembly().Location),
+                                        StartMenuLocations,
+                                        false, // not just an update, since this is case initial install
+                                        null, // can provide arguments to pass to Update.exe in shortcut, defaults are OK
+                                        iconPath,
+                                        SharedByAllUsers()
+                                    );
+                                }
+                            },
                             arguments: args
                         );
                     }
