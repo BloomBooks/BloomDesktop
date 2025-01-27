@@ -264,7 +264,7 @@ namespace Bloom.Publish
                 // - Book is not a translated shell
 
                 var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SafeSelectNodes(
-                    "//div[contains(@class, 'bloom-textOverPicture')]"
+                    "//div[contains(@class, 'bloom-textOverPicture') and not(contains(@class, 'bloom-backgroundImage'))]"
                 );
                 var bookContainsOverlayElements = (overlayElementNodes?.Length ?? 0) > 0;
 
