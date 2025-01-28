@@ -900,7 +900,6 @@ export function SetupElements(
             // I'm not sure whether this is desirable when we found one from data-bloom-active,
             // but there may be a case where the page gets reloaded while a text-editable bubble is active.
             if (elementToFocus && focusable) {
-                focusable.focus();
                 // Ideally calling focus above has this as a side effect.
                 // However, the focusin event handler doesn't seem to get called at this point
                 // for image containers, even though we have set tabindex to zero,
@@ -908,13 +907,15 @@ export function SetupElements(
                 theOneBubbleManager.setActiveElement(elementToFocus);
                 // see similar code below
                 BloomSourceBubbles.ShowSourceBubbleForElement(elementToFocus);
+                focusable.focus();
             } else {
                 // It's OK not to focus anything.
                 if (bubbleDivs.length) {
                     // HACK for BL-14109: source bubbles have stopped appearing automatically
                     // because focus is set before the SourceBubble qtips have been created.
                     // Refocusing here fixes this.
-                    // We want focus set in only a standard text box, not in an overlay
+                    // We want focus set in a standard text box, not in an overlay, if a standard
+                    // text box exists.  If not, we'll focus on the first overlay text.
                     const editables = container.querySelectorAll(
                         "textarea, div.bloom-editable.bloom-visibility-code-on"
                     ); // :visible and :not don't work in this context
@@ -927,6 +928,18 @@ export function SetupElements(
                         );
                         if (editable) {
                             $(editable).focus(); // jquery focus() is more reliable than the native focus()
+                        } else {
+                            // There may be overlays, so try to focus on the first one.
+                            const firstEditableOverlay = Array.from(
+                                editables
+                            ).find(
+                                e =>
+                                    e.closest(".box-header-off") === null &&
+                                    e.closest(".bloom-textOverPicture") !== null
+                            );
+                            if (firstEditableOverlay) {
+                                $(firstEditableOverlay).focus();
+                            }
                         }
                     }
                 }
