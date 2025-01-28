@@ -846,27 +846,11 @@ namespace Bloom.Publish.BloomPub
         {
             const string defaultFont = "Andika";
 
-            // "Andika" already in BR, don't need to embed or make rule.
-            fontsWanted.RemoveWhere(
-                x => x.fontName == defaultFont && x.fontStyle == "normal" && x.fontWeight == "400"
-            );
-            // We don't need to embed Andika New Basic Regular, because Andika Regular will handle it.
-            fontsWanted.RemoveWhere( // The default Andika Regular font will handle Andika New Basic Regular
-                x =>
-                    x.fontName == "Andika New Basic"
-                    && x.fontStyle == "normal"
-                    && x.fontWeight == "400"
-            );
-            // Don't include bold/italic variant of both Andika New Basic and Andika.
-            fontsWanted.RemoveWhere(
-                x =>
-                    x.fontName == "Andika New Basic"
-                    && fontsWanted.Any(
-                        y =>
-                            y.fontName == defaultFont
-                            && y.fontStyle == x.fontStyle
-                            && y.fontWeight == x.fontWeight
-                    )
+            // "Andika" already in BR in the standard four faces, don't need to embed or make rule.
+            fontsWanted.RemoveWhere(x => x.fontName == defaultFont);
+            // We don't need to embed Andika New Basic, because Andika will handle it.
+            fontsWanted.RemoveWhere( // The default Andika font will handle Andika New Basic
+                x => x.fontName == "Andika New Basic"
             );
 
             PublishHelper.CheckFontsForEmbedding(
