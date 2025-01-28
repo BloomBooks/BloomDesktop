@@ -10,8 +10,6 @@ using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
-using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
@@ -2607,18 +2605,22 @@ namespace Bloom.Book
         /// </summary>
         public void UpdateSupportFiles()
         {
-            Logger.WriteMinorEvent("DEBUG BL-14174 - Starting UpdateSupportFiles()");
-            Logger.WriteMinorEvent($"DEBUG BL-14174 - FolderPath = {FolderPath}");
-
             if (IsStaticContent(FolderPath))
                 return; // don't try to update our own templates, it's a waste and they might be locked.
-            if (IsPathReadonly(FolderPath))
+
+            // Windows doesn't actually care if the folder is readonly. It only cares about the file-level permissions.
+            // And if the files are readonly, we handle that elsewhere. See BloomUnauthorizedAccessException.
+            // Previously, we had an early return, including for Windows, and we ran into issues with
+            // book support files silently not being updated. See BL-14174.
+            // Instead, we now let the update continue on Windows, and we throw an exception
+            // for other environments (not yet used as of Jan 2025).
+            if (!Platform.IsWindows && IsPathReadonly(FolderPath))
             {
                 Logger.WriteEvent(
-                    "Not updating files in folder {0} because the directory is read-only.",
+                    "Can't update files in folder {0} because the directory is read-only.",
                     FolderPath
                 );
-                return;
+                throw new UnauthorizedAccessException();
             }
 
             // We want current shipping versions of these copied into the destination folder always.
@@ -2674,29 +2676,15 @@ namespace Bloom.Book
                     supportFilesToUpdate.Add(file);
             }
 
-            Logger.WriteMinorEvent(
-                $"DEBUG BL-14174 - supportFilesToUpdate = {supportFilesToUpdate}"
-            );
-
             // This will pull them into the book folder.
             foreach (var file in supportFilesToUpdate)
             {
                 var sourcePath = GetSupportingFile(file);
                 var destPath = Path.Combine(FolderPath, file);
                 if (sourcePath == destPath)
-                {
-                    Logger.WriteMinorEvent(
-                        $"DEBUG BL-14174 - skipping copy from {sourcePath} to {destPath}"
-                    );
                     continue; // don't copy from ourselves
-                }
                 if (!string.IsNullOrEmpty(sourcePath) && RobustFile.Exists(sourcePath))
-                {
-                    Logger.WriteMinorEvent(
-                        $"DEBUG BL-14174 - copying from {sourcePath} to {destPath}"
-                    );
                     RobustFile.Copy(sourcePath, destPath, true);
-                }
             }
 
             LoadCurrentBrandingFilesIntoBookFolder();
