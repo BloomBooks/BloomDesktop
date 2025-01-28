@@ -759,7 +759,19 @@ div.bloom-templateMode {
 //     }
 // }
 
-.childOverflowingThis {
+// We want a thick red line at the bottom. Outline can't do a line on just one side.
+// We don't want a border on the box itself because that takes up space; a box that
+// once starts overflowing might be stuck that way because of the extra space needed
+// for the border. So we use a pseudo-element to draw the line.
+.childOverflowingThis:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    box-sizing: border-box;
+    pointer-events: none;
     border-bottom: solid thick @OverflowColor !important;
     // no, that's really confusing when text far from the crime turns red color: red !important;
 }

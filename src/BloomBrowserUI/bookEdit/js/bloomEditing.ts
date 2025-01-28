@@ -808,6 +808,7 @@ export function SetupElements(
                     if (editables.length) {
                         const editable = Array.from(editables).find(
                             e =>
+                                e.closest(".bloom-imageContainer") === null && // we don't want image descriptions
                                 e.closest(".bloom-textOverPicture") === null && // we don't want overlays
                                 e.closest(".box-header-off") === null // these are invisible
                         );
