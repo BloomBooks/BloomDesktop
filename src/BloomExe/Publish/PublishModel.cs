@@ -263,8 +263,11 @@ namespace Bloom.Publish
                 // - Book contains overlay elements AND
                 // - Book is not a translated shell
 
+                // As of Bloom 6.2, all pictures in a book have the basic overlay class (bloom-textOverPicture).
+                // Top-level pictures also have the class bloom-backgroundImage.  We want to count only overlay
+                // elements that are not also marked as background images.  See BL-14245.
                 var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SafeSelectNodes(
-                    "//div[contains(@class, 'bloom-textOverPicture')]"
+                    "//div[contains(@class, 'bloom-textOverPicture') and not(contains(@class, 'bloom-backgroundImage'))]"
                 );
                 var bookContainsOverlayElements = (overlayElementNodes?.Length ?? 0) > 0;
 
