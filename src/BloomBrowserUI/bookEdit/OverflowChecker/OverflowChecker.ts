@@ -25,7 +25,24 @@ export default class OverflowChecker {
         );
 
         // BL-1260: disable overflow checking for pages with too many elements
-        if (editablePageElements.length > 30) return;
+        if (editablePageElements.length > 30) {
+            // since we're not going to check it, remove any indications from
+            // previous checking. (Normal code also removes some qtips. I don't
+            // think those survive from one page load to the next, so we don't
+            // need to remove them here.)
+            const cleanup = (className: string) => {
+                Array.from(
+                    container.getElementsByClassName(className)
+                ).forEach(x => x.classList.remove(className));
+            };
+            cleanup("overflow");
+            cleanup("thisOverflowingParent");
+            cleanup("childOverflowingThis");
+            cleanup("Layout-Problem-Detected");
+            cleanup("pageOverflows");
+
+            return;
+        }
 
         //Add the handler so that when the elements change, we test for overflow
         editablePageElements.on("keyup paste", e => {
