@@ -491,6 +491,10 @@ namespace BloomTests.Collection
                 RobustFile.Delete(collectionSettingsPath);
             var settings = CreateCollectionSettings(_folder.Path, collectionName);
 
+            var colorPalettePath = Path.Combine(_folder.Path, collectionName, "colorPalettes.json");
+            if (RobustFile.Exists(colorPalettePath))
+                RobustFile.Delete(colorPalettePath);
+
             const string jsonColor1 = "{\"colors\":[\"#012345\"],\"opacity\":1}";
             const string jsonColor2 = "{\"colors\":[\"#012345\",\"#987654\"],\"opacity\":1}";
             const string jsonColor3 = "{\"colors\":[\"#012345\"],\"opacity\":0.75}";
@@ -529,31 +533,17 @@ namespace BloomTests.Collection
             );
 
             // The file is supposed to be saved on every addition.  Check its contents.
-            var settingsContent = RobustFile.ReadAllText(
-                collectionSettingsPath,
-                System.Text.Encoding.UTF8
+            var colorSettings = new Dictionary<string, string>();
+            Assert.That(
+                CollectionSettings.LoadColorPalettesFromJsonFile(colorSettings, colorPalettePath),
+                Is.True
             );
-            var xml = XElement.Parse(settingsContent);
-            var elements = xml.Descendants("Palette");
-            Assert.That(elements, Is.Not.Null);
-            int count = 0;
-            foreach (XElement element in elements)
-            {
-                ++count; // why elements doesn't have Count or Count() is beyond me!
-                if (element.Attribute("id").Value == "test-text")
-                {
-                    Assert.That(element.Value, Is.EqualTo("#012345 #012345-#987654 #012345/0.75"));
-                }
-                else if (element.Attribute("id").Value == "test-background")
-                {
-                    Assert.That(element.Value, Is.EqualTo("#987643/0.5"));
-                }
-                else
-                {
-                    Assert.That(false, "unexpected element id value");
-                }
-            }
-            Assert.That(count, Is.EqualTo(2));
+            Assert.That(colorSettings.Count, Is.EqualTo(2));
+            Assert.That(
+                colorSettings["test-text"],
+                Is.EqualTo("#012345 #012345-#987654 #012345/0.75")
+            );
+            Assert.That(colorSettings["test-background"], Is.EqualTo("#987643/0.5"));
         }
 
         // Though currently Bloom does not save things in this state,

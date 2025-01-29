@@ -546,7 +546,10 @@ div.ui-tooltip-content {
     min-height: 50px;
 }
 p {
-    min-height: 1.5em;
+    // legacy originally had 1.5. We found that to be a problem in BL-14088, and decided to
+    // fix it in legacy also. It rarely if ever makes a difference except the 1.5 causes
+    // spurious overflow reports and unnecessary scroll bars.
+    min-height: 1em;
 }
 textarea,
 .bloom-editable {

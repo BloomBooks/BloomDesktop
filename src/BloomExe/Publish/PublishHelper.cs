@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -8,6 +9,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.web;
@@ -744,9 +746,110 @@ namespace Bloom.Publish
             {
                 SignLanguageApi.ProcessVideos(videoContainerElements, modifiedBook.FolderPath);
             }
+            ReallyCropImages(modifiedBook.RawDom, modifiedBook.FolderPath, modifiedBook.FolderPath);
             modifiedBook.Save();
             modifiedBook.UpdateSupportFiles();
             return modifiedBook;
+        }
+
+        /// <summary>
+        /// Permanently remove the cropped areas from all image files, saving any cropped images to the given folder.
+        /// Source and destination folders CAN be the same (in which case the original images are overwritten, if
+        /// there is any cropping to do).
+        /// </summary>
+        /// <param name="bookDom"></param>
+        /// <param name="imageSourceFolder"></param>
+        /// <param name="imageDestFolder"></param>
+        public static void ReallyCropImages(
+            SafeXmlDocument bookDom,
+            string imageSourceFolder,
+            string imageDestFolder
+        )
+        {
+            var images = bookDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray();
+            foreach (var img in images)
+            {
+                ReallyCropImage(img, imageSourceFolder, imageDestFolder);
+            }
+        }
+
+        private static void ReallyCropImage(
+            SafeXmlElement img,
+            string imageSourceFolder,
+            string imageDestFolder
+        )
+        {
+            var imgContainer = img.ParentNode as SafeXmlElement;
+            var overlay = imgContainer?.ParentNode as SafeXmlElement;
+            // Cropping is implemented using the interaction between an overlay (obsolete: bloom-textOverPicture)
+            // which specifies the visible area of the image by its height and width, and the img two levels
+            // down which may have adjusted width, left, and top to position part of itself in the overlay.
+            // An image can only be cropped, and we can only know what part of it to remove, if it occurs in
+            // this structure. Other images (e.g., branding) are left alone. (At the stage where this code is run,
+            // background images, including all normal page content images, are still represented as overlays.)
+            if (
+                overlay == null
+                || !overlay.HasClass("bloom-textOverPicture")
+                || !imgContainer.HasClass("bloom-imageContainer")
+            )
+                return;
+            var src = img.GetAttribute("src");
+            var srcPath = UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
+            if (!RobustFile.Exists(srcPath))
+                return;
+            var imgStyle = img.GetAttribute("style");
+            if (string.IsNullOrEmpty(imgStyle))
+                return;
+            var imgWidth = GetNumberFromPx("width", imgStyle);
+            var imgLeft = GetNumberFromPx("left", imgStyle);
+            var imgTop = GetNumberFromPx("top", imgStyle);
+            var overlayStyle = overlay.GetAttribute("style");
+            var overlayWidth = GetNumberFromPx("width", overlayStyle);
+            var overlayHeight = GetNumberFromPx("height", overlayStyle);
+            if (imgWidth == 0 || overlayWidth == 0)
+                return;
+            if (!ImageUtils.TryGetImageSize(srcPath, out Size size))
+            {
+                return; // can't crop the image if we can't get its size.
+            }
+            var scale = imgWidth / size.Width;
+            var selWidth = overlayWidth / scale;
+            var selHeight = overlayHeight / scale;
+            var selLeft = -imgLeft / scale;
+            var selTop = -imgTop / scale;
+            var ext = Path.GetExtension(srcPath).ToLowerInvariant();
+            var tempPath = Path.ChangeExtension(
+                Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
+                ext
+            );
+            var cropRectangle = new Rectangle(
+                Convert.ToInt32(selLeft),
+                Convert.ToInt32(selTop),
+                Convert.ToInt32(selWidth),
+                Convert.ToInt32(selHeight)
+            );
+            var result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
+            if (result.ExitCode == 0)
+            {
+                var destPath = Path.Combine(imageDestFolder, src);
+                RobustFile.Move(tempPath, destPath, true);
+                // If it failed, it should have already logged the reason. I think all we can do
+                // is leave the image alone.
+            }
+            img.RemoveAttribute("style");
+        }
+
+        internal static double GetNumberFromPx(string label, string input)
+        {
+            var parts = input.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            var part = parts.FirstOrDefault(p => p.Trim().StartsWith(label + ":"));
+            if (part == null)
+                return 0;
+            var number = part.Trim().Substring(label.Length + 1);
+            number = number.Substring(0, number.Length - 2); // remove "px"
+            if (double.TryParse(number, out double result))
+                return result;
+            return 0;
         }
 
         #region IDisposable Support

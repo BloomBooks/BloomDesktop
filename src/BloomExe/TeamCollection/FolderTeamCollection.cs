@@ -398,7 +398,11 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
-        /// Copy collection level files from the repo to the local directory
+        /// Copy collection level files from the repo to the local directory.
+        /// The local copy of the colorPalettes.json file will be merged with,
+        /// rather than copied from, the repo copy.  The colorPalettes.json file
+        /// in the repo may be updated as a result of this call although that is
+        /// unlikely.
         /// </summary>
         /// <param name="destFolder"></param>
         protected override void CopyRepoCollectionFilesToLocalImpl(string destFolder)
@@ -411,6 +415,72 @@ namespace Bloom.TeamCollection
             _collectionLock.UnlockFor(() => CopyRepoCollectionFilesTo(destFolder, _repoFolderPath));
             ExtractFolder(destFolder, _repoFolderPath, "Allowed Words");
             ExtractFolder(destFolder, _repoFolderPath, "Sample Texts");
+            SyncColorPaletteFileWithRepo(destFolder);
+        }
+
+        protected override void SyncColorPaletteFileWithRepo(string localFolder)
+        {
+            SyncColorPaletteFileWithRepo(
+                localFolder,
+                _repoFolderPath,
+                _tcManager.Settings,
+                LocalCollectionFolder
+            );
+        }
+
+        private static void CopyToRepoIfNeeded(
+            string localColorPalettePath,
+            string repoColorPalettePath
+        )
+        {
+            var needToCopy = false;
+            if (RobustFile.Exists(repoColorPalettePath))
+            {
+                var repoData = RobustFile.ReadAllText(repoColorPalettePath);
+                var destData = RobustFile.ReadAllText(localColorPalettePath);
+                needToCopy = repoData != destData;
+            }
+            else
+            {
+                needToCopy = true;
+            }
+            if (needToCopy)
+            {
+                try
+                {
+                    RobustFile.Copy(localColorPalettePath, repoColorPalettePath, true);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine($"Error copying {localColorPalettePath} to repo: {e.Message}");
+                }
+            }
+        }
+
+        protected override DateTime GetRepoColorPaletteTime()
+        {
+            var repoColorPalettePath = Path.Combine(_repoFolderPath, "Other", "colorPalettes.json");
+            return RobustFile.Exists(repoColorPalettePath)
+                ? new FileInfo(repoColorPalettePath).LastWriteTime
+                : DateTime.MinValue;
+        }
+
+        private static string MergeColorPaletteValues(string repoValues, string localValues)
+        {
+            if (repoValues == localValues)
+                return localValues;
+            if (String.IsNullOrEmpty(repoValues))
+                return localValues;
+            if (String.IsNullOrEmpty(localValues))
+                return repoValues;
+            var repoArray = repoValues.Split(new char[] { ' ' });
+            var localList = new List<string>(localValues.Split(new char[] { ' ' }));
+            foreach (var value in repoArray)
+            {
+                if (!string.IsNullOrEmpty(value) && !localList.Contains(value))
+                    localList.Add(value);
+            }
+            return string.Join(" ", localList);
         }
 
         private static void CopyRepoCollectionFilesTo(string destFolder, string repoFolder)
@@ -425,6 +495,7 @@ namespace Bloom.TeamCollection
                     collectionZipPath,
                     () => new HashSet<string>(RootLevelCollectionFilesIn(destFolder))
                 );
+                SyncColorPaletteFileWithRepo(destFolder, repoFolder);
             }
             catch (Exception e)
                 when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
@@ -435,6 +506,91 @@ namespace Bloom.TeamCollection
                     "Bloom could not unpack the collection files in your Team Collection",
                     exception: e
                 );
+            }
+        }
+
+        private static void SyncColorPaletteFileWithRepo(
+            string localFolder,
+            string repoFolder,
+            CollectionSettings collectionSettings = null,
+            string localCollectionFolder = null
+        )
+        {
+            var repoColorPalettePath = Path.Combine(repoFolder, "Other", "colorPalettes.json");
+            var localColorPalettePath = Path.Combine(localFolder, "colorPalettes.json");
+            if (RobustFile.Exists(repoColorPalettePath))
+            {
+                if (RobustFile.Exists(localColorPalettePath))
+                {
+                    // Merge the two files additively.
+                    var repoColorPalettes = new Dictionary<string, string>();
+                    CollectionSettings.LoadColorPalettesFromJsonFile(
+                        repoColorPalettes,
+                        repoColorPalettePath
+                    );
+                    var localColorPalettes = collectionSettings?.ColorPalettes;
+                    if (localColorPalettes == null)
+                    {
+                        localColorPalettes = new Dictionary<string, string>();
+                        CollectionSettings.LoadColorPalettesFromJsonFile(
+                            localColorPalettes,
+                            localColorPalettePath
+                        );
+                    }
+                    var dirty = false;
+                    foreach (var key in repoColorPalettes.Keys)
+                    {
+                        var mergedValues = MergeColorPaletteValues(
+                            repoColorPalettes[key],
+                            localColorPalettes[key]
+                        );
+                        if (mergedValues != localColorPalettes[key])
+                        {
+                            localColorPalettes[key] = mergedValues;
+                            dirty = true;
+                        }
+                        if (mergedValues != repoColorPalettes[key])
+                            dirty = true;
+                    }
+                    if (dirty)
+                    {
+                        if (collectionSettings == null)
+                        {
+                            CollectionSettings.SaveColorPalettesToJsonFile(
+                                localColorPalettes,
+                                localColorPalettePath
+                            );
+                            // The copy to repo may not happen when we're actually copying files to the
+                            // local collection, but that's okay.
+                            if (localFolder == localCollectionFolder)
+                                CopyToRepoIfNeeded(localColorPalettePath, repoColorPalettePath);
+                        }
+                        else if (collectionSettings.FolderPath == localFolder)
+                        {
+                            collectionSettings.SaveColorPalettesToJsonFile();
+                            CopyToRepoIfNeeded(localColorPalettePath, repoColorPalettePath);
+                        }
+                        // If the local folder is not the collection folder, we don't need to
+                        // save the color palettes because we must be working with temp data.
+                    }
+                }
+                else
+                {
+                    // Add the palette file to the local collection if it doesn't exist there.
+                    RobustFile.Copy(repoColorPalettePath, localColorPalettePath);
+                    if (collectionSettings != null && collectionSettings.FolderPath == localFolder)
+                    {
+                        CollectionSettings.LoadColorPalettesFromJsonFile(
+                            collectionSettings.ColorPalettes,
+                            localColorPalettePath
+                        );
+                    }
+                }
+            }
+            else if (RobustFile.Exists(localColorPalettePath))
+            {
+                // Add the palette file to the repo if it doesn't exist there.
+                CopyToRepoIfNeeded(localColorPalettePath, repoColorPalettePath);
             }
         }
 
