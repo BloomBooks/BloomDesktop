@@ -18,8 +18,10 @@ export default class OverflowChecker {
     // But this function should just do some basic checks and ADD the HANDLERS!
     public AddOverflowHandlers(container: HTMLElement) {
         //NB: for some historical reason in March 2014 the calendar still uses textareas
+        // I think .bloom-visibility-code-on is more reliable here than :visible;
+        // possibly this is set up before everything has been computed to be visible?
         const queryElementsThatCanOverflow =
-            ".bloom-editable:visible, textarea:visible";
+            ".bloom-editable.bloom-visibility-code-on, textarea:visible";
         const editablePageElements = $(container).find(
             queryElementsThatCanOverflow
         );
