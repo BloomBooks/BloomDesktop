@@ -1056,12 +1056,12 @@ namespace Bloom.Book
             },
             new Feature()
             {
-                FeatureId = "bloomGames6.1",
-                FeaturePhrase = "Bloom Games added in 6.1",
+                FeatureId = "croppedImages",
+                FeaturePhrase = "Cropped images",
                 BloomDesktopMinVersion = "6.1",
-                BloomReaderMinVersion = "3.3",
+                BloomReaderMinVersion = "1.0",
                 XPath =
-                    "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
+                    "//div[contains(@class,'bloom-textOverPicture')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
             }
         };
 
