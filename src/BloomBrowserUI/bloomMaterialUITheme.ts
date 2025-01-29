@@ -109,21 +109,6 @@ export const lightTheme = createTheme({
                 }
             }
         },
-        MuiDialogTitle: {
-            styleOverrides: {
-                root: {
-                    backgroundColor: kDialogTopBottomGray,
-                    "& h6": { fontWeight: "bold" }
-                }
-            }
-        },
-        MuiDialogActions: {
-            styleOverrides: {
-                root: {
-                    backgroundColor: kDialogTopBottomGray
-                }
-            }
-        },
         MuiCheckbox: {
             styleOverrides: {
                 root: {
