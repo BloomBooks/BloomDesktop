@@ -10,6 +10,7 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Publish;
 using Bloom.Publish.Epub;
+using Bloom.SafeXml;
 using Bloom.web.controllers;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
@@ -2558,22 +2559,22 @@ namespace BloomTests.Publish
             CheckBasicsInPage();
             CheckNavPage();
             CheckFontStylesheet();
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(_page1Data);
             var titleDiv =
                 dom.DocumentElement.SelectSingleNode(
                     "//xhtml:div[contains(@class, 'bookTitle')]",
                     _ns
-                ) as XmlElement;
+                ) as SafeXmlElement;
             Assert.IsNotNull(titleDiv);
-            var divs = titleDiv.SelectNodes("./xhtml:div", _ns);
-            Assert.AreEqual(2, divs.Count);
-            var class0 = divs[0].Attributes["class"];
+            var divs = titleDiv.SafeSelectNodes("./xhtml:div", _ns);
+            Assert.AreEqual(2, divs.Length);
+            var class0 = divs[0].GetAttribute("class");
             Assert.IsNotNull(class0);
-            StringAssert.Contains("bloom-content1", class0.Value);
-            var class1 = divs[1].Attributes["class"];
+            StringAssert.Contains("bloom-content1", class0);
+            var class1 = divs[1].GetAttribute("class");
             Assert.IsNotNull(class1);
-            StringAssert.Contains("bloom-content2", class1.Value);
+            StringAssert.Contains("bloom-content2", class1);
         }
 
         [TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]

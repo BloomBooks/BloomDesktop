@@ -139,7 +139,7 @@ mixin standard-cover-contents
 				//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
 				// because it is never empty
 				.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
-					+field-prototypeDeclaredExplicity("V")
+					+field-prototypeDeclaredExplicity("[CoverCreditsLanguage] DEFAULT:V")
 						+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
 
 			block cover-bottom-row-before-branding

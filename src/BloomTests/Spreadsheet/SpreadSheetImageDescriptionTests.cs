@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.SafeXml;
 using Bloom.Spreadsheet;
 using Moq;
 using NUnit.Framework;
@@ -103,7 +104,7 @@ namespace BloomTests.Spreadsheet
 
         private HtmlDom _destDom;
         private InternalSpreadsheet _sheetFromExport;
-        private List<XmlElement> _contentPages;
+        private List<SafeXmlElement> _contentPages;
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
@@ -139,7 +140,7 @@ namespace BloomTests.Spreadsheet
             }
             _contentPages = _destDom
                 .SafeSelectNodes("//div[contains(@class, 'numberedPage')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
         }
 
@@ -156,12 +157,12 @@ namespace BloomTests.Spreadsheet
             );
         }
 
-        private void AssertThatNodeContainsText(XmlElement source, string xPath, string text)
+        private void AssertThatNodeContainsText(SafeXmlElement source, string xPath, string text)
         {
-            IEnumerable<XmlNode> nodeList = source.SafeSelectNodes(xPath).Cast<XmlNode>().ToList();
+            var nodeList = source.SafeSelectNodes(xPath);
             Assert.That(
                 nodeList,
-                Has.Count.GreaterThan(0),
+                Has.Length.GreaterThan(0),
                 "Should have found matches for " + xPath
             );
             Assert.That(

@@ -2,7 +2,13 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { get, post, postJson, postString, useApiStringState } from "../utils/bloomApi";
+import {
+    get,
+    post,
+    postJson,
+    postString,
+    useApiStringState
+} from "../utils/bloomApi";
 import { P } from "../react_components/l10nComponents";
 import { RequiresBloomEnterpriseOverlayWrapper } from "../react_components/requiresBloomEnterprise";
 import "./TeamCollectionSettingsPanel.less";
@@ -25,7 +31,9 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
         ""
     );
 
-    const [adminstratorEmail, setAdminstratorEmail] = React.useState<string>("");
+    const [adminstratorEmail, setAdminstratorEmail] = React.useState<string>(
+        ""
+    );
 
     useEffect(() => {
         get("settings/administrators", result => {
@@ -78,14 +86,17 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
             >
                 {repoFolderPath}
             </a>
-            <Label l10nKey="TeamCollection.AdministratorEmails" htmlFor="adminstratorEmails">
+            <Label
+                l10nKey="TeamCollection.AdministratorEmails"
+                htmlFor="adminstratorEmails"
+            >
                 Administrator Emails:
             </Label>
-         <TextField
+            <TextField
                 id="adminstratorEmails"
                 value={adminstratorEmail}
                 onChange={event => {
-                    const newAdminString: string = event.target.value; 
+                    const newAdminString: string = event.target.value;
                     setAdminstratorEmail(newAdminString);
                     postString("settings/administrators", newAdminString);
                 }}
@@ -111,7 +122,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     hasText={true}
                     onClick={() =>
                         post(
-                            "help/Tasks/Basic_tasks/Team_Collections/Add_someone_to_a_Team_Collection.htm"
+                            "help?topic=Tasks/Basic_tasks/Team_Collections/Add_someone_to_a_Team_Collection.htm"
                         )
                     }
                 >
@@ -155,7 +166,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     temporarilyDisableI18nWarning={true}
                     onClick={() =>
                         post(
-                            "help/Tasks/Basic_tasks/Team_Collections/Join_a_Team_Collection.htm"
+                            "help?topic=Tasks/Basic_tasks/Team_Collections/Join_a_Team_Collection.htm"
                         )
                     }
                 >

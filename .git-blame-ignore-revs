@@ -1,2 +1,4 @@
 # format all c# with csharpier
 087743561c71bff054c9f8d5e56eb9fd1752c69e
+# format all c3 with csharpier (a follow-up after some changes hadn't been applied)
+29c4a976a1e71e1457074fc8eed2263b763f3e85

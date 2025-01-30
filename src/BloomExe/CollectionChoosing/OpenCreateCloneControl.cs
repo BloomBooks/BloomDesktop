@@ -171,14 +171,12 @@ namespace Bloom.CollectionChoosing
                 Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
             }
 
-            using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+            using (var dlg = new MiscUI.BloomOpenFileDialog())
             {
                 dlg.Title = "Open Collection";
-
                 dlg.Filter = _filterString;
                 dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
-                dlg.CheckFileExists = true;
-                dlg.CheckPathExists = true;
+
                 if (dlg.ShowDialog(this) == DialogResult.Cancel)
                     return;
 

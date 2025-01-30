@@ -167,7 +167,16 @@ div.ui-tooltip-content {
 }
 
 .bloom-imageContainer {
-    min-height: 50px;
+    // Was 50px until 6.1. Now we support making very small draggable images in games, so that's too big.
+    // Then we tried 10px with the idea that it could at least be grabbed. We may make a separate dragging affordance like
+    // Canva for very small imagesto help with that. But any min-height causes weird behavior when cropping
+    // makes the bubble smaller than the image-container is allowed to be. So try not setting one at all.
+    // We also have code to prevent them getting smaller than 30px, but setting an actual CSS min-height is problematic
+    // when the cropping code is trying to compute very exact sizes. I think we're better off without a min-height.
+    // However, when imageContainer has no height or min-height set at all, for some reason auto-sizing it with
+    // flex-grow (e.g., on the cover page) combined with auto-sizing the image inside it with content-fit doesn't work.
+    // A min-height of zero somehow fixes that without interfering with cropping. So that's what we're doing for now.
+    min-height: 0;
     border-radius: var(--image-border-radius);
     // image containers are ordered by document order so they can NOT be a stacking context,
     // allowing their child buttons to be over the comicaljs canvas
@@ -175,12 +184,17 @@ div.ui-tooltip-content {
 }
 
 p {
-    //without this, an empty paragraph will be invisible, making blank lines impossible
-    //but we also want to make sure that an empty paragraph is the same height as other lines...
-    //especially since in the Edit Page (but not in Publish to Reader preview, bloom-player, etc),
-    //CKEditor will insert a <br> element (making it take up the line-height) whereas without the <br>,
-    //it would take up the min-height
-    min-height: @defaultLineHeight * 1em;
+    // This used to be @defaultLineHeight em, with a comment that without such a rule an empty paragraph
+    // would be invisible, or at least smaller than one with a single line of text. But experimentally
+    // as of Jan 2025 that's not so. The size of an empty paragraph is the same as one with a single
+    // line of text, and is determined by the line-height.
+    // UNLESS, that is, this rule forces a one-line paragraph to be bigger. The line-height is
+    // configurable with our style dialog; the min-height is not. This can produce spurious
+    // overflow reports in one-line paragraphs.
+    // Probably we don't need this rule at all, but in case there is some case I haven't found where
+    // a paragraph might really disappear without it, I'm keeping it, but reducing the minimum
+    // to where it won't increase paragraph size for any of the line-heights we support.
+    min-height: 1em;
 }
 
 textarea,
@@ -637,6 +651,12 @@ div[data-book*="branding"] {
     }
 }
 
+// the extra specificity here is to win out over the legacy (but still active) cover-color rule in the html itself
+// As of 6.1 this is only used for Angola branding
+div.bloom-page.coverColor {
+    background-color: var(--cover-background-color) !important;
+}
+
 // --------------------------------------------------------------------------------------
 // pages that are symmetrical left vs. right, so that we only use --page-margin-left
 // (or --cover-margin-side).
@@ -769,7 +789,7 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         }
         // if the textbox has a special background color (only gray is offered for now),
         // then visually the margin doesn't matter. We need the padding.
-        .bloom-translationGroup.bloom-background-gray {
+        & > .bloom-translationGroup.bloom-background-gray {
             padding-top: var(--topLevel-text-padding-top);
             padding-bottom: var(--topLevel-text-padding-bottom);
             padding-right: var(--topLevel-text-padding-right);

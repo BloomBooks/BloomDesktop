@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Xml.Linq;
 using Bloom.Book;
 using Bloom.Collection;
+using FFMpegCore.Arguments;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -119,6 +120,85 @@ namespace BloomTests.Collection
                 newSettings.PageNumberStyle,
                 "Numbering style 'Gurmukhi' should round trip"
             );
+        }
+
+        [Test]
+        public void RTL_CanRoundTrip()
+        {
+            const string collectionName = "test";
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+            settings.Language1Tag = "en";
+            settings.Language1.IsRightToLeft = true;
+            settings.Save();
+            var newSettings = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(newSettings.Language1.IsRightToLeft, Is.True);
+        }
+
+        [Test]
+        public void LegacyRTL_Loads()
+        {
+            // A real collection settings file from 5.6.7.  The RTL setting is in the old place.
+            // This is also a continuing test that an old file can at least be read.
+            var input =
+                @"<Collection version=""0.2"">
+  <CollectionId>70a3889b-2ef9-46fb-948b-3da17b0351c9</CollectionId>
+  <Language1Name>Arta</Language1Name>
+  <Language1IsCustomName>false</Language1IsCustomName>
+  <Language1Iso639Code>atz</Language1Iso639Code>
+  <DefaultLanguage1FontName>Andika</DefaultLanguage1FontName>
+  <IsLanguage1Rtl>true</IsLanguage1Rtl>
+  <Language1LineHeight>0</Language1LineHeight>
+  <Language1BreaksLinesOnlyAtSpaces>false</Language1BreaksLinesOnlyAtSpaces>
+  <Language1BaseUIFontSizeInPoints>0</Language1BaseUIFontSizeInPoints>
+  <Language2Name>English</Language2Name>
+  <Language2IsCustomName>false</Language2IsCustomName>
+  <Language2Iso639Code>en</Language2Iso639Code>
+  <DefaultLanguage2FontName>Andika</DefaultLanguage2FontName>
+  <IsLanguage2Rtl>false</IsLanguage2Rtl>
+  <Language2LineHeight>0</Language2LineHeight>
+  <Language2BreaksLinesOnlyAtSpaces>false</Language2BreaksLinesOnlyAtSpaces>
+  <Language2BaseUIFontSizeInPoints>0</Language2BaseUIFontSizeInPoints>
+  <Language3Name></Language3Name>
+  <Language3IsCustomName>false</Language3IsCustomName>
+  <Language3Iso639Code></Language3Iso639Code>
+  <DefaultLanguage3FontName>Andika</DefaultLanguage3FontName>
+  <IsLanguage3Rtl>false</IsLanguage3Rtl>
+  <Language3LineHeight>0</Language3LineHeight>
+  <Language3BreaksLinesOnlyAtSpaces>false</Language3BreaksLinesOnlyAtSpaces>
+  <Language3BaseUIFontSizeInPoints>0</Language3BaseUIFontSizeInPoints>
+  <SignLanguageName></SignLanguageName>
+  <SignLanguageIsCustomName>false</SignLanguageIsCustomName>
+  <SignLanguageIso639Code></SignLanguageIso639Code>
+  <OneTimeCheckVersionNumber>1</OneTimeCheckVersionNumber>
+  <IsSourceCollection>False</IsSourceCollection>
+  <XMatterPack>Traditional</XMatterPack>
+  <PageNumberStyle>Decimal</PageNumberStyle>
+  <BrandingProjectName>Default</BrandingProjectName>
+  <SubscriptionCode></SubscriptionCode>
+  <Country>Philippines</Country>
+  <Province></Province>
+  <District></District>
+  <AllowNewBooks>True</AllowNewBooks>
+  <AudioRecordingMode>Sentence</AudioRecordingMode>
+  <AudioRecordingTrimEndMilliseconds>40</AudioRecordingTrimEndMilliseconds>
+  <BooksOnWebGoal>200</BooksOnWebGoal>
+  <BulkPublishBloomPubSettings>
+    <MakeBookshelfFile>True</MakeBookshelfFile>
+    <MakeBloomBundle>True</MakeBloomBundle>
+    <BookshelfColor>#B0DEE4</BookshelfColor>
+    <DistributionTag></DistributionTag>
+    <BookshelfLabel></BookshelfLabel>
+  </BulkPublishBloomPubSettings>
+</Collection>";
+            var collectionName = "testRtl";
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, input);
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(settings.Language1.IsRightToLeft, Is.True);
         }
 
         [Test]
@@ -411,6 +491,10 @@ namespace BloomTests.Collection
                 RobustFile.Delete(collectionSettingsPath);
             var settings = CreateCollectionSettings(_folder.Path, collectionName);
 
+            var colorPalettePath = Path.Combine(_folder.Path, collectionName, "colorPalettes.json");
+            if (RobustFile.Exists(colorPalettePath))
+                RobustFile.Delete(colorPalettePath);
+
             const string jsonColor1 = "{\"colors\":[\"#012345\"],\"opacity\":1}";
             const string jsonColor2 = "{\"colors\":[\"#012345\",\"#987654\"],\"opacity\":1}";
             const string jsonColor3 = "{\"colors\":[\"#012345\"],\"opacity\":0.75}";
@@ -449,31 +533,17 @@ namespace BloomTests.Collection
             );
 
             // The file is supposed to be saved on every addition.  Check its contents.
-            var settingsContent = RobustFile.ReadAllText(
-                collectionSettingsPath,
-                System.Text.Encoding.UTF8
+            var colorSettings = new Dictionary<string, string>();
+            Assert.That(
+                CollectionSettings.LoadColorPalettesFromJsonFile(colorSettings, colorPalettePath),
+                Is.True
             );
-            var xml = XElement.Parse(settingsContent);
-            var elements = xml.Descendants("Palette");
-            Assert.That(elements, Is.Not.Null);
-            int count = 0;
-            foreach (XElement element in elements)
-            {
-                ++count; // why elements doesn't have Count or Count() is beyond me!
-                if (element.Attribute("id").Value == "test-text")
-                {
-                    Assert.That(element.Value, Is.EqualTo("#012345 #012345-#987654 #012345/0.75"));
-                }
-                else if (element.Attribute("id").Value == "test-background")
-                {
-                    Assert.That(element.Value, Is.EqualTo("#987643/0.5"));
-                }
-                else
-                {
-                    Assert.That(false, "unexpected element id value");
-                }
-            }
-            Assert.That(count, Is.EqualTo(2));
+            Assert.That(colorSettings.Count, Is.EqualTo(2));
+            Assert.That(
+                colorSettings["test-text"],
+                Is.EqualTo("#012345 #012345-#987654 #012345/0.75")
+            );
+            Assert.That(colorSettings["test-background"], Is.EqualTo("#987643/0.5"));
         }
 
         // Though currently Bloom does not save things in this state,

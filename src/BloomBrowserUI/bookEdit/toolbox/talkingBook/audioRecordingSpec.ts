@@ -93,10 +93,12 @@ describe("audio recording tests", () => {
 
         it("SS -> SS, returns next box's first sentence", () => {
             const box1Html =
-                "<div id='box1' class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='sentence1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div>";
+                "<div id='box1' class='bloom-editable bloom-visibility-code-on' data-audiorecordingmode='Sentence'><p><span id='sentence1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div>";
             const box2Html =
-                "<div id='box2' class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='sentence2' class='audio-sentence'>Sentence 2.</span><span id='sentence3' class='audio-sentence'>Sentence 3.</span></p></div>";
-            SetupIFrameFromHtml(`<div id='page1'>${box1Html}${box2Html}</div>`);
+                "<div id='box2' class='bloom-editable bloom-visibility-code-on' data-audiorecordingmode='Sentence'><p><span id='sentence2' class='audio-sentence'>Sentence 2.</span><span id='sentence3' class='audio-sentence'>Sentence 3.</span></p></div>";
+            SetupIFrameFromHtml(
+                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`
+            );
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.Sentence;
@@ -108,10 +110,12 @@ describe("audio recording tests", () => {
 
         it("TS -> TT, returns next box", () => {
             const box1Html =
-                "<div id='box1' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span></p></div>";
+                "<div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span></p></div>";
             const box2Html =
-                "<div id='box2' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'><p><span id='sentence2' class='audio-sentence'>Sentence 2.</span><span id='sentence3' class=''>Sentence 3.</span></p></div>";
-            SetupIFrameFromHtml(`<div id='page1'>${box1Html}${box2Html}</div>`);
+                "<div id='box2' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'><p><span id='sentence2' class='audio-sentence'>Sentence 2.</span><span id='sentence3' class=''>Sentence 3.</span></p></div>";
+            SetupIFrameFromHtml(
+                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`
+            );
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -123,7 +127,7 @@ describe("audio recording tests", () => {
 
         it("TT -> TT, returns next box", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
+                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div></div>"
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -135,7 +139,7 @@ describe("audio recording tests", () => {
 
         it("Next() skips over empty box, TT -> TT -> TT", () => {
             const boxTemplate = (index: number, extraClasses: string) => {
-                return `<div id="box${index}" class="bloom-editable audio-sentence${extraClasses}" data-audiorecordingmode="TextBox">p>Sentence ${index}.</p></div>`;
+                return `<div id="box${index}" class="bloom-editable bloom-visibility-code-on audio-sentence${extraClasses}" data-audiorecordingmode="TextBox">p>Sentence ${index}.</p></div>`;
             };
             const box1Html = boxTemplate(1, " ui-audioCurrent");
             const box2Html =
@@ -143,7 +147,7 @@ describe("audio recording tests", () => {
             const box3Html = boxTemplate(3, "");
 
             SetupIFrameFromHtml(
-                `<div id="page1">${box1Html}${box2Html}${box3Html}</div>`
+                `<div id="page1"><div class='bloom-translationGroup'>${box1Html}${box2Html}${box3Html}</div></div>`
             );
 
             const recording = new AudioRecording();
@@ -195,10 +199,12 @@ describe("audio recording tests", () => {
 
         it("SS <- SS, returns previous box's last sentence", () => {
             const box1Html =
-                "<div id='box1' class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span><span id='sentence2' class='audio-sentence'>Sentence 2.</span></p></div>";
+                "<div id='box1' class='bloom-editable bloom-visibility-code-on' data-audiorecordingmode='Sentence'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span><span id='sentence2' class='audio-sentence'>Sentence 2.</span></p></div>";
             const box2Html =
-                "<div id='box2' class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='sentence3' class='audio-sentence ui-audioCurrent'>Sentence 3.</span></p></div>";
-            SetupIFrameFromHtml(`<div id='page1'>${box1Html}${box2Html}</div>`);
+                "<div id='box2' class='bloom-editable bloom-visibility-code-on' data-audiorecordingmode='Sentence'><p><span id='sentence3' class='audio-sentence ui-audioCurrent'>Sentence 3.</span></p></div>";
+            SetupIFrameFromHtml(
+                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`
+            );
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.Sentence;
@@ -210,10 +216,12 @@ describe("audio recording tests", () => {
 
         it("TS <- TT, returns previous box", () => {
             const box1Html =
-                "<div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span><span id='sentence2' class='audio-sentence'>Sentence 2.</span></p></div>";
+                "<div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span><span id='sentence2' class='audio-sentence'>Sentence 2.</span></p></div>";
             const box2Html =
-                "<div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='sentence3' class=''>Sentence 3.</span></p></div>";
-            SetupIFrameFromHtml(`<div id='page1'>${box1Html}${box2Html}</div>`);
+                "<div id='box2' class='bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='sentence3' class=''>Sentence 3.</span></p></div>";
+            SetupIFrameFromHtml(
+                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`
+            );
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -225,7 +233,7 @@ describe("audio recording tests", () => {
 
         it("TT <- TT, returns previous box", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
+                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div></div>"
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -237,7 +245,7 @@ describe("audio recording tests", () => {
 
         it("Prev() skips over empty box, TT <- TT <- TT", () => {
             const boxTemplate = (index: number, extraClasses: string) => {
-                return `<div id="box${index}" class="bloom-editable audio-sentence${extraClasses}" data-audiorecordingmode="TextBox">p>Sentence ${index}.</p></div>`;
+                return `<div id="box${index}" class="bloom-editable bloom-visibility-code-on audio-sentence${extraClasses}" data-audiorecordingmode="TextBox">p>Sentence ${index}.</p></div>`;
             };
             const box1Html = boxTemplate(1, "");
             const box2Html =
@@ -245,7 +253,7 @@ describe("audio recording tests", () => {
             const box3Html = boxTemplate(3, " ui-audioCurrent");
 
             SetupIFrameFromHtml(
-                `<div id="page1">${box1Html}${box2Html}${box3Html}</div>`
+                `<div id="page1"><div class='bloom-translationGroup'>${box1Html}${box2Html}${box3Html}</div></div>`
             );
 
             const recording = new AudioRecording();
@@ -261,7 +269,7 @@ describe("audio recording tests", () => {
     describe("- PlayingMultipleAudio()", () => {
         it("returns true while in listen to whole page with multiple text boxes", async () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
+                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div></div>"
             );
             const recording = new AudioRecording();
             await recording.listenAsync();
@@ -270,7 +278,7 @@ describe("audio recording tests", () => {
 
         it("returns true while in listen to whole page with only one box", async () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>"
+                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div></div>"
             );
             const recording = new AudioRecording();
             await recording.listenAsync();
@@ -1463,7 +1471,7 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
 
             // System under test
-            await recording.newPageReady(true);
+            await recording.newPageReady();
 
             // Verification
             const firstDiv = getFrameElementById("page", "div1")!;
@@ -1575,10 +1583,12 @@ describe("audio recording tests", () => {
         // Not sure how that happened, but now the Talking Book Tool will repair this case.
         it("setupAndUpdateMarkupAsync() repairs faulty setup, TextBox div has no audio-sentence class", async () => {
             const textBox1 =
-                "<div id='testId1' data-audioRecordingMode='TextBox' class='bloom-editable' lang='en' tabindex='-1'><p>Sentence 1.</p></div>";
+                "<div id='testId1' data-audioRecordingMode='TextBox' class='bloom-editable bloom-visibility-code-on' lang='en' tabindex='-1'><p>Sentence 1.</p></div>";
             const textBox2 =
-                "<div id='testId2' data-audioRecordingMode='TextBox' class='bloom-editable' lang='en' tabindex='-1'><p>Sentence 2.</p></div>";
-            SetupIFrameFromHtml(`<div>${textBox1}${textBox2}</div>`);
+                "<div id='testId2' data-audioRecordingMode='TextBox' class='bloom-editable bloom-visibility-code-on' lang='en' tabindex='-1'><p>Sentence 2.</p></div>";
+            SetupIFrameFromHtml(
+                `<div class='bloom-translationGroup'>${textBox1}${textBox2}</div>`
+            );
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -1610,7 +1620,7 @@ describe("audio recording tests", () => {
 
         it("setupAndUpdateMarkupAsync() repairs faulty setup, Sentence div has no spans", async () => {
             SetupIFrameFromHtml(
-                "<div><div id='testId' data-audioRecordingMode='Sentence' class='bloom-editable' lang='en'><p>Sentence 1.</p></div></div>"
+                "<div class='bloom-translationGroup'><div id='testId' data-audioRecordingMode='Sentence' class='bloom-editable bloom-visibility-code-on' lang='en'><p>Sentence 1.</p></div></div>"
             );
 
             const recording = new AudioRecording();
@@ -1960,7 +1970,7 @@ describe("audio recording tests", () => {
 
             it(`[${scenario}] disables highlight on 3 or more whitespace in split text box w/single highlight segment`, () => {
                 SetupIFrameFromHtml(
-                    '<div id="page1"><div id="box1" class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; Three&nbsp;&nbsp; Four&nbsp;&nbsp;&nbsp; End</span></p></div></div>'
+                    '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; Three&nbsp;&nbsp; Four&nbsp;&nbsp;&nbsp; End</span></p></div></div></div>'
                 );
                 const box1 = getFrameElementById("page", "box1")!;
 
@@ -1982,7 +1992,7 @@ describe("audio recording tests", () => {
 
             it(`[${scenario}] disables highlight on 3 or more whitespace in split text box w/multiple highlight segments.`, () => {
                 const html =
-                    '<div id="page1"><div id="box1" class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; End1.</span><span id="span2" class="bloom-highlightSegment">Three&nbsp;&nbsp; End2.</span><span id="span3" class="bloom-highlightSegment">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div></div>';
+                    '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; End1.</span><span id="span2" class="bloom-highlightSegment">Three&nbsp;&nbsp; End2.</span><span id="span3" class="bloom-highlightSegment">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div></div></div>';
                 SetupIFrameFromHtml(html);
                 const box1 = getFrameElementById("page", "box1")!;
 
@@ -2018,8 +2028,10 @@ describe("audio recording tests", () => {
 
             it(`[${scenario}] disables highlight on 3 or more whitespace in record-by-sentence box`, () => {
                 const originalHtml =
-                    '<div id="box1" class="bloom-editable data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">One Two&nbsp; End1.</span><span id="span2" class="audio-sentence">Three&nbsp;&nbsp; End2.</span><span id="span3" class="audio-sentence">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div>';
-                SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
+                    '<div id="box1" class="bloom-editable bloom-visibility-code-on data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">One Two&nbsp; End1.</span><span id="span2" class="audio-sentence">Three&nbsp;&nbsp; End2.</span><span id="span3" class="audio-sentence">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div>';
+                SetupIFrameFromHtml(
+                    `<div id="page1"><div class='bloom-translationGroup'>${originalHtml}</div></div>`
+                );
                 const box1 = getFrameElementById("page", "box1")!;
 
                 const recording = new AudioRecording();
@@ -2039,7 +2051,7 @@ describe("audio recording tests", () => {
 
             it(`[${scenario}] disables highlight on emphasized text`, () => {
                 const originalHtml =
-                    '<div id="box1" class="bloom-editable data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">T<em>hree&nbsp;&nbsp; End2.</em></span></p></div>';
+                    '<div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">T<em>hree&nbsp;&nbsp; End2.</em></span></p></div></div>';
                 SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
                 const box1 = getFrameElementById("page", "box1")!;
 
@@ -2058,8 +2070,10 @@ describe("audio recording tests", () => {
 
             it(`[${scenario}] disables highlight for &ZeroWidthSpace; (\u200B)`, () => {
                 const originalHtml =
-                    '<div id="box1" class="bloom-editable data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">T<em>hree\u200B \u200BEnd2.</em></span></p></div>';
-                SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
+                    '<div id="box1" class="bloom-editable bloom-visibility-code-on data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">T<em>hree\u200B \u200BEnd2.</em></span></p></div>';
+                SetupIFrameFromHtml(
+                    `<div id="page1"><div class='bloom-translationGroup'>${originalHtml}</div></div>`
+                );
                 const box1 = getFrameElementById("page", "box1")!;
 
                 const recording = new AudioRecording();
@@ -2077,7 +2091,7 @@ describe("audio recording tests", () => {
 
             it(`[${scenario}] disables highlight for complex html from real user`, () => {
                 SetupIFrameFromHtml(
-                    `<div id="page1">${getComplexHtmlFromUser()}</div>`
+                    `<div id="page1"><div class='bloom-translationGroup'>${getComplexHtmlFromUser()}</div></div>`
                 );
                 const box1 = getFrameElementById("page", "box1")!;
 

@@ -117,6 +117,17 @@
     font-weight: normal;
 }
 
+// There are at least two places in the UI where we expect to use Andika:
+// - the font chooser (it lists font names in their font)
+// - the book titles in the collection tab book lists
+// Without this rule, if the user doesn't have Andika installed
+// (which is likely), they will get a fallback font. See BL-14102.
+@font-face {
+    font-family: "Andika";
+    src: url("/bloom/fonts/Andika-Regular.woff2") format("woff2");
+    font-weight: normal;
+}
+
 // Should match kUiFontStack in bloomMaterialUITheme.ts.
 // And a rule in jquery-ui-1.8.16.custom.css.
 @UIFontStack: Roboto, NotoSans, sans-serif;

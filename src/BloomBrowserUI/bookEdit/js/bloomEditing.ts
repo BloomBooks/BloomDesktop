@@ -6,7 +6,8 @@ import {
     cleanupImages,
     SetOverlayForImagesWithoutMetadata,
     SetupResizableElement,
-    SetupImagesInContainer
+    SetupImagesInContainer,
+    doImageCommand
 } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
@@ -18,7 +19,14 @@ import BloomField from "../bloomField/BloomField";
 import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
-import { initializeBubbleManager, theOneBubbleManager } from "./bubbleManager";
+import {
+    bubbleDescription,
+    BubbleManager,
+    initializeBubbleManager,
+    kTextOverPictureClass,
+    kTextOverPictureSelector,
+    theOneBubbleManager
+} from "./bubbleManager";
 import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
@@ -56,6 +64,9 @@ import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
 import { removeToolboxMarkup } from "../toolbox/toolbox";
 import { IBloomWebSocketEvent } from "../../utils/WebSocketManager";
+import { setupDragActivityTabControl } from "../toolbox/dragActivity/dragActivityTool";
+import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
+import { addScrollbarsToPage, cleanupNiceScroll } from "./niceScrollBars";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -143,6 +154,7 @@ function Cleanup() {
 
     cleanupImages();
     cleanupOrigami();
+    cleanupNiceScroll();
 }
 
 //add a delete button which shows up when you hover
@@ -284,7 +296,12 @@ function AddLanguageTags(container) {
             // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
             // with each other, leading to flashing back and forth
             // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
-            if ($this.width() < 100) {
+            // August 2024: for overlays, the language is now displayed in the context controls box, and isn't
+            // a problem for small text boxes.
+            if (
+                $this.width() < 100 &&
+                !this.closest(kTextOverPictureSelector)
+            ) {
                 return;
             }
 
@@ -329,7 +346,7 @@ function SetBookCopyrightAndLicenseButtonVisibility(container) {
         .css("display", shouldShowButton ? "inline" : "none");
 }
 
-function GetEditor() {
+export function GetEditor() {
     return new StyleEditor("/bloom/bookEdit");
 }
 
@@ -401,6 +418,7 @@ export function changeImage(imageInfo: {
     }
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
+    theOneBubbleManager.updateBubbleForChangedImage(imgOrImageContainer);
 }
 
 // This origami checking business is related BL-13120
@@ -417,8 +435,12 @@ function hasOrigami(container: HTMLElement) {
 // can add new elements (such as during layout mode) and call this on only newly added elements.
 // Now document.load calls this with $('body') as the container.
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
-export function SetupElements(container: HTMLElement) {
+export function SetupElements(
+    container: HTMLElement,
+    elementToFocus?: HTMLElement
+) {
     recordWhatThisPageLooksLikeForSanityCheck(container);
+    BubbleManager.recordInitialZoom(container);
 
     SetupImagesInContainer(container);
 
@@ -476,6 +498,18 @@ export function SetupElements(container: HTMLElement) {
 
         if (toolbox) {
             toolbox.configureElementsForTools(container);
+            const page = container.getElementsByClassName(
+                "bloom-page"
+            )[0] as HTMLElement;
+            // When this is called initially on page load, container is the body,
+            // and we will find a bloom-page and adjust the tool list.
+            // If it is called later to adjust something like an image container,
+            // the toolbox should already be set for this page.
+            // In that case we won't find a page inside it, which is fine since
+            // we don't need to adjust the tool list again.
+            if (page) {
+                toolbox.adjustToolListForPage(page);
+            }
         }
     });
 
@@ -499,14 +533,6 @@ export function SetupElements(container: HTMLElement) {
     $(container)
         .find(".bloom-translationGroup")
         .each(function() {
-            // If we get focus on a translation group, move it to the first editable. See BL-11922.
-            $(this).focus(e => {
-                $(e.target)
-                    ?.find("div.bloom-editable:visible")
-                    ?.first()
-                    ?.focus();
-            });
-
             //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
             const contentElements = $(this).find(
                 "textarea, div.bloom-editable"
@@ -818,54 +844,120 @@ export function SetupElements(container: HTMLElement) {
             );
         }
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
-        // Ensure focus exists as best we can (BL-7994)
-        if (
-            document.hasFocus() &&
-            document.activeElement &&
-            $(document.activeElement).find(":focusable").length > 0
-        ) {
-            // There seem to be cases where the active element does not actually have focus.
-            // We like it to, so the user can actually type there.
-            (document.activeElement as HTMLElement).focus();
-            // It may already be focused, in which case, focusing it again may not trigger the side effect.
-            // So do it explicitly.
-            BloomSourceBubbles.ShowSourceBubbleForElement(
-                document.activeElement
-            );
-            // bloomApi postDebugMessage(
-            //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - trying to show source bubble on " +
-            //         document.activeElement.outerHTML
-            // );
-        } else {
-            // bloomApi postDebugMessage(
-            //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - no active element: try to set focus"
-            // );
-            // nothing is focused. If there are TOP boxes on the page, it's possible we've just reloaded
-            // the page after adding a TOP box. New TOP boxes are added last, so focusing the last one
-            // is helpful to make sure the user can immediately type into the new TOP box. (BL-8502).
-            // It's not obvious this is the most desirable focus when we're NOT doing comics, but it's still
-            // probably as good a guess as anything.
-            // The one case where it's definitely wrong is if we just added a TOP box to an image that isn't
-            // the last image on the page. Then we will pick the wrong one. Getting that right is going to take
-            // a pretty tricky solution, which I don't think we should attempt while stabilizing a beta, and
-            // may not be worth it at all.
-            // Note that there is code in bubbleManager.turnOnBubbleEditing() which tries to focus the last
-            // TOP bubble. We have not figured out why it doesn't work. Until we do, the two should probably
-            // be kept matching.
-            if (!focusLastEditableTopBox()) {
-                const firstEditable = $("body")
-                    .find("textarea:visible, div.bloom-editable:visible")
-                    .first();
-                if (firstEditable.length) {
-                    // bloomApi postDebugMessage(
-                    //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - setting focus on " +
-                    //         firstEditable.get(0).outerHTML
-                    // );
-                    firstEditable.focus();
+        if (theOneBubbleManager.isComicEditingOn) {
+            // If we saved the page with an indication that a particular element should be
+            // active, and calling code is not specifying one, restore the one we saved.
+            // This is especially useful when the page is unexpectedly reloaded, for example,
+            // changing a picture.
+            // Later: we decided we only want to do this if we're on the same page as last time.
+            if (!elementToFocus) {
+                const currentPageId = document
+                    .getElementsByClassName("bloom-page")[0]
+                    ?.getAttribute("id");
+                if (currentPageId === (window.top as any).lastPageId) {
+                    elementToFocus = Array.from(
+                        document.getElementsByClassName(kTextOverPictureClass)
+                    ).find(e =>
+                        e.hasAttribute("data-bloom-active")
+                    ) as HTMLElement;
                 } else {
-                    // bloomApi postDebugMessage(
-                    //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - nothing to focus??"
-                    // );
+                    // remember this page!
+                    (window.top as any).lastPageId = currentPageId;
+                }
+            }
+            // If we don't have some specific reason to focus on a particular overlay, we
+            // don't want to arbitrarily select one. It seems the browser will try
+            // to focus something, and sometimes it doesn't make a good choice, especially after
+            // changing zoom, which for some unknown reason seems to make it want to focus the
+            // first thing on the page that CAN be focused. And usually we automatically activate
+            // an overlay that gets focus.
+            // Prior to /4d9ff2a0860d78ecd96771a93a839ce60ab7a8d3, we made a call here to bubbleManager
+            // to tell it to ignore the next focusIn event. That was dubious and fragile.
+            // Then just prior to this commit, we were explicitly setting the active element to undefined
+            // here, but (since this is in a timeout) that could undo (for example) the sign language tool's
+            // attempt to pick some video as the one it applies to.
+            // In this commit, I've added code to specifically ignore focus events that immediately
+            // follow change of zoom. As far as I can tell, it is therefore no longer necessary
+            // to set the active element to undefined here. When we're loading a page, active element
+            // will be unset initially. If something (e.g., sign language tool) sets an initial
+            // active element, we don't want to unset it.
+            // There may, of course, be other circumstances we haven't discovered yet where the
+            // browser tries to focus the wrong thing. But if we restore this, we need to find
+            // some other way that the sign language tool can set an initial active element
+            // that will not be undone by this code. It's possible that data-bloom-active could be
+            // used, but note that currently it only applies if we're re-loading the same page.
+            // The sign language tool wants to be able to select a video (if any) on any page we load.
+            // if (!elementToFocus) {
+            //     // Make sure the active element is cleared if we're not setting it.
+            //     theOneBubbleManager.setActiveElement(undefined);
+            // }
+
+            const focusable = elementToFocus
+                ? $(elementToFocus).find(":focusable")
+                : undefined;
+            // If we were passed an element to focus, it could be a new comic bubble, and we'd like to
+            // be all set to type in it. So we focus it.
+            // I'm not sure whether this is desirable when we found one from data-bloom-active,
+            // but there may be a case where the page gets reloaded while a text-editable bubble is active.
+            if (elementToFocus && focusable) {
+                focusable.focus();
+                // Ideally calling focus above has this as a side effect.
+                // However, the focusin event handler doesn't seem to get called at this point
+                // for image containers, even though we have set tabindex to zero,
+                // so make sure it becomes the active element at least.
+                theOneBubbleManager.setActiveElement(elementToFocus);
+                // see similar code below
+                BloomSourceBubbles.ShowSourceBubbleForElement(elementToFocus);
+            } else {
+                // It's OK not to focus anything.  The priority for focusing text boxes is:
+                // 1) empty overlay "Text Box" which has no border to indicate that it's there
+                // 2) empty text box, whether overlay or origami
+                // 3) origami text box, empty or not
+                // Note that image description text boxes are never focused here since we can't
+                // tell whether they're actually visible or not.
+                // See BL-14265 and the earlier BL-14109.
+                const allEditables = container.querySelectorAll(
+                    "textarea, div.bloom-editable.bloom-visibility-code-on"
+                ); // :visible and :not don't work in this context
+                if (allEditables.length === 0) {
+                    return;
+                }
+                const visibleEditables = Array.from(allEditables).filter(
+                    e =>
+                        e.closest(".box-header-off") === null && // these are invisible (BL-14109)
+                        e.closest(".bloom-imageDescription") === null // these may be invisible
+                );
+                if (visibleEditables.length === 0) {
+                    return;
+                }
+                const emptyEditables = visibleEditables.filter(
+                    e => !e.textContent?.trim()
+                );
+                if (emptyEditables.length) {
+                    const emptyTextBlockOverlay = emptyEditables.find(e => {
+                        const div = e.closest(".bloom-textOverPicture");
+                        if (div === null) return false;
+                        return div
+                            .getAttribute("data-bubble")
+                            ?.includes("`style`:`none`");
+                    });
+                    if (emptyTextBlockOverlay) {
+                        // We want to focus on the first empty overlay text with style "none".
+                        $(emptyTextBlockOverlay).focus();
+                        return;
+                    } else {
+                        // otherwise, focus on the first empty text box, whether overlay or origami.
+                        $(emptyEditables[0]).focus();
+                        return;
+                    }
+                }
+                // don't want overlays selected here
+                const editable = visibleEditables.find(
+                    e => e.closest(".bloom-textOverPicture") === null
+                );
+                if (editable) {
+                    // focus on the first available origami text box
+                    $(editable).focus();
                 }
             }
         }
@@ -932,38 +1024,6 @@ export function SetupElements(container: HTMLElement) {
 
     AddXMatterLabelAfterPageLabel(container);
     ConstrainContentsOfPageLabel(container);
-}
-
-function focusLastEditableTopBox(): boolean {
-    const topBoxes = document.getElementsByClassName("bloom-textOverPicture");
-    if (topBoxes.length == 0) return false;
-    const lastTop = topBoxes[topBoxes.length - 1];
-    if (focusOnChildIfFound(lastTop, "bloom-editable")) return true;
-    // image and video boxes are also possibilities (BL-11620)
-    if (focusOnChildIfFound(lastTop, "bloom-imageContainer")) return true;
-    if (focusOnChildIfFound(lastTop, "bloom-videoContainer")) return true;
-    return false; // unexpected
-}
-
-function focusOnChildIfFound(lastTop: Element, className: string): boolean {
-    const visibleChildBoxesInLastTop = Array.from(
-        lastTop.getElementsByClassName(className)
-    ).filter(
-        // this is a crude check for visibility, but according to stack overflow
-        // equivalent to the :visible check we were previously doing in jquery
-        s => window.getComputedStyle(s).getPropertyValue("display") != "none"
-    );
-    if (visibleChildBoxesInLastTop.length !== 0) {
-        // This doesn't work reliably if we just use the Element.focus(), so we use the JQuery version that
-        // we set the eventhandler with in BloomSourceBubbles.SetupTooltips(). We've tried adding a "focusin"
-        // eventhandler to the div, instead of the JQuery one, but it still didn't work when we used
-        // the raw HTML focus() here, even if we changed the eventhandler to use currentTarget instead of target.
-        // It may have something to do with the fact that JQuery calls trigger() on the event, rather than
-        // calling the focus method. (BL-8726)
-        $(visibleChildBoxesInLastTop[0] as HTMLElement).focus();
-        return true;
-    }
-    return false;
 }
 
 // This function sets up a rule to display a prompt following the placeholder we insert for a missing
@@ -1059,6 +1119,7 @@ function AddXMatterLabelAfterPageLabel(container) {
 function OneTimeSetup() {
     setupOrigami();
     hookupLinkHandler();
+    setupDragActivityTabControl();
 }
 
 interface String {
@@ -1135,7 +1196,9 @@ export function bootstrap() {
         .each((index: number, element: Element) => {
             attachToCkEditor(element);
         });
-
+    if ($("div.bloom-page").length === 1) {
+        addScrollbarsToPage($("div.bloom-page")[0]);
+    }
     // We want to do this as late in the page setup process as possible because a
     // mouse zoom event will regenerate the page, and various things we do in the process
     // of starting up a page don't like it if the page we are loading is already unloading.
@@ -1218,6 +1281,7 @@ function removeOrigami() {
     for (let i = 0; i < textLabels.length; i++) {
         textLabels[i].remove();
     }
+    cleanupNiceScroll(); // don't leave the nicescroll debris around
 }
 
 // This is invoked from C# when we are about to change pages. It removes markup we don't want to save.
@@ -1333,7 +1397,20 @@ export const copySelection = () => {
 
 async function copyImpl() {
     const sel = document.getSelection();
-    if (!sel) return;
+    if (!sel?.toString()) {
+        const activeBubble = theOneBubbleManager?.getActiveElement();
+        const activeBubbleEditable = activeBubble?.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on"
+        )[0] as HTMLElement;
+
+        // No active text selection to copy; copy the bubble's entire content.
+        // There's a slight chance that the user wanted to copy some trailing
+        // whitespace. But there's a greater chance they **don't** want unintended
+        // trailing line breaks. This ".trimEnd()" works around an issue where multiple
+        // copy/pastes can result in an extra line break being added. See BL-14051.
+        navigator.clipboard.writeText(activeBubbleEditable.innerText.trimEnd());
+        return;
+    }
     navigator.clipboard.writeText(sel.toString());
 }
 
@@ -1361,27 +1438,89 @@ async function cutSelectionImpl() {
 }
 
 // See comment on copySelection
-export const pasteClipboardText = () => {
-    pasteImpl();
+export const pasteClipboard = (imageAvailable: boolean) => {
+    pasteImpl(imageAvailable);
 };
 
-async function pasteImpl() {
+async function pasteImpl(imageAvailable: boolean) {
+    const bubbleManager = theOneBubbleManager;
+    // Enhance: in what case would we consider a non-overlay image container to be the natural destination for pasting?
+    const activeBubble = bubbleManager?.getActiveElement();
+    const imageContainer = activeBubble?.getElementsByClassName(
+        "bloom-imageContainer"
+    )[0];
+    if (imageContainer) {
+        if (imageAvailable) {
+            const img = imageContainer.getElementsByTagName("img")[0];
+            if (!img) {
+                return; // unexpected, maybe log??
+            }
+            doImageCommand(img, "paste");
+        } else {
+            const imageIsGif =
+                activeBubble?.classList.contains("bloom-gif") ?? false;
+            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                imageIsGif
+                    ? "EditTab.NoGifFoundOnClipboard"
+                    : "EditTab.NoImageFoundOnClipboard",
+                "No image found",
+                ""
+            );
+        }
+        return; // can't paste anything but an image into an image container overlay
+    }
+    const activeBubbleEditable = activeBubble?.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on"
+    )[0] as HTMLElement;
+
+    if (
+        activeBubbleEditable &&
+        activeBubble !== bubbleManager.theBubbleWeAreTextEditing
+    ) {
+        // We've issued a paste command on a bubble that isn't active for editing.
+        // Replace its entire content with what's on the clipboard.
+        const editor = (activeBubbleEditable as any).bloomCkEditor;
+        if (editor) {
+            const manager = editor.undoManager;
+            const textToPaste = await navigator.clipboard.readText();
+            editor.focus();
+            manager.save(true);
+            // The description of these arguments is quite mysterious, but by experiment, if both are passed true,
+            // then the two changes we are about to make are treated as a single operation for undo purposes.
+            manager.lock(true, true);
+            // I tried a few options here. Using insertText is desirable because, unlike embedding the text in the
+            // html between the <p> tags, it doesn't bypass ckeditor's usual checks, nor allow unexpected things
+            // to happen if the clipboard contains something that looks like HTML. The setData gets rid of the
+            // old content, provides the wrapper markup we want, and leaves the insertion point in the right
+            // place for the desired text to be inserted.
+            editor.setData(`<p><p>`);
+            editor.insertText(textToPaste);
+            manager.unlock();
+            manager.save(true);
+            // We need to update the bubble height (BL-14004).
+            bubbleManager.updateAutoHeight();
+        }
+        // It shouldn't happen that we don't have an editor, but if we don't, we just don't paste.
+        // Otherwise, the paste is likely to go somewhere unexpected, wherever a ckeditor last had
+        // a selection.
+        return;
+    }
+    const textToPaste = await navigator.clipboard.readText();
     // Using ckeditor here because it's the only way I've found to integrate clipboard
     // ops into an Undo stack that we can operate from an external button.
     // We do a Save before and after to make sure that the cut is distinct from
     // any other editing and that ckEditor actually has an item in its undo stack
     // so that the Undo gets activated.
-    const textToPaste = await navigator.clipboard.readText();
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
     CKEDITOR.currentInstance.insertText(textToPaste);
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
-    // Works but isn't undoable.
-    //const sel = document.getSelection();
-    // if (sel) {
-    //     const range = sel.getRangeAt(0);
-    //     range.deleteContents();
-    //     range.insertNode(document.createTextNode(textToPaste));
-    // }
+    // We need to update the bubble height (BL-14004).
+    if (
+        activeBubbleEditable &&
+        activeBubble === bubbleManager.theBubbleWeAreTextEditing
+    ) {
+        bubbleManager.updateAutoHeight();
+    }
 }
 
 export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
@@ -1471,14 +1610,14 @@ export function attachToCkEditor(element) {
         // (Note that offsets are not defined if it's not visible.)
         if (show) {
             updateCkEditorButtonStatus(editor);
-            const barTop = bar.offset().top;
+            const barTop = bar.offset()?.top ?? 0;
             const div = mapCkeditDiv[editor.id];
             const rect = div.getBoundingClientRect();
             const parent = bar.scrollParent();
             const scrollTop = parent ? parent.scrollTop() : 0;
             const boxTop = rect.top + scrollTop;
             if (boxTop - barTop < 5) {
-                const barLeft = bar.offset().left;
+                const barLeft = bar.offset()?.left ?? 0;
                 const barHeight = bar.height();
                 bar.offset({ top: boxTop - barHeight, left: barLeft });
             }

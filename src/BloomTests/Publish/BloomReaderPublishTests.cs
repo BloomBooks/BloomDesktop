@@ -12,6 +12,7 @@ using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.Publish.BloomPub;
+using Bloom.SafeXml;
 using Bloom.web;
 using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
@@ -21,7 +22,6 @@ using SIL.PlatformUtilities;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using Color = System.Drawing.Color;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 
@@ -433,27 +433,27 @@ namespace BloomTests.Publish
                     var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
                     var body = htmlDom.DocumentElement.GetElementsByTagName("body")[0];
                     Assert.That(
-                        body.Attributes["data-bfautoadvance"]?.Value,
+                        body.GetAttribute("data-bfautoadvance"),
                         Is.EqualTo("landscape;bloomReader")
                     );
                     Assert.That(
-                        body.Attributes["data-bfcanrotate"]?.Value,
+                        body.GetAttribute("data-bfcanrotate"),
                         Is.EqualTo("allOrientations;bloomReader")
                     );
                     Assert.That(
-                        body.Attributes["data-bfplayanimations"]?.Value,
+                        body.GetAttribute("data-bfplayanimations"),
                         Is.EqualTo("landscape;bloomReader")
                     );
                     Assert.That(
-                        body.Attributes["data-bfplaymusic"]?.Value,
+                        body.GetAttribute("data-bfplaymusic"),
                         Is.EqualTo("landscape;bloomReader")
                     );
                     Assert.That(
-                        body.Attributes["data-bfplaynarration"]?.Value,
+                        body.GetAttribute("data-bfplaynarration"),
                         Is.EqualTo("landscape;bloomReader")
                     );
                     Assert.That(
-                        body.Attributes["data-bffullscreenpicture"]?.Value,
+                        body.GetAttribute("data-bffullscreenpicture"),
                         Is.EqualTo("landscape;bloomReader")
                     );
                 },
@@ -1130,8 +1130,8 @@ namespace BloomTests.Publish
                         "Expected to find untrimmed video"
                     );
                     var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(paramObj.Html);
-                    var secondSource = htmlDom.SelectNodes("//source")[1];
-                    var srcAttr = secondSource.Attributes["src"].Value;
+                    var secondSource = htmlDom.SafeSelectNodes("//source")[1] as SafeXmlElement;
+                    var srcAttr = secondSource.GetAttribute("src");
                     Assert.AreNotEqual(
                         -1,
                         zip.FindEntry(srcAttr, false),
@@ -1572,14 +1572,11 @@ namespace BloomTests.Publish
                 FontsWeCantInstall = new HashSet<string>();
             }
 
-            public Dictionary<string, string[]> FilesForFont = new Dictionary<string, string[]>();
+            public Dictionary<string, string> FilesForFont = new Dictionary<string, string>();
 
-            public IEnumerable<string> GetFilesForFont(string fontName)
+            public string GetFileForFont(string fontName, string fontStyle, string fontWeight)
             {
-                string[] result;
-                FilesForFont.TryGetValue(fontName, out result);
-                if (result == null)
-                    result = new string[0];
+                FilesForFont.TryGetValue(fontName, out string result);
                 return result;
             }
 
@@ -1650,11 +1647,11 @@ namespace BloomTests.Publish
                 FontsApi.AvailableFontMetadataDictionary.Add("Calibre", calibreMeta);
 
                 fontFileFinder.FontGroups["Times New Roman"] = tnrGroup;
-                fontFileFinder.FilesForFont["Times New Roman"] = new[] { tnrPath };
+                fontFileFinder.FilesForFont["Times New Roman"] = tnrPath;
                 fontFileFinder.FontGroups["Wen Yei"] = wenYeiGroup;
-                fontFileFinder.FilesForFont["Wen Yei"] = new[] { wenYeiPath };
+                fontFileFinder.FilesForFont["Wen Yei"] = wenYeiPath;
                 fontFileFinder.FontGroups["Calibre"] = calibreGroup;
-                fontFileFinder.FilesForFont["Calibre"] = new[] { calibrePath };
+                fontFileFinder.FilesForFont["Calibre"] = calibrePath;
                 fontFileFinder.FontsWeCantInstall.Add("NotAllowed");
                 // And "NotFound" just doesn't get a mention anywhere.
                 PublishHelper.ClearFontMetadataMapForTests();
@@ -1670,12 +1667,47 @@ namespace BloomTests.Publish
                     ".someStyle {font-family:'Calibre';} .otherStyle {font-family: 'NotFound';} .yetAnother {font-family:'NotAllowed';}"
                 );
 
-                HashSet<string> fontsWanted = new HashSet<string>();
-                fontsWanted.Add("Times New Roman");
-                fontsWanted.Add("Wen Yei");
-                fontsWanted.Add("Calibre");
-                fontsWanted.Add("NotAllowed");
-                fontsWanted.Add("NotFound"); // probably wouldn't happen with new approach for fonts, but leave in the test
+                HashSet<PublishHelper.FontInfo> fontsWanted = new HashSet<PublishHelper.FontInfo>();
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "Times New Roman",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "Wen Yei",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "Calibre",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "NotAllowed",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                );
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontName = "NotFound",
+                        fontStyle = "normal",
+                        fontWeight = "400"
+                    }
+                ); // probably wouldn't happen with new approach for fonts, but leave in the test
 
                 BloomPubMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
 

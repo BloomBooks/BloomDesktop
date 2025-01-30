@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml;
 using Bloom;
+using Bloom.SafeXml;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -18,7 +18,7 @@ namespace BloomTests
         {
             var dom = XmlHtmlConverter.GetXmlDomFromHtml("<!DOCTYPE html><html></html>", false);
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1); //makes sure no namespace was inserted (or does it? what if that assert is too smart))
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             var xml = dom.OuterXml;
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<html><head><title></title></head><body></body></html>", xml);
@@ -32,7 +32,7 @@ namespace BloomTests
                 false
             );
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1); //makes sure no namespace was inserted (or does it? what if that assert is too smart))
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             var xml = dom.OuterXml;
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual(
@@ -56,7 +56,7 @@ namespace BloomTests
         [Test]
         public void SaveAsHTML_HasXHTMLSelfClosingDiv_ChangesToHTMLStandard()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<html><body><div data-book='test'/></body></html>");
             using (var temp = new TempFile())
             {
@@ -91,7 +91,7 @@ namespace BloomTests
         [Test]
         public void SaveAsHTML_EmptyUbi_Removed()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 "<html><body><div data-book='test'/>Text with <u></u> and <b></b> and <i></i> works</body></html>"
             );
@@ -115,7 +115,7 @@ namespace BloomTests
         [Test]
         public void SaveAsHTML_MinimalUbiSpan_DoesNotContractOrRemove()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 "<html><body><div data-book='test'/>Text with <u /><u attr=\"1\" /> and <b/><b attr=\"1\" /><span /><span attr=\"1\" /> and <i /><i attr=\"1\" />  <em /><em attr=\"1\" />  <strong /><strong attr=\"1\" /> works</body></html>"
             );
@@ -147,7 +147,7 @@ namespace BloomTests
         [Test, Ignore("Will fix in BL-2558")]
         public void SaveAsHTML_HasEmUpAgainstStrong_DoesNotInsertSpace()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             var original = "<p><em>one</em><strong>two</strong></p>";
             dom.LoadXml("<html><body><div data-book='test'/>" + original + "</body></html>");
             using (var temp = new TempFile())
@@ -162,7 +162,7 @@ namespace BloomTests
         [Test]
         public void SaveAsHTML_EmptySpan_DoesNotRemove()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 "<html><body><p>first line <span class='bloom-linebreak'></span>second line</p></body></html>"
             );
@@ -179,7 +179,7 @@ namespace BloomTests
         {
             var pattern =
                 "<p></p><p></p><p>a</p><p></p><p>b</p><p/><cite></cite><cite /><cite data-book='originalTitle'></cite><cite data-book='originalTitle'/>";
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<!DOCTYPE html><html><body>" + pattern + "</body></html>");
             using (var temp = new TempFile())
             {
@@ -200,7 +200,7 @@ namespace BloomTests
         public void SaveDOMAsHtml5_DoesNotMessUpPaths()
         {
             var pattern = "<svg whatever='whatever'><path something='rubbish' /></svg>";
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<!DOCTYPE html><html><body>" + pattern + "</body></html>");
             using (var temp = new TempFile())
             {
@@ -235,7 +235,7 @@ namespace BloomTests
         [Test]
         public void SaveDOMAsHtml5_SavesBrCorrectly()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml("<html><body><br /></body></html>");
             using (var temp = new TempFile())
             {
@@ -322,7 +322,7 @@ namespace BloomTests
             var html = "<!DOCTYPE html><html><head></head><body><div><u></u></div></body></html>";
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<div></div>", xml);
         }
@@ -333,7 +333,7 @@ namespace BloomTests
             var html = "<!DOCTYPE html><html><head></head><body><div><u> </u></div></body></html>";
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<div><u> </u></div>", xml);
         }
@@ -345,7 +345,7 @@ namespace BloomTests
                 "<!DOCTYPE html><html><head></head><body><div><u><i /></u></div></body></html>";
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<div></div>", xml);
         }
@@ -357,7 +357,7 @@ namespace BloomTests
                 "<!DOCTYPE html><html><head></head><body><div><u style=\"test\"> </u></div></body></html>";
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<div><u style=\"test\"> </u></div>", xml);
 
@@ -366,7 +366,7 @@ namespace BloomTests
             dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
             xml = xml.Replace(Environment.NewLine, "");
-            // The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
         }
 

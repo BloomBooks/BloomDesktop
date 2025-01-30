@@ -5,7 +5,9 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
-import { BubbleManager } from "../js/bubbleManager";
+import { BubbleManager, theOneBubbleManager } from "../js/bubbleManager";
+import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
+import { addScrollbarsToPage, cleanupNiceScroll } from "../js/niceScrollBars";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -23,7 +25,24 @@ export default class OverflowChecker {
         );
 
         // BL-1260: disable overflow checking for pages with too many elements
-        if (editablePageElements.length > 30) return;
+        if (editablePageElements.length > 30) {
+            // since we're not going to check it, remove any indications from
+            // previous checking. (Normal code also removes some qtips. I don't
+            // think those survive from one page load to the next, so we don't
+            // need to remove them here.)
+            const cleanup = (className: string) => {
+                Array.from(
+                    container.getElementsByClassName(className)
+                ).forEach(x => x.classList.remove(className));
+            };
+            cleanup("overflow");
+            cleanup("thisOverflowingParent");
+            cleanup("childOverflowingThis");
+            cleanup("Layout-Problem-Detected");
+            cleanup("pageOverflows");
+
+            return;
+        }
 
         //Add the handler so that when the elements change, we test for overflow
         editablePageElements.on("keyup paste", e => {
@@ -126,12 +145,6 @@ export default class OverflowChecker {
         )
             return [0, 0]; //display:inline always returns zero width, so there's no way to know if it's overflowing
 
-        // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
-        // This is because of the thin grey border on a focused input box.
-        // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
-        // so we'll apply the same 'fudge' factor to both comparisons.
-        const focusedBorderFudgeFactor = 2;
-
         // I'm going to leave this comment and variable as a reminder that at one point we had to fudge things a
         // little to make it look right. This might be because we weren't correctly preventing flex grow and shrink
         // before measuring the content height.
@@ -155,27 +168,36 @@ export default class OverflowChecker {
         // To avoid spuriously reporting overflow in such cases (BL-6338), we adjust
         // for the discrepancy.
         const measurements = MeasureText.getDescentMeasurementsOfBox(element);
+        // console.log(
+        //     "actual descent: " +
+        //         measurements.actualDescent +
+        //         " layout descent: " +
+        //         measurements.layoutDescent +
+        //         " font descent: " +
+        //         measurements.fontDescent
+        // );
         const fontFudgeFactor = Math.max(
             measurements.fontDescent - measurements.actualDescent,
             0
         );
 
-        // Add a class so that the scroll height can be calculated without the language label affecting the height/width.
-        // (Currently, only done so for text-over-picture elements because the language label is OUTSIDE the box,
-        // but in a normal text box it is inside the box.)
-        element.classList.add("hideTOPLanguageLabel");
-
         const overflowY =
             this.contentHeight(element) -
             fontFudgeFactor -
-            (element.clientHeight +
-                focusedBorderFudgeFactor +
-                shortBoxFudgeFactor);
-        const overflowX =
-            element.scrollWidth -
-            (element.clientWidth + focusedBorderFudgeFactor);
-
-        element.classList.remove("hideTOPLanguageLabel");
+            (element.clientHeight + shortBoxFudgeFactor);
+        // console.log(
+        //     "overflowY: " +
+        //         overflowY +
+        //         " contentHeight: " +
+        //         this.contentHeight(element) +
+        //         " fontFudgeFactor: " +
+        //         fontFudgeFactor +
+        //         " clientHeight: " +
+        //         element.clientHeight +
+        //         " shortBoxFudgeFactor: " +
+        //         shortBoxFudgeFactor
+        // );
+        const overflowX = element.scrollWidth - element.clientWidth;
 
         return [overflowX, overflowY];
     }
@@ -278,9 +300,9 @@ export default class OverflowChecker {
             // search ancestors starting with nearest
             const currentAncestor = $(parents[i]);
             const parentBottom =
-                currentAncestor.offset().top / scaleY +
+                (currentAncestor.offset()?.top ?? 0) / scaleY +
                 currentAncestor.outerHeight(true);
-            const elemTop = $(element).offset().top / scaleY;
+            const elemTop = ($(element).offset()?.top ?? 0) / scaleY;
             const elemBottom = elemTop + $(element).outerHeight(false);
             // console.log("Offset top: " + elemTop + " Outer Height: " + $(element).outerHeight(false));
             // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
@@ -302,7 +324,7 @@ export default class OverflowChecker {
     // Checks for overflow on a bloom-page and adds/removes the proper class
     // N.B. This function is specifically designed to be called from within AddOverflowHandler()
     // but is also called from within StyleEditor (and therefore public)
-    public static MarkOverflowInternal(box) {
+    public static MarkOverflowInternal(box, doNotShrink?: boolean) {
         // There are two types of overflow that we need to check.
         // 1-When we're called by a handler on an element, we need to check that that element
         // doesn't overflow internally (i.e. has too much stuff to fit in itself).
@@ -348,7 +370,9 @@ export default class OverflowChecker {
         const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(box);
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
-        if (BubbleManager.growOverflowingBox(box, overflowY)) {
+        if (
+            theOneBubbleManager.growOverflowingBox(box, overflowY, doNotShrink)
+        ) {
             overflowY = 0;
         }
         if (preventOverflowY) {
@@ -364,6 +388,12 @@ export default class OverflowChecker {
         }
         if (overflowY > 0 || overflowX > 0) {
             $box.addClass("overflow");
+            const page = $box.closest(".bloom-page");
+            if (overflowY > 0 && page.length) {
+                cleanupNiceScroll();
+                addScrollbarsToPage(page[0]);
+            }
+
             if ($box.parents("[class*=Device]").length === 0) {
                 // don't show an overflow warning if we have scrolling available
                 theOneLocalizationManager
@@ -389,6 +419,10 @@ export default class OverflowChecker {
             }
         } else {
             $box.removeClass("overflow");
+            const page = $box.closest(".bloom-page");
+            if (page.length) {
+                cleanupNiceScroll();
+            }
         }
 
         const container = $box.closest(".marginBox");
@@ -463,7 +497,10 @@ export default class OverflowChecker {
                     // show the tooltip.
                     const shouldShow =
                         offsetY >= $overflowingAncestor.innerHeight() - 10 &&
-                        offsetY <= $overflowingAncestor.outerHeight(false) + 10;
+                        offsetY <=
+                            $overflowingAncestor.outerHeight(false) + 10 &&
+                        // I don't like this module knowing about this, but how else to hide it?
+                        !playingBloomGame(overflowingAncestor);
                     if (shouldShow && !showing) {
                         showing = true;
                         $overflowingAncestor.trigger("enterBorder");

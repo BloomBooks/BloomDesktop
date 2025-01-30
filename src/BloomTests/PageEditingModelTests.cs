@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Xml;
 using Bloom;
 using Bloom.Edit;
+using Bloom.SafeXml;
 using NUnit.Framework;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
@@ -52,7 +52,7 @@ namespace BloomTests
             [Test, Ignore("Test needs work")]
             public void ChangePicture_AlreadyHaveACopyInPublicationFolder_PictureUpdated()
             {
-                var dom = new XmlDocument();
+                var dom = SafeXmlDocument.Create();
                 dom.LoadXml(
                     "<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>"
                 );
@@ -103,7 +103,7 @@ namespace BloomTests
         [Test]
         public void ChangePicture_PictureIsTiff_ConvertedToPng()
         {
-            var dom = new XmlDocument();
+            var dom = SafeXmlDocument.Create();
             dom.LoadXml(
                 "<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>"
             );

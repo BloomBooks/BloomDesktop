@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -8,7 +9,9 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
+using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.Workspace;
@@ -136,14 +139,16 @@ namespace Bloom.Publish
             @"(() =>
 {
 	const elementsInfo = [];
-	const elementsWithId = document.querySelectorAll(""[id]"");
+	const elementsWithId = document.querySelectorAll(""[id], em, strong"");
 	elementsWithId.forEach(elt => {
 		const style = getComputedStyle(elt, null);
 		if (style) {
 			elementsInfo.push({
 				id: elt.id,
 				display: style.display,
-				fontFamily: style.getPropertyValue(""font-family"")
+				fontFamily: style.getPropertyValue(""font-family""),
+				fontStyle: style.getPropertyValue(""font-style""),
+				fontWeight: style.getPropertyValue(""font-weight"")
 			});
 		}
 	});
@@ -171,10 +176,63 @@ namespace Bloom.Publish
             public string id;
             public string display;
             public string fontFamily;
+            public string fontStyle;
+            public string fontWeight;
+        }
+
+        public class FontInfo
+        {
+            public string fontName;
+            public string fontStyle;
+            public string fontWeight;
+
+            public override string ToString()
+            {
+                if (string.IsNullOrEmpty(fontStyle) && string.IsNullOrEmpty(fontWeight))
+                    return string.IsNullOrEmpty(fontName) ? "<uninitialized FontInfo>" : fontName;
+                if (fontStyle == "normal" && fontWeight == "400")
+                    return string.IsNullOrEmpty(fontName) ? "<uninitialized FontInfo>" : fontName;
+                if (fontStyle == "normal" && fontWeight == "700")
+                    return $"{fontName} Bold";
+                if (fontStyle == "italic" && fontWeight == "400")
+                    return $"{fontName} Italic";
+                if (fontStyle == "italic" && fontWeight == "700")
+                    return $"{fontName} Bold Italic";
+                return $"{fontName} weight=\"{fontWeight}\" style=\"{fontStyle}\"";
+            }
+
+            public override bool Equals(object obj)
+            {
+                var that = obj as FontInfo;
+                if (that == null)
+                    return false;
+                return this.fontName == that.fontName
+                    && this.fontStyle == that.fontStyle
+                    && this.fontWeight == that.fontWeight;
+            }
+
+            public override int GetHashCode()
+            {
+                return fontName.GetHashCode() ^ fontStyle.GetHashCode() ^ fontWeight.GetHashCode();
+            }
+
+            public static bool operator ==(FontInfo info1, FontInfo info2)
+            {
+                if (ReferenceEquals(info1, info2))
+                    return true;
+                if (ReferenceEquals(info1, null) || ReferenceEquals(info2, null))
+                    return false;
+                return info1.Equals(info2);
+            }
+
+            public static bool operator !=(FontInfo info1, FontInfo info2)
+            {
+                return !(info1 == info2);
+            }
         }
 
         Dictionary<string, string> _mapIdToDisplay = new Dictionary<string, string>();
-        Dictionary<string, string> _mapIdToFontFamily = new Dictionary<string, string>();
+        Dictionary<string, FontInfo> _mapIdToFontInfo = new Dictionary<string, FontInfo>();
 
         private void RemoveUnwantedContentInternal(
             HtmlDom dom,
@@ -191,42 +249,42 @@ namespace Bloom.Publish
             Debug.Assert(dom != null && dom.Body != null);
 
             // Collect all the page divs.
-            var pageElts = new List<XmlElement>();
+            var pageElts = new List<SafeXmlElement>();
             if (epubMaker != null)
             {
-                pageElts.Add((XmlElement)dom.Body.FirstChild); // already have a single-page dom prepared for export
+                pageElts.Add((SafeXmlElement)dom.Body.FirstChild); // already have a single-page dom prepared for export
             }
             else
             {
-                foreach (XmlElement page in book.GetPageElements())
+                foreach (SafeXmlElement page in book.GetPageElements())
                     pageElts.Add(page);
             }
 
             RemoveEnterpriseFeaturesIfNeeded(book, pageElts, warningMessages);
 
             // Remove any left-over bubbles
-            foreach (XmlElement elt in dom.RawDom.SafeSelectNodes("//label"))
+            foreach (SafeXmlElement elt in dom.RawDom.SafeSelectNodes("//label"))
             {
-                if (HasClass(elt, "bubble"))
+                if (elt.HasClass("bubble"))
                     elt.ParentNode.RemoveChild(elt);
             }
             // Remove page labels and descriptions.  Also remove pages (or other div elements) that users have
             // marked invisible.  (The last mimics the effect of bookLayout/languageDisplay.less for editing
             // or PDF published books.)
-            foreach (XmlElement elt in dom.RawDom.SafeSelectNodes("//div"))
+            foreach (SafeXmlElement elt in dom.RawDom.SafeSelectNodes("//div"))
             {
                 if (!book.IsTemplateBook)
                 {
-                    if (!keepPageLabels && HasClass(elt, "pageLabel"))
+                    if (!keepPageLabels && elt.HasClass("pageLabel"))
                         elt.ParentNode.RemoveChild(elt);
 
-                    if (HasClass(elt, "pageDescription"))
+                    if (elt.HasClass("pageDescription"))
                         elt.ParentNode.RemoveChild(elt);
                 }
             }
             // Our recordingmd5 attribute is not allowed by epub
             foreach (
-                XmlElement elt in HtmlDom.SelectAudioSentenceElementsWithRecordingMd5(
+                SafeXmlElement elt in HtmlDom.SelectAudioSentenceElementsWithRecordingMd5(
                     dom.RawDom.DocumentElement
                 )
             )
@@ -234,12 +292,14 @@ namespace Bloom.Publish
                 elt.RemoveAttribute("recordingmd5");
             }
             // Users should not be able to edit content of published books
-            foreach (XmlElement elt in dom.RawDom.SafeSelectNodes("//div[@contenteditable]"))
+            foreach (SafeXmlElement elt in dom.RawDom.SafeSelectNodes("//div[@contenteditable]"))
             {
                 elt.RemoveAttribute("contenteditable");
             }
 
-            foreach (var div in dom.Body.SelectNodes("//div[@role='textbox']").Cast<XmlElement>())
+            foreach (
+                var div in dom.Body.SafeSelectNodes("//div[@role='textbox']").Cast<SafeXmlElement>()
+            )
             {
                 div.RemoveAttribute("role"); // this isn't an editable textbox in an ebook
                 div.RemoveAttribute("aria-label"); // don't want this without a role
@@ -248,7 +308,7 @@ namespace Bloom.Publish
             }
 
             // Clean up img elements (BL-6035/BL-6036 and BL-7218)
-            foreach (var img in dom.Body.SelectNodes("//img").Cast<XmlElement>())
+            foreach (var img in dom.Body.SafeSelectNodes("//img").Cast<SafeXmlElement>())
             {
                 // Ensuring a proper alt attribute is handled elsewhere
                 var src = img.GetOptionalStringAttribute("src", null);
@@ -265,7 +325,7 @@ namespace Bloom.Publish
                 }
                 else
                 {
-                    var parent = img.ParentNode as XmlElement;
+                    var parent = img.ParentNode as SafeXmlElement;
                     parent.RemoveAttribute("title"); // We don't want this in published books.
                     img.RemoveAttribute("title"); // We don't want this in published books.  (probably doesn't exist)
                     img.RemoveAttribute("type"); // This is invalid, but has appeared for svg branding images.
@@ -277,8 +337,8 @@ namespace Bloom.Publish
                 // epub-check doesn't like these attributes (BL-6036).  I suppose BloomReader might find them useful.
                 foreach (
                     var div in dom.Body
-                        .SelectNodes("//div[contains(@class, 'split-pane-component-inner')]")
-                        .Cast<XmlElement>()
+                        .SafeSelectNodes("//div[contains(@class, 'split-pane-component-inner')]")
+                        .Cast<SafeXmlElement>()
                 )
                 {
                     div.RemoveAttribute("min-height");
@@ -291,7 +351,9 @@ namespace Bloom.Publish
             // exists, it probably has a style attribute (position:fixed) that epubcheck won't like.
             // (fixed position way off the screen to hide it)
             foreach (
-                var div in dom.Body.SelectNodes("//*[@data-cke-hidden-sel]").Cast<XmlElement>()
+                var div in dom.Body
+                    .SafeSelectNodes("//*[@data-cke-hidden-sel]")
+                    .Cast<SafeXmlElement>()
             )
             {
                 div.ParentNode.RemoveChild(div);
@@ -309,7 +371,7 @@ namespace Bloom.Publish
             // need to use the real DOM with its stylesheets to figure out what is hidden there
             // and should be removed in the epub.
             HtmlDom displayDom = null;
-            foreach (XmlElement page in pageElts)
+            foreach (SafeXmlElement page in pageElts)
             {
                 EnsureAllThingsThatCanBeHiddenHaveIds(page);
                 if (displayDom == null)
@@ -361,14 +423,37 @@ namespace Bloom.Publish
             {
                 foreach (var info in rawInfo.results)
                 {
+                    if (string.IsNullOrEmpty(info.id))
+                    {
+                        // Presumably in a <strong> or <em> tag.
+                        if (info.display != "none")
+                        {
+                            var font = ExtractFontNameFromFontFamily(info.fontFamily);
+                            FontsUsed.Add(
+                                new FontInfo
+                                {
+                                    fontName = font,
+                                    fontStyle = info.fontStyle,
+                                    fontWeight = info.fontWeight
+                                }
+                            );
+                        }
+                        continue;
+                    }
                     _mapIdToDisplay[info.id] = info.display;
-                    _mapIdToFontFamily[info.id] = info.fontFamily;
+                    var fontInfo = new FontInfo
+                    {
+                        fontName = info.fontFamily,
+                        fontStyle = info.fontStyle,
+                        fontWeight = info.fontWeight
+                    };
+                    _mapIdToFontInfo[info.id] = fontInfo;
                 }
             }
-            var toBeDeleted = new List<XmlElement>();
+            var toBeDeleted = new List<SafeXmlElement>();
             // Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
             // (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
-            foreach (XmlElement page in pageElts)
+            foreach (SafeXmlElement page in pageElts)
             {
                 // BL-9501 Don't remove pages from template books, which are often empty but we still want to show their components
                 if (!book.IsTemplateBook)
@@ -381,7 +466,7 @@ namespace Bloom.Publish
                     var selector = removeInactiveLanguages
                         ? kSelectThingsThatCanBeHidden
                         : kSelectThingsThatCanBeHiddenButAreNotText;
-                    foreach (XmlElement elt in page.SafeSelectNodes(selector))
+                    foreach (SafeXmlElement elt in page.SafeSelectNodes(selector))
                     {
                         // Even when they are not displayed we want to keep image descriptions if they aren't empty.
                         // This is necessary for retaining any associated audio files to play.
@@ -405,7 +490,7 @@ namespace Bloom.Publish
                 // We need the font information for wanted text elements as well.  This is a side-effect but related to
                 // unwanted elements in that we don't need fonts that are used only by unwanted elements.  Note that
                 // elements don't need to be actually visible to provide computed style information such as font-family.
-                foreach (XmlElement elt in page.SafeSelectNodes(".//div"))
+                foreach (SafeXmlElement elt in page.SafeSelectNodes(".//div"))
                 {
                     StoreFontUsed(elt);
                 }
@@ -422,7 +507,7 @@ namespace Bloom.Publish
 
         public static void RemoveEnterpriseFeaturesIfNeeded(
             Book.Book book,
-            List<XmlElement> pageElts,
+            List<SafeXmlElement> pageElts,
             ISet<string> warningMessages
         )
         {
@@ -454,7 +539,7 @@ namespace Bloom.Publish
         public static Dictionary<string, int> RemoveEnterprisePagesIfNeeded(
             BookData bookData,
             HtmlDom dom,
-            List<XmlElement> pageElts
+            List<SafeXmlElement> pageElts
         )
         {
             var omittedPages = new Dictionary<string, int>();
@@ -488,9 +573,9 @@ namespace Bloom.Publish
             RobustFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
         }
 
-        private bool IsDisplayed(XmlElement elt, bool throwOnFailure)
+        private bool IsDisplayed(SafeXmlElement elt, bool throwOnFailure)
         {
-            var id = elt.Attributes["id"].Value;
+            var id = elt.GetAttribute("id");
             if (!_mapIdToDisplay.TryGetValue(id, out var display))
             {
                 Debug.WriteLine("element not found in IsDisplayed()");
@@ -504,12 +589,23 @@ namespace Bloom.Publish
             return display != "none";
         }
 
-        // store a set of font names encountered in displaying the book
-        public HashSet<string> FontsUsed = new HashSet<string>();
+        // store a set of font names, styles, and weights encountered in displaying the book
+        public HashSet<FontInfo> FontsUsed = new HashSet<FontInfo>();
 
         // map font names onto a set of language tags
         public Dictionary<string, HashSet<string>> FontsAndLangsUsed =
             new Dictionary<string, HashSet<string>>();
+
+        private string ExtractFontNameFromFontFamily(string fontFamily)
+        {
+            // we actually can get a comma-separated list with fallback font options: split into an array so we can
+            // use just the first one.  We don't need to worry about the fallback fonts, just the primary one.  It
+            // would be very unusual for the user not to have the primary font installed, but to have a fallback font
+            // installed instead that is always used.
+            var fonts = fontFamily.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            // Fonts whose names contain spaces are quoted: remove the quotes.
+            return fonts[0].Replace("\"", "");
+        }
 
         /// <summary>
         /// Stores the font used.  Note that unwanted elements should have been removed already.
@@ -518,23 +614,29 @@ namespace Bloom.Publish
         /// Elements that are made invisible by CSS still have their styles computed and can provide font information.
         /// See https://issues.bloomlibrary.org/youtrack/issue/BL-11108 for a misunderstanding of this.
         /// </remarks>
-        private void StoreFontUsed(XmlElement elt)
+        private void StoreFontUsed(SafeXmlElement elt)
         {
-            var id = elt.Attributes["id"].Value;
-            if (!_mapIdToFontFamily.TryGetValue(id, out var fontFamily))
+            var id = elt.GetAttribute("id");
+            if (!_mapIdToFontInfo.TryGetValue(id, out var fontInfo))
                 return; // Shouldn't happen, but ignore if it does.
-            // we actually can get a comma-separated list with fallback font options: split into an array so we can use just the first one
-            var fonts = fontFamily.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            // Fonts whose names contain spaces are quoted: remove the quotes.
-            var font = fonts[0].Replace("\"", "");
-            //Console.WriteLine("DEBUG PublishHelper.StoreFontUsed(): font=\"{0}\", fontFamily=\"{1}\"", font, fontFamily);
-            FontsUsed.Add(font);
+            var font = ExtractFontNameFromFontFamily(fontInfo.fontName);
+            //Debug.WriteLine(
+            //    $"DEBUG PublishHelper.StoreFontUsed(): font=\"{font}\", fontStyle={fontInfo.fontStyle}, fontWeight={fontInfo.fontWeight}"
+            //);
+            FontsUsed.Add(
+                new FontInfo
+                {
+                    fontName = font,
+                    fontStyle = fontInfo.fontStyle,
+                    fontWeight = fontInfo.fontWeight
+                }
+            );
             // We need more information for font analytics.  This still suffers from the limitation on multiple languages being
             // uploaded or embedded in a BloomPub that are not actively displayed.  Nothing will be recorded for such languages.
             // But this is the best we can do without a lot of additional work.  (See BL-11512.)
             if (Program.RunningHarvesterMode)
             {
-                var lang = elt.Attributes["lang"]?.Value;
+                var lang = elt.GetAttribute("lang");
                 if (string.IsNullOrEmpty(lang) || lang == "z" || lang == "*")
                     return; // no language information
                 if (!FontsAndLangsUsed.TryGetValue(font, out HashSet<string> langsForFont))
@@ -546,9 +648,9 @@ namespace Bloom.Publish
             }
         }
 
-        private bool IsNonEmptyImageDescription(XmlElement elt)
+        private bool IsNonEmptyImageDescription(SafeXmlElement elt)
         {
-            var classes = elt.Attributes["class"]?.Value;
+            var classes = elt.GetAttribute("class");
             if (
                 !String.IsNullOrEmpty(classes)
                 && (
@@ -565,36 +667,24 @@ namespace Bloom.Publish
         internal const string kTempIdMarker = "PublishTempIdXXYY";
         private static int s_count = 1;
 
-        public static void EnsureAllThingsThatCanBeHiddenHaveIds(XmlElement pageElt)
+        public static void EnsureAllThingsThatCanBeHiddenHaveIds(SafeXmlElement pageElt)
         {
-            foreach (XmlElement elt in pageElt.SafeSelectNodes(kSelectThingsThatCanBeHidden))
+            foreach (SafeXmlElement elt in pageElt.SafeSelectNodes(kSelectThingsThatCanBeHidden))
             {
-                if (elt.Attributes["id"] != null)
+                if (!string.IsNullOrEmpty(elt.GetAttribute("id")))
                     continue;
                 elt.SetAttribute("id", kTempIdMarker + s_count++);
             }
         }
 
-        public static void RemoveTempIds(XmlElement pageElt)
+        public static void RemoveTempIds(SafeXmlElement pageElt)
         {
-            foreach (XmlElement elt in pageElt.SafeSelectNodes(kSelectThingsThatCanBeHidden))
+            foreach (SafeXmlElement elt in pageElt.SafeSelectNodes(kSelectThingsThatCanBeHidden))
             {
-                if (
-                    elt.Attributes["id"] != null
-                    && elt.Attributes["id"].Value.StartsWith(kTempIdMarker)
-                )
+                var id = elt.GetAttribute("id");
+                if (id != null && id.StartsWith(kTempIdMarker))
                     elt.RemoveAttribute("id");
             }
-        }
-
-        public static bool HasClass(XmlElement elt, string className)
-        {
-            if (elt == null)
-                return false;
-            var classAttr = elt.Attributes["class"];
-            if (classAttr == null)
-                return false;
-            return ((" " + classAttr.Value + " ").Contains(" " + className + " "));
         }
 
         /// <summary>
@@ -651,14 +741,115 @@ namespace Bloom.Publish
             var domForVideoProcessing = modifiedBook.OurHtmlDom;
             var videoContainerElements = HtmlDom
                 .SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement)
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             if (videoContainerElements.Any())
             {
                 SignLanguageApi.ProcessVideos(videoContainerElements, modifiedBook.FolderPath);
             }
+            ReallyCropImages(modifiedBook.RawDom, modifiedBook.FolderPath, modifiedBook.FolderPath);
             modifiedBook.Save();
             modifiedBook.UpdateSupportFiles();
             return modifiedBook;
+        }
+
+        /// <summary>
+        /// Permanently remove the cropped areas from all image files, saving any cropped images to the given folder.
+        /// Source and destination folders CAN be the same (in which case the original images are overwritten, if
+        /// there is any cropping to do).
+        /// </summary>
+        /// <param name="bookDom"></param>
+        /// <param name="imageSourceFolder"></param>
+        /// <param name="imageDestFolder"></param>
+        public static void ReallyCropImages(
+            SafeXmlDocument bookDom,
+            string imageSourceFolder,
+            string imageDestFolder
+        )
+        {
+            var images = bookDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray();
+            foreach (var img in images)
+            {
+                ReallyCropImage(img, imageSourceFolder, imageDestFolder);
+            }
+        }
+
+        private static void ReallyCropImage(
+            SafeXmlElement img,
+            string imageSourceFolder,
+            string imageDestFolder
+        )
+        {
+            var imgContainer = img.ParentNode as SafeXmlElement;
+            var overlay = imgContainer?.ParentNode as SafeXmlElement;
+            // Cropping is implemented using the interaction between an overlay (obsolete: bloom-textOverPicture)
+            // which specifies the visible area of the image by its height and width, and the img two levels
+            // down which may have adjusted width, left, and top to position part of itself in the overlay.
+            // An image can only be cropped, and we can only know what part of it to remove, if it occurs in
+            // this structure. Other images (e.g., branding) are left alone. (At the stage where this code is run,
+            // background images, including all normal page content images, are still represented as overlays.)
+            if (
+                overlay == null
+                || !overlay.HasClass("bloom-textOverPicture")
+                || !imgContainer.HasClass("bloom-imageContainer")
+            )
+                return;
+            var src = img.GetAttribute("src");
+            var srcPath = UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
+            if (!RobustFile.Exists(srcPath))
+                return;
+            var imgStyle = img.GetAttribute("style");
+            if (string.IsNullOrEmpty(imgStyle))
+                return;
+            var imgWidth = GetNumberFromPx("width", imgStyle);
+            var imgLeft = GetNumberFromPx("left", imgStyle);
+            var imgTop = GetNumberFromPx("top", imgStyle);
+            var overlayStyle = overlay.GetAttribute("style");
+            var overlayWidth = GetNumberFromPx("width", overlayStyle);
+            var overlayHeight = GetNumberFromPx("height", overlayStyle);
+            if (imgWidth == 0 || overlayWidth == 0)
+                return;
+            if (!ImageUtils.TryGetImageSize(srcPath, out Size size))
+            {
+                return; // can't crop the image if we can't get its size.
+            }
+            var scale = imgWidth / size.Width;
+            var selWidth = overlayWidth / scale;
+            var selHeight = overlayHeight / scale;
+            var selLeft = -imgLeft / scale;
+            var selTop = -imgTop / scale;
+            var ext = Path.GetExtension(srcPath).ToLowerInvariant();
+            var tempPath = Path.ChangeExtension(
+                Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
+                ext
+            );
+            var cropRectangle = new Rectangle(
+                Convert.ToInt32(selLeft),
+                Convert.ToInt32(selTop),
+                Convert.ToInt32(selWidth),
+                Convert.ToInt32(selHeight)
+            );
+            var result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
+            if (result.ExitCode == 0)
+            {
+                var destPath = Path.Combine(imageDestFolder, src);
+                RobustFile.Move(tempPath, destPath, true);
+                // If it failed, it should have already logged the reason. I think all we can do
+                // is leave the image alone.
+            }
+            img.RemoveAttribute("style");
+        }
+
+        internal static double GetNumberFromPx(string label, string input)
+        {
+            var parts = input.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            var part = parts.FirstOrDefault(p => p.Trim().StartsWith(label + ":"));
+            if (part == null)
+                return 0;
+            var number = part.Trim().Substring(label.Length + 1);
+            number = number.Substring(0, number.Length - 2); // remove "px"
+            if (double.TryParse(number, out double result))
+                return result;
+            return 0;
         }
 
         #region IDisposable Support
@@ -711,7 +902,7 @@ namespace Bloom.Publish
         /// it might be null).
         /// </summary>
         public static void CollectPageLabel(
-            XmlElement pageElement,
+            SafeXmlElement pageElement,
             Dictionary<string, int> omittedPageLabels
         )
         {
@@ -786,13 +977,13 @@ namespace Bloom.Publish
         /// </summary>
         /// <remarks>
         /// fontFileFinder must be either a new instance or a stub for testing.
-        /// Setting fontFileFinder.NoteFontsWeCantInstall ensures that fontFileFinder.GetFilesForFont(font)
+        /// Setting fontFileFinder.NoteFontsWeCantInstall ensures that fontFileFinder. GetFilesForFont(font)
         /// will not return any files for fonts that we know cannot be embedded without reference to the
         /// license details.
         /// </remarks>
         public static void CheckFontsForEmbedding(
             IWebSocketProgress progress,
-            HashSet<string> fontsWanted,
+            HashSet<FontInfo> fontsWanted,
             IFontFinder fontFileFinder,
             out List<string> filesToEmbed,
             out HashSet<string> badFonts
@@ -809,15 +1000,20 @@ namespace Bloom.Publish
                 foreach (var meta in FontsApi.AvailableFontMetadata)
                     _fontMetadataMap.Add(meta.name, meta);
             }
-            foreach (var font in fontsWanted)
+            var filesAlreadyAdded = new HashSet<string>();
+            foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
-                var fontFiles = fontFileFinder.GetFilesForFont(font);
-                var filesFound = fontFiles.Any(); // unembeddable fonts determined don't have any files recorded
+                var fontFile = fontFileFinder.GetFileForFont(
+                    font.fontName,
+                    font.fontStyle,
+                    font.fontWeight
+                );
+                var filesFound = fontFile != null; // unembeddable fonts determined don't have any files recorded
                 var badLicense = false;
                 var missingLicense = false;
                 var badFileType = false;
                 var fileExtension = "";
-                if (_fontMetadataMap.TryGetValue(font, out var meta))
+                if (_fontMetadataMap.TryGetValue(font.fontName, out var meta))
                 {
                     fileExtension = meta.fileExtension;
                     switch (meta.determinedSuitability)
@@ -846,13 +1042,22 @@ namespace Bloom.Publish
                     // This is usually covered by the case kInvalid above, but needed if no metadata at all.
                     if (filesFound)
                     {
-                        fileExtension = Path.GetExtension(fontFiles.First()).ToLowerInvariant();
+                        fileExtension = Path.GetExtension(fontFile).ToLowerInvariant();
                         badFileType = !FontMetadata.fontFileTypesBloomKnows.Contains(fileExtension);
                     }
                 }
                 if (filesFound && !badFileType && !badLicense)
                 {
-                    filesToEmbed.AddRange(fontFiles);
+                    var fileToEmbed = fontFile;
+                    if (!filesAlreadyAdded.Contains(fileToEmbed))
+                    {
+                        filesToEmbed.Add(fileToEmbed);
+                        filesAlreadyAdded.Add(fileToEmbed);
+                    }
+                    else
+                    {
+                        continue;
+                    }
                     if (missingLicense)
                         progress.MessageWithParams(
                             "PublishTab.Android.File.Progress.UnknownLicense",
@@ -870,7 +1075,7 @@ namespace Bloom.Publish
                             font
                         );
                     // Assumes only one font file per font; if we embed multiple font files, will need to enhance this.
-                    var size = new FileInfo(fontFiles.First()).Length;
+                    var size = new FileInfo(fontFile).Length;
                     var sizeToReport = (size / 1000000.0).ToString("F2"); // purposely locale-specific; might be e.g. 1,2
                     progress.MessageWithParams(
                         "PublishTab.Android.File.Progress.Embedding",
@@ -884,7 +1089,7 @@ namespace Bloom.Publish
                 }
                 // If the missing font is Andika New Basic, don't complain because Andika subsumes Andika New Basic,
                 // and will be automatically substituted for it.
-                var dontComplain = font == "Andika New Basic";
+                var dontComplain = font.fontName == "Andika New Basic";
                 if (badFileType)
                 {
                     progress.MessageWithParams(
@@ -895,8 +1100,13 @@ namespace Bloom.Publish
                         font,
                         fileExtension
                     );
+                    progress.Message(
+                        "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                        "Check the Fonts section of the Book Settings dialog to locate this font.",
+                        ProgressKind.Error
+                    );
                 }
-                else if (fontFileFinder.FontsWeCantInstall.Contains(font) || badLicense)
+                else if (fontFileFinder.FontsWeCantInstall.Contains(font.fontName) || badLicense)
                 {
                     progress.MessageWithParams(
                         "PublishTab.Android.File.Progress.LicenseForbids",
@@ -904,6 +1114,11 @@ namespace Bloom.Publish
                         "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.",
                         ProgressKind.Error,
                         font
+                    );
+                    progress.Message(
+                        "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                        "Check the Fonts section of the Book Settings dialog to locate this font.",
+                        ProgressKind.Error
                     );
                 }
                 else if (!dontComplain)
@@ -915,6 +1130,11 @@ namespace Bloom.Publish
                         ProgressKind.Error,
                         font
                     );
+                    progress.Message(
+                        "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                        "Check the Fonts section of the Book Settings dialog to locate this font.",
+                        ProgressKind.Error
+                    );
                 }
                 if (!dontComplain)
                     progress.MessageWithParams(
@@ -925,7 +1145,7 @@ namespace Bloom.Publish
                         defaultFont,
                         font
                     );
-                badFonts.Add(font); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
+                badFonts.Add(font.fontName); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
             }
         }
 
@@ -978,7 +1198,7 @@ namespace Bloom.Publish
         /// </summary>
         /// <returns><c>true</c> if any references for bad fonts were fixed, <c>false</c> otherwise.</returns>
         public static bool FixXmlDomReferencesForBadFonts(
-            XmlDocument bookDoc,
+            SafeXmlDocument bookDoc,
             string defaultFont,
             HashSet<string> badFonts,
             XmlNamespaceManager nsmgr = null,
@@ -1096,10 +1316,15 @@ namespace Bloom.Publish
                             "PublishTab.FontProblem.Result",
                             "BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the �READ� button or downloads for BloomPUB or ePUB."
                         );
+                        var msg4 = LocalizationManager.GetString(
+                            "PublishTab.FontProblem.CheckInBookSettingsDialog",
+                            "Check the Fonts section of the Book Settings dialog to locate this font."
+                        );
                         // progress.WriteError() uses Color.Red, but also exposes a link to "report error" which we don't want here.
                         progress.WriteMessageWithColor("Red", msgFmt1, font);
                         progress.WriteMessageWithColor("Red", " \u2022 {0}", msg2);
                         progress.WriteMessageWithColor("Red", " \u2022 {0}", msg3);
+                        progress.WriteMessageWithColor("Red", " \u2022 {0}", msg4);
                     }
                 }
                 else

@@ -204,7 +204,7 @@
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
-        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura. 
+        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura.
 Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
       </trans-unit>

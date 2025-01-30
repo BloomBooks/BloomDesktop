@@ -1,0 +1,22 @@
+@import (reference) "../../../../BloomBrowserUI/bloomUI.less";
+@tan: #e9d9bd;
+@paleTan: #f9e9cc;
+
+// This is the beginning of Drag Activity Theme.
+// The class activityBlueOnTan is applied to the activity page.
+// Eventually, a different class would be applied when a different theme is chosen.
+// A theme should consist only of variable definitions.
+.activityBlueOnTan {
+    --page-color: #e9d9bd;
+    --target-color: #f9e9cc;
+    --draggable-background-color: #2980bb;
+    --draggable-color: white;
+    --fixed-color: #fc8602;
+    --slider-button-color: #2980bb;
+    --slider-keyword-color: #902a90;
+    --text-background: #75d0ee;
+    // These are probably not right. But at least they produce some feedback when
+    // a button is hovered and while the mouse is down over one.
+    --hover-button-border: @bloom-blue;
+    --active-button-border: black;
+}

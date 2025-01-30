@@ -182,6 +182,26 @@ export default class BloomField {
         ckeditor: CKEDITOR.editor
     ) {
         ckeditor.config.colorButton_colors = CKEDITOR.config.colorButton_colors;
+        if (
+            bloomEditableDiv.classList.contains(
+                "bloom-copyFromOtherLanguageIfNecessary"
+            ) &&
+            bloomEditableDiv.innerText &&
+            bloomEditableDiv.innerText !== "\n" &&
+            bloomEditableDiv.getAttribute("data-user-deleted") !== "true"
+        ) {
+            // See BL-13779. If the user deletes all the text in a div, we don't want to copy
+            // the text from another language in the future. We set the data-user-deleted attribute
+            // to keep this from happening.
+            ckeditor.on("change", event => {
+                if (
+                    bloomEditableDiv.innerText === "" ||
+                    bloomEditableDiv.innerText === "\n"
+                ) {
+                    bloomEditableDiv.setAttribute("data-user-deleted", "true");
+                }
+            });
+        }
         ckeditor.on("key", event => {
             if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
                 BloomField.InsertLineBreak();
@@ -296,24 +316,32 @@ export default class BloomField {
                     if (!result.data) {
                         return; // More sanity checks are in bloomEditing.updateCkEditorButtonStatus
                     }
-                    const anchor = document.createElement("a");
-                    anchor.href = result.data;
-                    try {
-                        document
-                            .getSelection()
-                            ?.getRangeAt(0)
-                            ?.surroundContents(anchor);
-                    } catch (ex) {
-                        const englishErrorMessage =
-                            "Bloom was not able to make a link. Try selecting only simple text.";
-                        console.log(`${englishErrorMessage} ${ex}`);
-                        BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
-                            "EditTab.HyperlinkPasteFailure",
-                            englishErrorMessage,
-                            "Shows when a hyperlink cannot be pasted due to invalid selection.",
-                            "CantPasteHyperlink"
+                    get("app/selectedBookInfo", bookInfo => {
+                        if (!bookInfo.data) {
+                            return;
+                        }
+                        const anchor = document.createElement("a");
+                        anchor.href = processPastedHyperlink(
+                            result.data,
+                            bookInfo.data.id
                         );
-                    }
+                        try {
+                            document
+                                .getSelection()
+                                ?.getRangeAt(0)
+                                ?.surroundContents(anchor);
+                        } catch (ex) {
+                            const englishErrorMessage =
+                                "Bloom was not able to make a link. Try selecting only simple text.";
+                            console.log(`${englishErrorMessage} ${ex}`);
+                            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                                "EditTab.HyperlinkPasteFailure",
+                                englishErrorMessage,
+                                "Shows when a hyperlink cannot be pasted due to invalid selection.",
+                                "CantPasteHyperlink"
+                            );
+                        }
+                    });
                 });
                 return true; // probaby means success, but I'm not sure. Typescript says this function has to return a boolean.
             }
@@ -928,4 +956,17 @@ interface FFSelection extends Selection {
 }
 interface JQuery {
     reverse(): JQuery;
+}
+function processPastedHyperlink(dataPaste, dataBookId): string {
+    const url = dataPaste as string;
+    const bookId = dataBookId as string;
+    if (!url || !bookId) {
+        return "";
+    }
+    const currentBookPrefix = `bloomnav://book/${bookId}?page=`;
+    if (url.startsWith(currentBookPrefix)) {
+        return "#" + url.substring(currentBookPrefix.length);
+    } else {
+        return url;
+    }
 }

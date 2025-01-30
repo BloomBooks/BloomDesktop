@@ -48,7 +48,7 @@ namespace Bloom.FontProcessing
         public const string kInvalid = "invalid"; // bad file format (eg, .ttc)
 
         /// <summary>
-        /// On Window, we can use System.Windows.Media (which provides the GlyphTypeface class) to
+        /// On Windows, we can use System.Windows.Media (which provides the GlyphTypeface class) to
         /// provide all the font metadata information.
         /// On Linux, we have to use Sharpfont from nuget (which provides the Sharpfont.Face class)
         /// for reading the font's embedding flag plus running /usr/bin/otfino for everything else.
@@ -59,7 +59,29 @@ namespace Bloom.FontProcessing
         {
             name = fontName;
             fileExtension = Path.GetExtension(group.Normal);
+            variants = group.GetAvailableVariants().ToArray();
 
+            SetFontMetadata(fontName, group.Normal);
+        }
+
+        /// <summary>
+        /// This constructor is used when we have a single font file and no FontGroup.
+        /// The Bloom harvester uses this constructor for font backup.
+        /// </summary>
+        public FontMetadata(string fontPath)
+        {
+            fileExtension = Path.GetExtension(fontPath);
+            // Setting variants would require scanning multiple files, or trying to create a
+            // FontGroup (which does exactly that).  We don't need variants for the harvester's
+            // use of the font metadata.
+
+            SetFontMetadata(name, fontPath);
+            if (string.IsNullOrEmpty(name))
+                name = Path.GetFileNameWithoutExtension(fontPath);
+        }
+
+        private void SetFontMetadata(string fontName, string fontPath)
+        {
             // First we detect invalid font types that we don't know how to handle (like .ttc)
             var bloomKnows = fontFileTypesBloomKnows.Contains(fileExtension.ToLowerInvariant());
             if (!bloomKnows)
@@ -73,7 +95,7 @@ namespace Bloom.FontProcessing
             {
                 using (var lib = new SharpFont.Library())
                 {
-                    using (var face = new Face(lib, group.Normal))
+                    using (var face = new Face(lib, fontPath))
                     {
                         var embeddingFlags = face.GetFSTypeFlags();
                         /*
@@ -147,7 +169,7 @@ namespace Bloom.FontProcessing
             }
             catch (Exception ex)
             {
-                Console.WriteLine("SharpLib threw an exception for {0}: {1}", group.Normal, ex);
+                Console.WriteLine("SharpLib threw an exception for {0}: {1}", fontPath, ex);
                 determinedSuitability = kInvalid;
                 determinedSuitabilityNotes = $"SharpLib exception: {ex}";
                 return;
@@ -156,7 +178,7 @@ namespace Bloom.FontProcessing
             {
                 var res = CommandLineRunnerExtra.RunWithInvariantCulture(
                     "/usr/bin/otfinfo",
-                    $"-i \"{group.Normal}\"",
+                    $"-i \"{fontPath}\"",
                     "",
                     600,
                     new NullProgress()
@@ -169,7 +191,7 @@ namespace Bloom.FontProcessing
                 {
                     Console.WriteLine(
                         "otfinfo -i \"{0}\" returned {1}.  Standard Error =\n{2}",
-                        group.Normal,
+                        fontPath,
                         res.ExitCode,
                         res.standardError
                     );
@@ -183,19 +205,21 @@ namespace Bloom.FontProcessing
             {
                 Console.WriteLine(
                     "CommandLineRunnerExtra.RunWithInvariantCulture() of otfinfo -i \"{0}\" threw an exception: {1}",
-                    group.Normal,
+                    fontPath,
                     e
                 );
                 determinedSuitability = kInvalid;
-                determinedSuitabilityNotes = $"otfinfo -i \"{group.Normal}\" exception: {e}";
+                determinedSuitabilityNotes = $"otfinfo -i \"{fontPath}\" exception: {e}";
                 return;
             }
 #else
             GlyphTypeface gtf = null;
             try
             {
-                gtf = new GlyphTypeface(new Uri("file:///" + group.Normal));
+                gtf = new GlyphTypeface(new Uri("file:///" + fontPath));
                 var english = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+                if (string.IsNullOrEmpty(fontName))
+                    gtf.FamilyNames.TryGetValue(english, out fontName);
                 version = gtf.VersionStrings[english];
                 // Most fonts include the text "Version x" here, but our UI provides the
                 // (possibly localized) text, so we strip it out here.
@@ -244,7 +268,7 @@ namespace Bloom.FontProcessing
                     // file is somehow corrupt or not really a font file? Just ignore it.
                     Console.WriteLine(
                         "GlyphTypeface for \"{0}\" threw an exception: {1}",
-                        group.Normal,
+                        fontPath,
                         e
                     );
                     determinedSuitability = kInvalid;
@@ -265,7 +289,6 @@ namespace Bloom.FontProcessing
                 version = info.metadata.version;
             }
 #endif
-            variants = group.GetAvailableVariants().ToArray();
 
             // Now for the hard part: setting DeterminedSuitability
             // Check out the license information.

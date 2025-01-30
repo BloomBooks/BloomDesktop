@@ -1,4 +1,5 @@
-﻿using SIL.Extensions;
+﻿using Bloom.SafeXml;
+using SIL.Extensions;
 using SIL.IO;
 using System;
 using System.Collections.Generic;
@@ -41,7 +42,7 @@ namespace Bloom.Utils
                 try
                 {
                     var content = RobustFile.ReadAllText(filepath); // Check that the file exists and is readable.
-                    var doc = new XmlDocument();
+                    var doc = SafeXmlDocument.Create();
                     doc.LoadXml(content); // check that the file is valid XML.
                 }
                 catch (Exception e)

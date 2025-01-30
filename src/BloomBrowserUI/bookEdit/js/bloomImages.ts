@@ -9,10 +9,15 @@ import {
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
-import { theOneBubbleManager, updateOverlayClass } from "./bubbleManager";
+import {
+    kTextOverPictureSelector,
+    theOneBubbleManager,
+    updateOverlayClass
+} from "./bubbleManager";
 
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
+import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -65,25 +70,6 @@ export function SetupImagesInContainer(container) {
                 });
         });
 
-    // Add the event listener to handle control/alt being pressed.
-    // We have a pretty interesting way of listening for these keydown/keyup events.
-    // I initially tried putting the event listeners on the bloom-imageContainer,
-    // but that didn't work reliably.
-    // Keyboard events don't fire for every element, but only certain valid ones.
-    // For the short answer, divs with contenteditable=true meet the criteria.
-    // (Although... I tested what happens with slapping contenteditable=true onto the bloom-imageContainer,
-    // and I don't think it helped)
-    // To get around this, I found the following strategy:
-    // 1) place the keydown listener as broadly as we can... that's {document}.
-    // 2) When a key is pressed, the listener will fire and some child element of the document will be the event target.
-    // 3) Oddly enough however, the same trick doesn't work for "keyup" (if you put the listener on {document}, it doesn't fire).
-    // 4) Instead, we put the "keyup" event listener on whatever element fired the "keydown" event,
-    //    since whatever element that is should presumably be getting the keyup event too.
-    //    This could be the main text box actually, and that's fine.
-    //    It could also be the translation qtip way off screen (maybe only for pages without a text box?),
-    //    but even that is sufficient for our purposes.
-    document.addEventListener("keydown", ctrlAltKeyDownListener);
-
     $(container)
         .find("img")
         .each(function() {
@@ -91,11 +77,21 @@ export function SetupImagesInContainer(container) {
         });
 }
 
-export function SetupImage(image: JQuery) {
+export function SetupImage(image) {
+    // Caution! image may or may not be a jQuery object.
+
     // Remove any obsolete explicit image size and position left over from earlier versions of Bloom, before we had object-fit:contain.
+    // Note: any changes to this should probably also be made to (C#) Book.RemoveObsoleteImageAttributes(), if it still exists.
     if (image.style) {
         // Note, in BL-9460 we had to return to having width and height in some cases.
-        if (!$(image.parent).hasClass("bloom-scale-with-code")) {
+        // As of 6.1, overlay images make use of explicit width, left, and top in styles for cropping.
+        // Since overlay images were added (2022) long after we switched to object-fit:contain (2018),
+        // we can safely suppress removing width and height for those as well as for ones explicitly
+        // marked to fix BL-9460 (as of August 2024, the latter is just one cover image in Kyrg2020).
+        if (
+            !$(image.parent).hasClass("bloom-scale-with-code") &&
+            !image.closest(kTextOverPictureSelector)
+        ) {
             image.style.width = "";
             image.style.height = "";
         }
@@ -111,73 +107,11 @@ export function SetupImage(image: JQuery) {
     }
 }
 
-/**
- * When the Ctrl or Alt key is pressed, hide the image editing buttons until the key is released.
- */
-function ctrlAltKeyDownListener(event: KeyboardEvent) {
-    if ((event.ctrlKey || event.altKey) && event.target) {
-        event.target.addEventListener("keyup", ctrlAltKeyUpListener);
-
-        // Note (paranoia): Add the ui-suppressImageButtons class conservatively (ensure event.target is good (non-null) first),
-        // remove it liberally (regardless of event.target),
-        // Since if it gets stuck on, the image editing buttons won't come back (unless SetupImageContainer is re-run)
-        document
-            .querySelectorAll<HTMLElement>(".bloom-imageContainer")
-            .forEach(imageContainer => {
-                SuppressImageEditing(imageContainer);
-
-                if (event.ctrlKey) {
-                    imageContainer.classList.add("ui-ctrlDown");
-                } else if (event.altKey) {
-                    theOneBubbleManager.tryApplyResizingUI(imageContainer);
-                }
-            });
-    }
-}
-
-/**
- * When the last Ctrl or Alt key is released, show the image editing buttons again (if they still exist)
- */
-function ctrlAltKeyUpListener(event: KeyboardEvent) {
-    // event.ctrlKey/event.altKey are normally false when a single Control or Alt button is released
-    // (unless the user pressed two ctrl/alt keys, and then released one of them).
-    // We don't want to fire the event until all of the ctrl/alt keys are released.
-    const isCtrlOrAltReleased = event.key === "Control" || event.key === "Alt";
-    const areAnyOtherCtrlOrAltKeysDown = event.ctrlKey || event.altKey;
-
-    if (isCtrlOrAltReleased && !areAnyOtherCtrlOrAltKeysDown) {
-        document
-            .querySelectorAll<HTMLElement>(
-                ".bloom-imageContainer.ui-suppressImageButtons"
-            )
-            .forEach(imageContainer => {
-                DisableSuppressImageEditingButtons(imageContainer);
-
-                // Remember, for keyup events, you want to check event.key === "Control" instead of event.ctrlKey
-                if (event.key === "Control") {
-                    imageContainer.classList.remove("ui-ctrlDown");
-                } else if (
-                    event.key === "Alt" &&
-                    !theOneBubbleManager.isResizing(imageContainer)
-                ) {
-                    // FYI: Check !isResizing() so if you release Alt but still keep the mouse down, resizing will continue.
-                    // Unsure if this needs to be set in stone, but it's for consistency with
-                    // 1) our historical practice, and 2) how Ctrl+drag currently works
-                    theOneBubbleManager.turnOffResizing(imageContainer);
-                }
-            });
-
-        // De-register ourself as an event handler.
-        // We're no longer needed until the next time ctrl/alt is pressed,
-        // and the user could type a bunch of things in a text box, which we don't need to bother listening to.
-        event.target?.removeEventListener("keyup", ctrlAltKeyUpListener);
-    }
-}
-
 export function GetButtonModifier(container) {
     let buttonModifier = "";
     const imageButtonWidth = 87;
     const imageButtonHeight = 52;
+    // container may or may not be a jQuery object already.
     const $container = $(container);
     if ($container.height() < imageButtonHeight * 2) {
         buttonModifier = "smallButtonHeight";
@@ -191,10 +125,67 @@ export function GetButtonModifier(container) {
     return buttonModifier;
 }
 
-export function addImageEditingButtons(containerDiv: HTMLElement): void {
-    if (!containerDiv || containerDiv.classList.contains("hoverUp")) {
+export function doImageCommand(
+    img: HTMLElement | undefined,
+    command: "cut" | "copy" | "paste" | "change"
+) {
+    if (!img) {
         return;
     }
+    // get the image id attribute. If it doesn't have one, add it before calling
+    // the server api. This is needed to properly identify the image later on in the
+    // changeImage method.  The copy command doesn't need to identify the image later,
+    // as the source url is enough for that command.
+    // (An image usually shouldn't have an id to begin with.)
+    let imageId = img.getAttribute("id");
+    const imageSrc = GetRawImageUrl(img);
+    if (command !== "copy") {
+        if (!imageId) {
+            imageId = EditableDivUtils.createUuid();
+            img.setAttribute("id", imageId);
+        }
+        // Note that the changeImage method (called from the C# code) will remove the id
+        // attribute after using it to find the correct image.  The C# code will call the
+        // removeImageId method if it doesn't call the changeImage method.  See BL-13619.
+    }
+
+    const topDiv = img.closest(".bloom-textOverPicture");
+    // Currently Gifs can only be added using the Games tool.
+    // A gif is always an img in an overlay (textOverPicture, even though it is
+    // not actually text) div, and we put a special class on the TOP element
+    // and use it in various ways where GIFs need to behave differently from
+    // other imgs. (For example, currently, they can only be cut/copied as file
+    // paths, we don't support metadata, they can't be cropped,...)
+    const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
+
+    postJson("editView/" + command + "Image", {
+        imageId,
+        imageSrc,
+        imageIsGif
+    });
+}
+
+export function addImageEditingButtons(containerDiv: HTMLElement): void {
+    if (
+        !containerDiv || // huh? so why did we call this?
+        containerDiv.classList.contains("hoverUp") || // should already have them if wanted
+        containerDiv.closest(kTextOverPictureSelector) // in overlay
+    ) {
+        return;
+    }
+    if (playingBloomGame(containerDiv)) {
+        // I wish this knowledge was not here, but I don't see a better way to prevent image editing
+        // and hover effects when in test mode.
+        return;
+    }
+    const topDiv = containerDiv.closest(".bloom-textOverPicture");
+    // Currently Gifs can only be added using the Games tool.
+    // A gif is always an img in an overlay (textOverPicture, even though it is
+    // not actually text) div, and we put a special class on the TOP element
+    // and use it in various ways where GIFs need to behave differently from
+    // other imgs. (For example, currently, they can only be cut/copied as file
+    // paths, we don't support metadata, they can't be cropped,...)
+    const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
     let img = getImgFromContainer(containerDiv);
 
     // Enhance: remove this unused flexibility to put images as background-images on div.bloom-imageContainers.
@@ -215,7 +206,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     }
     const buttonModifier = GetButtonModifier($containerDiv);
 
-    const addButtonHandler = (command: string) => {
+    const addButtonHandler = (command: "cut" | "copy" | "paste" | "change") => {
         const button = $containerDiv.get(0)?.firstElementChild;
         button?.addEventListener("click", (e: MouseEvent) => {
             // "detail >1" in chromium means this is a double click.
@@ -223,27 +214,10 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             // It's only going to debounce clicks that come in close enough to count as
             // double clicks, presumably based on the OS's double click timing setting.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((e as any).detail > 1 || !img) {
+            if ((e as any).detail > 1) {
                 return;
             }
-            // get the image id attribute. If it doesn't have one, add it before calling
-            // the server api. This is needed to properly identify the image later on in the
-            // changeImage method.  The copy command doesn't need to identify the image later,
-            // as the source url is enough for that command.
-            // (An image usually shouldn't have an id to begin with.)
-            let imageId = img.getAttribute("id");
-            const imageSrc = GetRawImageUrl(img);
-            if (command !== "copy") {
-                if (!imageId) {
-                    imageId = EditableDivUtils.createUuid();
-                    img.setAttribute("id", imageId);
-                }
-                // Note that the changeImage method (called from the C# code) will remove the id
-                // attribute after using it to find the correct image.  The C# code will call the
-                // removeImageId method if it doesn't call the changeImage method.  See BL-13619.
-            }
-
-            postJson("editView/" + command + "Image", { imageId, imageSrc });
+            doImageCommand(img, command);
         });
     };
 
@@ -399,22 +373,6 @@ export function EnableAllImageEditing() {
         .forEach(EnableImageEditing);
 }
 
-/**
- * Temporarily suppresses image editing
- */
-function SuppressImageEditing(imageContainer: HTMLElement) {
-    imageContainer.classList.add("ui-suppressImageButtons");
-    UpdateImageTooltipVisibility(imageContainer);
-}
-
-/**
- * Undo the effect of calling SuppressImageEditing()
- */
-function DisableSuppressImageEditingButtons(imageContainer: HTMLElement) {
-    imageContainer.classList.remove("ui-suppressImageButtons");
-    UpdateImageTooltipVisibility(imageContainer);
-}
-
 // Bloom "imageContainer"s are <div>'s which wrap an <img>, and automatically proportionally resize
 // the img to fit the available space.
 // Precondition: containerDiv must be just a single HTMLElement
@@ -430,9 +388,6 @@ function SetupImageContainer(containerDiv: HTMLElement) {
     } else {
         containerDiv.classList.remove("hoverUp");
     }
-
-    // Just in case, ensure prior state is cleaned up
-    DisableSuppressImageEditingButtons(containerDiv);
 
     // Now that we can overlay things on top of images, we don't want to show the flower placeholder
     // if the image container contains an overlay.
@@ -464,6 +419,12 @@ export function getImageUrlFromImageButton(button: HTMLButtonElement): string {
     return GetRawImageUrl(getImgFromContainer(imageContainer));
 }
 
+export function getImageUrlFromImageContainer(
+    HTMLElement: HTMLElement
+): string {
+    return GetRawImageUrl(getImgFromContainer(HTMLElement));
+}
+
 function getImgFromContainer(
     imageContainer: HTMLElement
 ): HTMLElement | undefined {
@@ -481,28 +442,32 @@ function getImgFromContainer(
  * Disables the current image tooltip
  */
 function DisableImageTooltip(container: HTMLElement) {
-    // The patriarch represents the main .bloom-imageContainer, which would be the earliest in the DOM hierarchy.
-    // We use the patriarch's title to represent the title for itself or whichever of its child overlayImages is active
-    // (to avoid complicated conflicting z-index issues)
-    const patriarch = farthest<HTMLElement>(container, ".bloom-imageContainer");
+    // The outermostImageContainer represents the main .bloom-imageContainer, which would be the highest in the DOM hierarchy.
+    // We use the outermostImageContainer's title to represent the title for itself or whichever of its child overlayImages is active
+    // (to avoid complicated conflicting z-index issues). (Actually doing titles for overlay images is currently disabled; they got
+    // in the way.)
+    const outermostImageContainer = farthest<HTMLElement>(
+        container,
+        ".bloom-imageContainer"
+    );
 
-    // Before clearing the patriarch's title, first check if the patriarch
-    // still represents this particular container.
-    // When switching between containers, it might not, because we need to both set the title for the new one
-    // and disable the old title.
-    // So, check first before clearing the title.
-    if (patriarch?.title === container.getAttribute("data-title")) {
-        patriarch.title = "";
+    // Earlier, we cleared it only if the outermostImageContainer's title was set to the same value as the container's data-title.
+    // A comment said this was to prevent turning off one bubble interfering with turning on another.
+    // But then we may fail to turn it off when we should. I think it's better to just make sure that
+    // turning on a new one comes after turning off an old one.
+    if (outermostImageContainer) {
+        outermostImageContainer.title = "";
     }
 }
 
 // Note: since this function (obviously) updates state / has side effects,
 // callers should consider the order operations are done if multiple operations happen at or near the same time
 // to ensure that the final state is the one they desire.
-function UpdateImageTooltipVisibility(container: HTMLElement) {
+export function UpdateImageTooltipVisibility(container: HTMLElement) {
     if (
         container.classList.contains("bloom-hideImageButtons") ||
-        container.classList.contains("ui-suppressImageButtons")
+        playingBloomGame(container) ||
+        EditableDivUtils.isInHiddenLanguageBlock(container)
     ) {
         // Since the image buttons aren't visible, hide the image tooltip too
         DisableImageTooltip(container);
@@ -795,17 +760,26 @@ function SetOverlayForImagesWithoutMetadataInner(container, img) {
 }
 
 function UpdateOverlay(container, img) {
-    $(container)
-        .find("button.imgMetadataProblem")
-        .each(function() {
-            $(this).remove();
-        });
+    // container may or may not be a jQuery object already.
+    // I'm trying to fix a 6.1 bug just before it goes to beta, so I'm not currently tackling
+    // trying to clean things up all over.
+    // But we should use $container throughout this function to reduce confusion and bugs.
+    const $container = $(container);
+    $container.find("button.imgMetadataProblem").each(function() {
+        $(this).remove();
+    });
+
+    if ($container[0]?.closest(kTextOverPictureSelector)) {
+        // for overlays we indicate this using a button below the overlay.
+        // Overlays can be small, so buttons on top of them don't work well.
+        return;
+    }
 
     //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
     const copyright = $(img).attr("data-copyright");
     if (!copyright || copyright.length === 0) {
         const buttonClasses = `editMetadataButton imageButton imgMetadataProblem ${GetButtonModifier(
-            container
+            $container
         )}`;
         const englishText =
             "Image is missing information on Credits, Copyright, or License";
@@ -817,12 +791,12 @@ function UpdateOverlay(container, img) {
             )
             .done(translation => {
                 const title = translation.replace(/'/g, "&apos;");
-                $(container).prepend(
+                $container.prepend(
                     `<button class='${buttonClasses}' title='${title}'></button>`
                 );
             })
             .fail(() => {
-                $(container).prepend(
+                $container.prepend(
                     `<button class='${buttonClasses}' title='${englishText}'></button>`
                 );
             });

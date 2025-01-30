@@ -82,10 +82,11 @@ var paths = {
         // as it wants. If we make changes, a newer bloomplayer.htm will
         // reference the new and differently named assets and automatically
         // get the new ones.
-        "./node_modules/bloom-player/dist/bloomPlayer*.min.js",
+        "./node_modules/bloom-player/dist/bloomPlayer.*.js",
         // doesn't exist currently, may be needed again later, possibly with a hash.
         //"./**/bloom-player/dist/simpleComprehensionQuiz.js",
         "./node_modules/bloom-player/dist/bloomplayer.htm",
+        "./node_modules/bloom-player/dist/bloomPlayer*.css",
         "./node_modules/bloom-player/dist/*.mp3"
     ],
     // List all the HTML files created by markdown or pug earlier in this gulp process.

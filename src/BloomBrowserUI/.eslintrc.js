@@ -1,3 +1,5 @@
+const { default: TruncateMarkup } = require("react-truncate-markup");
+
 module.exports = {
     env: {
         browser: true,
@@ -34,6 +36,10 @@ module.exports = {
         "no-var": "warn",
         "prefer-const": "warn",
         "no-useless-escape": "off",
+        "no-irregular-whitespace": [
+            "error",
+            { skipStrings: true, skipTemplates: true }
+        ],
         "no-warning-comments": [
             1,
             { terms: ["nocommit"], location: "anywhere" }

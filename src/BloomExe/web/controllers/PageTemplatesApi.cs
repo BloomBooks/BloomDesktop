@@ -62,9 +62,9 @@ namespace Bloom.web.controllers
         {
             // We could probably get away with using the server thread here, but the code interacts quite a bit with the
             // current book and other state.
-            apiHandler.RegisterEndpointLegacy("pageTemplates", HandleTemplatesRequest, true);
+            apiHandler.RegisterEndpointHandler("pageTemplates", HandleTemplatesRequest, true);
             // Being on the UI thread causes a deadlock on Linux/Mono.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3818.
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "pageTemplateThumbnail",
                 HandleThumbnailRequest,
                 false
@@ -82,6 +82,20 @@ namespace Bloom.web.controllers
                 _templateInsertionCommand.MostRecentInsertedTemplatePage == null
                     ? ""
                     : _templateInsertionCommand.MostRecentInsertedTemplatePage.Id;
+
+            if (addPageSettings.defaultPageToSelect == "")
+            {
+                var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
+                if (templateBook != null)
+                {
+                    var id = templateBook.GetDefaultTemplatePageId();
+                    if (!string.IsNullOrEmpty(id))
+                    {
+                        addPageSettings.defaultPageToSelect = id;
+                    }
+                }
+            }
+
             var sizeAndOrientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation;
             addPageSettings.orientation = sizeAndOrientation.IsSquare
                 ? "square"
@@ -89,7 +103,7 @@ namespace Bloom.web.controllers
                     ? "landscape"
                     : "portrait";
 
-            addPageSettings.groups = GetBookTemplatePaths(
+            addPageSettings.templateBooks = GetBookTemplatePaths(
                     GetPathToCurrentTemplateHtml(),
                     GetCurrentAndSourceBookPaths()
                 )
@@ -133,7 +147,7 @@ namespace Bloom.web.controllers
         /// </summary>
         public void HandleThumbnailRequest(ApiRequest request)
         {
-            var filePath = request.LocalPath().Replace("api/pageTemplateThumbnail/", "");
+            var filePath = request.RequiredParam("path");
             var pathToExistingOrGeneratedThumbnail = FindOrGenerateThumbnail(
                 filePath,
                 out bool isGenerating
@@ -319,12 +333,15 @@ namespace Bloom.web.controllers
                                 // same object, but the function call wants it to be DynamicJson,
                                 // while it's easier to set the props when it is typed as dynamic.
                                 dynamic props1 = props;
-                                props1.src = expectedPathOfThumbnailImage
+                                // Strip off the parameter that we no longer need so that the dialog code can use the path.
+                                // See BL-13722 for what happens if we don't do this.
+                                var path = expectedPathOfThumbnailImage.Replace("?generateThumbnailIfNecessary=true", "");
+                                props1.src = path
                                     .ToLocalhost()
                                     .Replace(
                                         BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
                                         BloomServer.ServerUrlWithBloomPrefixEndingInSlash
-                                            + "api/pageTemplateThumbnail/"
+                                            + "api/pageTemplateThumbnail?path="
                                     );
                                 _webSocketServer.SendBundle(
                                     "page-chooser",

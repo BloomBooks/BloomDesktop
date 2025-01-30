@@ -18,6 +18,10 @@ import { Expandable } from "../../../react_components/expandable";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
+import { updateVideoInContainer } from "../../js/bloomVideo";
+import { kTextOverPictureSelector } from "../../js/bubbleManager";
+import { OverlayTool } from "../overlay/overlayTool";
+import { selectVideoContainer } from "../../js/videoUtils";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; red record button shows; stop button and all labels hidden
@@ -511,21 +515,7 @@ export class SignLanguageToolControls extends React.Component<
         if (!url) return;
         const container = this.getSelectedVideoContainer();
         if (!container) return;
-        let video = container.getElementsByTagName("video")[0];
-        if (!video && container.ownerDocument) {
-            video = container.ownerDocument.createElement("video");
-            container.appendChild(video);
-        }
-        if (video) {
-            let source = video.getElementsByTagName("source")[0];
-            if (!source && container.ownerDocument) {
-                source = container.ownerDocument.createElement("source");
-                video.appendChild(source);
-            }
-            if (source) {
-                source.setAttribute("src", url);
-            }
-        }
+        updateVideoInContainer(container, url);
     }
 
     private importRecording() {
@@ -820,15 +810,15 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     // Specify 'true' to get only containers marked as selected
-    public static getVideoContainers(
-        selected?: boolean
-    ): HTMLCollectionOf<Element> | null {
+    public static getVideoContainers(selected?: boolean): HTMLElement[] {
         let classes = "bloom-videoContainer";
         if (selected) {
             classes += " bloom-selected";
         }
         const page = ToolBox.getPage();
-        return page ? page.getElementsByClassName(classes) : null;
+        return (page
+            ? Array.from(page.getElementsByClassName(classes))
+            : []) as HTMLElement[];
     }
 
     public static getSelectedVideoPathAndTiming(): string | null {
@@ -863,7 +853,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // when we come back to the page. This is especially important when refreshing the
         // page after selecting or recording a video.
         const containers = SignLanguageTool.getVideoContainers(false);
-        if (containers) {
+        if (containers && containers.length > 0) {
             for (let i = 0; i < containers.length; i++) {
                 containers[i].removeEventListener(
                     "click",
@@ -888,7 +878,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             }
         }
         const container = event.currentTarget as HTMLElement;
-        container.classList.add("bloom-selected");
+        selectVideoContainer(container);
         this.updateStateForSelected(container);
         // And now in most locations we want to prevent the default behavior where click starts playback.
         // This may need adjustment for zoom.
@@ -944,12 +934,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             // If one is already marked selected, presumably from a previous use of this page,
             // we'll leave that one active.
             const selectedVideos = SignLanguageTool.getVideoContainers(true);
-            if (!selectedVideos || selectedVideos.length === 0) {
-                containers[0].classList.add("bloom-selected");
-                this.updateStateForSelected(containers[0]);
-            } else {
-                this.updateStateForSelected(selectedVideos[0]);
-            }
+            const videoToUse =
+                selectedVideos.length > 0 ? selectedVideos[0] : containers[0];
+            selectVideoContainer(videoToUse);
+            this.updateStateForSelected(videoToUse);
+
             for (let i = 0; i < containers.length; i++) {
                 const container = containers[i];
                 // UpdateMarkup is called fairlyfrequently. Not sure what effect having

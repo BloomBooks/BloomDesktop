@@ -4,7 +4,8 @@
         {
             // 1. Launch the test runner: `yarn karma start --browsers Chrome`.
             // 2. Start this "Debug Unit Tests".
-            // 3. You may have to do a browser REFRESH before breakpoints are caught.
+            // 3. You may have to do a browser REFRESH before breakpoints are caught. (Possibly in BOTH of the browsers
+            // that the two previous commands launch.)
             // Enhance: could we get it to attach to the chrome that karma starts? Maybe need to have karma start one with the debug port open?
             "name": "Debug Unit Tests",
             "type": "chrome",

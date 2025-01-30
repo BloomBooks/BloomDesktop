@@ -108,9 +108,7 @@ public class AppearanceSettings
         // The default here is rarely if ever relevant. Usually a newly created instance will be initialized from a folder, and the default will be overwritten,
         // either to whatever we find in appearance.json, or to "legacy-5-6" if there is no appearance.json.
         new StringPropertyDef("cssThemeName", "cssThemeName", "default"),
-        // Todo: when we implement this setting, we want to migrate the old record of color color.
-        // See code commented out in BringBookUpToDateUnprotected.
-        //new CssStringVariableDef("coverColor","colors","yellow"),
+        new CssStringVariableDef("cover-background-color", "colors"),
         new CssDisplayVariableDef("cover-title-L1-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L2-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L3-show", "coverFields", false),
@@ -556,12 +554,19 @@ public class AppearanceSettings
         }
         else
         {
-            // if we don't have a json file, we'll switch to legacy. This means we're in a book that has never been in
-            // the appearance system (never migrated to 6.0). We switch new books to the default theme if it's safe,
-            // but we don't think it's safe to switch existing books. If we decide to allow that after all, note
-            // that there are complications if we do so for a book where we can't write out appearance.css.
-            // It should be possible in such a case to push it into the BookStorage's _supportingFiles cache.
-            CssThemeName = "legacy-5-6";
+            if (bookFolderPath == BloomFileLocator.FactoryTemplateBookDirectory)
+            {
+                CssThemeName = "default"; // our factory templates are safe for default
+            }
+            else
+            {
+                // if we don't have a json file, we'll switch to legacy. This means we're in a book that has never been in
+                // the appearance system (never migrated to 6.0). We switch new books to the default theme if it's safe,
+                // but we don't think it's safe to switch existing books. If we decide to allow that after all, note
+                // that there are complications if we do so for a book where we can't write out appearance.css.
+                // It should be possible in such a case to push it into the BookStorage's _supportingFiles cache.
+                CssThemeName = "legacy-5-6";
+            }
         }
     }
 
@@ -921,6 +926,15 @@ public class AppearanceSettings
         return null;
     }
 
+    public string GetStringPropertyValueOrDefault(string propertyName, string defaultValue)
+    {
+        if (((IDictionary<string, object>)_properties).TryGetValue(propertyName, out var value))
+        {
+            return (string)value;
+        }
+        return defaultValue;
+    }
+
     public ExpandoObject GetCopyOfProperties
     {
         // The client may modify the object, and it should not affect the original.
@@ -945,6 +959,11 @@ public class AppearanceSettings
     {
         if (brandingAppearanceSettings != null)
             UpdateFromJson(JsonConvert.SerializeObject(brandingAppearanceSettings));
+    }
+
+    public void SetPropertyString(string key, string value)
+    {
+        Properties[key] = value;
     }
 }
 

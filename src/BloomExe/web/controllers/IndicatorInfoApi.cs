@@ -46,8 +46,11 @@ namespace Bloom.web.controllers
                                 .AppearanceSettings
                                 .FirstPossiblyOffendingCssFile;
                             if (!String.IsNullOrEmpty(firstPossiblyOffendingCssFile))
-                                firstPossiblyOffendingCssFile = Path.GetFileName(firstPossiblyOffendingCssFile);
-                            migratedTheme = bookInfo.AppearanceSettings.GetPossiblyMigratedCssTheme();
+                                firstPossiblyOffendingCssFile = Path.GetFileName(
+                                    firstPossiblyOffendingCssFile
+                                );
+                            migratedTheme =
+                                bookInfo.AppearanceSettings.GetPossiblyMigratedCssTheme();
                         }
                         else
                         {

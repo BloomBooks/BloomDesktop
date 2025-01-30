@@ -64,62 +64,75 @@ namespace Bloom.History
                 {
                     var events = db.Table<BookHistoryEvent>().ToList();
                     db.Close();
-					FixEventTypesForEnumerationChange(events);
+                    FixEventTypesForEnumerationChange(events);
                     return events;
                 }
             }
-		}
+        }
 
-		/// <summary>
-		/// The BookHistoryEventType enumeration was changed in Bloom 5.6 by adding a new value at
-		/// the beginning instead of the end.  This broke all of the existing history event types.
-		/// This method attempts to repair that breakage while reading the data from the history
-		/// database.
-		/// </summary>
-		/// <remarks>See BL-13140.</remarks>
-		public static void FixEventTypesForEnumerationChange(List<BookHistoryEvent> events)
-		{
-			events.ForEach(ev =>
-			{
-				if (String.IsNullOrEmpty(ev.BloomVersion) ||
-					Regex.IsMatch(ev.BloomVersion, "^5\\.[0-5]\\.", RegexOptions.CultureInvariant) ||
-					// The new BookHistoryEventType value was introduced in BloomAlpha 5.6.1055 before it went beta.
-					// So we need to fix the event types for all versions of 5.6 before 5.6.1055.  Note that version
-					// numbers for the alpha start at 5.6.1000, version numbers for the beta start at 5.6.100, and
-					// version numbers for the release start at 5.6.1. So we need to verify the alpha range overall
-					// before we can make a simple string comparison to check for alpha prior to 5.6.1055.
-					(Regex.IsMatch(ev.BloomVersion, "^5\\.6\\.1[0-9][0-9][0-9]", RegexOptions.CultureInvariant) &&
-						ev.BloomVersion.CompareTo("5.6.1055") < 0))
-				{
-					switch (ev.Type)
-					{
-						case BookHistoryEventType.CheckOut:
-							ev.Type = BookHistoryEventType.CheckIn;
-							break;
-						case BookHistoryEventType.CheckIn:
-							ev.Type = BookHistoryEventType.Created;
-							break;
-						case BookHistoryEventType.Created:
-							ev.Type = BookHistoryEventType.Renamed;
-							break;
-						case BookHistoryEventType.Renamed:
-							ev.Type = BookHistoryEventType.Uploaded;
-							break;
-						case BookHistoryEventType.Uploaded:
-							ev.Type = BookHistoryEventType.ForcedUnlock;
-							break;
-						case BookHistoryEventType.ForcedUnlock:
-							ev.Type = BookHistoryEventType.ImportSpreadsheet;
-							break;
-						case BookHistoryEventType.ImportSpreadsheet:
-							ev.Type = BookHistoryEventType.SyncProblem;
-							break;
-						case BookHistoryEventType.SyncProblem:
-							ev.Type = BookHistoryEventType.Deleted;
-							break;
-					}
-				}
-			});
+        /// <summary>
+        /// The BookHistoryEventType enumeration was changed in Bloom 5.6 by adding a new value at
+        /// the beginning instead of the end.  This broke all of the existing history event types.
+        /// This method attempts to repair that breakage while reading the data from the history
+        /// database.
+        /// </summary>
+        /// <remarks>See BL-13140.</remarks>
+        public static void FixEventTypesForEnumerationChange(List<BookHistoryEvent> events)
+        {
+            events.ForEach(ev =>
+            {
+                if (
+                    String.IsNullOrEmpty(ev.BloomVersion)
+                    || Regex.IsMatch(
+                        ev.BloomVersion,
+                        "^5\\.[0-5]\\.",
+                        RegexOptions.CultureInvariant
+                    )
+                    ||
+                    // The new BookHistoryEventType value was introduced in BloomAlpha 5.6.1055 before it went beta.
+                    // So we need to fix the event types for all versions of 5.6 before 5.6.1055.  Note that version
+                    // numbers for the alpha start at 5.6.1000, version numbers for the beta start at 5.6.100, and
+                    // version numbers for the release start at 5.6.1. So we need to verify the alpha range overall
+                    // before we can make a simple string comparison to check for alpha prior to 5.6.1055.
+                    (
+                        Regex.IsMatch(
+                            ev.BloomVersion,
+                            "^5\\.6\\.1[0-9][0-9][0-9]",
+                            RegexOptions.CultureInvariant
+                        )
+                        && ev.BloomVersion.CompareTo("5.6.1055") < 0
+                    )
+                )
+                {
+                    switch (ev.Type)
+                    {
+                        case BookHistoryEventType.CheckOut:
+                            ev.Type = BookHistoryEventType.CheckIn;
+                            break;
+                        case BookHistoryEventType.CheckIn:
+                            ev.Type = BookHistoryEventType.Created;
+                            break;
+                        case BookHistoryEventType.Created:
+                            ev.Type = BookHistoryEventType.Renamed;
+                            break;
+                        case BookHistoryEventType.Renamed:
+                            ev.Type = BookHistoryEventType.Uploaded;
+                            break;
+                        case BookHistoryEventType.Uploaded:
+                            ev.Type = BookHistoryEventType.ForcedUnlock;
+                            break;
+                        case BookHistoryEventType.ForcedUnlock:
+                            ev.Type = BookHistoryEventType.ImportSpreadsheet;
+                            break;
+                        case BookHistoryEventType.ImportSpreadsheet:
+                            ev.Type = BookHistoryEventType.SyncProblem;
+                            break;
+                        case BookHistoryEventType.SyncProblem:
+                            ev.Type = BookHistoryEventType.Deleted;
+                            break;
+                    }
+                }
+            });
         }
 
         public static void SetPendingCheckinMessage(Book.Book book, string message)

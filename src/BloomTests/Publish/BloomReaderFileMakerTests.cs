@@ -2,6 +2,7 @@
 using System.Xml;
 using Bloom.Book;
 using Bloom.Publish.BloomPub;
+using Bloom.SafeXml;
 using NUnit.Framework;
 
 namespace BloomTests.Publish
@@ -34,7 +35,7 @@ namespace BloomTests.Publish
         public void ExtractQuestionGroups_ParsesCorrectly(string contents)
         {
             contents = contents.Replace("<br>", "<br/>"); // convert from html to xml
-            var page = new XmlDocument();
+            var page = SafeXmlDocument.Create();
             page.LoadXml(
                 @"<div><div class='bloom-editable' lang='abc'>" + contents + "</div></div>"
             );
@@ -94,7 +95,7 @@ namespace BloomTests.Publish
         )]
         public void ExtractQuestionGroups_Long_ParsesCorrectly(string contents)
         {
-            var page = new XmlDocument();
+            var page = SafeXmlDocument.Create();
             page.LoadXml(
                 @"<div><div class='bloom-editable' lang='abc'>" + contents + "</div></div>"
             );

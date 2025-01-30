@@ -1,0 +1,497 @@
+@import (reference) "../../../../BloomBrowserUI/bloomUI.less";
+// Important classes and attributes that bloom game template pages contain or that
+// bloom maniupulates to run games (maybe the classes should all be bloom-X?):
+// drag-item-correct, drag-item-wrong: put on overlay items that should only show
+//    in the correct or wrong tab, or the Play tab when the user has given an answer.
+// drag-activity-{start/correct/wrong/play/solution}: put on the div above the bloom-page
+//    to indicate state. One of the first four should always be present to indicate which
+//    tab we are in. When in the Play tab, one of drag-activity-{correct/wrong/solution} may
+//    also be present, indicating that we have checked an answer and found it correct (or wrong),
+//    or that we are showing the correct answer.
+// data-bubble-id attribute identifies an overlay that can be dragged in play mode. Except for distractors,
+//    each has an associated 'target' that has the same id in its data-target-of attribute,
+//    indicating the correct place it should be dragged to.
+// drag-item-order-sentence is put on an overlay that, in Play mode, is replaced with a sequence
+//    of its words in random order.
+// drag-item-random-sentence is put on the div containing the randomized words in Play mode.
+// drag-item-order-word is put on the words that are part of such a sequence.
+// check-button, try-again-button, show-correct-button: put on elements intended to perform those actions.
+// activeButton is added to the fixed check/try again/show correct buttons when they are usable (in Play mode).
+// game-button is put on all the icon buttons.
+// data-activity is put on the bloom-page to indicate the type of activity. Bloom games give it one of the
+//    values in dragActivityTypes (in dragActivityTool.tsx). Some of them are used in selectors here.
+// #target-arrow identifies the arrow that shows the target of the selected draggable in Start mode.
+// bloom-show-en-when-blank identifies a translation group which should display it's English alternative
+//    (dimmed) when the L1 alternative is blank.
+// There are a few others, mostly containing 'slider' that relate to the incomplete drag-word-chooser-slider game.
+
+// When we really figure out how to do themes, we probably won't import this; instead, we'll generate
+// a css file for each theme and have the book import the one it wants.
+@import "blueOnTanTheme.less";
+
+// These ones show in the Correct tab, or when the user has given a correct answer.
+.drag-item-correct,
+.drag-item-wrong {
+    display: none;
+}
+.drag-activity-correct .drag-item-correct,
+.drag-activity-wrong .drag-item-wrong {
+    display: block;
+}
+// in play mode suppress these focus effects
+.drag-activity-play {
+    .bloom-imageContainer .bloom-textOverPicture div:focus,
+    .bloom-imageContainer .bloom-textOverPicture video:focus {
+        outline-color: transparent;
+        box-shadow: none;
+    }
+}
+
+// We want these only in the start tab, except for ones that are specific to the other tabs
+.drag-activity-correct .bloom-textOverPicture:not(.drag-item-correct),
+.drag-activity-wrong .bloom-textOverPicture:not(.drag-item-wrong),
+.drag-activity-play .bloom-textOverPicture,
+.drag-activity-solution .bloom-textOverPicture {
+    img[src="placeHolder.png"] {
+        display: none;
+    }
+}
+[data-bubble-id] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    .bloom-translationGroup {
+        height: auto;
+    }
+}
+
+.activeButton {
+    opacity: 1;
+    pointer-events: unset;
+}
+
+//Slider: // The slider can go away at runtime once everything is correctly placed.
+// .drag-activity-correct.drag-activity-play .bloom-activity-slider {
+//     display: none;
+// }
+
+// .drag-activity-correct .bloom-page:not([data-activity="drag-word-chooser-slider"]) {
+//     .bloom-textOverPicture:not(.drag-item-correct):not(.bloom-change-page-button),
+//     [data-target-of],
+//     .drag-item-random-sentence {
+//         opacity: 30%;
+//         pointer-events: none;
+//         cursor: unset;
+//     }
+//     .bloom-dragHandle {
+//         display: none;
+//     }
+// }
+// .drag-activity-wrong .bloom-page:not([data-activity="drag-word-chooser-slider"]) {
+//     // Review: we want the change-page buttons to be visible and clickable always.
+//     // Should we have a distinct class for this, like bloom-all-tabs?
+//     .bloom-textOverPicture:not(.drag-item-wrong):not(.bloom-change-page-button),
+//     [data-target-of],
+//     .drag-item-random-sentence {
+//         opacity: 30%;
+//         pointer-events: none;
+//         cursor: unset;
+//     }
+//     .bloom-dragHandle {
+//         display: none;
+//     }
+// }
+// Hide these buttons in play mode, unless we already checked and got it wrong.
+.drag-activity-play :not(.drag-activity-wrong) {
+    .try-again-button,
+    .show-correct-button {
+        display: none;
+    }
+}
+
+// We'd like them in front of targets in Correct and Wrong tabs, too, but if we mess with
+// their own z-index there, it will mess up how they interact with the handles and canvas.
+.drag-activity-play {
+    .drag-item-wrong,
+    .drag-item-correct {
+        // In front of targets, in case they overlap
+        z-index: @bubbleCanvasZIndex + 2;
+    }
+}
+// In the play tab we don't even have the concept of a video element being selected.
+.drag-activity-play {
+    .bloom-videoContainer.bloom-selected {
+        border: none;
+    }
+}
+
+.drag-activity-play .bloom-ui-dragging {
+    // This is purposely all but invisible. It's just enough to make WebView2 think that one more
+    // pixel is being dragged, so that it redraws a little more of the background after the image
+    // moves away. Without it, some kind of rounding error (a bug in WebView2) causes lines to be
+    // left behind while dragging things if we are scaled up.
+    outline: 1px solid rgba(255, 255, 255, 0.01);
+}
+
+.drag-activity-play .drag-item-order-sentence {
+    display: none;
+}
+.drag-activity-play .uibloomSourceTextsBubble {
+    display: none !important;
+}
+
+.drag-item-random-sentence {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 5px;
+    position: absolute;
+}
+
+// In the Wrong tab, or when the user has given a wrong answer.
+// .drag-activity-start,
+// .drag-activity-correct,
+// .drag-activity-play {
+//     &:not(.drag-activity-wrong) {
+//         .drag-item-wrong {
+//             display: none;
+//         }
+//     }
+// }
+
+.drag-activity-play {
+    &.drag-activity-correct,
+    &.drag-activity-wrong,
+    &.drag-activity-solution {
+        .check-button {
+            // In the play tab when the user has given an answer, the check button does not apply.
+            display: none;
+        }
+    }
+}
+
+.drag-activity-play.drag-activity-wrong {
+    .try-again-button,
+    .show-correct-button {
+        // normal opacity in the situation where they actually apply and work
+        .activeButton;
+    }
+}
+
+.drag-activity-play {
+    #target-arrow,
+    .bloom-dragHandle,
+    .ui-resizable-handle {
+        display: none;
+    }
+    .check-button {
+        display: block; // displays in play mode initially...
+    }
+    &.drag-activity-wrong {
+        .check-button {
+            display: none; // but not if you already got it wrong
+        }
+        .try-again-button,
+        .show-correct-button {
+            display: block; // instead these show
+        }
+    }
+    &.drag-activity-correct {
+        .check-button {
+            display: none; // but not if you already got it right
+        }
+    }
+}
+
+[data-target-of] {
+    position: absolute;
+    // above overlay canvas so we can drag it when the canvas is active
+    z-index: @bubbleCanvasZIndex + 1;
+    box-sizing: border-box;
+    > * {
+        // targets have children to show a shadow of what is supposed to go there.
+        // the contents are identical, this makes them a shadow.
+        opacity: 50%;
+    }
+    // in targets, as in image overlays, we want the height to be derived from the width.
+    .bloom-imageContainer img {
+        height: unset;
+    }
+}
+
+// This might be more specific than it needs to be, but it roughly matches a rule that gives it a border and shadow,
+// and another that gives it an outline, that we don't want in play mode.
+.drag-activity-play {
+    .bloom-textOverPicture {
+        .bloom-translationGroup {
+            .bloom-editable.bloom-editable.bloom-editable {
+                // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
+                border: none;
+                box-shadow: none;
+                outline: none !important;
+                p:after {
+                    // suppress sticking in a paragraph mark when clicked
+                    content: unset;
+                }
+            }
+        }
+    }
+}
+
+// The rule above makes the target in front of the draggable it is the target-of.
+// IIRC, there are good reasons not to give the draggable itself a z-index in edit mode.
+// I think we can live with the target being in front in the other tabs, but
+// when testing we need to be able to drag the bubble over the target.
+// (But we don't want pictures that are just part of the background to be in front of targets.)
+.drag-activity-play {
+    .bloom-textOverPicture[data-bubble-id] {
+        z-index: @bubbleCanvasZIndex + 2;
+        &.bloom-ui-dragging {
+            z-index: @bubbleCanvasZIndex + 3;
+        }
+    }
+    // Buttons for editing images and formatting text should not show in test mode.
+    // Review: should we instead make special cases in the code that makes these buttons?
+    .imageButton,
+    #formatButton,
+    .ui-tooltip-plain {
+        // We need !important for the ui-tooltip-plain, which hides hint and source bubbles.
+        // jquery tooltip puts display:block in the style of the element itself, so only
+        // an !important rule can override it.
+        display: none !important;
+    }
+    .cke_editable {
+        cursor: default;
+    }
+    .marginBox {
+        border: none;
+        // repeat for specificity
+        .bloom-imageContainer.bloom-imageContainer:after {
+            border: none;
+        }
+    }
+    .check-button {
+        .activeButton;
+    }
+}
+
+// .bloom-page[data-activity="drag-word-chooser-slider"] {
+//     --slider-height: 80px;
+//     --slider-item-height: 76px;
+//     .marginBox {
+//         border: 0 !important;
+//         img {
+//             // defeats a rule in basepage.css that otherwise prevents the image from filling the page.
+//             max-width: unset;
+//         }
+//     }
+//     .bloom-activity-slider {
+//         position: absolute;
+//         left: 0;
+//         right: 0;
+//         bottom: 0;
+//         height: var(--slider-height);
+//         box-sizing: border-box;
+//         // Same as the canvas is enough to put in in front, since it comes later.
+//         z-index: @bubbleCanvasZIndex;
+//         .bloom-activity-slider-content {
+//             display: flex;
+//             height: 100%;
+//             position: absolute;
+//             top: 0;
+//         }
+//         .bloom-activity-slider-item {
+//             height: calc(100% - 4px);
+//             margin: 2px 22px;
+//             box-sizing: border-box;
+//             padding: 10px 3px;
+//             border-radius: 20px;
+//             min-width: calc(var(--slider-item-height) + 10px);
+//         }
+//         img {
+//             height: 100%;
+//             box-sizing: border-box;
+//             max-width: var(--slider-height);
+//         }
+//     }
+//     &:after {
+//         display: none; // no page number
+//     }
+//     .bloom-wordChoice {
+//         display: none; // only the active text box is shown
+//         &.bloom-activeTextBox {
+//             display: block;
+//         }
+//     }
+//     .bloom-textOverPicture {
+//         transition: opacity 1s ease-in-out;
+//     }
+//     .bloom-hideSliderImage {
+//         opacity: 0;
+//     }
+//     [data-img-txt="wrong"] {
+//         display: none;
+//         &.bloom-activePicture {
+//             display: block;
+//         }
+//     }
+// }
+// If we're not going to show the targets during play, we indicate this by not giving them a background
+// in other tabs.
+.bloom-page[data-show-targets-during-play="false"] {
+    [data-target-of] {
+        background-color: transparent;
+    }
+}
+// And don't show them at all in play mode.
+.drag-activity-play .bloom-page[data-show-targets-during-play="false"] {
+    [data-target-of] {
+        // display:none would prevent the snap code from using them, since they would not have a location.
+        visibility: hidden;
+    }
+}
+
+.bloom-targetWrapper {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.drag-item-order-sentence .bloom-editable {
+    // If we want to put these back, we have to make it the full size. Currently the special padding is messing that up.
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    p {
+        // This makes the original sentence take up about as much space as the broken-up words.
+        word-spacing: 16px;
+    }
+}
+
+.drag-item-order-word {
+    // In bloom-player, cursor seems to be auto, which here gives us a text editing cursor.
+    // Not sure why that doesn't happen in play mode in Bloom desktop.
+    // But anyway, we don't want it.
+    cursor: default;
+    box-sizing: border-box; // helpful when animating word moves by setting width.
+}
+
+.game-button,
+.page-turn-button {
+    position: absolute;
+    z-index: @imageEditingButtonZIndex;
+    border-color: transparent;
+    pointer-events: none;
+}
+
+.game-button {
+    height: 36px;
+    width: 50px;
+    opacity: 0.3;
+    pointer-events: none;
+}
+.page-turn-button {
+    background-color: transparent;
+    opacity: 10%;
+}
+
+.turn-left img {
+    transform: rotate(180deg);
+}
+
+// These rules depend on variables defined in a theme.
+&[data-activity="drag-word-chooser-slider"] {
+    [data-txt-img] {
+        border: 8px solid var(--slider-keyword-color) !important;
+        border-radius: 18px;
+        background-color: var(--text-background);
+    }
+}
+&.bloom-page {
+    // need this for specificity
+    background-color: var(--page-color);
+}
+//Slider: .bloom-activity-slider {
+//     //background-color: yellow; // Todo
+//     background-image: linear-gradient(white, yellow);
+//     .bloom-activity-slider-item {
+//         border: 6px solid var(--slider-button-color);
+//         background-color: var(--text-background);
+//     }
+// }
+.bloom-textOverPicture.draggable-text {
+    background-color: var(--draggable-background-color);
+    color: var(--draggable-color);
+}
+.drag-item-correct,
+.drag-item-wrong {
+    .bloom-translationGroup {
+        background-color: transparent;
+        color: var(--fixed-color);
+    }
+}
+.drag-item-order-word,
+.drag-item-order-sentence p {
+    background-color: var(--draggable-background-color);
+    color: var(--draggable-color);
+    border-radius: 10px;
+    padding: 0px 11px;
+    margin-right: 5px;
+}
+
+[data-target-of] {
+    border: dashed 2px var(--draggable-background-color);
+    // If we ever want targets to have a background color (except when hidden), here's the place.
+    //background-color: var(--target-color);
+
+    &:focus {
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+            0 0 8px var(--draggable-background-color);
+    }
+}
+
+.bloom-change-page-button {
+    background-color: var(--draggable-background-color);
+    color: var(--draggable-color);
+    border-radius: 10px;
+    padding: 3px 2px 2px 10px;
+    box-sizing: border-box;
+    // This puts it in front of other things so it can actually be clicked.
+    z-index: @textOverPictureZIndex;
+    // In bloom-player, cursor seems to be auto, which here gives us a text editing cursor.
+    // Not sure why that doesn't happen in play mode in Bloom desktop.
+    // But anyway, we don't want it.
+    cursor: default;
+}
+
+// We could add another common class to these three elements, but other themes
+// might want to style them differently.
+.check-button,
+.try-again-button,
+.show-correct-button {
+    cursor: pointer;
+    //font-size: 14px;
+    font-weight: bold;
+    //margin: 0 5px 5px 0;
+    //padding: 5px 10px;
+    text-decoration: none;
+    //text-transform: uppercase;
+    //transition: background-color 0.2s ease-in-out;
+    // enough for a typical line of text and the decoration we're adding to make it look like a button;
+    // tries to prevent initially coming up as overflowing, though may not succeed for other fonts.
+    // Is there a better way?
+    min-height: 36px;
+}
+.game-button {
+    background-color: var(--draggable-background-color);
+}
+
+.activeButton {
+    &:hover {
+        border-color: var(--hover-button-border);
+        &:active {
+            border-color: var(--active-button-border);
+        }
+    }
+}

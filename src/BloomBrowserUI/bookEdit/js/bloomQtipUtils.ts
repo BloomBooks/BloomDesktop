@@ -49,7 +49,10 @@ export default class bloomQtipUtils {
             .closest(".marginBox")
             .width();
         const kTolerancePixels = 10; //if the box is just a tiny bit smaller, there's not going to be anything to overlap
-        return $(element).width() < availableWidth - kTolerancePixels;
+        // NOT $element.width() because that doesn't include padding.
+        return (
+            $(element).get(0).clientWidth < availableWidth - kTolerancePixels
+        );
     }
 
     public static setQtipZindex(): void {

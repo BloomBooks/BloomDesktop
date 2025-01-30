@@ -53,10 +53,6 @@ namespace Bloom.Edit
             get { return ToolId + "State"; }
         }
 
-        // May be overridden to save some information about the tool state during page save.
-        // Default does nothing.
-        internal virtual void SaveSettings(XmlElement toolbox) { }
-
         public static object GetToolboxToolFromJsonObject(JObject item)
         {
             return item.ToObject<ToolboxToolState>();

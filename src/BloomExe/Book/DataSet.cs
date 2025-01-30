@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using SIL.Extensions;
 using SIL.Text;
 
@@ -45,7 +46,8 @@ namespace Bloom.Book
             string key,
             XmlString value,
             string writingSystemId,
-            bool isCollectionValue
+            bool isCollectionValue,
+            bool storeEmptyValue = false
         )
         {
             Debug.Assert(
@@ -60,7 +62,21 @@ namespace Bloom.Book
             {
                 text = new MultiTextBase();
             }
-            text.SetAlternative(writingSystemId, value?.Xml);
+
+            // MultiTextBase.SetAlternative() and .SetAnnotationOfAlternativeIsStarred()
+            // treat writingSystemId as case insensitive.  This is really bad when we want
+            // to store the writing system ID exactly as is to fix a bug that put in an
+            // incorrectly capitalized writing system ID.  Getting rid of the alternative
+            // form more explicitly works to instantiate the corrected writing system ID.
+            // See BL-14038.
+            var form = text.Forms.FirstOrDefault(x => x.WritingSystemId == writingSystemId);
+            if (form == null)
+                text.SetAlternative(writingSystemId, null);
+
+            if (storeEmptyValue && XmlString.IsNullOrEmpty(value))
+                text.SetAnnotationOfAlternativeIsStarred(writingSystemId, true); // This allows empty strings to be saved and restored as empty strings.
+            else
+                text.SetAlternative(writingSystemId, value?.Xml);
             TextVariables.Remove(key);
             if (text.Count > 0)
                 TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));

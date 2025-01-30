@@ -5,12 +5,14 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Web;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Publish;
+using Bloom.SafeXml;
 using Bloom.web.controllers;
 using BloomTemp;
 using Moq;
@@ -19,7 +21,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Xml;
 
 namespace BloomTests.Book
 {
@@ -64,7 +65,7 @@ namespace BloomTests.Book
 						</div>
 					</div>
 				</body></html>";
-            var doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(htmlSourceBook);
             var dom = new HtmlDom(doc);
             _storage.SetupGet(x => x.Dom).Returns(() => dom);
@@ -79,7 +80,7 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void SetCoverColor_WorksWithCaps()
+        public void SetCoverColor_UpdatesEverything()
         {
             var newValue = "#777777";
             SetDom(
@@ -87,9 +88,6 @@ namespace BloomTests.Book
                 @"<style type='text/css'>
 				</style>
 				<style type='text/css'>
-					DIV.coverColor  TEXTAREA {
-						background-color: #B2CC7D !important;
-					}
 					DIV.bloom-page.coverColor {
 						background-color: #B2CC7D !important;
 					}
@@ -98,42 +96,105 @@ namespace BloomTests.Book
 				</style>"
             );
             var book = CreateBook();
-            var dom = book.RawDom;
-            book.SetCoverColorInternal(newValue);
-            var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
-            var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
-            var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
-            Assert.That(first > 0);
-            Assert.That(last > 0 && last != first);
+            book.SetCoverColor(newValue);
+            Assert.That(GetLegacyCoverColorStyleNode(book).InnerText.Contains(newValue));
+            Assert.That(
+                GetAppearanceCoverBackgroundFallbackStyleNode(book).InnerText.Contains(newValue)
+            );
+            CheckOrderOfRules(book);
+            Assert.AreEqual(newValue, book.GetCoverColor());
+
+            // there should only be one style rule that contains "coverColor"... i.e. make sure we didn't just make a second one
+            Assert.AreEqual(
+                1,
+                book.RawDom.SafeSelectNodes("//style[contains(text(),'coverColor')]").Count()
+            );
+            // there should only be one appearance rule... i.e. make sure we didn't just make a second one
+            Assert.AreEqual(
+                1,
+                book.RawDom
+                    .SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
+                    .Count()
+            );
         }
 
         [Test]
-        public void SetCoverColor_WorksWithLowercase()
+        public void MigratesLegacyColorToAppearance()
         {
-            var newValue = "#777777";
             SetDom(
                 "",
                 @"<style type='text/css'>
-				</style>
-				<style type='text/css'>
-					div.coverColor  textarea {
+					DIV.bloom-page.coverColor {
 						background-color: #B2CC7D !important;
 					}
-					div.bloom-page.coverColor {
-						background-color: #B2CC7D !important;
-					}
-				</style>
-				<style type='text/css'>
 				</style>"
             );
             var book = CreateBook();
-            var dom = book.RawDom;
-            book.SetCoverColorInternal(newValue);
-            var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
-            var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
-            var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
-            Assert.That(first > 0);
-            Assert.That(last > 0 && last != first);
+            Assert.That(GetLegacyCoverColorStyleNode(book).InnerText.Contains("#B2CC7D"));
+            Assert.That(
+                GetAppearanceCoverBackgroundFallbackStyleNode(book).InnerText.Contains("#B2CC7D")
+            );
+            // there should only be one style rule that contains "coverColor"... i.e. make sure we didn't just make a second one
+            Assert.AreEqual(
+                1,
+                book.RawDom.SafeSelectNodes("//style[contains(text(),'coverColor')]").Count()
+            );
+        }
+
+        [Test]
+        public void MigratesLegacyColorToAppearance_RegressionFromActualBook()
+        {
+            SetDom(
+                "",
+                @"    <meta charset='UTF-8'></meta>
+    <meta name='Generator' content='Bloom Version 5.5.104 (apparent build date: 21-Aug-2023)'></meta>
+    <meta name='BloomFormatVersion' content='2.1'></meta>
+    <meta name='pageTemplateSource' content='Basic Book'></meta>
+
+    <title>நான் எப்படி மரமானேன்</title>
+    <style type='text/css' title='userModifiedStyles'>
+    /*<![CDATA[*/
+    .BigWords-style { font-size: 45pt !important; text-align: center !important; }
+    .normal-style[lang='en'] { font-size: 18pt !important; line-height: 1.6 !important; word-spacing: 5pt !important; }
+    .normal-style { font-size: 18pt !important; line-height: 1.8 !important; text-align: center !important; word-spacing: 5pt !important; }
+    .Outside-Back-Cover-style[lang='en'] { font-size: 16pt !important; }
+    .Outside-Back-Cover-style { font-size: 16pt !important; text-align: start !important; }
+    .Inside-Back-Cover-style[lang='en'] { font-size: 13pt !important; }
+    .Inside-Back-Cover-style { font-size: 12pt !important; line-height: 1.3 !important; word-spacing: normal !important; }
+    .Inside-Back-Cover-style > p { margin-bottom: 0.5em !important; }
+    .normal-style > p { margin-bottom: 0em !important; }
+    .Content-On-Title-Page-style[lang='ta'] { font-size: 12pt !important; word-spacing: 5pt !important; }
+    .Content-On-Title-Page-style { font-size: 12pt !important; word-spacing: 5pt !important; }
+    .Inside-Back-Cover-style[lang='ta'] { color: rgb(0, 0, 0); font-size: 12pt !important; line-height: 1.3 !important; word-spacing: normal !important; }
+    .normal-style[lang='ta'] { font-size: 18pt !important; line-height: 1.8 !important; }/*]]>*/
+    </style>
+    <style type='text/css'>
+    DIV.bloom-page.coverColor       {               background-color: #FEBF00 !important;   }
+    </style>
+    <meta name='FeatureRequirement' content='[{&quot;BloomDesktopMinVersion&quot;:&quot;5.5&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;hiddenAudioSplitMarkers&quot;,&quot;FeaturePhrase&quot;:&quot;Hide audio split markers (|) outside the talking book tool&quot;},{&quot;BloomDesktopMinVersion&quot;:&quot;4.7&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudioInXmatter&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio in Front/Back Matter&quot;},{&quot;BloomDesktopMinVersion&quot;:&quot;4.4&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio&quot;}]'></meta>
+    <meta name='maintenanceLevel' content='3'></meta>
+    <meta name='lockedDownAsShell' content='true'></meta>
+    <link rel='stylesheet' href='basePage.css' type='text/css'></link>"
+            );
+            var book = CreateBook();
+            Assert.That(GetLegacyCoverColorStyleNode(book).InnerText.Contains("#FEBF00"));
+            Assert.That(
+                GetAppearanceCoverBackgroundFallbackStyleNode(book).InnerText.Contains("#FEBF00")
+            );
+            // there should only be one style rule that contains "coverColor"... i.e. make sure we didn't just make a second one
+            Assert.AreEqual(
+                1,
+                book.RawDom.SafeSelectNodes("//style[contains(text(),'coverColor')]").Count()
+            );
+        }
+
+        [Test]
+        public void MigratingFromOldBook_CoverColorMissing()
+        {
+            SetDom("", @"");
+            var book = CreateBook();
+            Assert.NotNull(GetAppearanceCoverBackgroundFallbackStyleNode(book));
+            Assert.NotNull(GetLegacyCoverColorStyleNode(book));
         }
 
         [Test]
@@ -172,7 +233,7 @@ namespace BloomTests.Book
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
                 "//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']"
             );
-            Assert.IsTrue(pageImage.Attributes["src"].Value.Equals("myImage.png"));
+            Assert.IsTrue(pageImage.GetAttribute("src").Equals("myImage.png"));
         }
 
         [Test]
@@ -231,7 +292,7 @@ namespace BloomTests.Book
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
                 "//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']"
             );
-            Assert.IsTrue(pageImage.Attributes["src"].Value.Equals(placeHolderFile));
+            Assert.IsTrue(pageImage.GetAttribute("src").Equals(placeHolderFile));
         }
 
         // Unless it's part of an image container that has an image description, an image
@@ -268,18 +329,18 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             book.BringBookUpToDate(new NullProgress());
-            var images = dom.SelectNodes("//img");
-            Assert.That(images, Has.Count.AtLeast(4)); // may get extras from xmatter update
-            foreach (XmlElement img in images)
+            var images = dom.SafeSelectNodes("//img");
+            Assert.That(images, Has.Length.AtLeast(4)); // may get extras from xmatter update
+            foreach (SafeXmlElement img in images)
             {
-                Assert.That(img.Attributes["alt"], Is.Not.Null);
+                Assert.That(img.GetOptionalStringAttribute("alt", null), Is.Not.Null);
 
                 string expectedAltText = "";
-                if (img.Attributes["src"].Value == "imageWithCustomAlt.svg")
+                if (img.GetAttribute("src") == "imageWithCustomAlt.svg")
                 {
                     expectedAltText = "Custom Alt";
                 }
-                Assert.That(img.Attributes["alt"].Value, Is.EqualTo(expectedAltText));
+                Assert.That(img.GetAttribute("alt"), Is.EqualTo(expectedAltText));
             }
         }
 
@@ -309,7 +370,7 @@ namespace BloomTests.Book
             var img = dom.SelectSingleNode(
                 "//div[@class='bloom-imageContainer']/img[@src='aor_1B-E1.png']"
             );
-            Assert.That(img.Attributes["alt"].Value, Is.EqualTo("Bird with wings stretched wide"));
+            Assert.That(img.GetAttribute("alt"), Is.EqualTo("Bird with wings stretched wide"));
         }
 
         [Test]
@@ -421,7 +482,7 @@ namespace BloomTests.Book
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
                 "//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']"
             );
-            Assert.IsTrue(pageImage.Attributes["src"].Value.Equals(noPlusEncodedName));
+            Assert.IsTrue(pageImage.GetAttribute("src").Equals(noPlusEncodedName));
 
             // Test that obsolete img attributes are gone.
             Assert.IsNull(pageImage.GetOptionalStringAttribute("style", null));
@@ -474,13 +535,13 @@ namespace BloomTests.Book
             var imgsBefore = dom.SafeSelectNodes(
                     "//div[contains(@class,'bloom-imageContainer')]/img[@style|@width|@height]"
                 )
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(
                 3,
                 imgsBefore.Count(),
                 "3 bloom-imageContainer images had style/size attributes"
             );
-            imgsBefore = dom.SafeSelectNodes("//img[@style]").Cast<XmlElement>();
+            imgsBefore = dom.SafeSelectNodes("//img[@style]").Cast<SafeXmlElement>();
             Assert.AreEqual(3, imgsBefore.Count(), "3 images had style attributes");
 
             book.BringBookUpToDate(new NullProgress());
@@ -488,20 +549,20 @@ namespace BloomTests.Book
             var imgsAfter = dom.SafeSelectNodes(
                     "//div[contains(@class,'bloom-imageContainer')]/img[@style|@width|@height]"
                 )
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             Assert.AreEqual(
                 1,
                 imgsAfter.Count(),
                 "1 bloom-imageContainer image has style/size attributes after updating"
             );
-            var img = imgsAfter.First<XmlElement>();
+            var img = imgsAfter.First<SafeXmlElement>();
             var updatedStyle = img.GetOptionalStringAttribute("style", null);
             Assert.AreEqual(
                 "padding: 3px;",
                 updatedStyle,
                 "unrecognized style css items are preserved"
             );
-            imgsAfter = dom.SafeSelectNodes("//img[@style]").Cast<XmlElement>();
+            imgsAfter = dom.SafeSelectNodes("//img[@style]").Cast<SafeXmlElement>();
             Assert.AreEqual(2, imgsAfter.Count(), "2 images have style attribute after updating");
         }
 
@@ -690,13 +751,13 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
             var imgInEditingDom =
-                dom.SelectSingleNodeHonoringDefaultNS("//img[@id='img1']") as XmlElement;
+                dom.SelectSingleNodeHonoringDefaultNS("//img[@id='img1']") as SafeXmlElement;
             imgInEditingDom.SetAttribute("src", "changed.png");
 
             book.SavePage(dom);
             var imgInStorage =
                 _storage.Object.Dom.RawDom.SelectSingleNodeHonoringDefaultNS("//img[@id='img1']")
-                as XmlElement;
+                as SafeXmlElement;
 
             Assert.AreEqual("changed.png", imgInStorage.GetAttribute("src"));
         }
@@ -734,12 +795,12 @@ namespace BloomTests.Book
 
             Assert.AreEqual(
                 "changed",
-                vernacularTextNodesInStorage.Item(0).InnerText,
+                vernacularTextNodesInStorage[0].InnerText,
                 "the value didn't get copied to  the storage dom"
             );
             Assert.AreEqual(
                 "original2",
-                vernacularTextNodesInStorage.Item(1).InnerText,
+                vernacularTextNodesInStorage[1].InnerText,
                 "the second copy of this page should not have been changed"
             );
         }
@@ -775,12 +836,12 @@ namespace BloomTests.Book
 
             Assert.AreEqual(
                 "original1",
-                textNodesInStorage.Item(0).InnerText,
+                textNodesInStorage[0].InnerText,
                 "the first copy of this page should not have been changed"
             );
             Assert.AreEqual(
                 "changed",
-                textNodesInStorage.Item(1).InnerText,
+                textNodesInStorage[1].InnerText,
                 "the value didn't get copied to  the storage dom"
             );
         }
@@ -814,7 +875,7 @@ namespace BloomTests.Book
 
             Assert.AreEqual(
                 "changed",
-                vernacularTextNodesInStorage.Item(0).InnerText,
+                vernacularTextNodesInStorage[0].InnerText,
                 "the value didn't get copied to  the storage dom"
             );
         }
@@ -950,7 +1011,7 @@ namespace BloomTests.Book
             book.InsertPageAfter(existingPage, templatePage.Object);
             Assert.IsTrue(
                 GetPageFromBookDom(book, 1)
-                    .GetStringAttribute("class")
+                    .GetAttribute("class")
                     .Contains("bloom-page bloom-monolingual A5Portrait")
             );
         }
@@ -963,10 +1024,7 @@ namespace BloomTests.Book
             Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page'>hello</div>");
             book.IsSuitableForMakingShells = true;
             book.InsertPageAfter(existingPage, templatePage.Object);
-            Assert.That(
-                GetPageFromBookDom(book, 1).GetStringAttribute("data-page"),
-                Is.EqualTo("extra")
-            );
+            Assert.That(GetPageFromBookDom(book, 1).GetAttribute("data-page"), Is.EqualTo("extra"));
         }
 
         [Test]
@@ -1128,7 +1186,7 @@ namespace BloomTests.Book
                 "<div class='bloom-page'  data-page='extra'  data-pagelineage='grandma' id='ma'>hello</div>"
             );
             book.InsertPageAfter(existingPage, templatePage.Object);
-            XmlElement page = (XmlElement)GetPageFromBookDom(book, 1);
+            var page = (SafeXmlElement)GetPageFromBookDom(book, 1);
             AssertThatXmlIn
                 .String(page.OuterXml)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage]", 1);
@@ -1138,11 +1196,11 @@ namespace BloomTests.Book
             Assert.AreEqual(2, guids.Length);
         }
 
-        private string[] GetLineageGuids(XmlElement page)
+        private string[] GetLineageGuids(SafeXmlElement page)
         {
-            XmlAttribute node = (XmlAttribute)
-                page.SelectSingleNodeHonoringDefaultNS("//div/@data-pagelineage");
-            return node.Value.Split(new char[] { ';' });
+            var node = page.SelectSingleNodeHonoringDefaultNS("//div[@data-pagelineage]");
+            var attribute = node.GetAttribute("data-pagelineage");
+            return attribute.Split(new char[] { ';' });
         }
 
         [Test]
@@ -1155,7 +1213,7 @@ namespace BloomTests.Book
                 "<div class='bloom-page' data-page='extra' id='ma'>hello</div>"
             );
             book.InsertPageAfter(existingPage, templatePage.Object);
-            XmlElement page = (XmlElement)GetPageFromBookDom(book, 1);
+            var page = (SafeXmlElement)GetPageFromBookDom(book, 1);
             AssertThatXmlIn
                 .String(page.OuterXml)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage='ma']", 1);
@@ -1292,15 +1350,15 @@ namespace BloomTests.Book
             AssertPageCount(book, 4);
             Assert.IsTrue(
                 GetPageFromBookDom(book, 1)
-                    .GetStringAttribute("class")
+                    .GetAttribute("class")
                     .Contains("bloom-page somekind bloom-monolingual A5Portrait")
             );
         }
 
-        private XmlNode GetPageFromBookDom(Bloom.Book.Book book, int pageNumber0Based)
+        private SafeXmlNode GetPageFromBookDom(Bloom.Book.Book book, int pageNumber0Based)
         {
             var result = book.RawDom.StripXHtmlNameSpace();
-            return result.SafeSelectNodes("//div[contains(@class, 'bloom-page')]", null)[
+            return result.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")[
                 pageNumber0Based
             ];
         }
@@ -1316,25 +1374,48 @@ namespace BloomTests.Book
                 );
         }
 
+        // years later, I don't know why we are testing this, perhaps there was some bug at some point
         [Test]
         public void CreateBook_AlreadyHasCoverColor_GetsEmptyUserStyles()
         {
             var coverStyle =
                 @"<style type='text/css'>
-	DIV.coverColor  TEXTAREA  { background-color: #98D0B9 !important; }
 	DIV.bloom-page.coverColor { background-color: #98D0B9 !important; }
 			</style>";
             SetDom("<div class='bloom-page' id='1'></div>", coverStyle);
-
-            // SUT
             var book = CreateBook();
+            Assert.AreEqual(string.Empty, GetUserModifiedStylesNode(book).InnerText);
+        }
 
-            var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
-            Assert.AreEqual(2, styleNodes.Count);
-            Assert.AreEqual("userModifiedStyles", styleNodes[0].Attributes["title"].Value);
-            Assert.AreEqual(string.Empty, styleNodes[0].InnerText);
-            // verify that the 'coverColor' rules are still there
-            Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
+        private SafeXmlNode GetUserModifiedStylesNode(Bloom.Book.Book book)
+        {
+            return HtmlDom.GetUserModifiedStyleElement(book.RawDom.Head);
+        }
+
+        private SafeXmlNode GetLegacyCoverColorStyleNode(Bloom.Book.Book book)
+        {
+            return book.RawDom
+                .SafeSelectNodes("//style[contains(text(),'.bloom-page.coverColor')]")
+                .First();
+        }
+
+        private SafeXmlNode GetAppearanceCoverBackgroundFallbackStyleNode(Bloom.Book.Book book)
+        {
+            return book.RawDom
+                .SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
+                .First();
+        }
+
+        private void CheckOrderOfRules(Bloom.Book.Book book)
+        {
+            var indexOfUserStyles = book.OurHtmlDom.Head.ChildNodes.IndexOf(
+                GetUserModifiedStylesNode(book)
+            );
+            var indexOfCoverColorRule = book.OurHtmlDom.Head.ChildNodes.IndexOf(
+                GetLegacyCoverColorStyleNode(book)
+            );
+            // why this should come first is lost to time
+            Assert.Less(indexOfUserStyles, indexOfCoverColorRule);
         }
 
         [Test]
@@ -1347,25 +1428,20 @@ namespace BloomTests.Book
 			</style>";
             var coverStyle =
                 @"<style type='text/css'>
-	DIV.coverColor  TEXTAREA  { background-color: #98D0B9 !important; }
 	DIV.bloom-page.coverColor { background-color: #98D0B9 !important; }
 			</style>";
             SetDom("<div class='bloom-page' id='1'></div>", userStyle + coverStyle);
 
             // SUT
             var book = CreateBook();
-
-            var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
-            Assert.AreEqual(2, styleNodes.Count);
-            Assert.AreEqual("userModifiedStyles", styleNodes[0].Attributes["title"].Value);
             Assert.IsTrue(
-                styleNodes[0].InnerText.Contains(
+                GetUserModifiedStylesNode(book).InnerText.Contains(
                     ".normal-style[lang='fr'] { font-size: 9pt ! important; }"
                 )
             );
-            Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
         }
 
+        // years later, I don't know why we are testing this, perhaps there was some bug at some point
         [Test]
         public void CreateBook_HasNeitherStyle_GetsEmptyUserStyles()
         {
@@ -1373,20 +1449,27 @@ namespace BloomTests.Book
 
             // SUT
             var book = CreateBook();
-
-            var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
-            Assert.AreEqual(2, styleNodes.Count); // also gets a new 'coverColor' style element
-            Assert.AreEqual("userModifiedStyles", styleNodes[0].Attributes["title"].Value);
-            Assert.AreEqual(string.Empty, styleNodes[0].InnerText);
-            Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
+            Assert.AreEqual(GetUserModifiedStylesNode(book).InnerText, string.Empty);
         }
 
+        // why this is important is lost to time, and may be even less relevent now that the Appearance system handles colors
+        // and this rule is just there for legacy purposes
         [Test]
-        public void CreateBook_AlreadyHasCoverColorAndUserStyles_InWrongOrder_GetsStyleElementsReversed()
+        public void CreateBook_CoverColorRuleMustFollowUserStyles()
+        {
+            SetDom("<div class='bloom-page' id='1'></div>");
+
+            var book = CreateBook();
+            CheckOrderOfRules(book);
+        }
+
+        // why this is important is lost to time, and may be even less relevent now that the Appearance system handles colors
+        // and this rule is just there for legacy purposes
+        [Test]
+        public void CreateBook_CoverColorRuleMustFollowUserStyles_InWrongOrder_GetsStyleElementsReversed()
         {
             var coverStyle =
                 @"<style type='text/css'>
-	DIV.coverColor  TEXTAREA  { background-color: #98D0B9 !important; }
 	DIV.bloom-page.coverColor { background-color: #98D0B9 !important; }
 			</style>";
             var userStyle =
@@ -1396,18 +1479,8 @@ namespace BloomTests.Book
 			</style>";
             SetDom("<div class='bloom-page' id='1'></div>", coverStyle + userStyle);
 
-            // SUT
             var book = CreateBook();
-
-            var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
-            Assert.AreEqual(2, styleNodes.Count);
-            Assert.AreEqual("userModifiedStyles", styleNodes[0].Attributes["title"].Value);
-            Assert.IsTrue(
-                styleNodes[0].InnerText.Contains(
-                    ".normal-style[lang='fr'] { font-size: 9pt ! important; }"
-                )
-            );
-            Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
+            CheckOrderOfRules(book);
         }
 
         [Test]
@@ -1426,17 +1499,11 @@ namespace BloomTests.Book
             var existingDivNode = existingPage.GetDivNodeForThisPage();
             var newDivNode = newPage.GetDivNodeForThisPage();
 
-            Assert.AreEqual(existingPage.Id, newDivNode.Attributes["data-pagelineage"].Value);
+            Assert.AreEqual(existingPage.Id, newDivNode.GetAttribute("data-pagelineage"));
             Assert.AreEqual(existingDivNode.InnerXml, newDivNode.InnerXml);
 
-            Assert.AreEqual(
-                original.ToString(),
-                existingDivNode.Attributes["data-page-number"].Value
-            );
-            Assert.AreEqual(
-                (original + 1).ToString(),
-                newDivNode.Attributes["data-page-number"].Value
-            );
+            Assert.AreEqual(original.ToString(), existingDivNode.GetAttribute("data-page-number"));
+            Assert.AreEqual((original + 1).ToString(), newDivNode.GetAttribute("data-page-number"));
         }
 
         [Test]
@@ -1445,7 +1512,7 @@ namespace BloomTests.Book
             var book = CreateBook(); // has pages from  BookTestsBase.GetThreePageDom()
             var original = book.GetPages().Count();
             var existingPage = book.GetPages().Last();
-            var pageDiv = book.GetPageElements().Cast<XmlElement>().Last();
+            var pageDiv = book.GetPageElements().Cast<SafeXmlElement>().Last();
             var extraPara = pageDiv.OwnerDocument.CreateElement("p");
             pageDiv.AppendChild(extraPara);
             var sentenceSpan = pageDiv.OwnerDocument.CreateElement("span");
@@ -1486,14 +1553,11 @@ namespace BloomTests.Book
 
             var newDivNode = newPage.GetDivNodeForThisPage();
 
-            var newFirstPara = newDivNode.GetElementsByTagName("p").Cast<XmlElement>().Last();
+            var newFirstPara = newDivNode.GetElementsByTagName("p").Last();
             Assert.That(newFirstPara.InnerText, Is.EqualTo("This was a sentence span")); // kept the text
-            var newSpan = newFirstPara
-                .GetElementsByTagName("span")
-                .Cast<XmlElement>()
-                .FirstOrDefault();
+            var newSpan = newFirstPara.GetElementsByTagName("span").FirstOrDefault();
             Assert.That(newSpan, Is.Not.Null);
-            var id = newSpan.Attributes["id"]?.Value;
+            var id = newSpan.GetAttribute("id");
             Assert.That(id, Is.Not.Null.And.Not.Empty);
             Assert.That(id, Is.Not.EqualTo(audioId));
 
@@ -1504,7 +1568,7 @@ namespace BloomTests.Book
             Assert.That(File.Exists(newMp3Path));
             Assert.That(File.ReadAllText(newMp3Path), Is.EqualTo("This is a fake mp3"));
 
-            var newVideoSrc = newDivNode.SelectSingleNode(".//source") as XmlElement;
+            var newVideoSrc = newDivNode.SelectSingleNode(".//source") as SafeXmlElement;
             var srcAttrVal = newVideoSrc?.GetAttribute("src");
             Assert.That(srcAttrVal, Does.StartWith("video/"));
             Assert.That(srcAttrVal, Does.Not.Contain("#").And.Not.Contain("t="));
@@ -1556,7 +1620,7 @@ namespace BloomTests.Book
                 )
             )
             {
-                var doc = new XmlDocument();
+                var doc = SafeXmlDocument.Create();
                 doc.LoadXml(htmlSourceBook);
                 var dom = new HtmlDom(doc);
                 var storage = MakeMockStorage(tempFolder.Path, () => dom);
@@ -1574,13 +1638,13 @@ namespace BloomTests.Book
                 var existingPage = book.GetPages().Last();
 
                 var existingDivNode = existingPage.GetDivNodeForThisPage();
-                var existingTextDiv = existingDivNode.ChildNodes.Cast<XmlElement>().First();
-                Assert.That(existingTextDiv.Attributes["id"]?.Value, Is.EqualTo(divId));
+                var existingTextDiv = existingDivNode.ChildNodes.Cast<SafeXmlElement>().First();
+                Assert.That(existingTextDiv.GetAttribute("id"), Is.EqualTo(divId));
                 var existingP = existingTextDiv.ChildNodes[0];
                 var existingSpan1 = existingP.ChildNodes[0];
-                Assert.That(existingSpan1.Attributes?["id"]?.Value, Is.EqualTo(span1Id));
+                Assert.That(existingSpan1.GetAttribute("id"), Is.EqualTo(span1Id));
                 var existingSpan2 = existingP.ChildNodes[1];
-                Assert.That(existingSpan2.Attributes?["id"]?.Value, Is.EqualTo(span2Id));
+                Assert.That(existingSpan2.GetAttribute("id"), Is.EqualTo(span2Id));
 
                 var audioFolder = Path.Combine(book.FolderPath, "audio");
                 Directory.CreateDirectory(audioFolder);
@@ -1599,8 +1663,8 @@ namespace BloomTests.Book
 
                 var newDivNode = newPage.GetDivNodeForThisPage();
 
-                var newTextDiv = newDivNode.ChildNodes.Cast<XmlElement>().First();
-                var id = newTextDiv.Attributes["id"]?.Value;
+                var newTextDiv = newDivNode.ChildNodes.Cast<SafeXmlElement>().First();
+                var id = newTextDiv.GetAttribute("id");
                 Assert.That(id, Is.Not.Null.And.Not.Empty);
                 Assert.That(id, Is.Not.EqualTo(divId));
 
@@ -1608,7 +1672,7 @@ namespace BloomTests.Book
 
                 var newSpan1 = newP.ChildNodes[0];
                 Assert.That(newSpan1.InnerText, Is.EqualTo("Sentence 1.")); // kept the text
-                var newSpan1Id = newSpan1.Attributes?["id"]?.Value;
+                var newSpan1Id = newSpan1.GetAttribute("id");
                 Assert.That(newSpan1Id, Is.Not.Null.And.Not.Empty);
                 Assert.That(newSpan1Id, Is.Not.EqualTo(span1Id));
                 var newAudioFolder = Path.Combine(book.FolderPath, "audio");
@@ -1621,7 +1685,7 @@ namespace BloomTests.Book
 
                 var newSpan2 = newP.ChildNodes[1];
                 Assert.That(newSpan2.InnerText, Is.EqualTo("Sentence 2.")); // kept the text
-                var newSpan2Id = newSpan2.Attributes?["id"]?.Value;
+                var newSpan2Id = newSpan2.GetAttribute("id");
                 Assert.That(newSpan2Id, Is.Not.Null.And.Not.Empty);
                 Assert.That(newSpan2Id, Is.Not.EqualTo(span2Id));
                 var newMp3Path2 = Path.Combine(newAudioFolder, newSpan2Id + ".mp3");
@@ -1658,7 +1722,7 @@ namespace BloomTests.Book
                 var tempFolder = new SIL.TestUtilities.TemporaryFolder(_testFolder, "sourceBook")
             )
             {
-                var doc = new XmlDocument();
+                var doc = SafeXmlDocument.Create();
                 doc.LoadXml(htmlSourceBook);
                 var dom = new HtmlDom(doc);
                 var storage = MakeMockStorage(tempFolder.Path, () => dom);
@@ -1698,12 +1762,12 @@ namespace BloomTests.Book
 
                 var newDivNode = newPage.GetDivNodeForThisPage();
 
-                var newTextDiv = newDivNode.ChildNodes.Cast<XmlElement>().First();
+                var newTextDiv = newDivNode.ChildNodes.Cast<SafeXmlElement>().First();
                 Assert.That(
                     newTextDiv.InnerText,
                     Is.EqualTo("Page 1 Paragraph 1 Sentence 1Page 1 Paragraph 2 Sentence 1")
                 ); // kept the text
-                var id = newTextDiv.Attributes["id"]?.Value;
+                var id = newTextDiv.GetAttribute("id");
                 Assert.That(id, Is.Not.Null.And.Not.Empty);
                 Assert.That(id, Is.Not.EqualTo("id1"));
 
@@ -1715,10 +1779,12 @@ namespace BloomTests.Book
                 Assert.That(File.Exists(newMp3Path));
                 Assert.That(File.ReadAllText(newMp3Path), Is.EqualTo("This is a fake mp3"));
 
-                var newVideoContainer = newDivNode.GetElementsByTagName("div")[1] as XmlElement;
-                var newVideoDiv = newVideoContainer.GetElementsByTagName("video")[0] as XmlElement;
-                var newVideoSource = newVideoDiv.GetElementsByTagName("source")[0] as XmlElement;
-                var source = newVideoSource.Attributes["src"]?.Value;
+                var newVideoContainer = newDivNode.GetElementsByTagName("div")[1] as SafeXmlElement;
+                var newVideoDiv =
+                    newVideoContainer.GetElementsByTagName("video")[0] as SafeXmlElement;
+                var newVideoSource =
+                    newVideoDiv.GetElementsByTagName("source")[0] as SafeXmlElement;
+                var source = newVideoSource.GetAttribute("src");
                 Assert.That(source, Does.StartWith("video/"));
                 Assert.That(source, Does.EndWith(".mp4#t=1.2,5.7"));
                 var fileName = source.Substring(
@@ -1753,7 +1819,7 @@ namespace BloomTests.Book
                 var tempFolder = new SIL.TestUtilities.TemporaryFolder(_testFolder, "sourceBook")
             )
             {
-                var doc = new XmlDocument();
+                var doc = SafeXmlDocument.Create();
                 doc.LoadXml(htmlSourceBook);
                 var dom = new HtmlDom(doc);
                 var storage = MakeMockStorage(tempFolder.Path, () => dom);
@@ -1824,10 +1890,11 @@ namespace BloomTests.Book
                 Assert.AreNotEqual(existingPage, newPage);
                 Assert.AreNotEqual(existingPage.Id, newPage.Id);
                 var newDivNode = newPage.GetDivNodeForThisPage();
-                var newWidgetContainer = newDivNode.GetElementsByTagName("div")[0] as XmlElement;
+                var newWidgetContainer =
+                    newDivNode.GetElementsByTagName("div")[0] as SafeXmlElement;
                 var newWidgetIframe =
-                    newWidgetContainer.GetElementsByTagName("iframe")[0] as XmlElement;
-                var src = newWidgetIframe.Attributes["src"]?.Value;
+                    newWidgetContainer.GetElementsByTagName("iframe")[0] as SafeXmlElement;
+                var src = newWidgetIframe.GetAttribute("src");
                 var expectedNewActivityFolderEncoded =
                     "my%20Wid%25et" + (simulateWidgetWithSameNameExists ? "2" : "");
                 Assert.That(
@@ -1895,7 +1962,7 @@ namespace BloomTests.Book
             AssertPageCount(book, original - 1);
             var newFirstPage = book.GetPages().First();
             var newFirstDiv = newFirstPage.GetDivNodeForThisPage();
-            Assert.AreEqual("1", newFirstDiv.Attributes["data-page-number"].Value);
+            Assert.AreEqual("1", newFirstDiv.GetAttribute("data-page-number"));
         }
 
         [Test]
@@ -2015,6 +2082,52 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void DetectAndMarkDarkCoverColor_ColorIsDark_MarksCoverColorDark()
+        {
+            _bookDom = new HtmlDom(
+                @"
+				<html>
+					<body>
+						<div class='bloom-page cover coverColor bloom-frontMatter A4Landscape' data-page='required'>
+						</div>
+					</body>
+				</html>"
+            );
+            var book = CreateBook();
+            book.SetCoverColor("blue");
+            book.DetectAndMarkDarkCoverColor();
+            // should now have a div with class of both "bloom-page" and "darkCoverColor"
+            Assert.IsNotNull(
+                book.RawDom.SelectSingleNode(
+                    "//div[contains(@class, 'bloom-page') and contains(@class, 'darkCoverColor')]"
+                )
+            );
+        }
+
+        [Test]
+        public void DetectAndMarkDarkCoverColor_ColorIsLight_RemovesDarkCoverColorClass()
+        {
+            _bookDom = new HtmlDom(
+                @"
+				<html>
+					<body>
+						<div class='bloom-page cover coverColor darkCoverColor bloom-frontMatter A4Landscape' data-page='required'>
+						</div>
+					</body>
+				</html>"
+            );
+            var book = CreateBook();
+            book.SetCoverColor("yellow");
+            book.DetectAndMarkDarkCoverColor();
+            // should have removed the "darkCoverColor"
+            AssertThatXmlIn
+                .Dom(book.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[contains(@class, 'bloom-page') and contains(@class, 'darkCoverColor')]"
+                );
+        }
+
+        [Test]
         public void GetCoverColorFromDom_RegularHexCode_Works()
         {
             const string xml =
@@ -2023,13 +2136,28 @@ namespace BloomTests.Book
 				    DIV.bloom-page.coverColor       {               background-color: #abcdef !important;   }
 				</style>
 			</head><body></body></html>";
-            var document = new XmlDocument();
+            var document = SafeXmlDocument.Create();
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("#abcdef", result);
+        }
+
+        [Test]
+        public void GetCoverColorFromDom_NoCoverColorRule_ReturnsSomeColor()
+        {
+            const string xml = @"<html><head></head><body></body></html>";
+            var document = SafeXmlDocument.Create();
+            document.LoadXml(xml);
+
+            // SUT
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
+
+            // should look like a hex color
+            Assert.IsTrue(result.StartsWith("#"));
+            Assert.IsTrue(result.Length == 7);
         }
 
         [Test]
@@ -2046,11 +2174,11 @@ namespace BloomTests.Book
 				    }
 			    </style>
 			</head><body></body></html>";
-            var document = new XmlDocument();
+            var document = SafeXmlDocument.Create();
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("black", result);
         }
@@ -2070,11 +2198,11 @@ namespace BloomTests.Book
 				    }
 			    </style>
 			</head><body></body></html>";
-            var document = new XmlDocument();
+            var document = SafeXmlDocument.Create();
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("#ffd4d4", result);
         }
@@ -2739,16 +2867,13 @@ namespace BloomTests.Book
                 ); // fixed!
 
             // Check that all the audio ids outside the data-div are unique.
-            var audioNodes = book.RawDom
-                .SafeSelectNodes(
-                    "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
-                )
-                .Cast<XmlNode>()
-                .ToList();
+            var audioNodes = book.RawDom.SafeSelectNodes(
+                "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
+            );
             HashSet<string> uniqueIds = new HashSet<string>();
             foreach (var node in audioNodes)
             {
-                var id = node.GetStringAttribute("id");
+                var id = node.GetAttribute("id");
                 uniqueIds.Add(id);
             }
             Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1)); // NB: bookTitle occurs twice
@@ -2931,16 +3056,13 @@ namespace BloomTests.Book
                 ); // fixed!
 
             // Check that all the audio ids outside the data-div are unique.
-            var audioNodes = book.RawDom
-                .SafeSelectNodes(
-                    "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
-                )
-                .Cast<XmlNode>()
-                .ToList();
+            var audioNodes = book.RawDom.SafeSelectNodes(
+                "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
+            );
             HashSet<string> uniqueIds = new HashSet<string>();
             foreach (var node in audioNodes)
             {
-                var id = node.GetStringAttribute("id");
+                var id = node.GetAttribute("id");
                 uniqueIds.Add(id);
             }
             Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1)); // NB: bookTitle occurs twice in xMatter pages
@@ -3183,16 +3305,13 @@ namespace BloomTests.Book
                 ); // fixed!
 
             // Check that all the audio ids outside the data-div are unique.
-            var audioNodes = book.RawDom
-                .SafeSelectNodes(
-                    "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
-                )
-                .Cast<XmlNode>()
-                .ToList();
+            var audioNodes = book.RawDom.SafeSelectNodes(
+                "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
+            );
             HashSet<string> uniqueIds = new HashSet<string>();
             foreach (var node in audioNodes)
             {
-                var id = node.GetStringAttribute("id");
+                var id = node.GetAttribute("id");
                 uniqueIds.Add(id);
             }
             Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count));
@@ -3410,31 +3529,25 @@ namespace BloomTests.Book
             ); // 2 more files created
 
             // Check that all the audio ids outside the data-div are unique (except bookTitle is used twice).
-            var audioNodes = book.RawDom
-                .SafeSelectNodes(
-                    "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
-                )
-                .Cast<XmlNode>()
-                .ToList();
+            var audioNodes = book.RawDom.SafeSelectNodes(
+                "(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]"
+            );
             var uniqueIds = new HashSet<string>();
             foreach (var node in audioNodes)
             {
-                var id = node.GetStringAttribute("id");
+                var id = node.GetAttribute("id");
                 uniqueIds.Add(id);
             }
             Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1)); // bookTitle shared by two xMatter pages
 
             // Check that all the audio ids inside the data-div are unique.
-            audioNodes = book.RawDom
-                .SafeSelectNodes(
-                    "(//div[@id='bloomDataDiv']//div|//div[@id='bloomDataDiv']//span)[contains(@class,'audio-sentence') and @id]"
-                )
-                .Cast<XmlNode>()
-                .ToList();
+            audioNodes = book.RawDom.SafeSelectNodes(
+                "(//div[@id='bloomDataDiv']//div|//div[@id='bloomDataDiv']//span)[contains(@class,'audio-sentence') and @id]"
+            );
             uniqueIds.Clear();
             foreach (var node in audioNodes)
             {
-                var id = node.GetStringAttribute("id");
+                var id = node.GetAttribute("id");
                 uniqueIds.Add(id);
             }
             Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count));
@@ -4178,7 +4291,7 @@ namespace BloomTests.Book
 					</div>"
             );
             var book = CreateBook();
-            var title = (XmlElement)book.RawDom.SelectSingleNodeHonoringDefaultNS("//title");
+            var title = (SafeXmlElement)book.RawDom.SelectSingleNodeHonoringDefaultNS("//title");
             Assert.AreEqual("original", title.InnerText);
         }
 
@@ -4191,7 +4304,7 @@ namespace BloomTests.Book
             var langs =
                 book.RawDom.SelectSingleNode(
                     "//div[@id='bloomDataDiv']/div[@data-book='languagesOfBook']"
-                ) as XmlElement;
+                ) as SafeXmlElement;
             Assert.AreEqual("English", langs.InnerText);
         }
 
@@ -4790,7 +4903,7 @@ namespace BloomTests.Book
                         .SelectSingleNode(
                             "//div[@id='guid1']/div[contains(@class,'bloom-imageContainer')]"
                         )
-                        .Attributes["data-duration"].Value,
+                        .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
                 0.001,
@@ -4803,7 +4916,7 @@ namespace BloomTests.Book
                         .SelectSingleNode(
                             "//div[@id='guid3']/div[contains(@class,'bloom-imageContainer')]"
                         )
-                        .Attributes["data-duration"].Value,
+                        .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
                 0,
@@ -4859,7 +4972,7 @@ namespace BloomTests.Book
                         .SelectSingleNode(
                             "//div[@id='guid1']/div[contains(@class,'bloom-imageContainer')]"
                         )
-                        .Attributes["data-duration"].Value,
+                        .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
                 0.001,
@@ -4872,7 +4985,7 @@ namespace BloomTests.Book
                         .SelectSingleNode(
                             "//div[@id='guid3']/div[contains(@class,'bloom-imageContainer')]"
                         )
-                        .Attributes["data-duration"].Value,
+                        .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
                 0,
@@ -4885,7 +4998,7 @@ namespace BloomTests.Book
                         .SelectSingleNode(
                             "//div[@id='guid5']/div[contains(@class,'bloom-imageContainer')]"
                         )
-                        .Attributes["data-duration"].Value,
+                        .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
                 0.001,
@@ -5274,9 +5387,9 @@ namespace BloomTests.Book
             var templatePage = new Moq.Mock<IPage>();
 
             templatePage.Setup(x => x.Book).Returns(mockTemplateBook.Object);
-            var d = new XmlDocument();
+            var d = SafeXmlDocument.Create();
             d.LoadXml("<wrapper>" + divContent + "</wrapper>");
-            var pageContentElement = (XmlElement)d.SelectSingleNode("//div");
+            var pageContentElement = (SafeXmlElement)d.SelectSingleNode("//div");
             templatePage.Setup(x => x.GetDivNodeForThisPage()).Returns(pageContentElement);
 
             return templatePage;
@@ -5597,7 +5710,7 @@ namespace BloomTests.Book
                 ".//div[contains(@class, 'bloom-videoContainer')]"
             );
             // Process each discovered videoContainer
-            foreach (XmlElement videoContainerElement in videoContainerElements)
+            foreach (SafeXmlElement videoContainerElement in videoContainerElements)
             {
                 SignLanguageApi.PrepareVideoForPublishing(
                     videoContainerElement,
@@ -5639,7 +5752,7 @@ namespace BloomTests.Book
 
             var dom = new HtmlDom(html);
             var audioSpans = HtmlDom.SelectAudioSentenceElements(dom.Body);
-            Assert.That(audioSpans, Has.Count.EqualTo(1));
+            Assert.That(audioSpans, Has.Length.EqualTo(1));
             Assert.That(audioSpans[0].InnerText, Is.EqualTo("Page 1 Paragraph 2 Sentence 1"));
         }
 
@@ -6048,9 +6161,9 @@ namespace BloomTests.Book
             var xml =
                 "<div class='bloom-page simple-comprehension-quiz enterprise-only bloom-interactive-page side-right A5Portrait bloom-monolingual'></div>";
 
-            XmlDocument doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(xml);
-            XmlElement page = doc.DocumentElement;
+            var page = doc.DocumentElement;
             Assert.True(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
         }
 
@@ -6086,9 +6199,9 @@ namespace BloomTests.Book
         </div>
     </div>";
 
-            XmlDocument doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(xml);
-            XmlElement page = doc.DocumentElement;
+            var page = doc.DocumentElement;
             Assert.False(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
         }
 
@@ -6117,9 +6230,9 @@ namespace BloomTests.Book
         </div>
     </div>";
 
-            XmlDocument doc = new XmlDocument();
+            var doc = SafeXmlDocument.Create();
             doc.LoadXml(xml);
-            XmlElement page = doc.DocumentElement;
+            var page = doc.DocumentElement;
             Assert.False(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
         }
 
@@ -6179,13 +6292,13 @@ namespace BloomTests.Book
             var para =
                 _bookDom.RawDom.SelectSingleNode(
                     "//div[contains(@class,'ImageDescriptionEdit-style')]/p"
-                ) as XmlElement;
+                ) as SafeXmlElement;
             Assert.That(para, Is.Not.Null);
             Assert.That(para.InnerXml, Is.EqualTo("cat lying down looking at you"));
             Assert.That(para.InnerText, Is.EqualTo("cat lying down looking at you"));
             para =
                 _bookDom.RawDom.SelectSingleNode("//div[contains(@class,'normal-style')]/p")
-                as XmlElement;
+                as SafeXmlElement;
             Assert.That(para, Is.Not.Null);
             Assert.That(para.InnerXml, Is.EqualTo("This is a <em>cat</em>.&nbsp;Believe it!"));
             Assert.That(para.InnerText, Is.EqualTo("This is a cat.\u00A0Believe it!"));
@@ -6220,7 +6333,7 @@ namespace BloomTests.Book
             var para =
                 _bookDom.RawDom.SelectSingleNode(
                     "//div[contains(@class,'ImageDescriptionEdit-style')]/p"
-                ) as XmlElement;
+                ) as SafeXmlElement;
             Assert.That(para, Is.Not.Null);
             Assert.That(
                 para.InnerXml,
@@ -6231,7 +6344,7 @@ namespace BloomTests.Book
             Assert.That(para.InnerText, Is.EqualTo("cat lying down looking at you"));
             para =
                 _bookDom.RawDom.SelectSingleNode("//div[contains(@class,'normal-style')]/p")
-                as XmlElement;
+                as SafeXmlElement;
             Assert.That(para, Is.Not.Null);
             Assert.That(
                 para.InnerXml,
@@ -6308,7 +6421,7 @@ namespace BloomTests.Book
             var para =
                 _bookDom.RawDom.SelectSingleNode(
                     "//div[contains(@class,'ImageDescriptionEdit-style')]/p"
-                ) as XmlElement;
+                ) as SafeXmlElement;
             Assert.That(para, Is.Not.Null);
             Assert.That(para.InnerXml, Is.EqualTo("cat lying down looking at the reader"));
             Assert.That(para.InnerText, Is.EqualTo("cat lying down looking at the reader"));
@@ -6359,7 +6472,7 @@ namespace BloomTests.Book
             var para =
                 _bookDom.RawDom.SelectSingleNode(
                     "//div[contains(@class,'ImageDescriptionEdit-style')]/p"
-                ) as XmlElement;
+                ) as SafeXmlElement;
             Assert.That(para, Is.Not.Null);
             Assert.That(
                 para.InnerXml,
@@ -6466,19 +6579,19 @@ namespace BloomTests.Book
         [Test]
         public void ElementIsInXMatter_AncestorHasBloomFrontMatter_ReturnsTrue()
         {
-            XmlDocument doc = new XmlDocument();
-            XmlElement body = doc.CreateElement("body");
-            XmlElement xmatterDiv = doc.CreateElement("div");
+            var doc = SafeXmlDocument.Create();
+            var body = doc.CreateElement("body");
+            var xmatterDiv = doc.CreateElement("div");
             xmatterDiv.SetAttribute("class", "bloom-frontMatter");
             body.AppendChild(xmatterDiv);
-            XmlElement parentDiv = doc.CreateElement("div");
+            var parentDiv = doc.CreateElement("div");
             xmatterDiv.AppendChild(parentDiv);
-            XmlElement div = doc.CreateElement("div");
+            var div = doc.CreateElement("div");
             parentDiv.AppendChild(div);
 
             Assert.That(Bloom.Book.Book.ElementIsInXMatter(div), Is.True);
 
-            XmlElement innerDiv = doc.CreateElement("div");
+            var innerDiv = doc.CreateElement("div");
             div.AppendChild(innerDiv);
 
             Assert.That(Bloom.Book.Book.ElementIsInXMatter(innerDiv), Is.True);
@@ -6487,18 +6600,18 @@ namespace BloomTests.Book
         [Test]
         public void ElementIsInXMatter_NoAncestorHasBloomFrontMatter_ReturnsFalse()
         {
-            XmlDocument doc = new XmlDocument();
-            XmlElement body = doc.CreateElement("body");
-            XmlElement nonXmatterDiv = doc.CreateElement("div");
+            var doc = SafeXmlDocument.Create();
+            var body = doc.CreateElement("body");
+            var nonXmatterDiv = doc.CreateElement("div");
             body.AppendChild(nonXmatterDiv);
-            XmlElement parentDiv = doc.CreateElement("div");
+            var parentDiv = doc.CreateElement("div");
             nonXmatterDiv.AppendChild(parentDiv);
-            XmlElement div = doc.CreateElement("div");
+            var div = doc.CreateElement("div");
             parentDiv.AppendChild(div);
 
             Assert.That(Bloom.Book.Book.ElementIsInXMatter(div), Is.False);
 
-            XmlElement innerDiv = doc.CreateElement("div");
+            var innerDiv = doc.CreateElement("div");
             div.AppendChild(innerDiv);
 
             Assert.That(Bloom.Book.Book.ElementIsInXMatter(innerDiv), Is.False);
@@ -6507,8 +6620,8 @@ namespace BloomTests.Book
         [Test]
         public void ElementIsInXMatter_ElementIsBody_ReturnsFalse()
         {
-            XmlDocument doc = new XmlDocument();
-            XmlElement body = doc.CreateElement("body");
+            var doc = SafeXmlDocument.Create();
+            var body = doc.CreateElement("body");
 
             Assert.That(Bloom.Book.Book.ElementIsInXMatter(body), Is.False);
         }

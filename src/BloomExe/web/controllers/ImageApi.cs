@@ -16,6 +16,7 @@ using SIL.Windows.Forms.ClearShare;
 using L10NSharp;
 using SIL.IO;
 using SIL.Xml;
+using Bloom.SafeXml;
 
 namespace Bloom.web.controllers
 {
@@ -59,8 +60,8 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             // These are both just retrieving information about files, apart from using _bookSelection.CurrentSelection.FolderPath.
-            apiHandler.RegisterEndpointLegacy("image/info", HandleImageInfo, false);
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler("image/info", HandleImageInfo, false);
+            apiHandler.RegisterEndpointHandler(
                 "image/imageCreditsForWholeBook",
                 HandleCopyImageCreditsForWholeBook,
                 false
@@ -76,7 +77,7 @@ namespace Bloom.web.controllers
         /// <param name="domBody"></param>
         /// <returns></returns>
         public Dictionary<string, List<string>> GetFilteredImageNameToPagesDictionary(
-            XmlNode domBody,
+            SafeXmlNode domBody,
             IEnumerable<string> langs = null
         )
         {
@@ -320,14 +321,14 @@ namespace Bloom.web.controllers
         /// </summary>
         /// <param name="domBody"></param>
         public static Dictionary<string, List<string>> GetWhichImagesAreUsedOnWhichPages(
-            XmlNode domBody,
+            SafeXmlNode domBody,
             IEnumerable<string> langs
         )
         {
             var imageNameToPages = new Dictionary<string, List<string>>();
             foreach (
-                XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(
-                    domBody as XmlElement
+                SafeXmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(
+                    domBody as SafeXmlElement
                 )
             )
             {
@@ -355,19 +356,19 @@ namespace Bloom.web.controllers
             return imageNameToPages;
         }
 
-        private static bool IsImgNotInAPage(XmlElement imgElement)
+        private static bool IsImgNotInAPage(SafeXmlElement imgElement)
         {
             return !(
                 imgElement.SelectSingleNode("ancestor-or-self::div[contains(@class,'bloom-page')]")
-                is XmlElement
+                is SafeXmlElement
             );
         }
 
-        private static bool IsImgInsideBrandingElement(XmlElement imgElement)
+        private static bool IsImgInsideBrandingElement(SafeXmlElement imgElement)
         {
             return imgElement.SelectSingleNode(
                     "ancestor-or-self::div[contains(@data-book,'branding')]"
-                ) is XmlElement;
+                ) is SafeXmlElement;
         }
 
         /// <summary>

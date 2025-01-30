@@ -1,6 +1,8 @@
 include ../bloom-foundation-mixins
 include preview-xmatter-mixins.pug
 
+- const kImageOnLeftId = '7b192144-527c-417c-a2cb-1fb5e78bf38a';
+
 mixin standardStyles
   style(type="text/css" title="userModifiedStyles")
     = '\n'
@@ -97,7 +99,7 @@ mixin include-standard-pages
          +fieldx
        +lower(50)
          +image
-   +page-splittable-choice-custom('Picture on Left', 'For use with Landscape orientation.')#7b192144-527c-417c-a2cb-1fb5e78bf38a&attributes(attributes)
+   +page-splittable-choice-custom('Picture on Left', 'For use with Landscape orientation.')(id=kImageOnLeftId)&attributes(attributes)
      +stackLeftRight
        +left
          +imagex

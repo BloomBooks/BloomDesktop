@@ -800,6 +800,10 @@
         <source xml:lang="en">Templates</source>
         <note>ID: CollectionTab.Templates</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.Specialized Templates" sil:dynamic="true">
+        <source xml:lang="en">Specialized Templates</source>
+        <note>ID: CollectionTab.Specialized Templates</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing">
         <source xml:lang="en">Title Missing</source>
         <note>ID: CollectionTab.TitleMissing</note>
@@ -1805,11 +1809,15 @@
         <note>The {0} is replaced by the filename of the picture.</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
-        <source xml:lang="en">Change Image</source>
+        <source xml:lang="en">Change image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.ChooseImage">
+        <source xml:lang="en">Choose image from your computer...</source>
+        <note>ID: EditTab.Image.ChooseImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true">
-        <source xml:lang="en">Copy Image</source>
+        <source xml:lang="en">Copy image</source>
         <note>ID: EditTab.Image.CopyImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true">
@@ -1832,20 +1840,35 @@
         <note>label of a button to click to display a website with more information</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
-        <source xml:lang="en">Cut Image</source>
+        <source xml:lang="en">Cut image</source>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
-        <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
+        <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true">
+        <source xml:lang="en">Set image information...</source>
+        <note>ID: EditTab.Image.EditMetadataOverlay</note>
+        <note xml:lang="en">Invokes the same command as EditMetadata; used in overlay toolbox submenu</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true">
+        <source xml:lang="en">Image credits, copyright, &amp; license</source>
+        <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
+        <note xml:lang="en">Appears in smaller, lighter text right under EditMetadataOverlay</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This sound will play when the item is touched.</source>
+        <note>ID: EditTab.Image.PlayWhenTouched</note>
+        <note xml:lang="en">Appears in smaller, lighter text right under sound file's name in popup menu</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
         <note>ID: EditTab.Image.MissingInfo</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
-        <source xml:lang="en">Paste Image</source>
+        <source xml:lang="en">Paste image</source>
         <note>ID: EditTab.Image.PasteImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
@@ -2071,9 +2094,30 @@
         <source xml:lang="en">Drag any of these overlays onto the image:</source>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
+        <source xml:lang="en">Change Shape</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.ChangeShape</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
+        <source xml:lang="en">Crop</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
+        <source xml:lang="en">Resize</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
+        <source xml:lang="en">Shift Picture</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Shift</note>
+        <note>Or you could translate "position picture". The control is used when a picture has been made bigger than its framing overlay by cropping and causes the picture to move without changing the shape of the overlay so that a different part of it can be seen.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
-        <source xml:lang="en">Add Child Bubble</source>
+        <source xml:lang="en">Add child bubble</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.AddChildBubble</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.AutoHeight" sil:dynamic="true">
+        <source xml:lang="en">Auto height</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.AutoHeight</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background Color</source>
@@ -2085,10 +2129,22 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
         <note>A background color that looks like old lace</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true">
+        <source xml:lang="en">Choose video from your computer...</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ChooseVideo</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true">
+        <source xml:lang="en">Copy text</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
         <note>Tooltip for the bubble Duplicate icon</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
+        <source xml:lang="en">Format text...</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
         <source xml:lang="en">There are no options for this kind of overlay</source>
@@ -2104,6 +2160,22 @@
         <source xml:lang="en">None</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true">
+        <source xml:lang="en">Paste text</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayEarlier" sil:dynamic="true">
+        <source xml:lang="en">Play Earlier</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PlayEarlier</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayLater" sil:dynamic="true">
+        <source xml:lang="en">Play Later</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.PlayLater</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.RecordYourself" sil:dynamic="true">
+        <source xml:lang="en">Record yourself...</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.RecordYourself</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true">
         <source xml:lang="en">Rounded Corners</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.RoundedCorners</note>
@@ -2113,6 +2185,7 @@
         <source xml:lang="en">Show Sign Language Tool</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool</note>
         <note>This button shows if a video bubble is selected.</note>
+        <note>Obsolete as of Bloom 6.1</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true">
         <source xml:lang="en">Show Tail</source>
@@ -3109,6 +3182,10 @@
       <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true">
         <source xml:lang="en">Device16x9 Portrait</source>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true">
+        <source xml:lang="en">Half Folio Portrait</source>
+        <note>ID: LayoutChoices.HalfFolioPortrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true">
         <source xml:lang="en">HalfLetter Landscape</source>
@@ -4462,7 +4539,7 @@
         <source xml:lang="en">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web.</source>
         <note>ID: PublishTab.FontProblem.License</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.Microsoft" translate="no">
+      <trans-unit id="PublishTab.FontProblem.Microsoft">
         <source xml:lang="en">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</source>
         <note>ID: PublishTab.FontProblem.Microsoft</note>
         <note>This shows in the popup when hovering over a font that Microsoft owns (or distributes).</note>
@@ -4470,6 +4547,10 @@
       <trans-unit id="PublishTab.FontProblem.Result">
         <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</source>
         <note>ID: PublishTab.FontProblem.Result</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog">
+        <source xml:lang="en">Check the Fonts section of the Book Settings dialog to locate this font.</source>
+        <note>ID: PublishTab.FontProblem.CheckInBookSettingsDialog</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice">
         <source xml:lang="en">There was a problem uploading your book.</source>
@@ -4697,7 +4778,7 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.UploadCollisionDialog.MoreLanguages</note>
         <note>This is the dialog subtitle.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.CancelUpload" >
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.CancelUpload">
         <source xml:lang="en">Yes, these are the same book -- Cancel upload for now</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.CancelUpload</note>
         <note>This is the label on a radio button.</note>
@@ -4724,7 +4805,7 @@ Do you want to go ahead?</note>
         <note>This is the label on a radio button.</note>
         <note>Obsolete as of Bloom 6.0 (replaced by similar PublishTab.UploadCollisionDialog.Radio.SameBook2)</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2" >
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2">
         <source xml:lang="en">Yes, I want to update this book</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook2</note>
         <note>This is the label on a radio button. Slightly modified from previous PublishTab.UploadCollisionDialog.Radio.SameBook.</note>
@@ -5971,6 +6052,10 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Question" sil:dynamic="true">
         <source xml:lang="en">Put a comprehension question here</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
+      </trans-unit>
+      <trans-unit id="Topic" sil:dynamic="true">
+        <source xml:lang="en">Topic</source>
+        <note>ID: Topic</note>
       </trans-unit>
       <trans-unit id="TopicChooser.Title" sil:dynamic="true">
         <source xml:lang="en">Choose Topic</source>

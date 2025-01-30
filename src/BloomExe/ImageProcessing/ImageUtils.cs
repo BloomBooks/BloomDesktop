@@ -291,16 +291,25 @@ namespace Bloom.ImageProcessing
 
         public static void ReportImageMetadataProblem(string filePath, Exception ex)
         {
-            var msgFmt = LocalizationManager.GetString("EditTab.ImageMetadata.Corrupt",
-                "Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer.");
+            var msgFmt = LocalizationManager.GetString(
+                "EditTab.ImageMetadata.Corrupt",
+                "Bloom had a problem with {0}. The file may be corrupted. Please try another image, or try with Bloom 6.0 or newer."
+            );
             var msg = string.Format(msgFmt, Path.GetFileName(filePath));
-            var btnLabel = LocalizationManager.GetString("EditTab.ImageMetadata.MoreInfo",
-                "More Information");
-            var settings = new NotifyUserOfProblemSettings(AllowSendReport.Disallow,
+            var btnLabel = LocalizationManager.GetString(
+                "EditTab.ImageMetadata.MoreInfo",
+                "More Information"
+            );
+            var settings = new NotifyUserOfProblemSettings(
+                AllowSendReport.Disallow,
                 btnLabel,
-                (str, ex) => {
-                    SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org/image-license-problem");
-                });
+                (str, ex) =>
+                {
+                    SIL.Program.Process.SafeStart(
+                        "https://docs.bloomlibrary.org/image-license-problem"
+                    );
+                }
+            );
             BloomErrorReport.NotifyUserOfProblem(msg, ex, settings);
         }
 
@@ -399,9 +408,21 @@ namespace Bloom.ImageProcessing
                                 isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
                             );
                     }
-                    else
+                    // I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
+                    // In that case, we don't need to save it again. I checked that when we
+                    // use the old cropping tool to create a different image, it doesn't take this path.
+                    // As far as I can tell isSameFile is only true if we are copying the file on top of
+                    // itself, and that can't ever be useful.
+                    else if (!isSameFile)
                     {
-                        RobustFile.Copy(sourcePath, destinationPath);
+                        // Pasting an image can result in sourcePath being null.
+                        if (sourcePath == null)
+                            imageInfo.Image.Save(
+                                destinationPath,
+                                isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
+                            );
+                        else
+                            RobustFile.Copy(sourcePath, destinationPath);
                     }
                 }
                 else
@@ -1344,6 +1365,64 @@ namespace Bloom.ImageProcessing
             internal bool MakeTransparent;
             internal int JpegQuality; // 0 means use input jpeg's quality
             internal string ProfilesToStrip; // null means don't strip any profiles
+            internal Rectangle cropRectangle;
+        }
+
+        public static bool TryGetImageSize(string path, out Size size)
+        {
+            size = new Size(0, 0);
+            try
+            {
+                var arguments = "identify -format %P \"" + path + "\"";
+                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                    GetGraphicsMagickPath(),
+                    arguments,
+                    "",
+                    600,
+                    new NullProgress()
+                );
+                if (result.ExitCode == 0)
+                {
+                    var parts = result.StandardOutput.Split('x');
+                    if (parts.Length == 2)
+                    {
+                        size.Width = int.Parse(parts[0]);
+                        size.Height = int.Parse(parts[1]);
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return false;
+            }
+        }
+
+        public static ExecutionResult CropImage(
+            string sourcePath,
+            string destPath,
+            Rectangle cropRectangle
+        )
+        {
+            var options = new GraphicsMagickOptions
+            {
+                Size = new Size(0, 0), // preserve current size (no scaling)
+                MakeOpaque = false,
+                MakeTransparent = false,
+                JpegQuality = 0, // same as input
+                ProfilesToStrip = null,
+                cropRectangle = cropRectangle
+            };
+            var result = RunGraphicsMagick(sourcePath, destPath, options);
+            if (result.ExitCode != 0)
+            {
+                LogGraphicsMagickFailure(result);
+            }
+
+            return result;
         }
 
         private static ExecutionResult RunGraphicsMagick(
@@ -1383,6 +1462,16 @@ namespace Bloom.ImageProcessing
                     argsBldr.Append(
                         " -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
                     );
+                if (options.cropRectangle != Rectangle.Empty)
+                {
+                    argsBldr.AppendFormat(
+                        " -crop {0}x{1}+{2}+{3}",
+                        options.cropRectangle.Width,
+                        options.cropRectangle.Height,
+                        options.cropRectangle.X,
+                        options.cropRectangle.Y
+                    );
+                }
 
                 // http://www.graphicsmagick.org/GraphicsMagick.html#details-profile states:
                 // Use +profile profile_name to remove the respective profile.

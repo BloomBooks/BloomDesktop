@@ -19,11 +19,11 @@ import TemplateBookPages from "./TemplateBookPages";
 import { useEnterpriseAvailable } from "../react_components/requiresBloomEnterprise";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 
-interface IPageChooserdialogProps {
+interface IPageChooserDialogProps {
     forChooseLayout: boolean;
 }
 
-export interface IGroupData {
+export interface ITemplateBookInfo {
     templateBookFolderUrl: string;
     templateBookPath: string;
 }
@@ -45,10 +45,10 @@ export const getTemplatePageImageSource = (
 
     const urlPrefix = getBloomApiPrefix();
 
-    //NB:  without the generateThumbnaiIfNecessary=true, we can run out of worker threads and get deadlocked.
+    //NB:  without the generateThumbnailIfNecessary=true, we can run out of worker threads and get deadlocked.
     //See EnhancedImageServer.IsRecursiveRequestContext
     return (
-        `${urlPrefix}pageTemplateThumbnail/` +
+        `${urlPrefix}pageTemplateThumbnail?path=` +
         encodeURIComponent(templateBookFolderUrl) +
         "/template/" +
         encodeURIComponent(label) +
@@ -57,7 +57,7 @@ export const getTemplatePageImageSource = (
             : orientation === "square"
             ? "-square"
             : "") +
-        ".svg?generateThumbnaiIfNecessary=true"
+        ".svg?generateThumbnailIfNecessary=true"
     );
 };
 
@@ -70,7 +70,7 @@ export const getTemplatePageImageSource = (
 //   \"groups\":[{\"templateBookFolderUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book\",
 //                     \"templateBookUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book/Basic Book.htm\"}]}"
 
-export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps> = props => {
+export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps> = props => {
     const [open, setOpen] = useState(true);
     const [redoCounter, setRedoCounter] = useState(0);
 
@@ -100,7 +100,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
         undefined
     );
     const [orientation, setOrientation] = useState("Portrait");
-    const [templateBookUrls, setTemplateBookUrls] = useState<IGroupData[]>([]);
+    const [templateBooks, setTemplateBooks] = useState<ITemplateBookInfo[]>([]);
     const [selectedTemplatePageDiv, setSelectedTemplatePageDiv] = useState<
         HTMLDivElement | undefined
     >(undefined);
@@ -142,7 +142,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                 const imgSrc = img.src.replace(/%2F/g, "/");
                 // The 'if' condition here is to make sure we're dealing with the correct image element.
                 // We use 'startsWith' because the original 'imgSrc' has the parameter
-                // "?generateThumbnaiIfNecessary=true" tacked onto the end
+                // "?generateThumbnailIfNecessary=true" tacked onto the end
                 // [See getTemplatePageImageSource()], whereas 'updatedThumbUrl' is just the url
                 // to the updated thumbnail image.
                 if (imgSrc.startsWith(updatedThumbUrl)) {
@@ -159,26 +159,10 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
     useEffect(() => {
         WebSocketManager.addListener("page-chooser", thumbnailUpdatedListener);
         get("pageTemplates", result => {
-            const templatesJSON = result.data;
-            const initializationObject = templatesJSON;
-            // If provided, this is the last page that was added with the AddPage dialog, we'll
-            // have the dialog select it initially.
-            const defaultPageId = initializationObject["defaultPageToSelect"];
-            const arrayOfBookUrls = initializationObject["groups"].map(
-                (group: IGroupData) => {
-                    return {
-                        templateBookFolderUrl: group.templateBookFolderUrl,
-                        templateBookPath: group.templateBookPath
-                    };
-                }
-            );
-            // In reading:
-            // https://stackoverflow.com/questions/56885037/react-batch-updates-for-multiple-setstate-calls-inside-useeffect-hook
-            // I believe these 3 setState functions will be batched and performed at once.
-            // DefaultPageId will usually still be undefined, unless we've already opened the dialog this run.
-            setDefaultPageId(defaultPageId);
-            setOrientation(initializationObject["orientation"]);
-            setTemplateBookUrls(arrayOfBookUrls);
+            const results = result.data;
+            setDefaultPageId(results["defaultPageToSelect"]);
+            setOrientation(results["orientation"]);
+            setTemplateBooks(results["templateBooks"]);
         });
         return () => {
             WebSocketManager.removeListener(
@@ -272,7 +256,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
 
     const bookLoadedHandler = () => {
         const newCount = templateBooksLoadedCount + 1;
-        if (newCount === templateBookUrls.length) {
+        if (newCount === templateBooks.length) {
             setTemplateBooksLoadedCount(0);
             setAllPagesLoaded(true);
         } else if (!allPagesLoaded) {
@@ -281,10 +265,10 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
     };
 
     const getTemplateBooks = (): JSX.Element[] | undefined => {
-        if (templateBookUrls.length === 0) {
+        if (templateBooks.length === 0) {
             return undefined;
         }
-        return templateBookUrls.map((groupData, index) => {
+        return templateBooks.map((book, index) => {
             return (
                 <TemplateBookPages
                     selectedPageId={
@@ -296,7 +280,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                         selectedTemplatePageDiv ? undefined : defaultPageId
                     }
                     firstGroup={index === 0}
-                    groupUrls={groupData}
+                    templateBook={book}
                     orientation={orientation}
                     forChooseLayout={props.forChooseLayout}
                     key={index}
@@ -440,10 +424,10 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
     };
 
     const getFolderForSelectedBook = (): string => {
-        if (templateBookUrls.length === 0 || !selectedTemplateBookPath) {
+        if (templateBooks.length === 0 || !selectedTemplateBookPath) {
             return ""; // paranoia; won't happen
         }
-        return templateBookUrls.filter(
+        return templateBooks.filter(
             group => group.templateBookPath === selectedTemplateBookPath
         )[0].templateBookFolderUrl;
     };
@@ -510,7 +494,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                         max-width: 425px;
                     `}
                 >
-                    {templateBookUrls.length > 0 && getTemplateBooks()}
+                    {templateBooks.length > 0 && getTemplateBooks()}
                 </div>
                 <div
                     css={css`

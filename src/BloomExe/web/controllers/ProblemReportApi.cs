@@ -157,7 +157,7 @@ namespace Bloom.web.controllers
             // This one is an exception: it's not used BY the problem report dialog, but to launch one
             // from Javascript. However, it also must not require the lock, because if it holds it,
             // no calls that need it can run (such as one put forth by the Cancel button).
-            apiHandler.RegisterEndpointLegacy(
+            apiHandler.RegisterEndpointHandler(
                 "problemReport/showDialog",
                 HandleShowDialog,
                 true,

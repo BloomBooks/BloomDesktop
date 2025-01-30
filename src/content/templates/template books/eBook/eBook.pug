@@ -1,0 +1,39 @@
+include ../standard-page-mixins.pug
+
+//- This is an 'override' from bloom-foundation-mixins.pug
+//- that allows us to use its mixins that would otherwise
+//- put in a5portrait
+mixin pageWithJustPageSize
+	.Device16x9Landscape&attributes(attributes)
+		block
+
+doctype html
+html
+	head
+		+metadata-standard
+		//- This "Book" name is used for saving the file, until the user enters a title
+		meta(name='defaultNameForDerivedBooks', content='Book')
+		meta(name='bloomBookId', content='e3ad0a12-cf9c-412e-be55-0d5c958efbf4')
+
+		//- Here we specify this file as the source even though we aren't offering
+		//- any pages just so that we can suggest an appropriate default page when
+		//- they go to add a page for the first time.
+		meta(name='pageTemplateSource', content='eBook')
+		meta(name='defaultTemplatePageId', content=kImageOnLeftId)
+
+		//- Without the maintenanceLevel, we'd lose the appearance settings becuase
+		//- Bloom would assume we are too old to know about it
+		meta(name='maintenanceLevel', content='4')
+		title 'eBook'
+
+		//- eBook is just a preset for Basic book
+		+stylesheets('Basic Book.css')
+		+standardStyles
+
+	body
+		+dataDiv
+			+bookVariable-title('en', 'eBook')
+			+bookVariable('styleNumberSequence', '*', '0')
+
+		+preview-outsideFrontCover
+

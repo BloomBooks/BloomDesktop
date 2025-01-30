@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,22 +16,20 @@ using Bloom.Collection;
 using Bloom.ErrorReporter;
 using Bloom.FontProcessing;
 using Bloom.MiscUI;
+using Bloom.SafeXml;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
-using Sentry.Protocol;
 using SIL.Code;
-using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Miscellaneous;
-using SIL.Xml;
 
 namespace Bloom.Edit
 {
@@ -311,13 +308,13 @@ namespace Bloom.Edit
 
         /// <summary>
         /// Given the body of the editable page and the CSS for any user-defined styles (from the
-        /// editable page browser), this method creates a new XmlDocument that contains the same state.
+        /// editable page browser), this method creates a new SafeXmlDocument that contains the same state.
         /// It does some additional cleanup of things that get added to the page as UI controls
         /// to support editing. (Enhance: it would be nice if ALL the cleanup happened in one place,
         /// probably the Javascript method that retrieves the page content).
         /// (Nicer still if cleanup didn't leave the page in an invalid state, see BL-13502.)
         /// </summary>
-        private XmlDocument GetCleanCurrentPageFromBodyAndCss(
+        private SafeXmlDocument GetCleanCurrentPageFromBodyAndCss(
             string bodyHtml,
             string userCssContent
         )
@@ -330,7 +327,7 @@ namespace Bloom.Edit
                 throw new ApplicationException("Got an empty body while trying to save page");
 
             var content = bodyHtml;
-            XmlDocument dom;
+            SafeXmlDocument dom;
 
             //todo: deal with exception that can come out of this
             dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
@@ -346,7 +343,7 @@ namespace Bloom.Edit
 
             // We've seen pages get emptied out, and we don't know why. This is a safety check.
             // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
-            if (BookStorage.CheckForEmptyMarginBoxOnPage(browserDomPage as XmlElement))
+            if (BookStorage.CheckForEmptyMarginBoxOnPage(browserDomPage as SafeXmlElement))
             {
                 //We don't want to save the empty page.
                 // This has been logged and reported to the user; we would prefer not to report it again, but we need the exception
@@ -360,7 +357,7 @@ namespace Bloom.Edit
             return dom;
         }
 
-        private void SaveCustomizedCssRules(XmlDocument dom, string userCssContent)
+        private void SaveCustomizedCssRules(SafeXmlDocument dom, string userCssContent)
         {
             // Yes, this wipes out everything else in the head. At this point, the only things
             // we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
@@ -370,7 +367,7 @@ namespace Bloom.Edit
         }
 
         private Form _oldActiveForm;
-        private XmlElement _pageDivFromCopyPage;
+        private SafeXmlElement _pageDivFromCopyPage;
         private string _bookPathFromCopyPage;
 
         internal BloomWebSocketServer EditModelSocketServer
@@ -598,7 +595,11 @@ namespace Bloom.Edit
         private IPage GetPageToShowAfterDeletion(IPage page)
         {
             var pages = CurrentBook.GetPages().ToList();
-            var index = pages.IndexOf(page);
+            // pages.IndexOf(page) can fail here when a new page is removed after being relocated.
+            // Apparently the page object is modified when it is relocated, but the page chooser's
+            // copy of the page object is not updated.  IndexOf requires matching actual objects,
+            // not just objects with the same Id.  So we find the page index by Id.  See BL-14133.
+            var index = pages.FindIndex(p => p.Id == page.Id);
             Guard.Against(index < 0, "Couldn't find page in cache");
 
             if (index == pages.Count - 1) //if it's the last page
@@ -621,6 +622,7 @@ namespace Bloom.Edit
                 // Moving a page actually changes its html to have the new left/right side and page number,
                 // The Book takes care of that, but now we need to actually reload it from the dom.
                 RefreshDisplayOfCurrentPage();
+                _view.UpdatePageList(false);
 
                 Analytics.Track("Relocate Page");
                 Logger.WriteEvent("Relocate Page");
@@ -705,11 +707,17 @@ namespace Bloom.Edit
             }
         }
 
+        private bool IsFrontCover
+        {
+            get { return _pageSelection?.CurrentSelection?.IsFrontCoverPage ?? false; }
+        }
+
         // For now, the same rules govern copying hyperlinks. Working hyperlinks to xmatter pages are difficult,
         // since each bring-book-up-to-date recreates the xmatter pages and gives them different IDs, so we'd need
         // a different strategy for identifying them. And then, choosing a different xmatter pack might cause a page
         // to cease to exist altogether.
-        public bool CanCopyHyperlink => CanCopyPage;
+        // The only exception is the front cover page, which uses a magic value instead of the page id.
+        public bool CanCopyHyperlink => CanCopyPage || IsFrontCover;
 
         public bool CanDeletePage
         {
@@ -1047,12 +1055,12 @@ namespace Bloom.Edit
                     return;
                 }
 
-                for (int i = 0; i < nodeList.Count; ++i)
+                for (int i = 0; i < nodeList.Length; ++i)
                 {
-                    var node = nodeList.Item(i);
+                    var node = nodeList[i];
 
                     // GetOptionalStringAttribute needs this to be non-null, or else an exception will happen
-                    if (node.Attributes == null)
+                    if (node.AttributeNames == null)
                     {
                         continue;
                     }
@@ -1101,7 +1109,7 @@ namespace Bloom.Edit
             var imgElt = _pageSelection.CurrentSelection
                 .GetDivNodeForThisPage()
                 .SafeSelectNodes($".//img[@src='{match}']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             if (imgElt == null)
                 return; // log? unexpected
@@ -1116,7 +1124,7 @@ namespace Bloom.Edit
         private DataSet _pageDataBeforeEdits;
         private string _featureRequirementsBeforeEdits;
 
-        private DataSet GetPageData(XmlNode page)
+        private DataSet GetPageData(SafeXmlNode page)
         {
             var data = new DataSet();
             CurrentBook.BookData.GatherDataItemsFromXElement(
@@ -1167,7 +1175,7 @@ namespace Bloom.Edit
         private static void AddMissingCopyrightNoticeIfNeeded(Book.Book book, HtmlDom dom)
         {
             var licenseBlock = dom.SafeSelectNodes(".//div[@class='licenseBlock']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             if (licenseBlock == null)
                 return; // not the relevant page
@@ -1177,10 +1185,10 @@ namespace Bloom.Edit
             // suggests we want to know who says it is CC0. So commenting that aspect out.
             var copyrightOk = metadata.IsMinimallyComplete; // || metadata.License?.Token == "cc0";
             var firstElementChild = licenseBlock.ChildNodes
-                .Cast<XmlNode>()
-                .FirstOrDefault(x => x is XmlElement);
+                .Cast<SafeXmlNode>()
+                .FirstOrDefault(x => x is SafeXmlElement);
             var haveMissingNotice =
-                firstElementChild?.Attributes?["class"]?.Value == "ui-missingCopyrightNotice";
+                firstElementChild?.GetAttribute("class") == "ui-missingCopyrightNotice";
             if (haveMissingNotice && copyrightOk)
                 licenseBlock.RemoveChild(firstElementChild);
             else if (!copyrightOk && !haveMissingNotice)
@@ -1204,10 +1212,8 @@ namespace Bloom.Edit
         private static void InsertLabelAndLayoutTogglePane(HtmlDom dom)
         {
             // Add an empty div that will provide space for the page label and origami toggle above the displayed page.
-            var node = dom.RawDom.CreateNode(XmlNodeType.Element, "div", "");
-            var attr = dom.RawDom.CreateAttribute("id");
-            attr.Value = "labelAndLayoutPane";
-            node.Attributes.Append(attr);
+            var node = dom.RawDom.CreateElement("div");
+            node.SetAttribute("id", "labelAndLayoutPane");
             dom.Body.InsertBefore(node, dom.Body.FirstChild);
         }
 
@@ -1245,7 +1251,7 @@ namespace Bloom.Edit
             var body = dom.Body;
             var pageDiv =
                 body.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]")
-                as XmlElement;
+                as SafeXmlElement;
             if (pageDiv != null)
             {
                 var outerDiv = InsertContainingScalingDiv(body, pageDiv);
@@ -1267,7 +1273,10 @@ namespace Bloom.Edit
             }
         }
 
-        static XmlElement InsertContainingScalingDiv(XmlElement body, XmlElement pageDiv)
+        static SafeXmlElement InsertContainingScalingDiv(
+            SafeXmlElement body,
+            SafeXmlElement pageDiv
+        )
         {
             // Note: because this extra div is OUTSIDE the page div, we don't have to remove it later,
             // because only the page div and its contents are saved back to the permanent file.
@@ -1368,9 +1377,9 @@ namespace Bloom.Edit
 
         private void EnsureLevelAttrCorrect()
         {
-            var currentLevel = _currentlyDisplayedBook.OurHtmlDom.Body.Attributes[
+            var currentLevel = _currentlyDisplayedBook.OurHtmlDom.Body.GetAttribute(
                 "data-leveledreaderlevel"
-            ]?.Value;
+            );
             var correctLevel =
                 _currentlyDisplayedBook.BookInfo.MetaData.LeveledReaderLevel.ToString();
             if (correctLevel != currentLevel)
@@ -1546,14 +1555,14 @@ namespace Bloom.Edit
             _stateMachine.ToSavedAndStripped(pageContentData);
         }
 
-        private XmlElement _modifiedPageElement;
+        private SafeXmlElement _modifiedPageElement;
 
         /// <summary>
         /// Receives a DOM (derived the browser) that combines the body of the document of the page
         /// being edited with the CSS that defines the user-defined styles. It updates the current book DOM
         /// to match whatever the browser has.
         /// </summary>
-        public void UpdateBookDomFromBrowserPageContent(XmlDocument docFromBrowser)
+        public void UpdateBookDomFromBrowserPageContent(SafeXmlDocument docFromBrowser)
         {
             //BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
             //this old code:
@@ -1593,9 +1602,10 @@ namespace Bloom.Edit
                 throw err;
             }
             //OK, looks safe, time to save.
-            var newPageData = GetPageData(docFromBrowser);
+            var editedDom = new HtmlDom(docFromBrowser);
+            var newPageData = GetPageData(editedDom.RawDom);
             _nextSaveMustBeFull = CurrentBook.UpdateDomFromEditedPage(
-                HtmlDom.FromDoc(docFromBrowser),
+                editedDom,
                 out _modifiedPageElement,
                 _nextSaveMustBeFull || NeedToDoFullSave(newPageData)
             );
@@ -1643,36 +1653,7 @@ namespace Bloom.Edit
                     priorImageSrc,
                     imageInfo
                 );
-                // we don't need to wait. Even if our caller kicks off a save, its call to RunJavascriptAsync() will come in after ours.
-                GetEditingBrowser()
-                    .RunJavascriptFireAndForget(
-                        $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
-                    );
-
-                /* We're Saving to the DOM here:
-                 * 1) Makes it transparent if it should be:
-                 *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,
-                 *        so the check to see if we need to make it tranparent says "no".
-                 *        This could probably be done in a smarter way that isn't occuring to me at the moment.
-                 * 2) It is needed if we're going to update the thumbnail (we could live without this)
-                 */
-                SaveThen(
-                    doAfterSaving: () =>
-                    {
-                        _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
-
-                        Logger.WriteMinorEvent(
-                            "Finished ChangePicture {0}",
-                            (object)imageInfo.FileName
-                        );
-                        Analytics.Track("Change Picture");
-                        Logger.WriteEvent("ChangePicture {0}...", (object)imageInfo.FileName);
-                        return _pageSelection.CurrentSelection.Id; // we're not changing pages
-                    },
-                    doIfNotInRightStateToSave: () => { },
-                    forceFullSave: false,
-                    skipSaveToDisk: false // we can wait for the normal save to disk
-                );
+                UpdateImageInBrowser(args);
             }
             catch (Exception e)
             {
@@ -1683,6 +1664,49 @@ namespace Bloom.Edit
                 e.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
                 ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
             }
+        }
+
+        public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
+        {
+            // we don't need to wait. Even if our caller kicks off a save, its call to RunJavascriptAsync() will come in after ours.
+            GetEditingBrowser()
+                .RunJavascriptFireAndForget(
+                    $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
+                );
+
+            /* We're Saving to the DOM here:
+             * 1) Makes it transparent if it should be:
+             *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,
+             *        so the check to see if we need to make it tranparent says "no".
+             *        This could probably be done in a smarter way that isn't occuring to me at the moment.
+             * 2) It is needed if we're going to update the thumbnail (we could live without this)
+             */
+            SaveThen(
+                doAfterSaving: () =>
+                {
+                    try
+                    {
+                        _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+
+                        Logger.WriteMinorEvent("Finished ChangePicture {0}", (object)args.src);
+                        Analytics.Track("Change Picture");
+                        Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
+                    }
+                    catch (Exception e)
+                    {
+                        var msg = LocalizationManager.GetString(
+                            "Errors.ProblemImportingPicture",
+                            "Bloom had a problem importing this picture."
+                        );
+                        e.Data["ProblemImagePath"] = args.src;
+                        ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+                    }
+                    return _pageSelection.CurrentSelection.Id; // we're not changing pages
+                },
+                doIfNotInRightStateToSave: () => { },
+                forceFullSave: false,
+                skipSaveToDisk: false // we can wait for the normal save to disk
+            );
         }
 
         public void SetView(EditingView view)
@@ -1880,7 +1904,8 @@ namespace Bloom.Edit
                 {
                     // We have to clone this so that if the user changes the page after doing the copy,
                     // when they paste they get the page as it was, not as it is now.
-                    _pageDivFromCopyPage = (XmlElement)page.GetDivNodeForThisPage().CloneNode(true);
+                    _pageDivFromCopyPage = (SafeXmlElement)
+                        page.GetDivNodeForThisPage().CloneNode(true);
                     _bookPathFromCopyPage = page.Book.GetPathHtmlFile();
                     return page.Id;
                 },
@@ -1891,8 +1916,11 @@ namespace Bloom.Edit
 
         public void CopyHyperlink(IPage page)
         {
-            var id = page.GetDivNodeForThisPage().GetAttribute("id");
-            var hyperlink = "#" + id;
+            var pageId = page.IsFrontCoverPage
+                ? "cover"
+                : page.GetDivNodeForThisPage().GetAttribute("id");
+            var bookId = _bookSelection.CurrentSelection.ID;
+            var hyperlink = $"bloomnav://book/{bookId}?page={pageId}";
             PortableClipboard.SetText(hyperlink);
         }
 

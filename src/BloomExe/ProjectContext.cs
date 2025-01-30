@@ -151,6 +151,7 @@ namespace Bloom
                                     typeof(PublishModel),
                                     typeof(AudioRecording),
                                     typeof(BookSettingsApi),
+                                    typeof(StylesAndFontsApi),
                                     typeof(SpreadsheetApi),
                                     typeof(BookMetadataApi),
                                     typeof(IndicatorInfoApi),
@@ -436,6 +437,7 @@ namespace Bloom
             _scope.Resolve<PageControlsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<KeyboardingConfigApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<StylesAndFontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookMetadataApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<IndicatorInfoApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ImageApi>().RegisterWithApiHandler(server.ApiHandler);

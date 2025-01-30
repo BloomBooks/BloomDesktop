@@ -93,16 +93,20 @@
         border-radius: 3px;
         border: none !important; // needed to override ui-draggable blue border
 
+        // Keeping this in case it is needed outside edit mode...likely since if it was for edit mode,
+        // it should be in editMode.less. But unlikely because why do we want focus styling except when editing?
+        // If we reinstate it we need to suppress it in editMode, where it conflicts with the new control-container,
+        // resulting in a double border on the left and right (BL-13833).
         // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
         // This rule now works for regular just text bubbles and picture or video over picture.
-        div:focus,
-        video:focus {
-            // Use outline instead of border to avoid changing the size of the box
-            // when the "border" is added for focus.
-            outline: 1px solid @bloom-blue;
-            border: none;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px @bloom-blue;
-        }
+        // div:focus,
+        // video:focus {
+        //     // Use outline instead of border to avoid changing the size of the box
+        //     // when the "border" is added for focus.
+        //     outline: 1px solid @bloom-blue;
+        //     border: none;
+        //     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px @bloom-blue;
+        // }
 
         .bloom-translationGroup {
             background: transparent; // don't want to worry about what background the image has
@@ -140,17 +144,6 @@
                     }
                 }
             }
-            // Allows the language tip to be suppressed by adding a class
-            // (currently, during overflow testing). Don't normally like !important,
-            // but the rules this has to override are complex and trying to make this
-            // rule always more specific means breaking it up and putting it in multiple
-            // places (and is bug prone, if we change the other visibility rules).
-            // We absolutely want these hidden during overflow calculations!
-            .bloom-editable.hideTOPLanguageLabel {
-                &:after {
-                    display: none !important;
-                }
-            }
         }
     }
 }
@@ -173,26 +166,35 @@
         }
     }
 
+    // I'm leaving this here because I don't understand what it was for, and if it was important for
+    // something, maybe we will find this when debugging that. But if we want it at all, it is out
+    // of place in basePage.less, which is supposed to be about things that don't involve editing,
+    // whereas this is about focused boxes.
+    // In any case, putting an outline or box shadow on a text box when it has focus is now undesirable
+    // in edit mode, because we now have the new control-container that wraps the text box and indicates
+    // it has focus, and that box is made a little wider than the text to accommodate the size controls.
+    // So anything sort of border/outline/shadow that matches the box itself results in a double border
+    // on the left and right (BL-13833).
     // The inverse of the above... text boxes which do not have bubbles
     //
     // The case where it doesn't contain a data-bubble attribute at all
-    .bloom-textOverPicture:not([data-bubble]),
-    // The case where it does contain a data-bubble attribute, but the style is none.
-    .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
-        .bloom-translationGroup {
-            .bloom-editable {
-                &:focus {
-                    // Use outline instead of border to avoid changing the size of the box
-                    // when the "border" is added for focus.
-                    // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
-                    outline: 1px solid @bloom-blue;
-                    border: none;
-                    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
-                        0 0 8px @bloom-blue;
-                }
-            }
-        }
-    }
+    // .bloom-textOverPicture:not([data-bubble]),
+    // // The case where it does contain a data-bubble attribute, but the style is none.
+    // .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
+    //     .bloom-translationGroup {
+    //         .bloom-editable {
+    //             &:focus {
+    //                 // Use outline instead of border to avoid changing the size of the box
+    //                 // when the "border" is added for focus.
+    //                 // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
+    //                 outline: 1px solid @bloom-blue;
+    //                 border: none;
+    //                 box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    //                     0 0 8px @bloom-blue;
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 .bloom-showImageDescriptions {
@@ -238,8 +240,11 @@
     // and does NOT specify 'transparent' as the value of that background color.
     // (Of course, there could be other ways of specifying transparent. But AFIK Bloom has never used them.)
     // (Thus, if it has backgroundColors and isn't explicitly transparent the centering applies.)
-    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]),
-    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) {
+    // 3) But if the text overflows the box, we don't want to center it, because that would make the top
+    // and bottom of the text to disappear. So we exclude any box that has text overflow marked.  (Scrolling
+    // doesn't work when the contents are forcibly centered.)  See BL-13606 (and BL-12750).
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow)),
+    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow)) {
         // Center the translationGroup within the textOverPic box,
         // instead of having the 2 px difference all at the bottom.
         display: flex;

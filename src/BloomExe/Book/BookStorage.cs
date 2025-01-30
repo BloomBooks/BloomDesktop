@@ -10,12 +10,13 @@ using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
-using System.Xml;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
+using Bloom.SafeXml;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
@@ -28,7 +29,6 @@ using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Xml;
 using Image = System.Drawing.Image;
 
 namespace Bloom.Book
@@ -55,7 +55,7 @@ namespace Bloom.Book
         HtmlDom Dom { get; }
         void Save();
 
-        void SaveForPageChanged(string pageId, XmlElement modifiedPage);
+        void SaveForPageChanged(string pageId, SafeXmlElement modifiedPage);
         HtmlDom GetRelocatableCopyOfDom(bool withUpdatedStylesheets = true);
         HtmlDom MakeDomRelocatable(HtmlDom dom);
         string SaveHtml(HtmlDom bookDom);
@@ -689,7 +689,7 @@ namespace Bloom.Book
         /// On a long book (e.g., BL-7253) using this makes page switching two seconds faster,
         /// as well as preventing heap fragmentation that eventually leads to running out of memory.
         /// </summary>
-        public void SaveForPageChanged(string pageId, XmlElement modifiedPage)
+        public void SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
         {
             // We've seen pages get emptied out, and we don't know why. This is a safety check.
             // See BL-13078, BL-13120, BL-13123, and BL-13143 for examples.
@@ -1052,6 +1052,15 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "5.5",
                 BloomReaderMinVersion = "1.0",
                 XPath = "//span[contains(@class,'bloom-audio-split-marker')]"
+            },
+            new Feature()
+            {
+                FeatureId = "croppedImages",
+                FeaturePhrase = "Cropped images",
+                BloomDesktopMinVersion = "6.1",
+                BloomReaderMinVersion = "1.0",
+                XPath =
+                    "//div[contains(@class,'bloom-textOverPicture')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
             }
         };
 
@@ -1207,7 +1216,7 @@ namespace Bloom.Book
                 //This saves us from deleting, for example, cover page images if this is called before the front-matter
                 //has been applied to the document.
                 pathsToNotDelete.AddRange(
-                    from XmlElement dataDivImage in Dom.RawDom.SelectNodes(
+                    from SafeXmlElement dataDivImage in Dom.RawDom.SafeSelectNodes(
                         "//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]"
                     )
                     select UrlPathString
@@ -1247,10 +1256,10 @@ namespace Bloom.Book
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        internal static List<string> GetImagePathsRelativeToBook(XmlElement element)
+        internal static List<string> GetImagePathsRelativeToBook(SafeXmlElement element)
         {
             return (
-                from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
+                from SafeXmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
                 select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded
             )
                 .Distinct()
@@ -1310,6 +1319,23 @@ namespace Bloom.Book
 
             var backgroundMusicFileNames = GetBackgroundMusicFileNamesReferencedInBook();
             usedAudioFileNames.AddRange(backgroundMusicFileNames);
+
+            var activityPages = Dom.SafeSelectNodes("//div[@data-activity]");
+            foreach (SafeXmlElement dap in activityPages)
+            {
+                var correctSound = dap.GetAttribute("data-correct-sound");
+                var wrongSound = dap.GetAttribute("data-wrong-sound");
+                if (correctSound != null)
+                    usedAudioFileNames.Add(correctSound);
+                if (wrongSound != null)
+                    usedAudioFileNames.Add(wrongSound);
+            }
+            // These can now occur anywhere, not just in activity pages.
+            var dataSoundElts = Dom.SafeSelectNodes(".//div[@data-sound]");
+            foreach (var ds in dataSoundElts)
+            {
+                usedAudioFileNames.Add(ds.GetAttribute("data-sound"));
+            }
 
             // Don't get too trigger-happy with the delete button if you're not in publish mode
             if (!isForPublish)
@@ -1392,13 +1418,11 @@ namespace Bloom.Book
             HashSet<string> langsToExclude
         )
         {
-            var narrationElements = HtmlDom
-                .SelectChildNarrationAudioElements(
-                    Dom.RawDom.DocumentElement,
-                    includeSplitTextBoxAudio,
-                    langsToExclude
-                )
-                .Cast<XmlNode>();
+            var narrationElements = HtmlDom.SelectChildNarrationAudioElements(
+                Dom.RawDom.DocumentElement,
+                includeSplitTextBoxAudio,
+                langsToExclude
+            );
             var narrationIds = narrationElements
                 .Select(node => node.GetOptionalStringAttribute("id", null))
                 .Where(id => id != null);
@@ -1431,7 +1455,7 @@ namespace Bloom.Book
             var widgetElements = Dom.SafeSelectNodes(
                 "//*[contains(@class, 'bloom-widgetContainer')]/iframe"
             );
-            foreach (XmlElement elt in widgetElements)
+            foreach (SafeXmlElement elt in widgetElements)
             {
                 // Saved as a relative URL, which means it's supposed to be encoded.
                 var encodedSrc = elt.GetAttribute("src");
@@ -1468,15 +1492,20 @@ namespace Bloom.Book
             //Collect up all the video files in our book's video directory
             var videoFolderPath = GetVideoFolderPath(FolderPath);
             var videoFilesToDeleteIfNotUsed = new List<string>();
-            const string videoExtension = ".mp4"; // .mov, .avi...?
+            var videoExtensions = new HashSet<string> { ".mp4", ".webm" }; // .mov, .avi...?
 
             if (Directory.Exists(videoFolderPath))
             {
-                foreach (
-                    var path in Directory.EnumerateFiles(videoFolderPath, "*" + videoExtension)
-                )
+                foreach (var videoExtension in videoExtensions)
                 {
-                    videoFilesToDeleteIfNotUsed.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
+                    foreach (
+                        var path in Directory.EnumerateFiles(videoFolderPath, "*" + videoExtension)
+                    )
+                    {
+                        videoFilesToDeleteIfNotUsed.Add(
+                            Path.GetFileName(GetNormalizedPathForOS(path))
+                        );
+                    }
                 }
             }
 
@@ -1488,7 +1517,11 @@ namespace Bloom.Book
             {
                 if (Path.GetExtension(relativeFilePath).Length > 0)
                 {
-                    if (Path.GetExtension(relativeFilePath).ToLowerInvariant() == videoExtension)
+                    if (
+                        videoExtensions.Contains(
+                            Path.GetExtension(relativeFilePath).ToLowerInvariant()
+                        )
+                    )
                     {
                         videoFilesToDeleteIfNotUsed.Remove(
                             Path.GetFileName(GetNormalizedPathForOS(relativeFilePath))
@@ -1548,10 +1581,12 @@ namespace Bloom.Book
             return videoFolder;
         }
 
-        internal static List<string> GetVideoPathsRelativeToBook(XmlElement element)
+        internal static List<string> GetVideoPathsRelativeToBook(SafeXmlElement element)
         {
             return (
-                from XmlElement videoContainerElements in HtmlDom.SelectChildVideoElements(element)
+                from SafeXmlElement videoContainerElements in HtmlDom.SelectChildVideoElements(
+                    element
+                )
                 select HtmlDom.GetVideoElementUrl(videoContainerElements).PathOnly.NotEncoded
             )
                 .Where(path => !String.IsNullOrEmpty(path))
@@ -1817,7 +1852,7 @@ namespace Bloom.Book
             //check for missing images
 
             foreach (
-                XmlElement imgNode in HtmlDom.SelectChildImgAndBackgroundImageElements(Dom.Body)
+                SafeXmlElement imgNode in HtmlDom.SelectChildImgAndBackgroundImageElements(Dom.Body)
             )
             {
                 var imageFileName = HtmlDom.GetImageElementUrl(imgNode).PathOnly.NotEncoded;
@@ -2245,7 +2280,7 @@ namespace Bloom.Book
             }
             else
             {
-                XmlDocument xmlDomFromHtmlFile;
+                SafeXmlDocument xmlDomFromHtmlFile;
                 try
                 {
                     xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(
@@ -2294,7 +2329,7 @@ namespace Bloom.Book
                 InitialLoadErrors = ValidateBook(Dom, pathToExistingHtml);
                 if (!string.IsNullOrEmpty(InitialLoadErrors))
                 {
-                    XmlDocument possibleBackupDom;
+                    SafeXmlDocument possibleBackupDom;
                     if (TryGetValidXmlDomFromHtmlFile(backupPath, out possibleBackupDom))
                     {
                         RestoreBackup(
@@ -2408,7 +2443,10 @@ namespace Bloom.Book
             InitialLoadErrors = "";
         }
 
-        private bool TryGetValidXmlDomFromHtmlFile(string path, out XmlDocument xmlDomFromHtmlFile)
+        private bool TryGetValidXmlDomFromHtmlFile(
+            string path,
+            out SafeXmlDocument xmlDomFromHtmlFile
+        )
         {
             xmlDomFromHtmlFile = null;
             if (!RobustFile.Exists(path))
@@ -2524,13 +2562,20 @@ namespace Bloom.Book
         {
             if (IsStaticContent(FolderPath))
                 return; // don't try to update our own templates, it's a waste and they might be locked.
-            if (IsPathReadonly(FolderPath))
+
+            // Windows doesn't actually care if the folder is readonly. It only cares about the file-level permissions.
+            // And if the files are readonly, we handle that elsewhere. See BloomUnauthorizedAccessException.
+            // Previously, we had an early return, including for Windows, and we ran into issues with
+            // book support files silently not being updated. See BL-14174.
+            // Instead, we now let the update continue on Windows, and we throw an exception
+            // for other environments (not yet used as of Jan 2025).
+            if (!Platform.IsWindows && IsPathReadonly(FolderPath))
             {
                 Logger.WriteEvent(
-                    "Not updating files in folder {0} because the directory is read-only.",
+                    "Can't update files in folder {0} because the directory is read-only.",
                     FolderPath
                 );
-                return;
+                throw new UnauthorizedAccessException();
             }
 
             // We want current shipping versions of these copied into the destination folder always.
@@ -3022,11 +3067,11 @@ namespace Bloom.Book
 
         private void EnsureDoesNotHaveLinkToStyleSheet(HtmlDom dom, string path)
         {
-            foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+            foreach (SafeXmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
             {
-                var fileName = link.GetStringAttribute("href");
+                var fileName = link.GetAttribute("href");
                 if (fileName == path)
-                    dom.RemoveStyleSheetIfFound(path);
+                    dom.RawDom.RemoveStyleSheetIfFound(path);
             }
         }
 
@@ -3347,23 +3392,23 @@ namespace Bloom.Book
         {
             var dataDiv = Dom.RawDom
                 .SafeSelectNodes("//div[@id='bloomDataDiv']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             if (dataDiv == null)
                 return;
             var originalTitle = dataDiv.SafeSelectNodes(".//div[@data-book='originalTitle']");
-            if (originalTitle.Count > 0)
+            if (originalTitle.Length > 0)
                 return;
             var titles = Dom.RawDom
                 .SafeSelectNodes("//div[@data-book='bookTitle']")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
             if (titles.Count == 0)
                 return;
             // If we want to use some other, non-English title, we could consider such an option here,
             // e.g., any other language...except probably not the book's L1, especially when filling it in
             // for an older book.
-            var useTitle = titles.FirstOrDefault(t => t.Attributes["lang"]?.Value == "en");
+            var useTitle = titles.FirstOrDefault(t => t.GetAttribute("lang") == "en");
             if (useTitle == null)
                 return;
             var content = useTitle.InnerText;
@@ -3496,18 +3541,18 @@ namespace Bloom.Book
             if (GetMaintenanceLevel() >= 2)
                 return;
 
-            var comicalSvgs = Dom.SafeSelectNodes(ComicalXpath).Cast<XmlElement>();
-            var elementsToSave = new HashSet<XmlElement>();
+            var comicalSvgs = Dom.SafeSelectNodes(ComicalXpath).Cast<SafeXmlElement>();
+            var elementsToSave = new HashSet<SafeXmlElement>();
             foreach (var svgElement in comicalSvgs)
             {
                 var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
-                var textOverPictureDivs = container.SelectNodes(
+                var textOverPictureDivs = container.SafeSelectNodes(
                     "div[contains(@class, 'bloom-textOverPicture')]"
                 );
                 if (textOverPictureDivs == null) // unlikely, but maybe possible
                     continue;
 
-                foreach (XmlElement textOverPictureDiv in textOverPictureDivs)
+                foreach (var textOverPictureDiv in textOverPictureDivs)
                 {
                     var bubbleData = textOverPictureDiv.GetAttribute("data-bubble");
                     if (string.IsNullOrEmpty(bubbleData))
@@ -3563,17 +3608,15 @@ namespace Bloom.Book
             var imageContainers = Dom.SafeSelectNodes(
                     "//*[contains(@class, 'bloom-imageContainer')]"
                 )
-                .Cast<XmlElement>();
+                .Cast<SafeXmlElement>();
             foreach (var ic in imageContainers)
             {
-                var firstImage = ic.ChildNodes
-                    .Cast<XmlNode>()
-                    .FirstOrDefault(x => x is XmlElement && ((XmlElement)x).Name == "img");
+                var firstImage = ic.ChildNodes.FirstOrDefault(
+                    x => x is SafeXmlElement && ((SafeXmlElement)x).Name == "img"
+                );
                 if (firstImage == null)
                     continue;
-                var firstElement = ic.ChildNodes
-                    .Cast<XmlNode>()
-                    .FirstOrDefault(x => x is XmlElement);
+                var firstElement = ic.ChildNodes.FirstOrDefault(x => x is SafeXmlElement);
                 if (firstElement != firstImage)
                 {
                     ic.InsertBefore(firstImage, firstElement);
@@ -3882,7 +3925,7 @@ namespace Bloom.Book
         /// <remarks>
         /// See BL-13078, BL-13120, BL-13123, and BL-13143 for reported instances of this occurring.
         /// </remarks>
-        public static bool CheckForEmptyMarginBoxOnPage(XmlElement pageElement)
+        public static bool CheckForEmptyMarginBoxOnPage(SafeXmlElement pageElement)
         {
             if (Program.RunningUnitTests)
                 return false; // unit tests might have incomplete data, so we don't want to report this as an error.
@@ -3898,7 +3941,7 @@ namespace Bloom.Book
             return false;
         }
 
-        private static void ReportEmptyMarginBox(XmlElement pageDocument)
+        private static void ReportEmptyMarginBox(SafeXmlElement pageDocument)
         {
             Debug.Fail("Margin box is messed up");
 
@@ -3947,7 +3990,7 @@ namespace Bloom.Book
         public void RepairEmptyPages()
         {
             var pages = Dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                .Cast<XmlElement>()
+                .Cast<SafeXmlElement>()
                 .ToList();
             var problems = pages.Where(page => HasMessedUpMarginBox(page)).ToList();
             if (problems.Count == 0)
@@ -3961,7 +4004,7 @@ namespace Bloom.Book
             var justTextPage = dom.SelectSingleNode("//div[@id='" + Book.JustTextGuid + "']");
             // The standard Just Text page has a bloom-editable with language 'z' that is meant to be a template
             // for creating other language blocks. We'll just use it and modify the language.
-            var editable = justTextPage.SelectSingleNode(".//div[@lang='z']") as XmlElement;
+            var editable = justTextPage.SelectSingleNode(".//div[@lang='z']") as SafeXmlElement;
             // I'm deliberately not localizing this because it's a very rare message that we don't want our
             // translators to waste time on. Moreover, it's purpose is just to let the user know something has
             // gone wrong, which will be fairly evident even with an incomprehensible message in it.
@@ -3985,20 +4028,17 @@ namespace Bloom.Book
         // Tries to detect a state that some bug occasionally puts a page into, where it is more-or-less empty.
         // Another characteristic state produced by the bug is where the page labels that should be outside
         // the marginBox are inside it. BL-13120.
-        static bool HasMessedUpMarginBox(XmlElement page)
+        static bool HasMessedUpMarginBox(SafeXmlElement page)
         {
             var marginBox = GetMarginBox(page);
             if (marginBox == null)
                 return true; // marginBox should not be missing
-            var internalNodes = marginBox.ChildNodes
-                .Cast<XmlNode>()
-                .Where(x => x is XmlElement)
-                .ToList();
+            var internalNodes = marginBox.ChildNodes.Where(x => x is SafeXmlElement).ToList();
             if (internalNodes.Count == 0)
             {
                 return true; // marginBox should not be empty
             }
-            foreach (XmlElement elt in internalNodes)
+            foreach (var elt in internalNodes)
             {
                 var classes = elt.GetAttribute("class");
                 if (string.IsNullOrEmpty(classes))
@@ -4014,13 +4054,10 @@ namespace Bloom.Book
         }
 
         // I think this is more efficient than an xpath, especially since marginBox is usually the last top-level child.
-        static XmlElement GetMarginBox(XmlElement parent)
+        static SafeXmlElement GetMarginBox(SafeXmlElement parent)
         {
             foreach (
-                XmlElement child in parent.ChildNodes
-                    .Cast<XmlNode>()
-                    .Where(x => x is XmlElement)
-                    .Reverse()
+                SafeXmlElement child in parent.ChildNodes.Where(x => x is SafeXmlElement).Reverse()
             )
             {
                 if (child.GetAttribute("class").Contains("marginBox"))

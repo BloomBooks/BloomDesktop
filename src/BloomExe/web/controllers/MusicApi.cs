@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish;
+using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
 
@@ -37,7 +38,7 @@ namespace Bloom.web.controllers
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointLegacy("music/ui/chooseFile", HandleRequest, true);
+            apiHandler.RegisterEndpointHandler("music/ui/chooseFile", HandleRequest, true);
         }
 
         public void HandleRequest(ApiRequest request)
@@ -93,65 +94,87 @@ namespace Bloom.web.controllers
                 "EditTab.Toolbox.Music.FileDialogSoundFiles",
                 "Sound files"
             );
-            var dlg = new DialogAdapters.OpenFileDialogAdapter
-            {
-                Multiselect = false,
-                CheckFileExists = true,
-                Filter = $"{soundFiles} {BuildFileFilter()}"
-            };
-            var result = dlg.ShowDialog();
-            if (result == DialogResult.OK)
-            {
-                var srcFile = dlg.FileName;
-                var destFile = Path.GetFileName(srcFile);
-                if (destFile != null)
+            string srcFile = null;
+
+            // For saving and recalling the last chosen file location
+            var extension = ".mp3";
+            var directoryTag = "ShowSelectMusicFile";
+            using (
+                var dlg = new MiscUI.BloomOpenFileDialog
                 {
-                    if (IsInvalidMp3File(srcFile))
-                    {
-                        var badMp3File = LocalizationManager.GetString(
-                            "EditTab.Toolbox.Music.InvalidMp3File",
-                            "The selected sound file \"{0}\" cannot be played by Bloom.  Please choose another sound file.",
-                            "The {0} is replaced by the filename."
-                        );
-                        var badMp3Title = LocalizationManager.GetString(
-                            "EditTab.Toolbox.Music.InvalidMp3FileTitle",
-                            "Choose Another Sound File",
-                            "Title for a message box"
-                        );
-                        MessageBox.Show(
-                            String.Format(badMp3File, destFile),
-                            badMp3Title,
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information
-                        );
-                        return String.Empty;
-                    }
-                    // if file is already in the desired directory, do not try to copy it again.
-                    if (Path.GetFullPath(srcFile) != Path.Combine(destPath, destFile))
-                    {
-                        var i = 0;
-
-                        // get a unique destination file name
-                        while (RobustFile.Exists(Path.Combine(destPath, destFile)))
-                        {
-                            // Enhance: if the file in the destination directory already has the required contents,
-                            // we can just return this name.
-                            destFile = Path.GetFileName(srcFile);
-                            var fileExt = Path.GetExtension(srcFile);
-                            destFile =
-                                destFile.Substring(0, destFile.Length - fileExt.Length) + " - Copy";
-                            if (++i > 1)
-                                destFile += " " + i;
-                            destFile += fileExt;
-                        }
-
-                        RobustFile.Copy(srcFile, Path.Combine(destPath, destFile));
-                    }
-
-                    returnVal = destFile;
+                    Filter = $"{soundFiles} {BuildFileFilter()}",
+                    InitialDirectory = Path.GetDirectoryName(
+                        OutputFilenames.GetOutputFilePath(
+                            CurrentBook,
+                            extension,
+                            extraTag: directoryTag,
+                            proposedFolder: System.Environment.GetFolderPath(
+                                System.Environment.SpecialFolder.MyDocuments
+                            )
+                        )
+                    )
+                }
+            )
+            {
+                var result = dlg.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    srcFile = dlg.FileName;
+                    OutputFilenames.RememberOutputFilePath(
+                        CurrentBook,
+                        extension,
+                        srcFile,
+                        extraTag: directoryTag
+                    );
                 }
             }
+            var destFile = Path.GetFileName(srcFile);
+            if (destFile != null)
+            {
+                if (IsInvalidMp3File(srcFile))
+                {
+                    var badMp3File = LocalizationManager.GetString(
+                        "EditTab.Toolbox.Music.InvalidMp3File",
+                        "The selected sound file \"{0}\" cannot be played by Bloom.  Please choose another sound file.",
+                        "The {0} is replaced by the filename."
+                    );
+                    var badMp3Title = LocalizationManager.GetString(
+                        "EditTab.Toolbox.Music.InvalidMp3FileTitle",
+                        "Choose Another Sound File",
+                        "Title for a message box"
+                    );
+                    MessageBox.Show(
+                        String.Format(badMp3File, destFile),
+                        badMp3Title,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                    return String.Empty;
+                }
+                // if file is already in the desired directory, do not try to copy it again.
+                if (Path.GetFullPath(srcFile) != Path.Combine(destPath, destFile))
+                {
+                    var i = 0;
 
+                    // get a unique destination file name
+                    while (RobustFile.Exists(Path.Combine(destPath, destFile)))
+                    {
+                        // Enhance: if the file in the destination directory already has the required contents,
+                        // we can just return this name.
+                        destFile = Path.GetFileName(srcFile);
+                        var fileExt = Path.GetExtension(srcFile);
+                        destFile =
+                            destFile.Substring(0, destFile.Length - fileExt.Length) + " - Copy";
+                        if (++i > 1)
+                            destFile += " " + i;
+                        destFile += fileExt;
+                    }
+
+                    RobustFile.Copy(srcFile, Path.Combine(destPath, destFile));
+                }
+
+                returnVal = destFile;
+            }
             return returnVal;
         }
 

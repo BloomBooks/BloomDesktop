@@ -9,7 +9,7 @@
 		<Company>SIL</Company>
 		<Product>Bloom</Product>
 		<Copyright>© SIL International 2012-2024</Copyright>
-		<Version>6.0.0.0</Version>
+		<Version>6.1.0.0</Version>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net472</TargetFramework>
@@ -173,14 +173,18 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<RemoveDir Directories="@(RemoveForSILMedia)" />
 		<Message Text="ReallyAfterBuild target completed." Importance="high" />
 	</Target>
+	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild">
+		<MakeDir Directories="$(OutDir)runtimes\win-arm64\native" />
+		<Copy SourceFiles="$(OutDir)runtimes\win-x86\native\e_sqlite3.dll"
+			  DestinationFiles="$(OutDir)e_sqlite3.dll" />
+		<Message Text="BL-13934 sqlite looks in the ARM64 directory, but then fails because actually we're running as an x86 process still, as of Bloom 6.2. So for now we're cheating and just putting the x86 version in." Importance="high" />
+	</Target>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />
 		<PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
 		<PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
 		<PackageReference Include="CairoSharp-signed" Version="3.22.24.37" />
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
-		<!-- Don't let Nuget Package Manager automatically update (downgrade) this to DialogAdapters.Gtk2; it will break Bloom -->
-		<PackageReference Include="DialogAdapters" Version="0.1.11" />
 		<PackageReference Include="EPPlus" Version="6.2.4" />
 		<PackageReference Include="Fleck" Version="1.1.0" />
 		<PackageReference Include="Glob" Version="1.1.8" />
@@ -197,19 +201,19 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="Sentry" Version="3.9.4" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
-		<PackageReference Include="SIL.Core" Version="13.0.0-beta0084" />
-		<PackageReference Include="SIL.Core.Desktop" Version="13.0.0-beta0084" />
+		<PackageReference Include="SIL.Core" Version="15.0.0-beta0081" />
+		<PackageReference Include="SIL.Core.Desktop" Version="15.0.0-beta0081" />
 		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
-		<PackageReference Include="SIL.Media" Version="13.0.0-beta0084" />
-		<PackageReference Include="SIL.Windows.Forms" Version="13.0.0-beta0084" />
-		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="13.0.0-beta0084" />
-		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="13.0.0-beta0084" />
-		<PackageReference Include="SIL.WritingSystems" Version="13.0.0-beta0084" />
-		<PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
-		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.3" />
-		<PackageReference Include="SQLitePCLRaw.core" Version="2.0.3" />
-		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.0.3" />
-		<PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.0.3" />
+		<PackageReference Include="SIL.Media" Version="15.0.0-beta0081" />
+		<PackageReference Include="SIL.Windows.Forms" Version="15.0.0-beta0081" />
+		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="15.0.0-beta0081" />
+		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="15.0.0-beta0081" />
+		<PackageReference Include="SIL.WritingSystems" Version="15.0.0-beta0081" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
+		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />
+		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.2" />
+		<PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.1.2" />
 		<PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 		<PackageReference Include="System.Runtime" Version="4.3.0" />

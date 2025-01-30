@@ -31,10 +31,6 @@
     display: flex;
     flex-wrap: wrap;
 
-    .overlayToolControlDraggableBubble {
-        cursor: grab;
-    }
-
     .shapeChooserRow {
         // Using display: flex helps us grow some of the children
         // while also allowing us to adapt to the presence or absence of the vertical scrollbar
@@ -55,50 +51,6 @@
             margin-top: 0;
             margin-bottom: 10px;
         }
-    }
-
-    #shapeChooserSpeechBubble {
-        width: 50px;
-        height: 50px;
-    }
-
-    #shapeChooserImagePlaceholder {
-        width: 50px;
-        height: 50px;
-    }
-
-    #shapeChooserVideoPlaceholder {
-        width: 50px;
-        height: 50px;
-    }
-
-    #shapeChooserTextBlock {
-        margin-left: 5px; // Match the spacing on the bubble icon above
-        flex-grow: 1; // Let it fill as much space as possible to the right
-        text-align: center; // Center the text horizontally
-
-        padding-top: 1em;
-        vertical-align: middle;
-        padding-bottom: 1em;
-
-        color: white;
-        border: 1px dotted white;
-    }
-
-    #shapeChooserCaption {
-        // Horizontal positioning / sizing of the element
-        margin-left: 10px;
-        flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
-        text-align: center;
-
-        // Vertical sizing
-        padding-top: 5px;
-        padding-bottom: 5px;
-
-        border: 1px solid black;
-        color: black;
-        background-color: white;
-        box-shadow: 3px 3px black;
     }
 }
 

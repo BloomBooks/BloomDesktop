@@ -445,13 +445,12 @@ namespace Bloom.TeamCollection
             // are in a consistent state, as we may get multiple write notifications during the process of
             // writing a file. It may also help to ensure that repo writing doesn't interfere somehow with
             // whatever is changing things.
-            // (Form.ActiveForm should not be null when Bloom is running normally. However, it can be when we're displaying
-            // a page in a browser, or when we're reloading Bloom after saving collection settings.)
-            if (Form.ActiveForm != null)
+            var form = Shell.GetShellOrOtherOpenForm(); // Form.ActiveForm is null when a browser is active
+            if (form != null)
             {
                 SafeInvoke.InvokeIfPossible(
                     "Add SyncCollectionFilesToRepoOnIdle",
-                    Form.ActiveForm,
+                    form,
                     false,
                     (Action)(
                         () =>
@@ -755,10 +754,11 @@ namespace Bloom.TeamCollection
         /// (Updating the repo will eventually be conditional on a permission file.)
         /// This is done both when Bloom is starting up, before we create the local collection
         /// file, and when we detect a possibly-significant change to a local file while Bloom
-        /// is running. Only at startup are we allowed to copy changes TO the local system,
+        /// is running.  Only at startup are we allowed to copy changes TO the local system,
         /// since changes to the collection-level files normally require a restart.
+        /// (The only exception to this is colorPalettes.json, which can be changed while
+        /// the program is running.)
         /// </summary>
-        /// <param name="atStartup"></param>
         public void SyncLocalAndRepoCollectionFiles(bool atStartup = true)
         {
             if (_stopSyncingCollectionFiles)
@@ -793,9 +793,14 @@ namespace Bloom.TeamCollection
             }
             else
             {
-                if (LocalCollectionFilesUpdated())
+                var updateType = LocalCollectionFilesUpdated();
+                if (updateType == CollectionSettingsChange.ColorPalette)
                 {
-                    if (repoModTime > savedSyncTime)
+                    SyncColorPaletteFileWithRepo(_localCollectionFolder);
+                }
+                else if (updateType != CollectionSettingsChange.None)
+                {
+                    if (repoModTime > savedSyncTime && updateType == CollectionSettingsChange.Other)
                     {
                         // We have a conflict we should warn the user about...if we haven't already.
                         if (!_haveShownRemoteSettingsChangeWarning)
@@ -907,21 +912,46 @@ namespace Bloom.TeamCollection
             RobustFile.WriteAllText(path, nowString + @";" + checksum);
         }
 
+        internal enum CollectionSettingsChange
+        {
+            None,
+            ColorPalette,
+            Other
+        }
+
         /// <summary>
-        /// Return true if local collection-level files have changed and need to be copied
-        /// to the repo. Usually we can determine this by a quick check of modify times.
-        /// If that indicates a change, we verify it by comparing sha values.
-        /// (If we need to check sha values and determine that there is NOT a real change,
-        /// we update the time record to make the next check faster.)
+        /// Return enum value to indicate how local collection-level files have changed which
+        /// indicates what (if anything) needs to be copied to the repo.  Usually we can determine
+        /// this by a quick check of modify times.  For most files, if that indicates a change,
+        /// we verify it by comparing sha values.  (If we need to check sha values and determine
+        /// that there is NOT a real change, we update the time record to make the next check faster.)
         /// </summary>
-        /// <returns></returns>
-        internal bool LocalCollectionFilesUpdated()
+        /// <returns>
+        /// CollectionSettingsChange.None (no files changed),
+        /// CollectionSettingsChange.ColorPalette (only colorPalettes.json),
+        /// CollectionSettingsChange.Other (any files other than colorPalettes.json)
+        /// </returns>
+        internal CollectionSettingsChange LocalCollectionFilesUpdated()
         {
             var files = FilesToMonitorForCollection();
+
             var localModTime = files.Select(f => new FileInfo(f).LastWriteTime).Max();
             var savedModTime = LocalCollectionFilesRecordedSyncTime();
+            var colorPaletteChanged = false;
+            var colorPaletteFile = Path.Combine(LocalCollectionFolder, "colorPalettes.json");
+            if (RobustFile.Exists(colorPaletteFile))
+            {
+                var repoPaletteTime = GetRepoColorPaletteTime();
+                var localPaletteTime = new FileInfo(colorPaletteFile).LastWriteTime;
+                colorPaletteChanged = localPaletteTime > repoPaletteTime;
+            }
             if (localModTime <= savedModTime)
-                return false;
+            {
+                return colorPaletteChanged
+                    ? CollectionSettingsChange.ColorPalette
+                    : CollectionSettingsChange.None;
+            }
+
             var currentChecksum = MakeChecksumOnFiles(files);
             var localFilesReallyUpdated = currentChecksum != LocalCollectionFilesSavedChecksum();
             if (!localFilesReallyUpdated && savedModTime >= LastRepoCollectionFileModifyTime)
@@ -935,8 +965,15 @@ namespace Bloom.TeamCollection
                 // collection level anyway.
                 RecordCollectionFilesSyncDataInternal(currentChecksum);
             }
-            return localFilesReallyUpdated;
+            if (localFilesReallyUpdated)
+                return CollectionSettingsChange.Other;
+            else if (colorPaletteChanged)
+                return CollectionSettingsChange.ColorPalette;
+            else
+                return CollectionSettingsChange.None;
         }
+
+        protected abstract DateTime GetRepoColorPaletteTime();
 
         internal DateTime LocalCollectionFilesRecordedSyncTime()
         {
@@ -985,6 +1022,7 @@ namespace Bloom.TeamCollection
         }
 
         protected abstract void CopyRepoCollectionFilesToLocalImpl(string destFolder);
+        protected abstract void SyncColorPaletteFileWithRepo(string destFolder);
 
         /// <summary>
         /// Gets the path to the bloomCollection file, given the folder.
