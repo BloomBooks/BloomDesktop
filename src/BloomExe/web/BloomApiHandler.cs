@@ -38,9 +38,13 @@ namespace Bloom.Api
 
         public CollectionSettings CurrentCollectionSettings { get; private set; }
 
-        public BloomApiHandler(BookSelection bookSelection, CollectionSettings collectionSettings)
+        public BloomApiHandler(BookSelection bookSelection)
         {
             _bookSelection = bookSelection;
+        }
+
+        public void SetCollectionSettingsDuringInitialization(CollectionSettings collectionSettings)
+        {
             CurrentCollectionSettings = collectionSettings;
         }
 

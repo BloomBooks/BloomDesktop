@@ -46,7 +46,6 @@ namespace BloomTests.Publish
             s_bloomServer = new BloomServer(
                 new RuntimeImageProcessor(new BookRenamedEvent()),
                 new BookSelection(),
-                settings,
                 locator
             );
             s_bloomServer.StartListening();

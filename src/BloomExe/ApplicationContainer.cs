@@ -7,6 +7,9 @@ using System.Linq;
 using L10NSharp;
 using System.Windows.Forms;
 using Bloom.web.controllers;
+using Bloom.Api;
+using Bloom.ImageProcessing;
+using Bloom.Book;
 
 namespace Bloom
 {
@@ -45,6 +48,19 @@ namespace Bloom
             builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer()).SingleInstance();
             builder
                 .Register<BookThumbNailer>(c => new BookThumbNailer(c.Resolve<HtmlThumbNailer>()))
+                .SingleInstance();
+
+            var bookRenameEvent = new BookRenamedEvent();
+            builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
+            builder.Register<BookSelection>(c => new BookSelection()).SingleInstance();
+            builder
+                .Register<BloomServer>(
+                    c =>
+                        new BloomServer(
+                            new RuntimeImageProcessor(bookRenameEvent),
+                            c.Resolve<BookSelection>()
+                        )
+                )
                 .SingleInstance();
 
             _container = builder.Build();

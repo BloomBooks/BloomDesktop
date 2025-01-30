@@ -73,7 +73,6 @@ namespace BloomTests.Publish
             var server = new BloomServer(
                 new RuntimeImageProcessor(new BookRenamedEvent()),
                 GetTestBookSelection(),
-                s_collectionSettings,
                 GetTestFileLocator()
             );
             server.StartListening();
