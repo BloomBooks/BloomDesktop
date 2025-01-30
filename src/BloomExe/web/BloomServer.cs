@@ -157,7 +157,7 @@ namespace Bloom.Api
         static Dictionary<string, string> _urlToSimulatedPageContent =
             new Dictionary<string, string>(); // see comment on MakeInMemoryHtmlFileInBookFolder
         private BloomFileLocator _fileLocator;
-        private readonly BookSelection _bookSelection;
+        private BookSelection _bookSelection;
 
         public CollectionSettings CurrentCollectionSettings { get; private set; }
 
@@ -180,7 +180,7 @@ namespace Bloom.Api
 
         public BloomServer(
             RuntimeImageProcessor cache,
-            BookSelection bookSelection,
+            BookSelection bookSelection, // TODO remove arguments?
             CollectionSettings collectionSettings,
             BloomFileLocator fileLocator = null
         )
@@ -195,7 +195,7 @@ namespace Bloom.Api
             _cache = cache;
             _useCache = Settings.Default.ImageHandler != "off";
             CurrentCollectionSettings = collectionSettings;
-            ApiHandler = new BloomApiHandler(bookSelection, collectionSettings);
+            ApiHandler = new BloomApiHandler(bookSelection, collectionSettings); // TODO ?
             _theOneInstance = this;
         }
 
@@ -206,6 +206,18 @@ namespace Bloom.Api
             Dispose(false);
         }
 #endif
+
+        public void SetBookSelectionDuringInitialization(BookSelection bookSelection)
+        {
+            _bookSelection = bookSelection;
+            ApiHandler.SetBookSelectionDuringInitialization(bookSelection);
+        }
+
+        public void SetCollectionSettingsDuringInitialization(CollectionSettings collectionSettings)
+        {
+            CurrentCollectionSettings = collectionSettings;
+            ApiHandler.SetCollectionSettingsDuringInitialization(collectionSettings);
+        }
 
         private static string _keyToCurrentPage;
 
