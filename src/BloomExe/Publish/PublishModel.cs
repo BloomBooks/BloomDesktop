@@ -654,7 +654,7 @@ namespace Bloom.Publish
                 pdfFileLabel = pdfFileLabel.Replace("|", "");
                 var pdfFilter = String.Format("{0}|*.pdf", pdfFileLabel);
 
-                var initialPath = OutputFilenames.GetOutputFilePath(
+                var initialPath = FilePathMemory.GetOutputFilePath(
                     _currentlyLoadedBook,
                     ".pdf",
                     suggestedName,
@@ -669,7 +669,7 @@ namespace Bloom.Publish
                 if (String.IsNullOrEmpty(destFileName))
                     return;
 
-                OutputFilenames.RememberOutputFilePath(
+                FilePathMemory.RememberOutputFilePath(
                     _currentlyLoadedBook,
                     ".pdf",
                     destFileName,

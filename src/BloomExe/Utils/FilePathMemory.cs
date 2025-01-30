@@ -4,14 +4,34 @@ using System.IO;
 
 namespace Bloom.Utils
 {
-    public static class OutputFilenames
+    public static class FilePathMemory
     {
-        // map from the book ID and file type (extension + possible extra tag) to the most recent full file pathname
-        static Dictionary<Tuple<string, string>, string> _savedOutputFilePaths =
+        // map from the book ID (if relevant) and file type (extension + possible extra tag) to the most recent full file pathname
+        static Dictionary<Tuple<string, string>, string> _savedFilePaths =
             new Dictionary<Tuple<string, string>, string>();
 
-        // map from the file type (extension only) to the most recently used folder for that file type
-        static Dictionary<string, string> _savedOutputFolders = new Dictionary<string, string>();
+        // map from the file type or other tag to the most recently used folder for that file type
+        static Dictionary<string, string> _savedFolderPaths = new Dictionary<string, string>();
+
+        public static void RememberFilePath(Tuple<string, string> key, string filePath)
+        {
+            _savedFilePaths[key] = filePath;
+        }
+
+        public static void RememberFolderPath(string key, string folderPath)
+        {
+            _savedFolderPaths[key] = folderPath;
+        }
+
+        public static bool TryGetRememberedFilePath(Tuple<string, string> key, out string path)
+        {
+            return _savedFilePaths.TryGetValue(key, out path);
+        }
+
+        public static bool TryGetRememberedFolderPath(string key, out string path)
+        {
+            return _savedFolderPaths.TryGetValue(key, out path);
+        }
 
         /// <summary>
         /// Get the output file path for the given book and output type provided by the extension (plus extraTag)
@@ -42,14 +62,14 @@ namespace Bloom.Utils
         )
         {
             if (
-                _savedOutputFilePaths.TryGetValue(
+                TryGetRememberedFilePath(
                     GetCompoundTag(book.ID, extension, extraTag),
                     out string path
                 )
             )
                 return path;
             string startingFolder;
-            if (!_savedOutputFolders.TryGetValue(extension, out startingFolder))
+            if (!TryGetRememberedFolderPath(extension, out startingFolder))
             {
                 if (!String.IsNullOrEmpty(proposedFolder) && Directory.Exists(proposedFolder))
                     startingFolder = proposedFolder;
@@ -83,14 +103,14 @@ namespace Bloom.Utils
             string extraTag = ""
         )
         {
-            _savedOutputFilePaths[GetCompoundTag(book.ID, extension, extraTag)] = outputFilePath;
-            _savedOutputFolders[extension] = Path.GetDirectoryName(outputFilePath);
+            RememberFilePath(GetCompoundTag(book.ID, extension, extraTag), outputFilePath);
+            RememberFolderPath(extension, Path.GetDirectoryName(outputFilePath));
         }
 
         private static Tuple<string, string> GetCompoundTag(
-            string id,
-            string extension,
-            string extraTag
+            string id = "",
+            string extension = "",
+            string extraTag = ""
         )
         {
             return Tuple.Create(id, $"{extraTag}{extension}");
@@ -102,14 +122,14 @@ namespace Bloom.Utils
         )
         {
             if (
-                _savedOutputFilePaths.TryGetValue(
+                _savedFilePaths.TryGetValue(
                     GetCompoundTag(collection.PathToDirectory, extension, ""),
                     out string path
                 )
             )
                 return path;
             string startingFolder;
-            if (!_savedOutputFolders.TryGetValue(extension, out startingFolder))
+            if (!_savedFolderPaths.TryGetValue(extension, out startingFolder))
             {
                 startingFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             }
@@ -122,19 +142,19 @@ namespace Bloom.Utils
             string outputFilePath
         )
         {
-            _savedOutputFilePaths[GetCompoundTag(collection.PathToDirectory, extension, "")] =
+            _savedFilePaths[GetCompoundTag(collection.PathToDirectory, extension, "")] =
                 outputFilePath;
-            _savedOutputFolders[extension] = Path.GetDirectoryName(outputFilePath);
+            _savedFolderPaths[extension] = Path.GetDirectoryName(outputFilePath);
         }
 
-        public static void ResetOutputFilenamesMemory()
+        public static void ResetFilePathMemory()
         {
             if (!Program.RunningUnitTests)
                 throw new ApplicationException(
                     "ResetOutputFilenamesMemory() can be called only by unit tests!"
                 );
-            _savedOutputFilePaths.Clear();
-            _savedOutputFolders.Clear();
+            _savedFilePaths.Clear();
+            _savedFolderPaths.Clear();
         }
     }
 }
