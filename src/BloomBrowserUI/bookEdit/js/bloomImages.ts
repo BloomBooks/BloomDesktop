@@ -110,6 +110,26 @@ export function SetupImage(image) {
         image.removeAttribute("width");
         image.removeAttribute("height");
     }
+    var hndlr = image.getAttribute("onerror");
+    if (!hndlr) {
+        // Cover images get a handler assigned in C# code, and they also don't
+        // preserve the bloom-imageLoadError class from earlier editing sessons.
+        // (Assigning the handler in javascript happens too late for the initial
+        // load on cover pages, but not other pages.  I don't know why.)
+        // The onerror handler can be null if this is not a cover image and the error
+        // handler has not yet been assigned.  In that case, we want to initialize the
+        // error handler and class.  See BL-14241.
+        // Note that the error handler assigned this way will not be persisted as an
+        // attribute in the image element in the HTML.
+        image.classList.remove("bloom-imageLoadError");
+        image.onerror = HandleImageError;
+    }
+}
+
+export function HandleImageError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    target.classList.add("bloom-imageLoadError");
+    // console.error("Image failed to load:", target.src);
 }
 
 export function GetButtonModifier(container) {
@@ -795,6 +815,11 @@ function SetAlternateTextOnImages(element) {
             "This picture, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
         const nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
         const decodedName = decodeURI(nameWithoutQueryString);
+        // show English to start with in case localization never returns even a failure
+        $(element).attr(
+            "alt",
+            theOneLocalizationManager.simpleFormat(englishText, [decodedName])
+        );
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Image.AltMsg",

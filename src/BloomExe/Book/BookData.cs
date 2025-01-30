@@ -1836,6 +1836,17 @@ namespace Bloom.Book
             var oldImageUrl = HtmlDom.GetImageElementUrl(node);
             var imgOrDivWithBackgroundImage = node;
             HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage, newImageUrl);
+            // Attaching the onerror handler in javascript is too late for the cover page
+            // image.  The image resource load fails before the bootstrap code is called
+            // in document.ready.  This minimal code sets a class that is used by CSS and
+            // javascript to make things look right.  The class is not copied into the
+            // new xmatter page, so it has to be set afresh each time the book is opened
+            // for editing.  See BL-14241.
+            if (imgOrDivWithBackgroundImage.Name == "img")
+                imgOrDivWithBackgroundImage.SetAttribute(
+                    "onerror",
+                    "this.classList.add('bloom-imageLoadError')"
+                );
 
             if (_updateImgNode != null && !newImageUrl.Equals(oldImageUrl))
             {

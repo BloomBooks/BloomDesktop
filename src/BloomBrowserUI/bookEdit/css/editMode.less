@@ -476,6 +476,14 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
         background-image: url("/bloom/bookEdit/img/imageMissingMetaData.svg") !important;
     }
 }
+// In an active background overlay, don't show the edit metadata icon if the image failed
+// to load.  Clicking on it would just show an error message anyway, and the button would
+// obscure part of the alt attribute error message.
+.bloom-backgroundImage:has(img.bloom-imageLoadError) {
+    .editMetadataButton.imgMetadataProblem {
+        display: none !important;
+    }
+}
 
 // we need to inset the buttons a bit when the full bleed borders are showing
 body.bloom-fullBleed {
