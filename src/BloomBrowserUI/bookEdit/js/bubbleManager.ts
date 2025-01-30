@@ -28,7 +28,8 @@ import {
     kImageContainerClass,
     getBackgroundImageFromContainer,
     SetupMetadataButton,
-    UpdateImageTooltipVisibility
+    UpdateImageTooltipVisibility,
+    HandleImageError
 } from "./bloomImages";
 import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
@@ -4224,6 +4225,8 @@ export class BubbleManager {
             // just revert it to a placeholder
             const img = getImageFromOverlay(textOverPicDiv);
             if (img) {
+                img.classList.remove("bloom-imageLoadError");
+                img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
                 this.updateBubbleForChangedImage(img);
             }
@@ -5196,6 +5199,7 @@ export class BubbleManager {
             newImgContainer.classList.remove(kOverlayClass);
             bgOverlay.appendChild(newImgContainer);
             const newImg = img.cloneNode(false) as HTMLImageElement;
+            newImg.classList.remove("bloom-imageLoadError");
             newImgContainer.appendChild(newImg);
 
             // Set level so Comical will consider the new overlay to be under the existing ones.
@@ -5233,6 +5237,8 @@ export class BubbleManager {
             imageContainer
         ) as HTMLElement; // must exist by now
         // Whether it's a new bgImage or not, copy its src from the old-style img
+        bgImage.classList.remove("bloom-imageLoadError");
+        bgImage.onerror = HandleImageError;
         bgImage.setAttribute("src", img.getAttribute("src") ?? "");
         this.adjustBackgroundImageSize(imageContainer, bgOverlay, true);
         bgOverlay.style.visibility = ""; // now we can show it, if it was new and hidden
@@ -5266,6 +5272,21 @@ export class BubbleManager {
         );
     }
 
+    // Given a bgOverlay element, which is always an overlay having the bloom-backgroundImage
+    // class, and the height and width of the parent imageContainer, this method attempts to
+    // make the bgOverlay the right size and position to fill as much as possible of the parent,
+    // rather like object-fit:contain. It is used in two main scenarios: the user may have
+    // selected a different image, which means we must adjust to suit a different image aspect
+    // ratio. Or, the size of the container may have changed, e.g., using origami. We must also
+    // account for the possibility that the image has been cropped, in which case, we want to
+    // keep the cropped aspect ratio. (Cropping attributes will already have been removed if it
+    // is a new image.)
+    // Things are complicated because it's possible the image has not loaded yet, so we can't
+    // get its natural dimensions to figure an aspect ratio. In this case, the method arranges
+    // to be called again after the image loads or a timeout.
+    // A further complication is that the image may fail to load, so we never get natural
+    // dimensions. In this case, we expand the bgOverlay to the full size of the container so
+    // all the space is available to display the error icon and message.
     private adjustBackgroundImageSizeToFit(
         containerWidth: number,
         containerHeight: number,
@@ -5292,22 +5313,34 @@ export class BubbleManager {
         }
         let imgAspectRatio = bgOverlay.clientWidth / bgOverlay.clientHeight;
         const img = getImageFromOverlay(bgOverlay);
+        let failedImage = false;
+        // We don't ever expect there not to be an img. If it happens, we'll just go
+        // ahead and adjust based on the current shape of the overlay (as set above).
         if (img) {
-            // We don't ever expect there not to be an img. If it happens, we'll just go
-            // ahead and adjust based on the current shape of the overlay.
-            // if we don't have a height and width, or we know the image src changed
-            // and have not yet waited for new dimensions, go ahead and wait.
-            if (img.style.width) {
-                // there is established cropping. Use the cropped size to determine the
-                // aspect ratio.
-                imgAspectRatio =
-                    BubbleManager.pxToNumber(bgOverlay.style.width) /
-                    BubbleManager.pxToNumber(bgOverlay.style.height);
+            // The image may not have loaded yet or may have failed to load.  If either of these
+            // cases is true, then the naturalHeight and naturalWidth will be zero.  If the image
+            // failed to load, a special class is added to the image to indicate this fact (if all
+            // goes well).  However, we may know that this is called in response to a new image, in
+            // which case the class may not have been added yet.
+            // We conclude that the image has truly failed if 1) we don't have natural dimensions set
+            // to something other than zero, 2) we are not waiting for new dimensions, and 3) the
+            // image has the special class indicating that it failed to load.  (The class is supposed
+            // to be removed when we change the src attribute, which leads to a new load attempt.)
+            failedImage =
+                img.naturalHeight === 0 && // not loaded successfully (yet)
+                !useSizeOfNewImage && // not waiting for new dimensions
+                img.classList.contains("bloom-imageLoadError"); // error occurred while trying to load
+            if (failedImage) {
+                // If the image failed to load, just use the container aspect ratio to fill up
+                // the container with the error message (alt attribute string).
+                imgAspectRatio = containerWidth / containerHeight;
             } else if (
                 img.naturalHeight === 0 ||
                 img.naturalWidth === 0 ||
                 useSizeOfNewImage
             ) {
+                // if we don't have a height and width, or we know the image src changed
+                // and have not yet waited for new dimensions, go ahead and wait.
                 // We set up this timeout
                 const handle = (setTimeout(
                     () =>
@@ -5340,6 +5373,12 @@ export class BubbleManager {
                     { once: true }
                 );
                 return; // try again once we have valid image data
+            } else if (img.style.width) {
+                // there is established cropping. Use the cropped size to determine the
+                // aspect ratio.
+                imgAspectRatio =
+                    BubbleManager.pxToNumber(bgOverlay.style.width) /
+                    BubbleManager.pxToNumber(bgOverlay.style.height);
             } else {
                 // not cropped, so we can use the natural dimensions
                 imgAspectRatio = img.naturalWidth / img.naturalHeight;
@@ -5371,6 +5410,27 @@ export class BubbleManager {
                 BubbleManager.pxToNumber(img.style.left) * scale + "px";
             img.style.top =
                 BubbleManager.pxToNumber(img.style.top) * scale + "px";
+        }
+        // Ensure that the missing image message is displayed without being cropped.
+        // See BL-14241.
+        if (failedImage && img && img.style && img.style.width.length > 0) {
+            const imgLeft = BubbleManager.pxToNumber(img.style.left);
+            const imgTop = BubbleManager.pxToNumber(img.style.top);
+            if (imgLeft < 0 || imgTop < 0) {
+                // The failed image was cropped. Remove the cropping to facilitate displaying the error state.
+                img.setAttribute(
+                    "data-style",
+                    `left:${img.style.left}; width:${img.style.width}; top:${img.style.top};`
+                );
+                const imgWidth = BubbleManager.pxToNumber(img.style.width);
+                console.warn(
+                    `Missing image: resetting left from ${imgLeft} to 0, top from ${imgTop} to 0, and width from ${imgWidth} to ${imgWidth +
+                        imgLeft}`
+                );
+                img.style.left = "0px";
+                img.style.top = "0px";
+                img.style.width = imgWidth + imgLeft + "px";
+            }
         }
         this.alignControlFrameWithActiveElement();
     }
