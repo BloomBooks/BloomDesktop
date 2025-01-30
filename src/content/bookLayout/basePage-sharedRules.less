@@ -49,6 +49,18 @@ textarea,
     background-position: center;
 }
 
+// The following two rules allow missing images to occupy the full space available
+// to them if they exist.  This allows the user to see the error message from the
+// alt attribute, and to manipulate the controls to remove or replace the missing
+// image.  See BL-14241.
+.bloom-imageContainer > .bloom-textOverPicture.bloom-backgroundImage {
+    width: 100%;
+    height: 100%;
+}
+#overlay-control-frame {
+    height: 100%;
+}
+
 // Centers the img in the container making it as large as possible while preserving aspect ratio
 // (for all current pages, which currently have a child img element)
 .bloom-imageContainer img {
