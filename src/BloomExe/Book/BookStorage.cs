@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
@@ -1056,12 +1055,12 @@ namespace Bloom.Book
             },
             new Feature()
             {
-                FeatureId = "bloomGames6.1",
-                FeaturePhrase = "Bloom Games added in 6.1",
+                FeatureId = "croppedImages",
+                FeaturePhrase = "Cropped images",
                 BloomDesktopMinVersion = "6.1",
-                BloomReaderMinVersion = "3.3",
+                BloomReaderMinVersion = "1.0",
                 XPath =
-                    "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
+                    "//div[contains(@class,'bloom-textOverPicture')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
             }
         };
 
@@ -2563,13 +2562,20 @@ namespace Bloom.Book
         {
             if (IsStaticContent(FolderPath))
                 return; // don't try to update our own templates, it's a waste and they might be locked.
-            if (IsPathReadonly(FolderPath))
+
+            // Windows doesn't actually care if the folder is readonly. It only cares about the file-level permissions.
+            // And if the files are readonly, we handle that elsewhere. See BloomUnauthorizedAccessException.
+            // Previously, we had an early return, including for Windows, and we ran into issues with
+            // book support files silently not being updated. See BL-14174.
+            // Instead, we now let the update continue on Windows, and we throw an exception
+            // for other environments (not yet used as of Jan 2025).
+            if (!Platform.IsWindows && IsPathReadonly(FolderPath))
             {
                 Logger.WriteEvent(
-                    "Not updating files in folder {0} because the directory is read-only.",
+                    "Can't update files in folder {0} because the directory is read-only.",
                     FolderPath
                 );
-                return;
+                throw new UnauthorizedAccessException();
             }
 
             // We want current shipping versions of these copied into the destination folder always.
