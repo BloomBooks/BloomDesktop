@@ -110,6 +110,21 @@ export function SetupImage(image) {
         image.removeAttribute("width");
         image.removeAttribute("height");
     }
+    var hndlr = image.getAttribute("onerror");
+    if (!hndlr) {
+        // Cover images get a handler assigned in C# code, and also don't
+        // preserve the bloom-imageLoadError class.  Assigning the handler
+        // happens too late for the initial load on cover pages.  See BL-14241.
+        image.classList.remove("bloom-imageLoadError");
+        image.onerror = HandleImageError;
+    }
+}
+
+export function HandleImageError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    target.onerror = null; // don't keep calling this
+    console.error("Image failed to load:", target.src);
+    target.classList.add("bloom-imageLoadError");
 }
 
 export function GetButtonModifier(container) {
@@ -790,6 +805,11 @@ function SetAlternateTextOnImages(element) {
             "This picture, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
         const nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
         const decodedName = decodeURI(nameWithoutQueryString);
+        // show English to start with in case localization never returns even a failure
+        $(element).attr(
+            "alt",
+            theOneLocalizationManager.simpleFormat(englishText, [decodedName])
+        );
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Image.AltMsg",

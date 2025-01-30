@@ -5292,7 +5292,11 @@ export class BubbleManager {
         }
         let imgAspectRatio = bgOverlay.clientWidth / bgOverlay.clientHeight;
         const img = getImageFromOverlay(bgOverlay);
+        let missingImage = false;
         if (img) {
+            missingImage =
+                img.naturalHeight === 0 &&
+                img.classList.contains("bloom-imageLoadError");
             // We don't ever expect there not to be an img. If it happens, we'll just go
             // ahead and adjust based on the current shape of the overlay.
             // if we don't have a height and width, or we know the image src changed
@@ -5371,6 +5375,24 @@ export class BubbleManager {
                 BubbleManager.pxToNumber(img.style.left) * scale + "px";
             img.style.top =
                 BubbleManager.pxToNumber(img.style.top) * scale + "px";
+        }
+        // Ensure that the missing image message is displayed without being cropped.
+        // See BL-14241.
+        if (missingImage && img && img.style && img.style.width.length > 0) {
+            const imgLeft = BubbleManager.pxToNumber(img.style.left);
+            if (imgLeft < 0) {
+                img.setAttribute(
+                    "data-style",
+                    `left:${img.style.left}; width:${img.style.width}`
+                );
+                const imgWidth = BubbleManager.pxToNumber(img.style.width);
+                // console.warn(
+                //     `Missing image: resetting left from ${imgLeft} to 0 and width from ${imgWidth} to ${imgWidth +
+                //         imgLeft}`
+                // );
+                img.style.left = "0px";
+                img.style.width = imgWidth + imgLeft + "px";
+            }
         }
         this.alignControlFrameWithActiveElement();
     }

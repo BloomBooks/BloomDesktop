@@ -4,6 +4,7 @@ import * as $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
+    HandleImageError,
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
@@ -405,6 +406,12 @@ export function changeImage(imageInfo: {
     // has an <img> element, we're setting the src on that. But if it does not, we're
     // setting the background-image on the container itself.
     if (imgOrImageContainer.tagName === "IMG") {
+        // We need to reset the image load error flag for a new image.  We also want to
+        // install an error handler to set the flag if needed.  See BL-14241.
+        (imgOrImageContainer as HTMLImageElement).classList.remove(
+            "bloom-imageLoadError"
+        );
+        (imgOrImageContainer as HTMLImageElement).onerror = HandleImageError;
         (imgOrImageContainer as HTMLImageElement).src = imageInfo.src;
     }
     // else if it has class bloom-imageContainer, we need to set the background-image on the container
