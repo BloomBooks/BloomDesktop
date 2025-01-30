@@ -208,6 +208,9 @@ namespace Bloom
                         .Where((arg) => commandTypes.Contains(arg))
                         .As<ICommand>();
 
+                    var bookRenameEvent = new BookRenamedEvent();
+                    builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
+
                     //This deserves some explanation:
                     //*every* collection has a "*.BloomCollection" settings file. But the one we make the most use of is the one editable collection
                     //That's why we're registering it... it gets used all over. At the moment (May 2012), we don't ever read the
@@ -345,16 +348,27 @@ namespace Bloom
 
                     builder.RegisterType<CreateFromSourceBookCommand>().InstancePerLifetimeScope();
 
-                    // builder
-                    //     .Register<BloomServer>(
-                    //         c =>
-                    //             new BloomServer(
-                    //                 new RuntimeImageProcessor(bookRenameEvent),
-                    //                 c.Resolve<BookSelection>(),
-                    //                 c.Resolve<CollectionSettings>()
-                    //             )
-                    //     )
-                    //     .SingleInstance();
+                    // See related comment below for BL-688
+                    //				string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
+                    //				if (Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
+                    //				{
+                    //					// REVIEW: This seems to be used only for testing purposes
+                    //					BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
+                    //					var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
+                    //					_httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
+                    //				}
+                    //				else
+                    //				{
+                    builder
+                        .Register<BloomServer>(
+                            c =>
+                                new BloomServer(
+                                    new RuntimeImageProcessor(bookRenameEvent),
+                                    c.Resolve<BookSelection>(),
+                                    c.Resolve<CollectionSettings>()
+                                )
+                        )
+                        .SingleInstance();
 
                     builder.Register<Func<WorkspaceView>>(
                         c =>
@@ -400,9 +414,7 @@ namespace Bloom
                 Application.Exit();
             }
 
-            var server = parentContainer.Resolve<BloomServer>();
-            server.SetBookSelectionDuringInitialization(_scope.Resolve<BookSelection>());
-            server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
+            var server = _scope.Resolve<BloomServer>();
             server.StartListening();
             _scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 

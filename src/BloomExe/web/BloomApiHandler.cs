@@ -34,24 +34,13 @@ namespace Bloom.Api
         // This allows certain methods to run concurrently.
         private object I18NLock = new object(); // used to synchronize access to I18N methods
         private object SyncObj = new object(); // used to synchronize access to various other methods
-        private BookSelection _bookSelection;
+        private readonly BookSelection _bookSelection;
 
         public CollectionSettings CurrentCollectionSettings { get; private set; }
 
-        // TODO take out arguments?
         public BloomApiHandler(BookSelection bookSelection, CollectionSettings collectionSettings)
         {
             _bookSelection = bookSelection;
-            CurrentCollectionSettings = collectionSettings;
-        }
-
-        public void SetBookSelectionDuringInitialization(BookSelection bookSelection)
-        {
-            _bookSelection = bookSelection;
-        }
-
-        public void SetCollectionSettingsDuringInitialization(CollectionSettings collectionSettings)
-        {
             CurrentCollectionSettings = collectionSettings;
         }
 
