@@ -62,7 +62,20 @@ textarea,
 .bloom-imageContainer.bloom-imageObjectFit-cover {
     background-size: cover;
 }
-.bloom-textOverPicture .bloom-imageContainer img {
+
+// A rule elsewhere says that images in image containers should be object-fit:contain
+// and height:100%. That's necessary for images that haven't been converted to 6.1 mode,
+// where the imageContainer is the size of the image, so the browser will put it where
+// older bloom's intended.
+// On the other hand we must prevent it for cropped images, where we explicitly position
+// the image to produce the cropping.
+// A third possible state is that we have converted to 6.1 but not cropped. In this case,
+// it doeesn't matter whether we override the old rule, since the imageContainer is already
+// the right size. The easiest way to make
+// sure we don't mess up the old overlays but do get this rule for cropped images
+// where we need it is to look for the width in the style attribute, which is always
+// present for cropped images (and not otherwise, at least in overlays).
+.bloom-textOverPicture .bloom-imageContainer img[style*="width"] {
     object-fit: unset;
     height: unset;
     // width will initially be 100%, but typically overridden by object style

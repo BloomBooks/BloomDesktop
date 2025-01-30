@@ -1054,6 +1054,15 @@ namespace Bloom.Book
             },
             new Feature()
             {
+                FeatureId = "croppedImages",
+                FeaturePhrase = "Cropped images",
+                BloomDesktopMinVersion = "6.1",
+                BloomReaderMinVersion = "1.0",
+                XPath =
+                    "//div[contains(@class,'bloom-textOverPicture')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
+            },
+            new Feature()
+            {
                 FeatureId = "bloomGames6.2",
                 FeaturePhrase = "Bloom Games added in 6.2",
                 BloomDesktopMinVersion = "6.2",

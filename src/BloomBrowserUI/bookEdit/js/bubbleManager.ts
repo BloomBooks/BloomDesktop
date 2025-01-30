@@ -1631,6 +1631,11 @@ export class BubbleManager {
             // an additional move makes continuing the last crop invalid.
             this.lastCropControl = undefined;
         }
+        // Now the crop is over, if it is actually no longer cropped at all, we can
+        // remove the cropping-specfic style info on the image.
+        // Doing so helps us more accurately determine whether a book has cropped images,
+        // which means it is not allowed to open in earlier versions of Bloom.
+        this.adjustMoveCropHandleVisibility(true);
     };
     private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
         if (!this.activeElement) return; // should never happen, but makes lint happy
@@ -2997,7 +3002,7 @@ export class BubbleManager {
     // unless the bubble has actually been cropped. Unless we figure out something
     // sensible to do in this case, it's better not to show it, lest the user be
     // confused by a control that does nothing.
-    private adjustMoveCropHandleVisibility() {
+    private adjustMoveCropHandleVisibility(removeCropAttrsIfNotNeeded = false) {
         const controlFrame = document.getElementById("overlay-control-frame");
         if (!controlFrame || !this.activeElement) return;
         const imgC = this.activeElement.getElementsByClassName(
@@ -3014,6 +3019,12 @@ export class BubbleManager {
             wantMoveCropHandle =
                 imgRect.width > controlRect.width + 1 ||
                 imgRect.height > controlRect.height + 1;
+            if (!wantMoveCropHandle && removeCropAttrsIfNotNeeded) {
+                // remove the width, top, left styles that indicate cropping
+                img.style.width = "";
+                img.style.top = "";
+                img.style.left = "";
+            }
         }
         controlFrame.classList.toggle(
             "bloom-ui-overlay-show-move-crop-handle",

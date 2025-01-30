@@ -1652,7 +1652,8 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
 }
 
 // Not in 5.6, but needed for new image cropping to work.
-.bloom-textOverPicture .bloom-imageContainer img {
+// See comment on the similar rule in basePage-sharedRules.less
+.bloom-textOverPicture .bloom-imageContainer img[style*="width"] {
     object-fit: unset;
     height: unset;
 }
