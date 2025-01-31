@@ -3629,10 +3629,10 @@
         <target xml:lang="fr" state="final">13cm carrés</target>
         <note>ID: LayoutChoices.Cm13Landscape</note>
       </trans-unit>
-      <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Comic Portrait</source>
+      <trans-unit id="LayoutChoices.USComicPortrait" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">US Comic Portrait</source>
         <target xml:lang="fr" state="final">Portrait en BD</target>
-        <note>ID: LayoutChoices.ComicPortrait</note>
+        <note>ID: LayoutChoices.USComicPortrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device16x9 Landscape</source>

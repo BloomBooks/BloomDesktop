@@ -3631,10 +3631,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Cuadro de 13cm</target>
         <note>ID: LayoutChoices.Cm13Landscape</note>
       </trans-unit>
-      <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Comic Portrait</source>
+      <trans-unit id="LayoutChoices.USComicPortrait" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">US Comic Portrait</source>
         <target xml:lang="es-ES" state="final">Cómic Vertical</target>
-        <note>ID: LayoutChoices.ComicPortrait</note>
+        <note>ID: LayoutChoices.USComicPortrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device16x9 Landscape</source>
