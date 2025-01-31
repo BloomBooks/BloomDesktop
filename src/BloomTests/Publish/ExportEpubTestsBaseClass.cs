@@ -75,7 +75,7 @@ namespace BloomTests.Publish
                 GetTestBookSelection(),
                 GetTestFileLocator()
             );
-            server.StartListening();
+            server.EnsureListening();
             return server;
         }
 

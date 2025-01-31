@@ -161,7 +161,6 @@ namespace Bloom
                                     typeof(PublishEpubApi),
                                     typeof(AccessibilityCheckApi),
                                     typeof(CollectionSettingsApi),
-                                    typeof(NewCollectionWizardApi),
                                     typeof(CollectionApi),
                                     typeof(PageControlsApi),
                                     typeof(ReadersApi),
@@ -175,7 +174,6 @@ namespace Bloom
                                     typeof(PageListApi),
                                     typeof(TalkingBookApi),
                                     typeof(ToolboxApi),
-                                    typeof(CommonApi),
                                     typeof(TeamCollectionApi),
                                     typeof(BrandingSettings),
                                     typeof(AppApi),
@@ -389,7 +387,9 @@ namespace Bloom
 
             var server = parentContainer.Resolve<BloomServer>();
             server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
-            server.StartListening();
+            server.EnsureListening();
+
+            // A few APIs are now registered in the constructor of ApplicationContainer
             _scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 
             _scope
@@ -407,7 +407,6 @@ namespace Bloom
             _scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
-            _scope.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookCommandsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<SpreadsheetApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -423,7 +422,6 @@ namespace Bloom
             _scope.Resolve<PageListApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<TalkingBookApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ToolboxApi>().RegisterWithApiHandler(server.ApiHandler);
-            _scope.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<TeamCollectionApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<AppApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);

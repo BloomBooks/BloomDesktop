@@ -1310,12 +1310,8 @@ namespace Bloom.Api
         /// </summary>
         public virtual void EnsureListening()
         {
-            if (_listener?.IsListening != true)
-                StartListening();
-        }
-
-        public virtual void StartListening()
-        {
+            if (_listener?.IsListening == true)
+                return;
             const int kStartingPort = 8089;
             const int kNumberOfPortsToTry = 10;
             bool success = false;

@@ -63,9 +63,20 @@ namespace Bloom
                 )
                 .SingleInstance();
 
+            //Other classes which are also singletons for the whole application
+            builder
+                .RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .InstancePerLifetimeScope()
+                .Where(
+                    t => new[] { typeof(CommonApi), typeof(NewCollectionWizardApi), }.Contains(t)
+                );
+
             _container = builder.Build();
 
             Application.ApplicationExit += OnApplicationExit;
+            var server = _container.Resolve<BloomServer>();
+            _container.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
+            _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
         }
 
         private void OnApplicationExit(object sender, EventArgs e)
@@ -85,6 +96,8 @@ namespace Bloom
         public BookThumbNailer BookThumbNailer => _container.Resolve<BookThumbNailer>();
 
         internal ProblemReportApi ProblemReportApi => _container.Resolve<ProblemReportApi>();
+
+        public BloomServer BloomServer => _container.Resolve<BloomServer>();
 
         public void Dispose()
         {

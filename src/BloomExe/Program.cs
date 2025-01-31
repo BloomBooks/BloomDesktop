@@ -1417,7 +1417,7 @@ namespace Bloom
                 //		return;
                 //	}
                 //}
-
+                _applicationContainer.BloomServer.EnsureListening();
                 using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
                 {
                     dlg.StartPosition = FormStartPosition.Manual; // try not to have it under the splash screen

@@ -48,7 +48,7 @@ namespace BloomTests.Publish
                 new BookSelection(),
                 locator
             );
-            s_bloomServer.StartListening();
+            s_bloomServer.EnsureListening();
         }
 
         [OneTimeTearDown]
