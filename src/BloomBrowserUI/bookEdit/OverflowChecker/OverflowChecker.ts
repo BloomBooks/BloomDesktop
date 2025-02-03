@@ -79,7 +79,7 @@ export default class OverflowChecker {
             .bind("_splitpaneparentresize", function() {
                 const $this = $(this);
                 $this.find(queryElementsThatCanOverflow).each(function() {
-                    OverflowChecker.MarkOverflowInternal(this);
+                    OverflowChecker.CheckForOverflowSoon(this);
                 });
             });
 
@@ -321,6 +321,26 @@ export default class OverflowChecker {
             }
         }
         return null;
+    }
+
+    // We want to check for overflow, but we can't afford the delay right now.
+    // (checking all elements on a complex page can take several seconds, and this
+    // is called on every mouse move when adjusting origami). We will wait a second.
+    // If we're asked to check the same element again before that second is up, we'll
+    // cancel that timer and start a new one. When we don't get a new request for a
+    // whole second, we'll do the check.
+    // A further benefit of this delay is that a single mouse movement could resize
+    // several origami elements, and the loop over all of them used to be in the
+    // handling of one mouse move. Now, each timeout will be its own event, and
+    // hopefully other events can be processed in between if they occur.
+    public static CheckForOverflowSoon(element: HTMLElement) {
+        const timeOut = (element as any).overflowCheckTimeout;
+        if (timeOut) {
+            clearTimeout(timeOut);
+        }
+        (element as any).overflowCheckTimeout = setTimeout(() => {
+            OverflowChecker.MarkOverflowInternal(element);
+        }, 1000);
     }
 
     // Checks for overflow on a bloom-page and adds/removes the proper class
