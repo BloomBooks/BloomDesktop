@@ -43,9 +43,9 @@ export function getLanguageData(
 ): ILanguageData {
     return {
         LanguageTag: languageTag || null,
-        DefaultName: defaultDisplayName(selection?.language),
+        DefaultName: selection ? defaultDisplayName(selection?.language) : null,
         DesiredName: selection?.customDetails?.displayName || null,
-        Country: defaultRegionForLangTag(languageTag).name
+        Country: languageTag ? defaultRegionForLangTag(languageTag).name : null
     };
 }
 
