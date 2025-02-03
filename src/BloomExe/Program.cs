@@ -1418,6 +1418,9 @@ namespace Bloom
                 //	}
                 //}
 
+                // We normally start listening when setting up the project context. However, this dialog might
+                // get run at startup when we don't have a chosen project from which to make a ProjectContext
+                _applicationContainer.BloomServer.EnsureListening();
                 using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
                 {
                     dlg.StartPosition = FormStartPosition.Manual; // try not to have it under the splash screen

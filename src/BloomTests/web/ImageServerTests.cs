@@ -98,7 +98,7 @@ namespace BloomTests.web
 
         private BloomServer CreateBloomServer()
         {
-            return new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, null);
+            return new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), null);
         }
 
         private TempFile MakeTempImage(string fileName = null)

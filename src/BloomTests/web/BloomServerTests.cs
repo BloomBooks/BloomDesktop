@@ -207,6 +207,8 @@ namespace BloomTests.web
             // Setup
             using (var server = CreateBloomServer())
             {
+                server.SetCollectionSettingsDuringInitialization(new CollectionSettings());
+
                 // set boolean handler
                 server.ApiHandler.RegisterBooleanEndpointHandler(
                     "allowNewBooks",
@@ -389,12 +391,10 @@ namespace BloomTests.web
         private BloomServer CreateBloomServer(Bloom.Book.Book book)
         {
             var bookSelection = new BookSelection();
-            var collectionSettings = new CollectionSettings();
             bookSelection.SelectBook(book);
             return new BloomServer(
                 new RuntimeImageProcessor(new BookRenamedEvent()),
                 bookSelection,
-                collectionSettings,
                 _fileLocator
             );
         }

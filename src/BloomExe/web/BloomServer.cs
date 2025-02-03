@@ -172,16 +172,11 @@ namespace Bloom.Api
         /// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
         /// </summary>
         internal BloomServer(BookSelection bookSelection)
-            : this(
-                new RuntimeImageProcessor(new BookRenamedEvent()),
-                bookSelection,
-                new CollectionSettings()
-            ) { }
+            : this(new RuntimeImageProcessor(new BookRenamedEvent()), bookSelection) { }
 
         public BloomServer(
             RuntimeImageProcessor cache,
             BookSelection bookSelection,
-            CollectionSettings collectionSettings,
             BloomFileLocator fileLocator = null
         )
         {
@@ -194,8 +189,7 @@ namespace Bloom.Api
             _fileLocator = fileLocator;
             _cache = cache;
             _useCache = Settings.Default.ImageHandler != "off";
-            CurrentCollectionSettings = collectionSettings;
-            ApiHandler = new BloomApiHandler(bookSelection, collectionSettings);
+            ApiHandler = new BloomApiHandler(bookSelection);
             _theOneInstance = this;
         }
 
@@ -206,6 +200,22 @@ namespace Bloom.Api
             Dispose(false);
         }
 #endif
+
+        /// <summary>
+        /// Normally we would want this to be initialized by the constructor, but because BloomServer is
+        /// a singleton for the whole application and we're creating it before the ProjectContext,
+        /// we can't a get a CollectionSettings until we have the collection folder which allows us to
+        /// make the ProjectContext and CollectionSettings. So we have this method that's just used once
+        /// by the project context.
+        /// It would be better still if we could get the BloomServer not to know about the collection at all.
+        /// John's idea is that any api about the collection should pass something that identifies it.
+        /// </summary>
+        /// <param name="collectionSettings"></param>
+        public void SetCollectionSettingsDuringInitialization(CollectionSettings collectionSettings)
+        {
+            CurrentCollectionSettings = collectionSettings;
+            ApiHandler.SetCollectionSettingsDuringInitialization(collectionSettings);
+        }
 
         private static string _keyToCurrentPage;
 
@@ -1300,12 +1310,8 @@ namespace Bloom.Api
         /// </summary>
         public virtual void EnsureListening()
         {
-            if (_listener?.IsListening != true)
-                StartListening();
-        }
-
-        public virtual void StartListening()
-        {
+            if (_listener?.IsListening == true)
+                return;
             const int kStartingPort = 8089;
             const int kNumberOfPortsToTry = 10;
             bool success = false;
