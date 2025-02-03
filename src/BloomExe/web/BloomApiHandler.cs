@@ -43,6 +43,10 @@ namespace Bloom.Api
             _bookSelection = bookSelection;
         }
 
+        /// <summary>
+        /// Only used in BloomServer.SetCollectionSettingsDuringInitialization. See comment there.
+        /// </summary>
+        /// <param name="collectionSettings"></param>
         public void SetCollectionSettingsDuringInitialization(CollectionSettings collectionSettings)
         {
             CurrentCollectionSettings = collectionSettings;

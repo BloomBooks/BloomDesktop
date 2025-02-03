@@ -74,6 +74,14 @@ namespace Bloom
             _container = builder.Build();
 
             Application.ApplicationExit += OnApplicationExit;
+
+            // Register the API Handlers that are global to the application (not dependent on knowing a particular project).
+            // Note: it is is a work in progress to transfer more API handlers from ProjectContext to here.
+            // Ideally, nothing in BloomServer, and hence not in any API handler, would know the current project.
+            // Any API call whose answer is project-dependent would pass a project identifier. Then all the
+            // handlers could all be registered here (and created by the ApplicationContainer). It's likely
+            // that a lot more could already be moved, but so far we just did enough for the handful of dialogs
+            // that need to work independent of a project.
             var server = _container.Resolve<BloomServer>();
             _container.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
             _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
