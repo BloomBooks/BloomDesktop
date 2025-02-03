@@ -267,7 +267,8 @@ namespace Bloom.ImageProcessing
             string pathToProcessedImage,
             int thumbnailWidth,
             int thumbnailHeight,
-            Color backColor
+            Color backColor,
+            bool padImageToRequestedSize = true
         )
         {
             using (var coverImage = PalasoImage.FromFileRobustly(coverImagePath))
@@ -298,6 +299,11 @@ namespace Bloom.ImageProcessing
                 // pad to center the cover image
                 var horizontalPadding = (availableThumbnailWidth - targetImageWidth) / 2;
                 var verticalPadding = (availableThumbnailHeight - targetImageHeight) / 2;
+                if (!padImageToRequestedSize)
+                {
+                    horizontalPadding = 0;
+                    verticalPadding = 0;
+                }
                 var destRect = new Rectangle(
                     kborder + horizontalPadding,
                     kborder + verticalPadding,
@@ -310,7 +316,7 @@ namespace Bloom.ImageProcessing
 
                 Rectangle backgroundAndBorderRect;
                 var appearsToBeJpeg = ImageUtils.AppearsToBeJpeg(coverImage);
-                if (appearsToBeJpeg)
+                if (appearsToBeJpeg || !padImageToRequestedSize)
                 {
                     backgroundAndBorderRect = destRect;
                     backgroundAndBorderRect.Inflate(kborder * 2, kborder * 2);
@@ -320,8 +326,15 @@ namespace Bloom.ImageProcessing
                     // or, if we decide to always deliver the full thing:
                     backgroundAndBorderRect = new Rectangle(0, 0, thumbnailWidth, thumbnailHeight);
                 }
+                var newWidth = thumbnailWidth;
+                var newHeight = thumbnailHeight;
+                if (!padImageToRequestedSize)
+                {
+                    newWidth = Math.Min(newWidth, targetImageWidth + kborder * 2);
+                    newHeight = Math.Min(newHeight, targetImageHeight + kborder * 2);
+                }
 
-                using (var thumbnail = new Bitmap(thumbnailWidth, thumbnailHeight))
+                using (var thumbnail = new Bitmap(newWidth, newHeight))
                 using (var g = Graphics.FromImage(thumbnail))
                 using (var brush = new SolidBrush(backColor))
                 {

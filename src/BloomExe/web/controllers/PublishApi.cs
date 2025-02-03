@@ -315,7 +315,8 @@ namespace Bloom.web.controllers
                                 thumbnail.Path,
                                 256,
                                 256,
-                                _thumbnailBackgroundColor
+                                _thumbnailBackgroundColor,
+                                padImageToRequestedSize: false
                             );
                             request.ReplyWithImage(thumbnail.Path);
                         }
