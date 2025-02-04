@@ -206,7 +206,7 @@ namespace Bloom.Api
         /// a singleton for the whole application and we're creating it before the ProjectContext,
         /// we can't a get a CollectionSettings until we have the collection folder which allows us to
         /// make the ProjectContext and CollectionSettings. So we have this method that's just used once
-        /// by the project context.
+        /// by the project context (plus tests).
         /// It would be better still if we could get the BloomServer not to know about the collection at all.
         /// John's idea is that any api about the collection should pass something that identifies it.
         /// </summary>
