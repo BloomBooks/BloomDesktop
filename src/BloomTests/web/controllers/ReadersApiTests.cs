@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.SafeXml;
 using Moq;
 using NUnit.Framework;
@@ -20,6 +21,7 @@ namespace BloomTests.web
             _bookSelection = new BookSelection();
             _bookSelection.SelectBook(new Bloom.Book.Book());
             _server = new BloomServer(_bookSelection);
+            _server.SetCollectionSettingsDuringInitialization(new CollectionSettings());
 
             var controller = new ReadersApi(_bookSelection, null);
             controller.RegisterWithApiHandler(_server.ApiHandler);
@@ -237,7 +239,6 @@ namespace BloomTests.web
             var storage = CreateMockStorage(dom, "GetPagesForReader");
             var book = new Bloom.Book.Book(storage.Object.BookInfo, storage.Object);
             _bookSelection.SelectBook(book);
-
             var result = ApiTest.GetString(_server, "readers/io/textOfContentPages");
             Assert.That(
                 result,
