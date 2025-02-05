@@ -56,6 +56,7 @@ import {
     tryProcessHyperlink
 } from "../bloomField/hyperlinks";
 import { useApiString } from "../../utils/bloomApi";
+import { MissingMetadataIcon } from "./MissingMetadataIcon";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -92,6 +93,8 @@ const OverlayContextControls: React.FunctionComponent<{
     const videoAlreadyChosen = !!videoSource?.getAttribute("src");
     const isPlaceHolder =
         hasImage && img.getAttribute("src")?.startsWith("placeHolder.png");
+    const missingMetadata =
+        hasImage && !isPlaceHolder && !img.getAttribute("data-copyright");
     const setMenuOpen = (open: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the bubble manager
@@ -139,9 +142,9 @@ const OverlayContextControls: React.FunctionComponent<{
         kbackgroundImageClass
     );
 
-    // These commands apply to all overlays.
+    // These commands apply to all overlays (currently none!).
     const menuOptions: IMenuItemWithSubmenu[] = [];
-    // This one to everything except background images
+    // These to everything except background images
     if (!isBackgroundImage) {
         menuOptions.unshift({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
@@ -210,6 +213,14 @@ const OverlayContextControls: React.FunctionComponent<{
         addTextMenuItems(menuOptions, editable, props.overlay);
     }
 
+    const runMetadataDialog = () => {
+        if (!props.overlay) return;
+        if (!imgContainer) return;
+        showCopyrightAndLicenseDialog(
+            getImageUrlFromImageContainer(imgContainer as HTMLElement)
+        );
+    };
+
     return (
         <ThemeProvider theme={lightTheme}>
             <div
@@ -246,8 +257,18 @@ const OverlayContextControls: React.FunctionComponent<{
                 >
                     {hasImage && (
                         <Fragment>
+                            {// Want an attention-grabbing version of set metadata if there is none.)
+                            missingMetadata && (
+                                <ButtonWithTooltip
+                                    tipL10nKey="EditTab.Image.EditMetadataOverlay"
+                                    icon={MissingMetadataIcon}
+                                    onClick={() => runMetadataDialog()}
+                                />
+                            )}
                             {// Choose image is only a LIKELY choice if we don't yet have one.
-                            isPlaceHolder && (
+                            // (or if it's a background image...not sure why, except otherwise
+                            // the toolbar might not have any icons for a background image.)
+                            (isPlaceHolder || isBackgroundImage) && (
                                 <ButtonWithTooltip
                                     tipL10nKey="EditTab.Image.ChooseImage"
                                     icon={SearchIcon}
@@ -266,7 +287,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                     }}
                                 />
                             )}
-                            {isPlaceHolder && (
+                            {(isPlaceHolder || isBackgroundImage) && (
                                 <ButtonWithTooltip
                                     tipL10nKey="EditTab.Image.PasteImage"
                                     icon={PasteIcon}
@@ -339,14 +360,19 @@ const OverlayContextControls: React.FunctionComponent<{
                             }}
                         />
                     )}
-                    <ButtonWithTooltip
-                        tipL10nKey="Common.Delete"
-                        icon={DeleteIcon}
-                        onClick={() => {
-                            if (!props.overlay) return;
-                            theOneBubbleManager?.deleteBubble();
-                        }}
-                    />
+                    {// Not sure of the reasoning here, since we do have a way to 'delete' a background image,
+                    // not by removing the overlay but by setting the image back to a placeholder.
+                    // But the mockup in BL-14069 definitely doesn't have it.
+                    isBackgroundImage || (
+                        <ButtonWithTooltip
+                            tipL10nKey="Common.Delete"
+                            icon={DeleteIcon}
+                            onClick={() => {
+                                if (!props.overlay) return;
+                                theOneBubbleManager?.deleteBubble();
+                            }}
+                        />
+                    )}
                     <button
                         ref={ref => (menuEl.current = ref)}
                         css={getIconCss()}

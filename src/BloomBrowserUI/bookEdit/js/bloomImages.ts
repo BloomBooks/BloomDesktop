@@ -298,13 +298,16 @@ export function EnableAllImageEditing() {
 // the img to fit the available space.
 // Precondition: containerDiv must be just a single HTMLElement
 function SetupImageContainer(containerDiv: HTMLElement) {
+    const isOutermostImageContainer = !containerDiv.parentElement?.closest(
+        ".bloom-imageContainer"
+    );
     // Initialize the value of the hoverUp class.
     // the hoverup class should be present whenever the mouse is over the containerDiv.
     // This is usually achieved by mouseenter/mouseleave event handlers,
     // but mouseenter won't trigger if the mouse starts off over the image container when the page is loaded
     // That case is extremely commonplace when adding comic bubbles, because that needs to reload the page.
     // (It is also possible to trigger even when opening up a new page, but probably less likely to happen accidentally)
-    if (containerDiv.matches(":hover")) {
+    if (isOutermostImageContainer && containerDiv.matches(":hover")) {
         containerDiv.classList.add("hoverUp");
     } else {
         containerDiv.classList.remove("hoverUp");
@@ -320,18 +323,20 @@ function SetupImageContainer(containerDiv: HTMLElement) {
     const img = $(containerDiv).find("img");
     SetImageDisplaySizeIfCalledFor($(containerDiv), img);
 
-    $(containerDiv)
-        .mouseenter(function() {
-            addImageEditingButtons(this);
-        })
-        .mouseleave(function(e: JQueryMouseEventObject) {
-            // Page numbers displaying inside the image container must have their
-            // width and height constrained.  That way, hovering over the page number
-            // triggers the mouseleave event, and the image editing buttons are hidden
-            // before the mouse cursor actually leaves the image container, but hovering
-            // above or beside the page number does nothing.  See BL-13098 and BL-13221.
-            removeImageEditingButtons(this);
-        });
+    if (isOutermostImageContainer) {
+        $(containerDiv)
+            .mouseenter(function() {
+                addImageEditingButtons(this);
+            })
+            .mouseleave(function(e: JQueryMouseEventObject) {
+                // Page numbers displaying inside the image container must have their
+                // width and height constrained.  That way, hovering over the page number
+                // triggers the mouseleave event, and the image editing buttons are hidden
+                // before the mouse cursor actually leaves the image container, but hovering
+                // above or beside the page number does nothing.  See BL-13098 and BL-13221.
+                removeImageEditingButtons(this);
+            });
+    }
 }
 
 export function getImageUrlFromImageButton(button: HTMLButtonElement): string {
