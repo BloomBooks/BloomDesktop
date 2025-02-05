@@ -1543,7 +1543,6 @@ export class BubbleManager {
         this.currentDragControl = event.currentTarget as HTMLElement;
         this.currentDragControl.classList.add("active-control");
         this.currentDragSide = side;
-        const style = this.activeElement.style;
         this.oldWidth = this.activeElement.clientWidth;
         this.oldHeight = this.activeElement.clientHeight;
         this.oldTop = this.activeElement.offsetTop;
@@ -1564,36 +1563,38 @@ export class BubbleManager {
                 this.lastCropControl = event.currentTarget as HTMLElement;
             }
             // Determine whether the drag is starting in the "no cropping" position
-            // and we therefore want to disable cropping until we move a bit.
-            switch (side) {
-                case "n":
-                    this.cropSnapDisabled = this.oldImageTop === 0;
-                    break;
-                case "w":
-                    this.cropSnapDisabled = this.oldImageLeft === 0;
-                    break;
-                case "s":
-                    // initialCropImageTop + initialCropImageHeight is where the bottom of the image is.
-                    // this.oldHeight is where the bottom of the overlay is. We're in this state if
-                    // they are equal. There can be fractions of pixels involved, so we allow up to
-                    // a pixel and still consider it uncropped.
-                    this.cropSnapDisabled =
-                        Math.abs(
-                            this.initialCropImageTop +
-                                this.initialCropImageHeight -
-                                this.oldHeight
-                        ) < 1;
-                    break;
-                case "e":
-                    // Similarly figure whether the right edge is uncropped.
-                    this.cropSnapDisabled =
-                        Math.abs(
-                            this.initialCropImageLeft +
-                                this.initialCropImageWidth -
-                                this.oldWidth
-                        ) < 1;
-                    break;
-            }
+            // and we therefore want to disable snapping until we move a bit.
+            // switch (side) {
+            //     case "n":
+            //         this.cropSnapDisabled = this.oldImageTop === 0;
+            //         break;
+            //     case "w":
+            //         this.cropSnapDisabled = this.oldImageLeft === 0;
+            //         break;
+            //     case "s":
+            //         // initialCropImageTop + initialCropImageHeight is where the bottom of the image is.
+            //         // this.oldHeight is where the bottom of the overlay is. We're in this state if
+            //         // they are equal. There can be fractions of pixels involved, so we allow up to
+            //         // a pixel and still consider it uncropped.
+            //         this.cropSnapDisabled =
+            //             Math.abs(
+            //                 this.initialCropImageTop +
+            //                     this.initialCropImageHeight -
+            //                     this.oldHeight
+            //             ) < 1;
+            //         break;
+            //     case "e":
+            //         // Similarly figure whether the right edge is uncropped.
+            //         this.cropSnapDisabled =
+            //             Math.abs(
+            //                 this.initialCropImageLeft +
+            //                     this.initialCropImageWidth -
+            //                     this.oldWidth
+            //             ) < 1;
+            //         break;
+            // }
+            // For now we're disabling move beyond zero cropping, so we don't need snap-to-zero.
+            this.cropSnapDisabled = true;
             if (!img.style.width) {
                 // From here on it should stay this width unless we decide otherwise.
                 img.style.width = `${this.initialCropImageWidth}px`;
@@ -1707,25 +1708,147 @@ export class BubbleManager {
         // ctrl key suppresses snapping, and we also suppress it if we started
         // snapped and haven't moved far. This is to allow very small adjustments.
         const snapping = !event.ctrlKey && !this.cropSnapDisabled;
-        const snapDelta = 15;
+        const snapDelta = 30;
+        // This block of code supports snapping to the "zero crop" position (useful if we re-enable
+        // zooming the image by dragging the crop handles outward).
         // Each case begins by figuring out whether, if we are snapping, we should snap.
         // Next it figures out whether we've moved far enough to end the "start at zero"
         // non-snapping. Then it figures out a first approximation of how the overlay and image
         // position and size should change, without considering the possibility that
         // dragging outward would leave white space. A later step adjusts for that.
+        // switch (this.currentDragSide) {
+        //     case "n":
+        //         if (
+        //             snapping &&
+        //             Math.abs(this.oldImageTop - deltaY) < snapDelta
+        //         ) {
+        //             deltaY = this.oldImageTop;
+        //         }
+        //         if (Math.abs(this.oldImageTop - deltaY) > snapDelta) {
+        //             // The distance moved is substantial, time to re-enable snapping
+        //             // for future moves (without ctrl-key).
+        //             this.cropSnapDisabled = false;
+        //         }
+        //         newBubbleHeight = Math.max(
+        //             this.oldHeight - deltaY,
+        //             this.minHeight
+        //         );
+        //         // Everything subsequent behaves as if it only moved as far as permitted.
+        //         deltaY = this.oldHeight - newBubbleHeight;
+        //         this.activeElement.style.height = `${newBubbleHeight}px`;
+        //         // Moves down by the amount the bubble shrank (or up by the amount it grew),
+        //         // so the bottom stays in the same place
+        //         this.activeElement.style.top = `${this.oldTop + deltaY}px`;
+        //         // For a first attempt, we move it the oppposite of how the bubble actually
+        //         // changd size. That might leave a gap at the top, but we'll adjust for that later.
+        //         img.style.top = `${this.oldImageTop - deltaY}px`;
+        //         break;
+        //     case "s":
+        //         // These variables would make the next line more comprehensible, but they only apply
+        //         // to this case and lint does not like declaring variables inside a switch.
+        //         // Essentially we're trying to determine how far apart the bottom of the image and the bottom of the overlay are.
+        //         // const heightThatMathchesBottomOfImage = this.initialCropImageTop + this.initialCropImageHeight;
+        //         // const newHeight = this.oldHeight + deltaY;
+        //         if (
+        //             snapping &&
+        //             Math.abs(
+        //                 this.initialCropImageTop +
+        //                     this.initialCropImageHeight -
+        //                     this.oldHeight -
+        //                     deltaY
+        //             ) < snapDelta
+        //         ) {
+        //             deltaY =
+        //                 this.initialCropImageTop +
+        //                 this.initialCropImageHeight -
+        //                 this.oldHeight;
+        //         }
+        //         if (
+        //             Math.abs(
+        //                 this.initialCropImageTop +
+        //                     this.initialCropImageHeight -
+        //                     this.oldHeight -
+        //                     deltaY
+        //             ) > snapDelta
+        //         ) {
+        //             // The distance moved is substantial, time to re-enable snapping
+        //             // for future moves (without ctrl-key).
+        //             this.cropSnapDisabled = false;
+        //         }
+        //         newBubbleHeight = Math.max(
+        //             this.oldHeight + deltaY,
+        //             this.minHeight
+        //         );
+        //         deltaY = newBubbleHeight - this.oldHeight;
+        //         this.activeElement.style.height = `${newBubbleHeight}px`;
+        //         break;
+        //     case "e":
+        //         // const widthThatMathchesRightOfImage = this.initialCropImageLeft + this.initialCropImageWidth;
+        //         // const newWidth = this.oldWidth + deltaX;
+        //         if (
+        //             snapping &&
+        //             Math.abs(
+        //                 this.initialCropImageLeft +
+        //                     this.initialCropImageWidth -
+        //                     this.oldWidth -
+        //                     deltaX
+        //             ) < snapDelta
+        //         ) {
+        //             deltaX =
+        //                 this.initialCropImageLeft +
+        //                 this.initialCropImageWidth -
+        //                 this.oldWidth;
+        //         }
+        //         if (
+        //             Math.abs(
+        //                 this.initialCropImageLeft +
+        //                     this.initialCropImageWidth -
+        //                     this.oldWidth -
+        //                     deltaX
+        //             ) > snapDelta
+        //         ) {
+        //             // The distance moved is substantial, time to re-enable snapping
+        //             // for future moves (without ctrl-key).
+        //             this.cropSnapDisabled = false;
+        //         }
+        //         newBubbleWidth = Math.max(
+        //             this.oldWidth + deltaX,
+        //             this.minWidth
+        //         );
+        //         deltaX = newBubbleWidth - this.oldWidth;
+        //         this.activeElement.style.width = `${newBubbleWidth}px`;
+        //         break;
+        //     case "w":
+        //         if (
+        //             snapping &&
+        //             Math.abs(this.oldImageLeft - deltaX) < snapDelta
+        //         ) {
+        //             deltaX = this.oldImageLeft;
+        //         }
+        //         if (Math.abs(this.oldImageLeft - deltaX) > snapDelta) {
+        //             // The distance moved is substantial, time to re-enable snapping
+        //             // for future moves (without ctrl-key).
+        //             this.cropSnapDisabled = false;
+        //         }
+        //         newBubbleWidth = Math.max(
+        //             this.oldWidth - deltaX,
+        //             this.minWidth
+        //         );
+        //         deltaX = this.oldWidth - newBubbleWidth;
+        //         this.activeElement.style.width = `${newBubbleWidth}px`;
+        //         this.activeElement.style.left = `${this.oldLeft + deltaX}px`;
+        //         img.style.left = `${this.oldImageLeft - deltaX}px`;
+        //         break;
+        // }
+        // This code, which is an alternative to the block commented out above, just won't let you move
+        // beyond zero cropping.
         switch (this.currentDragSide) {
             case "n":
-                if (
-                    snapping &&
-                    Math.abs(this.oldImageTop - deltaY) < snapDelta
-                ) {
+                // correct if we moved the top too far up, which would leave a gap at the top
+                if (this.oldImageTop - deltaY > 0) {
                     deltaY = this.oldImageTop;
                 }
-                if (Math.abs(this.oldImageTop - deltaY) > snapDelta) {
-                    // The distance moved is substantial, time to re-enable snapping
-                    // for future moves (without ctrl-key).
-                    this.cropSnapDisabled = false;
-                }
+                // correct if we moved too far down, violating the minimum image height constraint.
                 newBubbleHeight = Math.max(
                     this.oldHeight - deltaY,
                     this.minHeight
@@ -1736,42 +1859,27 @@ export class BubbleManager {
                 // Moves down by the amount the bubble shrank (or up by the amount it grew),
                 // so the bottom stays in the same place
                 this.activeElement.style.top = `${this.oldTop + deltaY}px`;
-                // For a first attempt, we move it the oppposite of how the bubble actually
-                // changd size. That might leave a gap at the top, but we'll adjust for that later.
+                // We move it the oppposite of how the bubble actually
+                // changd size.
                 img.style.top = `${this.oldImageTop - deltaY}px`;
                 break;
             case "s":
+                // correct if we moved too far down, which would leave a gap at the bottom
                 // These variables would make the next line more comprehensible, but they only apply
                 // to this case and lint does not like declaring variables inside a switch.
-                // Essentially we're trying to determine how far apart the bottom of the image and the bottom of the overlay are.
+                // Essentially we're trying to determine whether we moved the bottom of the overlay beyond the bottom of the image.
                 // const heightThatMathchesBottomOfImage = this.initialCropImageTop + this.initialCropImageHeight;
                 // const newHeight = this.oldHeight + deltaY;
                 if (
-                    snapping &&
-                    Math.abs(
-                        this.initialCropImageTop +
-                            this.initialCropImageHeight -
-                            this.oldHeight -
-                            deltaY
-                    ) < snapDelta
+                    this.initialCropImageTop + this.initialCropImageHeight <
+                    this.oldHeight + deltaY
                 ) {
                     deltaY =
                         this.initialCropImageTop +
                         this.initialCropImageHeight -
                         this.oldHeight;
                 }
-                if (
-                    Math.abs(
-                        this.initialCropImageTop +
-                            this.initialCropImageHeight -
-                            this.oldHeight -
-                            deltaY
-                    ) > snapDelta
-                ) {
-                    // The distance moved is substantial, time to re-enable snapping
-                    // for future moves (without ctrl-key).
-                    this.cropSnapDisabled = false;
-                }
+                // correct if we moved too far up, violating the minimum image height constraint.
                 newBubbleHeight = Math.max(
                     this.oldHeight + deltaY,
                     this.minHeight
@@ -1780,34 +1888,17 @@ export class BubbleManager {
                 this.activeElement.style.height = `${newBubbleHeight}px`;
                 break;
             case "e":
-                // const widthThatMathchesRightOfImage = this.initialCropImageLeft + this.initialCropImageWidth;
-                // const newWidth = this.oldWidth + deltaX;
+                // correct if we moved too far right, which would leave a gap at the right
                 if (
-                    snapping &&
-                    Math.abs(
-                        this.initialCropImageLeft +
-                            this.initialCropImageWidth -
-                            this.oldWidth -
-                            deltaX
-                    ) < snapDelta
+                    this.initialCropImageLeft + this.initialCropImageWidth <
+                    this.oldWidth + deltaX
                 ) {
                     deltaX =
                         this.initialCropImageLeft +
                         this.initialCropImageWidth -
                         this.oldWidth;
                 }
-                if (
-                    Math.abs(
-                        this.initialCropImageLeft +
-                            this.initialCropImageWidth -
-                            this.oldWidth -
-                            deltaX
-                    ) > snapDelta
-                ) {
-                    // The distance moved is substantial, time to re-enable snapping
-                    // for future moves (without ctrl-key).
-                    this.cropSnapDisabled = false;
-                }
+                // correct if we moved too far left, violating the minimum image width constraint.
                 newBubbleWidth = Math.max(
                     this.oldWidth + deltaX,
                     this.minWidth
@@ -1816,17 +1907,11 @@ export class BubbleManager {
                 this.activeElement.style.width = `${newBubbleWidth}px`;
                 break;
             case "w":
-                if (
-                    snapping &&
-                    Math.abs(this.oldImageLeft - deltaX) < snapDelta
-                ) {
+                // correct if we moved too far left, which would leave a gap at the left
+                if (this.oldImageLeft > deltaX) {
                     deltaX = this.oldImageLeft;
                 }
-                if (Math.abs(this.oldImageLeft - deltaX) > snapDelta) {
-                    // The distance moved is substantial, time to re-enable snapping
-                    // for future moves (without ctrl-key).
-                    this.cropSnapDisabled = false;
-                }
+                // correct if we moved too far right, violating the minimum image width constraint.
                 newBubbleWidth = Math.max(
                     this.oldWidth - deltaX,
                     this.minWidth
@@ -1837,150 +1922,153 @@ export class BubbleManager {
                 img.style.left = `${this.oldImageLeft - deltaX}px`;
                 break;
         }
-        let newImageWidth: number;
-        let newImageHeight: number;
-        // How much of the image should stay cropped on the left if we're adjusting the right, etc.
-        // Some of these are not needed on some sides, but it's easier to calculate them all,
-        // and makes lint happy if we don't declare variables inside the switch.
-        const leftFraction =
-            -this.initialCropImageLeft / this.initialCropImageWidth;
-        // Fraction of the total image width that is left of the center of the bubble.
-        // This stays constant as we crop on the top and bottom.
-        const centerFractionX =
-            leftFraction +
-            this.initialCropBubbleWidth / this.initialCropImageWidth / 2;
-        const rightFraction =
-            (this.initialCropImageWidth +
-                this.initialCropImageLeft -
-                this.initialCropBubbleWidth) /
-            this.initialCropImageWidth;
-        const bottomFraction =
-            (this.initialCropImageHeight +
-                this.initialCropImageTop -
-                this.initialCropBubbleHeight) /
-            this.initialCropImageHeight;
-        const topFraction =
-            -this.initialCropImageTop / this.initialCropImageHeight;
-        // fraction of the total image height that is above the center of the bubble.
-        // This stays constant as we crop on the left and right.
-        const centerFractionY =
-            topFraction +
-            this.initialCropBubbleHeight / this.initialCropImageHeight / 2;
-        // Deliberately dividing by the WIDTH here; all our calculations are
-        // based on the adjusted width of the image.
-        const topAsFractionOfWidth =
-            -this.initialCropImageTop / this.initialCropImageWidth;
-        // Specifically, the aspect ratio for computing the height of the (full) image
-        // from its width.
-        const aspectRatio = img.naturalHeight / img.naturalWidth;
-        switch (this.currentDragSide) {
-            case "e":
-                if (
-                    // the bubble has stretched beyond the right side of the image
-                    newBubbleWidth >
-                    this.initialCropImageLeft + this.initialCropImageWidth
-                ) {
-                    // grow the image. We want its right edge to end up at newBubbleWidth,
-                    // after being stretched enough to leave the same fraction as before
-                    // cropped on the left.
-                    newImageWidth = newBubbleWidth / (1 - leftFraction);
-                    img.style.width = `${newImageWidth}px`;
-                    // fiddle with the left to keep the same part cropped
-                    img.style.left = `${-leftFraction * newImageWidth}px`;
-                    // and the top to split the extra height between top and bottom
-                    newImageHeight = newImageWidth * aspectRatio;
-                    const newTopFraction =
-                        centerFractionY -
-                        this.initialCropBubbleHeight / newImageHeight / 2;
-                    img.style.top = `${-newTopFraction * newImageHeight}px`;
-                } else {
-                    // no need to stretch. Restore the image to its original position and size.
-                    img.style.width = `${this.initialCropImageWidth}px`;
-                    img.style.top = `${this.initialCropImageTop}px`;
-                }
-                break;
-            case "w":
-                if (
-                    // the bubble has stretched beyond the original left side of the image
-                    // this.oldLeft + deltaX is where the left of the bubble is now
-                    // this.initialCropImageLeft + this.initialBubbleImageLeft is where
-                    // the left of the image was when we started.
-                    this.oldLeft + deltaX <
-                    this.initialCropImageLeft + this.initialCropBubbleLeft
-                ) {
-                    // grow the image. We want its left edge to end up at zero,
-                    // after being stretched enough to leave the same fraction as before
-                    // cropped on the right.
-                    newImageWidth = newBubbleWidth / (1 - rightFraction);
-                    img.style.width = `${newImageWidth}px`;
-                    // no cropping on the left
-                    img.style.left = `0`;
-                    // and the top to split the extra height between top and bottom
-                    newImageHeight = newImageWidth * aspectRatio;
-                    const newTopFraction =
-                        centerFractionY -
-                        this.initialCropBubbleHeight / newImageHeight / 2;
-                    img.style.top = `${-newTopFraction * newImageHeight}px`;
-                } else {
-                    img.style.width = `${this.initialCropImageWidth}px`;
-                    img.style.top = `${this.initialCropImageTop}px`;
-                }
-                break;
-            case "s":
-                if (
-                    // the bubble has stretched beyond the bottom side of the image
-                    newBubbleHeight >
-                    this.initialCropImageTop + this.initialCropImageHeight
-                ) {
-                    // grow the image. We want its bottom edge to end up at newBubbleHeight,
-                    // after being stretched enough to leave the same fraction as before
-                    // cropped on the top.
-                    newImageHeight = newBubbleHeight / (1 - topFraction);
-                    newImageWidth = newImageHeight / aspectRatio;
-                    img.style.width = `${newImageWidth}px`;
-                    // fiddle with the top to keep the same part cropped
-                    img.style.top = `${-topAsFractionOfWidth *
-                        newImageWidth}px`;
-                    // and the left to split the extra width between top and bottom
-                    // centerFractionX = leftFraction + this.initialCropBubbleWidth / this.initialCropImageWidth / 2;
-                    // centerFractionX = newleftFraction + this.initialCropBubbleWidth / newImageWidth / 2;
-                    const newleftFraction =
-                        centerFractionX -
-                        this.initialCropBubbleWidth / newImageWidth / 2;
-                    img.style.left = `${-newleftFraction * newImageWidth}px`;
-                } else {
-                    img.style.width = `${this.initialCropImageWidth}px`;
-                    img.style.left = `${this.initialCropImageLeft}px`;
-                }
-                break;
-            case "n":
-                if (
-                    // the bubble has stretched beyond the original top side of the image
-                    // this.oldTop + deltaY is where the top of the bubble is now
-                    // this.initialCropImageTop + this.initialBubbleImageTop is where
-                    // the top of the image was when we started.
-                    this.oldTop + deltaY <
-                    this.initialCropImageTop + this.initialCropBubbleTop
-                ) {
-                    // grow the image. We want its top edge to end up at zero,
-                    // after being stretched enough to leave the same fraction as before
-                    // cropped on the bottom.
-                    newImageHeight = newBubbleHeight / (1 - bottomFraction);
-                    newImageWidth = newImageHeight / aspectRatio;
-                    img.style.width = `${newImageWidth}px`;
-                    // no cropping on the top
-                    img.style.top = `0`;
-                    // and the left to split the extra width between top and bottom
-                    const newleftFraction =
-                        centerFractionX -
-                        this.initialCropBubbleWidth / newImageWidth / 2;
-                    img.style.left = `${-newleftFraction * newImageWidth}px`;
-                } else {
-                    img.style.width = `${this.initialCropImageWidth}px`;
-                    img.style.left = `${this.initialCropImageLeft}px`;
-                }
-                break;
-        }
+        // This block is the adjustment if we allow the image to be zoomed by dragging the crop handles outward.
+        // To make that work, we also need to remove the code above that prevents moving beyond zero cropping.
+        // (and probably restore the code that snaps to zero cropping).
+        // let newImageWidth: number;
+        // let newImageHeight: number;
+        // // How much of the image should stay cropped on the left if we're adjusting the right, etc.
+        // // Some of these are not needed on some sides, but it's easier to calculate them all,
+        // // and makes lint happy if we don't declare variables inside the switch.
+        // const leftFraction =
+        //     -this.initialCropImageLeft / this.initialCropImageWidth;
+        // // Fraction of the total image width that is left of the center of the bubble.
+        // // This stays constant as we crop on the top and bottom.
+        // const centerFractionX =
+        //     leftFraction +
+        //     this.initialCropBubbleWidth / this.initialCropImageWidth / 2;
+        // const rightFraction =
+        //     (this.initialCropImageWidth +
+        //         this.initialCropImageLeft -
+        //         this.initialCropBubbleWidth) /
+        //     this.initialCropImageWidth;
+        // const bottomFraction =
+        //     (this.initialCropImageHeight +
+        //         this.initialCropImageTop -
+        //         this.initialCropBubbleHeight) /
+        //     this.initialCropImageHeight;
+        // const topFraction =
+        //     -this.initialCropImageTop / this.initialCropImageHeight;
+        // // fraction of the total image height that is above the center of the bubble.
+        // // This stays constant as we crop on the left and right.
+        // const centerFractionY =
+        //     topFraction +
+        //     this.initialCropBubbleHeight / this.initialCropImageHeight / 2;
+        // // Deliberately dividing by the WIDTH here; all our calculations are
+        // // based on the adjusted width of the image.
+        // const topAsFractionOfWidth =
+        //     -this.initialCropImageTop / this.initialCropImageWidth;
+        // // Specifically, the aspect ratio for computing the height of the (full) image
+        // // from its width.
+        // const aspectRatio = img.naturalHeight / img.naturalWidth;
+        // switch (this.currentDragSide) {
+        //     case "e":
+        //         if (
+        //             // the bubble has stretched beyond the right side of the image
+        //             newBubbleWidth >
+        //             this.initialCropImageLeft + this.initialCropImageWidth
+        //         ) {
+        //             // grow the image. We want its right edge to end up at newBubbleWidth,
+        //             // after being stretched enough to leave the same fraction as before
+        //             // cropped on the left.
+        //             newImageWidth = newBubbleWidth / (1 - leftFraction);
+        //             img.style.width = `${newImageWidth}px`;
+        //             // fiddle with the left to keep the same part cropped
+        //             img.style.left = `${-leftFraction * newImageWidth}px`;
+        //             // and the top to split the extra height between top and bottom
+        //             newImageHeight = newImageWidth * aspectRatio;
+        //             const newTopFraction =
+        //                 centerFractionY -
+        //                 this.initialCropBubbleHeight / newImageHeight / 2;
+        //             img.style.top = `${-newTopFraction * newImageHeight}px`;
+        //         } else {
+        //             // no need to stretch. Restore the image to its original position and size.
+        //             img.style.width = `${this.initialCropImageWidth}px`;
+        //             img.style.top = `${this.initialCropImageTop}px`;
+        //         }
+        //         break;
+        //     case "w":
+        //         if (
+        //             // the bubble has stretched beyond the original left side of the image
+        //             // this.oldLeft + deltaX is where the left of the bubble is now
+        //             // this.initialCropImageLeft + this.initialBubbleImageLeft is where
+        //             // the left of the image was when we started.
+        //             this.oldLeft + deltaX <
+        //             this.initialCropImageLeft + this.initialCropBubbleLeft
+        //         ) {
+        //             // grow the image. We want its left edge to end up at zero,
+        //             // after being stretched enough to leave the same fraction as before
+        //             // cropped on the right.
+        //             newImageWidth = newBubbleWidth / (1 - rightFraction);
+        //             img.style.width = `${newImageWidth}px`;
+        //             // no cropping on the left
+        //             img.style.left = `0`;
+        //             // and the top to split the extra height between top and bottom
+        //             newImageHeight = newImageWidth * aspectRatio;
+        //             const newTopFraction =
+        //                 centerFractionY -
+        //                 this.initialCropBubbleHeight / newImageHeight / 2;
+        //             img.style.top = `${-newTopFraction * newImageHeight}px`;
+        //         } else {
+        //             img.style.width = `${this.initialCropImageWidth}px`;
+        //             img.style.top = `${this.initialCropImageTop}px`;
+        //         }
+        //         break;
+        //     case "s":
+        //         if (
+        //             // the bubble has stretched beyond the bottom side of the image
+        //             newBubbleHeight >
+        //             this.initialCropImageTop + this.initialCropImageHeight
+        //         ) {
+        //             // grow the image. We want its bottom edge to end up at newBubbleHeight,
+        //             // after being stretched enough to leave the same fraction as before
+        //             // cropped on the top.
+        //             newImageHeight = newBubbleHeight / (1 - topFraction);
+        //             newImageWidth = newImageHeight / aspectRatio;
+        //             img.style.width = `${newImageWidth}px`;
+        //             // fiddle with the top to keep the same part cropped
+        //             img.style.top = `${-topAsFractionOfWidth *
+        //                 newImageWidth}px`;
+        //             // and the left to split the extra width between top and bottom
+        //             // centerFractionX = leftFraction + this.initialCropBubbleWidth / this.initialCropImageWidth / 2;
+        //             // centerFractionX = newleftFraction + this.initialCropBubbleWidth / newImageWidth / 2;
+        //             const newleftFraction =
+        //                 centerFractionX -
+        //                 this.initialCropBubbleWidth / newImageWidth / 2;
+        //             img.style.left = `${-newleftFraction * newImageWidth}px`;
+        //         } else {
+        //             img.style.width = `${this.initialCropImageWidth}px`;
+        //             img.style.left = `${this.initialCropImageLeft}px`;
+        //         }
+        //         break;
+        //     case "n":
+        //         if (
+        //             // the bubble has stretched beyond the original top side of the image
+        //             // this.oldTop + deltaY is where the top of the bubble is now
+        //             // this.initialCropImageTop + this.initialBubbleImageTop is where
+        //             // the top of the image was when we started.
+        //             this.oldTop + deltaY <
+        //             this.initialCropImageTop + this.initialCropBubbleTop
+        //         ) {
+        //             // grow the image. We want its top edge to end up at zero,
+        //             // after being stretched enough to leave the same fraction as before
+        //             // cropped on the bottom.
+        //             newImageHeight = newBubbleHeight / (1 - bottomFraction);
+        //             newImageWidth = newImageHeight / aspectRatio;
+        //             img.style.width = `${newImageWidth}px`;
+        //             // no cropping on the top
+        //             img.style.top = `0`;
+        //             // and the left to split the extra width between top and bottom
+        //             const newleftFraction =
+        //                 centerFractionX -
+        //                 this.initialCropBubbleWidth / newImageWidth / 2;
+        //             img.style.left = `${-newleftFraction * newImageWidth}px`;
+        //         } else {
+        //             img.style.width = `${this.initialCropImageWidth}px`;
+        //             img.style.left = `${this.initialCropImageLeft}px`;
+        //         }
+        //         break;
+        // }
         // adjust other things that are affected by the new size.
         this.alignControlFrameWithActiveElement();
         this.adjustTarget(this.activeElement);
