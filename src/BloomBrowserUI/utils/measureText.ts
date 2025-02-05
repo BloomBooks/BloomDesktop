@@ -53,8 +53,6 @@ export class MeasureText {
             div = document.createElement("div");
             div.setAttribute("id", "measureTextDiv");
             block = document.createElement("div");
-            div.style.fontFamily = fontFamily;
-            div.style.fontSize = fontSize + "px";
             // before we add block, otherwise it will wipe it out.
             div.innerText = text.substring(0, 1);
 
@@ -72,6 +70,9 @@ export class MeasureText {
             div.firstChild!.nodeValue = text.substring(0, 1);
             block = div.firstElementChild as HTMLElement;
         }
+        div.style.fontFamily = fontFamily;
+        div.style.fontSize = fontSize + "px";
+        div.style.lineHeight = ""; // reset in case we're reusing it
         const bottomOfTextWithDefaultLineSpace = div.getBoundingClientRect()
             .bottom;
         const baselineOfTextWithDefaultLineSpace = block.getBoundingClientRect()
@@ -80,7 +81,7 @@ export class MeasureText {
             bottomOfTextWithDefaultLineSpace -
             baselineOfTextWithDefaultLineSpace;
 
-        if (lineHeight != null) div.style.lineHeight = lineHeight;
+        if (lineHeight !== null) div.style.lineHeight = lineHeight;
         const bottomOfTextWithActualLineSpace = div.getBoundingClientRect()
             .bottom;
         const baselineOfTextWithActualLineSpace = block.getBoundingClientRect()
