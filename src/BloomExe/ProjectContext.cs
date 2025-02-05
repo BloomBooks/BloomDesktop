@@ -389,6 +389,10 @@ namespace Bloom
             server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
             server.EnsureListening();
 
+            // The Api Handler is now at the application level and has a longer lifetime than
+            // the project context. We need to clear out any project-level handlers that may have
+            // been added by an earlier project context.
+            server.ApiHandler.ClearProjectLevelHandlers();
             // A few APIs are now registered in the constructor of ApplicationContainer
             _scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 

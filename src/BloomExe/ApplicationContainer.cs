@@ -85,6 +85,7 @@ namespace Bloom
             var server = _container.Resolve<BloomServer>();
             _container.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
             _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
+            server.ApiHandler.RecordApplicationLevelHandlers();
         }
 
         private void OnApplicationExit(object sender, EventArgs e)

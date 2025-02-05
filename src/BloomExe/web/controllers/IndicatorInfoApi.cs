@@ -114,7 +114,7 @@ namespace Bloom.web.controllers
                         bookInfo = bi;
                     return bi != null;
                 });
-            if (_bookSelection.CurrentSelection?.BookInfo?.Id == id)
+            if (bookInfo != null && _bookSelection.CurrentSelection?.BookInfo?.Id == id)
                 bookInfo = _bookSelection.CurrentSelection.BookInfo; // May be more initialized than the one in the collection.
             bookInfoOut = bookInfo;
             collectionOut = collection;
