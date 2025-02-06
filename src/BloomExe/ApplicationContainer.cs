@@ -66,6 +66,11 @@ namespace Bloom
             //Other classes which are also singletons for the whole application
             builder
                 .RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                // Not InstancePerLifetimeScope! Although that would make for a singleton at the application level,
+                // if one of these objects is requested from the child scope ProjectContext, it would make an independent
+                // instance (possibly every time it is asked for one, since ProjectContext has not been told to only make
+                // one). Singleton seems to be a much stronger constraint that forces a single one for this and all child
+                // containers, which is what we want for all the application singletons.
                 .SingleInstance()
                 .Where(
                     t => new[] { typeof(CommonApi), typeof(NewCollectionWizardApi), }.Contains(t)
