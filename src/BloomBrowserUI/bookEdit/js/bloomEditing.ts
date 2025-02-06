@@ -1086,7 +1086,7 @@ export function bootstrap() {
             attachToCkEditor(element);
         });
     if ($("div.bloom-page").length === 1) {
-        addScrollbarsToPage($("div.bloom-page")[0]);
+        addScrollbarsToPage($("div.bloom-page")[0], (e: PointerEvent) => {});
     }
     // We want to do this as late in the page setup process as possible because a
     // mouse zoom event will regenerate the page, and various things we do in the process

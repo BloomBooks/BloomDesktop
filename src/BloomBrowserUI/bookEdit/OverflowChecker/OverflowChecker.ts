@@ -413,7 +413,7 @@ export default class OverflowChecker {
             const page = $box.closest(".bloom-page");
             if (overflowY > 0 && page.length) {
                 cleanupNiceScroll();
-                addScrollbarsToPage(page[0]);
+                addScrollbarsToPage(page[0], (e: PointerEvent) => {});
             }
 
             if ($box.parents("[class*=Device]").length === 0) {
