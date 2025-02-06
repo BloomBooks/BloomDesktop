@@ -1758,6 +1758,64 @@ export class BubbleManager {
         // snapped and haven't moved far. This is to allow very small adjustments.
         const snapping = !event.ctrlKey && !this.cropSnapDisabled;
         const snapDelta = 30;
+        let shouldSnapForBackground = "";
+        let backgroundSnapDelta = 0;
+        if (
+            this.activeElement.classList.contains(kbackgroundImageClass) &&
+            !event.ctrlKey
+        ) {
+            const container = this.activeElement.closest(
+                kImageContainerSelector
+            ) as HTMLElement;
+            const containerAspectRatio =
+                container.clientWidth / container.clientHeight;
+            const overlayAspectRatio = this.oldWidth / this.oldHeight;
+            switch (this.currentDragSide) {
+                case "n":
+                    if (containerAspectRatio > overlayAspectRatio) {
+                        // The overlay has extra space left and right. Removing just enough at the top
+                        // will make the overlay the same shape as the container. We want to snap to that.
+                        // That is, how much smaller would our height have to be to make the aspect ratios
+                        // match?
+                        backgroundSnapDelta =
+                            this.oldHeight -
+                            this.oldWidth / containerAspectRatio;
+                        shouldSnapForBackground = "y";
+                    }
+                    break;
+                case "w":
+                    if (containerAspectRatio < overlayAspectRatio) {
+                        // The overlay has extra space top and bottom. Removing just enough at the left
+                        // will make the overlay the same shape as the container. We want to snap to that.
+                        backgroundSnapDelta =
+                            this.oldWidth -
+                            this.oldHeight * containerAspectRatio;
+                        shouldSnapForBackground = "x";
+                    }
+                    break;
+                case "s":
+                    if (containerAspectRatio > overlayAspectRatio) {
+                        // The overlay has extra space left and right. Removing just enough at the bottom
+                        // will make the overlay the same shape as the container. We want to snap to that.
+                        backgroundSnapDelta =
+                            this.oldWidth / containerAspectRatio -
+                            this.oldHeight;
+                        shouldSnapForBackground = "y";
+                    }
+                    break;
+                case "e":
+                    if (containerAspectRatio < overlayAspectRatio) {
+                        // The overlay has extra space top and bottom. Removing just enough at the right
+                        // will make the overlay the same shape as the container. We want to snap to that.
+                        backgroundSnapDelta =
+                            this.oldHeight * containerAspectRatio -
+                            this.oldWidth;
+                        shouldSnapForBackground = "x";
+                    }
+                    break;
+            }
+        }
+
         // This block of code supports snapping to the "zero crop" position (useful if we re-enable
         // zooming the image by dragging the crop handles outward).
         // Each case begins by figuring out whether, if we are snapping, we should snap.
@@ -1893,6 +1951,12 @@ export class BubbleManager {
         // beyond zero cropping.
         switch (this.currentDragSide) {
             case "n":
+                deltaY = this.adjustDeltaForSnap(
+                    shouldSnapForBackground === "y",
+                    deltaY,
+                    backgroundSnapDelta,
+                    "n"
+                );
                 // correct if we moved the top too far up, which would leave a gap at the top
                 if (this.oldImageTop - deltaY > 0) {
                     deltaY = this.oldImageTop;
@@ -1913,6 +1977,12 @@ export class BubbleManager {
                 img.style.top = `${this.oldImageTop - deltaY}px`;
                 break;
             case "s":
+                deltaY = this.adjustDeltaForSnap(
+                    shouldSnapForBackground === "y",
+                    deltaY,
+                    backgroundSnapDelta,
+                    "s"
+                );
                 // correct if we moved too far down, which would leave a gap at the bottom
                 // These variables would make the next line more comprehensible, but they only apply
                 // to this case and lint does not like declaring variables inside a switch.
@@ -1937,6 +2007,12 @@ export class BubbleManager {
                 this.activeElement.style.height = `${newBubbleHeight}px`;
                 break;
             case "e":
+                deltaX = this.adjustDeltaForSnap(
+                    shouldSnapForBackground === "x",
+                    deltaX,
+                    backgroundSnapDelta,
+                    "e"
+                );
                 // correct if we moved too far right, which would leave a gap at the right
                 if (
                     this.initialCropImageLeft + this.initialCropImageWidth <
@@ -1956,6 +2032,12 @@ export class BubbleManager {
                 this.activeElement.style.width = `${newBubbleWidth}px`;
                 break;
             case "w":
+                deltaX = this.adjustDeltaForSnap(
+                    shouldSnapForBackground === "x",
+                    deltaX,
+                    backgroundSnapDelta,
+                    "w"
+                );
                 // correct if we moved too far left, which would leave a gap at the left
                 if (this.oldImageLeft > deltaX) {
                     deltaX = this.oldImageLeft;
@@ -2124,6 +2206,40 @@ export class BubbleManager {
         this.updateCurrentlyCropped();
     };
 
+    private adjustDeltaForSnap(
+        shouldSnap: boolean,
+        delta: number,
+        backgroundSnapDelta: number,
+        side: string
+    ): number {
+        if (!shouldSnap) return delta;
+        const snapDelta = 30;
+        const controlFrame = document.getElementById(
+            "overlay-control-frame"
+        ) as HTMLElement;
+        if (Math.abs(backgroundSnapDelta - delta) < snapDelta) {
+            this.getHandleTitlesAsync(
+                controlFrame,
+                "bloom-ui-overlay-side-handle-" + side,
+                "Fit",
+                true,
+                "data-title"
+            );
+            console.log("set title to fit");
+            return backgroundSnapDelta;
+        }
+        // not snapping
+        this.getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-overlay-side-handle-" + side,
+            "Crop",
+            true,
+            "data-title"
+        );
+        console.log("set title to crop");
+        return delta;
+    }
+
     // If this overlay contains an image, and it has not already been adjusted so that the overlay
     // dimensions have the same aspect ratio as the image, make it so, reducing either height or
     // width as necessary, or possibly increasing one if the usual adjustment would make it too small.
@@ -2247,7 +2363,8 @@ export class BubbleManager {
         controlFrame: HTMLElement,
         className: string,
         l10nId: string,
-        force: boolean = false
+        force: boolean = false,
+        attribute: string = "title"
     ) {
         const handles = Array.from(
             controlFrame.getElementsByClassName(className)
@@ -2255,14 +2372,14 @@ export class BubbleManager {
         // We could cache these somewhere, especially the crop/change shape pair, but I think
         // it would be premature optimization. We only have four title, and
         // only the crop/change shape one has to be retrieved each time the frame moves.
-        if (!handles[0]?.title || force) {
+        if (!handles[0]?.getAttribute(attribute) || force) {
             const title = await theOneLocalizationManager.asyncGetText(
                 "EditTab.Toolbox.ComicTool.Handle." + l10nId,
                 "",
                 ""
             );
             handles.forEach(handle => {
-                handle.title = title;
+                handle.setAttribute(attribute, title);
             });
         }
     }
@@ -2297,7 +2414,11 @@ export class BubbleManager {
                 controlFrame,
                 "bloom-ui-overlay-side-handle",
                 hasText ? "ChangeShape" : "Crop",
-                true
+                // We don't need to change it while we're moving the frame, only if we're switching
+                // between text and image. And there's another state we want
+                // when cropping a background image and snapped.
+                !controlFrame.classList.contains("moving"),
+                "data-title"
             );
             this.getHandleTitlesAsync(
                 controlFrame,

@@ -1543,6 +1543,26 @@ canvas.moving {
         height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ew-resize;
     }
+    [data-title]:hover:after,
+    [data-title]:active:after {
+        // display the data-title like a title, but we will show it immediately,
+        // and even while the mouse is down
+        content: attr(data-title);
+        position: absolute;
+        top: 20px;
+        left: 10px;
+        background: white;
+        border: 1px solid black;
+        color: black;
+        font-size: small;
+        padding: 0.2em;
+        z-index: 2;
+        text-wrap-mode: nowrap;
+    }
+    .bloom-ui-overlay-side-handle-s:after {
+        bottom: 20px;
+        top: auto !important;
+    }
 
     // the background image is hard up against the side of the container on at least two edges,
     // and can't be moved. Half the default crop handle is clipped at best, and sometimes the

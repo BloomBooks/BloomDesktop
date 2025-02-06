@@ -2106,6 +2106,10 @@
         <source xml:lang="en">Crop</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fit" sil:dynamic="true">
+        <source xml:lang="en">Fit space</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Fit</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
         <source xml:lang="en">Resize</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
