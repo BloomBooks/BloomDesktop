@@ -66,7 +66,7 @@ namespace Bloom
             //Other classes which are also singletons for the whole application
             builder
                 .RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-                .InstancePerLifetimeScope()
+                .SingleInstance()
                 .Where(
                     t => new[] { typeof(CommonApi), typeof(NewCollectionWizardApi), }.Contains(t)
                 );
