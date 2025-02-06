@@ -35,7 +35,7 @@ import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderOverlayContextControls } from "./OverlayContextControls";
-import { data } from "jquery";
+import { data, get } from "jquery";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { MeasureText } from "../../utils/measureText";
@@ -1688,6 +1688,45 @@ export class BubbleManager {
         this.alignControlFrameWithActiveElement();
     }
 
+    // Determine which of the side handles, if any, should have the class "bloom-currently-cropped"
+    private updateCurrentlyCropped() {
+        const sideHandles = Array.from(
+            document.getElementsByClassName("bloom-ui-overlay-side-handle")
+        );
+        if (sideHandles.length === 0 || !this.activeElement) return;
+        const img = getImageFromOverlay(this.activeElement);
+        if (!img) {
+            // only images do cropping. Remove them all.
+            sideHandles.forEach(handle => {
+                handle.classList.remove("bloom-currently-cropped");
+            });
+            return;
+        }
+        const imgRect = img.getBoundingClientRect();
+        const overlayRect = this.activeElement.getBoundingClientRect();
+        const cropped = {
+            n: imgRect.top < overlayRect.top,
+            e: imgRect.right > overlayRect.right,
+            s: imgRect.bottom > overlayRect.bottom,
+            w: imgRect.left < overlayRect.left
+        };
+        sideHandles.forEach(handle => {
+            //const side = handle.classList[1].split("-")[4];
+            const longClass = Array.from(handle.classList).find(c =>
+                c.startsWith("bloom-ui-overlay-side-handle-")
+            );
+            if (!longClass) return;
+            const side = longClass.substring(
+                "bloom-ui-overlay-side-handle-".length
+            );
+            if (cropped[side]) {
+                handle.classList.add("bloom-currently-cropped");
+            } else {
+                handle.classList.remove("bloom-currently-cropped");
+            }
+        });
+    }
+
     private continueSideDrag = (event: MouseEvent) => {
         if (event.buttons !== 1 || !this.activeElement) {
             return;
@@ -2082,6 +2121,7 @@ export class BubbleManager {
         // adjust other things that are affected by the new size.
         this.alignControlFrameWithActiveElement();
         this.adjustTarget(this.activeElement);
+        this.updateCurrentlyCropped();
     };
 
     // If this overlay contains an image, and it has not already been adjusted so that the overlay
@@ -3132,6 +3172,7 @@ export class BubbleManager {
             "bloom-ui-overlay-show-move-crop-handle",
             wantMoveCropHandle
         );
+        this.updateCurrentlyCropped();
     }
 
     private stopMoving() {
