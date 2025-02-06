@@ -10,7 +10,11 @@ interface IGamePromptDialogProps {
     setOpen(open: boolean): void;
 }
 import { useRef } from "react";
-import { copyContentToTarget, getTarget, shuffle } from "./dragActivityRuntime";
+import {
+    copyContentToTarget,
+    getTarget,
+    shuffle
+} from "../../shared/dragActivityRuntime";
 import { setGeneratedBubbleId } from "../overlay/overlayItem";
 import { adjustTarget, makeTargetForBubble } from "./dragActivityTool";
 import ReactDOM = require("react-dom");

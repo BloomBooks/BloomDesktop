@@ -1,5 +1,6 @@
 // This is the code that is shared between the Play tab of the bloom games
-// (also known as drag activities) and bloom-player.
+// (also known as drag activities) and bloom-player.  The code originates in
+// the bloom-player repo and is shared by the bloom-player package.
 // It wants to live in the dragActivity folder because it is specific to drag activities.
 // However, it also wants to live in the same place relative to narration.ts both in
 // bloom player and bloom desktop. For now that's a stronger requirement.
@@ -55,6 +56,7 @@ const restorePositions = () => {
     positionsToRestore = [];
 };
 
+// This method may be specific to BloomDesktop.
 export function adjustDraggablesForLanguage(page: HTMLElement) {
     if (page.getAttribute("data-activity") !== "drag-letter-to-target") {
         return;
@@ -73,6 +75,11 @@ export function adjustDraggablesForLanguage(page: HTMLElement) {
         }
     });
 }
+export function IsRunningOnBloomDesktop(bloomPage?: Element): boolean {
+    // REVIEW: is there a better way to detect this?
+    if (bloomPage) return bloomPage.closest("#page-scaling-container") !== null;
+    return document.body.querySelector("div#page-scaling-container") !== null;
+}
 
 // Function to call to get everything ready for playing the game.
 // Things that get done here should usually be undone in undoPrepareActivity.
@@ -83,7 +90,10 @@ export function prepareActivity(
     changePageAction: (next: boolean) => void
 ) {
     currentPage = page;
-    adjustDraggablesForLanguage(page);
+    if (IsRunningOnBloomDesktop()) {
+        // REVIEW: is this needed/wanted inside bloom-player?
+        adjustDraggablesForLanguage(page);
+    }
     currentChangePageAction = changePageAction;
     doShowAnswersInTargets(
         page.getAttribute("data-show-answers-in-targets") === "true",
@@ -141,6 +151,22 @@ export function prepareActivity(
         elt.addEventListener("pointerdown", startDrag, { capture: true });
     });
 
+    if (!IsRunningOnBloomDesktop()) {
+        // REVIEW: is this needed/wanted inside Bloom Desktop?
+        const videos = Array.from(page.getElementsByTagName("video"));
+        videos.forEach(video => {
+            video.addEventListener("pointerdown", playVideo);
+            if (
+                video
+                    .closest(".bloom-textOverPicture")
+                    ?.hasAttribute("data-bubble-id")
+            ) {
+                // don't want to show controls on these, because they are typically too small,
+                // and the play time is short enough that just click-to-play is fine
+                video.classList.add("bloom-ui-no-controls");
+            }
+        });
+    }
     // Add event listeners to (other) text items that should play audio when clicked.
     const dontPlayWhenClicked = draggables.concat(targets);
     const otherTextItems = Array.from(
@@ -692,7 +718,10 @@ function showCorrectOrWrongItems(page: HTMLElement, correct: boolean) {
 
 function playSound(someElt: HTMLElement, soundFile: string) {
     const audio = new Audio(urlPrefix() + "/audio/" + soundFile);
-    audio.classList.add("bloom-ui"); // in case remove code fails, should make sure it doesn't get saved.
+    if (IsRunningOnBloomDesktop()) {
+        // REVIEW: is this needed/wanted inside bloom-player?
+        audio.classList.add("bloom-ui"); // in case remove code fails, should make sure it doesn't get saved.
+    }
     audio.style.visibility = "hidden";
     // To my surprise, in BP storybook it works without adding the audio to any document.
     // But in Bloom proper, it does not. I think it is because this code is part of the toolbox,

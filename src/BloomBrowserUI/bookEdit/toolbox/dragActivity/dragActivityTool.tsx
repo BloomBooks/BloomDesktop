@@ -34,7 +34,7 @@ import {
     prepareActivity,
     shuffle,
     undoPrepareActivity
-} from "./dragActivityRuntime";
+} from "../../shared/dragActivityRuntime";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { getWithPromise, postData, postJson } from "../../../utils/bloomApi";
 import {
@@ -46,7 +46,7 @@ import { useL10n } from "../../../react_components/l10nHooks";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { BubbleSpec } from "comicaljs";
-import { setPlayerUrlPrefixFromWindowLocationHref } from "./narration";
+import { setPlayerUrlPrefixFromWindowLocationHref } from "../../shared/narration";
 import { renderGamePromptDialog } from "./GamePromptDialog";
 import { OverlayTool } from "../overlay/overlayTool";
 import { theOneBubbleManager } from "../../js/bubbleManager";
