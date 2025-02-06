@@ -1222,6 +1222,7 @@ export class BubbleManager {
         document.addEventListener("mouseup", this.endMoveCrop, {
             capture: true
         });
+        this.startMoving();
     };
     private endMoveCrop = (event: MouseEvent) => {
         document.removeEventListener("mousemove", this.continueMoveCrop, {
@@ -1233,6 +1234,7 @@ export class BubbleManager {
         this.currentDragControl?.classList.remove("active");
         this.currentDragControl!.style.left = "";
         this.currentDragControl!.style.top = "";
+        this.stopMoving();
     };
 
     private continueMoveCrop = (event: MouseEvent) => {
@@ -1246,6 +1248,8 @@ export class BubbleManager {
         )[0];
         const img = imgC?.getElementsByTagName("img")[0];
         if (!img) return;
+        event.preventDefault();
+        event.stopPropagation();
         const imgStyle = img.style;
         // left can't be greater than zero; that would leave empty space on the left.
         // also can't be so small as to make the right of the image (img.clientWidth + newLeft) less than
@@ -1692,6 +1696,8 @@ export class BubbleManager {
             "bloom-editable bloom-visibility-code-on"
         )[0];
         if (textBox) {
+            event.preventDefault();
+            event.stopPropagation();
             this.continueTextBoxResize(event, textBox as HTMLElement);
             return;
         }
@@ -1700,6 +1706,8 @@ export class BubbleManager {
             // These handles shouldn't even be visible in this case, so this is for paranoia/lint.
             return;
         }
+        event.preventDefault();
+        event.stopPropagation();
         // These may be adjusted to the deltas that would not violate min sizes
         let deltaX = event.clientX - this.startSideDragX;
         let deltaY = event.clientY - this.startSideDragY;
