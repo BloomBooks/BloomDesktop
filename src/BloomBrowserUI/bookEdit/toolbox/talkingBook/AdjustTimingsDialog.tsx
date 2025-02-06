@@ -26,7 +26,7 @@ import { AdjustTimingsControl, TimedTextSegment } from "./AdjustTimingsControl";
 import {
     getUrlPrefixFromWindowHref,
     kHighlightSegmentClass
-} from "../dragActivity/narration";
+} from "../../shared/narration";
 import { IAudioRecorder } from "./IAudioRecorder";
 import { getToolboxBundleExports } from "../../editViewFrame";
 

@@ -1,17 +1,22 @@
+//import $ from "jquery";
 import "jquery.nicescroll";
+import { IsRunningOnBloomDesktop } from "./dragActivityRuntime";
 
-// This constant string was copied from bloom-player with minimal changes and should be in a common library.
-const kSelectorForPotentialNiceScrollElements =
+export const kSelectorForPotentialNiceScrollElements =
     ".bloom-translationGroup:not(.bloom-imageDescription) .bloom-editable.bloom-visibility-code-on, " +
     ".scrollable"; // we added .scrollable for branding cases where the boilerplate text also needs to scroll
 
 // Add a "nice" scrollbar to the page if the content overflows.
-// This function was copied from bloom-player with minimal changes and should be in a common library.
-export function addScrollbarsToPage(bloomPage: Element): void {
+export function addScrollbarsToPage(
+    bloomPage: Element,
+    pointerEventHandler?: (e: PointerEvent) => void
+): void {
     // Expected behavior for cover: "on the cover, which is has a very dynamic layout, we just don't do scrollbars"
     if (bloomPage.classList.contains("cover")) {
         return;
     }
+    const isRunningOnBloomDesktop = IsRunningOnBloomDesktop(bloomPage);
+
     // on a browser so obsolete that it doesn't have IntersectionObserver (e.g., IE or Safari before 12.2),
     // we just won't get scrolling.
     if ("IntersectionObserver" in window) {
@@ -52,15 +57,29 @@ export function addScrollbarsToPage(bloomPage: Element): void {
                 // scaling when it comes to the padding that we add to the top and left of
                 // the translationGroup element.  See BL-13796.
                 let scale = 1;
-                const scaleContainer = elt.closest(
-                    "#page-scaling-container"
-                ) as HTMLElement;
-                if (scaleContainer) {
-                    const scaleValue = scaleContainer.style.transform;
-                    if (scaleValue && scaleValue.startsWith("scale(")) {
-                        scale = parseFloat(
-                            scaleValue.substring(6, scaleValue.length - 1)
-                        );
+                // bloom-player approach to setting the scale
+                const scaleStyle = document.querySelector(
+                    "style#scale-style-sheet"
+                );
+                if (scaleStyle) {
+                    const match = scaleStyle.innerHTML.match(
+                        /transform:[a-z0-9, ()]* scale\((\d+(\.\d+)?)\)/
+                    );
+                    if (match) {
+                        scale = parseFloat(match[1]);
+                    }
+                } else {
+                    // Bloom Desktop approach to setting the scale
+                    const scaleContainer = elt.closest(
+                        "#page-scaling-container"
+                    ) as HTMLElement;
+                    if (scaleContainer) {
+                        const scaleValue = scaleContainer.style.transform;
+                        if (scaleValue && scaleValue.startsWith("scale(")) {
+                            scale = parseFloat(
+                                scaleValue.substring(6, scaleValue.length - 1)
+                            );
+                        }
                     }
                 }
                 // nicescroll doesn't provide a way to adjust the height of the scrollbar
@@ -163,9 +182,10 @@ export function addScrollbarsToPage(bloomPage: Element): void {
                                     group.classList.remove(
                                         "bloom-vertical-align-center"
                                     );
-                                    group.classList.add(
-                                        "bloom-vertical-align-center-removed"
-                                    );
+                                    if (isRunningOnBloomDesktop)
+                                        group.classList.add(
+                                            "bloom-vertical-align-center-removed"
+                                        );
                                 }
                                 if (
                                     group.classList.contains(
@@ -175,9 +195,10 @@ export function addScrollbarsToPage(bloomPage: Element): void {
                                     group.classList.remove(
                                         "bloom-vertical-align-bottom"
                                     );
-                                    group.classList.add(
-                                        "bloom-vertical-align-bottom-removed"
-                                    );
+                                    if (isRunningOnBloomDesktop)
+                                        group.classList.add(
+                                            "bloom-vertical-align-bottom-removed"
+                                        );
                                 }
                                 if (isBubble) {
                                     // This is a way of forcing it not to be display-flex, which doesn't
@@ -206,7 +227,8 @@ export function addScrollbarsToPage(bloomPage: Element): void {
                                     cursorborderradius: thumbWidth // Make the corner more rounded than the 5px default.
                                 });
                                 setupSpecialMouseTrackingForNiceScroll(
-                                    bloomPage
+                                    bloomPage,
+                                    pointerEventHandler
                                 );
                                 scrollBlocks = []; // Just in case it's possible to get callbacks before we created them all.
                             }
@@ -229,7 +251,6 @@ export function addScrollbarsToPage(bloomPage: Element): void {
 // element that should have the inserted scrollbar elements.  If nothing is found by this
 // method, nicescroll uses the body element.  Since the nicescroll release hasn't been updated
 // since 2017, I feel safe in copying this method here in January 2025.
-// This method is identical to one in bloom-player.  It should be in a common library.
 function getNiceScrollParent(elt: HTMLElement): HTMLElement | null {
     var parentElt =
         elt && elt.parentNode ? (elt.parentNode as HTMLElement) : null;
@@ -264,15 +285,13 @@ function getNiceScrollParent(elt: HTMLElement): HTMLElement | null {
 // method computes offset values to correct for this.  See BL-13796.
 // nicescroll also doesn't scale at all when nicescroll cannot find a scrollable
 // area containing the element under the scaling div.  See BL-14112.
-// This method is identical to one in bloom-player.  It should be in a common library.
 function ComputeNiceScrollOffsets(
     scale: number,
     elt: HTMLElement
 ): { topAdjust: number; leftAdjust: number; thumbWidth: string } {
     let topAdjust = 0;
     let leftAdjust = 0;
-    let thumbWidth = "12px";
-    // should we allow for a small amount of rounding error?
+    let thumbWidth = "12px"; // nicescroll calls the thumb a "cursor", but it's really a thumb
     if (scale !== 1) {
         const translationGroupDiv = elt.parentElement;
         if (
@@ -286,11 +305,11 @@ function ComputeNiceScrollOffsets(
         if (whereToPutTheScrollbars) {
             // The nicescroll elements are added somewhere in the DOM that is presumably inside
             // the element that sets the scaling.
-            const compStyles = window.getComputedStyle(elt.parentElement!);
+            const compStyles = window.getComputedStyle(translationGroupDiv);
             const topPadding =
-                compStyles.getPropertyValue("padding-top") ?? "0";
+                compStyles.getPropertyValue("padding-top") || "0";
             const leftPadding =
-                compStyles.getPropertyValue("padding-left") ?? "0";
+                compStyles.getPropertyValue("padding-left") || "0";
             topAdjust = parseFloat(topPadding) * (scale - 1);
             leftAdjust = parseFloat(leftPadding) * (scale - 1);
         } else {
@@ -317,23 +336,73 @@ function ComputeNiceScrollOffsets(
     return { topAdjust, leftAdjust, thumbWidth };
 }
 
-// This function was copied from bloom-player with minimal changes and should be in a common library.
-function setupSpecialMouseTrackingForNiceScroll(bloomPage: Element) {
+export function setupSpecialMouseTrackingForNiceScroll(
+    bloomPage: Element,
+    pointerEventHandler?: (e: PointerEvent) => void
+) {
     bloomPage.removeEventListener("pointerdown", listenForPointerDown); // only want one!
     bloomPage.addEventListener("pointerdown", listenForPointerDown);
+    if (!pointerEventHandler) {
+        return;
+    }
+    // The purpose of this is to prevent Swiper causing the page to be moved or
+    // flicked when the user is trying to scroll on the page.  See BL-14079.
+    for (const eventName of ["pointermove", "pointerup"]) {
+        bloomPage.ownerDocument.body.addEventListener(
+            eventName,
+            pointerEventHandler,
+            {
+                capture: true
+            }
+        );
+    }
 }
+
+// nicescroll doesn't properly scale the padding at the top and left of the
+// scrollable area of the languageGroup divs when the page is scaled.  This
+// method sets offset values to correct for this.  It is called whenever the
+// entire window resizes, which also scales the page before this is called.
+// See BL-13796.
+export function fixNiceScrollOffsets(page: HTMLElement, scale: number) {
+    page.querySelectorAll(kSelectorForPotentialNiceScrollElements).forEach(
+        group => {
+            // The type definition is not correct for getNiceScroll; we expect it to return an array.
+            const groupNiceScroll = $(group).getNiceScroll() as any;
+            if (groupNiceScroll && groupNiceScroll.length > 0) {
+                let {
+                    topAdjust,
+                    leftAdjust,
+                    thumbWidth
+                } = ComputeNiceScrollOffsets(scale, group as HTMLElement);
+                groupNiceScroll[0].opt.railoffset.top = -topAdjust;
+                groupNiceScroll[0].opt.railoffset.left = -leftAdjust;
+                groupNiceScroll[0].opt.cursorwidth = thumbWidth;
+                groupNiceScroll[0].resize();
+            }
+        }
+    );
+}
+
 // If the mouse down is in the thumb of a NiceScroll, we don't want to get a click
-// event later even if the mouse up is outside that element.
-// This function was copied from bloom-player with minimal changes and should be in a common library.
+// event later even if the mouse up is outside that element.  Also, we want the
+// scrolling to follow the mouse movement even if the mouse cursor leaves the thumb
+// before the mouse button is released.
 function listenForPointerDown(ev: PointerEvent) {
     if (
         ev.target instanceof HTMLDivElement &&
         (ev.target as HTMLDivElement).classList.contains("nicescroll-cursors")
     ) {
         (ev.target as HTMLDivElement).setPointerCapture(ev.pointerId);
+        if (ev.pointerType === "mouse") {
+            // Investigation shows that Swiper uses pointer event handlers and NiceScroll
+            // uses mouse event handlers, so stopping the propagation of pointer events
+            // doesn't effect the scrolling, but does stop the swiping.  See BL-14079.
+            // Pointer capture affects mouse events as well as pointer events.
+            ev.stopPropagation();
+        }
     }
 }
-// This function was copied from bloom-player with minimal changes and should be in a common library.
+
 export function cleanupNiceScroll() {
     // Doing this cleanup is unfortunate overhead, but niceScrolls stick around too much,
     // including when the page divs they are on are removed because the page is not the
