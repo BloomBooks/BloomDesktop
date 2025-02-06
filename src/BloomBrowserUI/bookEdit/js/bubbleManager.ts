@@ -1615,6 +1615,7 @@ export class BubbleManager {
         document.addEventListener("mouseup", this.stopSideDrag, {
             capture: true
         });
+        this.startMoving();
     }
     private stopSideDrag = () => {
         document.removeEventListener("mousemove", this.continueSideDrag, {
@@ -1637,7 +1638,8 @@ export class BubbleManager {
         // remove the cropping-specfic style info on the image.
         // Doing so helps us more accurately determine whether a book has cropped images,
         // which means it is not allowed to open in earlier versions of Bloom.
-        this.adjustMoveCropHandleVisibility(true);
+        //this.adjustMoveCropHandleVisibility(true); // called by stopMoving()
+        this.stopMoving();
     };
     private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
         if (!this.activeElement) return; // should never happen, but makes lint happy
@@ -2939,14 +2941,7 @@ export class BubbleManager {
             Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3
         ) {
             this.gotAMoveWhileMouseDown = true;
-            const controlFrame = document.getElementById(
-                "overlay-control-frame"
-            );
-            controlFrame?.classList?.add("moving");
-            this.activeElement?.classList?.add("moving");
-            document
-                .getElementById("overlay-context-controls")
-                ?.classList?.add("moving");
+            this.startMoving();
         }
         if (!this.gotAMoveWhileMouseDown) {
             return; // don't actually move until the distance is enough to be sure it's not a click.
@@ -2960,6 +2955,16 @@ export class BubbleManager {
             this.handleMouseMoveDragBubble(event, container);
         }
     };
+
+    // Add the classes that let various controls know that a move, resize, or drag is in progress.
+    private startMoving() {
+        const controlFrame = document.getElementById("overlay-control-frame");
+        controlFrame?.classList?.add("moving");
+        this.activeElement?.classList?.add("moving");
+        document
+            .getElementById("overlay-context-controls")
+            ?.classList?.add("moving");
+    }
 
     // Mouse hover - No move or resize is currently active, but check if there is a bubble under the mouse that COULD be
     // and add or remove the classes we use to indicate this
@@ -3123,7 +3128,6 @@ export class BubbleManager {
 
     private stopMoving() {
         if (this.lastMoveContainer) this.lastMoveContainer.style.cursor = "";
-        const controlFrame = document.getElementById("overlay-control-frame");
         // We want to get rid of it at least from the control frame and the active bubble,
         // but may as well make sure it doesn't get left anywhere.
         Array.from(document.getElementsByClassName("moving")).forEach(
