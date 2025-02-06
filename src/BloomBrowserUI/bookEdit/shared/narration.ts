@@ -1,7 +1,6 @@
 // This file contains code for playing audio in a bloom page, including a draggable page.
-// The file is designed to be shared between Bloom Desktop and Bloom Player. Maybe eventually
-// as an npm module, but for now, just copied into both projects. See comments in dragActivityRuntime.ts.
-// Until that day, changes must be copied manually, and care taken to avoid conflicts.
+// The file is designed to be shared between Bloom Desktop and Bloom Player, with the original
+// being in the Bloom Player and provided in its package.  See comments in dragActivityRuntime.ts.
 
 // It is quite difficult to know how to handle audio in a drag activity page.
 // We need to be able to play it both during "Play" and when showing the page in BP.
@@ -190,7 +189,8 @@ export function setCurrentPage(page: HTMLElement) {
     }, 3000);
     currentPlayPage = page;
 }
-export function getCurrentPage(): HTMLElement {
+// Get the page that the narration system thinks is current.
+export function getCurrentNarrationPage(): HTMLElement {
     return currentPlayPage!;
 }
 
@@ -500,7 +500,7 @@ function playCurrentInternal() {
     if (currentPlaybackMode === PlaybackMode.AudioPlaying) {
         const mediaPlayer = getPlayer();
         if (mediaPlayer) {
-            const element = getCurrentPage().querySelector(
+            const element = getCurrentNarrationPage().querySelector(
                 `#${currentAudioId}`
             );
             if (!element || !canPlayAudio(element)) {
@@ -976,13 +976,39 @@ function currentAudioUrl(id: string): string {
 
 function getPlayer(): HTMLMediaElement {
     const audio = getAudio("bloom-audio-player", a => {
-        a.addEventListener("ended", playEnded);
+        a.addEventListener("ended", handlePlayEnded);
         a.addEventListener("error", handlePlayError);
     });
     return audio;
 }
 
-function playEnded(): void {
+function handlePlayEnded() {
+    playEnded();
+}
+
+// Stop any audio that is currently playing.
+// This will also raise the PlayCompleted and PageNarrationComplete events
+export function abortNarrationPlayback() {
+    if (currentPlaybackMode !== PlaybackMode.AudioPlaying) {
+        return; // no need to abort
+    }
+
+    // I hesitated to put this comment here because I'm afraid it won't make any sense.
+    // But I also don't feel right about not attempting to capture what happened.
+    // Previously, we didn't have this "keepPlayingTheStack" parameter, and we just
+    // modified the stack to have only the top element in it.
+    // But for no reason we can explain, in BloomPUB Viewer, and only there,
+    // even if we weren't calling this code, referencing elementsToPlayConsecutivelyStack
+    // caused an error to be thrown and a black screen to result.
+    // So if you're tempted to modify this code, especially if you need to
+    // reference elementsToPlayConsecutivelyStack, be sure to test in BloomPUB Viewer.
+
+    playEnded(false);
+}
+
+// Handles ending the current playback. If there are more things stacked to play, it plays the next one.
+// otherwise, it reports that play ended. Note that the latter raises the PlayCompleted and PageNarrationComplete events.
+function playEnded(keepPlayingTheStack = true): void {
     // Not sure if this is necessary, since both 'playCurrentInternal()' and 'reportPlayEnded()'
     // will toggle image description already, but if we've just gotten to the end of our "stack",
     // it may be needed.
@@ -996,7 +1022,7 @@ function playEnded(): void {
     ) {
         const elementJustPlayed = elementsToPlayConsecutivelyStack.pop(); // get rid of the last one we played
         const newStackCount = elementsToPlayConsecutivelyStack.length;
-        if (newStackCount > 0) {
+        if (newStackCount > 0 && keepPlayingTheStack) {
             // More items to play
             const nextElement =
                 elementsToPlayConsecutivelyStack[newStackCount - 1];
@@ -1127,7 +1153,7 @@ export function pageHasAudio(page: HTMLElement): boolean {
 // If the page nas no audio, we assume the user paused as long as wanted on
 // the page, and raise the PageNarrationComplete event at once (to move to the
 // next page if we are in autoplay).
-export function play() {
+export function playNarration() {
     if (currentPlaybackMode === PlaybackMode.AudioPlaying) {
         return; // no change.
     }
@@ -1156,7 +1182,7 @@ export function play() {
     PageNarrationComplete?.raise(currentPlayPage!);
 }
 
-export function pause() {
+export function pauseNarration() {
     if (currentPlaybackMode === PlaybackMode.AudioPaused) {
         return;
     }
@@ -1219,7 +1245,12 @@ export function hidingPage() {
 
 // Play the specified elements, one after the other. When the last completes (or at once if the array is empty),
 // perform the 'then' action (typically used to play narration, which we put after videos).
-// Todo: Bloom Player version, at least, should work with play/pause/resume/change page architecture.
+//
+// Note, there is a very similar function in video.ts. It would be nice to combine them, but
+// there are various reasons that is difficult at the moment. e.g.:
+// 1. See comment below about sharing code with Bloom Desktop.
+// 2. The other version handles play/pause which doesn't apply in BloomDesktop.
+//
 // (This function would be more natural in video.ts. But at least for now I'm trying to minimize the
 // number of source files shared with Bloom Desktop, and we need this for Bloom Games.)
 export function playAllVideo(elements: HTMLVideoElement[], then: () => void) {
@@ -1228,6 +1259,7 @@ export function playAllVideo(elements: HTMLVideoElement[], then: () => void) {
         return;
     }
     const video = elements[0];
+
     // If there is an error, try to continue with the next video.
     if (
         video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE &&
@@ -1241,12 +1273,15 @@ export function playAllVideo(elements: HTMLVideoElement[], then: () => void) {
         const promise = video.play();
         promise
             .then(() => {
-                // Note: in Bloom Desktop, sometimes this event does not fire normally, even when the video is played to the end.
-                // I have not figured out why. It may be something to do with how we are trimming them.
-                // In Bloom Desktop, this is worked around by raising the ended event when we detect that it has paused past the end point
-                // in resetToStartAfterPlayingToEndPoint.
-                // In BloomPlayer,I don't think this is a problem. Videos are trimmed when published, so we always play to the
-                // real end (unless the user pauses). So one way or another, we should get the ended event.
+                // The promise resolves when the video starts playing. We want to know when it ends.
+                // Note: in Bloom Desktop, sometimes this event does not fire normally, even when the video is
+                // played to the end.  I have not figured out why. It may be something to do with how we are
+                // trimming the videos.
+                // In Bloom Desktop, this is worked around by raising the ended event when we detect that it has
+                // paused past the end point in resetToStartAfterPlayingToEndPoint.
+                // In BloomPlayer,I don't think this is a problem. Videos are trimmed when published, so we always
+                // play to the real end (unless the user pauses). So one way or another, we should get the ended
+                // event.
                 video.addEventListener(
                     "ended",
                     () => {
@@ -1262,6 +1297,9 @@ export function playAllVideo(elements: HTMLVideoElement[], then: () => void) {
             });
     }
 }
+
+// These methods live here instead of video.ts because video.ts is already importing
+// from narration.ts, and we don't want to create a circular dependency.
 
 // We're living with this message not being localized.
 const badVideoMessage = "Sorry, this video cannot be played in this browser.";
