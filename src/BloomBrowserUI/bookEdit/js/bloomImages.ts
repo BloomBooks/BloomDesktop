@@ -110,6 +110,33 @@ export function SetupImage(image) {
         image.removeAttribute("width");
         image.removeAttribute("height");
     }
+    var hndlr = image.getAttribute("onerror");
+    if (!hndlr) {
+        // Cover images get a handler assigned in C# code because assigning it here
+        // doesn't work for the initial load on cover pages.  (The image resource load
+        // fails before this bootstrap code is called in document.ready(), but only
+        // for the cover image for some reason.)  The C# code also doesn't preserve
+        // the bloom-imageLoadError class from earlier editing sessons.
+        // The onerror handler can be null if this is not a cover image and the error
+        // handler has not yet been assigned.  In that case, we want to initialize the
+        // error handler and class.  See BL-14241.
+        // Note that the error handler assigned this way will not be persisted as an
+        // attribute in the image element in the HTML.
+        image.classList.remove("bloom-imageLoadError");
+        image.onerror = HandleImageError;
+    }
+}
+
+// This handler behaves exactly the same as the one assigned in C# code to the
+// cover image elementin BookData.cs/UpdateImageFromDataSet().  Any change here
+// should be reflected there as well.  This might be difficult since the C# code
+// adds the very simple "this.classList.add('bloom-imageLoadError');" as the content
+// of the onerror attribute.  Anything much more complicated would probably require
+// more javascript work to bundle up the error handler appropriately for access.
+export function HandleImageError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    target.classList.add("bloom-imageLoadError");
+    // console.error("Image failed to load:", target.src);
 }
 
 export function GetButtonModifier(container) {
@@ -795,6 +822,11 @@ function SetAlternateTextOnImages(element) {
             "This picture, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
         const nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
         const decodedName = decodeURI(nameWithoutQueryString);
+        // show English to start with in case localization never returns even a failure
+        $(element).attr(
+            "alt",
+            theOneLocalizationManager.simpleFormat(englishText, [decodedName])
+        );
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Image.AltMsg",
