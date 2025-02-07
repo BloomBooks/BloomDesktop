@@ -2241,17 +2241,40 @@ export class BubbleManager {
         return delta;
     }
 
+    public resetCropping() {
+        if (!this.activeElement) return;
+        const img = getImageFromOverlay(this.activeElement);
+        if (!img) return;
+        img.style.width = "";
+        img.style.top = "";
+        img.style.left = "";
+        // Enhance: possibly we want to align by making it bigger rather than smaller?
+        this.adjustContainerAspectRatio(this.activeElement);
+    }
+
     // If this overlay contains an image, and it has not already been adjusted so that the overlay
     // dimensions have the same aspect ratio as the image, make it so, reducing either height or
     // width as necessary, or possibly increasing one if the usual adjustment would make it too small.
     // After making the adjustment if necessary (which might be delayed if the image dimensions
     // are not available), align the control frame with the active element.
-    private adjustContainerAspectRatio(overlay: HTMLElement): void {
+    private adjustContainerAspectRatio(
+        overlay: HTMLElement,
+        useSizeOfNewImage = false,
+        // Sometimes we think we need to wait for onload, but the data arrives before we set up
+        // the watcher. We make a timeout so we will go ahead and adjust if we have dimensions
+        // and don't get an onload in a reasonable time. If we DO get the onload before we
+        // timeout, we use this handle to clear it.
+        // This is set when we arrange an onload callback and receive it
+        timeoutHandler: number = 0
+    ): void {
+        if (timeoutHandler) {
+            clearTimeout(timeoutHandler);
+        }
         if (overlay.classList.contains(kbackgroundImageClass)) {
             this.adjustBackgroundImageSize(
                 overlay.closest(kImageContainerSelector)!,
                 overlay,
-                true
+                useSizeOfNewImage
             );
             return;
         }

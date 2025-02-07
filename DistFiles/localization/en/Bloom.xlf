@@ -1875,6 +1875,11 @@
         <source xml:lang="en">Paste image</source>
         <note>ID: EditTab.Image.PasteImage</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.Reset" sil:dynamic="true">
+        <source xml:lang="en">Reset</source>
+        <note>ID: EditTab.Image.Reset</note>
+        <note>Removes cropping from image</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
         <note>ID: EditTab.Image.TooLarge</note>

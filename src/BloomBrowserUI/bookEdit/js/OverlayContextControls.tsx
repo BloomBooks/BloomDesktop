@@ -649,6 +649,8 @@ function addImageMenuOptions(
         "bloom-imageContainer"
     )[0] as HTMLElement;
 
+    const isCropped = !!img.style.width;
+
     const runMetadataDialog = () => {
         if (!overlay) return;
         if (!imgContainer) return;
@@ -703,6 +705,15 @@ function addImageMenuOptions(
         }
         // Enhance: some way to remove a link you don't want anymore. For now, you can paste an empty string.
     );
+    if (isCropped) {
+        menuOptions.push({
+            l10nId: "EditTab.Image.Reset",
+            english: "Reset",
+            onClick: () => {
+                theOneBubbleManager?.resetCropping();
+            }
+        });
+    }
 }
 function pasteLink(overlay: HTMLElement) {
     const imgContainer = overlay.getElementsByClassName(
