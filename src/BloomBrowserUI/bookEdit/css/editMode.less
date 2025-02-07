@@ -1495,7 +1495,7 @@ canvas.moving {
         top: calc(50% - @resizeHandleRadius);
         left: calc(50% - @resizeHandleRadius);
         display: none;
-        //cursor: move;
+        cursor: move;
     }
 
     &.bloom-ui-overlay-show-move-crop-handle
@@ -1514,8 +1514,7 @@ canvas.moving {
         border: 1px solid @bloom-blue;
         box-sizing: border-box;
         pointer-events: all;
-        &.active-control,
-        &:hover {
+        &.bloom-currently-cropped {
             background-color: @bloom-blue;
         }
     }
@@ -1543,6 +1542,32 @@ canvas.moving {
         left: -@sideHandleRadius;
         height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ew-resize;
+    }
+    [data-title]:hover:after,
+    [data-title]:active:after {
+        // display the data-title like a title, but we will show it immediately,
+        // and even while the mouse is down
+        content: attr(data-title);
+        position: absolute;
+        top: 20px;
+        left: 10px;
+        background: white;
+        border: 1px solid black;
+        color: black;
+        font-size: small;
+        padding: 0.2em;
+        z-index: 2;
+        text-wrap-mode: nowrap;
+    }
+    // the tooltip may not be visible outside the frame, so
+    // on the south and east sides we move it to the other side.
+    .bloom-ui-overlay-side-handle-s:after {
+        bottom: 20px;
+        top: auto !important;
+    }
+    .bloom-ui-overlay-side-handle-e:after {
+        right: 10px;
+        left: auto !important;
     }
 
     // the background image is hard up against the side of the container on at least two edges,

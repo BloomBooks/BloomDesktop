@@ -57,6 +57,8 @@ import {
 } from "../bloomField/hyperlinks";
 import { useApiString } from "../../utils/bloomApi";
 import { MissingMetadataIcon } from "./MissingMetadataIcon";
+import { FillSpaceIcon } from "./FillSpaceIcon";
+import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -141,6 +143,7 @@ const OverlayContextControls: React.FunctionComponent<{
     const isBackgroundImage = props.overlay.classList.contains(
         kbackgroundImageClass
     );
+    const canExpandBackgroundImage = theOneBubbleManager?.canExpandToFillSpace();
 
     // These commands apply to all overlays (currently none!).
     const menuOptions: IMenuItemWithSubmenu[] = [];
@@ -184,6 +187,28 @@ const OverlayContextControls: React.FunctionComponent<{
     }
     if (hasVideo) {
         addVideoMenuItems(menuOptions, videoContainer);
+    }
+    if (isBackgroundImage) {
+        const fillItem = {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.FillSpace",
+            english: "Fit Space",
+            onClick: () => theOneBubbleManager?.expandImageToFillSpace(),
+            disabled: !canExpandBackgroundImage,
+            icon: (
+                <img
+                    src="/bloom/images/fill image black.svg"
+                    // tweak to align better for an icon that is wider than most
+                    css={getMenuIconCss(1, "left: -8px;")}
+                />
+            )
+        };
+        let index = menuOptions.findIndex(
+            option => option.l10nId === "EditTab.Image.Reset"
+        );
+        if (index < 0) {
+            index = menuOptions.indexOf(divider);
+        }
+        menuOptions.splice(index, 0, fillItem);
     }
 
     // last one
@@ -373,6 +398,17 @@ const OverlayContextControls: React.FunctionComponent<{
                             }}
                         />
                     )}
+                    {isBackgroundImage && (
+                        <ButtonWithTooltip
+                            tipL10nKey="EditTab.Toolbox.ComicTool.Options.FillSpace"
+                            icon={FillSpaceIcon}
+                            disabled={!canExpandBackgroundImage}
+                            onClick={() => {
+                                if (!props.overlay) return;
+                                theOneBubbleManager?.expandImageToFillSpace();
+                            }}
+                        />
+                    )}
                     <button
                         ref={ref => (menuEl.current = ref)}
                         css={getIconCss()}
@@ -478,6 +514,7 @@ const ButtonWithTooltip: React.FunctionComponent<{
     tipL10nKey: string;
     onClick: React.MouseEventHandler;
     relativeSize?: number;
+    disabled?: boolean;
 }> = props => {
     return (
         <BloomTooltip
@@ -488,7 +525,11 @@ const ButtonWithTooltip: React.FunctionComponent<{
         >
             <button
                 onClick={props.onClick}
-                css={getIconCss(props.relativeSize)}
+                css={getIconCss(
+                    props.relativeSize,
+                    props.disabled ? `opacity: ${kBloomDisabledOpacity};` : ""
+                )}
+                disabled={props.disabled}
             >
                 <props.icon color="primary" />
             </button>
@@ -531,10 +572,11 @@ export function renderOverlayContextControls(
     );
 }
 
-function getIconCss(relativeSize?: number) {
+function getIconCss(relativeSize?: number, extra = "") {
     const defaultFontSize = 1.3;
     const fontSize = defaultFontSize * (relativeSize ?? 1);
     return css`
+        ${extra}
         border-color: transparent;
         background-color: transparent;
         vertical-align: middle;
@@ -545,12 +587,13 @@ function getIconCss(relativeSize?: number) {
     `;
 }
 
-function getMenuIconCss(relativeSize?: number) {
+function getMenuIconCss(relativeSize?: number, extra = "") {
     const defaultFontSize = 1.3;
     const fontSize = defaultFontSize * (relativeSize ?? 1);
     return css`
         color: black;
         font-size: ${fontSize}rem;
+        ${extra}
     `;
 }
 
@@ -649,6 +692,8 @@ function addImageMenuOptions(
         "bloom-imageContainer"
     )[0] as HTMLElement;
 
+    const isCropped = !!img.style.width;
+
     const runMetadataDialog = () => {
         if (!overlay) return;
         if (!imgContainer) return;
@@ -682,6 +727,21 @@ function addImageMenuOptions(
             subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
             onClick: runMetadataDialog,
             icon: <CopyrightIcon css={getMenuIconCss()} />
+        },
+        {
+            l10nId: "EditTab.Image.Reset",
+            english: "Reset Image",
+            onClick: () => {
+                theOneBubbleManager?.resetCropping();
+            },
+            disabled: !isCropped,
+            icon: (
+                <img
+                    src="/bloom/images/reset image black.svg"
+                    // tweak to align better and make it look the same size as the other icons
+                    css={getMenuIconCss(1, "left: -2px; width: 22px;")}
+                />
+            )
         },
         divider,
         {

@@ -1875,6 +1875,11 @@
         <source xml:lang="en">Paste image</source>
         <note>ID: EditTab.Image.PasteImage</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.Reset" sil:dynamic="true">
+        <source xml:lang="en">Reset image</source>
+        <note>ID: EditTab.Image.Reset</note>
+        <note>Removes cropping from image</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
         <note>ID: EditTab.Image.TooLarge</note>
@@ -2106,12 +2111,16 @@
         <source xml:lang="en">Crop</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
+        <source xml:lang="en">Fill the space</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Fit</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
         <source xml:lang="en">Resize</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
-        <source xml:lang="en">Shift Picture</source>
+        <source xml:lang="en">Move image</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Shift</note>
         <note>Or you could translate "position picture". The control is used when a picture has been made bigger than its framing overlay by cropping and causes the picture to move without changing the shape of the overlay so that a different part of it can be seen.</note>
       </trans-unit>
@@ -2145,6 +2154,10 @@
         <source xml:lang="en">Duplicate</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
         <note>Tooltip for the bubble Duplicate icon</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate ="no">
+        <source xml:lang="en">Expand image to fill space</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
         <source xml:lang="en">Format text...</source>
