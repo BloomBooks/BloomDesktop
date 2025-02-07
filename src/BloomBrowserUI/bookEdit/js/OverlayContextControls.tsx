@@ -145,7 +145,14 @@ const OverlayContextControls: React.FunctionComponent<{
     // These commands apply to all overlays (currently none!).
     const menuOptions: IMenuItemWithSubmenu[] = [];
     // These to everything except background images
-    if (!isBackgroundImage) {
+    if (isBackgroundImage) {
+        menuOptions.unshift({
+            l10nId: "EditTab.Toolbox.ComicTool.Options.FitSpace",
+            english: "Fit Space",
+            onClick: () => theOneBubbleManager?.fitBgImageToContainer()
+            //icon: <DuplicateIcon css={getMenuIconCss()} />
+        });
+    } else {
         menuOptions.unshift({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",

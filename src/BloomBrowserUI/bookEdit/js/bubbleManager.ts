@@ -2252,6 +2252,56 @@ export class BubbleManager {
         this.adjustContainerAspectRatio(this.activeElement);
     }
 
+    public fitBgImageToContainer() {
+        if (
+            !this.activeElement ||
+            !this.activeElement.classList.contains(kbackgroundImageClass)
+        )
+            return;
+        const img = getImageFromOverlay(this.activeElement);
+        if (!img) return;
+        const container = this.activeElement.closest(
+            kImageContainerSelector
+        ) as HTMLElement;
+        if (!container) return;
+        const containerAspectRatio =
+            container.clientWidth / container.clientHeight;
+        const overlayAspectRatio =
+            this.activeElement.clientWidth / this.activeElement.clientHeight;
+        if (containerAspectRatio > overlayAspectRatio) {
+            // The overlay has extra space left and right. Removing just enough at the top
+            // will make the overlay the same shape as the container.
+            // That is, how much smaller would our height have to be to make the aspect ratios
+            // match? (Then, adjustBackgroundImageSize will make them actually the same size.)
+            const delta =
+                this.activeElement.clientHeight -
+                this.activeElement.clientWidth / containerAspectRatio;
+            if (delta < 1) return; // let's not switch into cropped mode if it's this close already
+            if (!img.style.width) {
+                img.style.width = `${img.clientWidth}px`;
+            }
+            this.activeElement.style.height = `${this.activeElement
+                .clientHeight - delta}px`;
+            img.style.top = `${BubbleManager.pxToNumber(img.style.top) -
+                delta / 2}px`;
+        } else {
+            // The overlay has extra space top and bottom. Removing just enough at the left
+            // will make the overlay the same shape as the container.
+            const delta =
+                this.activeElement.clientWidth -
+                this.activeElement.clientHeight * containerAspectRatio;
+            if (delta < 1) return;
+            if (!img.style.width) {
+                img.style.width = `${img.clientWidth}px`;
+            }
+            this.activeElement.style.width = `${this.activeElement.clientWidth -
+                delta}px`;
+            img.style.left = `${BubbleManager.pxToNumber(img.style.left) -
+                delta / 2}px`;
+        }
+        this.adjustBackgroundImageSize(container, this.activeElement, false);
+    }
+
     // If this overlay contains an image, and it has not already been adjusted so that the overlay
     // dimensions have the same aspect ratio as the image, make it so, reducing either height or
     // width as necessary, or possibly increasing one if the usual adjustment would make it too small.

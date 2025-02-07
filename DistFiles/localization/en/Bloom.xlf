@@ -2155,6 +2155,10 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
         <note>Tooltip for the bubble Duplicate icon</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FitSpace" sil:dynamic="true">
+        <source xml:lang="en">Fit space</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FitSpace</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
         <source xml:lang="en">Format text...</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
