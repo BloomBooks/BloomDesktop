@@ -2226,7 +2226,6 @@ export class BubbleManager {
                 true,
                 "data-title"
             );
-            console.log("set title to fit");
             return backgroundSnapDelta;
         }
         // not snapping
@@ -2237,7 +2236,6 @@ export class BubbleManager {
             true,
             "data-title"
         );
-        console.log("set title to crop");
         return delta;
     }
 
@@ -2250,6 +2248,43 @@ export class BubbleManager {
         img.style.left = "";
         // Enhance: possibly we want to align by making it bigger rather than smaller?
         this.adjustContainerAspectRatio(this.activeElement);
+    }
+
+    // This duplicates a good deal of code from expandImageToFillSpace, but I don't see a clean way to
+    // factor it out.
+    public canExpandToFillSpace(): boolean {
+        if (
+            !this.activeElement ||
+            !this.activeElement.classList.contains(kbackgroundImageClass)
+        )
+            return false;
+        const img = getImageFromOverlay(this.activeElement);
+        if (!img) return false;
+        const container = this.activeElement.closest(
+            kImageContainerSelector
+        ) as HTMLElement;
+        if (!container) return false;
+        const containerAspectRatio =
+            container.clientWidth / container.clientHeight;
+        const overlayAspectRatio =
+            this.activeElement.clientWidth / this.activeElement.clientHeight;
+        if (containerAspectRatio > overlayAspectRatio) {
+            // The overlay has extra space left and right. Removing just enough at the top
+            // will make the overlay the same shape as the container.
+            // That is, how much smaller would our height have to be to make the aspect ratios
+            // match? (Then, adjustBackgroundImageSize will make them actually the same size.)
+            const delta =
+                this.activeElement.clientHeight -
+                this.activeElement.clientWidth / containerAspectRatio;
+            return delta >= 1; // let's not switch into cropped mode if it's this close already
+        } else {
+            // The overlay has extra space top and bottom. Removing just enough at the left
+            // will make the overlay the same shape as the container.
+            const delta =
+                this.activeElement.clientWidth -
+                this.activeElement.clientHeight * containerAspectRatio;
+            return delta >= 1;
+        }
     }
 
     public expandImageToFillSpace() {
@@ -2300,6 +2335,9 @@ export class BubbleManager {
                 delta / 2}px`;
         }
         this.adjustBackgroundImageSize(container, this.activeElement, false);
+        // We will have changed the state of the fill space button, but the React code
+        // doesn't know this unless we force a render.
+        renderOverlayContextControls(this.activeElement, false);
     }
 
     // If this overlay contains an image, and it has not already been adjusted so that the overlay

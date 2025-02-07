@@ -1559,9 +1559,15 @@ canvas.moving {
         z-index: 2;
         text-wrap-mode: nowrap;
     }
+    // the tooltip may not be visible outside the frame, so
+    // on the south and east sides we move it to the other side.
     .bloom-ui-overlay-side-handle-s:after {
         bottom: 20px;
         top: auto !important;
+    }
+    .bloom-ui-overlay-side-handle-e:after {
+        right: 10px;
+        left: auto !important;
     }
 
     // the background image is hard up against the side of the container on at least two edges,
