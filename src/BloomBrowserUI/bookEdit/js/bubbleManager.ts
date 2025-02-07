@@ -2222,7 +2222,7 @@ export class BubbleManager {
             this.getHandleTitlesAsync(
                 controlFrame,
                 "bloom-ui-overlay-side-handle-" + side,
-                "Fit",
+                "Fill",
                 true,
                 "data-title"
             );
@@ -2252,7 +2252,7 @@ export class BubbleManager {
         this.adjustContainerAspectRatio(this.activeElement);
     }
 
-    public fitBgImageToContainer() {
+    public expandImageToFillSpace() {
         if (
             !this.activeElement ||
             !this.activeElement.classList.contains(kbackgroundImageClass)

@@ -1876,7 +1876,7 @@
         <note>ID: EditTab.Image.PasteImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.Reset" sil:dynamic="true">
-        <source xml:lang="en">Reset</source>
+        <source xml:lang="en">Reset image</source>
         <note>ID: EditTab.Image.Reset</note>
         <note>Removes cropping from image</note>
       </trans-unit>
@@ -2111,8 +2111,8 @@
         <source xml:lang="en">Crop</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fit" sil:dynamic="true">
-        <source xml:lang="en">Fit space</source>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
+        <source xml:lang="en">Fill the space</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Fit</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
@@ -2155,9 +2155,9 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
         <note>Tooltip for the bubble Duplicate icon</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FitSpace" sil:dynamic="true">
-        <source xml:lang="en">Fit space</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.FitSpace</note>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate ="no">
+        <source xml:lang="en">Expand image to fill space</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
         <source xml:lang="en">Format text...</source>

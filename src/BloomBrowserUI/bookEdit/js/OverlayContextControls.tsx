@@ -145,14 +145,7 @@ const OverlayContextControls: React.FunctionComponent<{
     // These commands apply to all overlays (currently none!).
     const menuOptions: IMenuItemWithSubmenu[] = [];
     // These to everything except background images
-    if (isBackgroundImage) {
-        menuOptions.unshift({
-            l10nId: "EditTab.Toolbox.ComicTool.Options.FitSpace",
-            english: "Fit Space",
-            onClick: () => theOneBubbleManager?.fitBgImageToContainer()
-            //icon: <DuplicateIcon css={getMenuIconCss()} />
-        });
-    } else {
+    if (!isBackgroundImage) {
         menuOptions.unshift({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
@@ -191,6 +184,27 @@ const OverlayContextControls: React.FunctionComponent<{
     }
     if (hasVideo) {
         addVideoMenuItems(menuOptions, videoContainer);
+    }
+    if (isBackgroundImage) {
+        const fillItem = {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.FillSpace",
+            english: "Fit Space",
+            onClick: () => theOneBubbleManager?.expandImageToFillSpace(),
+            icon: (
+                <img
+                    src="/bloom/images/fill image black.svg"
+                    // tweak to align better for an icon that is wider than most
+                    css={getMenuIconCss(1, "left: -8px;")}
+                />
+            )
+        };
+        let index = menuOptions.findIndex(
+            option => option.l10nId === "EditTab.Image.Reset"
+        );
+        if (index < 0) {
+            index = menuOptions.indexOf(divider);
+        }
+        menuOptions.splice(index, 0, fillItem);
     }
 
     // last one
@@ -552,12 +566,13 @@ function getIconCss(relativeSize?: number) {
     `;
 }
 
-function getMenuIconCss(relativeSize?: number) {
+function getMenuIconCss(relativeSize?: number, extra = "") {
     const defaultFontSize = 1.3;
     const fontSize = defaultFontSize * (relativeSize ?? 1);
     return css`
         color: black;
         font-size: ${fontSize}rem;
+        ${extra}
     `;
 }
 
@@ -692,6 +707,21 @@ function addImageMenuOptions(
             onClick: runMetadataDialog,
             icon: <CopyrightIcon css={getMenuIconCss()} />
         },
+        {
+            l10nId: "EditTab.Image.Reset",
+            english: "Reset Image",
+            onClick: () => {
+                theOneBubbleManager?.resetCropping();
+            },
+            disabled: !isCropped,
+            icon: (
+                <img
+                    src="/bloom/images/reset image black.svg"
+                    // tweak to align better for an icon that is wider than most
+                    css={getMenuIconCss(1, "left: -8px;")}
+                />
+            )
+        },
         divider,
         {
             l10nId: "EditTab.PasteHyperLink",
@@ -712,15 +742,6 @@ function addImageMenuOptions(
         }
         // Enhance: some way to remove a link you don't want anymore. For now, you can paste an empty string.
     );
-    if (isCropped) {
-        menuOptions.push({
-            l10nId: "EditTab.Image.Reset",
-            english: "Reset",
-            onClick: () => {
-                theOneBubbleManager?.resetCropping();
-            }
-        });
-    }
 }
 function pasteLink(overlay: HTMLElement) {
     const imgContainer = overlay.getElementsByClassName(
