@@ -1704,11 +1704,12 @@ export class BubbleManager {
         }
         const imgRect = img.getBoundingClientRect();
         const overlayRect = this.activeElement.getBoundingClientRect();
+        const slop = 1; // allow for rounding errors
         const cropped = {
-            n: imgRect.top < overlayRect.top,
-            e: imgRect.right > overlayRect.right,
-            s: imgRect.bottom > overlayRect.bottom,
-            w: imgRect.left < overlayRect.left
+            n: imgRect.top + slop < overlayRect.top,
+            e: imgRect.right > overlayRect.right + slop,
+            s: imgRect.bottom > overlayRect.bottom + slop,
+            w: imgRect.left + slop < overlayRect.left
         };
         sideHandles.forEach(handle => {
             //const side = handle.classList[1].split("-")[4];
@@ -2268,11 +2269,39 @@ export class BubbleManager {
         if (imgOrVideo instanceof HTMLImageElement) {
             imgWidth = imgOrVideo.naturalWidth;
             imgHeight = imgOrVideo.naturalHeight;
-            if (imgHeight === 0) {
+            if (
+                imgOrVideo.naturalHeight === 0 && // not loaded successfully (yet)
+                !useSizeOfNewImage && // not waiting for new dimensions
+                imgOrVideo.classList.contains("bloom-imageLoadError") // error occurred while trying to load
+            ) {
+                // Image is in an error state; we probably won't ever get useful dimensions. Just leave
+                // the overlay the shape it is.
+                return;
+            }
+            if (imgHeight === 0 || useSizeOfNewImage) {
                 // image not ready yet, try again later.
+                const handle = (setTimeout(
+                    () =>
+                        this.adjustContainerAspectRatio(
+                            overlay,
+                            false, // if we've got dimensions just use them
+                            0
+                        ), // if we get this call we don't have a timeout to cancel
+                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+                    // If by any chance this happens when the image really isn't loaded enough to
+                    // have naturalHeight/Width, the zero checks above will force another iteration.
+                    100
+                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+                ) as unknown) as number;
                 imgOrVideo.addEventListener(
                     "load",
-                    () => this.adjustContainerAspectRatio(overlay),
+                    () =>
+                        this.adjustContainerAspectRatio(
+                            overlay,
+                            false, // it's loaded, we don't want to wait again
+                            handle
+                        ), // if we get this call we can cancel the timeout above.
                     { once: true }
                 );
                 return; // control frame will be aligned when the image is loaded
@@ -2355,7 +2384,7 @@ export class BubbleManager {
                 true
             );
         } else {
-            this.adjustContainerAspectRatio(overlay);
+            this.adjustContainerAspectRatio(overlay, true);
         }
     }
 
