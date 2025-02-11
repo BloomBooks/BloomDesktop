@@ -59,12 +59,26 @@ export function reportPreliminaryError(
 // way of dealing with unhandled exceptions, and helps us distinguish thrown
 // from unhandled ones, which some Gecko45 reporting doesn't.
 window.onerror = (msg, url, line, col, error) => {
+    const message = msg.toString();
+    if (
+        message.includes(
+            "ResizeObserver loop completed with undelivered notifications"
+        )
+    ) {
+        // We've done some investigation of this error. It doesn't seem to come from our code,
+        // but from something deep in React. It signifies (roughly) that changes made by one resize observer
+        // changed the size of something causing another resize observer to fire at a higher
+        // level in the document, and that handler is going to be postponed to the next animation frame.
+        // It doesn't seem to be causing any harm, and ongoing reports of it are a nuisance.
+        console.error("Ignoring: " + message);
+        return true; // suppress normal handling.
+    }
     if (!error) {
-        reportError(msg.toString(), "(stack not available)");
+        reportError(message, "(stack not available)");
         return true;
     }
     // Make a preliminary report, which will be discarded if the stack conversion succeeds.
-    reportPreliminaryError(msg.toString(), error.stack);
+    reportPreliminaryError(message, error.stack);
     // Try to make the report using source stack.
     StackTrace.fromError(error).then(stackframes => {
         const stringifiedStack = stackframes
@@ -72,7 +86,7 @@ window.onerror = (msg, url, line, col, error) => {
                 return sf.toString();
             })
             .join("\n");
-        reportError(msg.toString(), stringifiedStack);
+        reportError(message, stringifiedStack);
     });
     return true; // suppress normal handling.
 };

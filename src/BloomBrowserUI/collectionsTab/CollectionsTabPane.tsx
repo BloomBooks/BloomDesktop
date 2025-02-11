@@ -40,6 +40,7 @@ const kResizerSize = 10;
 
 type CollectionInfo = {
     id: string;
+    key?: string; // React key, defaults to id
     name: string;
     shouldLocalizeName: boolean;
     isLink: boolean;
@@ -347,7 +348,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const collectionComponents = sourcesCollections.map(c => {
         return (
             <BooksOfCollectionWithHeading
-                key={c.id}
+                key={c.key ?? c.id}
                 name={c.name}
                 id={c.id}
                 shouldLocalizeName={c.shouldLocalizeName}
@@ -864,7 +865,10 @@ function sanitize(id: string): string {
 function processTemplatesCollection(
     templatesCollection: CollectionInfo
 ): CollectionInfo[] {
-    const simpleTemplates = { ...templatesCollection };
+    const simpleTemplates = {
+        ...templatesCollection,
+        key: templatesCollection.id + "/Simple"
+    };
 
     // this "f" garbage is because TS refused to see that simpleTemplates.filter is never undefined
     const f = (book: IBookInfo) => {
@@ -876,6 +880,7 @@ function processTemplatesCollection(
     simpleTemplates.filter = f;
     const specializedTemplates = {
         ...templatesCollection,
+        key: templatesCollection.id + "/Specialized",
         name: "Specialized Templates"
     };
     specializedTemplates.filter = (book: IBookInfo) => {
