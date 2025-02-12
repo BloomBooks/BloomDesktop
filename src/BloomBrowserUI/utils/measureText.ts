@@ -186,6 +186,10 @@ export class MeasureText {
         // canvas.style.left = "0";
         // canvas.style.top = "0";
         // document.body.appendChild(canvas);
+
+        // tell the canvas we will frequently retrieve its bitmap
+        // This is supposed to make it faster. (It uses CPU memory instead of GPU memory)
+        canvas.getContext("2d", { willReadFrequently: true });
         return canvas;
     }
 

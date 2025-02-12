@@ -216,6 +216,72 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         />
     );
 
+    const preview = (
+        <div
+            css={css`
+                display: flex;
+                flex-direction: column;
+                /* height: calc(
+            100% - 4px
+        ); // hack. JT+JH couldn't find why the parent was giving a scroll bar when everything was 100%. */
+                height: 100%;
+                position: relative; // this div exists so that we can provide this position relative which allows the "Edit This book" button to be absolutely positioned.
+            `}
+        >
+            <div
+                css={css`
+                    // this is a row above the preview
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                `}
+            >
+                <div
+                    css={css`
+                        // overrides a material-ui tabs rule that applies to any div in the selected tab!
+                        padding: 0 !important;
+                        // keep the white background inside the button.
+                        border-radius: 5px;
+                        flex-shrink: 0;
+                        margin-top: 6px;
+                        margin-bottom: 10px;
+                    `}
+                >
+                    {editOrMakeButton}
+                </div>
+                {selectedBookId && (
+                    <BookInfoIndicator bookId={selectedBookId} />
+                )}
+            </div>
+            {selectedBookId && (
+                <iframe
+                    src={`/book-preview/index.htm?dummy=${selectedBookId +
+                        reload}`}
+                    height="100%"
+                    width="100%"
+                    css={css`
+                        flex-grow: 1;
+                        border: none;
+                    `}
+                    ref={iframeRef}
+                />
+            )}
+            {aboutBookInfoUrl && selectedBookId && (
+                <iframe
+                    src={aboutBookInfoUrl}
+                    height="100%"
+                    width="100%"
+                    css={css`
+                        margin-top: 5px;
+                        flex-grow: 1;
+                        border: none;
+                        background: #fcfafa;
+                    `}
+                />
+            )}
+        </div>
+    );
+
     return (
         <div
             css={css`
@@ -272,24 +338,20 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                         } */
                     `}
                 ></div>
-                <BloomTabs
-                    id="tabs"
-                    defaultIndex={0}
-                    color="white"
-                    selectedColor="white"
-                    labelBackgroundColor={kDarkestBackground}
-                >
-                    <TabList>
-                        {// actually we want the (default) preview tab pane even we're not showing history.
-                        // but we don't need the tab label if there are no others.
-                        showTabs && (
+                {showTabs ? (
+                    <BloomTabs
+                        id="tabs"
+                        defaultIndex={0}
+                        color="white"
+                        selectedColor="white"
+                        labelBackgroundColor={kDarkestBackground}
+                    >
+                        <TabList>
                             <Tab id="previewLabel">
                                 <LocalizedString l10nKey="Common.Preview">
                                     Preview
                                 </LocalizedString>
                             </Tab>
-                        )}
-                        {showTabs && (
                             <Tab id="historyLabel">
                                 <LocalizedString
                                     l10nKey="TeamCollection.History"
@@ -298,83 +360,18 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                                     History
                                 </LocalizedString>
                             </Tab>
-                        )}
-                    </TabList>
-                    <TabPanel id="previewPanel">
-                        <div
-                            css={css`
-                                display: flex;
-                                flex-direction: column;
-                                /* height: calc(
-                                    100% - 4px
-                                ); // hack. JT+JH couldn't find why the parent was giving a scroll bar when everything was 100%. */
-                                height: 100%;
-                                position: relative; // this div exists so that we can provide this position relative which allows the "Edit This book" button to be absolutely positioned.
-                            `}
-                        >
-                            <div
-                                css={css`
-                                    // this is a row above the preview
-                                    display: flex;
-                                    flex-direction: row;
-                                    justify-content: space-between;
-                                `}
-                            >
-                                <div
-                                    css={css`
-                                        // overrides a material-ui tabs rule that applies to any div in the selected tab!
-                                        padding: 0 !important;
-                                        // keep the white background inside the button.
-                                        border-radius: 5px;
-                                        flex-shrink: 0;
-                                        margin-top: 6px;
-                                        margin-bottom: 10px;
-                                    `}
-                                >
-                                    {editOrMakeButton}
-                                </div>
-                                {selectedBookId && (
-                                    <BookInfoIndicator
-                                        bookId={selectedBookId}
-                                    />
-                                )}
-                            </div>
-                            {selectedBookId && (
-                                <iframe
-                                    src={`/book-preview/index.htm?dummy=${selectedBookId +
-                                        reload}`}
-                                    height="100%"
-                                    width="100%"
-                                    css={css`
-                                        flex-grow: 1;
-                                        border: none;
-                                    `}
-                                    ref={iframeRef}
-                                />
-                            )}
-                            {aboutBookInfoUrl && selectedBookId && (
-                                <iframe
-                                    src={aboutBookInfoUrl}
-                                    height="100%"
-                                    width="100%"
-                                    css={css`
-                                        margin-top: 5px;
-                                        flex-grow: 1;
-                                        border: none;
-                                        background: #fcfafa;
-                                    `}
-                                />
-                            )}
-                        </div>
-                    </TabPanel>
-                    {enterpriseAvailable && selectedBookId && (
+                        </TabList>
+                        <TabPanel id="previewPanel">{preview}</TabPanel>
                         <TabPanel id="historyPanel">
                             <CollectionHistoryTable
                                 selectedBook={selectedBookId}
                             />
                         </TabPanel>
-                    )}
-                </BloomTabs>
+                    </BloomTabs>
+                ) : (
+                    // No tabs, so just show the preview
+                    preview
+                )}
                 {editOrMakeProgress}
             </div>
             {// Currently, canMakeBook is a synonym for 'book is not in the current TC'
