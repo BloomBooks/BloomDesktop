@@ -126,6 +126,19 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
     if (editable) {
         getToolboxBundleExports()?.activateLongPressFor($(editable));
     }
+    // This interception prevents pasting anything but plain text (e.g., we don't want
+    // HTML markup, possibly forcing an unwanted font into our document).
+    editable.addEventListener("paste", event => {
+        event.preventDefault();
+        const text = event.clipboardData?.getData("text");
+        if (text) {
+            // There are undeprecated ways of inserting the text, but this also puts the
+            // change into the browser undo stack as expected, and nothing else I can find
+            // does so (short of attaching CkEditor). Hopefully, if execCommand ever really
+            // goes away, by then there will be a way to insert a change into the Undo stack.
+            document.execCommand("insertText", false, text);
+        }
+    });
     promptEditable = promptTg.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
@@ -182,6 +195,15 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         draggableX = Math.min(draggableX, originalDraggables[i].offsetLeft);
         draggableY = Math.min(draggableY, originalDraggables[i].offsetTop);
     }
+    const setDraggableText = (draggable: HTMLElement, text: string) => {
+        const ed = draggable.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on"
+        )[0] as HTMLElement;
+        const p = ed.getElementsByTagName("p")[0];
+        // Ones after the number of letters we have should be empty. This helps with
+        // automatically deciding which ones should be visible based on language.
+        p.textContent = text ?? "";
+    };
     // Set up an observer to keep the draggables in sync with the prompt during typing.
     const promptObserver = new MutationObserver(() => {
         if (!promptEditable) {
@@ -194,6 +216,10 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         const draggables = Array.from(
             page.getElementsByClassName("bloom-textOverPicture draggable-text")
         ) as HTMLElement[];
+        // make sure we get some reasonable offsetWidth for the first one, if there are
+        // any letters. (Can become display:none if we have no letters.)
+        setDraggableText(draggables[0], letters[0]);
+        draggables[0].classList.remove("bloom-unused-in-lang");
         const separation = draggables[0].offsetWidth + 15; // enhance: may want to increase this
         // How many can we fit in one row inside the parent?
         const maxBubbles = Math.floor(
@@ -229,13 +255,7 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
         // in some other language. This loop, as well as making the ones we want have the right content,
         // makes the ones we don't want invisible and empty.
         for (let i = 0; i < draggables.length; i++) {
-            const ed = draggables[i].getElementsByClassName(
-                "bloom-editable bloom-visibility-code-on"
-            )[0] as HTMLElement;
-            const p = ed.getElementsByTagName("p")[0];
-            // Ones after the number of letters we have should be empty. This helps with
-            // automatically deciding which ones should be visible based on language.
-            p.textContent = letters[i] ?? "";
+            setDraggableText(draggables[i], letters[i]);
             // up to the number of letters we have, they should be visible; others, not.
             draggables[i].classList.toggle(
                 "bloom-unused-in-lang",
