@@ -449,7 +449,8 @@ function hasOrigami(container: HTMLElement) {
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
 export function SetupElements(
     container: HTMLElement,
-    elementToFocus?: HTMLElement
+    // undefined means it will do its best to find something to focus. "none" means don't focus anything.
+    elementToFocus?: HTMLElement | "none"
 ) {
     recordWhatThisPageLooksLikeForSanityCheck(container);
     BubbleManager.recordInitialZoom(container);
@@ -788,72 +789,76 @@ export function SetupElements(
             //     theOneBubbleManager.setActiveElement(undefined);
             // }
 
-            const focusable = elementToFocus
-                ? $(elementToFocus).find(":focusable")
-                : undefined;
-            // If we were passed an element to focus, it could be a new comic bubble, and we'd like to
-            // be all set to type in it. So we focus it.
-            // I'm not sure whether this is desirable when we found one from data-bloom-active,
-            // but there may be a case where the page gets reloaded while a text-editable bubble is active.
-            if (elementToFocus && focusable) {
-                focusable.focus();
-                // Ideally calling focus above has this as a side effect.
-                // However, the focusin event handler doesn't seem to get called at this point
-                // for image containers, even though we have set tabindex to zero,
-                // so make sure it becomes the active element at least.
-                theOneBubbleManager.setActiveElement(elementToFocus);
-                // see similar code below
-                BloomSourceBubbles.ShowSourceBubbleForElement(elementToFocus);
-            } else {
-                // It's OK not to focus anything.  The priority for focusing text boxes is:
-                // 1) empty overlay "Text Box" which has no border to indicate that it's there
-                // 2) empty text box, whether overlay or origami
-                // 3) origami text box, empty or not
-                // Note that image description text boxes are never focused here since we can't
-                // tell whether they're actually visible or not.
-                // See BL-14265 and the earlier BL-14109.
-                const allEditables = container.querySelectorAll(
-                    "textarea, div.bloom-editable.bloom-visibility-code-on"
-                ); // :visible and :not don't work in this context
-                if (allEditables.length === 0) {
-                    return;
-                }
-                const visibleEditables = Array.from(allEditables).filter(
-                    e =>
-                        e.closest(".box-header-off") === null && // these are invisible (BL-14109)
-                        e.closest(".bloom-imageDescription") === null // these may be invisible
-                );
-                if (visibleEditables.length === 0) {
-                    return;
-                }
-                const emptyEditables = visibleEditables.filter(
-                    e => !e.textContent?.trim()
-                );
-                if (emptyEditables.length) {
-                    const emptyTextBlockOverlay = emptyEditables.find(e => {
-                        const div = e.closest(".bloom-textOverPicture");
-                        if (div === null) return false;
-                        return div
-                            .getAttribute("data-bubble")
-                            ?.includes("`style`:`none`");
-                    });
-                    if (emptyTextBlockOverlay) {
-                        // We want to focus on the first empty overlay text with style "none".
-                        $(emptyTextBlockOverlay).focus();
-                        return;
-                    } else {
-                        // otherwise, focus on the first empty text box, whether overlay or origami.
-                        $(emptyEditables[0]).focus();
+            if (elementToFocus !== "none") {
+                const focusable = elementToFocus
+                    ? $(elementToFocus).find(":focusable")
+                    : undefined;
+                // If we were passed an element to focus, it could be a new comic bubble, and we'd like to
+                // be all set to type in it. So we focus it.
+                // I'm not sure whether this is desirable when we found one from data-bloom-active,
+                // but there may be a case where the page gets reloaded while a text-editable bubble is active.
+                if (elementToFocus && focusable) {
+                    focusable.focus();
+                    // Ideally calling focus above has this as a side effect.
+                    // However, the focusin event handler doesn't seem to get called at this point
+                    // for image containers, even though we have set tabindex to zero,
+                    // so make sure it becomes the active element at least.
+                    theOneBubbleManager.setActiveElement(elementToFocus);
+                    // see similar code below
+                    BloomSourceBubbles.ShowSourceBubbleForElement(
+                        elementToFocus
+                    );
+                } else {
+                    // It's OK not to focus anything.  The priority for focusing text boxes is:
+                    // 1) empty overlay "Text Box" which has no border to indicate that it's there
+                    // 2) empty text box, whether overlay or origami
+                    // 3) origami text box, empty or not
+                    // Note that image description text boxes are never focused here since we can't
+                    // tell whether they're actually visible or not.
+                    // See BL-14265 and the earlier BL-14109.
+                    const allEditables = container.querySelectorAll(
+                        "textarea, div.bloom-editable.bloom-visibility-code-on"
+                    ); // :visible and :not don't work in this context
+                    if (allEditables.length === 0) {
                         return;
                     }
-                }
-                // don't want overlays selected here
-                const editable = visibleEditables.find(
-                    e => e.closest(".bloom-textOverPicture") === null
-                );
-                if (editable) {
-                    // focus on the first available origami text box
-                    $(editable).focus();
+                    const visibleEditables = Array.from(allEditables).filter(
+                        e =>
+                            e.closest(".box-header-off") === null && // these are invisible (BL-14109)
+                            e.closest(".bloom-imageDescription") === null // these may be invisible
+                    );
+                    if (visibleEditables.length === 0) {
+                        return;
+                    }
+                    const emptyEditables = visibleEditables.filter(
+                        e => !e.textContent?.trim()
+                    );
+                    if (emptyEditables.length) {
+                        const emptyTextBlockOverlay = emptyEditables.find(e => {
+                            const div = e.closest(".bloom-textOverPicture");
+                            if (div === null) return false;
+                            return div
+                                .getAttribute("data-bubble")
+                                ?.includes("`style`:`none`");
+                        });
+                        if (emptyTextBlockOverlay) {
+                            // We want to focus on the first empty overlay text with style "none".
+                            $(emptyTextBlockOverlay).focus();
+                            return;
+                        } else {
+                            // otherwise, focus on the first empty text box, whether overlay or origami.
+                            $(emptyEditables[0]).focus();
+                            return;
+                        }
+                    }
+                    // don't want overlays selected here
+                    const editable = visibleEditables.find(
+                        e => e.closest(".bloom-textOverPicture") === null
+                    );
+                    if (editable) {
+                        // focus on the first available origami text box
+                        $(editable).focus();
+                    }
                 }
             }
         }
