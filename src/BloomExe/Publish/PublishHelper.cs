@@ -824,6 +824,12 @@ namespace Bloom.Publish
                 if (oldImg == null || oldImg.GetAttribute("src") != "placeHolder.png")
                     return;
                 oldImg.SetAttribute("src", src);
+                // Preserve links if they exist (BL-14318)
+                if (imgContainer.AttributeNames.Contains("data-href"))
+                    parentContainer.SetAttribute(
+                        "data-href",
+                        imgContainer.GetAttribute("data-href")
+                    );
                 overlay.ParentNode.RemoveChild(overlay);
             }
         }
