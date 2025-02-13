@@ -618,8 +618,23 @@ namespace Bloom.Publish
         private void StoreFontUsed(SafeXmlElement elt)
         {
             var id = elt.GetAttribute("id");
+            // If it's not displayed, and there's nothing to display, ignore it.
+            if (
+                _mapIdToDisplay.TryGetValue(id, out var display)
+                && display == "none"
+                && elt.InnerText.Trim() == ""
+            )
+            {
+                return;
+            }
             if (!_mapIdToFontInfo.TryGetValue(id, out var fontInfo))
                 return; // Shouldn't happen, but ignore if it does.
+            // See basePage-sharedRules.less for the default fonts list.  Changes there should be reflected here.
+            // We don't really want to embed any of these fonts unless they're explicitly used.
+            var defaultFonts =
+                "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif";
+            if (fontInfo.fontName == defaultFonts)
+                return;
             var font = ExtractFontNameFromFontFamily(fontInfo.fontName);
             //Debug.WriteLine(
             //    $"DEBUG PublishHelper.StoreFontUsed(): font=\"{font}\", fontStyle={fontInfo.fontStyle}, fontWeight={fontInfo.fontWeight}"
