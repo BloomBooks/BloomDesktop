@@ -725,7 +725,7 @@ export class BubbleManager {
             }
             SetupElements(
                 imageContainer,
-                activateBubble ? bubble.content : undefined
+                activateBubble ? bubble.content : "none"
             );
 
             // Since we may have just added an element, check if the container has at least one
