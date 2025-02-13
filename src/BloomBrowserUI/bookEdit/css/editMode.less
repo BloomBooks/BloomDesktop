@@ -434,7 +434,7 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
 
     &.changeImageButton {
         right: @imageButtonHInset;
-        top: imageButtonVInset;
+        top: @imageButtonVInset;
         background-image: url("/bloom/bookEdit/img/ChangeImageButton.svg");
     }
 
@@ -468,6 +468,10 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
             background-image: url("/bloom/bookEdit/img/MissingInfoIndicator.svg") !important;
         }
     }
+}
+
+.moving .imageButton {
+    display: none !important;
 }
 
 // In an active background overlay, show yet another form of the edit metadata icon
