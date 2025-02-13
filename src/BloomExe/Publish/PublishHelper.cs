@@ -183,23 +183,27 @@ namespace Bloom.Publish
 
         public class FontInfo
         {
-            public string fontName;
+            public string fontFamily;
             public string fontStyle;
             public string fontWeight;
 
             public override string ToString()
             {
                 if (string.IsNullOrEmpty(fontStyle) && string.IsNullOrEmpty(fontWeight))
-                    return string.IsNullOrEmpty(fontName) ? "<uninitialized FontInfo>" : fontName;
+                    return string.IsNullOrEmpty(fontFamily)
+                        ? "<uninitialized FontInfo>"
+                        : fontFamily;
                 if (fontStyle == "normal" && fontWeight == "400")
-                    return string.IsNullOrEmpty(fontName) ? "<uninitialized FontInfo>" : fontName;
+                    return string.IsNullOrEmpty(fontFamily)
+                        ? "<uninitialized FontInfo>"
+                        : fontFamily;
                 if (fontStyle == "normal" && fontWeight == "700")
-                    return $"{fontName} Bold";
+                    return $"{fontFamily} Bold";
                 if (fontStyle == "italic" && fontWeight == "400")
-                    return $"{fontName} Italic";
+                    return $"{fontFamily} Italic";
                 if (fontStyle == "italic" && fontWeight == "700")
-                    return $"{fontName} Bold Italic";
-                return $"{fontName} weight=\"{fontWeight}\" style=\"{fontStyle}\"";
+                    return $"{fontFamily} Bold Italic";
+                return $"{fontFamily} weight=\"{fontWeight}\" style=\"{fontStyle}\"";
             }
 
             public override bool Equals(object obj)
@@ -207,14 +211,16 @@ namespace Bloom.Publish
                 var that = obj as FontInfo;
                 if (that == null)
                     return false;
-                return this.fontName == that.fontName
+                return this.fontFamily == that.fontFamily
                     && this.fontStyle == that.fontStyle
                     && this.fontWeight == that.fontWeight;
             }
 
             public override int GetHashCode()
             {
-                return fontName.GetHashCode() ^ fontStyle.GetHashCode() ^ fontWeight.GetHashCode();
+                return fontFamily.GetHashCode()
+                    ^ fontStyle.GetHashCode()
+                    ^ fontWeight.GetHashCode();
             }
 
             public static bool operator ==(FontInfo info1, FontInfo info2)
@@ -433,7 +439,7 @@ namespace Bloom.Publish
                             FontsUsed.Add(
                                 new FontInfo
                                 {
-                                    fontName = font,
+                                    fontFamily = font,
                                     fontStyle = info.fontStyle,
                                     fontWeight = info.fontWeight
                                 }
@@ -444,7 +450,7 @@ namespace Bloom.Publish
                     _mapIdToDisplay[info.id] = info.display;
                     var fontInfo = new FontInfo
                     {
-                        fontName = info.fontFamily,
+                        fontFamily = info.fontFamily,
                         fontStyle = info.fontStyle,
                         fontWeight = info.fontWeight
                     };
@@ -618,16 +624,35 @@ namespace Bloom.Publish
         private void StoreFontUsed(SafeXmlElement elt)
         {
             var id = elt.GetAttribute("id");
+            // If it's not displayed, and there's nothing to display, ignore it.
+            if (
+                _mapIdToDisplay.TryGetValue(id, out var display)
+                && display == "none"
+                && elt.InnerText.Trim() == ""
+            )
+            {
+                return;
+            }
             if (!_mapIdToFontInfo.TryGetValue(id, out var fontInfo))
                 return; // Shouldn't happen, but ignore if it does.
-            var font = ExtractFontNameFromFontFamily(fontInfo.fontName);
+
+            // See basePage-sharedRules.less for the default font-family list.  Changes there should be reflected here.
+            // fontFamily can list multiple fonts, but we usually want only the first one. We don't want to embed any
+            // of these fonts unless they're explicitly used.  So if fontInfo.fontFamily matches the default font-family
+            // fallback list established in basePage-sharedRules.less, we can ignore it.
+            var defaultFontFamily =
+                "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif";
+            if (fontInfo.fontFamily == defaultFontFamily)
+                return;
+            // Get the first font in the font-family list if there's more than one.
+            var font = ExtractFontNameFromFontFamily(fontInfo.fontFamily);
             //Debug.WriteLine(
             //    $"DEBUG PublishHelper.StoreFontUsed(): font=\"{font}\", fontStyle={fontInfo.fontStyle}, fontWeight={fontInfo.fontWeight}"
             //);
             FontsUsed.Add(
                 new FontInfo
                 {
-                    fontName = font,
+                    fontFamily = font,
                     fontStyle = fontInfo.fontStyle,
                     fontWeight = fontInfo.fontWeight
                 }
@@ -1086,7 +1111,7 @@ namespace Bloom.Publish
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
                 var fontFile = fontFileFinder.GetFileForFont(
-                    font.fontName,
+                    font.fontFamily,
                     font.fontStyle,
                     font.fontWeight
                 );
@@ -1095,7 +1120,7 @@ namespace Bloom.Publish
                 var missingLicense = false;
                 var badFileType = false;
                 var fileExtension = "";
-                if (_fontMetadataMap.TryGetValue(font.fontName, out var meta))
+                if (_fontMetadataMap.TryGetValue(font.fontFamily, out var meta))
                 {
                     fileExtension = meta.fileExtension;
                     switch (meta.determinedSuitability)
@@ -1171,7 +1196,7 @@ namespace Bloom.Publish
                 }
                 // If the missing font is Andika New Basic, don't complain because Andika subsumes Andika New Basic,
                 // and will be automatically substituted for it.
-                var dontComplain = font.fontName == "Andika New Basic";
+                var dontComplain = font.fontFamily == "Andika New Basic";
                 if (badFileType)
                 {
                     progress.MessageWithParams(
@@ -1188,7 +1213,7 @@ namespace Bloom.Publish
                         ProgressKind.Error
                     );
                 }
-                else if (fontFileFinder.FontsWeCantInstall.Contains(font.fontName) || badLicense)
+                else if (fontFileFinder.FontsWeCantInstall.Contains(font.fontFamily) || badLicense)
                 {
                     progress.MessageWithParams(
                         "PublishTab.Android.File.Progress.LicenseForbids",
@@ -1227,7 +1252,7 @@ namespace Bloom.Publish
                         defaultFont,
                         font
                     );
-                badFonts.Add(font.fontName); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
+                badFonts.Add(font.fontFamily); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
             }
         }
 
