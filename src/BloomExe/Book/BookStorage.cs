@@ -3296,16 +3296,23 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// if necessary, append a number to make the file name unique within the given folder
+        /// if necessary, append a number to make the file name unique within the given folder.
+        /// name must NOT include an extension. The supplied extension will be added rather than
+        /// replacing any existing extension. (This is to allow names that may contain periods,
+        /// without stripping off whatever follows the period.)
         /// </summary>
         internal static string GetUniqueFileName(string parentPath, string name, string ext)
         {
             int i = 0;
             string suffix = "";
             string result;
+            if (!ext.StartsWith("."))
+                ext = "." + ext;
             do
             {
-                result = Path.ChangeExtension(Path.Combine(parentPath, name + suffix), ext);
+                // Don't use Path.ChangeExtension here. If name happens to have a period, it will remove
+                // everything after it, including suffix, potentially resulting in an infinite loop.
+                result = Path.Combine(parentPath, name + suffix + ext);
                 ++i;
                 suffix = i.ToString(CultureInfo.InvariantCulture);
             } while (RobustFile.Exists(result));
