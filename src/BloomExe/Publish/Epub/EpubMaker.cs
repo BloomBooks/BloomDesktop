@@ -2731,7 +2731,6 @@ namespace Bloom.Publish.Epub
         {
             ISet<string> warningMessages = new HashSet<string>();
             var fontFileFinder = FontFileFinder.GetInstance(Program.RunningUnitTests);
-            const string defaultFont = "Andika";
             PublishHelper.CheckFontsForEmbedding(
                 progress,
                 _fontsUsedInBook,
@@ -2755,10 +2754,10 @@ namespace Bloom.Publish.Epub
             var sb = new StringBuilder();
             foreach (var font in _fontsUsedInBook.OrderBy(x => x.ToString()))
             {
-                if (badFonts.Contains(font.fontName))
+                if (badFonts.Contains(font.fontFamily))
                     continue;
                 var file = fontFileFinder.GetFileForFont(
-                    font.fontName,
+                    font.fontFamily,
                     font.fontStyle,
                     font.fontWeight
                 );
@@ -2772,7 +2771,7 @@ namespace Bloom.Publish.Epub
                     // If we can't embed the font, no reason to refer to it in the css.
                     continue;
                 }
-                var group = fontFileFinder.GetGroupForFont(font.fontName);
+                var group = fontFileFinder.GetGroupForFont(font.fontFamily);
                 if (group != null)
                 {
                     // The fonts.css file is stored in a subfolder as are the font files.  They are in different
@@ -2786,7 +2785,7 @@ namespace Bloom.Publish.Epub
                 && !_fontsUsedInBook
                     .Where(
                         x =>
-                            x.fontName == defaultFont
+                            x.fontFamily == PublishHelper.DefaultFont
                             && x.fontStyle == "normal"
                             && x.fontWeight != "700"
                     )
@@ -2794,10 +2793,10 @@ namespace Bloom.Publish.Epub
             )
                 AddFontFace(
                     sb,
-                    defaultFont,
+                    PublishHelper.DefaultFont,
                     "normal",
                     "normal",
-                    fontFileFinder.GetGroupForFont(defaultFont).Normal,
+                    fontFileFinder.GetGroupForFont(PublishHelper.DefaultFont).Normal,
                     "../" + kFontsFolder + "/"
                 );
             Directory.CreateDirectory(Path.Combine(_contentFolder, kCssFolder));
@@ -2811,10 +2810,10 @@ namespace Bloom.Publish.Epub
             {
                 PublishHelper.FixCssReferencesForBadFonts(
                     Path.Combine(_contentFolder, kCssFolder),
-                    defaultFont,
+                    PublishHelper.DefaultFont,
                     badFonts
                 );
-                FixXhtmlReferencesForBadFonts(_contentFolder, defaultFont, badFonts);
+                FixXhtmlReferencesForBadFonts(_contentFolder, PublishHelper.DefaultFont, badFonts);
             }
 
             return warningMessages;
@@ -2868,7 +2867,7 @@ namespace Bloom.Publish.Epub
                 path = group.Normal;
             AddFontFace(
                 sb,
-                font.fontName,
+                font.fontFamily,
                 weight,
                 font.fontStyle,
                 path,
