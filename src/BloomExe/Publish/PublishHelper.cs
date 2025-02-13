@@ -618,6 +618,8 @@ namespace Bloom.Publish
         private void StoreFontUsed(SafeXmlElement elt)
         {
             var id = elt.GetAttribute("id");
+            if (_mapIdToDisplay.TryGetValue(id, out var displayValue) && displayValue == "none")
+                return;
             if (!_mapIdToFontInfo.TryGetValue(id, out var fontInfo))
                 return; // Shouldn't happen, but ignore if it does.
             var font = ExtractFontNameFromFontFamily(fontInfo.fontName);
