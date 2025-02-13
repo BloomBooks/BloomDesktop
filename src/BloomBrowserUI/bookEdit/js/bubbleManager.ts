@@ -477,78 +477,11 @@ export class BubbleManager {
                         const x = event.offsetX;
                         const y = event.offsetY;
                         if (!Comical.somethingHit(container, x, y)) {
-                            // So far so good. We have now determined that we want to remove
-                            // focus from anything in this image.
-                            // (Enhance: should we check that something within this image
-                            // is currently focused, so clicking on a picture won't
-                            // arbitrarily move the focus if it's not in this image?)
-                            // Leaving nothing at all selected is something of a last resort,
-                            // so we first look for something we can focus that is outside the
-                            // image.
-                            let somethingElseToFocus = Array.from(
-                                document.getElementsByClassName(
-                                    "bloom-editable"
-                                )
-                            ).filter(
-                                e =>
-                                    !container.contains(e) &&
-                                    (e as HTMLElement).offsetHeight > 0 // a crude but here adequate way to pick a visible one
-                            )[0] as HTMLElement;
-                            if (!somethingElseToFocus) {
-                                // If the page contains only images (or videos, etc...no text except bubbles
-                                // then we will make something temporary and hidden to focus.
-                                // There may be some alternative to this but it is the most reliable
-                                // thing I can think of to remove all the focus effects from the bubbles.
-                                // Even so it's not as reliable as I would like because some of those
-                                // effects are produced by focus handlers that won't automatically get
-                                // attached to this temporary element.
-                                somethingElseToFocus = document.createElement(
-                                    "div"
-                                );
-                                container.parentElement!.insertBefore(
-                                    somethingElseToFocus,
-                                    container
-                                );
-                                // We give it this class so it won't persist...Bloom cleans out such
-                                // elements when saving the page.
-                                somethingElseToFocus.classList.add("bloom-ui");
-                                // it needs to be bloom-editable to trigger the code in
-                                // onFocusSetActiveElement that hides the handles on the active bubble.
-                                somethingElseToFocus.classList.add(
-                                    "bloom-editable"
-                                );
-                                // These properties are necessary (or at least sufficient) to make it possible to focus it
-                                somethingElseToFocus.setAttribute(
-                                    "contenteditable",
-                                    "true"
-                                );
-                                somethingElseToFocus.setAttribute(
-                                    "tabindex",
-                                    "0"
-                                );
-                                somethingElseToFocus.style.display = "block"; // defeat rules making it display:none and hence not focusable
-
-                                // However, we don't actually want to see it; these rules
-                                // (somewhat redundantly) make it have no size and be positioned
-                                // off-screen.
-                                somethingElseToFocus.style.width = "0";
-                                somethingElseToFocus.style.height = "0";
-                                somethingElseToFocus.style.overflow = "hidden";
-                                somethingElseToFocus.style.position =
-                                    "absolute";
-                                somethingElseToFocus.style.left = "-1000px";
-                            }
-                            // In case we've already set this listener, remove it before setting it again.
-                            somethingElseToFocus.removeEventListener(
-                                "focusin",
-                                BubbleManager.onFocusSetActiveElement
-                            );
-                            // And we want the usual behavior when it gets focus!
-                            somethingElseToFocus.addEventListener(
-                                "focusin",
-                                BubbleManager.onFocusSetActiveElement
-                            );
-                            somethingElseToFocus.focus();
+                            // If we click on the background of the image container, we
+                            // don't want anything to have focus. This prevents any source
+                            // bubbles interfering with seeing the full content of the image
+                            // container. BL-14295.
+                            this.removeFocus();
                         }
                     }
                 });
@@ -557,6 +490,11 @@ export class BubbleManager {
                 this.setMouseDragHandlers(container);
             }
         );
+    }
+    removeFocus() {
+        if (document.activeElement) {
+            (document.activeElement as HTMLElement)?.blur();
+        }
     }
     // declare this strange way so it has the right 'this' when added as event listener.
     private bubbleLosingFocus = event => {
@@ -1047,6 +985,18 @@ export class BubbleManager {
                 )[0] as HTMLElement,
                 false
             );
+            // if the active element isn't a text one, we don't want anything to have focus.
+            // One reason is that the thing that has focus may display a source bubble that
+            // hides what we're trying to work on.
+            // (If we one day try to make Bloom fully accessible, we may have to instead allow
+            // non-text elements to have focus so that keyboard commands can be applied to them.)
+            if (
+                this.activeElement.getElementsByClassName(
+                    "bloom-visibility-code-on"
+                ).length === 0
+            ) {
+                this.removeFocus();
+            }
         }
         UpdateImageTooltipVisibility(
             this.activeElement?.closest(".bloom-imageContainer")
