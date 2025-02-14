@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.SafeXml;
 using L10NSharp;
@@ -56,7 +57,7 @@ namespace Bloom.Book
 
             // Do this last, on the off-chance that the page contains a localizable string that matches
             // a language code.
-            AddLanguagesUsedInPage(pageDom.RawDom, d);
+            AddLanguagesUsedInPage(pageDom.RawDom, d, bookData.CollectionSettings);
 
             dictionaryScriptElement.InnerText = String.Format(
                 "function GetInlineDictionary() {{ return {0};}}",
@@ -124,7 +125,8 @@ namespace Bloom.Book
         /// <param name="mapOriginalToLocalized"></param>
         internal static void AddLanguagesUsedInPage(
             SafeXmlDocument xmlDocument,
-            Dictionary<string, string> mapOriginalToLocalized
+            Dictionary<string, string> mapOriginalToLocalized,
+            CollectionSettings collectionSettings
         )
         {
             var langs = xmlDocument
@@ -139,8 +141,12 @@ namespace Bloom.Book
                 // We don't have a localization for these languages, but we can at least try to give them a name
                 foreach (var lang in langs) // may include things like empty string, z, *, but this is harmless as they are not language codes.
                 {
-                    if (IetfLanguageTag.GetBestLanguageName(lang, out string match)) // some better name found
-                        mapOriginalToLocalized[lang] = match;
+                    var langName = collectionSettings.GetDisplayNameForLanguage(lang);
+                    if (!string.IsNullOrEmpty(langName) && langName != lang)
+                    {
+                        mapOriginalToLocalized[lang] = langName;
+                        continue;
+                    }
                 }
             }
         }
