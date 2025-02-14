@@ -2189,15 +2189,17 @@ export class BubbleManager {
         return delta;
     }
 
-    public resetCropping() {
+    public resetCropping(adjustContainer = true) {
         if (!this.activeElement) return;
         const img = getImageFromOverlay(this.activeElement);
         if (!img) return;
         img.style.width = "";
         img.style.top = "";
         img.style.left = "";
-        // Enhance: possibly we want to align by making it bigger rather than smaller?
-        this.adjustContainerAspectRatio(this.activeElement);
+        if (adjustContainer) {
+            // Enhance: possibly we want to align by making it bigger rather than smaller?
+            this.adjustContainerAspectRatio(this.activeElement);
+        }
     }
 
     // This duplicates a good deal of code from expandImageToFillSpace, but I don't see a clean way to
@@ -2249,6 +2251,8 @@ export class BubbleManager {
             kImageContainerSelector
         ) as HTMLElement;
         if (!container) return;
+        // Remove any existing cropping
+        this.resetCropping(false);
         const containerAspectRatio =
             container.clientWidth / container.clientHeight;
         const overlayAspectRatio =
