@@ -222,9 +222,10 @@ export function cleanupNiceScroll() {
             // The "as" cast is crucial here for this code to work.  For some reason,
             // the type returned by getNiceScroll() is not interpreted correctly and
             // the code silently fails to work, with length always being 0.
-            // (bloom-player uses "as any" in this context, but "as JQuery" seems to
-            // work as well and doesn't trigger an eslint warning.)
-            const groupNiceScroll = $(group).getNiceScroll() as JQuery;
+            // Note, in an earlier version of this code, we were using  "as jQuery".
+            // Typescript chokes on this with TS2352: Conversion of type 'NiceScroll' to type 'JQuery' may be a mistake
+            // because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+            const groupNiceScroll = $(group).getNiceScroll() as any;
             if (groupNiceScroll && groupNiceScroll.length > 0) {
                 groupNiceScroll.remove();
             }
