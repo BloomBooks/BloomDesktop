@@ -241,45 +241,71 @@ export default class BloomSourceBubbles {
         editableDiv.css("min-height", "");
     }
 
-    // 'Smart' orders the tabs putting the latest viewed language first, followed by others in the collection
+    // 'Smart' orders the tabs putting the latest viewed languages first, followed by others in the collection
     // param 'items' is an alphabetical list of all the divs of different languages to be used as tabs
     // optional param 'newLangTag' is defined when the user clicks on a language in the dropdown box
     private static SmartOrderSourceTabs(items, newLangTag?: string): JQuery {
         // BL-2357 Do some smart ordering of source language tabs
         const settingsObject = GetSettings();
         let defaultSrcLang = settingsObject.defaultSourceLanguage;
+        let defaultSrcLang2 = settingsObject.defaultSourceLanguage2;
         let destination = 0;
         if (newLangTag) defaultSrcLang = newLangTag;
+
+        // Order first source language
         let newItems = BloomSourceBubbles.DoSafeReplaceInList(
             items,
             defaultSrcLang,
             destination
         );
-        if ($(newItems).attr("lang") == defaultSrcLang) {
+        if ($(newItems).attr("lang") === defaultSrcLang) {
             // .attr() just gets the first one
             destination++;
             items = newItems;
         }
+
+        // Order second source language next if it exists
+        if (defaultSrcLang2 && defaultSrcLang2 !== defaultSrcLang) {
+            newItems = BloomSourceBubbles.DoSafeReplaceInList(
+                items,
+                defaultSrcLang2,
+                destination
+            );
+            if ($(newItems[destination]).attr("lang") === defaultSrcLang2) {
+                destination++;
+                items = newItems;
+            }
+        }
+
+        // Then handle collection languages
         const language2 = settingsObject.currentCollectionLanguage2;
         const language3 = settingsObject.currentCollectionLanguage3;
-        if (language2 && language2 != defaultSrcLang) {
+        if (
+            language2 &&
+            language2 !== defaultSrcLang &&
+            language2 !== defaultSrcLang2
+        ) {
             newItems = BloomSourceBubbles.DoSafeReplaceInList(
                 items,
                 language2,
                 destination
             );
-            if ($(newItems[destination]).attr("lang") == language2) {
+            if ($(newItems[destination]).attr("lang") === language2) {
                 destination++;
                 items = newItems;
             }
         }
-        if (language3 && language3 != defaultSrcLang) {
+        if (
+            language3 &&
+            language3 !== defaultSrcLang &&
+            language3 !== defaultSrcLang2
+        ) {
             newItems = BloomSourceBubbles.DoSafeReplaceInList(
                 items,
                 language3,
                 destination
             );
-            if ($(newItems[destination]).attr("lang") == language3) {
+            if ($(newItems[destination]).attr("lang") === language3) {
                 items = newItems;
             }
         }
@@ -473,7 +499,10 @@ export default class BloomSourceBubbles {
         let shouldShowAlways = true;
 
         const $group = $(group);
-        if (bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group) || !$group.is(':visible')) {
+        if (
+            bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group) ||
+            !$group.is(":visible")
+        ) {
             showEvents = true;
             showEventsStr = "focusin";
             hideEvents = true;
