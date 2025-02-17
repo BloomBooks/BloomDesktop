@@ -106,7 +106,7 @@ namespace BloomTests.Spreadsheet
             firstXmatterRowToModify.SetCell(asteriskColumn, "7");
 
             var secondXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.MetadataKey.Contains("coverImage")
+                row => row.MetadataKey == InternalSpreadsheet.CoverImageRowLabel
             );
             Assert.IsNotNull(
                 secondXmatterRowToModify,
@@ -115,7 +115,7 @@ namespace BloomTests.Spreadsheet
             secondXmatterRowToModify.SetCell(imageSrcColumn, "octopus.png");
 
             var thirdXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.MetadataKey.Contains("bookTitle")
+                row => row.MetadataKey == InternalSpreadsheet.BookTitleRowLabel
             );
             Assert.IsNotNull(
                 thirdXmatterRowToModify,

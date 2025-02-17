@@ -42,10 +42,40 @@ namespace Bloom.Spreadsheet
 
         public const string BlankContentIndicator = "[blank]";
 
-        public const string BookTitleRowLabel = "[bookTitle]";
-        public const string CoverImageRowLabel = "[coverImage]";
+        public const string BookTitleRowLabel = "[book title]";
+        public const string CoverImageRowLabel = "[cover image]";
         public const string PageContentRowLabel = "[page content]";
         public const string ImageDescriptionRowLabel = "[image description]";
+
+        internal static string MapRowLabelToDataBookLabel(string rowTypeLabel)
+        {
+            string dataBookLabel;
+            switch (rowTypeLabel)
+            {
+                case InternalSpreadsheet.BookTitleRowLabel:
+                    return "bookTitle";
+                case InternalSpreadsheet.CoverImageRowLabel:
+                    return "coverImage";
+                default:
+                    return rowTypeLabel.Substring(1, rowTypeLabel.Length - 2); // remove brackets
+            }
+        }
+
+        internal static string MapDataBookLabelToRowLabel(string dataBookLabel)
+        {
+            var trimmedLabel = dataBookLabel.Trim();
+            switch (trimmedLabel)
+            {
+                case "bookTitle":
+                    return InternalSpreadsheet.BookTitleRowLabel;
+                case "coverImage":
+                    return InternalSpreadsheet.CoverImageRowLabel;
+                default:
+                    if (Regex.IsMatch(trimmedLabel, @"[A-Z]"))
+                        Console.WriteLine($"Row label will be pascal case: [{trimmedLabel}]");
+                    return "[" + trimmedLabel + "]";
+            }
+        }
 
         private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
         public SpreadsheetExportParams Params = new SpreadsheetExportParams();

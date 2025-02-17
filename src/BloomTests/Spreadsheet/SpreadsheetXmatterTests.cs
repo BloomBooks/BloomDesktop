@@ -200,7 +200,9 @@ namespace BloomTests.Spreadsheet
         public void MultilingualXmatterTest(string source)
         {
             SetupFor(source);
-            var contentLangRow = _rows.Find(x => x.MetadataKey.Equals("[bookTitle]"));
+            var contentLangRow = _rows.Find(
+                x => x.MetadataKey.Equals(InternalSpreadsheet.BookTitleRowLabel)
+            );
             Assert.That(contentLangRow, Is.Not.Null);
             Assert.That(
                 contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("es")).Content,
@@ -236,7 +238,9 @@ namespace BloomTests.Spreadsheet
             SetupFor(source);
             var imageSourceCol = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
-            var coverImageRow = _rows.Find(x => x.MetadataKey.Equals("[coverImage]"));
+            var coverImageRow = _rows.Find(
+                x => x.MetadataKey.Equals(InternalSpreadsheet.CoverImageRowLabel)
+            );
             Assert.That(coverImageRow, Is.Not.Null);
             Assert.That(
                 coverImageRow.GetCell(imageSourceCol).Content,
