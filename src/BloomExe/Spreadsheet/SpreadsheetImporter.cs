@@ -378,7 +378,9 @@ namespace Bloom.Spreadsheet
                 }
                 else if (rowTypeLabel.StartsWith("[") && rowTypeLabel.EndsWith("]")) //This row is xmatter
                 {
-                    string dataBookLabel = rowTypeLabel.Substring(1, rowTypeLabel.Length - 2); //remove brackets
+                    var dataBookLabel = InternalSpreadsheet.MapRowLabelToDataBookLabel(
+                        rowTypeLabel
+                    );
                     await UpdateDataDivFromRowAsync(currentRow, dataBookLabel);
                 }
                 _currentRowIndex++;

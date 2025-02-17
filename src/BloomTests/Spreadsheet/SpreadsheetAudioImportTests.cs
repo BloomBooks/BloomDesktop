@@ -88,7 +88,7 @@ namespace BloomTests.Spreadsheet
             var columnForFrAlignment = ss.AddColumnForAudioAlignment("fr", "French");
 
             var titleRow = new ContentRow(ss);
-            titleRow.SetCell(0, "[bookTitle]");
+            titleRow.SetCell(0, InternalSpreadsheet.BookTitleRowLabel);
             titleRow.SetCell(columnForFr, "<p>My Title</p>");
             titleRow.SetCell(columnForFrAudio, titleAudioPath);
             // Actual duration of this audio is 3.996735; we should get that, not 2.5

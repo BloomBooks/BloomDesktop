@@ -580,7 +580,7 @@ namespace BloomTests.Spreadsheet
         [TestCase("en", "a9d7b794-7a83-473a-8307-7968176ae4bc", "4.360")]
         public void DataDivHasTitleAudio(string lang, string expectedId, string expectedDuration)
         {
-            var row = AllRows.First(r => r.MetadataKey == "[bookTitle]");
+            var row = AllRows.First(r => r.MetadataKey == InternalSpreadsheet.BookTitleRowLabel);
             Assert.That(AllRows.First().CellContents, Has.Member($"[audio {lang}]"));
             var frAudioIndex = AllRows.First().CellContents.IndexOf($"[audio {lang}]");
             Assert.That(
