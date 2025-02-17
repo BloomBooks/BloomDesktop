@@ -7,7 +7,7 @@ import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
 import { BubbleManager, theOneBubbleManager } from "../js/bubbleManager";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
-import { addScrollbarsToPage, cleanupNiceScroll } from "../js/niceScrollBars";
+import { addScrollbarsToPage, cleanupNiceScroll } from "../shared/scrolling";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;

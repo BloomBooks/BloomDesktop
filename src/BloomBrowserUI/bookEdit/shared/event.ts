@@ -1,6 +1,5 @@
 // originally from http://stackoverflow.com/a/14657922/723299.
-// Temporarily duplicated in Bloom Player and Bloom Desktop (under Drag Activity),
-// but planned to become a Bloom Player artifact.
+// a Bloom Player source file shared with Bloom Desktop
 
 interface ILiteEvent<T> {
     subscribe(handler: (data?: T) => void): void;
