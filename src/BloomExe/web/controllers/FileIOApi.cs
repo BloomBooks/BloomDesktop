@@ -13,6 +13,8 @@ using System.Net;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
+using ThirdParty.Json.LitJson;
+using System.Dynamic;
 
 namespace Bloom.web.controllers
 {
@@ -65,6 +67,39 @@ namespace Bloom.web.controllers
             ); // Common
 
             apiHandler.RegisterEndpointHandler("fileIO/listFiles", HandleListFiles, true);
+            apiHandler.RegisterEndpointHandler(
+                "fileIO/completeRelativePath",
+                HandleCompleteRelativePath,
+                false
+            );
+
+            apiHandler.RegisterEndpointHandler("fileIO/writeFile", WriteFile, true);
+        }
+
+        private void WriteFile(ApiRequest request)
+        {
+            string json = request.RequiredPostJson();
+            dynamic data = JsonConvert.DeserializeObject<ExpandoObject>(json);
+            string path = data.path;
+            string content = data.content;
+            try
+            {
+                RobustFile.WriteAllText(path, content);
+            }
+            catch (Exception e)
+            {
+                request.Failed(HttpStatusCode.InternalServerError, e.Message);
+            }
+            request.PostSucceeded();
+        }
+
+        private void HandleCompleteRelativePath(ApiRequest request)
+        {
+            string json = request.RequiredPostJson();
+            dynamic data = JsonConvert.DeserializeObject<ExpandoObject>(json);
+            string relativePath = data.relativePath;
+            var result = Path.Combine(_bookSelection.CurrentSelection.FolderPath, relativePath);
+            request.ReplyWithText(result);
         }
 
         // Return a list of files in the specified subfolder of the browser root.

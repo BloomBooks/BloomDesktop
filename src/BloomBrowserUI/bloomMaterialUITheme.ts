@@ -89,7 +89,15 @@ export const lightTheme = createTheme({
                         }
                     }
                 }
-            ]
+            ],
+            // This makes all MuiLinks (import { Link as MuiLink } from "@mui/material";)
+            // default to our blue color. Note that it doesn't apply to plain <a> react
+            // components.
+            styleOverrides: {
+                root: {
+                    color: kBloomBlue
+                }
+            }
         },
 
         MuiTooltip: {

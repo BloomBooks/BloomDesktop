@@ -404,8 +404,12 @@ namespace Bloom.web.controllers
             // The client was supposed to validate this already, but double-check in case something strange happened.
             // Since this is basically a desperate fallback that shouldn't ever happen we won't try to make the message
             // contain a hot link here. That code is in Typescript.
+            // If we're just trying to read a manual timings file, we don't need to check the Aeneas installation.
             string message;
-            if (!AreAutoSegmentDependenciesMet(out message))
+            if (
+                string.IsNullOrEmpty(requestParameters.manualTimingsPath)
+                && !AreAutoSegmentDependenciesMet(out message)
+            )
             {
                 var localizedFormatString = L10NSharp.LocalizationManager.GetString(
                     "EditTab.Toolbox.TalkingBook.MissingDependency",
