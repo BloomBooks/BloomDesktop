@@ -1670,7 +1670,7 @@ namespace BloomTests.Publish
                 fontsWanted.Add(
                     new PublishHelper.FontInfo
                     {
-                        fontName = "Times New Roman",
+                        fontFamily = "Times New Roman",
                         fontStyle = "normal",
                         fontWeight = "400"
                     }
@@ -1678,7 +1678,7 @@ namespace BloomTests.Publish
                 fontsWanted.Add(
                     new PublishHelper.FontInfo
                     {
-                        fontName = "Wen Yei",
+                        fontFamily = "Wen Yei",
                         fontStyle = "normal",
                         fontWeight = "400"
                     }
@@ -1686,7 +1686,7 @@ namespace BloomTests.Publish
                 fontsWanted.Add(
                     new PublishHelper.FontInfo
                     {
-                        fontName = "Calibre",
+                        fontFamily = "Calibre",
                         fontStyle = "normal",
                         fontWeight = "400"
                     }
@@ -1694,7 +1694,7 @@ namespace BloomTests.Publish
                 fontsWanted.Add(
                     new PublishHelper.FontInfo
                     {
-                        fontName = "NotAllowed",
+                        fontFamily = "NotAllowed",
                         fontStyle = "normal",
                         fontWeight = "400"
                     }
@@ -1702,7 +1702,7 @@ namespace BloomTests.Publish
                 fontsWanted.Add(
                     new PublishHelper.FontInfo
                     {
-                        fontName = "NotFound",
+                        fontFamily = "NotFound",
                         fontStyle = "normal",
                         fontWeight = "400"
                     }
