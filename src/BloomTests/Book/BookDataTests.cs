@@ -2261,6 +2261,7 @@ namespace BloomTests.Book
         [TestCase("Bible Society")]
         [TestCase("Group of Bible Translators")]
         [TestCase("SIL International")]
+        [TestCase("SIL Global")]
         [TestCase("Kartidaya")]
         [TestCase("WPS")]
         public void MigrateSpiritualTopic_TopicIsSpiritual_CopyrightIsForBible_MigratesTopicToBible(
