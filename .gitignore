@@ -129,6 +129,7 @@ DistFiles/infoPages/TrainingVideos-*.htm
 DistFiles/localization/*.htm
 
 src/BloomBrowserUI/yarn-error\.log
+src/BloomBrowserUI/bookEdit/shared/*.ts
 
 src/BloomExe/Firefox/
 
