@@ -16,6 +16,7 @@ using BloomTemp;
 using CommandLine;
 using L10NSharp;
 using SIL.IO;
+using SIL.WritingSystems;
 
 namespace Bloom.CLI
 {
@@ -112,6 +113,9 @@ namespace Bloom.CLI
                     )
                     {
                         Bloom.Program.SetProjectContext(_projectContext);
+                        // This may be needed for bringing the book up to date.  See BH-7453, BH-7454, and BH-7455.
+                        if (!Sldr.IsInitialized)
+                            Sldr.Initialize();
 
                         // Make the .bloompub and /bloomdigital outputs
                         return CreateArtifacts(options);
