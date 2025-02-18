@@ -18,7 +18,6 @@ using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.web;
 using Bloom.Collection;
-using Bloom.History;
 using Bloom.ImageProcessing;
 using Bloom.web.controllers;
 using Bloom.Utils;

@@ -22,7 +22,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Bloom.web;
 using System.Linq;
-using static SQLite.TableMapping;
 using System.Drawing.Imaging;
 
 namespace Bloom.Spreadsheet
