@@ -1,6 +1,7 @@
 // Ideas mainly taken from https://git.cryto.net/joepie91/measure-font.git
 // As that is CC0, this module may be considered to fall under the usual
 // Bloom license.
+let cleanupTimeout: any = 0;
 
 export class MeasureText {
     // Returns an object with three measurements:
@@ -39,21 +40,39 @@ export class MeasureText {
         // Thus, the distance from the bottom of the block to the bottom of
         // the whole div provides the 'wrong' descent that we want to compare
         // with the real one.
-        const div = document.createElement("div");
-        const block = document.createElement("div");
-        div.innerText = text.substr(0, 1);
+        // (We call this a LOT when checking overflow of a complex page. Optimizing to
+        // only create the div once reduces the time spent in the first half of this
+        // routine from about 2ms to 0.1ms.)
+        if (cleanupTimeout) {
+            clearTimeout(cleanupTimeout);
+            cleanupTimeout = 0;
+        }
+        let div = document.getElementById("measureTextDiv");
+        let block: HTMLElement | null = null;
+        if (!div) {
+            div = document.createElement("div");
+            div.setAttribute("id", "measureTextDiv");
+            block = document.createElement("div");
+            // before we add block, otherwise it will wipe it out.
+            div.innerText = text.substring(0, 1);
+
+            // It has to be in the document to get measured, but we don't want the
+            // user to see it.
+            div.style.visibility = "hidden";
+
+            block.style.display = "inline-block";
+            block.style.height = "1px";
+            div.appendChild(block);
+            // We don't want to put it in the document, but unless we do all its
+            // measurements are zero.
+            document.body.appendChild(div);
+        } else {
+            div.firstChild!.nodeValue = text.substring(0, 1);
+            block = div.firstElementChild as HTMLElement;
+        }
         div.style.fontFamily = fontFamily;
         div.style.fontSize = fontSize + "px";
-
-        // It has to be in the document to get measured, but we don't want the
-        // user to see it.
-        div.style.visibility = "hidden";
-        block.style.display = "inline-block";
-        block.style.height = "1px";
-        div.appendChild(block);
-        // We don't want to put it in the document, but unless we do all its
-        // measurements are zero.
-        document.body.appendChild(div);
+        div.style.lineHeight = ""; // reset in case we're reusing it
         const bottomOfTextWithDefaultLineSpace = div.getBoundingClientRect()
             .bottom;
         const baselineOfTextWithDefaultLineSpace = block.getBoundingClientRect()
@@ -62,14 +81,13 @@ export class MeasureText {
             bottomOfTextWithDefaultLineSpace -
             baselineOfTextWithDefaultLineSpace;
 
-        if (lineHeight != null) div.style.lineHeight = lineHeight;
+        if (lineHeight !== null) div.style.lineHeight = lineHeight;
         const bottomOfTextWithActualLineSpace = div.getBoundingClientRect()
             .bottom;
         const baselineOfTextWithActualLineSpace = block.getBoundingClientRect()
             .bottom;
         const layoutDescent =
             bottomOfTextWithActualLineSpace - baselineOfTextWithActualLineSpace;
-        document.body.removeChild(div);
 
         // Get the real descent. This is done by drawing the text on a canvas.
         // The code in drawText causes it to be drawn in such a position
@@ -111,6 +129,21 @@ export class MeasureText {
         //         (t1 - t0) +
         //         " ms)"
         // );
+
+        // The optimization is mainly helpful for a lot of calls close together.
+        // It would be fairly harmless to just leave it on the body (we only
+        // persist the page element), but it feels neater (at least for debugging)
+        // to remove it if we haven't used it for a while. Moreover, it's only
+        // hidden, not display:none, so it will have some effect on layout if we
+        // add other elements, and some layout performance cost.
+        // (If we need to prevent any visible effect, I think it would work to also
+        // make it position:absolute. But I haven't seen a reason to try yet.)
+        cleanupTimeout = setTimeout(() => {
+            if (div) {
+                document.body.removeChild(div);
+            }
+        }, 2000);
+
         return {
             fontDescent: fontDescent,
             actualDescent: descent,

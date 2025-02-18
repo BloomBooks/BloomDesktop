@@ -154,24 +154,35 @@ body:has(#overlay-context-controls:hover) .bloom-page {
         // box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
         //     0 0 8px rgba(82, 168, 236, 0.6);
     }
-    .bloom-textOverPicture div.bloom-editable:focus {
+    .bloom-textOverPicture div.bloom-editable:focus, // not sure need this as well as the following, but it was here first
+    .bloom-textOverPicture[data-bloom-active="true"] div.bloom-editable {
         // editable in an overlay has the control frame, so any outline just produces a double border
         outline: none !important;
     }
     // Any single outline/border color is not enough to always show up on all backgrounds.
-    // So when the page is hovered, we add a thin white border around the editable divs when
-    // they are not focused to ensure that the user can see their presence even without
-    // any text being entered.  See BL-14193.
-    .bloom-textOverPicture div.bloom-editable:not(:focus):before {
+    // So when the page is hovered, we add a thin white outline around the editable overlay divs when
+    // they are not active to ensure that the user can see their presence even without
+    // any text being entered, and even if the faint blueish outline we put on the element
+    // itself merges into the background. (On a white background, of course, the outline here
+    // won't be visible. But then the  bluish one can be seen.)  See BL-14193.
+    // A rule in base-page.less suppresses these (along with other borders) for bubbles
+    // that are have natural borders to make them visible (i.e., comic style is not 'none')
+    .bloom-textOverPicture:not([data-bloom-active="true"])
+        div.bloom-editable:before {
         content: " ";
         position: absolute;
         z-index: -1;
-        top: 1px; // avoid being below the outline
-        left: 1px;
-        height: calc(100% - 1px);
-        width: calc(100% - 1px);
+        top: 0; // align it with the editable
+        left: 0;
+        // Make it the same size. Be careful about making it extend beyond the editable;
+        // we had a bug where it caused the scrollWidth of the editable to be larger than the clientWidth,
+        // causing spurious overflow indications. The outline is outside the editable, which is OK because
+        // it doesn't count as part of the size, but a border (unless you calc a smaller size or use box-sizing:border-box)
+        // would cause a problem, and a left: 1px might, too.
+        height: 100%;
+        width: 100%;
         pointer-events: none;
-        border: 1px solid white;
+        outline: 1px solid white;
     }
     div.bloom-imageContainer {
         // Allow book templates to define a custom borderColor, otherwise fallback to the default color

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bloom.Book;
+using Bloom.Collection;
 using NUnit.Framework;
 
 namespace BloomTests.Book
@@ -31,14 +32,19 @@ namespace BloomTests.Book
 						<p>
 							<div lang='ant' id='4'>more</div>
 							<div  lang='xyz' id='3'>original2</div>
+                            <div lang='fr' id='5'>This is french</div>
 						</p>
 					</div>
 			"
             );
+            var settings = new CollectionSettings();
+            var french = new WritingSystem(() => "en") { Tag = "fr" };
+            french.SetName("My fancy French", true);
+            settings.AllLanguages.Add(french);
             var d = new Dictionary<string, string>();
             d["en"] = "Anglais";
 
-            RuntimeInformationInjector.AddLanguagesUsedInPage(_bookDom.RawDom, d);
+            RuntimeInformationInjector.AddLanguagesUsedInPage(_bookDom.RawDom, d, settings);
 
             Assert.That(d["en"], Is.EqualTo("Anglais"), "Should not have replaced an existing key");
             Assert.That(d["fub"], Is.EqualTo("Adamawa Fulfulde"));
@@ -48,8 +54,13 @@ namespace BloomTests.Book
                 "Should find in divs as well as textareas"
             );
             Assert.That(
+                d["fr"],
+                Is.EqualTo("My fancy French"),
+                "Should use the name from the settings"
+            );
+            Assert.That(
                 d.Keys,
-                Has.Count.EqualTo(3),
+                Has.Count.EqualTo(4),
                 "should not have added anything for xyz, since not in db"
             );
         }
