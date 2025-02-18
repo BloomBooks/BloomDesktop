@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="prs">
     <body>
@@ -3629,10 +3629,10 @@
         <target xml:lang="prs" state="needs-translation">13cm Square</target>
         <note>ID: LayoutChoices.Cm13Landscape</note>
       </trans-unit>
-      <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true">
-        <source xml:lang="en">Comic Portrait</source>
-        <target xml:lang="prs" state="needs-translation">Comic Portrait</target>
-        <note>ID: LayoutChoices.ComicPortrait</note>
+      <trans-unit id="LayoutChoices.USComicPortrait" sil:dynamic="true">
+        <source xml:lang="en">US Comic Portrait</source>
+        <target xml:lang="prs" state="needs-translation">US Comic Portrait</target>
+        <note>ID: LayoutChoices.USComicPortrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true">
         <source xml:lang="en">Device16x9 Landscape</source>

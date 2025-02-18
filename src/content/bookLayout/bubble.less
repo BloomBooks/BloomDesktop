@@ -162,6 +162,14 @@
                 outline: none;
                 border: none;
                 box-shadow: none;
+                // this suppresses the white rectangle we show to give "none" text boxes
+                // some visibility when hoverered.
+                // Don't know a reason this needs to be in basepage.less, I think only bloom-editing
+                // adds a :before that needs suppressing, but the other outline-removal rule was
+                // here and I wanted to keep them together. So I'm putting this here too.
+                &:before {
+                    content: none !important; // the rule that makes this border is pretty specific
+                }
             }
         }
     }
