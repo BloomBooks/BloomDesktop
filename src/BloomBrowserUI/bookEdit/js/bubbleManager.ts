@@ -1594,6 +1594,9 @@ export class BubbleManager {
         // which means it is not allowed to open in earlier versions of Bloom.
         //this.adjustMoveCropHandleVisibility(true); // called by stopMoving()
         this.stopMoving();
+        // We may have changed the state of the fill space button, but the React code
+        // doesn't know this unless we force a render.
+        renderOverlayContextControls(this.activeElement as HTMLElement, false);
     };
     private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
         if (!this.activeElement) return; // should never happen, but makes lint happy
@@ -2202,41 +2205,21 @@ export class BubbleManager {
         }
     }
 
-    // This duplicates a good deal of code from expandImageToFillSpace, but I don't see a clean way to
-    // factor it out.
+    // If the background overlay doesn't fill the container, we can expand the image to make it so.
     public canExpandToFillSpace(): boolean {
         if (
             !this.activeElement ||
             !this.activeElement.classList.contains(kbackgroundImageClass)
         )
             return false;
-        const img = getImageFromOverlay(this.activeElement);
-        if (!img) return false;
         const container = this.activeElement.closest(
             kImageContainerSelector
         ) as HTMLElement;
         if (!container) return false;
-        const containerAspectRatio =
-            container.clientWidth / container.clientHeight;
-        const overlayAspectRatio =
-            this.activeElement.clientWidth / this.activeElement.clientHeight;
-        if (containerAspectRatio > overlayAspectRatio) {
-            // The overlay has extra space left and right. Removing just enough at the top
-            // will make the overlay the same shape as the container.
-            // That is, how much smaller would our height have to be to make the aspect ratios
-            // match? (Then, adjustBackgroundImageSize will make them actually the same size.)
-            const delta =
-                this.activeElement.clientHeight -
-                this.activeElement.clientWidth / containerAspectRatio;
-            return delta >= 1; // let's not switch into cropped mode if it's this close already
-        } else {
-            // The overlay has extra space top and bottom. Removing just enough at the left
-            // will make the overlay the same shape as the container.
-            const delta =
-                this.activeElement.clientWidth -
-                this.activeElement.clientHeight * containerAspectRatio;
-            return delta >= 1;
-        }
+        return (
+            container.clientWidth !== this.activeElement.clientWidth ||
+            container.clientHeight !== this.activeElement.clientHeight
+        );
     }
 
     public expandImageToFillSpace() {
@@ -2253,41 +2236,35 @@ export class BubbleManager {
         if (!container) return;
         // Remove any existing cropping
         this.resetCropping(false);
+        const imgAspectRatio = img.naturalWidth / img.naturalHeight;
         const containerAspectRatio =
             container.clientWidth / container.clientHeight;
-        const overlayAspectRatio =
-            this.activeElement.clientWidth / this.activeElement.clientHeight;
-        if (containerAspectRatio > overlayAspectRatio) {
-            // The overlay has extra space left and right. Removing just enough at the top
-            // will make the overlay the same shape as the container.
-            // That is, how much smaller would our height have to be to make the aspect ratios
-            // match? (Then, adjustBackgroundImageSize will make them actually the same size.)
-            const delta =
-                this.activeElement.clientHeight -
-                this.activeElement.clientWidth / containerAspectRatio;
-            if (delta < 1) return; // let's not switch into cropped mode if it's this close already
-            if (!img.style.width) {
-                img.style.width = `${img.clientWidth}px`;
+        this.activeElement.style.width = `${container.clientWidth}px`;
+        this.activeElement.style.height = `${container.clientHeight}px`;
+        if (imgAspectRatio < containerAspectRatio) {
+            // When the image fills the width of the container, it will be too tall,
+            // and will need cropping top and bottom.
+            const imgHeightForFullWidth =
+                container.clientWidth / imgAspectRatio;
+            const delta = imgHeightForFullWidth - container.clientHeight;
+            if (delta >= 1) {
+                // let's not switch into cropped mode if it's this close already
+                img.style.width = `${container.clientWidth}px`;
+                img.style.top = `${-delta / 2}px`;
             }
-            this.activeElement.style.height = `${this.activeElement
-                .clientHeight - delta}px`;
-            img.style.top = `${BubbleManager.pxToNumber(img.style.top) -
-                delta / 2}px`;
         } else {
-            // The overlay has extra space top and bottom. Removing just enough at the left
-            // will make the overlay the same shape as the container.
-            const delta =
-                this.activeElement.clientWidth -
-                this.activeElement.clientHeight * containerAspectRatio;
-            if (delta < 1) return;
-            if (!img.style.width) {
-                img.style.width = `${img.clientWidth}px`;
+            // When the image fills the height of the container, it will be too wide,
+            // and will need cropping left and right.
+            const imgWidthForFullHeight =
+                container.clientHeight * imgAspectRatio;
+            const delta = imgWidthForFullHeight - container.clientWidth;
+            if (delta >= 1) {
+                img.style.width = `${imgWidthForFullHeight}px`;
+                img.style.left = `${-delta / 2}px`;
             }
-            this.activeElement.style.width = `${this.activeElement.clientWidth -
-                delta}px`;
-            img.style.left = `${BubbleManager.pxToNumber(img.style.left) -
-                delta / 2}px`;
         }
+        // I think this is redundant, but it may (now or one day) do something that needs doing
+        // when the background image changes size.
         this.adjustBackgroundImageSize(container, this.activeElement, false);
         // We will have changed the state of the fill space button, but the React code
         // doesn't know this unless we force a render.

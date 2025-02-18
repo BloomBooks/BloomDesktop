@@ -198,7 +198,7 @@ const OverlayContextControls: React.FunctionComponent<{
                 <img
                     src="/bloom/images/fill image black.svg"
                     // tweak to align better for an icon that is wider than most
-                    css={getMenuIconCss(1, "left: -8px;")}
+                    css={getMenuIconCss(1, "left: -3px;")}
                 />
             )
         };
@@ -739,7 +739,7 @@ function addImageMenuOptions(
                 <img
                     src="/bloom/images/reset image black.svg"
                     // tweak to align better and make it look the same size as the other icons
-                    css={getMenuIconCss(1, "left: -2px; width: 22px;")}
+                    css={getMenuIconCss(1, "left: -1px; width: 22px;")}
                 />
             )
         },
@@ -873,7 +873,7 @@ function addAudioMenuItems(
         subLabelL10nId: "EditTab.Image.PlayWhenTouched",
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         onClick: () => {},
-        icon: <VolumeUpIcon css={getMenuIconCss()} />,
+        icon: <VolumeUpIcon css={getMenuIconCss(1, "left:2px;")} />,
         requiresEnterpriseSubscription: true,
         subMenu
     });
