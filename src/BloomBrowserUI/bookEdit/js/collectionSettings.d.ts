@@ -6,6 +6,7 @@ declare function GetSettings(): ICollectionSettings;
 interface ICollectionSettings {
     languageForNewTextBoxes: string;
     defaultSourceLanguage: string;
+    defaultSourceLanguage2: string;
     currentCollectionLanguage2: string;
     currentCollectionLanguage3: string;
     browserRoot: string;

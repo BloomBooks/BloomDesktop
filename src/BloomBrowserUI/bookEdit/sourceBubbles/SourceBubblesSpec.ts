@@ -74,6 +74,47 @@ describe("SourceBubbles", () => {
         ).toBe("Tok Pisin text");
     });
 
+    it("Run MakeSourceTextDivForGroup with pre-defined settings including defaultSourceLanguage2", () => {
+        // Test tab ordering with both defaultSourceLanguage and defaultSourceLanguage2
+        const testHtml = $(
+            [
+                "<div id='testTarget' class='bloom-translationGroup'>",
+                "   <div class='bloom-editable' lang='es'>Spanish text</div>",
+                "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>English text</div>",
+                "   <div class='bloom-editable' lang='fr'>French text</div>",
+                "   <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>",
+                "</div>"
+            ].join("\n")
+        );
+        $("body").append(testHtml);
+
+        // Mock GetSettings() to return both source languages
+        // Original test already assumes defaultSourceLanguage = 'en'
+        // Here we'll pretend 'fr' was the second most recently used source language
+        const oldGetSettings = (window as any).GetSettings;
+        (window as any).GetSettings = () => ({
+            defaultSourceLanguage: "en",
+            defaultSourceLanguage2: "fr",
+            currentCollectionLanguage2: "tpi",
+            currentCollectionLanguage3: null
+        });
+
+        const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
+            $("body").find("#testTarget")[0]
+        );
+
+        // Restore original GetSettings
+        (window as any).GetSettings = oldGetSettings;
+
+        // English is vernacular so no tab, French should be first since it's defaultSourceLanguage2,
+        // Tok Pisin second since it's currentCollectionLanguage2, Spanish last alphabetically
+        const listItems = result.find("nav ul li");
+        expect(listItems.length).toBe(3);
+        expect(listItems[0].getAttribute("id")).toBe("fr");
+        expect(listItems[1].getAttribute("id")).toBe("tpi");
+        expect(listItems[2].getAttribute("id")).toBe("es");
+    });
+
     it("Run CreateDropdownIfNecessary with pre-defined settings", () => {
         const testHtml = $(
             [
@@ -163,5 +204,76 @@ describe("SourceBubbles", () => {
         );
         const srcTexts = result.find(".source-text");
         expect(srcTexts.length).toBe(2);
+    });
+
+    it("MakeSourceTextDivForGroup handles missing defaultSourceLanguage2 content", () => {
+        // Test when defaultSourceLanguage2 refers to a language not in the group
+        const testHtml = $(
+            [
+                "<div id='testTarget' class='bloom-translationGroup'>",
+                "   <div class='bloom-editable' lang='es'>Spanish text</div>",
+                "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>English text</div>",
+                "   <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>",
+                "</div>"
+            ].join("\n")
+        );
+        $("body").append(testHtml);
+
+        const oldGetSettings = (window as any).GetSettings;
+        (window as any).GetSettings = () => ({
+            defaultSourceLanguage: "en",
+            defaultSourceLanguage2: "fr", // fr content doesn't exist in the group
+            currentCollectionLanguage2: "tpi",
+            currentCollectionLanguage3: null
+        });
+
+        const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
+            $("body").find("#testTarget")[0]
+        );
+
+        // Restore original GetSettings
+        (window as any).GetSettings = oldGetSettings;
+
+        // Should just ignore the missing fr and continue with normal ordering
+        const listItems = result.find("nav ul li");
+        expect(listItems.length).toBe(2);
+        expect(listItems[0].getAttribute("id")).toBe("tpi"); // collection lang 2
+        expect(listItems[1].getAttribute("id")).toBe("es"); // alphabetical
+    });
+
+    it("MakeSourceTextDivForGroup handles when defaultSourceLanguage2 equals defaultSourceLanguage", () => {
+        const testHtml = $(
+            [
+                "<div id='testTarget' class='bloom-translationGroup'>",
+                "   <div class='bloom-editable' lang='es'>Spanish text</div>",
+                "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>English text</div>",
+                "   <div class='bloom-editable' lang='fr'>French text</div>",
+                "   <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>",
+                "</div>"
+            ].join("\n")
+        );
+        $("body").append(testHtml);
+
+        const oldGetSettings = (window as any).GetSettings;
+        (window as any).GetSettings = () => ({
+            defaultSourceLanguage: "fr",
+            defaultSourceLanguage2: "fr", // Same as defaultSourceLanguage
+            currentCollectionLanguage2: "tpi",
+            currentCollectionLanguage3: null
+        });
+
+        const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
+            $("body").find("#testTarget")[0]
+        );
+
+        // Restore original GetSettings
+        (window as any).GetSettings = oldGetSettings;
+
+        // fr should only appear once
+        const listItems = result.find("nav ul li");
+        expect(listItems.length).toBe(3);
+        expect(listItems[0].getAttribute("id")).toBe("fr"); // first source lang
+        expect(listItems[1].getAttribute("id")).toBe("tpi"); // collection lang 2
+        expect(listItems[2].getAttribute("id")).toBe("es"); // alphabetical
     });
 });
