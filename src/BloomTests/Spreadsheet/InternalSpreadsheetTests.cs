@@ -47,5 +47,29 @@ namespace BloomTests.Spreadsheet
             Assert.That(row3.Count, Is.EqualTo(row3Count));
             Assert.That(row3.GetCell(indexEn).Content, Is.EqualTo(""));
         }
+
+        [TestCase("copyright", "[copyright]")]
+        [TestCase("bookTitle", "[book title]")]
+        [TestCase("language1", "[language 1]")]
+        [TestCase("contentLanguage2", "[content language 2]")]
+        [TestCase("ISBN", "[ISBN]")]
+        [TestCase("contentLanguage1Rtl", "[content language 1 rtl]")]
+        public void MapDataBookLabelToRowLabel_Works(string dataBookLabel, string expectedRowLabel)
+        {
+            var rowLabel = InternalSpreadsheet.MapDataBookLabelToRowLabel(dataBookLabel);
+            Assert.That(rowLabel, Is.EqualTo(expectedRowLabel));
+        }
+
+        [TestCase("[copyright]", "copyright")]
+        [TestCase("[book title]", "bookTitle")]
+        [TestCase("[language 1]", "language1")]
+        [TestCase("[content language 2]", "contentLanguage2")]
+        [TestCase("[ISBN]", "ISBN")]
+        [TestCase("[content language 1 rtl]", "contentLanguage1Rtl")]
+        public void MapRowLabelToDataBookLabel_Works(string rowLabel, string expectedDataBookLabel)
+        {
+            var dataBookLabel = InternalSpreadsheet.MapRowLabelToDataBookLabel(rowLabel);
+            Assert.That(dataBookLabel, Is.EqualTo(expectedDataBookLabel));
+        }
     }
 }
