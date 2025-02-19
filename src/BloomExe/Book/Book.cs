@@ -2857,6 +2857,8 @@ namespace Bloom.Book
             foreach (var div in langDivs)
             {
                 var lang = div.GetAttribute("lang");
+                if (lang.Contains("-x-ai-"))
+                    continue; // skip AI languages (BL-14339)
                 if (HtmlDom.DivHasContent(div))
                 {
                     result[lang] = true; // may be set repeatedly, but no harm.

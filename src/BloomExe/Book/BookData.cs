@@ -2093,6 +2093,8 @@ namespace Bloom.Book
                     sb.Append("{");
                     foreach (var langForm in title.TextAlternatives.Forms)
                     {
+                        if (langForm.WritingSystemId.Contains("-x-ai-"))
+                            continue; // skip AI generated titles (BL-14339)
                         if (sb.Length > 1)
                             sb.Append(",");
                         sb.Append("\"");
