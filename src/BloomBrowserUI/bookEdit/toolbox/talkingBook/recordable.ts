@@ -230,6 +230,7 @@ export default class Recordable {
             );
         }
         // regex based on what the extension method LibSynphony.stringToSentences() uses.
+        // @ts-expect-error Unicode property escapes require ES2018 or later
         const intersentenceSpace = /^[\s\p{PEP}\u00A0]+/;
         return (
             textMissingMarkup &&

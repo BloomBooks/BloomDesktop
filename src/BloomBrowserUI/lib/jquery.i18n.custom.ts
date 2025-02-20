@@ -4,7 +4,7 @@ import * as jQuery from "jquery";
 import theOneLocalizationManager from "./localizationManager/localizationManager";
 
 interface JQuery {
-    localize(callbackDone?: Function): void;
+    localize(callbackDone?: () => void): void;
 }
 /**
  * jquery.i18n.custom.js

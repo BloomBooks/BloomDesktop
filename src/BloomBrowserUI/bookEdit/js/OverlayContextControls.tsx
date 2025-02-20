@@ -453,7 +453,7 @@ const OverlayContextControls: React.FunctionComponent<{
                             if (option.l10nId === "-") {
                                 return (
                                     <Divider
-                                        key={index}
+                                        key={`divider-${index}`}
                                         variant="middle"
                                         component="li"
                                     />
@@ -462,13 +462,14 @@ const OverlayContextControls: React.FunctionComponent<{
                             if (option.subMenu) {
                                 return (
                                     <LocalizableNestedMenuItem
+                                        key={`nested-${index}`}
                                         {...option}
                                         truncateMainLabel={true}
                                     >
                                         {option.subMenu.map(
                                             (subOption, subIndex) => (
                                                 <LocalizableMenuItem
-                                                    key={subIndex}
+                                                    key={`sub-${index}-${subIndex}`}
                                                     {...subOption}
                                                 />
                                             )
@@ -478,7 +479,7 @@ const OverlayContextControls: React.FunctionComponent<{
                             }
                             return (
                                 <LocalizableMenuItem
-                                    key={index}
+                                    key={`item-${index}`}
                                     {...option}
                                     onClick={e => {
                                         setMenuOpen(false);

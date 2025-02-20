@@ -1,14 +1,14 @@
 import * as _ from "underscore";
 import * as $ from "jquery";
-import "../../../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
+import "../../../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min"; //for dialog()
 import "errorHandler";
-import "jquery.i18n.custom.ts"; //localize()
-import "long-press/jquery.mousewheel.js";
-import "long-press/jquery.longpress.js";
+import "jquery.i18n.custom"; //localize()
+import "long-press/jquery.mousewheel";
+import "long-press/jquery.longpress";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 
-import "../jquery.div-columns.ts";
-import "../libSynphony/jquery.text-markup.ts";
+import "../jquery.div-columns";
+import "../libSynphony/jquery.text-markup";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
 import {
     theOneLanguageDataInstance,

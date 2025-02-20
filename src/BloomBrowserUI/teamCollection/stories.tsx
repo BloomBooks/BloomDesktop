@@ -85,7 +85,7 @@ const avatar = (lockedByMe: boolean) => (
     />
 );
 
-let emptyAvatarForProblemState: JSX.Element;
+let emptyAvatarForProblemState: JSX.Element = <span></span>;
 
 storiesOf("Team Collection components/StatusPanelCommon", module)
     .add("Available", () =>
