@@ -537,6 +537,12 @@ namespace Bloom.Publish.BloomLibrary
                 if (!bookInfo.PublishSettings.BloomLibrary.AudioLangs.ContainsKey(langCode))
                     bookInfo.PublishSettings.BloomLibrary.AudioLangs[langCode] = settingForNewLang;
             }
+            // Remove all unpublishable languages from consideration (BL-14339).
+            foreach (var langCode in bookInfo.PublishSettings.BloomLibrary.AudioLangs.Keys.ToList())
+            {
+                if (PublishHelper.IsUnpublishableLanguage(langCode))
+                    bookInfo.PublishSettings.BloomLibrary.AudioLangs.Remove(langCode);
+            }
         }
 
         private static void InitializeSignLanguage(
