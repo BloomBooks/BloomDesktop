@@ -565,6 +565,15 @@ namespace Bloom.WebLibraryIntegration
             var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
             if (subscriptionNode != null)
                 subscriptionNode.InnerText = "";
+            // Remove traces of AI generated data from the collection settings.
+            var languages = doc.SafeSelectNodes("/Collection/Languages/Language")
+                .Cast<SafeXmlElement>();
+            foreach (SafeXmlElement lang in languages)
+            {
+                var code = lang.GetChildWithName("languageiso639code")?.InnerText;
+                if (PublishHelper.IsUnpublishableLanguage(code))
+                    lang.ParentNode.RemoveChild(lang);
+            }
             Directory.CreateDirectory(Path.Combine(tempBookFolder, "collectionFiles"));
             doc.Save(
                 Path.Combine(tempBookFolder, "collectionFiles", "book.uploadCollectionSettings")
@@ -768,8 +777,11 @@ namespace Bloom.WebLibraryIntegration
             IProgress progress
         )
         {
-            if (book.CollectionSettings.HaveEnterpriseFeatures)
-                return false;
+            if (
+                book.CollectionSettings.HaveEnterpriseFeatures
+                && !PublishHelper.BookHasUnpublishableData(book)
+            )
+                return false; // no need to prune the book data
 
             // We need to be sure that any in-memory changes have been written to disk
             // before we start copying/loading the new book to/from disk
@@ -784,9 +796,18 @@ namespace Bloom.WebLibraryIntegration
             var pages = new List<SafeXmlElement>();
             foreach (SafeXmlElement page in copiedBook.GetPageElements())
                 pages.Add(page);
-            ISet<string> warningMessages = new HashSet<string>();
-            PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);
-            PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
+            if (!book.CollectionSettings.HaveEnterpriseFeatures)
+            {
+                // Remove enterprise features since they aren't allowed.
+                ISet<string> warningMessages = new HashSet<string>();
+                PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);
+                PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
+            }
+            // Remove any AI generated content from the book. (BL-14339)
+            foreach (var page in pages)
+                PublishHelper.RemoveUnpublishableContent(page);
+            PublishHelper.RemoveUnpublishableBookData(copiedBook.RawDom);
+            PublishHelper.RemoveUnpublishableBookInfo(copiedBook.BookInfo);
             copiedBook.Save();
             copiedBook.UpdateSupportFiles();
             book = copiedBook;

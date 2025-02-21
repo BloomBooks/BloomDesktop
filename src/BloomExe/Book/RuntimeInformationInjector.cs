@@ -473,6 +473,10 @@ namespace Bloom.Book
             {
                 d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
             }
+            if (!String.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed2))
+            {
+                d.Add("defaultSourceLanguage2", Settings.Default.LastSourceLanguageViewed2);
+            }
 
             d.Add("languageForNewTextBoxes", bookData.Language1.Tag);
 

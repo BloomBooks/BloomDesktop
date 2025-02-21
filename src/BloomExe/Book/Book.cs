@@ -2856,6 +2856,8 @@ namespace Bloom.Book
             foreach (var div in langDivs)
             {
                 var lang = div.GetAttribute("lang");
+                if (PublishHelper.IsUnpublishableLanguage(lang))
+                    continue; // skip languages that we know are not to be published (BL-14339)
                 if (HtmlDom.DivHasContent(div))
                 {
                     result[lang] = true; // may be set repeatedly, but no harm.
