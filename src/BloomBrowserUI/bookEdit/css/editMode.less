@@ -1322,31 +1322,6 @@ body.hideAllCKEditors .cke_chrome {
     color: @bloom-purple;
 }
 
-// --------------------------------------------------------
-// hide tips when the user clicks out of the page
-.qtip {
-    opacity: 0 !important;
-    // When the page isn't focused, the tips will go away when you move off the page.
-    // This keeps them around long enough to reach with the mouse.
-    // We're using opacity instead of visibility because visibility doesn't animate.
-    // A side benefit is that no longer how long it takes you to point at the bubble,
-    // it will still light up if you point at it.
-    transition: opacity 1s cubic-bezier(0, 0.7, 0.3, 1);
-}
-// but keep them visible when the user is interacting with them (BL-13224)
-.qtip:hover,
-.qtip:focus {
-    opacity: 1 !important;
-    transition: opacity 200ms ease-out;
-}
-body:has(.bloom-page:focus-within, .bloom-page:hover),
-body:has(#overlay-context-controls:hover) {
-    .qtip {
-        opacity: 1 !important;
-        transition: opacity 200ms ease-out;
-    }
-}
-
 // ----- Bloom Games ----
 // Tweak the position of the Start/Correct/Wrong/Play control
 #drag-activity-tab-control {
