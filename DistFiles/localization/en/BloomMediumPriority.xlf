@@ -290,9 +290,31 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use an external tool like Audacity. When you're done, use "Apply Timings File..."</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings" sil:dynamic="true" translate="no">
         <source xml:lang="en">Adjust Timings...</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use Aeneas to guess timings</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra" sil:dynamic="true" translate="no">
+        <source xml:lang="en">If Bloom's pause-based timing guesses aren't good enough, you can try this text-based tool. This will remove any adjustments you have made. See [here for more info].</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra</note>
+        <note>The part inside square brackets will become a link.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Re-run pause-based timing guesses</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun.Extra" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This will remove any adjustments you have made.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun.Extra</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title" sil:dynamic="true" translate="no">
         <source xml:lang="en">Adjust Timings</source>

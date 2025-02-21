@@ -42,6 +42,7 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nParam0?: string;
     l10nParam1?: string;
     onClick?: () => void; // not yet implemented by String subclass and maybe others outside this file
+    id?: string; // not yet implented by all
 
     // Set to true if we don't want the yellow highlighting in the UI for now.
     // Typically this is used when the UI is still is such flux that we
@@ -384,6 +385,7 @@ export class Div extends LocalizableElement<
         return (
             <div
                 className={this.getClassName()}
+                id={this.props.id}
                 onClick={() => {
                     if (this.props.onClick) {
                         this.props.onClick();

@@ -34,8 +34,13 @@ interface IBaseLocalizableMenuItemProps {
         Variant | "inherit",
         TypographyPropsVariantOverrides
     >;
+    // To make a sublabel, you may pass an entire node. If that is missing, you may pass a l10nId,
+    // and the corresponding string will be shown. If that also is missing, you may pass the actual
+    // string to show, already localized if necessary.
+    sublabel?: ReactNode;
     subLabelL10nId?: string;
     generatedSubLabel?: string;
+    tooltip?: string;
 }
 
 export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
@@ -150,7 +155,8 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
         );
 
     const localizedSublabel = useL10n("", props.subLabelL10nId ?? null);
-    const sublabel = props.generatedSubLabel ?? localizedSublabel;
+    const sublabel =
+        props.sublabel ?? props.generatedSubLabel ?? localizedSublabel;
 
     const openCollectionSettings = () =>
         post("common/showSettingsDialog?tab=enterprise");
@@ -161,7 +167,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
 
     // The "div" wrapper is necessary to get the tooltip to work on a disabled MenuItem.
     return (
-        <div title={props.disabled ? props.tooltipIfDisabled : undefined}>
+        <div title={props.disabled ? props.tooltipIfDisabled : props.tooltip}>
             <MenuItem
                 key={props.l10nId}
                 onClick={menuClickHandler}

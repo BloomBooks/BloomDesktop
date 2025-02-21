@@ -3,6 +3,6 @@
 // anything implementation-specific.
 
 export interface IAudioRecorder {
-    autoSegmentBasedOnTextLength: () => void;
+    autoSegmentBasedOnTextLength: () => number[];
     markAudioSplit: () => void;
 }

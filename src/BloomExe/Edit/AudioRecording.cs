@@ -19,6 +19,7 @@ using SIL.Media.Naudio;
 using SIL.Reporting;
 using Timer = System.Windows.Forms.Timer;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using SIL.Code;
 
 // Note: it is for the benefit of this component that Bloom references NAudio. We don't use it directly,
@@ -422,7 +423,11 @@ namespace Bloom.Edit
             // book tool has no awareness of the app being activated.
             if (_monitoringAudio)
             {
-                var dummy = Recorder;
+                // start recording on a background thread (takes a few seconds)
+                Task.Run(() =>
+                {
+                    var dummy = Recorder;
+                });
             }
         }
 

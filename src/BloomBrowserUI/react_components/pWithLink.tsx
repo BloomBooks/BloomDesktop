@@ -4,6 +4,7 @@ import {
     ILocalizationState,
     LocalizableElement
 } from "./l10nComponents";
+import { Link as MuiLink } from "@mui/material";
 
 export interface ILocalizationPropsWithLink extends ILocalizationProps {
     href: string;
@@ -26,13 +27,13 @@ export class PWithLink extends LocalizableElement<
                 <p className={this.getClassName()}>
                     <span className={parts.l10nClass}>
                         {parts.text.substring(0, idxOpen)}
-                        <a
+                        <MuiLink
                             href={this.props.href}
                             target={isLinkExternal ? "_blank" : undefined}
                             rel="noreferrer"
                         >
                             {parts.text.substring(idxOpen + 1, idxClose)}
-                        </a>
+                        </MuiLink>
                         {parts.text.substring(idxClose + 1)}
                     </span>
                 </p>
