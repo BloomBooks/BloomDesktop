@@ -31,7 +31,7 @@
         "// note that this wants to be 'watch', but on windows cpx doesn't actually notice changes from a BP build, symlinked by yarn link": " ",
         "bp-to-output": "cpx \"./node_modules/bloom-player/dist/*.*\" ../../output/browser/bloom-player/dist -v --clean",
         "// This needs to be done before any building after a fresh yarn fetch.": " ",
-        "bp-to-src": "cpx \"./node_modules/bloom-player/src/*.*\" ./bookEdit/shared/ -v --clean && shx sed -i \"s/^import \\$/\\/\\/import $/\" ./bookEdit/shared/scrolling.ts >nul",
+        "bp-to-src": "cpx \"./node_modules/bloom-player/src/*.ts\" ./bookEdit/shared/ -v --clean && shx sed -i \"s/^import \\$/\\/\\/import $/\" ./bookEdit/shared/scrolling.ts >nul",
         "watchBookLayoutLess": "less-watch-compiler bookLayout ../../output/browser/bookLayout",
         "watchBookEditLess": "less-watch-compiler bookEdit ../../output/browser/bookEdit",
         "watchProblemDialogLess": "less-watch-compiler problemDialog ../../output/browser/problemDialog",
