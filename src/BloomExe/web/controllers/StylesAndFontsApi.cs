@@ -63,19 +63,19 @@ namespace Bloom.web.controllers
                 var modified = modifiedStylesAndFonts.FindAll(s => s.style == style).ToArray();
                 if (modified.Length == 0)
                 {
-                    var styleAndFont = new StyleAndFont();
-                    styleAndFont.style = style;
-                    if (fontToLangs.Count == 1)
+                    foreach (var kvp in fontToLangs)
                     {
-                        if (fontToLangs.First().Value.Count == 1)
-                            styleAndFont.languageTag = fontToLangs.First().Value.First();
+                        var styleAndFont = new StyleAndFont();
+                        styleAndFont.style = style;
+                        if (kvp.Value.Count == 1)
+                            styleAndFont.languageTag = kvp.Value.First();
                         else
                             styleAndFont.languageTag = "*";
-                        styleAndFont.fontName = fontToLangs.First().Key;
+                        styleAndFont.fontName = kvp.Key;
+                        styleAndFont.pageId = stylesInBook[style].id;
+                        styleAndFont.pageDescription = stylesInBook[style].description;
+                        stylesAndFonts.Add(styleAndFont);
                     }
-                    styleAndFont.pageId = stylesInBook[style].id;
-                    styleAndFont.pageDescription = stylesInBook[style].description;
-                    stylesAndFonts.Add(styleAndFont);
                 }
                 else
                 {
