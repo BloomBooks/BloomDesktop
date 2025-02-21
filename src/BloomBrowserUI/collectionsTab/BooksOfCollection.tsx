@@ -31,6 +31,7 @@ export interface ICollection {
     containsDownloadedBooks: boolean;
     id: string;
     languageFont: string;
+    languagesToAiTranslate: string[];
 }
 
 export const BooksOfCollection: React.FunctionComponent<{
@@ -96,7 +97,8 @@ export const BooksOfCollection: React.FunctionComponent<{
             isFactoryInstalled: true,
             containsDownloadedBooks: false,
             id: props.collectionId,
-            languageFont: "Andika"
+            languageFont: "Andika",
+            languagesToAiTranslate: []
         }
     );
     // not getting these from the api currently, and I'm not sure the initial defaults will carry over

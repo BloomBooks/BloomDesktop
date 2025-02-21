@@ -49,6 +49,18 @@ namespace Bloom.Collection
         public string AdministratorsDisplayString =>
             Administrators == null ? "" : string.Join(", ", Administrators);
 
+        public string[] LanguagesToAiTranslate
+        {
+            // have to look through our languages and find which ones have enableAiTranslation set
+            get
+            {
+                return AllLanguages
+                    .Where(ws => ws.EnableAiTranslation)
+                    .Select(ws => ws.Tag)
+                    .ToArray();
+            }
+        }
+
         public WritingSystem SignLanguage;
 
         private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
@@ -319,6 +331,11 @@ namespace Bloom.Collection
             xml.Add(new XElement("BooksOnWebGoal", BooksOnWebGoal));
             if (Administrators != null && Administrators.Length > 0)
                 xml.Add(new XElement("Administrators", string.Join(",", Administrators)));
+
+            if (LanguagesToAiTranslate != null && LanguagesToAiTranslate.Length > 0)
+                xml.Add(
+                    new XElement("LanguagesToAiTranslate", string.Join(",", LanguagesToAiTranslate))
+                );
             if (!string.IsNullOrEmpty(DefaultBookshelf))
             {
                 xml.Add(new XElement("DefaultBookTags", "bookshelf:" + DefaultBookshelf));

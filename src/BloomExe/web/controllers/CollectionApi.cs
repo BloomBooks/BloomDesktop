@@ -97,7 +97,12 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
-
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "book/json",
+                HandleBookJsonRequest,
+                false,
+                false
+            );
             // used by visual regression tests to name screenshots
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "selected-book-info",
@@ -483,6 +488,7 @@ namespace Bloom.web.controllers
             props.containsDownloadedBooks = collection.ContainsDownloadedBooks;
             if (collection.PathToDirectory == _settings.FolderPath)
                 props.languageFont = _settings.Language1.FontName;
+            props.languagesToAiTranslate = _settings.LanguagesToAiTranslate;
             request.ReplyWithJson(JsonConvert.SerializeObject(props));
         }
 
@@ -792,6 +798,31 @@ namespace Bloom.web.controllers
         private Book.Book GetUpdatedBookObjectFromBookInfo(BookInfo info)
         {
             return _collectionModel.GetBookFromBookInfo(info);
+        }
+
+        private void HandleBookJsonRequest(ApiRequest request)
+        {
+            // if it is a get
+            if (request.HttpMethod == HttpMethods.Get)
+            {
+                var bookInfo = GetBookInfoFromRequestParam(request);
+                var book = _collectionModel.GetBookFromBookInfo(bookInfo);
+                var json = book.OurHtmlDom.GetBookJson();
+                request.ReplyWithJson(json);
+            }
+            else
+            {
+                // if it is a post
+                var bookInfo = GetBookInfoFromRequestParam(request);
+                var book = _collectionModel.GetBookFromBookInfo(bookInfo);
+                if (!book.IsSaveable)
+                {
+                    request.Failed("This book is not saveable.");
+                    return;
+                }
+                book.ImportJson(request.RequiredPostJson());
+                request.PostSucceeded();
+            }
         }
     }
 }

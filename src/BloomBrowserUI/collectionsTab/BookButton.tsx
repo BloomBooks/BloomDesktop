@@ -26,6 +26,8 @@ import { useL10n } from "../react_components/l10nHooks";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { showBookSettingsDialog } from "../bookEdit/bookSettings/BookSettingsDialog";
 import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { handleAITranslate } from "./handleAITranslate";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -208,6 +210,17 @@ export const BookButton: React.FunctionComponent<{
                 l10nId: "CollectionTab.BookMenu.DuplicateBook",
                 command: "collections/duplicateBook",
                 hide: () =>
+                    !props.collection.isEditableCollection ||
+                    props.lockedToOneDownloadedBook
+            },
+            {
+                label: "AI Translate",
+                //l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
+                onClick: () => handleAITranslate(props.book.id),
+                icon: <AutoAwesomeIcon />,
+                hide: () =>
+                    !props.collection.languagesToAiTranslate ||
+                    props.collection.languagesToAiTranslate.length === 0 ||
                     !props.collection.isEditableCollection ||
                     props.lockedToOneDownloadedBook
             },

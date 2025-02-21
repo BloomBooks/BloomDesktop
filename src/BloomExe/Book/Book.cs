@@ -5826,5 +5826,24 @@ namespace Bloom.Book
         {
             return Storage.Dom.GetMetaValue("defaultTemplatePageId", null);
         }
+
+        internal void ImportJson(string json)
+        {
+            try
+            {
+                OurHtmlDom.ImportJson(json);
+                Save();
+            }
+            catch (Exception e)
+            {
+                // revert to the original by reloading from disk
+                ReloadFromDisk(null);
+
+                throw new ApplicationException(
+                    "Error importing json into book " + this.FolderPath,
+                    e
+                );
+            }
+        }
     }
 }

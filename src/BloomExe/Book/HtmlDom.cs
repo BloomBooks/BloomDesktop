@@ -30,7 +30,7 @@ namespace Bloom.Book
     /// They are actually XHTML, though when we save or send to a browser, we always convert to plain html.
     /// May also contain a BookInfo, which for certain operations should be kept in sync with the HTML.
     /// </summary>
-    public class HtmlDom
+    public partial class HtmlDom
     {
         public const string RelativePathAttrName = "data-base";
         public static readonly char[] kHtmlClassDelimiters = new char[] { ' ' };

@@ -35,6 +35,8 @@ namespace Bloom.Collection
         /// </summary>
         public int BaseUIFontSizeInPoints;
 
+        public bool EnableAiTranslation;
+
         public int GetBaseUIFontSizeInPointsForCss() =>
             BaseUIFontSizeInPoints == 0 ? 12 : BaseUIFontSizeInPoints;
 
@@ -170,6 +172,7 @@ namespace Bloom.Collection
             xml.Add(
                 new XElement($"Language{langNumTag}BaseUIFontSizeInPoints", BaseUIFontSizeInPoints)
             );
+            xml.Add(new XElement("EnableAiTranslation", EnableAiTranslation));
         }
 
         public void AddSelectorCssRule(StringBuilder sb, bool omitDirection)
@@ -322,6 +325,7 @@ namespace Bloom.Collection
                 $"Language{langNumTag}BaseUIFontSizeInPoints",
                 0 /* 0 means "default" */
             );
+            EnableAiTranslation = ReadBoolean(xml, "EnableAiTranslation", false);
         }
 
         private bool ReadOrComputeIsCustomName(XElement xml, string id)
@@ -411,6 +415,7 @@ namespace Bloom.Collection
             copy.BreaksLinesOnlyAtSpaces = this.BreaksLinesOnlyAtSpaces;
             copy.BaseUIFontSizeInPoints = this.BaseUIFontSizeInPoints;
             copy.IsRightToLeft = this.IsRightToLeft;
+            copy.EnableAiTranslation = this.EnableAiTranslation;
             return copy;
         }
 

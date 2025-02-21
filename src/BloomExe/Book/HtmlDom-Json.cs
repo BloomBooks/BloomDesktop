@@ -27,9 +27,121 @@ namespace Bloom.Book
         //        "es":"Esta es otra prueba."
         //    }
         //  ]
-        public string GetBookTextJson()
+        public string GetBookJson()
         {
-            var textBlocks = new List<Dictionary<string, string>>();
+            var translationGroups = new List<Dictionary<string, string>>();
+
+            foreach (
+                SafeXmlElement transGroup in _dom.SafeSelectNodes(
+                    "//div[contains(@class, 'bloom-translationGroup')]"
+                )
+            )
+            {
+                var textDict = new Dictionary<string, string>();
+                foreach (
+                    SafeXmlElement editable in transGroup.SafeSelectNodes(
+                        "./div[contains(@class, 'bloom-editable')]"
+                    )
+                )
+                {
+                    string lang = editable.GetAttribute("lang");
+                    if (!string.IsNullOrEmpty(lang))
+                    {
+                        textDict[lang] = editable.InnerText.Trim();
+                    }
+                }
+                if (textDict.Count > 0)
+                {
+                    translationGroups.Add(textDict);
+                }
+            }
+
+            var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            return serializer.Serialize(translationGroups);
+        }
+
+        public void ImportJson(string json)
+        {
+            // json looks like this
+            //  [
+            //    {
+            //        "en":"This is a test.",
+            //        "es":"Esta es una prueba."
+            //    },
+            //    {
+            //        "en":"This is another test.",
+            //        "es":"Esta es otra prueba."
+            //    }
+            //  ]
+
+            // turn this into a dictionary keyed on the "en" text so that we can look up any group by its english text
+            var englishToLanguages = new Dictionary<string, Dictionary<string, string>>();
+            var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            var translationGroups = serializer.Deserialize<List<Dictionary<string, string>>>(json);
+            if (translationGroups == null)
+                return;
+            foreach (var group in translationGroups)
+            {
+                if (!group.ContainsKey("en"))
+                    continue;
+                var englishText = group["en"].Trim();
+                if (englishToLanguages.ContainsKey(englishText))
+                    continue;
+                group.Remove("en");
+                englishToLanguages[englishText] = group;
+            }
+
+            foreach (
+                SafeXmlElement transGroup in _dom.SafeSelectNodes(
+                    "//div[contains(@class, 'bloom-translationGroup')]"
+                )
+            )
+            {
+                var englishEditable = transGroup
+                    .SafeSelectNodes("./div[contains(@class, 'bloom-editable') and @lang='en']")
+                    .FirstOrDefault();
+                if (englishEditable == null)
+                    continue;
+                var englishText = englishEditable.InnerText.Trim();
+                // Find matching text in our import data
+                var matchingGroup = englishToLanguages[englishText];
+                if (matchingGroup == null)
+                    continue;
+
+                // Update or create editables for each language in the matching group
+                foreach (var kvp in matchingGroup)
+                {
+                    string lang = kvp.Key;
+                    string text = kvp.Value;
+
+                    var editable = transGroup
+                        .SafeSelectNodes(
+                            $"./div[contains(@class, 'bloom-editable') and @lang='{lang}']"
+                        )
+                        .FirstOrDefault();
+
+                    if (editable == null)
+                    {
+                        editable = _dom.CreateElement("div") as SafeXmlElement;
+                        editable.SetAttribute("class", "bloom-editable");
+                        editable.SetAttribute("lang", lang);
+                        transGroup.AppendChild(editable);
+                    }
+
+                    editable.InnerText = text;
+                }
+            }
+        }
+
+        // For each element in the json, every bloom-translationGroup, we get the text of the the bloom-editable that matches the keyLanguage.
+        public void SetBookTextOfOneLanguageFromJson(
+            string keyLanguage,
+            string targetLanguage,
+            string jsonArrayOfMultilingualTexts
+        )
+        {
+            var texts = DynamicJson.Parse(jsonArrayOfMultilingualTexts);
+            var textDictionaries = texts as IList<dynamic>;
 
             foreach (SafeXmlElement page in GetContentPageElements())
             {
@@ -39,61 +151,44 @@ namespace Bloom.Book
                     )
                 )
                 {
-                    var textDict = new Dictionary<string, string>();
-                    foreach (
-                        SafeXmlElement editable in transGroup.SafeSelectNodes(
-                            "./div[contains(@class, 'bloom-editable')]"
-                        )
-                    )
-                    {
-                        string lang = editable.GetAttribute("lang");
-                        if (!string.IsNullOrEmpty(lang))
-                        {
-                            textDict[lang] = editable.InnerText.Trim();
-                        }
-                    }
-                    if (textDict.Count > 0)
-                    {
-                        textBlocks.Add(textDict);
-                    }
-                }
-            }
-            return DynamicJson.Serialize(textBlocks);
-        }
-
-        // For each element in the json, every bloom-translationGroup, we get the text of the the bloom-editable that matches the keyLanguage.
-        public void SetBookTextOfOneLanguageFromJson(string keyLanguage, string targetLanguage, string jsonArrayOfMultilingualTexts)
-        {
-            var texts = DynamicJson.Parse(jsonArrayOfMultilingualTexts);
-            var textDictionaries = texts as IList<dynamic>;
-
-            foreach (SafeXmlElement page in GetContentPageElements())
-            {
-                foreach (SafeXmlElement transGroup in page.SafeSelectNodes(".//div[contains(@class, 'bloom-translationGroup')]"))
-                {
                     // Find the key language editable
-                    var keyEditable = transGroup.SafeSelectNodes($"./div[contains(@class, 'bloom-editable') and @lang='{keyLanguage}']").FirstOrDefault();
+                    var keyEditable = transGroup
+                        .SafeSelectNodes(
+                            $"./div[contains(@class, 'bloom-editable') and @lang='{keyLanguage}']"
+                        )
+                        .FirstOrDefault();
                     if (keyEditable == null)
                         continue;
 
                     string keyText = keyEditable.InnerText.Trim();
 
-                    // Find matching text in our json
-                    var matchingDict = textDictionaries?.FirstOrDefault(d =>
-                        ((IDictionary<string, object>)d).ContainsKey(keyLanguage) &&
-                        ((string)d[keyLanguage]).Trim() == keyText);
+                    // Find matching text in our import data
+                    var matchingDict = textDictionaries?.FirstOrDefault(
+                        d =>
+                            ((IDictionary<string, object>)d).ContainsKey(keyLanguage)
+                            && ((string)d[keyLanguage]).Trim() == keyText
+                    );
 
-                    if (matchingDict == null || !((IDictionary<string, object>)matchingDict).ContainsKey(targetLanguage))
+                    if (
+                        matchingDict == null
+                        || !((IDictionary<string, object>)matchingDict).ContainsKey(targetLanguage)
+                    )
                         continue;
 
                     string targetText = (string)matchingDict[targetLanguage];
+                    if (string.IsNullOrEmpty(targetText))
+                        continue;
 
                     // Find or create target language editable
-                    var targetEditable = transGroup.SafeSelectNodes($"./div[contains(@class, 'bloom-editable') and @lang='{targetLanguage}']").FirstOrDefault();
+                    var targetEditable = transGroup
+                        .SafeSelectNodes(
+                            $"./div[contains(@class, 'bloom-editable') and @lang='{targetLanguage}']"
+                        )
+                        .FirstOrDefault();
                     if (targetEditable == null)
                     {
-                        // Create new editable div for target language
-                        targetEditable = (SafeXmlElement)keyEditable.Clone();
+                        targetEditable = _dom.CreateElement("div") as SafeXmlElement;
+                        targetEditable.SetAttribute("class", "bloom-editable");
                         targetEditable.SetAttribute("lang", targetLanguage);
                         transGroup.AppendChild(targetEditable);
                     }
@@ -102,5 +197,30 @@ namespace Bloom.Book
                 }
             }
         }
+    }
+
+    // Add new NonEnumerableDynamicObject class to enable proper JSON object serialization without enumeration issues
+    public class NonEnumerableDynamicObject : System.Dynamic.DynamicObject
+    {
+        private readonly Dictionary<string, object> _dict = new Dictionary<string, object>();
+
+        public void Set(string key, object value)
+        {
+            _dict[key] = value;
+        }
+
+        public int DynamicMemberCount => _dict.Count;
+
+        public override bool TryGetMember(System.Dynamic.GetMemberBinder binder, out object result)
+        {
+            return _dict.TryGetValue(binder.Name, out result);
+        }
+
+        public override IEnumerable<string> GetDynamicMemberNames()
+        {
+            return _dict.Keys;
+        }
+
+        // Do not implement IEnumerable to avoid being serialized as a collection of KeyValuePair objects
     }
 }
