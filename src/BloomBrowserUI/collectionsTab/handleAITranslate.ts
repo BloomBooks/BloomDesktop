@@ -3,55 +3,55 @@ import { AxiosResponse } from "axios";
 
 export async function handleAITranslate(bookId: string) {
     try {
-        // Get the book content as JSON using await
-        const response = (await getWithPromise(
+        // use collections/collectionProps to get the languagesToAiTranslate
+        const aiLanguagesResponse = (await getWithPromise(
+            `collections/collectionProps?book-id=${bookId}`
+        )) as AxiosResponse<Record<string, string>[]>;
+
+        if (aiLanguagesResponse?.data?.length === 0) return;
+
+        const bookTextResponse = (await getWithPromise(
             `collections/book/json?book-id=${bookId}`
         )) as AxiosResponse<Record<string, string>[]>;
 
-        console.log("Response data:", JSON.stringify(response.data, null, 2));
+        console.log(
+            "Response data:",
+            JSON.stringify(bookTextResponse.data, null, 2)
+        );
 
-        if (!response?.data || !Array.isArray(response.data)) {
+        if (!bookTextResponse?.data || !Array.isArray(bookTextResponse.data)) {
             console.error("Invalid response data format");
             return;
         }
 
-        const texts = response.data;
-        const translatedTexts = texts.map(textBlock => {
-            if (typeof textBlock !== "object") {
-                console.warn("Invalid text block format");
-                return textBlock;
-            }
+        const texts = bookTextResponse.data;
+        console.log("Translating text block:", JSON.stringify(texts, null, 2));
+        // TODO: we will need to know which language the ai model was trained to translate from.
+        // Could encode in the langtag, e.g. wsg-x-a-acts2-bloom10-from-en
+        // In the case of Acts2, I have requested that they add this info to the API.
+        // Else if L2 is one of the top world languages, then a reasonable guess would be that it was used for a Bible source during translation and thus training.
 
-            console.log(
-                "Translating text block:",
-                JSON.stringify(textBlock, null, 2)
+        const sourceLang = "en";
+        const sourceText = texts[sourceLang];
+
+        // Skip translation if source text is not available
+        if (!sourceText) {
+            console.warn(
+                `No source text found for translation in language: ${sourceLang}`
             );
-            const sourceLang = "en";
-            const sourceText = textBlock[sourceLang];
-
-            // Skip translation if source text is not available
-            if (!sourceText) {
-                console.warn(
-                    `No source text found for translation in language: ${sourceLang}`
-                );
-                return textBlock;
-            }
-
-            // Do a mock "translation" - capitalize all letters
-            const mockTranslation = sourceText.toUpperCase();
-
-            // Add the new translation
-            return {
-                ...textBlock,
-                "en-x-capitalized": mockTranslation
-            };
-        });
+            return texts;
+        }
+        const translatedTexts = await getTranslations(
+            sourceLang,
+            "en-x-capitalized",
+            texts
+        );
 
         console.log(
             "Translated texts:",
             JSON.stringify(translatedTexts, null, 2)
         );
-        // Post the translated content back using the bulk import endpoint
+        // Post the translated content back using the json import endpoint
         await postJson(
             `collections/book/json?book-id=${bookId}`,
             translatedTexts
@@ -60,4 +60,20 @@ export async function handleAITranslate(bookId: string) {
     } catch (error) {
         console.error("Translation failed:", error);
     }
+}
+
+async function getTranslations(
+    sourceLang: string,
+    targetLangTag: string,
+    texts: Record<string, string>[]
+) {
+    const translatedTexts = texts.map(text => {
+        const translatedText = text[sourceLang].toUpperCase();
+        return {
+            ...text,
+            [targetLangTag]: translatedText
+        };
+    });
+
+    return translatedTexts;
 }

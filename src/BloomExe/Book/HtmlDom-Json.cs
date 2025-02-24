@@ -27,7 +27,7 @@ namespace Bloom.Book
         //        "es":"Esta es otra prueba."
         //    }
         //  ]
-        public string GetBookJson()
+        public string GetTextsJson()
         {
             var translationGroups = new List<Dictionary<string, string>>();
 
@@ -45,9 +45,10 @@ namespace Bloom.Book
                 )
                 {
                     string lang = editable.GetAttribute("lang");
-                    if (!string.IsNullOrEmpty(lang))
+                    string text = editable.InnerText.Trim();
+                    if (!string.IsNullOrEmpty(lang) && !string.IsNullOrEmpty(text))
                     {
-                        textDict[lang] = editable.InnerText.Trim();
+                        textDict[lang] = text;
                     }
                 }
                 if (textDict.Count > 0)
