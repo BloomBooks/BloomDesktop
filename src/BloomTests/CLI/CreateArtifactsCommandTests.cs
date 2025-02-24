@@ -240,5 +240,67 @@ namespace BloomTests.CLI
                 Assert.That(result, Is.EqualTo(CreateArtifactsExitCode.LegacyBookCannotHarvest));
             }
         }
+
+        [Test]
+        public void CreateArtifacts_WithJsonOutput_CreatesJsonFile()
+        {
+            using (
+                var testFolder = new TemporaryFolder(
+                    "CreateArtifacts_WithJsonOutput_CreatesJsonFile"
+                )
+            )
+            {
+                var collectionFolderPath = testFolder.Combine("collection");
+
+                var bookFolderPath = Path.Combine(collectionFolderPath, "book");
+                System.IO.Directory.CreateDirectory(bookFolderPath);
+                var collectionFilePath = Path.Combine(
+                    collectionFolderPath,
+                    "collection.bloomCollection"
+                );
+                var settings = new CollectionSettings(collectionFilePath);
+                settings.Save();
+                var metaData = new BookMetaData();
+                metaData.WriteToFolder(bookFolderPath);
+                var bookPath = System.IO.Path.Combine(bookFolderPath, "book.htm");
+                System.IO.File.WriteAllText(
+                    bookPath,
+                    @"<html>
+                    <body>
+						<div class='bloom-page'>
+							<div class='marginBox'>
+								<div class='bloom-translationGroup'>
+									<div class='bloom-editable' lang='en'>
+                                        Hello
+									</div>
+                                    <div class='bloom-editable' lang='es'>
+                                        Hola
+									</div>
+								</div>
+							</div>
+						</div>
+					</body>
+				</html>"
+                );
+
+                var jsonOutputPath = Path.Combine(testFolder.FolderPath, "texts.json");
+                var result = CreateArtifactsCommand.HandleInternal(
+                    new CreateArtifactsParameters()
+                    {
+                        BookPath = bookFolderPath,
+                        CollectionPath = collectionFilePath,
+                        JsonTextsOutputPath = jsonOutputPath
+                    }
+                );
+
+                Assert.That(result, Is.EqualTo(CreateArtifactsExitCode.Success));
+                Assert.That(File.Exists(jsonOutputPath), Is.True);
+                var jsonContent = File.ReadAllText(jsonOutputPath);
+                // The json should have format {"pageGuid":"text content"}
+                // Page guid is defined in bloom-page div's id attribute
+                // Text content comes from bloom-content1 div
+                Assert.That(jsonContent, Is.EqualTo(@"[{""en"":""Hello"",""es"":""Hola""}]"));
+            }
+        }
     }
 }

@@ -1403,7 +1403,7 @@ namespace Bloom.Publish
                         );
                         var msg3 = LocalizationManager.GetString(
                             "PublishTab.FontProblem.Result",
-                            "BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the �READ� button or downloads for BloomPUB or ePUB."
+                            "BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the \"READ\" button or downloads for BloomPUB or ePUB."
                         );
                         var msg4 = LocalizationManager.GetString(
                             "PublishTab.FontProblem.CheckInBookSettingsDialog",
