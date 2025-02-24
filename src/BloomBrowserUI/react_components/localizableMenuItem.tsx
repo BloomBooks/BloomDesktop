@@ -34,12 +34,15 @@ interface IBaseLocalizableMenuItemProps {
         Variant | "inherit",
         TypographyPropsVariantOverrides
     >;
-    // To make a sublabel, you may pass an entire node. If that is missing, you may pass a l10nId,
-    // and the corresponding string will be shown. If that also is missing, you may pass the actual
-    // string to show, already localized if necessary.
+    // To make a sublabel, you may pass an entire node. If that is missing, you may pass a string that is
+    // already localized as necessary (generatedSubLabel), and if that is also missing, you may pass
+    // an l10nId, and the corresponding string will be shown.
+    // Note that (unlike many places in our code) you are not supposed to pass the English string merely
+    // as a comment, with the expectation that the localized one will override it. GeneratedSubLabel will
+    // beat subLabelL10nId, if it is not undefined.
     sublabel?: ReactNode;
-    subLabelL10nId?: string;
     generatedSubLabel?: string;
+    subLabelL10nId?: string;
     tooltip?: string;
 }
 

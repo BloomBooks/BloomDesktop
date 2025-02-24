@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import * as ReactDOM from "react-dom";
 
 import {
@@ -44,6 +44,8 @@ export function getAudioRecorder(): IAudioRecorder | undefined {
     return result;
 }
 
+const timingsMenuId = "timingsMenuAnchor";
+
 export const AdjustTimingsDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
     split: (timingFilePath: string) => Promise<string | undefined>;
@@ -61,7 +63,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     >();
     // Should the next render of the AdjustTimingsControl adjust the segments based on the audio?
     // This should only happen on the render immediately after we create the segments based on the text length.
-    const shouldAdjustSegments = useRef(false);
+    const [shouldAdjustSegments, setShouldAdjustSegments] = useState(false);
     const [endTimes, setEndTimes] = useState<number[]>([]);
     const [audioFileUrl, setAudioFileUrl] = useState<string>();
     const [fontFamily, setFontFamily] = useState<string>("Andika");
@@ -95,7 +97,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     ] = React.useState<null | HTMLElement>(null);
     const moreMenuOpen = Boolean(moreElForAdvancedMenu);
     const handleClick = () => {
-        const anchor = document.getElementById("timimgsMenuAnchor");
+        const anchor = document.getElementById(timingsMenuId);
         setMoreElForAdvancedMenu(anchor);
     };
     const closeMoreMenu = () => {
@@ -107,11 +109,14 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     // initialized the segments based on the text length, and want the control to fine tune
     // them based on the audio. This should happen just once, not on any subsequent render
     // when we pass in segments from some other source, such as Aeneas or a timings file.
-    // So when we get this message, we clear the flag. That doesn't call for another render, so
-    // I made this a useRef rather than a state.
+    // So when we get this message, we clear the flag. (Clearing the flag woult not require
+    // a render, which makes a useRef appealing, but we always change some other state when we
+    // change setShouldAdjustSegments, so there's no point.)
     const updateEndTimes = (newTimes: number[]) => {
+        // I think these two state changes will result in just one re-render, but just in
+        // case we set this flag first, so that the next render will not try to adjust the segments.
+        setShouldAdjustSegments(false);
         setEndTimes(newTimes);
-        shouldAdjustSegments.current = false;
     };
 
     // Configure the local function (`show`) for showing the dialog to be the one derived from useSetupBloomDialog (`showDialog`)
@@ -174,7 +179,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             getAudioRecorder()?.autoSegmentBasedOnTextLength() ?? [];
         // will be passed to the control to tell it to fine tune the segments based on the audio.
         // gets set back to false when the control sends us the adjusted times.
-        shouldAdjustSegments.current = true;
+        setShouldAdjustSegments(true);
         const bloomEditable = getCurrentTextBox();
 
         const segmentElements = Array.from(
@@ -196,7 +201,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         let ff = (
             bloomEditable.ownerDocument.defaultView || window
         ).getComputedStyle(bloomEditable).fontFamily;
-        ff = ff.replace(/^['"]/, "").replace(/['"]$/, "");
+
         setFontFamily(ff);
         let endTimes = audioRecordingEndTimes?.split(" ").map(parseFloat);
         let segmentElements = Array.from(
@@ -223,7 +228,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             endTimes = getAudioRecorder()?.autoSegmentBasedOnTextLength() ?? [];
             // will be passed to the control to tell it to fine tune the segments based on the audio.
             // gets set back to false when the control sends us the adjusted times.
-            shouldAdjustSegments.current = true;
+            setShouldAdjustSegments(true);
             segmentElements = Array.from(
                 bloomEditable.getElementsByClassName(kHighlightSegmentClass)
             ) as HTMLSpanElement[];
@@ -259,10 +264,10 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                     audioFileUrl={audioFileUrl!}
                     setEndTimes={endTimes => updateEndTimes(endTimes)}
                     fontFamily={fontFamily}
-                    shouldAdjustSegments={shouldAdjustSegments.current}
+                    shouldAdjustSegments={shouldAdjustSegments}
                 />
                 <div
-                    id="timimgsMenuAnchor"
+                    id={timingsMenuId}
                     css={css`
                         display: flex;
                         width: fit-content;
@@ -271,7 +276,6 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                     onClick={handleClick}
                 >
                     <Div
-                        className="timimgsMenuAnchor"
                         l10nKey="CollectionTab.ContextMenu.More"
                         css={css`
                             display: flex;
@@ -489,10 +493,18 @@ const computeSegments = (
     // I'm thinking it might be best to let JohnH think about these kinds of issues along with any
     // other problems that come up in testing.
     const segmentArray: TimedTextSegment[] = [];
+    // There's no obvious behavior here if the two arrays are not the same length,
+    // and if the value we get from the data attribute does not have the right number of
+    // items, code elsewhere reverts to the autoSegmentBasedOnTextLength behavior,
+    // which should give the right number of segments, at least.
+    console.assert(
+        endTimes.length === segmentElements.length,
+        "Mismatched endTimes and segments"
+    );
 
     let start = 0;
     for (let i = 0; i < segmentElements.length; i++) {
-        const end = endTimes ? endTimes[i] : start + 1;
+        const end = endTimes[i];
         segmentArray.push({
             start,
             end,
