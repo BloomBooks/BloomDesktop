@@ -458,25 +458,38 @@ export default class BloomSourceBubbles {
         }
     }
 
-    // Arrange a mutation observer to recompute position of tooltips when something changes in
-    // any of the translation groups.
+    private static debounceTimeout = 0;
+
+    // Arrange a mutation observer to recompute position of tooltips when something changes on
+    // the page.
     // I don't think we need worry about disposing of this. It's useful until the page is reloaded.
-    // This could be better done with resizeObserver...FixGecko60.
-    // Note, in that case we'd want to observer each .bloom-editable, not the whole page.
+    // Enhance: possibly this could be better done with resizeObserver? But we need to detect changes of position, too.
+    // Note, in that case we'd want to observe each translation group, not the whole page.
     // (The page typically will NOT change size when a text block does.)
     public static setupSizeChangedHandling(groups: HTMLElement[]) {
-        const observer = new MutationObserver(mutations => {
-            $(groups).qtip("reposition");
-        });
         const config = {
             childList: true,
             characterData: true,
-            subtree: true
+            subtree: true,
+            attributes: true
         };
-        observer.observe(
-            document.getElementsByClassName("bloom-page")[0],
-            config
-        );
+        const observer = new MutationObserver(mutations => {
+            // To minimize the overhead of this, we only do it after nothing changes for 100ms
+            if (BloomSourceBubbles.debounceTimeout) {
+                clearTimeout(BloomSourceBubbles.debounceTimeout);
+            }
+
+            BloomSourceBubbles.debounceTimeout = (setTimeout(() => {
+                observer.disconnect(); // don't want to respond to changes that reposition makes
+                $(document.querySelectorAll("[data-hasqtip]")).qtip(
+                    "reposition"
+                );
+                observer.observe(document.body, config);
+            }, 100) as any) as number;
+        });
+        // observe everything...even (for example) dialogs that are outside the page.
+        // For example, the GamePromptDialog has a source bubble and can be moved.
+        observer.observe(document.body, config);
     }
 
     // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
