@@ -468,7 +468,7 @@ namespace Bloom.CLI
         public string BloomSourceOutputPath { get; set; }
 
         [Option(
-            "jsonTextOutputPath",
+            "jsonTextsOutputPath",
             HelpText = "Output destination path in which to place a json file containing all of the texts in the book",
             Required = false
         )]
