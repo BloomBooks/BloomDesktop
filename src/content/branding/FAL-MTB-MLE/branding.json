@@ -22,20 +22,17 @@
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "*", // we might like to put "th" here, but as of now, only the "*" will ever by used
-            "content": "หากมีการนำสื่อไปใช้ในโครงการใด ขอความกรุณาแจ้งให้ทางมูลนิธิภาษาศาสตร์ประยุกต์ทราบ เพื่อเป็นข้อมูลได้ที่ thaifal.fal@gmail.com. ท่านสามารถสนับสนุนการพัฒนาและผลิตสื่อในลักษณะอื่นเพิ่มเติมได้
-โดยบริจาคได้ที่ TMB: 453-2-21348-7",
-    "condition": "always"
+            "content": "หากมีการนำสื่อไปใช้ในโครงการใด ขอความกรุณาแจ้งให้ทางมูลนิธิภาษาศาสตร์ประยุกต์ทราบ เพื่อเป็นข้อมูลได้ที่ thaifal.fal@gmail.com. ท่านสามารถสนับสนุนการพัฒนาและผลิตสื่อในลักษณะอื่นเพิ่มเติมได้ โดยบริจาคได้ที่ TMB: 453-2-21348-7",
+            "condition": "always"
         },
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "en", // this isn't actually ever used, but it's here to understand what the thai is using.
-            "content": "If the materials are used in any project, please notify the Applied Linguistics Foundation at thaifal.fal@gmail.com for record-keeping purposes. You can support the development and production of additional materials
-by donating to TMB: 453-2-21348-7.",
-    "condition": "always"
-
+            "content": "If the materials are used in any project, please notify the Applied Linguistics Foundation at thaifal.fal@gmail.com for record-keeping purposes. You can support the development and production of additional materials by donating to TMB: 453-2-21348-7.",
+            "condition": "always"
         }
-
-    ],      "appearance": {
+    ],
+    "appearance": {
         "cover-background-color": "white"
     }
 }
