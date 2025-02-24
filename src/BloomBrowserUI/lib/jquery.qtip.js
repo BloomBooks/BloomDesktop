@@ -1231,7 +1231,7 @@ function QTip(target, options, id, attr)
 
                     position = PLUGINS.offset(target, container);
                     // Bloom: Adjust for zoom by transform: scale, which affects position as read here but not the position we want to calculate.
-                    const scale = EditableDivUtils.getPageScale();
+                    const scale = EditableDivUtils.getPageScale(target.get(0));
                     position.left = position.left / scale;
                     position.top = position.top / scale;
                 }
