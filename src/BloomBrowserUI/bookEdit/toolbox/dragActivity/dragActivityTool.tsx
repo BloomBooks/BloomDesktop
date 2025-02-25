@@ -49,7 +49,7 @@ import { BubbleSpec } from "comicaljs";
 import { setPlayerUrlPrefixFromWindowLocationHref } from "../../shared/narration";
 import { renderGamePromptDialog } from "./GamePromptDialog";
 import { OverlayTool } from "../overlay/overlayTool";
-import { theOneBubbleManager } from "../../js/bubbleManager";
+import { BubbleManager, theOneBubbleManager } from "../../js/bubbleManager";
 
 // This is the main code that manages the Bloom Games or Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -176,6 +176,14 @@ export const adjustTarget = (
     const allSameSize =
         draggable.closest(".bloom-page")!.getAttribute("data-same-size") !==
         "false";
+    // get height and width of things this way, because sometimes some are not visible
+    // (e.g., when creating letters in the drag-letter-to-target game)
+    const getHeight = (elt: HTMLElement) => {
+        return BubbleManager.pxToNumber(elt.style.height);
+    };
+    const getWidth = (elt: HTMLElement) => {
+        return BubbleManager.pxToNumber(elt.style.width);
+    };
     // if the target is not the same size, presumably the draggable size changed, in which case
     // we need to adjust the target, and possibly all other targets and draggables on the page.
     // If there's no target, just assume we need to adjust all if we're keeping sizes the same.
@@ -185,15 +193,15 @@ export const adjustTarget = (
     if (!target) {
         adjustAll = true;
     } else {
-        if (target.offsetHeight !== draggable.offsetHeight) {
+        if (getHeight(target) !== getHeight(draggable)) {
             if (!allSameSize) {
-                target.style.height = `${draggable.offsetHeight}px`;
+                target.style.height = `${getHeight(draggable)}px`;
             }
             adjustAll = true;
         }
-        if (target.offsetWidth !== draggable.offsetWidth) {
+        if (getWidth(target) !== getWidth(draggable)) {
             if (!allSameSize) {
-                target.style.width = `${draggable.offsetWidth}px`;
+                target.style.width = `${getWidth(draggable)}px`;
             }
             adjustAll = true;
         }
@@ -222,18 +230,18 @@ export const adjustTarget = (
             page.querySelectorAll("[data-target-of]")
         );
 
-        let targetHeight = draggable.offsetHeight;
-        let targetWidth = draggable.offsetWidth;
+        let targetHeight = getHeight(draggable);
+        let targetWidth = getWidth(draggable);
         if (draggableImages.length > 0) {
-            targetHeight = Math.max(...draggables.map(x => x.offsetHeight));
-            targetWidth = Math.max(...draggables.map(x => x.offsetWidth));
+            targetHeight = Math.max(...draggables.map(x => getHeight(x)));
+            targetWidth = Math.max(...draggables.map(x => getWidth(x)));
         }
 
         otherDraggables.concat(targets).forEach((elt: HTMLElement) => {
-            if (elt.offsetHeight !== targetHeight) {
+            if (getHeight(elt) !== targetHeight) {
                 elt.style.height = `${targetHeight}px`;
             }
-            if (elt.offsetWidth !== targetWidth) {
+            if (getWidth(elt) !== targetWidth) {
                 elt.style.width = `${targetWidth}px`;
             }
         });
@@ -1813,7 +1821,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
     }
 
     // Set the bloom-blank class iff the element contains nothing that regex recognizes as a non-whitespace character.
-    private setBlankClass(element: HTMLElement) {
+    public static setBlankClass(element: HTMLElement) {
         if (element.textContent?.replace(/\s/g, "") === "") {
             element.classList.add("bloom-blank");
         } else {
@@ -1838,7 +1846,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
             if (!editable) continue; // we actually seem to get some disconnected nodes, I don't know why
             editable = (editable as HTMLElement).closest(".bloom-editable");
             if (editable) {
-                this.setBlankClass(editable as HTMLElement);
+                DragActivityTool.setBlankClass(editable as HTMLElement);
                 return;
             }
         }
@@ -1874,7 +1882,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
                 subtree: true,
                 characterData: true
             });
-            this.setBlankClass(l1editable as HTMLElement);
+            DragActivityTool.setBlankClass(l1editable as HTMLElement);
         }
     }
 
