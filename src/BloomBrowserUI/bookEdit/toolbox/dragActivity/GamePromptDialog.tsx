@@ -245,6 +245,14 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
                     true
                 ) as HTMLElement;
                 setGeneratedBubbleId(newDraggable);
+                // Ensure the new draggable starts out empty.  See BL-14348.
+                // (This covers all languages present, visible or not.)
+                const paras = newDraggable.querySelectorAll(
+                    "div.Letter-style>p"
+                );
+                paras.forEach(p => {
+                    p.textContent = "";
+                });
                 lastDraggable.parentElement?.appendChild(newDraggable);
                 makeTargetForBubble(newDraggable);
                 // It's available to push letter groups into
