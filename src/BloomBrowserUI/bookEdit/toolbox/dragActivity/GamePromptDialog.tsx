@@ -11,15 +11,20 @@ interface IGamePromptDialogProps {
 }
 import { useRef } from "react";
 import {
+    adjustDraggablesForLanguage,
     copyContentToTarget,
     getTarget,
     shuffle
 } from "../../shared/dragActivityRuntime";
 import { setGeneratedBubbleId } from "../overlay/overlayItem";
-import { adjustTarget, makeTargetForBubble } from "./dragActivityTool";
+import {
+    adjustTarget,
+    DragActivityTool,
+    makeTargetForBubble
+} from "./dragActivityTool";
 import ReactDOM = require("react-dom");
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
-import { theOneBubbleManager } from "../../js/bubbleManager";
+import { BubbleManager, theOneBubbleManager } from "../../js/bubbleManager";
 import { Bubble } from "comicaljs";
 import { getToolboxBundleExports } from "../../editViewFrame";
 import {
@@ -40,10 +45,25 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
     // The translation group that React creates in the dialog, kept in sync with the one in the prompt
     // element in the page.
     const localTg = useRef<HTMLElement | null>();
+    const [haveLocalTg, setHaveLocalTg] = React.useState(false);
     const closeDialog = () => {
         BloomSourceBubbles.removeSourceBubbles(localTg.current!);
         props.setOpen(false);
     };
+    React.useEffect(() => {
+        if (props.open && localTg.current) {
+            // The dialog is being opened. Initialize everything.
+            // We really only want to do this once, especially when first switching to a new
+            // language, because we want to capture the positions of the visible boxes before
+            // adjustDraggablesForLanguage hides most of them, and also because we capture state
+            // here that is used to restore things on Cancel.
+            initializeDialog(props.prompt, localTg.current);
+        }
+        if (!localTg.current) {
+            // So we'll get rendered when we get the ref.
+            setHaveLocalTg(false);
+        }
+    }, [props.open, props.prompt, haveLocalTg]);
     return (
         <BloomDialog
             id="promptDialog"
@@ -77,10 +97,8 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
                     id="promptInput"
                     ref={ref => {
                         localTg.current = ref;
-                        if (props.open) {
-                            // I don't understand how this gets called again when the dialog is being closed,
-                            // but it does, and it can re-create the source bubble.
-                            initializeTg(props.prompt, localTg.current);
+                        if (ref && !haveLocalTg) {
+                            setHaveLocalTg(true);
                         }
                     }}
                 />
@@ -111,7 +129,17 @@ let originalPromptHtml = "";
 
 // prompt is the hidden element in the page where we store the 'word'.
 // tg is the copy of the prompt TG that we make as part of the dialog.
-const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
+// This method initializes it and captures a lot of other stuff we want to
+// save from the initial state of the page, including the positions where
+// we should put letters and the state we should restore if cancelled.
+// It's important (but I don't know how to ensure it) that when switching to
+// a new language, this method is called before adjustDraggablesForLanguage
+// is called by anything else, so that the positions we use as a starting point
+// for the new language are based on the letters that were previously visible.
+// At present, calling the dialog happens quite early in bootstrapping the page,
+// while the only other call to adjustDraggablesForLanguage is in from code
+// in the dragActivityTool's newPageReady, which is called later.
+const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     const promptTg = prompt.getElementsByClassName(
         "bloom-translationGroup"
     )[0] as HTMLElement;
@@ -178,6 +206,34 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
     originalContents = [];
     originalTargetContents = [];
     draggableX = draggableY = targetX = targetY = 1000000; // will get reduced to minimums
+    const draggables = Array.from(
+        page.querySelectorAll("[data-bubble-id]")
+    ) as HTMLElement[];
+    const first = draggables[0];
+    const firstEditable = first.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on"
+    )[0];
+    if (firstEditable && !firstEditable.getAttribute("data-bubble-alternate")) {
+        // We are showing this language for the first time. We want to move the first letter to the
+        // left-most position, since it will soon be the only one visible, and we dont' want to mess
+        // up the starting place for new letters.
+        const minx = Math.min(
+            ...draggables
+                .filter(
+                    (d, index) =>
+                        index === 0 ||
+                        !d.classList.contains("bloom-unused-in-lang")
+                )
+                .map(d => d.offsetLeft)
+        );
+        first.style.left = minx + "px";
+        // remember it to make sure we never take this branch again for this language
+        BubbleManager.saveStateOfOverlayAsCurrentLangAlternate(first);
+    }
+    // Adjust which targets are visible based on the current language.
+    // Must be after the adjustment of the first draggable, since it may affect which ones are unused.
+    adjustDraggablesForLanguage(prompt.closest(".bloom-page") as HTMLElement);
+    // Capture the state we want to restore on Cancel and the start positions for draggable and target rows
     for (let i = 0; i < originalDraggables.length; i++) {
         originalClassLists.push(
             originalDraggables[i].getAttribute("class") ?? ""
@@ -189,24 +245,42 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
             continue;
         }
         const target = getTarget(originalDraggables[i]);
-        if (target) {
-            targetX = Math.min(targetX, target.offsetLeft);
-            targetY = Math.min(targetY, target.offsetTop);
+        if (target && target.offsetLeft < targetX) {
+            // capture a starting place for new rows of targets from the left-most target.
+            // This allows just one to be dragged to control them all; otherwise, moving the
+            // row down would be difficult since they would all have to be moved.
+            targetX = target.offsetLeft;
+            targetY = target.offsetTop;
         }
         originalTargetStyles.push(target?.getAttribute("style") ?? "");
         originalTargetContents.push(target?.innerHTML ?? "");
-
-        draggableX = Math.min(draggableX, originalDraggables[i].offsetLeft);
-        draggableY = Math.min(draggableY, originalDraggables[i].offsetTop);
+        if (originalDraggables[i].offsetLeft < draggableX) {
+            draggableX = originalDraggables[i].offsetLeft;
+            draggableY = originalDraggables[i].offsetTop;
+        }
     }
     const setDraggableText = (draggable: HTMLElement, text: string) => {
         const ed = draggable.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
-        const p = ed.getElementsByTagName("p")[0];
-        // Ones after the number of letters we have should be empty. This helps with
-        // automatically deciding which ones should be visible based on language.
+        const p = ed?.getElementsByTagName("p")?.[0];
+        // one use of this method is to clear the text, in which case, it's fine
+        // for there to be no p present to clear. But if we're trying to set
+        // text, there needs to be one.
+        if (!p) {
+            console.assert(
+                !text,
+                "Expected to set a non-empty string, but found no paragraph"
+            );
+            return;
+        }
         p.textContent = text ?? "";
+        // And we need to make sure the blank class is set correctly, otherwise,
+        // we can get shadow English letters in bubbles that have content in the
+        // current language. This is usually handled by a mutation observer, but
+        // it doesn't get attached to extra letters we create here. Their content
+        // mainly gets changed by this method, so I think this is good enough.
+        DragActivityTool.setBlankClass(ed);
     };
     // Set up an observer to keep the draggables in sync with the prompt during typing.
     const promptObserver = new MutationObserver(() => {
@@ -252,6 +326,9 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 );
                 paras.forEach(p => {
                     p.textContent = "";
+                    DragActivityTool.setBlankClass(
+                        p.parentElement as HTMLElement
+                    );
                 });
                 lastDraggable.parentElement?.appendChild(newDraggable);
                 makeTargetForBubble(newDraggable);
