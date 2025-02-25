@@ -5704,6 +5704,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Use for comprehension testing on devices.</source>
         <note>ID: TemplateBooks.PageDescription.Bloom Reader Quiz</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Top text in local language, bottom text in national language.</source>
+        <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true">
         <source xml:lang="en">A blank page that allows you to add items.</source>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
@@ -6030,6 +6034,10 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
         <source xml:lang="en">Picture in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Bilingual &amp; Picture in Middle</source>
+        <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
         <source xml:lang="en">Picture on Bottom</source>
