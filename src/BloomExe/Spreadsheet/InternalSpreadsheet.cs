@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Bloom.Utils;
 using Bloom.web;
@@ -42,10 +43,45 @@ namespace Bloom.Spreadsheet
 
         public const string BlankContentIndicator = "[blank]";
 
-        public const string BookTitleRowLabel = "[bookTitle]";
-        public const string CoverImageRowLabel = "[coverImage]";
+        public const string BookTitleRowLabel = "[book title]";
+        public const string CoverImageRowLabel = "[cover image]";
         public const string PageContentRowLabel = "[page content]";
         public const string ImageDescriptionRowLabel = "[image description]";
+
+        internal static string MapRowLabelToDataBookLabel(string rowTypeLabel)
+        {
+            var label = rowTypeLabel.Substring(1, rowTypeLabel.Length - 2); // remove brackets
+            while (label.Contains(" "))
+            {
+                var match = Regex.Match(label, @"( )([a-z0-9])");
+                if (match.Success)
+                    label = label.Replace(match.Value, match.Groups[2].Value.ToUpper());
+                else
+                    break;
+            }
+            if (label == "insideFrontCover")
+                return "insideFontCover"; // typo in the data-book label that we live with
+            return label;
+        }
+
+        internal static string MapDataBookLabelToRowLabel(string dataBookLabel)
+        {
+            var trimmedLabel = dataBookLabel.Trim();
+            while (Regex.IsMatch(trimmedLabel, @"([a-z][A-Z0-9]|[0-9][A-Z])"))
+            {
+                var match = Regex.Match(trimmedLabel, @"[^ ]([A-Z0-9])");
+                if (match.Success)
+                    trimmedLabel = trimmedLabel.Replace(
+                        match.Groups[1].Value,
+                        " " + match.Groups[1].Value.ToLower()
+                    );
+                else
+                    break;
+            }
+            if (trimmedLabel == "inside font cover") // typo in the data-book label that we live with
+                return "[inside front cover]";
+            return "[" + trimmedLabel + "]";
+        }
 
         private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
         public SpreadsheetExportParams Params = new SpreadsheetExportParams();

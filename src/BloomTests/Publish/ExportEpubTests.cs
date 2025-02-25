@@ -2801,6 +2801,38 @@ namespace BloomTests.Publish
                 .HasSpecifiedNumberOfMatchesForXpath($"//aside/p/{elementName}", 1);
             AssertThatXmlIn.String(page2Data).HasNoMatchForXpath("//aside/div");
         }
+
+        [Test]
+        public void EpubOmitsAiGeneratedText()
+        {
+            var book = SetupBookLong(
+                "Is this really a cat?",
+                "en",
+                extraEditDivClasses: "bloom-visibility-code-on",
+                extraContent: @"<div class='bloom-editable bloom-visibility-code-on' lang='es-x-ai-google' contenteditable='true'>
+<p>¿Es esto realmente un gato?</p>
+</div>",
+                optionalDataDiv: @"<div id='bloomDataDiv'>
+					<div data-book='contentLanguage1' lang='*'>en</div>
+					<div data-book='contentLanguage2' lang='*'>es-x-ai-google</div>
+					<div data-book='bookTitle' lang='en'>My Book</div>
+                    <div data-book='bookTitle' lang='es-x-ai-google'>Mi Libro</div>
+				</div>"
+            );
+            MakeEpub("output", "OmitsAiGeneratedText", book);
+
+            GetPageOneData();
+            AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@lang='en']");
+            Assert.That(_page1Data, Does.Contain("My Book"));
+            AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//div[@lang='es-x-ai-google']");
+            Assert.That(_page1Data, Does.Not.Contain("Mi Libro"));
+
+            var page2Data = GetPageNData(2);
+            AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//div[@lang='en']");
+            Assert.That(page2Data, Does.Contain("Is this really a cat?"));
+            AssertThatXmlIn.String(page2Data).HasNoMatchForXpath("//div[@lang='es-x-ai-google']");
+            Assert.That(page2Data, Does.Not.Contain("¿Es esto realmente un gato?"));
+        }
     }
 
     class EpubMakerAdjusted : EpubMaker

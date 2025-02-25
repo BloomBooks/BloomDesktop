@@ -142,6 +142,7 @@ namespace Bloom.CLI
             string zippedBloomPubOutputPath = parameters.BloomPubOutputPath;
             string unzippedBloomDigitalOutputPath = parameters.BloomDigitalOutputPath;
             string zippedBloomSourceOutputPath = parameters.BloomSourceOutputPath;
+            string jsonTextsOutputPath = parameters.JsonTextsOutputPath;
 
             bool isBloomDOrBloomDigitalRequested =
                 !String.IsNullOrEmpty(zippedBloomPubOutputPath)
@@ -163,6 +164,10 @@ namespace Bloom.CLI
                     parameters.Creator,
                     zippedBloomSourceOutputPath
                 );
+            }
+            if (!String.IsNullOrEmpty(jsonTextsOutputPath))
+            {
+                exitCode |= CreateJsonTextsArtifact(jsonTextsOutputPath);
             }
 
             Control control = new Control();
@@ -232,6 +237,13 @@ namespace Bloom.CLI
             {
                 return CreateArtifactsExitCode.UnhandledException;
             }
+            return CreateArtifactsExitCode.Success;
+        }
+
+        private static CreateArtifactsExitCode CreateJsonTextsArtifact(string jsonTextsOutputPath)
+        {
+            var json = _book.OurHtmlDom.GetTextsJson();
+            RobustFile.WriteAllText(jsonTextsOutputPath, json);
             return CreateArtifactsExitCode.Success;
         }
 
@@ -454,6 +466,13 @@ namespace Bloom.CLI
             Required = false
         )]
         public string BloomSourceOutputPath { get; set; }
+
+        [Option(
+            "jsonTextsOutputPath",
+            HelpText = "Output destination path in which to place a json file containing all of the texts in the book",
+            Required = false
+        )]
+        public string JsonTextsOutputPath { get; internal set; }
 
         // obsolete: will be removed when Harvester has been updated to use the new option.
         [Option(
