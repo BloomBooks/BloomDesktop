@@ -106,5 +106,26 @@ namespace BloomTests.Book
             var json = dom.GetTextsJson();
             Assert.That(json, Is.EqualTo(@"[{""en"":""Not empty""}]"));
         }
+
+        [Test]
+        public void GetBookJson_ContainsBubbleLabel_BubbleTextNotIncluded()
+        {
+            var dom = new HtmlDom(
+                @"<html><body>
+            <div class=""bloom-translationGroup"" data-default-languages=""N1"">
+                <div class=""bloom-editable Inside-Back-Cover-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"" lang=""en"" contenteditable=""true"" data-book=""insideBackCover"">
+                    <label class=""bubble"">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</label>
+                </div>
+            </div>
+                    <div class='bloom-translationGroup'>
+                        <div class='bloom-editable' lang='en'>Hello</div>
+                        <div class='bloom-editable' lang='es'>Hola</div>
+                    </div>
+                </body></html>"
+            );
+
+            var json = dom.GetTextsJson();
+            Assert.That(json, Is.EqualTo(@"[{""en"":""Hello"",""es"":""Hola""}]"));
+        }
     }
 }

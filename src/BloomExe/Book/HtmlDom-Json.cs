@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Bloom.SafeXml;
 
 namespace Bloom.Book
@@ -37,7 +38,10 @@ namespace Bloom.Book
                 )
                 {
                     string lang = editable.GetAttribute("lang");
-                    string text = editable.InnerText.Trim();
+                    // Select all text nodes that are not descendants of label elements.
+                    // i.e. filter out bubble text.
+                    var textNodes = editable.SafeSelectNodes(".//text()[not(ancestor::label)]");
+                    string text = string.Join("", textNodes.Select(n => n.InnerText)).Trim();
                     if (!string.IsNullOrEmpty(lang) && !string.IsNullOrEmpty(text))
                     {
                         textDict[lang] = text;
