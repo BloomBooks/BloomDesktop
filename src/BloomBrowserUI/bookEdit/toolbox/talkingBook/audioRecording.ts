@@ -244,6 +244,8 @@ export default class AudioRecording implements IAudioRecorder {
         $("#audio-split")
             .off()
             .click(async e => {
+                const mediaPlayer = this.getMediaPlayer();
+                mediaPlayer.pause();
                 getEditTabBundleExports().showAdjustTimingsDialogFromEditViewFrame(
                     this.split,
                     this.editTimingsFileAsync,
@@ -3632,19 +3634,11 @@ export default class AudioRecording implements IAudioRecorder {
             this.haveAudio = false;
         }
 
-        const currentPlaybackMode = this.getCurrentPlaybackMode();
         if (
             doesElementAudioExist &&
             this.recordingMode === RecordingMode.TextBox
         ) {
-            if (
-                currentPlaybackMode === RecordingMode.TextBox &&
-                !this.isInSoftSplitMode()
-            ) {
-                this.setEnabledOrExpecting("split", expectedVerb);
-            } else {
-                this.setStatus("split", Status.DisabledUnlessHover);
-            }
+            this.setEnabledOrExpecting("split", expectedVerb);
         } else {
             this.setStatus("split", Status.Disabled);
         }
@@ -3936,19 +3930,6 @@ export default class AudioRecording implements IAudioRecorder {
             .done(localizedMessage => {
                 toastr.error(localizedMessage);
             });
-    }
-
-    // Soft Split mode: Split is done by noting the start/end times of each sentence, but the actual audio files is not actually physically split. (e.g. if opening books created in 4.6+)
-    // Hard Split mode: Perform split by physically splitting a single audio file into multiple audio files, one per sentence. (e.g. if opening books created in 4.5)
-    public isInSoftSplitMode(): boolean {
-        const currentTextBox = this.getCurrentTextBox();
-        if (
-            currentTextBox &&
-            currentTextBox.getAttribute(kEndTimeAttributeName)
-        ) {
-            return true;
-        }
-        return false;
     }
 
     // Finds the current text box, gets its text, split into sentences, then return each sentence with a UUID.
