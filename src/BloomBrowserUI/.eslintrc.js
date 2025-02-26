@@ -56,6 +56,7 @@ module.exports = {
         "@typescript-eslint/no-inferrable-types": "off", // not worth worrying about (not even convinced it's a problem at all)
         "@typescript-eslint/triple-slash-reference": "off", // a lot of our legacy code still uses this
         "react/no-unescaped-entities": "off", // Complains about some special chars that sort of work, but due to the burden that enocded chars present to localizers, we'd prefer not to encode them if not necessary.
-        "react/prop-types": "off" // Seems to require validation on the props parameter itself, but Typescript can already figure out the types through annotations in different places, seems unnecessary
+        "react/prop-types": "off", // Seems to require validation on the props parameter itself, but Typescript can already figure out the types through annotations in different places, seems unnecessary
+        "no-irregular-whitespace": "off"
     }
 };

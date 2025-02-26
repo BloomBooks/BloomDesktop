@@ -117,7 +117,7 @@
         <note>ID: Settings.Enterprise.None</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode" approved="yes">
-        <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
+        <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. </source>
         <target xml:lang="pbu" state="final">د بلوم په زاړه نسخه کې، دې پروژې **%0 ** کارول شوې. د دې کارولو ته دوام ورکولو لپاره تاسو اړتیا لرئ د اوسني ګډون کوډ داخل کړئ. د SIL برڼډ لپاره کوډونه موندل کیدی شي (here](1%]. د نور ګډون لپاره، د خپلې پروژې مدیر سره اړیکه ونیسئ.</target>
         <note>ID: Settings.Enterprise.NeedsCode</note>
       </trans-unit>
