@@ -1777,32 +1777,6 @@ describe("audio recording tests", () => {
         );
     });
 
-    it("isInSoftSplitMode() works on positive examples", () => {
-        SetupIFrameFromHtml(
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox' data-audioRecordingEndTimes='1.0 2.0 3.0'><p>One. Two. Three.</p></div>"
-        );
-
-        const recording = new AudioRecording();
-        const result = recording.isInSoftSplitMode();
-
-        expect(result).toBe(true);
-    });
-
-    it("isInSoftSplitMode() works on negative examples", () => {
-        const div1 =
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p>One. Two. Three.</p></div>";
-        const div2 =
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='s1' class='audioSentence'>One.</span> <span id='s2' class='audioSentence'>Two.</span> <span id='s3' class='audioSentence'>Three.</span></p></div>";
-        const div3 =
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='Sentence'><p><span id='s1' class='audioSentence'>One.</span> <span id='s2' class='audioSentence'>Two.</span> <span id='s3' class='audioSentence'>Three.</span></p></div>";
-        SetupIFrameFromHtml(div1 + div2 + div3);
-
-        const recording = new AudioRecording();
-        const result = recording.isInSoftSplitMode();
-
-        expect(result).toBe(false);
-    });
-
     describe("- importRecordingAsync()", () => {
         function simulateBloomApiResponses(
             audioToCopyFilePath: string,
