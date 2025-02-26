@@ -6149,7 +6149,7 @@
         <note>ID: Settings.Enterprise.LearnMore</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
+        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
         <target xml:lang="fr" state="final">Ce projet a déjà utilisé **%0**. Pour continuer à l'utiliser, il faut saisir un code d'abonnement actuel. On peut trouver les codes pour les marques SIL [here](%1). Pour d'autres abonnements, veuillez contacter l'administrateur de votre projet.</target>
         <note>ID: Settings.Enterprise.NeedsCode</note>
       </trans-unit>
