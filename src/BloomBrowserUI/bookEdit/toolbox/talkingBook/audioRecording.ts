@@ -244,6 +244,8 @@ export default class AudioRecording implements IAudioRecorder {
         $("#audio-split")
             .off()
             .click(async e => {
+                const mediaPlayer = this.getMediaPlayer();
+                mediaPlayer.pause();
                 getEditTabBundleExports().showAdjustTimingsDialogFromEditViewFrame(
                     this.split,
                     this.editTimingsFileAsync,
@@ -3632,19 +3634,11 @@ export default class AudioRecording implements IAudioRecorder {
             this.haveAudio = false;
         }
 
-        const currentPlaybackMode = this.getCurrentPlaybackMode();
         if (
             doesElementAudioExist &&
             this.recordingMode === RecordingMode.TextBox
         ) {
-            if (
-                currentPlaybackMode === RecordingMode.TextBox &&
-                !this.isInSoftSplitMode()
-            ) {
-                this.setEnabledOrExpecting("split", expectedVerb);
-            } else {
-                this.setStatus("split", Status.DisabledUnlessHover);
-            }
+            this.setEnabledOrExpecting("split", expectedVerb);
         } else {
             this.setStatus("split", Status.Disabled);
         }

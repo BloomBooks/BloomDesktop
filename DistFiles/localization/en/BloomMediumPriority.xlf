@@ -304,7 +304,7 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra" sil:dynamic="true" translate="no">
-        <source xml:lang="en">If Bloom's pause-based timing guesses aren't good enough, you can try this text-based tool. This will remove any adjustments you have made. See [here for more info].</source>
+        <source xml:lang="en">If Bloom’s timing guesses based on pauses aren’t accurate enough, you can use this more advanced tool instead. Keep in mind that this will erase any changes you’ve made. Check [here] for more details.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra</note>
         <note>The part inside square brackets will become a link.</note>
       </trans-unit>
