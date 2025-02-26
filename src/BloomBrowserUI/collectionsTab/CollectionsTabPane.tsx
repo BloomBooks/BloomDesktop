@@ -35,6 +35,7 @@ import { Link } from "../react_components/link";
 import { ForumInvitationDialogLauncher } from "../react_components/forumInvitationDialog";
 import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
 import { BooksOnBlorgProgressBar } from "../booksOnBlorg/BooksOnBlorgProgressBar";
+import { SubscriptionStatus } from "./SubscriptionStatus";
 
 const kResizerSize = 10;
 
@@ -436,6 +437,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             margin: 10px;
                         `}
                     >
+                        <SubscriptionStatus />
                         <BooksOnBlorgProgressBar />
                         <h1>
                             {collections[0].name}

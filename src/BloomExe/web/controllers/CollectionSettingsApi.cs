@@ -22,6 +22,7 @@ namespace Bloom.web.controllers
     public class CollectionSettingsApi
     {
         public const string kApiUrlPart = "settings/";
+        private const string kExpiryDateForDeprecatedBrandings = "2025-07-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
 
         // These options must match the strings used in accessibileImage.tsx
         public enum EnterpriseStatus
@@ -33,7 +34,7 @@ namespace Bloom.web.controllers
 
         // These are static so they can easily be set by the collection settings dialog using SetSubscriptionCode()
         private static string SubscriptionCode { get; set; }
-        private static DateTime _enterpriseExpiry = DateTime.MinValue;
+        private static DateTime _subscriptionExpiry = DateTime.MinValue;
 
         // True if the part of the subscription code that identifies the branding is one this version of Bloom knows about
         private static bool _knownBrandingInSubscriptionCode = false;
@@ -176,7 +177,7 @@ namespace Bloom.web.controllers
                     {
                         var requestData = DynamicJson.Parse(request.RequiredPostJson());
                         SubscriptionCode = requestData.subscriptionCode;
-                        _enterpriseExpiry = GetExpirationDate(SubscriptionCode);
+                        _subscriptionExpiry = GetExpirationDate(SubscriptionCode);
                         var newBranding = GetBrandingFromCode(SubscriptionCode);
                         var oldBranding = !string.IsNullOrEmpty(_collectionSettings.InvalidBranding)
                             ? _collectionSettings.InvalidBranding
@@ -190,7 +191,7 @@ namespace Bloom.web.controllers
                             && newBranding != oldBranding
                         )
                             ResetBookshelf();
-                        if (_enterpriseExpiry < DateTime.Now) // expired or invalid
+                        if (_subscriptionExpiry < DateTime.Now) // expired or invalid
                         {
                             BrandingChangeHandler("Default", null);
                         }
@@ -219,7 +220,7 @@ namespace Bloom.web.controllers
                         branding = "Local-Community";
                     else if (_enterpriseStatus == EnterpriseStatus.Subscription)
                         branding =
-                            _enterpriseExpiry == DateTime.MinValue
+                            _subscriptionExpiry == DateTime.MinValue
                                 ? ""
                                 : GetBrandingFromCode(SubscriptionCode);
                     var html = GetSummaryHtml(branding);
@@ -228,10 +229,15 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "enterpriseExpiry",
+                kApiUrlPart + "subscriptionExpiration",
                 request =>
                 {
-                    if (_enterpriseExpiry == DateTime.MinValue)
+                    if (_enterpriseStatus == EnterpriseStatus.Community)
+                    {
+                        request.ReplyWithText(kExpiryDateForDeprecatedBrandings);
+                        return;
+                    }
+                    if (_subscriptionExpiry == DateTime.MinValue)
                     {
                         if (SubscriptionCodeLooksIncomplete(SubscriptionCode))
                             request.ReplyWithText("incomplete");
@@ -243,13 +249,21 @@ namespace Bloom.web.controllers
                         // O is ISO 8601, the only format I can find that C# ToString() can produce and JS is guaranteed to parse.
                         // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
                         request.ReplyWithText(
-                            _enterpriseExpiry.ToString("O", CultureInfo.InvariantCulture)
+                            _subscriptionExpiry.ToString("O", CultureInfo.InvariantCulture)
                         );
                     }
                     else
                     {
                         request.ReplyWithText("unknown");
                     }
+                },
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "brandingProjectKey",
+                request =>
+                {
+                    request.ReplyWithText(_collectionSettings.BrandingProjectKey);
                 },
                 false
             );
@@ -413,6 +427,15 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "languageNames",
                 HandleGetLanguageNames,
+                false
+            );
+            // // a "deprecated" subscription is one that used to be eternal but is now being phased out
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "deprecatedBrandingsExpiryDate",
+                request =>
+                {
+                    request.ReplyWithText(kExpiryDateForDeprecatedBrandings);
+                },
                 false
             );
             apiHandler.RegisterEndpointHandler(
@@ -728,6 +751,9 @@ namespace Bloom.web.controllers
         {
             if (input == null)
                 return DateTime.MinValue;
+
+            if (input == "Local-Community")
+                return DateTime.Parse(kExpiryDateForDeprecatedBrandings);
             var parts = input.Split('-');
             if (parts.Length < 3)
                 return DateTime.MinValue;
@@ -745,7 +771,12 @@ namespace Bloom.web.controllers
             if ((Math.Floor(Math.Sqrt(datePart)) + checkSum) % 10000 != combinedChecksum)
                 return DateTime.MinValue;
             int dateNum = datePart + 40000; // days since Dec 30 1899
-            return new DateTime(1899, 12, 30) + TimeSpan.FromDays(dateNum);
+            var date = new DateTime(1899, 12, 30) + TimeSpan.FromDays(dateNum);
+
+            // At one time there were some subscriptions which never ended. Those have been retired.
+            if (date.Year == 3000)
+                return DateTime.Parse(kExpiryDateForDeprecatedBrandings);
+            return date;
         }
 
         // From the same sort of code extract the project name,
@@ -780,7 +811,7 @@ namespace Bloom.web.controllers
         public static void SetSubscriptionCode(string code, bool knownCode, EnterpriseStatus status)
         {
             SubscriptionCode = code;
-            _enterpriseExpiry = GetExpirationDate(code);
+            _subscriptionExpiry = GetExpirationDate(code);
             _knownBrandingInSubscriptionCode = knownCode;
             _enterpriseStatus = status;
         }
