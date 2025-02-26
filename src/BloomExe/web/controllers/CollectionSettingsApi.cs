@@ -22,7 +22,7 @@ namespace Bloom.web.controllers
     public class CollectionSettingsApi
     {
         public const string kApiUrlPart = "settings/";
-        private const string kExpiryDateForDeprecatedBrandings = "2025-01-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
+        private const string kExpiryDateForDeprecatedBrandings = "2025-07-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
 
         // These options must match the strings used in accessibileImage.tsx
         public enum EnterpriseStatus
