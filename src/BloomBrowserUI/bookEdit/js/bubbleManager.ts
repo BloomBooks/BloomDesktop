@@ -610,6 +610,31 @@ export class BubbleManager {
         }
     }
 
+    public static saveStateOfOverlayAsCurrentLangAlternate(
+        top: HTMLElement,
+        overlayLangIn?: string
+    ) {
+        const overlayLang =
+            overlayLangIn ?? GetSettings().languageForNewTextBoxes;
+
+        const editable = Array.from(
+            top.getElementsByClassName("bloom-editable")
+        ).find(e => e.getAttribute("lang") === overlayLang);
+        if (editable) {
+            const bubbleData = top.getAttribute("data-bubble") ?? "";
+            const bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
+            const alternate = {
+                lang: overlayLang,
+                style: top.getAttribute("style") ?? "",
+                tails: bubbleDataObj.tails as object[]
+            };
+            editable.setAttribute(
+                "data-bubble-alternate",
+                JSON.stringify(alternate).replace(/"/g, "`")
+            );
+        }
+    }
+
     // Save the current state of things so that we can later position everything
     // correctly for this language, even if in the meantime we change bubble
     // positions for other languages.
@@ -617,24 +642,12 @@ export class BubbleManager {
         const overlayLang = GetSettings().languageForNewTextBoxes;
         Array.from(
             container.getElementsByClassName("bloom-textOverPicture")
-        ).forEach(top => {
-            const editable = Array.from(
-                top.getElementsByClassName("bloom-editable")
-            ).find(e => e.getAttribute("lang") === overlayLang);
-            if (editable) {
-                const bubbleData = top.getAttribute("data-bubble") ?? "";
-                const bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
-                const alternate = {
-                    lang: overlayLang,
-                    style: top.getAttribute("style") ?? "",
-                    tails: bubbleDataObj.tails as object[]
-                };
-                editable.setAttribute(
-                    "data-bubble-alternate",
-                    JSON.stringify(alternate).replace(/"/g, "`")
-                );
-            }
-        });
+        ).forEach((top: HTMLElement) =>
+            BubbleManager.saveStateOfOverlayAsCurrentLangAlternate(
+                top,
+                overlayLang
+            )
+        );
         // Record that the current comical-generated SVG is for this language.
         const currentSvg = container.getElementsByClassName(
             "comical-generated"
