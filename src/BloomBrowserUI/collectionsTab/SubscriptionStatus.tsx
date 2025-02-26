@@ -10,6 +10,7 @@ import { Link } from "@mui/material";
 import { BoxWithIconAndText } from "../react_components/boxes";
 import { useL10n } from "../react_components/l10nHooks";
 import { kBloomBlue } from "../bloomMaterialUITheme";
+import { Markdown } from "../react_components/markdown";
 export const SubscriptionStatus: React.FunctionComponent<{
     overrideSubscriptionExpiration?: string;
     minimalUI?: boolean;
@@ -123,20 +124,17 @@ const ExpiringSubscriptionStatus: React.FunctionComponent<{
         >
             <div>
                 {props.message}
-                <br />
-                Please{" "}
-                <Link
-                    href="mailto:subscriptions@bloomlibrary.org"
-                    sx={{
-                        textDecorationColor: "black",
-                        "&:hover": {
-                            textDecorationColor: "black"
+                <Markdown
+                    l10nKey="SubscriptionStatus.RenewalMessage"
+                    l10nParam0={"mailto://subscriptions@bloomlibrary.org"}
+                    css={css`
+                        p {
+                            margin: 0; // markdown wraps everything in a p tag which adds a big margin we don't need
                         }
-                    }}
+                    `}
                 >
-                    contact us
-                </Link>{" "}
-                to renew.
+                    Please [contact us](%1) to renew.
+                </Markdown>
             </div>
         </BoxWithIconAndText>
     );

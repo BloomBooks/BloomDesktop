@@ -340,6 +340,16 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                             className="communityRadio"
                             l10nKey="Settings.Enterprise.Community"
                             value="Community"
+                            // Disable if we are at or past the date for deprecating legacy subscriptions
+                            // Compare only the date parts (year, month, day) without time or timezone
+                            disabled={
+                                this.state.deprecatedBrandingsExpiryDate
+                                    ? new Date(
+                                          this.state.deprecatedBrandingsExpiryDate
+                                      ).setHours(0, 0, 0, 0) <=
+                                      new Date().setHours(0, 0, 0, 0)
+                                    : false
+                            }
                         >
                             Funded by the local community only
                         </Radio>
