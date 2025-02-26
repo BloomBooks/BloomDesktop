@@ -163,7 +163,23 @@ const initializeTg = (prompt: HTMLElement, tg: HTMLElement | null) => {
             true
         );
     }
-    editable.focus();
+    // The prompt looks strange and the user can't type until we actually get focus onto the
+    // editable. For some reason, simply calling focus doesn't always work.
+    const tryToFocus = () => {
+        if (
+            !editable.contains(document.activeElement) &&
+            // I don't know how this can be false, but in my testing it often was and this loop
+            // could become infinite since it's not possible to focus something that's not in
+            // the document. Possibly something to do with the dialog being repeatedly
+            // initialized, a problem I fixed in a parallel PR.
+            document.contains(editable)
+        ) {
+            editable.focus();
+            // keep trying to focus it until it is. Usually only takes a couple of tries at most.
+            setTimeout(tryToFocus, 100);
+        }
+    };
+    tryToFocus();
 
     // From here on is specific to the letter drag activity.
     // capture where the top left draggable and target are (before we add or remove any).
