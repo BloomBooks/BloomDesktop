@@ -6147,7 +6147,7 @@
         <note>ID: Settings.Enterprise.LearnMore</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
+        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
         <target xml:lang="pt-PT" state="final">Em uma versão mais antiga do Bloom, este projeto usou **%0**. Para continuar usando isso você precisará inserir um código de assinatura atual. Códigos para as marcas de SIL podem ser encontrados [aqui](%1). Para outras assinaturas, entre em contato com o administrador do projeto.</target>
         <note>ID: Settings.Enterprise.NeedsCode</note>
       </trans-unit>

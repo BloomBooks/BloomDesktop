@@ -5405,7 +5405,7 @@ Do you want to go ahead?</note>
         <note>ID: Settings.Enterprise.LearnMore</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true">
-        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
+        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
         <note>ID: Settings.Enterprise.NeedsCode</note>
         <note>**%0** should be kept. It will become the branding name. Keep something like [here](%1), but replace the word "here" as appropriate. This will become a hyperlink that launches a web page in a browser.</note>
       </trans-unit>
@@ -6093,6 +6093,26 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Setup</source>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
+        <source xml:lang="en">Your {0} subscription expires on {1}.</source>
+        <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
+        <note>{0} is the branding project key, {1} is the formatted expiration date</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.ExpiredMessage">
+        <source xml:lang="en">Your {0} subscription expired on {1}.</source>
+        <note>ID: SubscriptionStatus.ExpiredMessage</note>
+        <note>{0} is the branding project key, {1} is the formatted expiration date</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.DefaultMessage">
+        <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
+        <note>ID: SubscriptionStatus.DefaultMessage</note>
+        <note>{0} is the branding project key, {1} is the formatted expiration date</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.RenewalMessage">
+        <source xml:lang="en">Please [contact us](%0) to renew.</source>
+        <note>ID: SubscriptionStatus.RenewalMessage</note>
+        <note>Make sure to keep the brackets around your translation of "Contact Us" and do not change the (%0) part. This will become a hyperlink that opens an emaili program to the correct email address.</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
         <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>

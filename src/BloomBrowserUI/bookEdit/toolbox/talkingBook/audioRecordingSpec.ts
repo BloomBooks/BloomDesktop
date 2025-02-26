@@ -1901,16 +1901,18 @@ describe("audio recording tests", () => {
             elt1.getElementsByClassName("audio-sentence")
         );
         expect(sentences.length).toBe(3);
-        const ids = sentences.map(s => s.getAttribute("id"));
-        ids.forEach(id => expect(id?.length).toBeGreaterThan(35));
+        const ids: Array<any> = sentences.map((s: HTMLElement) =>
+            s.getAttribute("id")
+        );
+        ids.forEach((id: any) => expect(id?.length).toBeGreaterThan(35));
         expect(ids[0]).not.toBe(ids[1]);
         expect(ids[0]).not.toBe(ids[2]);
         expect(ids[1]).not.toBe(ids[2]);
 
-        sentences.forEach(s => expect(s.parentElement).toBe(elt1));
+        sentences.forEach((s: any) => expect(s.parentElement).toBe(elt1));
         const colorSpans = Array.from(elt1.getElementsByTagName("span")).filter(
-            s => s.getAttribute("style") === "color:#ff1616;"
-        );
+            (s: any) => s.getAttribute("style") === "color:#ff1616;"
+        ) as HTMLElement[];
         expect(colorSpans.length).toBe(5);
         for (let i = 0; i < 3; i++) {
             expect(colorSpans[2 * i].parentElement).toBe(sentences[i]);
