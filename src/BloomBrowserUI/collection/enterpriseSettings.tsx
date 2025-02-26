@@ -12,6 +12,7 @@ import "./enterpriseSettings.less";
 import { FontAwesomeIcon } from "../bloomIcons";
 import { tabMargins } from "./commonTabSettings";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
+import { SubscriptionStatus } from "../collectionsTab/SubscriptionStatus";
 
 // values of controlState:
 // None: the None button is selected.
@@ -47,6 +48,7 @@ interface IState {
     // the saved branding appears to be a legacy one. Gets inserted into
     // the message and the code box.
     legacyBrandingName: string;
+    deprecatedBrandingsExpiryDate: string; // date after which deprecated brandings expire
 }
 
 // This class implements the Bloom Enterprise tab of the Settings dialog.
@@ -58,10 +60,15 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         subscriptionSummary: "",
         hasSubscriptionFiles: false,
         controlState: "None",
-        legacyBrandingName: ""
+        legacyBrandingName: "",
+        deprecatedBrandingsExpiryDate: ""
     };
 
     public componentDidMount() {
+        get("settings/deprecatedBrandingsExpiryDate", result => {
+            this.setState({ deprecatedBrandingsExpiryDate: result.data });
+        });
+
         get("settings/enterpriseStatus", result => {
             const status = result.data;
             get("settings/subscriptionCode", result => {
@@ -358,6 +365,15 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                         None. Enterprise features will be unavailable.
                     </Radio>
                 </RadioGroup>
+                <br />
+                <SubscriptionStatus
+                    overrideSubscriptionExpiration={
+                        this.state.enterpriseStatus === "None"
+                            ? ""
+                            : this.state.subscriptionExpiry?.toISOString()
+                    }
+                    minimalUI
+                />
             </div>
         );
     }
@@ -436,14 +452,16 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             this.setState({
                 controlState: "Community",
                 subscriptionCode: code,
-                subscriptionExpiry: null
+                subscriptionExpiry: new Date(
+                    this.state.deprecatedBrandingsExpiryDate
+                )
             });
             get("settings/enterpriseSummary", result => {
                 this.setSummary(result.data);
             });
             return;
         }
-        get("settings/enterpriseExpiry", result => {
+        get("settings/subscriptionExpiration", result => {
             if (result.data === "unknown") {
                 // Valid-looking code, but not one this version knows about.
                 this.setState({
