@@ -8,8 +8,9 @@ namespace BloomTests.web.controllers
     {
         [TestCase("Acme-003506-0487", 2019, 2, 10)]
         [TestCase("Quite-Phony-003098-4247", 2017, 12, 29)]
-        [TestCase("SOME-FAKE-361769-3038", 3000, 1, 1)]
-        [TestCase("Somevery long fake thing-361769-9523", 3000, 1, 1)]
+        [TestCase("SOME-FAKE-361769-3038", 2025, 7, 1)] // this number must correspond to kExpiryDateForDeprecatedBrandings
+        [TestCase("Somevery long fake thing-361769-9523", 2025, 7, 1)] // this number must correspond to kExpiryDateForDeprecatedBrandings
+        [TestCase("Local-Community", 2025, 7, 1)] // this number must correspond to kExpiryDateForDeprecatedBrandings
         public void GetExpirationDate_Valid_ReturnsCorrectDate(
             string input,
             int year,
