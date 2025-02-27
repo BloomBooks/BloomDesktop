@@ -1,5 +1,5 @@
-import React = require("react");
-import ReactDOM = require("react-dom");
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import { BloomMessageBox, showBloomMessageBox } from "./BloomMessageBox";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";

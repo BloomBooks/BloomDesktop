@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import {
     kBloomBlue,
     kPanelBackground,
@@ -126,7 +126,7 @@ export const CheckoutNeededScreen: React.FunctionComponent<{
     );
 };
 
-export const PublishTabPane: React.FunctionComponent<{}> = () => {
+export const PublishTabPane: React.FunctionComponent = () => {
     const kWaitForUserToChooseTabIndex = 5;
 
     const [publishTabReady, setPublishTabReady] = React.useState(false);

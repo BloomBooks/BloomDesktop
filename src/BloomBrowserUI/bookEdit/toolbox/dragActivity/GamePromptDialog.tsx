@@ -22,7 +22,7 @@ import {
     DragActivityTool,
     makeTargetForBubble
 } from "./dragActivityTool";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { BubbleManager, theOneBubbleManager } from "../../js/bubbleManager";
 import { Bubble } from "comicaljs";

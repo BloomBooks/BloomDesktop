@@ -690,7 +690,7 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
     }
 }
 
-function getFileLengthString(bytes): String {
+function getFileLengthString(bytes): string {
     const units = ["bytes", "kb", "mb"];
     for (let i = units.length; i-- > 0; ) {
         const unit = Math.pow(1024, i);

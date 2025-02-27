@@ -5,7 +5,8 @@ import * as React from "react";
 import {
     ILocalizationProps,
     LocalizableElement,
-    Label
+    Label,
+    ILocalizationState
 } from "./l10nComponents";
 import { FormControlLabel, Switch } from "@mui/material";
 
@@ -26,7 +27,10 @@ interface ICheckboxProps extends ILocalizationProps {
 // A checkbox that is localizable and can toggle between either a 2 or 3 states.
 // This is a vanilla html checkbox.
 // New controls should probably use MuiCheckbox.
-export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
+export class Checkbox extends LocalizableElement<
+    ICheckboxProps,
+    ILocalizationState
+> {
     // Resist the temptation to change null to undefined here.
     // This type has to match the 'ref' attribute below, which has "| null".
     private input: HTMLInputElement | null;

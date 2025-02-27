@@ -8,8 +8,8 @@
 // This collectionSettings reference defines the function GetSettings(): ICollectionSettings
 // The actual function is injected by C#.
 /// <reference path="../js/collectionSettings.d.ts"/>
-import React = require("react");
-import ReactDOM = require("react-dom");
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
@@ -307,7 +307,7 @@ export default class BloomSourceBubbles {
 
     private static DoSafeReplaceInList(
         items: JQuery,
-        langCode: String,
+        langCode: string,
         position: number
     ): JQuery {
         // if items contains a div with langCode, then try to put it at the position specified in the list

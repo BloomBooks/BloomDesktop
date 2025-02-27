@@ -16,7 +16,7 @@ import {
     TopicChooserDialog
 } from "../../bookEdit/TopicChooser/TopicChooserDialog";
 
-export const PublishTopic: React.FunctionComponent<{}> = () => {
+export const PublishTopic: React.FunctionComponent = () => {
     const [topicName, setTopicName] = React.useState("");
 
     function retrieveTopic() {

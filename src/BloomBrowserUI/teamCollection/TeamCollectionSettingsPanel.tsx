@@ -200,7 +200,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
     );
 };
 
-const ExperimentalWarningBox: React.FunctionComponent<{}> = () => (
+const ExperimentalWarningBox: React.FunctionComponent = () => (
     <WarningBox>
         <span>
             This is an <strong>experimental</strong> feature. Please contact us

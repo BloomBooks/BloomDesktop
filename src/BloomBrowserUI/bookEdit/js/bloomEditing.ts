@@ -1505,7 +1505,11 @@ export function attachToCkEditor(element) {
         const show = textSelected && textSelected.length > 0;
         const bar = $("body").find("." + editor.id);
         localizeCkeditorTooltips(bar);
-        show ? bar.show() : bar.hide();
+        if (show) {
+            bar.show();
+        } else {
+            bar.hide();
+        }
 
         // Move the format bar on the screen if needed.
         // (Note that offsets are not defined if it's not visible.)
