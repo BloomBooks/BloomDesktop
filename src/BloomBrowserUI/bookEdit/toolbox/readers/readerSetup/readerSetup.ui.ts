@@ -1,7 +1,7 @@
 /// <reference path="readerSetup.io.ts" />
 /// <reference path="../../../../lib/jquery.onSafe.d.ts" />
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
-import "../../../../lib/jquery.onSafe.ts";
+import "../../../../lib/jquery.onSafe";
 import {
     beginSaveChangedSettings,
     cleanSpaceDelimitedList,

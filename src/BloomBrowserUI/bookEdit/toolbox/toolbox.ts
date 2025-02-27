@@ -28,7 +28,7 @@ let savedSettings: string;
 
 let keypressTimer: any = null;
 
-let showExperimentalTools: boolean; // set by Toolbox.initialize()
+let showExperimentalTools = false; // set by Toolbox.initialize()
 
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
