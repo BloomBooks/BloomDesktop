@@ -45,6 +45,7 @@ import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CogIcon } from "./CogIcon";
+import { Bubble } from "comicaljs";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -100,8 +101,21 @@ const OverlayContextControls: React.FunctionComponent<{
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the bubble manager
         // to ignore focus changes while the menu is open.
-        BubbleManager.ignoreFocusChanges = open;
+        if (open) {
+            BubbleManager.ignoreFocusChanges = true;
+        }
         props.setMenuOpen(open);
+        // Setting ignoreFocusChanges to false immediately after closing the menu doesn't work,
+        // because the the focus change is still happening after the menu closes.  This timeout
+        // ensures that the focus change is ignored immediately after the menu closes.
+        // The skipNextFocusChange flag is used to prevent the focus change that happens when
+        // a dialog opened by the menu command closes.  See BL-14123.
+        if (!open) {
+            setTimeout(() => {
+                BubbleManager.skipNextFocusChange = true;
+                BubbleManager.ignoreFocusChanges = false;
+            }, 0);
+        }
     };
 
     const menuEl = useRef<HTMLElement | null>();
