@@ -1,8 +1,7 @@
+"use strict";
 /// <reference path="localizationManager.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
 import theOneLocalizationManager from "./localizationManager";
-
-"use strict";
 
 describe("localizationManager", () => {
     /* This doesn't work. The old version would never fail, because it didn't actually account for how to handle

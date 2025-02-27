@@ -1,5 +1,9 @@
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import {
+    ILocalizationProps,
+    ILocalizationState,
+    LocalizableElement
+} from "./l10nComponents";
 import { BloomCheckbox } from "./BloomCheckBox";
 
 interface IProps extends ILocalizationProps {
@@ -17,7 +21,10 @@ interface IProps extends ILocalizationProps {
 // something is not true, and just be silent on the matter. In the case of the "something is not true",
 // a "tristateItemOffName" is used, e.g. "noMotionHazard".
 
-export class StringListCheckbox extends LocalizableElement<IProps, {}> {
+export class StringListCheckbox extends LocalizableElement<
+    IProps,
+    ILocalizationState
+> {
     public constructor(props: IProps) {
         super(props);
     }

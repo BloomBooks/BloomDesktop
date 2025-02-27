@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 
 import Grid from "@mui/material/Grid";
-import React = require("react");
+import * as React from "react";
 import { useState, useEffect } from "react";
 import "BooksOfCollection.less";
 import { useApiData, useWatchApiData } from "../utils/bloomApi";

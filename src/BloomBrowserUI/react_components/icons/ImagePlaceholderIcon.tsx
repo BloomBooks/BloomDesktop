@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 
 interface ImagePlaceholderIconProps extends React.SVGProps<SVGSVGElement> {
     color?: string;

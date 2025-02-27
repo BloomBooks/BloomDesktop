@@ -52,7 +52,7 @@ export const kDefaultLanguageFontStack = "Andika, sans-serif";
 //const AACompliantBloomBlue = "#177c8a";
 
 declare module "@mui/styles" {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    // eslint-disable-next-line  @typescript-eslint/no-empty-object-type
     interface DefaultTheme extends Theme {}
 }
 

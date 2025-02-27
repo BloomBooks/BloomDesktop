@@ -499,9 +499,9 @@ export const BloomEnterpriseIndicatorIconAndText: React.FunctionComponent<{
     return (
         <div
             onClick={() => {
-                enterpriseAvailable ||
-                    props.disabled ||
+                if (!enterpriseAvailable && !props.disabled) {
                     openBloomEnterpriseSettings();
+                }
             }}
             css={css`
                 display: flex;

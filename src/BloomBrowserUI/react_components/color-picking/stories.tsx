@@ -16,7 +16,7 @@ import {
 } from "./colorPickerDialog";
 import { BloomPalette, TextBackgroundColors } from "./bloomPalette";
 import BloomSketchPicker from "./bloomSketchPicker";
-import tinycolor = require("tinycolor2");
+import * as tinycolor from "tinycolor2";
 import { ColorResult } from "react-color";
 import { FormControl, InputLabel, Typography } from "@mui/material";
 import { HexColorInput } from "./hexColorInput";

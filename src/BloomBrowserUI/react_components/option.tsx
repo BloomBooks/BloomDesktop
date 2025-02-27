@@ -1,5 +1,9 @@
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import {
+    ILocalizationProps,
+    ILocalizationState,
+    LocalizableElement
+} from "./l10nComponents";
 
 interface IOptionProps extends ILocalizationProps {
     className: string;
@@ -11,7 +15,10 @@ interface IOptionProps extends ILocalizationProps {
 // we use to indicate localization problems. However, option is not allowed
 // to contain HTML markup, only text, so trying to put a span in it has weird
 // results...we get [object Object] instead of anything sensible.
-export default class Option extends LocalizableElement<IOptionProps, {}> {
+export default class Option extends LocalizableElement<
+    IOptionProps,
+    ILocalizationState
+> {
     public render() {
         return (
             <option className={this.props.className} value={this.props.value}>

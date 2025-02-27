@@ -296,7 +296,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                     const nextRegion = rp.getRegions()[index + 1];
                     if (nextRegion) {
                         nextRegion.start = region.end;
-                        region;
+                        //region; lint complained; seems to do nothing.
                         nextRegion.setOptions({
                             ...nextRegion,
                             start: region.end

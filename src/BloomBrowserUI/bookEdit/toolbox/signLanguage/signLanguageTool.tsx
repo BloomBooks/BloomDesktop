@@ -85,10 +85,10 @@ const emptyVideoStatistics = {
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of SignLanguageTool to ToolBox.registerTool().
 export class SignLanguageToolControls extends React.Component<
-    {},
+    unknown,
     IComponentState
 > {
-    constructor(props: Readonly<{}>) {
+    constructor(props: Readonly<unknown>) {
         super(props);
 
         // The following binding weirdness allows VideoTrimSlider to use these as callbacks
